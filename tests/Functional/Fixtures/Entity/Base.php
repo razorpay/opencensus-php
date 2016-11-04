@@ -39,6 +39,7 @@ class Base
         'terminal'      => \RZP\Models\Terminal\Entity::class,
         'emi_plan'      => \RZP\Models\Emi\Entity::class,
         'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
+        'billdesk'      => \RZP\Gateway\Billdesk\Entity::class,
         'app_token'     => \RZP\Models\Customer\AppToken\Entity::class,
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
@@ -46,6 +47,8 @@ class Base
         'bank_account'  => \RZP\Models\BankAccount\Entity::class,
         'credits'       => \RZP\Models\Merchant\Credits\Entity::class,
         'address'       => \RZP\Models\Address\Entity::class,
+        'batch'         => \RZP\Models\Batch\Entity::class,
+        'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -53,7 +56,8 @@ class Base
         'pricing',
         'methods',
         'emi_plan',
-        'iin'
+        'iin',
+        'schedule',
     );
 
     public function create(array $attributes = array())

@@ -83,6 +83,38 @@ return [
         'terminal_id' => '1000AxisMigsTl',
     ],
 
+    'testPaymentAxisMigsCaptureEntity' => [
+//        'id' => 'pay_53',
+//        'payment_id' => '3GZ95U9Rss628z',
+        'genius' => false,
+        'action' => 'capture',
+        'received' => true,
+        'vpc_amount' => 50000,
+        'vpc_AcqResponseCode' => '00',
+        'vpc_Command' => 'capture',
+        'vpc_Currency' => null,
+//        'vpc_MerchTxnRef' => '3GZ95U9Rss628z',
+        'vpc_3DSECI' => null,
+//        'vpc_3DSXID' => null,
+        'vpc_3DSenrolled' => null,
+        'vpc_3DSstatus' => null,
+        'vpc_AuthorizeId' => null,
+        //'vpc_BatchNo' => '20150827', // '20150503',
+        'vpc_Card' => 'MC',
+        'vpc_ReceiptNo' => '511415585968',
+//        'vpc_ShopTransactionNo' => '1100087478',
+//        'vpc_TransactionNo' => '1100032024',
+        'vpc_TxnResponseCode' => '0',
+//        'vpc_VerToken' => null,
+        'vpc_VerType' => null,
+        'vpc_VerSecurityLevel' => null, // null,
+        'vpc_VerStatus' => null, //null,
+        'vpc_Message' => 'Approved',
+        'refund_id' => null,
+        'entity' => 'axis_migs',
+        'terminal_id' => '1000AxisMigsTl',
+    ],
+
     'testPaymentRefund' => [
 //        'id' => '153',
 //        'payment_id' => '3dxwY5ZgxBnrQE',
@@ -131,6 +163,22 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\RuntimeException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'testPaymentVerifyFailed' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 

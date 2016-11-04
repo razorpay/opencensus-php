@@ -5,7 +5,6 @@ namespace RZP\Services;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
 use CreditCardFraudDetection;
-use RZP\Services;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -26,6 +25,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('mailgun', function($app)
         {
+            $mailgunMock = $app['config']->get('applications.mailgun.mock');
+
+            if ($mailgunMock === true)
+            {
+                return new Mock\Mailgun($app);
+            }
+
             return new Mailgun($app);
         });
 
@@ -55,10 +61,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($tokenexMock === true)
             {
-                return new Services\Mock\TokenEx($app);
+                return new Mock\TokenEx($app);
             }
 
-            return new Services\TokenEx($app);
+            return new TokenEx($app);
         });
 
         $this->app->singleton('raven', function($app)
@@ -75,6 +81,12 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new \RZP\Base\RepositoryManager($app);
         });
+
+        $this->app->singleton('segment', function($app)
+        {
+            return new SegmentClient($app);
+        });
+
 
         $this->registerApiMutex();
 
@@ -103,7 +115,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'repo',
             'es',
-            'maxmind'
+            'maxmind',
+            'segment'
         );
     }
 
@@ -137,10 +150,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($maxmindMock === true)
             {
-                return new Services\Mock\MaxMind($app);
+                return new Mock\MaxMind($app);
             }
 
-            return new Services\MaxMind($app);
+            return new MaxMind($app);
         });
     }
 
@@ -152,10 +165,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Mutex($app);
+                return new Mock\Mutex($app);
             }
 
-            return new Services\Mutex($app);
+            return new Mutex($app);
         });
     }
 }

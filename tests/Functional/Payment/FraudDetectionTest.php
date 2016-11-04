@@ -13,7 +13,7 @@ class FraudDetectionTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/fraudDetectionTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/FraudDetectionTestData.php';
 
         parent::setUp();
 

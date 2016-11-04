@@ -12,10 +12,13 @@ use Carbon\Carbon;
 
 class EmiFile extends Base\EmiFile
 {
-
     protected static $fileToWriteName = 'Kotak_Emi_File';
 
-    protected static $headers = array(
+    protected $emailIdsToSendTo = ['kotakcards.emi@razorpay.com'];
+
+    protected $bankName  = 'Kotak';
+
+    protected static $headers = [
         'EMI ID',
         'Card Pan',
         'Issuer',
@@ -33,45 +36,15 @@ class EmiFile extends Base\EmiFile
         'Interest Rate',
         'Discount / Cashback %',
         'Discount / Cashback Amount',
-    );
+    ];
 
-    public function generate($input)
+    protected function writeEmiFile($emiData)
     {
-        $txt = $this->getEmiData($input);
+        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        $path = $this->getExcelFullFilePath();
 
-        $this->sendKotakEmiFile();
-
-        return $urlExcel;
-    }
-
-    protected function sendKotakEmiFile()
-    {
-        $this->fetchAndSendPassword();
-
-        $fullPath = $this->getExcelFullFilePath();
-
-        $zipFile = $this->getZippedFile($fullPath);
-
-        $data['file'] = $zipFile;
-
-        $data['body'] = 'Please process the attached EMI file';
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = ['kotakcards.emi@razorpay.com', 'settlements@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Kotak Emi File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Kotak Emi File for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
+        return compact('url', 'path');
     }
 
     protected function getEmiData($input)
@@ -84,13 +57,13 @@ class EmiFile extends Base\EmiFile
         {
             $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('M d,Y h:i:s A');
 
-            $emiPlan = (new Emi\Service)->fetch($emiPayment->getEmiPlanId());
+            $emiPlan = $emiPayment->emiPlan;
 
             $emiPercent = $emiPlan['rate']/100;
 
             $authCode = $this->getAuthCode($emiPayment);
 
-            $data[] = array(
+            $data[] = [
             'EMI ID'                     => $emiPayment->getId(),
             'Card Pan'                   => $this->getCardNumber($emiPayment->card),
             'Issuer'                     => 'Kotak',
@@ -108,26 +81,9 @@ class EmiFile extends Base\EmiFile
             'Interest Rate'              => '', // Non Mandatory
             'Discount / Cashback %'      => '0.00%',
             'Discount / Cashback Amount' => '0'
-            );
+            ];
         }
 
         return $data;
-    }
-
-    protected function sendEmiPassword()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $data['body'] = 'Kotak Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $emails = ['kotakcards.emi@razorpay.com'];
-
-            $message->from('emifiles@razorpay.com', 'Kotak Emi File Password');
-
-            $message->subject('Kotak Emi File Password for ' . $today);
-
-            $message->to($emails);
-        });
     }
 }

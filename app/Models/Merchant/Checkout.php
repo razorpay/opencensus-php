@@ -6,15 +6,13 @@ use App;
 use Request;
 use Session;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Checkout
@@ -32,9 +30,9 @@ class Checkout
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
-        $data = $this->getMerchantPreferencesData($merchant, $input);
+        $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
-        $data['methods'] = $this->getMethods($merchant, $input);
+        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -45,12 +43,14 @@ class Checkout
 
     protected function tracePreferencesRequest($merchant, $mode, $input)
     {
+        $sessionData = $this->app['request']->session()->all();
+
         $this->app['trace']->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $mode,
-                'cookie'      => Session::getId(),
+                'session'     => $sessionData,
                 'input'       => $input
             ]);
     }
@@ -80,17 +80,16 @@ class Checkout
         {
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
-            assertTrue($customer !== null);
-
-            if ($customer->isLocal() === true)
+            if ($customer === null)
             {
-                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+                return null;
             }
-            else if((Base\Utility::isUpdatedAndroidSdk($input)) and
+
+            if((Base\Utility::isUpdatedAndroidSdk($input)) and
                     ($appToken !== null) and
                     ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
-                return;
+                return null;
             }
 
             $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -100,6 +99,11 @@ class Checkout
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic()
             );
+
+            if ($customer->isLocal() === true)
+            {
+                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
         }
         catch (\Exception $ex)
         {
@@ -111,6 +115,11 @@ class Checkout
 
     protected function checkAndFillAppTokenInputFromSession($merchant, $mode, array & $input)
     {
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            return;
+        }
+
         if ($merchant->isFeatureEnabled('cardsaving') === false)
         {
             return;
@@ -125,35 +134,6 @@ class Checkout
         {
             $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
-    }
-
-    protected function getMethods($merchant, $input)
-    {
-        $methodsArray = array(
-            'entity'        => 'methods',
-            'card'          => true,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
-        );
-
-        $methods = (new Methods\Core)->getMethods($merchant);
-
-        if ($methods !== null)
-        {
-            $methodsArray['card'] = $methods->isCardEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
-            }
-            $methodsArray['wallet'] = $methods->getEnabledWallets();
-            $methodsArray['emi'] = $methods->isEmiEnabled();
-            $methodsArray['upi'] = $methods->isUpiEnabled();
-        }
-
-        return $methodsArray;
     }
 
     protected function checkAndAddOrderForTpv($merchant, $input, & $data)
@@ -217,42 +197,31 @@ class Checkout
         }
      }
 
-    protected function getMerchantPreferencesData($merchant, $input)
+    protected function getMerchantPreferencesData($merchant, $mode, $input)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
+
         $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
-        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $input);
+
+        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode, $input);
+
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
+
         $data['version'] = 1;
 
         return $data;
     }
 
-    protected function shouldEnableCardSaving($merchant, $input)
+    protected function shouldEnableCardSaving($merchant, $mode, $input)
     {
         $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
 
-        // On few devices where browser is blocking cookies, disable card saving
-        if (isset($input['checkcookie']))
+        // if card saving is enabled, create a session and set a key
+        if ($rememberCustomer === true)
         {
-            $expectedValue = $input['checkcookie'];
+            $key = $mode . '_checkcookie';
 
-            $cookie = Request::cookie('checkcookie');
-
-            if (($expectedValue === '1') and ($expectedValue !== $cookie))
-            {
-                $this->app['trace']->info(
-                    TraceCode::CHECKOUT_PREFERENCES_COOKIE_CHECK,
-                    [
-                        'actual'           => $cookie,
-                        'expected'         => $expectedValue,
-                        'merchant_id'      => $merchant->getId(),
-                        'rememberCustomer' => $rememberCustomer,
-                    ]);
-
-                //uncomment this once we are sure its becuase of above mismatch
-                //return false;
-            }
+            $this->app['request']->session()->put($key, '1');
         }
 
         return $rememberCustomer;

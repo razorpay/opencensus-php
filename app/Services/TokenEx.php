@@ -45,16 +45,20 @@ class TokenEx
         $this->tokenScheme = $this->config['scheme'];
 
         $this->baseUrl = $this->config['url'];
+
+        $this->proxy = $app['config']->get('app.proxy_address');
+
+        $this->proxyEnabled = $app['config']->get('app.proxy_enabled');
     }
 
     public function tokenize($data)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::DATA          => $data,
             self::TOKEN_SCHEME  => (int) $this->tokenScheme
-        );
+        ];
 
         $response = $this->sendRequest('REST/Tokenize', 'post', $input);
 
@@ -63,11 +67,11 @@ class TokenEx
 
     public function validateToken($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token
-        );
+        ];
 
         $response = $this->sendRequest('REST/ValidateToken', 'post', $input);
 
@@ -76,11 +80,11 @@ class TokenEx
 
     public function detokenize($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token,
-        );
+        ];
 
         $response = $this->sendRequest('REST/Detokenize', 'post', $input);
 
@@ -89,11 +93,11 @@ class TokenEx
 
     public function deleteToken($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token,
-        );
+        ];
 
         $response = $this->sendRequest('REST/DeleteToken', 'post', $input);
 
@@ -108,19 +112,23 @@ class TokenEx
             $data = '';
 
         $headers['Content-Type'] = 'application/json';
+
         $headers['Accept'] = 'application/json';
 
-        $options = array(
-            'proxy' => 'https://splunk.razorpay.com:8888'
-        );
+        $options = [];
 
-        $request = array(
+        if ($this->proxyEnabled === true)
+        {
+            $options['proxy'] = $this->proxy;
+        }
+
+        $request = [
             'url' => $url,
             'method' => $method,
             'headers' => $headers,
             'options' => $options,
             'content' => $data
-        );
+        ];
 
         $response = $this->sendTokenExRequest($request);
 
@@ -165,7 +173,11 @@ class TokenEx
 
         if ($success === false)
         {
-            throw new Exception\RuntimeException('tokenex request: '. $referenceNumber . ' failed');
+            $data = [
+                'referenceId' => $referenceNumber
+            ];
+
+            throw new Exception\RuntimeException('tokenex request failed', $data);
         }
     }
 }

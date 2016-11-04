@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Models\Order;
+use ApiResponse;
 use Request;
+use RZP\Models\Order;
 
 class OrderController extends Controller
 {
@@ -12,7 +12,7 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        $this->order = new Order\Service();
+        $this->order = new Order\Service;
     }
 
     public function createOrder()

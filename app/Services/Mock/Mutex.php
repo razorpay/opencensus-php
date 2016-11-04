@@ -30,7 +30,9 @@ class Mutex extends BaseLock
             return false;
         }
 
-        return $this->cache->store('file')->put($resource, $this->requestId, $ttl);
+        $this->cache->store('file')->put($resource, $this->requestId, $ttl);
+
+        return true;
     }
 
     /**

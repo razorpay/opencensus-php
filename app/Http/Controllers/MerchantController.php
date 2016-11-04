@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
+use Request;
 use RZP\Constants\Mode;
-use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
-use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -144,6 +144,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function assignSettlementSchedule($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->assignSettlementSchedule($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);
@@ -156,6 +165,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = (new Terminal\Service)->createTerminal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCopyTerminal($mid, $tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->copyTerminal($mid, $tid, $input);
 
         return ApiResponse::json($data);
     }
@@ -303,11 +321,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFreeCredits($id)
+    public function postAmountCredits($id)
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+        $data = (new Merchant\Service)->editAmountCredits($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -400,7 +418,7 @@ class MerchantController extends Controller
     {
         $data = $this->getCheckoutCommon();
 
-        return \View::make('checkout.checkout-public')
+        return \View::make('checkout.checkout')
                     ->with($data);
     }
 
@@ -408,18 +426,19 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $app = \App::getFacadeRoot();
+        $context = $this->config->get('app.context');
 
-        $context = $app['config']->get('app.context');
+        $url = $this->config->get('app.checkout');
 
-        $url = $app['config']->get('app.checkout');
+        $urlMap = $this->config->get('url.checkout');
 
-        $urlMap = array(
-            'production'    => 'https://checkout.razorpay.com',
-            'beta'          => 'https://betacheckout.razorpay.com');
+        $cdnUrlMap = $this->config->get('url.cdn');
 
         $framejs = '/v1/checkout-frame.js';
+
         $css = '/v1/css/checkout.css';
+
+        $font = '/lato';
 
         $data = [];
 
@@ -427,7 +446,6 @@ class MerchantController extends Controller
         {
             $url = $urlMap[$context];
         }
-
         else if (isset($input['checkout']))
         {
             $url = $input['checkout'];
@@ -436,7 +454,7 @@ class MerchantController extends Controller
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato';
+        $data['font'] = $cdnUrlMap['production'].$font;
 
         return $data;
     }
@@ -461,7 +479,10 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        $input = Request::all();
+
+        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
+
         return ApiResponse::json($response);
     }
 

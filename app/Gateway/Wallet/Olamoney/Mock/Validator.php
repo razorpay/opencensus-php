@@ -2,21 +2,57 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 
 class Validator extends Base\Validator
 {
-    protected static $debitRules   = array(
-        'paymentId'                                            => 'required|alpha_num',
-        RequestFields::BILL                                    => 'required|array',
-        RequestFields::BILL . '.' . RequestFields::UNIQUE_ID   => 'required|alpha_num',
-        RequestFields::BILL . '.' . RequestFields::AMOUNT      => 'required|numeric',
-        RequestFields::BILL . '.' . RequestFields::COMMENTS    => 'sometimes|string',
-        RequestFields::BILL . '.' . RequestFields::UDF         => 'required|string',
-        RequestFields::PHONE                                   => 'required|integer'
+    protected static $creditRules   = array(
+        'paymentId'                                                         => 'required|string',
+        RequestFields::BILL                                                 => 'required|array',
+        RequestFields::BILL . '.' . RequestFields::MERCHANT_REFERENCE_ID    => 'required|alpha_num',
+        RequestFields::BILL . '.' . RequestFields::COMMAND                  => 'required|string|in:credit',
+        RequestFields::BILL . '.' . RequestFields::RETURN_URL               => 'required|url',
+        RequestFields::BILL . '.' . RequestFields::NOTIFICATION_URL         => 'required',
+        RequestFields::BILL . '.' . RequestFields::USER_ACCESS_TOKEN        => 'required|string',
+        RequestFields::BILL . '.' . RequestFields::CURRENCY                 => 'required|string|in:INR',
+        RequestFields::BILL . '.' . RequestFields::BALANCE_TYPE             => 'required|string|in:cash',
+        RequestFields::BILL . '.' . RequestFields::BALANCE_NAME             => 'required|string|in:cash',
+        RequestFields::BILL . '.' . RequestFields::AMOUNT                   => 'required|numeric',
+        RequestFields::BILL . '.' . RequestFields::COMMENTS                 => 'sometimes|string',
+        RequestFields::BILL . '.' . RequestFields::UDF                      => 'required|string',
+        RequestFields::PHONE                                                => 'sometimes|string|size:10',
+    );
+
+    protected static $otpGenerateRules = array(
+        RequestFields::PHONE    => 'required|string|size:10',
+        RequestFields::EMAIL    => 'required|email'
+    );
+
+    protected static $otpSubmitRules = array(
+        RequestFields::PHONE    => 'required|string|size:10',
+        RequestFields::OTP      => 'required|string|size:6'
+    );
+
+    protected static $checkBalanceRules = array(
+        RequestFields::USER_ACCESS_TOKEN    => 'required|string',
+    );
+
+    protected static $debitRules = array(
+        RequestFields::ACCESS_TOKEN         => 'required|string',
+        RequestFields::COMMAND              => 'required|in:debit',
+        RequestFields::UNIQUE_ID            => 'required|string',
+        RequestFields::AMOUNT               => 'required|numeric',
+        RequestFields::UDF                  => 'required|string',
+        RequestFields::CURRENCY             => 'required|in:INR',
+        RequestFields::NOTIFICATION_URL     => 'required|url',
+        RequestFields::RETURN_URL           => 'required',
+        RequestFields::COMMENTS             => 'required|string',
+        RequestFields::COUPON_CODE          => 'required|string',
+        RequestFields::USER_ACCESS_TOKEN    => 'required|string',
+        RequestFields::HASH                 => 'required|regex:"^[a-f0-9]+$"',
     );
 
     protected static $refundRules = array(
@@ -25,7 +61,7 @@ class Validator extends Base\Validator
         RequestFields::UNIQUE_ID        => 'required|string',
         RequestFields::COMMENTS         => 'required|string',
         RequestFields::UDF              => 'required|string',
-        RequestFields::HASH             => 'required|string',
+        RequestFields::HASH             => 'required|regex:"^[a-f0-9]+$"',
         RequestFields::RETURN_URL       => 'sometimes',
         RequestFields::NOTIFICATION_URL => 'sometimes',
         RequestFields::AMOUNT           => 'required|numeric',
@@ -39,6 +75,6 @@ class Validator extends Base\Validator
         RequestFields::UNIQUE_BILL_ID   => 'required|string',
         RequestFields::ACCESS_TOKEN     => 'required|string',
         RequestFields::TIMESTAMP        => 'required|date_format:Y-m-d H:i:s',
-        RequestFields::HASH             => 'required|string',
+        RequestFields::HASH             => 'required|regex:"^[a-f0-9]+$"',
     );
 }

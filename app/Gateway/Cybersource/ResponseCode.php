@@ -147,6 +147,16 @@ class ResponseCode
         703 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
     );
 
+    public static function getDescription($code)
+    {
+        if (isset(self::$reasonCodes[$code]))
+        {
+            return self::$reasonCodes[$code];
+        }
+
+        return 'Payment failed';
+    }
+
     public static function getMappedCode($code)
     {
         if (isset(self::$errorCodeMap[$code]))

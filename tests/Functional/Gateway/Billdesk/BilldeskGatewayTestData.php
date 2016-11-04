@@ -132,6 +132,58 @@ return [
         'entity'=> 'billdesk',
     ],
 
+    'testPaymentMultiplePartialRefund' => [
+        'action'=> 'refund',
+        'received' => true,
+        'TxnAmount'=> '5.00',
+        'BankID'=> null,
+        'CurrencyType'=> 'INR',
+        'ItemCode'=> null,
+        'TypeField1'=> null,
+        'TypeField2'=> null,
+        'AdditionalInfo1'=> null,
+        'BankReferenceNo'=> null,
+        'BankMerchantID'=> null,
+        'SecurityType'=> null,
+        'AuthStatus'=> null,
+        'SettlementType'=> null,
+        'ErrorStatus'=> null,
+        'ErrorDescription'=> null,
+        'RequestType'=> '0410',
+        'RefAmount'=> '100.00',
+        'RefStatus'=> '0799',
+        'ErrorCode'=> 'NA',
+        'ErrorReason'=> 'NA',
+        'ProcessStatus'=> 'Y',
+        'entity'=> 'billdesk',
+    ],
+
+    'testPaymentPartialRefund' => [
+        'action'=> 'refund',
+        'received' => true,
+        'TxnAmount'=> '5.00',
+        'BankID'=> null,
+        'CurrencyType'=> 'INR',
+        'ItemCode'=> null,
+        'TypeField1'=> null,
+        'TypeField2'=> null,
+        'AdditionalInfo1'=> null,
+        'BankReferenceNo'=> null,
+        'BankMerchantID'=> null,
+        'SecurityType'=> null,
+        'AuthStatus'=> null,
+        'SettlementType'=> null,
+        'ErrorStatus'=> null,
+        'ErrorDescription'=> null,
+        'RequestType'=> '0410',
+        'RefAmount'=> '400.00',
+        'RefStatus'=> '0799',
+        'ErrorCode'=> 'NA',
+        'ErrorReason'=> 'NA',
+        'ProcessStatus'=> 'Y',
+        'entity'=> 'billdesk',
+    ],
+
     'testTransactionAfterRefundingAuthorizedPayment' => [
         'type' => 'refund',
         'merchant_id' => '10000000000000',
@@ -172,6 +224,51 @@ return [
                 ],
                 'wallet' => [],
             ],
+        ],
+    ],
+
+    'testPaymentMultipleInvalidPartialRefund' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+        ],
+    ],
+
+    'testReconcileCancelledTransactions' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/reconciliate/billdesk/cancelled',
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failure_count' => 0,
+            ],
+        ],
+    ],
+
+    'testServerToServerCallback' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 ];

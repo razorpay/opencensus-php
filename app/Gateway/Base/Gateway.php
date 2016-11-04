@@ -115,6 +115,15 @@ class Gateway
     protected $config;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    protected $terminal;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -144,6 +153,8 @@ class Gateway
         $this->loadGatewayConfig();
 
         $this->repo = $this->getRepository();
+
+        $this->route = $this->app['api.route'];
     }
 
     public function authorize(array $input)
@@ -357,23 +368,25 @@ class Gateway
     {
         // This payment is the gateway entity payment.
         // Also sets this gateway payment in the verify object's payment.
-        $payment = $this->getPaymentToVerify($verify->input, $verify);
+        $gatewayPayment = $this->getPaymentToVerify($verify->input, $verify);
 
-        if (($payment === null) and
+        if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $verify->input['payment']['id'],
-                 'message' => 'payment id not found in the gateway database',
-                 'gateway' => $this->gateway]);
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]);
 
             return null;
         }
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $this->sendPaymentVerifyRequest($verify);
 
-        $status = $this->verifyPayment($verify);
+        $this->verifyPayment($verify);
 
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
@@ -407,8 +420,19 @@ class Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => $this->gateway,
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse($response, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
     }
@@ -551,6 +575,8 @@ class Gateway
         $this->config = $this->app['config']->get($configGatewayStr);
 
         $this->proxy = $this->app['config']->get('gateway.proxy_address');
+
+        $this->proxyEnabled = $this->app['config']->get('gateway.proxy_enabled');
     }
 
     protected function getFormValues($form, $url)
@@ -624,6 +650,16 @@ class Gateway
         return $request;
     }
 
+    protected function getOtpSubmitRequest(array $input): array
+    {
+        $request = [
+            'url' => $input['otpSubmitUrl'],
+            'method' => 'post'
+        ];
+
+        return $request;
+    }
+
     protected function jsonToArray($json)
     {
         $decodeJson = json_decode($json, true);
@@ -659,6 +695,15 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getGatewayCertDirPath()
+    {
+        $certificatePath = $this->app['config']->get('gateway.certificate_path');
+
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        return $gatewayCertPath;
     }
 
     protected function getRepository()

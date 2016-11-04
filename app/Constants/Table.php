@@ -5,46 +5,48 @@ namespace RZP\Constants;
 class Table
 {
     // Core entities
-    const IIN                       = 'iins';
-    const KEY                       = 'keys';
-    const CARD                      = 'cards';
-    const ORDER                     = 'orders';
-    const TOKEN                     = 'tokens';
-    const REFUND                    = 'refunds';
-    const INVOICE                   = 'invoices';
-    const BALANCE                   = 'balance';
-    const METHODS                   = 'merchant_banks';
-    const PRICING                   = 'pricing';
-    const PAYMENT                   = 'payments';
-    const WEBHOOK                   = 'webhooks';
-    const ADDRESS                   = 'addresses';
-    const MERCHANT                  = 'merchants';
-    const TERMINAL                  = 'terminals';
-    const CUSTOMER                  = 'customers';
-    const EMI_PLAN                  = 'emi_plans';
-    const LINE_ITEM                 = 'line_items';
-    const APP_TOKEN                 = 'customer_apps';
-    const ADJUSTMENT                = 'adjustment';
-    const SETTLEMENT                = 'settlements';
-    const TRANSACTION               = 'transactions';
-    const BANK_ACCOUNT              = 'bank_accounts';
-    const INVOICE_ITEM              = 'invoice_items';
-    const DAILY_SETTLEMENT          = 'daily_settlements';
-    const SETTLEMENT_DETAIL         = 'settlement_details';
+    const IIN                   = 'iins';
+    const KEY                   = 'keys';
+    const CARD                  = 'cards';
+    const BATCH                 = 'batches';
+    const ORDER                 = 'orders';
+    const TOKEN                 = 'tokens';
+    const REFUND                = 'refunds';
+    const INVOICE               = 'invoices';
+    const BALANCE               = 'balance';
+    const METHODS               = 'merchant_banks';
+    const PRICING               = 'pricing';
+    const SCHEDULE              = 'schedules';
+    const PAYMENT               = 'payments';
+    const WEBHOOK               = 'webhooks';
+    const ADDRESS               = 'addresses';
+    const MERCHANT              = 'merchants';
+    const TERMINAL              = 'terminals';
+    const CUSTOMER              = 'customers';
+    const EMI_PLAN              = 'emi_plans';
+    const LINE_ITEM             = 'line_items';
+    const APP_TOKEN             = 'customer_apps';
+    const ADJUSTMENT            = 'adjustment';
+    const SETTLEMENT            = 'settlements';
+    const TRANSACTION           = 'transactions';
+    const BANK_ACCOUNT          = 'bank_accounts';
+    const INVOICE_ITEM          = 'invoice_items';
+    const DAILY_SETTLEMENT      = 'daily_settlements';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
 
     // Gateway related
-
-    const UPI                       = 'upi';
-    const EBS                       = 'ebs';
-    const ATOM                      = 'atom';
-    const HDFC                      = 'hdfc';
-    const AXIS                      = 'axis';
-    const CYBERSOURCE               = 'cybersource';
-    const PAYTM                     = 'paytm';
-    const BILLDESK                  = 'billdesk';
-    const MOBIKWIK                  = 'mobikwik';
-    const NETBANKING                = 'netbanking';
-    const WALLET                    = 'wallet';
+    const EBS                   = 'ebs';
+    const ATOM                  = 'atom';
+    const HDFC                  = 'hdfc';
+    const MIGS                  = 'axis';
+    const CYBERSOURCE           = 'cybersource';
+    const FIRST_DATA            = 'first_data';
+    const PAYTM                 = 'paytm';
+    const BILLDESK              = 'billdesk';
+    const MOBIKWIK              = 'mobikwik';
+    const NETBANKING            = 'netbanking';
+    const UPI                   = 'upi';
+    const WALLET                = 'wallet';
 
     // Sessions table
     const SESSION                   = 'sessions';
@@ -53,10 +55,29 @@ class Table
     const CREDITS                   = 'credits';
 
     // Terminal Performance
-    const TERMINAL_ACTION           = 'terminal_action_logs';
-    const GATEWAY_STATUS_ABSENCE    = 'gatewaystatus_absence';
+
+    const TERMINAL_ACTION       = 'terminal_action_logs';
+    const GATEWAY_ABSENCE       = 'gateway_status_absence';
 
     // Payment Analytics
-    const PAYMENT_ANALYTICS         = 'payment_analytics';
-    const TERMINAL_ANALYTICS        = 'terminal_analytics';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
+
+    protected static $entityToTableMap = array(
+        Entity::AXIS_MIGS       => self::MIGS,
+        Entity::AXIS_GENIUS     => self::MIGS,
+        Entity::AMEX            => self::MIGS,
+    );
+
+    public static function getTableNameForEntity(string $entity)
+    {
+        Entity::validateEntityOrFail($entity);
+
+        if (isset(self::$entityToTableMap[$entity]))
+        {
+            return self::$entityToTableMap[$entity];
+        }
+
+        return constant(Table::class.'::'.strtoupper($entity));
+    }
 }

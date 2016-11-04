@@ -10,10 +10,9 @@ use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'Pricing';
+    protected $entity = 'pricing';
 
     protected $appFetchParamRules = array(
         Entity::PLAN_ID         => 'sometimes|string',
@@ -24,6 +23,7 @@ class Repository extends Base\Repository
         $pricing = $this->newQuery()
                         ->where(Pricing\Entity::PLAN_ID, '=', $id)
                         ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                        ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                         ->orderBy(Pricing\Entity::ID, 'desc')
                         ->get();
 
@@ -70,6 +70,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
@@ -80,6 +81,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
@@ -95,6 +97,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Pricing\Entity::PLAN_NAME, '=', $name)
+                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }

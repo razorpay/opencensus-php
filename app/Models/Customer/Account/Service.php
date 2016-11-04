@@ -8,6 +8,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -155,6 +156,26 @@ class Service extends Base\Service
     {
         $data = ['saved' => false];
 
+        // send otp is true when called from the checkout, false if called from
+        // preferences, we need to find out for first case only
+        if ($sendOtp === true)
+        {
+            $sessionData = $this->app['request']->session()->all();
+
+            $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
+                [
+                    'session' => $sessionData,
+                    'input'   => $input
+                ]);
+
+            $key = $this->mode . '_checkcookie';
+
+            if (empty($sessionData[$key]) === true)
+            {
+                return $data;
+            }
+        }
+
         $merchant = $this->repo->merchant->getSharedAccount();
 
         $contact = Customer\Validator::validateAndParseContact($contact);
@@ -262,7 +283,7 @@ class Service extends Base\Service
         {
             AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $appToken = (new AppToken\Core)->getAppByAppToken($appTokenId, $this->merchant);
+            $appToken = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             if ($appToken !== null)
             {

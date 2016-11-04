@@ -2,6 +2,8 @@
 
 namespace RZP\Http;
 
+use ApiResponse;
+
 final class Route
 {
     /*
@@ -11,253 +13,271 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'account'                                 => ['get',      'account',                                  'PublicController@getAccount'                                       ],
-        'checkout'                                => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
-        'checkout_public'                         => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
-        'merchant_methods'                        => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
-        'merchant_checkout_preferences'           => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
-        'payment_create'                          => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_private'                  => ['post',     'payments/create',                          'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_private_old'              => ['post',     'payments/create/redirect',                 'PaymentCreateController@postCreatePayment'                         ],
-        'payment_create_checkout'                 => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
-        'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
-        'payment_create_ajax'                     => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
-        'payment_create_fees'                     => ['post',     'payments/create/fees',                     'PaymentCreateController@postCreatePaymentFees'                     ],
-        'payment_create_wallet'                   => ['post',     'payments/create/wallet',                   'PaymentCreateController@postCreateWalletPayment'                   ],
-        'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
-        'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
-        'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
-        'payment_callback_with_key_get'           => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
-        'payment_get_status'                      => ['get',      'payments/{id}/status',                     'PaymentController@getPaymentStatusForAsyncPayments'                ],
-        'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
-        'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                 'PaymentCreateController@postOtpResend'                             ],
-        'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                 'PaymentCreateController@postTopupAjax'                             ],
-        'payment_topup_post'                      => ['post',     'payments/{id}/topup',                      'PaymentCreateController@postTopup'                                 ],
-        'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',          'PaymentCreateController@postRedirectCallback'                      ],
-        'payment_refund'                          => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
-        'payment_capture'                         => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
-        'payment_verify'                          => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
-        'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
-        'payment_cancel'                          => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                                      ],
-        'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',           'PaymentController@postAuthorizeFailedPayment'                      ],
-        'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',           'PaymentController@postRefundAuthorized'                            ],
-        'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                   'PaymentController@postPaymentMetadata'                             ],
-        'payment_fetch_by_id'                     => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                      ],
-        'payment_fetch_multiple'                  => ['get',      'payments',                                 'PaymentController@getPayments'                                     ],
-        'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                       'PaymentController@getCardForPayment'                               ],
-        'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                            ],
-        'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'                   ],
-        'payment_auth_notify'                     => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                                  ],
-        'payment_timeout'                         => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                                     ],
-        'payment_auto_capture'                    => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                                 ],
-        'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                             ],
-        'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                 'PaymentController@getVerifyPayments'                               ],
-        'payment_capture_reminder'                => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'           ],
-        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAuthorizedPayments'                 ],
-        'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                             'RefundController@getRefund'                                        ],
-        'refund_fetch_multiple'                   => ['get',      'refunds',                                  'RefundController@getRefunds'                                       ],
-        'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                 'RefundController@generateNetbankingRefunds'                        ],
-        'refund_generate_excel'                   => ['post',     'refunds/excel',                            'RefundController@generateRefunds'                                  ],
-        'refund_verify'                           => ['post',     'refunds/{ids}/verify',                     'RefundController@postRefundVerify'                                 ],
-        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',             'PaymentController@postCaptureVerify'                               ],
-        'card_fetch_by_id'                        => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
-        'card_fetch_multiple'                     => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
-        'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
-        'iin_fetch_multiple'                      => ['get',      'iins',                                     'CardController@getIins'                                            ],
-        'iin_add'                                 => ['post',     'iins',                                     'CardController@postIin'                                            ],
-        'iin_upload'                              => ['post',     'iins/upload',                              'CardController@uploadIin'                                          ],
-        'iin_edit'                                => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
-        'iin_generate_post'                       => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
-        'merchant_public_get_banks'               => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
-        'merchant_secret'                         => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                                   ],
-        'merchant_get_banks'                      => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                                       ],
-        'merchant_set_banks'                      => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                                       ],
-        'merchant_set_all_banks'                  => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'                        ],
-        'merchant_daily_report'                   => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                                ],
-        'merchant_create'                         => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                             ],
-        'merchant_fetch'                          => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
-        'merchant_edit'                           => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
-        'merchant_edit_config'                    => ['put',      'account/config',                           'MerchantController@putMerchantConfig'                              ],
-        'merchant_edit_config_logo'               => ['post',     'account/config/logo',                      'MerchantController@postMerchantConfigLogo'                         ],
-        'merchant_delete_config_logo'             => ['delete',   'account/config/logo',                      'MerchantController@deleteMerchantConfigLogo'                       ],
-        'submerchant_create'                      => ['post',     'submerchants',                             'MerchantController@postCreateSubMerchant'                          ],
-        'account_fetch_balance'                   => ['get',      'balance',                                  'MerchantController@getAccountBalance'                              ],
-        'fetch_bank_account'                      => ['get',      'account/bank_account',                     'MerchantController@getOwnBankAccount'                              ],
-        'account_fetch_config'                    => ['get',      'account/config',                           'MerchantController@getAccountConfig'                               ],
-        'merchant_edit_email'                     => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
-        'merchant_fetch_multiple'                 => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
-        'merchant_create_key'                     => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                                 ],
-        'merchant_fetch_keys'                     => ['get',      'merchants/{id}/keys',                      'MerchantController@getKeys'                                        ],
-        'merchant_replace_key'                    => ['put',      'merchants/{merchantId}/keys/{keyId}',      'MerchantController@putKeys'                                        ],
-        'merchant_fetch_webhooks'                 => ['get',      'merchants/{id}/webhooks',                  'MerchantController@getMerchantWebhooks'                            ],
-        'merchant_assign_pricing'                 => ['post',     'merchants/{id}/pricing',                   'MerchantController@postAssignPricingPlan'                          ],
-        'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                   'MerchantController@getPricingPlan'                                 ],
-        'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',              'MerchantController@postBankAccount'                                ],
-        'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',              'MerchantController@getBankAccount'                                 ],
-        'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',     'MerchantController@postGenerateTestBankAccounts'                   ],
-        'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                             ],
-        'merchant_get_terminals'                  => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                                   ],
-        'merchant_get_terminal'                   => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTerminal'                                    ],
-        'merchant_delete_terminal'                => ['delete',   'merchants/{mid}/terminals/{tid}',          'MerchantController@deleteTerminal'                                 ],
-        'merchant_modify_terminal'                => ['put',      'merchants/{mid}/terminals/{tid}',          'MerchantController@putTerminal'                                    ],
-        'merchant_put_payment_methods'            => ['put',      'merchants/{mid}/methods',                  'MerchantController@putMethods'                                     ],
-        'merchant_activate'                       => ['post',     'merchants/{id}/activate',                  'MerchantController@postActivate'                                   ],
-        'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',               'MerchantController@postLiveEnable'                                 ],
-        'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',              'MerchantController@postLiveDisable'                                ],
-        'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                   'MerchantController@getBalance'                                     ],
-        'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                   'MerchantController@postFreeCredits',                               ],
-        'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                     ],
-        'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',          'MerchantController@postMerchantBeneficiaryFile'                    ],
-        'merchant_add_features'                   => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
-        'merchant_get_features'                   => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
-        'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                 'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'credits_create'                          => ['post',     'merchants/{id}/credits_log',               'MerchantController@postCreateCreditsLog'                           ],
-        'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',             'MerchantController@getCreditsLog'                                  ],
-        'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',             'MerchantController@putCreditsLog'                                  ],
-        'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',             'MerchantController@deleteCreditsLog'                               ],
-        'credits_fetch_multiple'                  => ['get',      'credits',                                  'MerchantController@getCreditsLogs'                                 ],
-        'key_fetch_by_id'                         => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
-        'key_fetch_multiple'                      => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
-        'terminal_delete'                         => ['delete',   'terminals/{id}',                           'TerminalController@deleteTerminal'                                 ],
-        'terminal_edit'                           => ['put',      'terminals/{id}',                           'TerminalController@putTerminal'                                    ],
-        'terminal_restore'                        => ['put',      'terminals/{id}/restore',                   'TerminalController@restoreTerminal',                               ],
-        'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                    'TerminalController@toggleTerminal'                                 ],
-        'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                    'TerminalController@postCheckTerminalEncryptedValue'                ],
-        'webhook_create'                          => ['post',     'webhooks',                                 'MerchantController@postWebhook'                                    ],
-        'webhook_edit'                            => ['put',      'webhooks/{id}',                            'MerchantController@putWebhook'                                     ],
-        'webhook_fetch'                           => ['get',      'webhooks/{id}',                            'MerchantController@getWebhook'                                     ],
-        'webhook_fetch_multiple'                  => ['get',      'webhooks',                                 'MerchantController@getWebhooks'                                    ],
-        'pricing_create_plan'                     => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                           ],
-        'pricing_upload_plan'                     => ['post',     'pricing/upload',                           'PricingController@postUploadPricingPlan'                           ],
-        'pricing_get_plans'                       => ['get',      'pricing',                                  'PricingController@getPricingPlans'                                 ],
-        'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                         ],
-        'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                         'PricingController@getGatewayPricingPlans'                          ],
-        'pricing_supported_networks'              => ['get',      'pricing/networks',                         'PricingController@getSupportedNetworks'                            ],
-        'pricing_get_plan'                        => ['get',      'pricing/{id}',                             'PricingController@getPricingPlan'                                  ],
-        'pricing_get_plan_rule'                   => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                              ],
-        'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'                          ],
-        'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',           'PricingController@deletePricingPlanRule'                           ],
-        'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',     'PricingController@deletePricingPlanRuleForce'                      ],
-        'refund_create_missing_txn'               => ['post',     'refunds/transaction',                      'RefundController@postRefundsTransactions'                          ],
-        'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                              ],
-        'transaction_fetch_multiple'              => ['get',      'transactions',                             'TransactionController@getTransactions'                             ],
-        'transaction_monthly_report'              => ['get',      'transactions/report',                      'TransactionController@getMonthlyReport'                            ],
-        'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                                ],
-        'setl_fetch_multiple'                     => ['get',      'settlements',                              'SettlementController@getSettlements'                               ],
-        'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',            'SettlementController@getSettlementTransactions'                    ],
-        'setl_edit'                               => ['put',      'settlements/{id}',                         'SettlementController@putEditSettlement'                            ],
-        'setl_fixer'                              => ['get',      'settlements/fixer',                        'SettlementController@getSettlementFixer'                           ],
-        'hdfc_mpr_reconcile'                      => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'                      ],
-        'hdfc_mpr_generate'                       => ['post',     'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'                       ],
-        'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',          'SettlementController@deleteSettlementFile'                         ],
-        'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',          'SettlementController@postSettlementInitiate'                       ],
-        'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',           'SettlementController@postSettlementReconcileGenerate'              ],
-        'setl_reconcile'                          => ['post',     'settlements/reconcile',                    'SettlementController@postSettlementReconcile'                      ],
-        'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                 'SettlementController@postH2HSettlementReconcile'                   ],
-        'setl_return_generate'                    => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
-        'setl_return'                             => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
-        'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
-        'setl_get_details'                        => ['get',      'settlements/{id}/details',                 'SettlementController@getSettlementDetails',                        ],
-        'setl_post_details_old'                   => ['post',     'settlements/details',                      'SettlementController@postSettlementDetailsForOldTxns'              ],
-        'setl_combined_report'                    => ['get',      'settlements/report/combined',              'SettlementController@getSettlementCombinedReport'                  ],
-        'daily_setl_calc_previous_fees'           => ['post',     'dailysettlements/fees/previous',           'SettlementController@postDailySettlementCalculatePreviousFees'     ],
-        'daily_setl_fetch_by_id'                  => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                           ],
-        'daily_setl_fetch_multiple'               => ['get',      'dailysettlements',                         'SettlementController@getDailySettlements'                          ],
-        'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                                ],
-        'adj_fetch_multiple'                      => ['get',      'adjustments',                              'AdjustmentController@getAdjustments'                               ],
-        'adj_add'                                 => ['post',     'adjustments',                              'AdjustmentController@postAdjustment'                               ],
-        'mockhdfc_enroll'                         => ['post',     'gateway/mockhdfc/enroll',                  'MockGatewayController@enroll'                                      ],
-        'mockhdfc_payment'                        => ['post',     'gateway/mockhdfc/payment',                 'MockGatewayController@payment'                                     ],
-        'mockhdfc_auth_enrolled'                  => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockGatewayController@authEnrolled'                                ],
-        'mockhdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                         'MockGatewayController@post3dSecure'                                ],
-        'mockcybersource_acs'                     => ['post',     'gateway/acs/{gateway}',                    'MockGatewayController@postAcs'                                     ],
-        'mockatom_init_payment'                   => ['post',     'gateway/mockanb',                          'MockGatewayController@postAtomInitPayment'                         ],
-        'mockatom_choose_org'                     => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                            ],
-        'mockatom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
-        'mockatom_rzp_payment_submit'             => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'                    ],
-        'mock_axis_migs_payment'                  => ['post',     'gateway/mockaxismigs/payment',             'MockGatewayController@postAxisPayment'                             ],
-        'mock_axis_genius_payment'                => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'                       ],
-        'mock_kotak_payment'                      => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                             ],
-        'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],
-        'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                         ],
-        'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                         ],
-        'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                  'MockGatewayController@postEbsPayment'                              ],
-        'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
-        'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
-        'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                             ],
-        'mock_sharp_payment_submit'               => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                            ],
-        'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                       ],
-        'mock_sbiepay_payment'                    => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                          ],
-        'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
-        'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',             'MockGatewayController@walletPayment'                               ],
-        'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@walletPayment'                               ],
-        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                  'MockGatewayController@postUpiPayment'                              ],
-        'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
-        'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],
-        'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],
-        'send_newsletter'                         => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                                ],
-        'gateway_payment_callback_axis'           => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                    ],
-        'gateway_payment_callback_get'            => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
-        'gateway_payment_callback_post'           => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
-        'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
-        'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'reconciliate'                            => ['post',     'reconciliate',                             'ReconciliatorController@postReconciliation'                        ],
-        'dummy_return_callback'                   => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
-        'dummy_critical_error'                    => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
-        'dummy_route'                             => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
-        'transparent_redirect_get'                => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                            ],
-        'transparent_redirect_post'               => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                           ],
-        'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'              ],
-        'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
-        'get_features'                            => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
-        'dummy_feature'                           => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
-        'add_emi_plan'                            => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
-        'get_emi_plans'                           => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
-        'get_emi_plan_by_id'                      => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
-        'delete_emi_plan'                         => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
-        'emi_generate_excel'                      => ['post',     'emi/generate/excel',                       'EmiController@generateEmiExcel'                                    ],
-        'order_create'                            => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
-        'order_fetch'                             => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
-        'order_fetch_by_id'                       => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
-        'order_payments'                          => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
-        'reports_monthly_invoice'                 => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
-        'reports_public_entity'                   => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
-        'customer_create'                         => ['post',     'customers',                                'CustomerController@createLocalCustomer'                            ],
-        'customer_update'                         => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
-        'customer_get'                            => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
-        'customer_delete'                         => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],
-        'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',              'CustomerController@postBankAccount'                                ],
-        'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',              'CustomerController@getBankAccounts'                                ],
-        'customer_create_token'                   => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
-        'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
-        'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
-        'customer_fetch_tokens'                   => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
-        'customer_delete_token'                   => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
-        'customer_get_saved_status'               => ['get',      'customers/status/{contact}',               'CustomerController@fetchGlobalCustomerStatus'                      ],
-        'customer_logout_global'                  => ['delete',   'apps/logout',                              'CustomerController@logoutCustomer'                                 ],
-        'customer_create_address'                 => ['post',     'customers/{id}/addresses',                 'CustomerController@postCreateAddress'                              ],
-        'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',    'CustomerController@deleteAddress'                                  ],
-        'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                 'CustomerController@getAddresses'                                   ],
-        'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary', 'CustomerController@putPrimaryAddress'                         ],
-        'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                      'CustomerController@deleteTokenForGlobalCustomer'                   ],
-        'app_fetch_tokens'                        => ['get',      'apps/tokens',                              'CustomerController@fetchTokensForGlobalCustomer'                   ],
-        'app_fetch_payments'                      => ['get',      'apps/payments',                            'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
-        'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
-        'otp_post'                                => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
-        'otp_verify'                              => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
-        'sms_callback'                            => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
-        'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
-        'invoice_create'                          => ['post',     'invoices',                                 'InvoiceController@createInvoice'                                   ],
-        'invoice_fetch'                           => ['get',      'invoices/{id}',                            'InvoiceController@getInvoice'                                      ],
-        'invoice_fetch_multiple'                  => ['get',      'invoices',                                 'InvoiceController@getInvoices'                                     ],
-        'invoice_send_notifications'              => ['post',     'invoices',                                 'InvoiceController@sendNotifications'                               ],
-        'invoice_notification_update'             => ['put',      'invoices/{medium}',                        'InvoiceController@updateInvoiceNotificationStatus'                 ],
-        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                    'InvoiceController@getInvoiceDetails'                               ],
-        'line_item_create'                        => ['post',     'line_items',                               'LineItemController@createLineItem'                                 ],
-        'line_item_fetch'                         => ['get',      'line_items/{id}',                          'LineItemController@getLineItem'                                    ],
-        'line_item_fetch_multiple'                => ['get',      'line_items',                               'LineItemController@getLineItems'                                   ],
-        'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                    'RefundController@postManualGatewayRefund'                          ],
-        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                   'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
+        'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
+        'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+        'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
+        'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
+        'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
+        'payment_create_private'                  => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_recurring'                => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_private_old'              => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_checkout'                 => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
+        'payment_create_jsonp'                    => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
+        'payment_create_ajax'                     => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
+        'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
+        'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
+        'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
+        'payment_callback_with_key_get'           => ['get',      'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
+        'payment_get_status'                      => ['get',      'payments/{id}/status',                           'PaymentController@getPaymentStatusForAsyncPayments'                ],
+        'payment_otp_submit'                      => ['post',     'payments/{id}/otp_submit/{hash}',                'PaymentCreateController@postOtpSubmit'                             ],
+        'payment_otp_resend'                      => ['post',     'payments/{id}/otp_resend',                       'PaymentCreateController@postOtpResend'                             ],
+        'payment_topup_ajax'                      => ['post',     'payments/{id}/topup/ajax',                       'PaymentCreateController@postTopupAjax'                             ],
+        'payment_topup_post'                      => ['post',     'payments/{id}/topup',                            'PaymentCreateController@postTopup'                                 ],
+        'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',                'PaymentCreateController@postRedirectCallback'                      ],
+        'payment_refund'                          => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
+        'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
+        'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
+        'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
+        'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
+        'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
+        'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
+        'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
+        'payment_verify'                          => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
+        'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
+        'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
+        'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
+        'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
+        'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
+        'payment_fetch_by_id'                     => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
+        'payment_fetch_multiple'                  => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
+        'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
+        'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
+        'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
+        'payment_auth_notify'                     => ['get',      'payments/auth/notify',                           'PaymentController@getAuthNotify',                                  ],
+        'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
+        'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
+        'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
+        'payment_verify_multiple'                 => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
+        'payment_capture_reminder'                => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
+        'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
+        'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
+        'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
+        'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
+        'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
+        'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                       'RefundController@generateNetbankingRefunds'                        ],
+        'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
+        'refund_verify'                           => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerify'                                 ],
+        'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
+        'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                          'RefundController@postManualGatewayRefund'                          ],
+        'card_fetch_by_id'                        => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
+        'card_fetch_multiple'                     => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
+        'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                      'CardController@getIin'                                             ],
+        'iin_fetch_multiple'                      => ['get',      'iins',                                           'CardController@getIins'                                            ],
+        'iin_add'                                 => ['post',     'iins',                                           'CardController@postIin'                                            ],
+        'iin_upload'                              => ['post',     'iins/upload',                                    'CardController@uploadIin'                                          ],
+        'iin_edit'                                => ['put',      'iins/{id}',                                      'CardController@editIin'                                            ],
+        'iin_generate_post'                       => ['post',     'iins/import/generate',                           'CardController@postIinGenerate'                                    ],
+        'merchant_public_get_banks'               => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
+        'merchant_secret'                         => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
+        'merchant_get_banks'                      => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
+        'merchant_set_banks'                      => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
+        'merchant_set_all_banks'                  => ['put',      'merchants/banks',                                'MerchantController@putBanksForAllMerchants'                        ],
+        'merchant_daily_report'                   => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
+        'merchant_create'                         => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
+        'merchant_fetch'                          => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
+        'merchant_edit'                           => ['put',      'merchants/{id}',                                 'MerchantController@putMerchant'                                    ],
+        'merchant_edit_config'                    => ['put',      'account/config',                                 'MerchantController@putMerchantConfig'                              ],
+        'merchant_edit_config_logo'               => ['post',     'account/config/logo',                            'MerchantController@postMerchantConfigLogo'                         ],
+        'merchant_delete_config_logo'             => ['delete',   'account/config/logo',                            'MerchantController@deleteMerchantConfigLogo'                       ],
+        'merchant_sub_create'                     => ['post',     'submerchants',                                   'MerchantController@postCreateSubMerchant'                          ],
+        'merchant_fetch_config'                   => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
+        'merchant_edit_email'                     => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
+        'merchant_fetch_multiple'                 => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
+        'merchant_create_key'                     => ['post',     'merchants/{id}/keys',                            'MerchantController@postCreateKeys'                                 ],
+        'merchant_fetch_keys'                     => ['get',      'merchants/{id}/keys',                            'MerchantController@getKeys'                                        ],
+        'merchant_replace_key'                    => ['put',      'merchants/{merchantId}/keys/{keyId}',            'MerchantController@putKeys'                                        ],
+        'merchant_fetch_webhooks'                 => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
+        'merchant_assign_pricing'                 => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
+        'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
+        'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
+        'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
+        'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
+        'merchant_get_terminals'                  => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
+        'merchant_get_terminal'                   => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
+        'merchant_delete_terminal'                => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
+        'merchant_modify_terminal'                => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
+        'merchant_copy_terminal'                  => ['post',     'merchants/{mid}/terminals/{tid}/copy',           'MerchantController@postCopyTerminal'                               ],
+        'merchant_put_payment_methods'            => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
+        'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
+        'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
+        'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
+        'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
+        'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
+        'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
+        'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
+        'merchant_add_features'                   => ['post',     'merchants/{id}/features',                        'MerchantController@postMerchantFeatures'                           ],
+        'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
+        'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
+        'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
+        'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
+        'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
+        'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
+        'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
+        'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
+        'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
+        'key_fetch_multiple'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
+        'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
+        'terminal_edit'                           => ['put',      'terminals/{id}',                                 'TerminalController@putTerminal'                                    ],
+        'terminal_restore'                        => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
+        'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
+        'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
+        'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
+        'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
+        'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
+        'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
+        'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
+        'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
+        'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                               'PricingController@getGatewayPricingPlans'                          ],
+        'pricing_supported_networks'              => ['get',      'pricing/networks',                               'PricingController@getSupportedNetworks'                            ],
+        'pricing_get_plan'                        => ['get',      'pricing/{id}',                                   'PricingController@getPricingPlan'                                  ],
+        'pricing_get_plan_rule'                   => ['get',      'pricing/{planId}/rule/{ruleId}',                 'PricingController@getPricingPlanRule'                              ],
+        'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPricingPlanRule'                          ],
+        'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePricingPlanRule'                           ],
+        'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePricingPlanRuleForce'                      ],
+        'schedule_create'                         => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
+        'schedule_get'                            => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
+        'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                      ],
+        'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
+        'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
+        'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
+        'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
+        'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
+        'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
+        'setl_edit'                               => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
+        'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
+        'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
+        'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
+        'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
+        'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
+        'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
+        'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
+        'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
+        'setl_return'                             => ['post',     'settlements/return',                             'SettlementController@postSettlementReturn'                         ],
+        'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
+        'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
+        'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
+        'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
+        'daily_setl_calc_previous_fees'           => ['post',     'dailysettlements/fees/previous',                 'SettlementController@postDailySettlementCalculatePreviousFees'     ],
+        'daily_setl_fetch_by_id'                  => ['get',      'dailysettlements/{id}',                          'SettlementController@getDailySettlement'                           ],
+        'daily_setl_fetch_multiple'               => ['get',      'dailysettlements',                               'SettlementController@getDailySettlements'                          ],
+        'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
+        'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
+        'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
+        'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
+        'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
+        'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
+        'mock_hdfc_3dsecure'                      => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
+        'mock_cybersource_acs'                    => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
+        'mock_atom_init_payment'                  => ['post',     'gateway/mockanb',                                'MockGatewayController@postAtomInitPayment'                         ],
+        'mock_atom_choose_org'                    => ['get',      'gateway/mockanb',                                'MockGatewayController@getAtomChooseOrg'                            ],
+        'mock_atom_rzp_payment'                   => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomRzpPayment'                          ],
+        'mock_atom_rzp_payment_submit'            => ['post',     'gateway/mockanb/payment/submit',                 'MockGatewayController@postAtomRzpPaymentSubmit'                    ],
+        'mock_axis_migs_payment'                  => ['post',     'gateway/mockaxismigs/payment',                   'MockGatewayController@postAxisPayment'                             ],
+        'mock_first_data_payment'                 => ['post',     'gateway/mockfirstdata/payment',                  'MockGatewayController@postFirstDataPayment'                        ],
+        'mock_axis_genius_payment'                => ['post',     'gateway/mockaxisgenius/payment',                 'MockGatewayController@postAxisGeniusPayment'                       ],
+        'mock_paytm_payment'                      => ['post',     'gateway/mockpaytm/payment',                      'MockGatewayController@postPaytmPayment'                            ],
+        'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',                   'MockGatewayController@postMobikwikPayment'                         ],
+        'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
+        'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
+        'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
+        'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
+        'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
+        'mock_sharp_payment_submit'               => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
+        'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
+        'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
+        'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
+        'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
+        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
+        'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
+        'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
+        'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
+        'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
+        'gateway_payment_callback_get'            => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_post'           => ['get',      'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
+        'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
+        'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
+        'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
+        'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
+        'dummy_route'                             => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
+        'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
+        'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
+        'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
+        'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',                   'SettlementController@postComputeDailySettlementServiceTax'         ],
+        'features_fetch'                          => ['get',      'features',                                       'MerchantController@getAllFeatures'                                 ],
+        'feature_dummy'                           => ['get',      'features/dummy',                                 'MerchantController@getDummyFeatures'                               ],
+        'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
+        'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
+        'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
+        'emi_plan_delete'                         => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
+        'emi_generate_excel'                      => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
+        'order_create'                            => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
+        'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
+        'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
+        'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
+        'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
+        'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
+        'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
+        'customer_get'                            => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
+        'customer_delete'                         => ['delete',   'customers/{id}',                                 'CustomerController@deleteCustomer'                                 ],
+        'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
+        'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
+        'customer_create_token'                   => ['post',     'customers/{id}/tokens',                          'CustomerController@addToken'                                       ],
+        'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',                  'CustomerController@updateToken'                                    ],
+        'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',                  'CustomerController@fetchToken'                                     ],
+        'customer_fetch_tokens'                   => ['get',      'customers/{id}/tokens',                          'CustomerController@fetchTokens'                                    ],
+        'customer_delete_token'                   => ['delete',   'customers/{id}/tokens/{token}',                  'CustomerController@deleteToken'                                    ],
+        'customer_get_saved_status'               => ['get',      'customers/status/{contact}',                     'CustomerController@fetchGlobalCustomerStatus'                      ],
+        'customer_logout_global'                  => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
+        'customer_create_address'                 => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
+        'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
+        'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
+        'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
+        'invoice_create'                          => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
+        'invoice_fetch'                           => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
+        'invoice_fetch_multiple'                  => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
+        'invoice_send_notifications'              => ['post',     'invoices',                                       'InvoiceController@sendNotifications'                               ],
+        'invoice_notification_update'             => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
+        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                          'InvoiceController@getInvoiceDetails'                               ],
+        'line_item_create'                        => ['post',     'line_items',                                     'LineItemController@createLineItem'                                 ],
+        'line_item_fetch'                         => ['get',      'line_items/{id}',                                'LineItemController@getLineItem'                                    ],
+        'line_item_fetch_multiple'                => ['get',      'line_items',                                     'LineItemController@getLineItems'                                   ],
+        'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
+        'app_fetch_tokens'                        => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
+        'app_fetch_payments'                      => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
+        'bank_account_fetch'                      => ['get',      'account/bank_account',                           'MerchantController@getOwnBankAccount'                              ],
+        'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',                   'CustomerController@validateDeviceToken'                            ],
+        'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
+        'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
+        'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
+        'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
+        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
+        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
+        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
+        'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
+        'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
+        'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
     );
 
     public static $public = array(
@@ -278,14 +298,14 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
-        'mockatom_init_payment',
-        'mockatom_choose_org',
-        'mockatom_rzp_payment',
-        'mockatom_rzp_payment_submit',
+        'mock_atom_init_payment',
+        'mock_atom_choose_org',
+        'mock_atom_rzp_payment',
+        'mock_atom_rzp_payment_submit',
         'mock_amex_payment',
         'mock_axis_migs_payment',
+        'mock_first_data_payment',
         'mock_axis_genius_payment',
-        'mock_kotak_payment',
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
@@ -294,13 +314,12 @@ final class Route
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
-        'mock_sbiepay_payment',
         'mock_wallet_payment',
         'mock_wallet_payment_get',
         'mock_upi_icici_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
-        'get_emi_plans',
+        'emi_plans_fetch_multiple',
         'customer_get_saved_status',
         'app_delete_token',
         'app_fetch_payments',
@@ -317,6 +336,7 @@ final class Route
     public static $private = array(
         'payment_create_private',
         'payment_create_private_old',
+        'payment_create_recurring',
         'payment_create_wallet',
         'payment_refund',
         'payment_capture',
@@ -331,7 +351,8 @@ final class Route
         'order_fetch',
         'order_fetch_by_id',
         'order_payments',
-        'dummy_feature',
+        'feature_dummy',
+        'setl_combined_report',
         'customer_create',
         'customer_update',
         'customer_get',
@@ -374,6 +395,7 @@ final class Route
         'merchant_daily_report',
         'merchant_delete_terminal',
         'merchant_get_terminals',
+        'merchant_copy_terminal',
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
@@ -405,6 +427,8 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_initiate_schedule',
+        'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
@@ -428,16 +452,16 @@ final class Route
         'payment_capture_reminder',
         'payment_refund_authorized',
         'payment_verify_multiple',
+        'payment_authorize_time_out',
         'refund_create_missing_txn',
-        'settlement_compute_tax',
-        'daily_settlement_compute_tax',
+        'refund_gateway_manual',
         'refund_netbanking_generate_excel',
         'refund_generate_excel',
-        'hdfc_mpr_reconcile',
-        'hdfc_mpr_generate',
-        'mockhdfc_enroll',
-        'mockhdfc_auth_enrolled',
-        'mockhdfc_payment',
+        'settlement_compute_tax',
+        'daily_settlement_compute_tax',
+        'mock_hdfc_enroll',
+        'mock_hdfc_auth_enrolled',
+        'mock_hdfc_payment',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -448,10 +472,10 @@ final class Route
         'send_newsletter',
         'merchant_add_features',
         'merchant_get_features',
-        'get_features',
-        'add_emi_plan',
-        'delete_emi_plan',
-        'get_emi_plan_by_id',
+        'features_fetch',
+        'emi_plan_add',
+        'emi_plan_delete',
+        'emi_plan_fetch_by_id',
         'emi_generate_excel',
         'refund_verify',
         'payment_capture_verify',
@@ -464,11 +488,23 @@ final class Route
         'invoice_send_notifications',
         'invoice_get_details',
         'refund_gateway_manual',
+        'batch_process_file',
+        'gateway_create_absence',
+        'gateway_update_absence',
+        'gateway_delete_absence',
+        'gateway_fetch_absence',
         'order_refund_multiple_authorized',
+        'scorecard',
+        'billdesk_reconcile_cancelled',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
     );
 
     public static $proxy = array(
         'payment_fetch_card_details',
+        'payment_authorize_refund',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -480,21 +516,20 @@ final class Route
         'adj_fetch_multiple',
         'adj_add',
         'card_fetch_multiple',
-        'payment_authorize_refund',
         'webhook_create',
         'webhook_edit',
         'webhook_fetch',
         'webhook_fetch_multiple',
-        'merchant_fetch_balance',
+        'balance_fetch',
         'reports_monthly_invoice',
-        'fetch_bank_account',
         'reports_public_entity',
+        'bank_account_fetch',
         'merchant_edit_config',
         'merchant_edit_config_logo',
         'merchant_delete_config_logo',
-        'account_fetch_balance',
-        'account_fetch_config',
-        'submerchant_create',
+        'merchant_fetch_balance',
+        'merchant_fetch_config',
+        'merchant_sub_create',
         'customer_delete',
         'customer_create_token',
         'customer_update_token',
@@ -502,40 +537,46 @@ final class Route
         'app_fetch_tokens',
         'credits_fetch_multiple',
         'credits_fetch_by_id',
+        'batch_create',
+        'batch_fetch_multiple',
+        'batch_fetch_by_id',
+        'batch_retry',
+        'batch_download_file',
     );
 
     public static $direct = array(
         'account',
         'dummy_route',
+        'sms_callback',
+        'reconciliate',
         'checkout_public',
-        'mockhdfc_3dsecure',
-        'mockcybersource_acs',
+        'mock_hdfc_3dsecure',
+        'mock_cybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
-        'gateway_payment_callback_kotak',
-        'gateway_payment_callback_kotak_cancel',
-        'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'sms_callback',
+        'gateway_payment_callback_kotak',
+        'gateway_payment_callback_kotak_cancel',
     );
 
     public static $internalApps = array(
         'dashboard' => array('*'),
 
         'mock_gateways' => array(
-            'mockhdfc_enroll',
-            'mockhdfc_auth_enrolled',
-            'mockhdfc_payment',
+            'mock_hdfc_enroll',
+            'mock_hdfc_auth_enrolled',
+            'mock_hdfc_payment',
         ),
 
         'cron' => array(
-            'hdfc_mpr_generate',
             'setl_initiate',
+            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
             'payment_timeout',
+            'scorecard',
             'merchant_daily_report',
             'merchant_post_beneficiary_file',
             'merchant_notify_holiday',
@@ -549,11 +590,11 @@ final class Route
             'es_migrate_entity',
             'setl_post_details_old',
             'invoice_send_notifications',
+            'batch_process_file',
             'order_refund_multiple_authorized',
         ),
 
         'mailgun' => array(
-            'hdfc_mpr_reconcile',
             'reconciliate',
         ),
 
@@ -580,32 +621,41 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_feature'             => 'dummy',
-        'submerchant_create'        => 'aggregator',
-        'customer_delete'           => 'tokens',
-        'customer_delete_token'     => 'tokens',
-        'customer_fetch_tokens'     => 'tokens',
-        'payment_create_wallet'     => 's2swallet',
-        'setl_combined_report'      => 'setl_report',
-        'customer_get_saved_status' => 'cardsaving',
-        'customer_logout_global'    => 'cardsaving',
-        'app_delete_token'          => 'cardsaving',
-        'otp_post'                  => 'cardsaving',
-        'otp_verify'                => 'cardsaving',
+        'feature_dummy'              => 'dummy',
+        'merchant_sub_create'        => 'aggregator',
+        'customer_delete'            => 'tokens',
+        'customer_delete_token'      => 'tokens',
+        'customer_fetch_tokens'      => 'tokens',
+        'payment_create_wallet'      => 's2swallet',
+        'payment_create_recurring'   => 'recurring',
+        'payment_create_private_old' => 's2s',
+        'setl_combined_report'       => 'setl_report',
+        'customer_get_saved_status'  => 'cardsaving',
+        'customer_logout_global'     => 'cardsaving',
+        'app_delete_token'           => 'cardsaving',
+        'otp_post'                   => 'cardsaving',
+        'otp_verify'                 => 'cardsaving',
     );
 
-    protected static $router;
+    const RAZORPAYJS_ROUTES = array(
+        'payment_cancel',
+        'payment_create_ajax',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax');
 
-    public static function setRouter($router)
+    public function __construct($app)
     {
-        self::$router = $router;
+        $this->app = $app;
+
+        $this->router = $app['router'];
+
+        $this->ba = $app['basicauth'];
     }
 
-    public static function getCurrentRouteName()
+    public function getCurrentRouteName()
     {
-        $router = self::$router;
-
-        return $router->currentRouteName();
+        return $this->router->currentRouteName();
     }
 
     public static function getSlaveRoutes()
@@ -613,7 +663,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -623,44 +673,70 @@ final class Route
             $key = '';
         }
 
-        $urlSegment = \URL::route($routeName, $parameters, false);
+        $urlSegment = \Url::route($routeName, $parameters, false);
 
-        $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
+        $url = $this->getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
         return $url;
     }
 
-    public static function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl($routeName, $parameters, $key);
+        return $this->getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    {
+        $key = $this->ba->getPublicKey();
+
+        list($schema, $host) = $this->getSchemaAndHost();
+
+        $parameters['key_id'] = $key;
+
+        $urlSegment = \Url::route($routeName, $parameters, false);
+
+        return $schema . $host . $urlSegment;
+    }
+
+    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
         if ($key === '')
         {
-            $key = \BasicAuth::getPublicKey();
+            $key = $this->ba->getPublicKey();
         }
 
-        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
+    public function getPublicCallbackUrlWithHash($pid , $key = '')
     {
-        return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+        if ($key === '')
+        {
+            $key = $this->ba->getPublicKey();
+        }
+
+        $secret = $this->app->config->get('app.key');
+
+        $hash = hash_hmac('sha1', $pid, $secret);
+
+        $parameters = ['id' => $pid, 'hash' => $hash];
+
+        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    protected static function getSchemaHostAndAuth($key = '', $secret = '')
+    public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
-        $request = \Request::getFacadeRoot();
+        return $this->getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+    }
 
-        $schema = $request->getScheme() . '://';
-        $host = $request->getHost();
+    protected function getSchemaHostAndAuth($key = '', $secret = '')
+    {
+        list($schema, $host) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -679,12 +755,32 @@ final class Route
         return $url;
     }
 
-    public static function getDoNotLogURLs()
+    protected function getSchemaAndHost()
+    {
+        $request = \Request::getFacadeRoot();
+
+        $schema = $request->getScheme() . '://';
+        $host = $request->getHost();
+
+        return [$schema, $host];
+    }
+
+    public function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
             'v1/payments/create/jsonp',
             'payments/create/jsonp',
-            self::$apiRoutes['payment_create_jsonp'][1]);
+            self::$apiRoutes['payment_create_jsonp'][1],
+            'v1/payments',
+            'v1/payments/create',
+            'v1/payments/create/recurring',
+            'v1/payments/create/redirect',
+            'v1/payments/create/checkout',
+            'v1/payments/create/jsonp',
+            'v1/payments/create/ajax',
+            'v1/payments/create/fees',
+            'v1/payments/create/wallet'
+        );
 
         return $doNotLogUrls;
     }
@@ -696,15 +792,18 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    public static function addRoutes($type)
+    public function addRouteGroups($groups)
     {
-        foreach (self::$$type as $routeName)
+        foreach ($groups as $group)
         {
-            self::addRoute($routeName);
+            foreach (self::$$group as $routeName)
+            {
+                $this->addRoute($routeName);
+            }
         }
     }
 
-    protected static function addRoute($name)
+    protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
 
@@ -712,48 +811,20 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $router = self::$router;
-
-        $router->$method($uri, array('as' => $name, 'uses' => $action));
+        $this->router->$method($uri, array('as' => $name, 'uses' => $action));
     }
 
-    public static function defineApiRoutes()
+    public function defineAllExtraRoutes()
     {
-        $router = self::$router;
-
-        $router->group(array('prefix' => 'v1'), function () use ($router)
-        {
-            //
-            // First define internal routes and then private and finally public
-            // If by mistake a route is defined twice in say internal and public,
-            // then it will go into internal app auth and will not expose the route.
-            // This must not happen though.
-            //
-            self::addRoutes('internal');
-            self::addRoutes('private');
-            self::addRoutes('public');
-            self::addRoutes('publicCallback');
-            self::addRoutes('proxy');
-            self::addRoutes('direct');
-        });
-
-    }
-
-    public static function defineAllExtraRoutes()
-    {
-        $router = self::$router;
-
-        $router->any('{all}', function ($uri)
+        $this->router->any('{all}', function ($uri)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
     }
 
-    public static function defineRootApiRoute()
+    public function defineRootApiRoute()
     {
-        $router = self::$router;
-
-        $router->get('/', function ()
+        $this->router->get('/', function ()
         {
             $response['message'] = "Welcome to Razorpay API.";
 
@@ -761,12 +832,7 @@ final class Route
         });
     }
 
-    public static function getApiRoutes()
-    {
-        return self::$apiRoutes;
-    }
-
-    public static function getApiRouteInCategory($category)
+    public function getApiRouteInCategory($category)
     {
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
     }
@@ -776,8 +842,10 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public static function getApiRouteUrl($name)
+    public function isCurrentRouteInFeatureMap()
     {
-        return self::getApiRoute($name)[1];
+        $route = $this->getCurrentRouteName();
+
+        return (array_key_exists($route, self::$routeNameToFeatureMap));
     }
 }

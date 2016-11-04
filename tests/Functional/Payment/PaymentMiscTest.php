@@ -11,8 +11,6 @@ class PaymentMiscTest extends TestCase
 
     public function setUp()
     {
-//        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
-
         parent::setUp();
 
         $this->ba->publicAuth();

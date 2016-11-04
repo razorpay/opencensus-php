@@ -60,5 +60,10 @@ return array(
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
         'secret'    => env('MAXMIND_SECRET')
-    )
+    ),
+
+    'lumberjack' => array(
+        'url'       => env('LUMBERJACK_URL'),
+        'secret'    => env('LUMBERJACK_SECRET')
+    ),
 );

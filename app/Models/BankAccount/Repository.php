@@ -9,16 +9,15 @@ use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    protected $entity = 'bank_account';
 
-    protected $entity = 'BankAccount';
-
-    const WITH_TRASHED = 'with_trashed';
+    const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num'
     );
 
     public function getBankAccount($merchant)
@@ -84,7 +83,7 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
 
-    protected function addQueryParamWithTrashed($query, $params)
+    protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')
         {

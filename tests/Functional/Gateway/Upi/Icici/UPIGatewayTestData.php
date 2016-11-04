@@ -61,22 +61,6 @@ return [
         ],
     ],
 
-    'testPhonePeVPA'   =>  [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED
-        ],
-    ],
-
     'testPaymentWithRandomResponseCode'   => [
         'response'  => [
             'content'     => [
@@ -184,5 +168,25 @@ return [
         'status_code'           => '0',
         'vpa'                   => 'shk@hdfc',
         'entity'                => 'upi',
+    ],
+
+    'testCreateAutoCaptureOrder' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => '1',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
     ],
 ];

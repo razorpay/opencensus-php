@@ -10,9 +10,11 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'refund';
+
+    protected $entityFetchParamRules = array(
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num|max:14',
+    );
 
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
@@ -82,6 +84,17 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
+    public function fetchRefundSummaryBetweenTimestamp($from , $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
+                    ->get();
+    }
+
     /**
      * Fetches all refunds which have no transactions, but the
      * corresponding payments have transactions.
@@ -106,32 +119,40 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $ptable = Payment\Entity::getTableName();
-
-        $attrs = Refund\Entity::getAttributeWithTableName('*');
+        $attrs = $this->getAttributeWithTableName('*');
 
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(
-            $ptable,
+            $this->manager->payment->getTableName(),
             function ($join) use ($from, $to, $type, $gatewayCode, $gateway)
             {
-                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
+                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
-                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-                $ptype = Payment\Entity::getAttributeWithTableName($type);
-                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pRepo = $this->manager->payment;
+                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+                $pType = $pRepo->getAttributeWithTableName($type);
+                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
-                $join->on($rPaymentId, '=', $pid)
+                $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
-                     ->where($ptype, '=', $gatewayCode)
-                     ->where($pgateway, '=', $gateway);
+                     ->where($pType, '=', $gatewayCode)
+                     ->where($pGateway, '=', $gateway);
             })
             ->with('payment')
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchRefundsByBatchAndPayment($batch, $payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
+                    ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
+                    ->get();
     }
 }

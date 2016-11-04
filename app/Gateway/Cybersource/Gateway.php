@@ -5,9 +5,11 @@ namespace RZP\Gateway\Cybersource;
 use Cache;
 use Crypt;
 use Config;
+use SoapVar;
 use Requests;
 use SoapFault;
 use RZP\Error;
+use SoapClient;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Utility;
@@ -19,7 +21,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-
 
 class Gateway extends Base\Gateway
 {
@@ -65,8 +66,9 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
-    //soap client timeout in seconds
-    const CONNECTION_TIMEOUT          = 60;
+
+    // Soap client timeout in seconds
+    const TIMEOUT                     = 60;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
@@ -87,9 +89,21 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            return $this->recurring($input);
+        }
+
         $response = $this->enroll($input);
 
         return $this->decideAuthStepAfterEnroll($response, $input);
+    }
+
+    public function recurring(array $input)
+    {
+        $response = $this->authorizeRecurring($input);
+
+        $this->persistAfterAuthorizeRecurring($input, $response);
     }
 
     public function callback(array $input)
@@ -165,6 +179,53 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, "Refund request failed");
         }
+    }
+
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function authorizeRecurring($input)
+    {
+        $request = $this->createRecurringAuthorizeRequestFields($input);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $request);
+
+        return $this->postRequest($request);
+    }
+
+    protected function createRecurringAuthorizeRequestFields($input)
+    {
+        $content = [
+            'merchantID' => $this->getMerchantID($input['terminal']),
+            'merchantReferenceCode' => $input['payment']['id'],
+            'purchaseTotals' => [
+                'currency' => $input['payment']['currency'],
+                'grandTotalAmount' => ($input['payment']['amount'] / 100)
+            ],
+            'card' => [
+                'accountNumber' => $input['card']['number'],
+                'expirationMonth' => $input['card']['expiry_month'],
+                'expirationYear' => $input['card']['expiry_year']
+            ],
+            'ccAuthService' => [
+                'run' => 'true',
+                'commerceIndicator' => 'recurring'
+            ]
+        ];
+
+        $this->setBillingInfo($content, $input);
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -537,6 +598,38 @@ class Gateway extends Base\Gateway
         $gateway->saveOrFail();
     }
 
+    protected function persistAfterAuthorizeRecurring($input, $response)
+    {
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
+
+        if ($response['reasonCode'] !== Result::SUCCESS)
+        {
+            $attributes = array(
+                Entity::STATUS      => Status::AUTHORIZE_FAILED,
+                Entity::REASON_CODE => $response['reasonCode'],
+                Entity::AMOUNT      => $input['payment']['amount']
+            );
+
+            if (isset($response[self::REQUEST_ID]) === true)
+            {
+                $attributes[Entity::REF] = $response[self::REQUEST_ID];
+            }
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+
+            $this->throwException($response);
+        }
+
+        $attributes = [
+            Entity::REF         => $response[self::REQUEST_ID],
+            Entity::REASON_CODE => $response['reasonCode'],
+            Entity::AMOUNT      => $input['payment']['amount'],
+            Entity::STATUS      => Status::AUTHORIZED
+        ];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+    }
+
     protected function persistAfterEnroll($input, $response, $request)
     {
         $this->trace->info(TraceCode::GATEWAY_ENROLL_RESPONSE, $response);
@@ -766,6 +859,8 @@ class Gateway extends Base\Gateway
             ]
         ];
 
+        $content['purchaseTotals']['grandTotalAmount'] = ($input['refund']['amount']/100);
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
@@ -803,11 +898,42 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'],
-                                                $request['options']['auth'],
-                                                $request['connect_options']);
+        $soapClient = new SoapClient($request['url'], $request['options']);
+
+        $headers = $this->getSoapHeader($request);
+        $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
+    }
+
+    protected function getSoapHeader($request)
+    {
+        $username = $request['auth']['username'];
+        $password = $request['auth']['password'];
+
+        // Must understand should be omitted in case of test cases
+        $mustUnderstand = ! $this->mock;
+
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        // $passwordObj->Type = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordTex';
+
+        $wsseAuth = [
+            'Username' => (new SoapVar($username, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+            'Password' => (new SoapVar($password, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+        ];
+
+        $wsseToken = [
+            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs))
+        ];
+
+        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs);
+
+        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, NULL, $wsseNs, 'Security', $wsseNs);
+
+        $objSoapVarWSSEHeader = new \SoapHeader($wsseNs, 'Security', $wsseHeaderSoap, $mustUnderstand);
+
+        return $objSoapVarWSSEHeader;
     }
 
     protected function getWsdlFile()
@@ -981,18 +1107,17 @@ class Gateway extends Base\Gateway
     {
         $soapClient = $this->getSoapClientObject($request);
 
-        $content = json_decode(json_encode($request['content']));
+        $response = $soapClient->runTransaction($request['content']);
 
-        $response = $soapClient->runTransaction($content);
-
-        return json_decode(json_encode($response), true);;
+        // Hack to convert object to array recursively
+        return json_decode(json_encode($response), true);
     }
 
     protected function traceGatewayRequest($traceCode, $request)
     {
         unset($request['content']['card']);
         unset($request['card']);
-        unset($request['options']['auth']);
+        unset($request['auth']);
 
         $this->trace->info($traceCode, $request);
     }
@@ -1003,12 +1128,11 @@ class Gateway extends Base\Gateway
             'url'     => $this->getWsdlFile(),
             'method'  => $method,
             'content' => $content,
+            'auth'    => $this->getCredentials(),
             'options' => [
-                'auth' => $this->getCredentials()
-            ],
-            'connect_options' => [
-                'exception' => true,
-                'connection_timeout' => self::CONNECTION_TIMEOUT
+                'encoding'           => 'UTF-8',
+                'exception'          => true,
+                'connection_timeout' => self::TIMEOUT
             ],
         ];
 
@@ -1141,12 +1265,13 @@ class Gateway extends Base\Gateway
         $paInfo = $paymentData['PayerAuthenticationInfo'];
 
         $data = [
-            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
-            'cavv' => $paInfo['AAV_CAVV'],
-            'xid' => $paInfo['XID'],
+            'eci'         => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv'        => $paInfo['AAV_CAVV'],
+            'xid'         => $paInfo['XID'],
             'reason_code' => 100,
-            'action' => Base\Action::AUTHORIZE,
-            'status' => Status::AUTHORIZED
+            'action'      => Base\Action::AUTHORIZE,
+            'status'      => Status::AUTHORIZED,
+            'received'    => true
         ];
 
         $verify->verifyResponseContent = $data;
@@ -1198,7 +1323,7 @@ class Gateway extends Base\Gateway
 
         $reasonCode = $response['reasonCode'];
 
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
+        $desc = ResponseCode::getDescription($reasonCode);
 
         if (ResponseCode::isValidationError($reasonCode))
         {

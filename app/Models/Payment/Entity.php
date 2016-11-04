@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
+use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
+    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -58,11 +60,14 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    // This is the bucket for the next verify and not the current verify.
+    const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
 
@@ -97,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::FEE,
         self::SERVICE_TAX,
+        self::RECURRING,
         self::SAVE);
 
     protected $visible = array(
@@ -138,7 +144,9 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::VERIFY_BUCKET,
         self::CALLBACK_URL,
+        self::RECURRING,
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
@@ -167,6 +175,8 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::EMAIL,
         self::CONTACT,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID,
         self::NOTES,
         self::FEE,
         self::SERVICE_TAX,
@@ -174,8 +184,14 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
 
-    protected $publicSetters = array(
-        self::ID, self::ENTITY, self::ORDER_ID, self::CARD_ID);
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ORDER_ID,
+        self::CARD_ID,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID
+    ];
 
     protected $guarded = array(self::ID);
 
@@ -205,12 +221,10 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT         => null,
         self::EMI_PLAN_ID       => null,
         self::LATE_AUTHORIZED   => null,
+        self::RECURRING         => false,
         self::INTERNATIONAL     => null,
+        self::VERIFY_BUCKET     => null,
     );
-
-    protected $casts = [
-        self::INTERNATIONAL => 'bool',
-    ];
 
     protected $amounts = array(
         self::AMOUNT,
@@ -219,6 +233,19 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::SERVICE_TAX
     );
+
+    protected $casts = [
+        self::RECURRING         => 'bool',
+        self::AMOUNT_AUTHORIZED => 'int',
+        self::AMOUNT_REFUNDED   => 'int',
+        self::AUTO_CAPTURED     => 'bool',
+        self::SIGNED            => 'bool',
+        self::AMOUNT            => 'int',
+        self::FEE               => 'int',
+        self::SERVICE_TAX       => 'int',
+        self::SAVE              => 'bool',
+        self::INTERNATIONAL     => 'bool',
+    ];
 
 // --------------------- Generators --------------------------------------------
 
@@ -323,11 +350,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setCaptureAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
     public function setAmountAuthorized()
     {
         $authAmount = $this->getAttribute(self::AMOUNT);
@@ -408,6 +430,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setVerifyBucket($verifyBucket = 0)
+    {
+        $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
@@ -421,6 +448,11 @@ class Entity extends Base\PublicEntity
     public function setFee($fee)
     {
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     public function setErrorNull()
@@ -516,11 +548,6 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     // TODO: Return a phonebook instance (like carbon) instead of string
     protected function getContactAttribute()
     {
@@ -531,25 +558,6 @@ class Entity extends Base\PublicEntity
         return (string) $phoneBook;
     }
 
-    protected function getAmountAuthorizedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
-    }
-
-    protected function getAmountRefundedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_REFUNDED];
-    }
-
-    protected function getAutoCapturedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTO_CAPTURED];
-    }
-
-    protected function getSignedAttribute()
-    {
-        return (bool) $this->attributes[self::SIGNED];
-    }
 
     protected function getVerifiedAttribute()
     {
@@ -566,26 +574,6 @@ class Entity extends Base\PublicEntity
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
-
-    protected function getEmiPlanIdAttribute()
-    {
-        return $this->attributes[self::EMI_PLAN_ID];
-    }
-
-    protected function getSaveAttribute()
-    {
-        return (bool) $this->attributes[self::SAVE];
     }
 
     protected function getOtpAttemptsAttribute()
@@ -655,7 +643,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNull(self::TRANSACTION_ID));
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+    }
+
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ORDER_ID));
     }
 
     public function isCaptured()
@@ -704,6 +697,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
+    }
+
     public function isNetbanking()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
@@ -742,7 +740,7 @@ class Entity extends Base\PublicEntity
 
     public function isSigned()
     {
-        return ((bool)$this->getAttribute(self::SIGNED) === true);
+        return ($this->getAttribute(self::SIGNED) === true);
     }
 
     public function isInternational()
@@ -755,17 +753,17 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountRefunded()
     {
-        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
+        return $this->getAttribute(self::AMOUNT_REFUNDED);
     }
 
     public function getAmountUnrefunded()
     {
-        return (int) $this->getAmount() - $this->getAmountRefunded();
+        return $this->getAmount() - $this->getAmountRefunded();
     }
 
     public function getCurrency()
@@ -884,6 +882,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getGlobalCustomerId()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER_ID);
+    }
+
     public function getGlobalTokenId()
     {
         return $this->getAttribute(self::GLOBAL_TOKEN_ID);
@@ -911,12 +914,12 @@ class Entity extends Base\PublicEntity
 
     public function getSave()
     {
-        return (bool) $this->getAttribute(self::SAVE);
+        return $this->getAttribute(self::SAVE);
     }
 
     public function isRecurring()
     {
-        return false;
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function getCardId()
@@ -927,6 +930,33 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getOtpCount()
+    {
+        return $this->getAttribute(self::OTP_COUNT);
+    }
+
+    public function getOtpAttempts()
+    {
+        return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
+    public function getVerifyBucket()
+    {
+        return $this->getAttribute(self::VERIFY_BUCKET);
+    }
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function isSecondRecurring()
+    {
+        return (($this->isRecurring() === true) and
+                ($this->getTokenId() !== null) and
+                ($this->localToken->isRecurring() === true));
     }
 
     /**
@@ -1018,7 +1048,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->token;
+            $token = $this->localToken;
         }
         else if ($this->getGlobalTokenId() !== null)
         {
@@ -1028,21 +1058,56 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    public function setPublicOrderIdAttribute(Array & $array)
+    public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
         {
-            $array[self::ORDER_ID] =
-                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+            $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
     }
 
-    public function setPublicCardIdAttribute(Array & $array)
+    public function getPublicOrderId()
+    {
+        if ($this->hasOrder())
+        {
+            return Order\Entity::getSignedId($this->getApiOrderId());
+        }
+    }
+
+    public function setPublicCardIdAttribute(array & $array)
     {
         if (isset($array[self::CARD_ID]))
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
+        }
+    }
+
+    public function setPublicCustomerIdAttribute(array & $array)
+    {
+        if (isset($array[self::CUSTOMER_ID]))
+        {
+            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        }
+        else
+        {
+            unset($array[self::CUSTOMER_ID]);
+        }
+    }
+
+    public function setPublicTokenIdAttribute(array & $array)
+    {
+        if (isset($array[self::TOKEN_ID]))
+        {
+            $tokenId = $this->getAttribute(self::TOKEN_ID);
+
+            $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedId($tokenId);
+        }
+        else
+        {
+            unset($array[self::TOKEN_ID]);
         }
     }
 
@@ -1059,7 +1124,6 @@ class Entity extends Base\PublicEntity
 
         $this->setGateway($terminal->getGateway());
     }
-
 
 // ----------------------- Getters Ends-----------------------------------------
 
@@ -1103,6 +1167,9 @@ class Entity extends Base\PublicEntity
     public function toArrayReport()
     {
         $data = parent::toArrayReport();
+
+        unset($data[self::CUSTOMER_ID]);
+        unset($data[self::TOKEN_ID]);
 
         $data[self::NOTES] = $this->getNotesJson();
 
@@ -1167,7 +1234,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
-    public function token()
+    public function localToken()
     {
         return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
     }
@@ -1243,6 +1310,11 @@ class Entity extends Base\PublicEntity
     public function scopeStatus($query, $status)
     {
         return $query->where(Payment\Entity::STATUS, '=', $status);
+    }
+
+    public function scopeStatusSuccess($query)
+    {
+        return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
     public function scopeCreatedAtLessThan($query, $ts)

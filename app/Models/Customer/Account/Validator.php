@@ -4,7 +4,8 @@ namespace RZP\Models\Customer;
 
 use App;
 
-use RZP\Models\Base;
+use RZP\Base;
+
 use libphonenumber\PhoneNumberFormat;
 
 class Validator extends Base\Validator

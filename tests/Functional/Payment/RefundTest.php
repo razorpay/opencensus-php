@@ -3,11 +3,11 @@
 namespace RZP\Tests\Functional\Payment;
 
 use DB;
-use Redis;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -31,7 +31,7 @@ class RefundTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/refund.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/RefundTestData.php';
 
         parent::setUp();
 
@@ -125,6 +125,16 @@ class RefundTest extends TestCase
     public function testRefundWithSpacedAmount()
     {
         $this->startTest($this->payment['public_id'], ' 100');
+    }
+
+    public function testRefundWithFloatAmountString()
+    {
+        $this->startTest($this->payment['public_id'], '100.1');
+    }
+
+    public function testRefundWithFloatAmount()
+    {
+        $this->startTest($this->payment['public_id'], 100.1);
     }
 
     public function testRefundofOldAuthorizedPayments()

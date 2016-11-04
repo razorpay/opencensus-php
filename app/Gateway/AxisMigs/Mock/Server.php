@@ -12,13 +12,6 @@ use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new AxisMigs\Repository;
-    }
-
     public function authorize($input)
     {
         parent::authorize($input);
@@ -55,6 +48,7 @@ class Server extends Base\Mock\Server
             'vpc_VerToken'          => 'huMdTSBYZwAbYwAAAHhpApYAAAA=',
             'vpc_VerType'           => '3DS',
             'vpc_Version'           => '1',
+            'vpc_SecureHashType'    => 'SHA256',
         );
 
         $this->addVpcCard($content, $input);
@@ -159,7 +153,7 @@ class Server extends Base\Mock\Server
 
     protected function getGatewayPaymentEntity($input)
     {
-        return $this->repo->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+        return $this->getRepo()->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
     }
 
     protected function addMessageAndResponseCode(array & $content, array $input)
@@ -176,7 +170,7 @@ class Server extends Base\Mock\Server
 
     protected function prepareResponse($content)
     {
-        $content = $this->content($content);
+        $this->content($content);
         $body = http_build_query($content);
         $response = \Response::make($body);
 
@@ -207,5 +201,10 @@ class Server extends Base\Mock\Server
     protected function generateTransactionNo()
     {
         return '11000' . random_integer(5);
+    }
+
+    protected function getRepo()
+    {
+        return new AxisMigs\Repository;
     }
 }

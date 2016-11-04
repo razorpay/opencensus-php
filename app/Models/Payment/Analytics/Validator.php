@@ -2,16 +2,12 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Base;
-use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::PAYMENT_ID              => 'required|alpha_num|size:14',
-        Entity::TERMINAL_ID             => 'required|alpha_num|size:14',
         Entity::CHECKOUT_ID             => 'sometimes|alpha_num|size:14',
         Entity::ATTEMPTS                => 'sometimes|integer|min:0',
         Entity::LIBRARY                 => 'sometimes',

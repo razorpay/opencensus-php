@@ -18,32 +18,34 @@
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
-### ( Ubuntu / OSX - System )
+### ( Ubuntu )
 
-* Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lieks.
+* Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
 * `sudo a2ensite api.razorpay.com.conf`
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
-#### OSX - Extra steps
-
+### ( OSX )
+*  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
+*  In `/etc/hosts`, add `api.razorpay.dev` to the list of domains that loopback to your own machine.
+* Follow Common Instructions
+* Follow Common Test Setup Instructions
 * Install coreutils `brew install coreutils --with-default-names`
-* Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`
+* ~~Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
 
 ### Common Instruction
 
 * `chmod -R o+wx storage/`
 * `php composer.phar install` to install project dependencies
-* Create 2 databases (one is for live and another for test accounts). (`api-live`, `api-test` are sample names)
-* Copy over `environment/.env.vault.sample` to `environment/.env.vault` and provide both database usernames and password
-* Copy over `environment/.env.dev.sample` to `environment/.env.dev`
+* Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)
+* Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
 
 ### Common Test Setup Instructions
 
-* Create two seperate databases for testing (separate from the development ones). (sample names: `api-testing-live`, `api-testing-test`)
-* Copy over `environment/.env.dev.sample` to `.env.testing` and provide the database information
+* Create two seperate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`)
+* Copy over `environment/.env.sample` to `.env.testing` and provide the database information
 * For above step, if you have sqlite set-up. Google how to do that with laravel.
 * Install php unit `sudo apt-get install phpunit`
 * Disable Xdebug ( Some Tests fail with Xdebug enabled ): `sudo php5dismod xdebug`
@@ -54,6 +56,11 @@
 
 TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testing` file to `false` after running the tests once. This makes sure you don't run fixtures everytime and hence the tests will run faster. If you add/change/delete any fixtures or clear your test db then change them to `true` once, run tests and then change them back to `false`.
 
+### Code Coverage Instructions
+
+* Install `php70-xdebug`
+* Run `phpunit --coverage-html [Directory to save coverage]`
+* You can also generate coverage in other formats. Visit [PHPUnit CodeCoverage](https://phpunit.de/manual/current/en/code-coverage-analysis.html) for more info.
 
 # Docs
 

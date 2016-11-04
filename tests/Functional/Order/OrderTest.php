@@ -45,6 +45,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithNegativeAmount()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();
@@ -106,8 +113,11 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+
         $payment = $this->getLastEntity('payment');
-        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');

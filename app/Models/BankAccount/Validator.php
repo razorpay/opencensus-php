@@ -2,10 +2,10 @@
 
 namespace RZP\Models\BankAccount;
 
+use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
-use RZP\Models\Base;
 use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
@@ -34,9 +34,9 @@ class Validator extends Base\Validator
     protected static $beneficiaryStateCodes = array(
         'AN', 'AP', 'AR', 'AS', 'BI', 'CH', 'CT', 'DN',
         'DD', 'GO', 'GJ', 'HA', 'HP', 'JK', 'JH', 'KA',
-        'KE', 'MP', 'MH', 'MA', 'ME', 'MI', 'NA', 'DL',
-        'OR', 'PO', 'PB', 'RJ', 'SK', 'TG', 'TN', 'TR',
-        'UP', 'UT', 'WB');
+        'KE', 'LD', 'MP', 'MH', 'MA', 'ME', 'MI', 'NA',
+        'DL', 'OR', 'PO', 'PB', 'RJ', 'SK', 'TG', 'TN',
+        'TR', 'UP', 'UT', 'WB');
 
     protected function validateBeneficiaryState($input)
     {

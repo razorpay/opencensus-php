@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Cybersource\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Card;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -12,13 +12,13 @@ class Validator extends Base\Validator
     protected static $authRules = array(
         'merchantID'                        => 'required|string',
         'merchantReferenceCode'             => 'required|alpha_num',
-        'clientLibrary'                     => 'present|string',
-        'clientLibraryVersion'              => 'present|string',
-        'clientEnvironment'                 => 'present|string',
+        'clientLibrary'                     => 'sometimes|string',
+        'clientLibraryVersion'              => 'sometimes|string',
+        'clientEnvironment'                 => 'sometimes|string',
         'ccAuthService'                     => 'required|array',
         'ccAuthService.run'                 => 'required_with:ccAuthService|string|in:true',
         'ccAuthService.commerceIndicator'   => 'required_with:ccAuthService|string',
-        'ccAuthService.reconciliationID'    => 'required_with:ccAuthService|string',
+        'ccAuthService.reconciliationID'    => 'required_if:ccAuthService.commerceIndicator,internet|string',
         'ccAuthService.eci'                 => 'sometimes|string',
         'billTo'                            => 'required|array',
         'billTo.firstName'                  => 'required|string',
@@ -27,18 +27,19 @@ class Validator extends Base\Validator
         'billTo.city'                       => 'required|string',
         'billTo.state'                      => 'required|string',
         'billTo.postalCode'                 => 'required|string',
-        'billTo.country'                    => 'required|string',
+        'billTo.country'                    => 'required_with:billTo.postalCode|string',
         'billTo.email'                      => 'required|email',
         'card'                              => 'required|array',
         'card.accountNumber'                => 'required|string|min:13|max:19',
         'card.expirationMonth'              => 'required|numeric|digits:2',
         'card.expirationYear'               => 'required|numeric|digits:4',
-        'card.cvNumber'                     => 'required|numeric|digits_between:3,4',
+        'card.cvNumber'                     => 'required_if:ccAuthService.commerceIndicator,internet|numeric|digits_between:3,4',
         'purchaseTotals'                    => 'required|array',
         'purchaseTotals.currency'           => 'required|in:INR',
-        'item'                              => 'required|array',
-        'item.*.unitPrice'                  => 'required|numeric',
-        'item.*.id'                         => 'required|string',
+        'purchaseTotals.grandTotalAmount'   => 'required_without:item.unitPrice|numeric',
+        'item'                              => 'sometimes|array',
+        'item.unitPrice'                    => 'required_without:purchaseTotals.grandTotalAmount|numeric',
+        'item.id'                           => 'required_with:item.unitPrice|numeric',
         'ucaf'                              => 'sometimes|array',
         'ucaf.collectionIndicator'          => 'required_with:ucaf',
     );
@@ -67,9 +68,10 @@ class Validator extends Base\Validator
         'card.expirationYear'                   => 'required|numeric|digits:4',
         'purchaseTotals'                        => 'required|array',
         'purchaseTotals.currency'               => 'required|in:INR',
-        'item'                                  => 'required|array',
-        'item.*.unitPrice'                      => 'required|numeric',
-        'item.*.id'                             => 'required|string',
+        'purchaseTotals.grandTotalAmount'       => 'required_without:item.unitPrice|numeric',
+        'item'                                  => 'sometimes|array',
+        'item.unitPrice'                        => 'required_without:purchaseTotals.grandTotalAmount|numeric',
+        'item.id'                               => 'required_with:item.unitPrice|numeric',
     );
 
     protected static $captureRules = array(
@@ -83,31 +85,33 @@ class Validator extends Base\Validator
         'card.expirationYear'               => 'required|numeric|digits:4',
         'purchaseTotals'                    => 'required|array',
         'purchaseTotals.currency'           => 'required|in:INR',
-        'item'                              => 'required|array',
-        'item.*.unitPrice'                  => 'required|numeric',
-        'item.*.id'                         => 'required|string',
+        'purchaseTotals.grandTotalAmount'   => 'required_without:item.unitPrice|numeric',
+        'item'                              => 'sometimes|array',
+        'item.unitPrice'                    => 'required_without:purchaseTotals.grandTotalAmount|numeric',
+        'item.id'                           => 'required_with:item.unitPrice|numeric',
         'clientLibrary'                     => 'present|string',
         'clientLibraryVersion'              => 'present|string',
         'clientEnvironment'                 => 'present|string'
     );
 
     protected static $enrollRules = array(
-        'payerAuthEnrollService'        => 'required|array',
-        'payerAuthEnrollService.run'    => 'required_with:payerAuthEnrollService|string|in:true',
-        'card'                          => 'required|array',
-        'card.accountNumber'            => 'required|numeric|digits_between:13,19',
-        'card.expirationMonth'          => 'required|numeric|digits:2',
-        'card.expirationYear'           => 'required|numeric|digits:4',
-        'purchaseTotals'                => 'required|array',
-        'purchaseTotals.currency'       => 'required|in:INR',
-        'item'                          => 'required|array',
-        'item.*.unitPrice'              => 'required|numeric',
-        'item.*.id'                     => 'required|string',
-        'merchantID'                    => 'required|string',
-        'merchantReferenceCode'         => 'required|string',
-        'clientLibrary'                 => 'present|string',
-        'clientLibraryVersion'          => 'present|string',
-        'clientEnvironment'             => 'present|string'
+        'payerAuthEnrollService'            => 'required|array',
+        'payerAuthEnrollService.run'        => 'required_with:payerAuthEnrollService|string|in:true',
+        'card'                              => 'required|array',
+        'card.accountNumber'                => 'required|string|between:13,19',
+        'card.expirationMonth'              => 'required|numeric|digits_between:1,2|between:1,12',
+        'card.expirationYear'               => 'required|numeric|digits:4',
+        'purchaseTotals'                    => 'required|array',
+        'purchaseTotals.currency'           => 'required|in:INR',
+        'purchaseTotals.grandTotalAmount'   => 'required_without:item.unitPrice|numeric',
+        'item'                              => 'sometimes|array',
+        'item.unitPrice'                    => 'required_without:purchaseTotals.grandTotalAmount|numeric',
+        'item.id'                           => 'required_with:item.unitPrice|numeric',
+        'merchantID'                        => 'required|string',
+        'merchantReferenceCode'             => 'required|string',
+        'clientLibrary'                     => 'sometimes|string',
+        'clientLibraryVersion'              => 'sometimes|string',
+        'clientEnvironment'                 => 'sometimes|string'
     );
 
     protected static $refundRules = array(
@@ -116,9 +120,10 @@ class Validator extends Base\Validator
         'ccCreditService.captureRequestID'  => 'required_with:ccCreditService|string',
         'purchaseTotals'                    => 'required|array',
         'purchaseTotals.currency'           => 'required|in:INR',
-        'item'                              => 'required|array',
-        'item.*.unitPrice'                  => 'required|numeric',
-        'item.*.id'                         => 'required|string',
+        'purchaseTotals.grandTotalAmount'   => 'required_without:item.unitPrice|numeric',
+        'item'                              => 'sometimes|array',
+        'item.unitPrice'                    => 'required_without:purchaseTotals.grandTotalAmount|numeric',
+        'item.id'                           => 'required_with:item.unitPrice|numeric',
         'merchantID'                        => 'required|string',
         'merchantReferenceCode'             => 'required|string',
         'clientLibrary'                     => 'present|string',

@@ -16,9 +16,6 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
 
-
-    protected $table = Table::TERMINAL_ANALYTICS;
-
     protected $entity = 'terminal_analytics';
 
     protected $fillable = array(
@@ -47,4 +44,9 @@ class Entity extends Base\PublicEntity
     protected $casts = array(
         self::TERMINAL_RESPONSE_TIME => 'int',
     );
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
 }

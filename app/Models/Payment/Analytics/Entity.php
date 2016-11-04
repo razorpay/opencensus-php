@@ -25,14 +25,11 @@ class Entity extends Base\PublicEntity
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
-    const TERMINAL_ID                   = 'terminal_id';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
-
-    protected $table = Table::PAYMENT_ANALYTICS;
 
     protected $entity = 'payment_analytics';
 
@@ -57,14 +54,12 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-        self::TERMINAL_ID,
     );
 
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
         self::CHECKOUT_ID,
-        self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
         self::LIBRARY_VERSION,
@@ -108,11 +103,6 @@ class Entity extends Base\PublicEntity
     public function getCheckoutId()
     {
         return $this->getAttribute(self::CHECKOUT_ID);
-    }
-
-    public function getTerminalId()
-    {
-        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getAttempts()
@@ -312,10 +302,21 @@ class Entity extends Base\PublicEntity
 
     protected function modifyOs(& $input)
     {
-        if ((isset($input[self::OS])) and
-            (strtolower($input[self::OS]) === 'os x'))
+        if (isset($input[self::OS]) === true)
         {
-            $input[self::OS] = Metadata::MACOS;
+            switch (strtolower($input[self::OS]))
+            {
+                case 'os x':
+                    $input[self::OS] = Metadata::MACOS;
+                    break;
+
+                case 'androidos':
+                    $input[self::OS] = Metadata::ANDROID;
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 }

@@ -76,6 +76,7 @@ class Processor
     protected $trace;
     protected $payment;
     protected $terminal;
+    protected $selectedTerminals;
     protected $mode;
     protected $repo;
     protected $orderRepo;
@@ -85,8 +86,17 @@ class Processor
     protected $request;
     protected $methods;
     protected $refund;
+    protected $order;
+    protected $segment;
 
     protected $verifyRefundStatus;
+
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -108,6 +118,10 @@ class Processor
         $this->request = $this->app['request'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->route = $this->app['api.route'];
+
+        $this->segment = $this->app['segment'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -282,6 +296,8 @@ class Processor
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
@@ -340,6 +356,8 @@ class Processor
      * made by Checkout
      * @param  string $id payment id
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {
@@ -364,8 +382,12 @@ class Processor
         // has been exceeded
         if ($payment->justCreated() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
+
+            throw $e;
         }
 
         if ($payment->isCreated() === true)
@@ -376,7 +398,12 @@ class Processor
         }
 
         // We don't want to reach this in case of captured|refunded payments
-        assertTrue($payment->isAuthorized() === true);
+        // However, the payment would be captured here IFF it was auto-captured
+        // So we make an exception for that.
+        $returnResponse = (($payment->isAuthorized()) or
+                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+
+        assertTrue($returnResponse);
 
         return $this->processAuthorizeResponse($payment);
     }
@@ -409,6 +436,16 @@ class Processor
 
         $status = $payment->getStatus();
 
+        $segmentCustomProperties = [
+            'error'                 => $error,
+            'code'                  => $code,
+            'description'           => $desc,
+            'internal_error_code'   => $internalCode,
+            'status'                => $status
+        ];
+
+        $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
+
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
             throw new Exception\LogicException(
@@ -423,6 +460,9 @@ class Processor
         $payment->setStatus(Payment\Status::FAILED);
 
         $payment->setError($code, $desc, $internalCode);
+
+        $payment->setVerified(null);
+        $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
 
@@ -475,24 +515,24 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        // TODO: Shouldn't be KOTAK specific
-        if ($gateway === Payment\Gateway::KOTAK)
-        {
-            $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
-        }
+        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
+
+        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)
     {
-        $this->tracePaymentNewRequest($input);
-
         $payment = new Payment\Entity;
 
         $payment->generateId();
 
+        $this->tracePaymentNewRequest($input);
+
         $payment->merchant()->associate($this->merchant);
+
+        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         $payment->build($input);
 
@@ -652,6 +692,8 @@ class Processor
         $this->trace->$level(
             $traceCode,
             $traceData);
+
+        $this->segment->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)
@@ -666,10 +708,8 @@ class Processor
 
     protected function retrieve($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getId());
+        $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
+                                                $id, $this->merchant);
 
         return $this->payment;
     }

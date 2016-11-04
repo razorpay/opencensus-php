@@ -33,7 +33,7 @@ class CaptureTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/capture.php';
+        $this->testDataFilePath = __DIR__.'/helpers/CaptureTestData.php';
 
         parent::setUp();
 

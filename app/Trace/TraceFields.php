@@ -167,10 +167,6 @@ class TraceFields
             'description'
         ),
 
-        TraceCode::MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK => array(
-            'network'
-        ),
-
         TraceCode::DASHBOARD_INTEGRATION_ERROR => array(
             'body',
             'transaction',
@@ -182,7 +178,8 @@ class TraceFields
     /**
      * Return fields for a trace event
      *
-     * @param $eventCode event code
+     * @param string $traceCode event code
+     * @return array|mixed
      */
     public static function getFields($traceCode)
     {

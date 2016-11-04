@@ -10,8 +10,6 @@ use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'order';
 
     protected $appFetchParamRules = [
@@ -23,6 +21,10 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
     ];
 
     protected $esWhitelistedParams = [

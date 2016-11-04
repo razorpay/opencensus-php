@@ -2,13 +2,13 @@
 
 namespace RZP\Http\BasicAuth;
 
+use ApiResponse;
 use Config;
+use Crypt;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Crypt;
 use RZP\Trace\TraceCode;
-use RZP\Http\ApiResponse;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
@@ -126,6 +126,13 @@ class BasicAuth
     protected $trace;
 
     /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    /**
      * Array of dashboard headers
      * @var array
      */
@@ -156,6 +163,7 @@ class BasicAuth
         $this->router = $app['router'];
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
+        $this->route = $this->app['api.route'];
     }
 
     public function setCredentials()
@@ -401,16 +409,20 @@ class BasicAuth
     {
         $route = $this->getCurrentRouteName();
 
-        if (array_key_exists($route, Route::$routeNameToFeatureMap) === true)
+        if ($this->route->isCurrentRouteInFeatureMap() === true)
         {
+            //
+            // Current route is in feature map list.
+            //
+
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
             $allowedFeatures = $this->merchant->getFeatures();
 
-            if (!empty($allowedFeatures) and
-                in_array($accessedFeature, $allowedFeatures))
+            if (in_array($accessedFeature, $allowedFeatures))
             {
                 return null;
             }
+
             return ApiResponse::routeNotFound();
         }
 
@@ -493,12 +505,18 @@ class BasicAuth
 
         if ($secret === '')
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
@@ -679,6 +697,16 @@ class BasicAuth
         return $this->merchant->getKey();
     }
 
+    public function getMerchantIdOfKey()
+    {
+        if ($this->key === null)
+        {
+            return null;
+        }
+
+        return $this->key->getMerchantId();
+    }
+
     public function getPublicKey()
     {
         return $this->creds['public_key'];
@@ -686,12 +714,19 @@ class BasicAuth
 
     protected function getCurrentRouteName()
     {
-        return Route::getCurrentRouteName();
+        return $this->app['api.route']->getCurrentRouteName();
     }
 
     public function getAuthType()
     {
         return $this->type;
+    }
+
+    public function isCron()
+    {
+        $cron = ($this->internalApp === 'cron');
+
+        return $cron;
     }
 
 // --------------------- Getters Ends ------------------------------------------
@@ -738,9 +773,19 @@ class BasicAuth
         return ($this->type === Type::PUBLIC_AUTH);
     }
 
+    public function isPrivateAuth()
+    {
+        return ($this->type === Type::PRIVATE_AUTH);
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isProxyOrPrivilegeAuth()
+    {
+        return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
     }
 
     protected function setKeyFromQueryParams()
@@ -808,9 +853,9 @@ class BasicAuth
     protected function invalidApiKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+            TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 

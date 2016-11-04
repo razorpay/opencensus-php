@@ -46,10 +46,6 @@ class Entity extends Base\Entity
         'error_text',
     );
 
-    protected $table = 'hdfc';
-
-    protected $primaryKey = 'id';
-
     protected $entity = 'hdfc';
 
     public $incrementing = true;
@@ -84,11 +80,6 @@ class Entity extends Base\Entity
     public function getEnrollResult()
     {
         return $this->getAttribute('enroll_result');
-    }
-
-    public function getReceived()
-    {
-        return $this->getAttribute('received');
     }
 
     public function getReceivedAttribute()

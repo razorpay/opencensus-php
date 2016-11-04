@@ -78,9 +78,9 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $isMerchantInternational = $input['merchant']->isInternational();
+        $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isMerchantInternational))
+        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
         {
             // Allow support for cards on atom for international test
             $testTerminals = array_merge(
@@ -89,7 +89,7 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminal->getGateway(), $testTerminals);
         }
-        else if ($isMerchantInternational)
+        else if ($isPaymentInternational)
         {
             return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
         }
@@ -142,16 +142,21 @@ class TransactionFilter extends Terminal\Filter
 
     public function recurringFilter($terminal, $input)
     {
-        $value = Terminal\Recurring::NON_RECURRING;
-
         $payment = $input['payment'];
 
+        $value = Terminal\Recurring::NON_RECURRING;
+
+        // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            $value = Terminal\Recurring::RECURRING_3DS;
+            // for recurring payment, terminal must be cybersource
+            if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+            {
+                return false;
+            }
 
-            if (($payment->token !== null) and
-                ($payment->token->isRecurring() === true))
+            if (($payment->getTokenId() !== null) and
+                ($payment->localToken->isRecurring() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }

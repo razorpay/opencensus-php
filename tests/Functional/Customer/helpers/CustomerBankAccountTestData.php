@@ -17,7 +17,7 @@ return [
                 'beneficiary_address3'  => 'address 3',
                 'beneficiary_address4'  => 'address 4',
                 'beneficiary_email'     => 'random@email.com',
-                'beneficiary_mobile'    => '1234567890',
+                'beneficiary_mobile'    => '9988776655',
                 'beneficiary_city'      => 'Kolkata',
                 'beneficiary_state'     => 'WB',
                 'beneficiary_country'   => 'IN',
@@ -39,7 +39,7 @@ return [
                 'beneficiary_country' => 'IN',
                 'beneficiary_pin' => '123456',
                 'beneficiary_email' => 'random@email.com',
-                'beneficiary_mobile' => '1234567890',
+                'beneficiary_mobile' => '9988776655',
             ]
         ]
     ],

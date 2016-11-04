@@ -21,10 +21,8 @@ class Gateway
     const BILLDESK           = 'billdesk';
     const EBS                = 'ebs';
     const HDFC               = 'hdfc';
-    const KOTAK              = 'kotak';
     const MOBIKWIK           = 'mobikwik';
     const PAYTM              = 'paytm';
-    const SBIEPAY            = 'sbiepay';
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
@@ -33,19 +31,25 @@ class Gateway
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
     const CYBERSOURCE        = 'cybersource';
+    const FIRST_DATA         = 'first_data';
 
-    const NOT_SUPPORTED      = 'not_supported';
-    const SUPPORTED          = 'supported';
+    const NOT_SUPPORTED     = 'not_supported';
+    const SUPPORTED         = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
+        Wallet::OLAMONEY,
+        Wallet::FREECHARGE,
     );
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
+        self::WALLET_OLAMONEY,
+        self::WALLET_FREECHARGE,
         self::SHARP,
     );
 
@@ -57,19 +61,19 @@ class Gateway
         self::BILLDESK           => Settlement\Channel::KOTAK,
         self::EBS                => Settlement\Channel::KOTAK,
         self::HDFC               => Settlement\Channel::KOTAK,
-        self::KOTAK              => Settlement\Channel::KOTAK,
         self::MOBIKWIK           => Settlement\Channel::KOTAK,
         self::PAYTM              => Settlement\Channel::KOTAK,
-        self::SBIEPAY            => Settlement\Channel::KOTAK,
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+        self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK
     );
 
     /**
@@ -82,12 +86,12 @@ class Gateway
         Method::CARD => array(
             self::HDFC,
             self::ATOM,
-            // self::AXIS_MIGS,
+            self::AXIS_MIGS,
             self::AXIS_GENIUS,
-            self::KOTAK,
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::FIRST_DATA,
         ),
 
         Method::NETBANKING => array(
@@ -96,7 +100,6 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
-            self::SBIEPAY,
         ),
 
         Method::WALLET => array(
@@ -106,11 +109,13 @@ class Gateway
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
+            self::WALLET_FREECHARGE,
         ),
 
         Method::EMI => array(
             self::AMEX,
             self::HDFC,
+            self::FIRST_DATA,
         ),
 
         Method::UPI => array(
@@ -128,8 +133,10 @@ class Gateway
         self::HDFC => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
+        self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
+        self::FIRST_DATA => [],
     );
 
 
@@ -168,8 +175,6 @@ class Gateway
         self::ATOM => array(
             Network::MC,
             Network::VISA),
-        self::KOTAK => array(
-            Network::RUPAY),
         self::AMEX => array(
             Network::AMEX),
         self::PAYTM => array(
@@ -186,6 +191,9 @@ class Gateway
         self::CYBERSOURCE => array(
             Network::MC,
             Network::VISA),
+        self::FIRST_DATA => array(
+            Network::MC,
+            Network::VISA),
     );
 
     public static $walletToGatewayMap = array(
@@ -195,6 +203,7 @@ class Gateway
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
+        Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
     );
 
     public static $upiToGatewayMap = array(
@@ -218,6 +227,12 @@ class Gateway
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
         self::WALLET_PAYZAPP,
+        self::FIRST_DATA,
+        self::CYBERSOURCE,
+        self::WALLET_PAYUMONEY,
+        self::WALLET_AIRTELMONEY,
+        self::WALLET_OLAMONEY,
+        self::WALLET_FREECHARGE,
     );
 
     /**
@@ -242,6 +257,7 @@ class Gateway
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -251,9 +267,10 @@ class Gateway
      */
     public static $domesticCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -262,12 +279,12 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
-        Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -284,6 +301,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
         );
 
     /**
@@ -297,12 +315,11 @@ class Gateway
      */
     public static $directCardGatewaysInTest = array(
         Gateway::AXIS_GENIUS,
-        Gateway::SBIEPAY,
-        Gateway::KOTAK,
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
         Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
     );
 
     /**
@@ -343,7 +360,6 @@ class Gateway
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
         Gateway::EBS,
-        Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
 
@@ -364,25 +380,32 @@ class Gateway
      * @var array
      */
     public static $directNetbankingGatewaysInTest = array(
-        Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
 
     public static $emiBanks = array(
         IFSC::HDFC,
-        IFSC::KKBK,
-        IFSC::UTIB,
+        IFSC::HSBC,
+        IFSC::ICIC,
         IFSC::INDB,
+        IFSC::KKBK,
+        IFSC::RATN,
+        IFSC::SCBL,
+        IFSC::UTIB,
     );
 
     public static $emiBanksUsingCardTerminals = array(
-        IFSC::KKBK,
-        IFSC::UTIB,
         IFSC::INDB,
+        IFSC::KKBK,
+        IFSC::RATN,
+        IFSC::UTIB,
     );
 
     public static $emiBankToGatewayMap = array(
-        IFSC::HDFC      =>  Gateway::HDFC,
+        IFSC::HDFC => Gateway::HDFC,
+        IFSC::ICIC => Gateway::FIRST_DATA,
+        IFSC::HSBC => Gateway::FIRST_DATA,
+        IFSC::SCBL => Gateway::FIRST_DATA,
     );
 
     public static function isNetbankingBankDirectlySupported($bank)
@@ -397,7 +420,7 @@ class Gateway
 
     public static function isValidGateway($gateway)
     {
-        return (defined(__CLASS__.'::'.strtoupper($gateway)));
+        return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
     public static function getGatewayForWallet($wallet)
@@ -568,6 +591,7 @@ class Gateway
                     $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
                 }
 
+                // Adds direct netbanking to have highest priority
                 array_unshift($gateways, 'direct');
 
                 break;

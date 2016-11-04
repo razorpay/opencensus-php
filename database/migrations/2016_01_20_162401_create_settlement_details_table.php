@@ -10,14 +10,14 @@ use RZP\Models\Settlement\Details\Entity;
 
 class CreateSettlementDetailsTable extends Migration
 {
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create(Table::SETTLEMENT_DETAIL, function(Blueprint $table)
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::SETTLEMENT_DETAILS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -35,7 +35,7 @@ class CreateSettlementDetailsTable extends Migration
             $table->integer(Entity::COUNT)
                   ->nullable();
 
-            $table->integer(Entity::AMOUNT)
+            $table->bigInteger(Entity::AMOUNT)
                   ->unsigned();
 
             $table->string(Entity::DESCRIPTION)

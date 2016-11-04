@@ -115,11 +115,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($content['status'] !== Status::SUCCESS)
-        {
-            $verify->apiSuccess = false;
-        }
-        else
+        if ($content['status'] === Status::SUCCESS)
         {
             if ($content['result'][0]['status'] !== 'success')
             {
@@ -167,30 +163,22 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function saveVerifyContentIfNeeded($payment, $response)
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
     {
         $content = $response['result'][0];
 
-        $this->action = Action::AUTHORIZE;
-
-        if (isset($content['status']) and $content['status'] === Status::VERIFY_SUCCESS)
+        if ((isset($content['status']) === true) and
+            ($content['status'] === Status::VERIFY_SUCCESS))
         {
-            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+            $walletAttributes = $this->getWalletContentFromVerify($gatewayPayment, $content);
 
-            if ($payment === null)
+            if ($gatewayPayment === null)
             {
-                $payment = $this->createGatewayPaymentEntity($walletAttributes);
-            }
-            else if ($payment['received'] === false)
-            {
-                $payment->fill($walletAttributes);
-                $payment->saveOrFail();
+                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes, Action::AUTHORIZE);
             }
         }
 
-        $this->action = Action::VERIFY;
-
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function refund(array $input)
@@ -222,15 +210,6 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
-
         $request = $this->getTopupWalletRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -241,7 +220,7 @@ class Gateway extends Base\Gateway
 
         if ($content['status'] === Status::SUCCESS)
         {
-            return $this->getTopupWalletRedirectRequestArray($content);
+            return $this->getTopupWalletRedirectRequestArray($input, $content);
         }
 
         throw new Exception\GatewayErrorException(
@@ -267,9 +246,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $code = $content['status'];
-
-        if ($code !== Status::SUCCESS)
+        if ($content['status'] !== Status::SUCCESS)
         {
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
@@ -284,6 +261,8 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -332,22 +311,17 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         // Not verifying hash as it's generated with different secret by payu
-        if ((isset($content['status']) === true) and
-            ($content['status'] === Status::TOPUP_SUCCESS))
+        if ((isset($content['status']) === false) or
+            ($content['status'] !== Status::TOPUP_SUCCESS))
         {
-            $token = $this->getValidWalletToken($input);
+            $status = isset($content['status']) ? $content['status']: null;
+            $message = isset($content['error_Message']) ? $content['error_Message']: null;
 
-            if ($token !== null)
-            {
-                $this->accessToken = $token->getGatewayToken();
-                return;
-            }
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $status,
+                $message);
         }
-
-        throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            $content['status'],
-            $content['error_Message']);
     }
 
     public function debit(array $input)
@@ -381,12 +355,7 @@ class Gateway extends Base\Gateway
             'received' => true
         );
 
-        //  Changing action to AUTHORIZE to keep the action consistent
-        $this->action = Action::AUTHORIZE;
-
-        $this->createGatewayPaymentEntity($contentToSave);
-
-        $this->action = Action::DEBIT_WALLET;
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
     }
 
     public function checkBalance(array $input)
@@ -421,7 +390,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        if (($content['status'] === Status::SUCCESS) and
+        if ((isset($content['status']) === true) and
+            ($content['status'] === Status::SUCCESS) and
             (isset($content['result']['availableBalance']) === true))
         {
             $key = $this->getBalanceKeyForCache($input['payment']);
@@ -474,7 +444,7 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
@@ -521,7 +491,7 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
@@ -653,19 +623,19 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
     }
 
-    protected function getTopupWalletRedirectRequestArray($input)
+    protected function getTopupWalletRedirectRequestArray(array $input, $content)
     {
         $this->action($input, Action::TOPUP_REDIRECT);
 
         $content = array(
-            'paymentId'     => $input['result'],
-            'accessToken'   => $this->accessToken
+            'paymentId'     => $content['result'],
+            'accessToken'   => $input['token']['gateway_token']
         );
 
         $request = $this->getStandardRequestArray($content);

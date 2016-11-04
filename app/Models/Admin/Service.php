@@ -17,9 +17,7 @@ class Service extends Base\Service
 
         $id = $entityClass::verifyIdAndSilentlyStripSign($id);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $entity = (new $repo)->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailPublic($id);
 
         return $entity->toArrayAdmin();
     }
@@ -28,11 +26,7 @@ class Service extends Base\Service
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $repo = new $repo;
-
-        $entities = $repo->fetch($input);
+        $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
     }
@@ -41,16 +35,13 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('send_test_newsletter', $input);
 
-        //
-        // Now we send the newsletter
-        //
         $mailer = new Newsletter(
-            $input['email'],
             $input['subject'],
             $input['msg'],
-            $input['template'],
-            true // Test Email to self
+            $input['template']
         );
+
+        $mailer->setTestEmail($input['email']);
 
         return $mailer->send();
     }
@@ -60,10 +51,12 @@ class Service extends Base\Service
         (new Validator)->validateInput('send_newsletter', $input);
 
         $mailer = new Newsletter(
-            $input['lists'],
             $input['subject'],
             $input['msg'],
-            $input['template']);
+            $input['template']
+        );
+
+        $mailer->setRecipient($input['lists']);
 
         return $mailer->send();
     }

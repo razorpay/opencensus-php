@@ -13,7 +13,7 @@ class AuthorizeTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
+        $this->testDataFilePath = __DIR__.'/helpers/AuthorizeTestData.php';
 
         parent::setUp();
 
@@ -62,6 +62,11 @@ class AuthorizeTest extends TestCase
     }
 
     public function testContactTooLong()
+    {
+        $this->startTest();
+    }
+
+    public function testNegativeAmount()
     {
         $this->startTest();
     }
@@ -382,7 +387,7 @@ class AuthorizeTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->topupPayment($payment->getPublicId());
+            $this->doWalletTopupViaAjaxRoute($payment->getPublicId());
         });
     }
 

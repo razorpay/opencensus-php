@@ -39,8 +39,6 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE      = 'network_code';
 
-    protected $table = \RZP\Constants\Table::CARD;
-
     protected static $sign = 'card';
 
     protected $entity = 'card';
@@ -69,7 +67,8 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::TYPE,
         self::LAST4,
-        self::LENGTH);
+        self::LENGTH,
+        self::VAULT_TOKEN);
 
     protected $hidden = array();
 
@@ -93,6 +92,8 @@ class Entity extends Base\PublicEntity
         self::VAULT,
         self::NETWORK_CODE,
         self::TRIVIA,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     );
 
     protected $public = array(
@@ -101,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::LAST4,
         self::NETWORK,
+        self::TYPE,
         self::INTERNATIONAL,
     );
 
@@ -135,30 +137,40 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Card\Entity', self::GLOBAL_CARD_ID, self::ID);
     }
 
-    public function generateLast4($input)
+    protected function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);
 
         $this->setAttribute(self::LAST4, $last4);
     }
 
-    public function generateIin($input)
+    protected function generateIin($input)
     {
         $iin = substr($input['number'], 0, 6);
 
         $this->setAttribute(self::IIN, $iin);
     }
 
-    public function generateType($input)
+    protected function generateType($input)
     {
         $this->setAttribute(self::TYPE, Card\Type::UNKNOWN);
     }
 
-    public function generateLength($input)
+    protected function generateLength($input)
     {
         $length = strlen($input['number']);
 
         $this->setAttribute(self::LENGTH, $length);
+    }
+
+    protected function generateVaultToken($input)
+    {
+        if (isset($input[self::VAULT]))
+        {
+            $vaultToken = Card\Tokenex::getVaultToken($input['number']);
+
+            $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
+        }
     }
 
     public function modifyExpiryYear(& $input)
@@ -180,17 +192,20 @@ class Entity extends Base\PublicEntity
 
     public static function modifyNumber(& $input)
     {
-        $number = $input['number'];
-
-        if (is_string($number) === false)
+        if (isset($input['number']))
         {
-            return $number;
+            $number = $input['number'];
+
+            if (is_string($number) === false)
+            {
+                return $number;
+            }
+
+            $number = str_replace(' ', '', $number);
+            $number = str_replace('-', '', $number);
+
+            $input['number'] = $number;
         }
-
-        $number = str_replace(' ', '', $number);
-        $number = str_replace('-', '', $number);
-
-        $input['number'] = $number;
     }
 
     public function getNetwork()
@@ -394,6 +409,15 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isRecurringSupported()
+    {
+        $isCreditCard = ($this->getType() === Card\Type::CREDIT);
+
+        $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
+
+        return (($isCreditCard == true) and ($isSupportedNetwork == true));
+    }
+
     public function isBlocked()
     {
         $iin = $this->getIin();
@@ -416,9 +440,9 @@ class Entity extends Base\PublicEntity
         $emi = $this->getAttribute(self::EMI);
 
         $attributes = array(
-            self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
-            self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
-            self::EMI               => $emi
+            self::EXPIRY_MONTH => $this->getAttribute(self::EXPIRY_MONTH),
+            self::EXPIRY_YEAR  => $this->getAttribute(self::EXPIRY_YEAR),
+            self::EMI          => $emi
         );
 
         if ($emi === true)

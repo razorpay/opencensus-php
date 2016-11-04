@@ -22,13 +22,24 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
 
-    protected $table = \RZP\Constants\Table::DAILY_SETTLEMENT;
-
     protected $entity = 'daily_settlement';
 
     protected $generateIdOnCreate = true;
 
     protected static $delimiter = '';
+
+    protected $fillable = array(
+        self::CHANNEL,
+        self::AMOUNT,
+        self::FEES,
+        self::SETTLEMENT_COUNT,
+        self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
+        self::INITIATED_AT,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::URLS,
+    );
 
     protected $public = array(
         self::ID,
@@ -80,7 +91,6 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::FEES, $fees);
     }
-
 
     public static function getTodayTimestamp()
     {

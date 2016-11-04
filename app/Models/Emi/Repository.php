@@ -7,14 +7,20 @@ use RZP\Models\Card\Network;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'emi_plan';
 
-    public function getAllEmiPlans()
+    protected $appFetchParamRules = array(
+        Entity::BANK            => 'sometimes|string|size:4',
+        Entity::NETWORK         => 'sometimes|string|max:12',
+    );
+
+    public function fetchEmiPlans()
     {
-        return $this->newQuery()->get();
+        return $this->newQuery()
+                    ->withoutTrashed()
+                    ->get();
     }
 
     public function fetchRelevantEmiPlan($iin, $duration)
@@ -36,4 +42,4 @@ class Repository extends Base\Repository
 
         return $query->firstOrFail();
     }
-}
+ }

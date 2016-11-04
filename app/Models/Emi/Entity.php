@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     const DURATION              = 'duration';
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
+    const ISSUER_PLAN_ID        = 'issuer_plan_id';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -24,7 +26,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'emi_plan';
 
-    protected $table            = \RZP\Constants\Table::EMI_PLAN;
+    protected $table            = Table::EMI_PLAN;
 
     protected $generateIdOnCreate = true;
 
@@ -35,7 +37,8 @@ class Entity extends Base\PublicEntity
         self::RATE,
         self::DURATION,
         self::METHODS,
-        self::MIN_AMOUNT);
+        self::MIN_AMOUNT,
+        self::ISSUER_PLAN_ID);
 
     protected $visible = array(
         self::ID,
@@ -44,19 +47,22 @@ class Entity extends Base\PublicEntity
         self::RATE,
         self::DURATION,
         self::METHODS,
-        self::MIN_AMOUNT);
+        self::MIN_AMOUNT,
+        self::ISSUER_PLAN_ID);
 
     protected $public = array(
         self::BANK,
         self::RATE,
         self::DURATION,
         self::METHODS,
-        self::MIN_AMOUNT);
+        self::MIN_AMOUNT,
+        self::ISSUER_PLAN_ID);
 
     protected $defaults = array(
-        self::MIN_AMOUNT => 300000,
-        self::BANK       => null,
-        self::NETWORK    => null,
+        self::MIN_AMOUNT     => 300000,
+        self::BANK           => null,
+        self::NETWORK        => null,
+        self::ISSUER_PLAN_ID => null,
     );
 
     protected $casts = array(
@@ -97,13 +103,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    protected function getBankAttribute()
+    /**
+     * Issuer is either a bank or a network
+     */
+    public function getIssuer()
     {
-       return $this->attributes[self::BANK];
-    }
+        $bank = $this->getBank();
 
-    protected function getMethodsAttribute()
-    {
-       return $this->attributes[self::METHODS];
+        if (is_null($bank) === false)
+        {
+            return $bank;
+        }
+
+        return $this->getNetwork();
     }
 }

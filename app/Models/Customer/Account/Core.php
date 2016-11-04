@@ -197,23 +197,28 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function getCustomerAndApp($input, $merchant)
+    public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
         $merchantId = null;
         $customer = null;
         $appToken = null;
-        $appToken = null;
 
-        if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
-            $appToken = $input[Payment\Entity::APP_TOKEN];
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
-            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
+            $merchantId = $merchant->getId();
 
-            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
-                $appToken,
-                $merchant);
+            Customer\Entity::verifyIdAndStripSign($customerId);
+        }
+        else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+        {
+            $appTokenId = $input[Payment\Entity::APP_TOKEN];
+
+            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
+
+            $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
             if ($appToken !== null)
             {
@@ -221,14 +226,6 @@ class Core extends Base\Core
 
                 $merchantId = Account::SHARED_ACCOUNT;
             }
-        }
-        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
-        {
-            $merchantId = $merchant->getId();
-
-            $customerId = $input[Payment\Entity::CUSTOMER_ID];
-
-            Customer\Entity::verifyIdAndStripSign($customerId);
         }
 
         if ($customerId !== null)

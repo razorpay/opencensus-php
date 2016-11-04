@@ -9,56 +9,45 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
+    const BANK                          = 'bank';
     const FROM                          = 'from';
     const TO                            = 'to';
     const REASON                        = 'reason';
+    const SCHEDULED                     = 'scheduled';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-
-    protected $fillable = array(
-        self::GATEWAY,
-        self::FROM,
-        self::TO,
-        self::REASON
-    );
-
-    protected $public = array(
-        self::ID,
+    protected $fillable = [
         self::GATEWAY,
         self::FROM,
         self::TO,
         self::REASON,
-        self::CREATED_AT,
-        self::UPDATED_AT
-    );
+        self::BANK,
+        self::SCHEDULED
+    ];
 
-    protected $table = Table::GATEWAY_STATUS_ABSENCE;
+    protected $public = [
+        self::ID,
+        self::GATEWAY,
+        self::FROM,
+        self::BANK,
+        self::TO,
+        self::CREATED_AT,
+
+        self::UPDATED_AT,
+        self::REASON,
+        self::SCHEDULED
+    ];
+
+    protected $casts = [
+        self::FROM      => 'int',
+        self::TO        => 'int',
+        self::SCHEDULED => 'bool'
+    ];
+
+    const END_OF_TIME = 2147483647;
 
     protected $entity = 'gateway_absence';
 
-    protected static $sign = '';
-
-    protected static $delimiter = '';
-
-    public function getGateway()
-    {
-        return $this->getAttributes(self::GATEWAY);
-    }
-
-    public function getDowntimeFrom()
-    {
-        return $this->getAttributes(self::FROM);
-    }
-
-    public function getDowntimeTo()
-    {
-        return $this->getAttributes(self::TO);
-    }
-
-    public function getReason()
-    {
-        return $this->getAttributes(self::REASON);
-    }
-
+    protected $generateIdOnCreate = true;
 }

@@ -149,18 +149,82 @@ class BilldeskGatewayTest extends TestCase
 
         $this->setMockServer($server);
 
-        try
+        $data = $this->testData['testServerToServerCallback'];
+
+        $this->runRequestResponseFlow($data, function()
         {
             $payment = $this->getDefaultNetbankingPaymentArray();
             $payment = $this->doAuthPayment($payment);
-        }
-        catch (Exception\RuntimeException $e)
-        {
-            ;
-        }
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $refund = $this->getLastEntity('billdesk', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultiplePartialRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('billdesk', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentMultipleInvalidPartialRefund()
+    {
+        $data = $this->testData['testPaymentMultipleInvalidPartialRefund'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 40000);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id'], 40000);
+        });
+    }
+
+    public function testReconcileCancelledTransactions()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentTransaction = $this->getLastTransaction(true);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $billdeskRefund = $this->getLastEntity('billdesk', true);
+
+        $this->fixtures->edit('billdesk', $billdeskRefund['id'], ['refStatus' => '0699']);
+
+        $this->startTest();
+
+        $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
+
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
+        $this->assertEquals(0, $paymentTransaction['gateway_fee']);
     }
 }

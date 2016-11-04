@@ -48,8 +48,6 @@ class Entity extends Base\PublicEntity
         self::BANK,
     );
 
-    protected $table = Table::ORDER;
-
     protected $generateIdOnCreate = true;
 
     protected $defaults = array(

@@ -6,14 +6,12 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'payment_analytics';
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
-        Entity::TERMINAL_ID     => 'sometimes|alpha_num',
+        Entity::CHECKOUT_ID     => 'sometimes|alpha_num',
     );
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -27,24 +25,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findForTerminal($id)
-    {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
-                    ->get();
-    }
-
-    public function findForPayment($paymentId, $id = null)
+    public function findForPayment($paymentId)
     {
         $repo = $this->repo;
 
         $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
-
-        if ($id !== null)
-        {
-            $results = $results->where(Entity::TERMINAL_ID, '=', $id);
-        }
 
         return $results->get();
     }

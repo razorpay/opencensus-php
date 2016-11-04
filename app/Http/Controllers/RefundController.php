@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use Request;
@@ -15,7 +15,7 @@ class RefundController extends Controller
     {
         parent::__construct();
 
-        $this->refund = new Payment\Refund\Service();
+        $this->refund = new Payment\Refund\Service;
     }
 
     public function getRefund($id)

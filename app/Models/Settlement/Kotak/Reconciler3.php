@@ -64,23 +64,37 @@ class Reconciler3
         if ($reconcileFile === null)
         {
             $this->trace->info(
-                TraceCode::MISC_TRACE_CODE, ['message' => 'No file present']);
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message' => 'No file present'
+                ]);
 
             return new Base\PublicCollection;
         }
 
         $data = $this->parseTextFile($reconcileFile);
 
-        $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
+        $response = null;
 
-        // update the format so that recon mail is appended to settlement mail
-        $date = $date->format('d-m-Y');
+        if (empty($data) === true)
+        {
+            $response =  [
+                'message' => 'no records to reconcile'
+            ];
+        }
+        else
+        {
+            $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
 
-        $response = $this->reconcile($data);
+            // update the format so that recon mail is appended to settlement mail
+            $date = $date->format('d-m-Y');
 
-        $this->storeReconciledFile($reconcileFile);
+            $response = $this->reconcile($data);
 
-        $this->sendReconciliationMail($date, $response);
+            $this->storeReconciledFile($reconcileFile);
+
+            $this->sendReconciliationMail($date, $response);
+        }
 
         return $response;
     }
@@ -122,7 +136,8 @@ class Reconciler3
         $response = [
             'setl_count'     => $collection->count(),
             'failures_count' => $failures->count(),
-            'failure ids'    => $failureIds];
+            'failure ids'    => $failureIds
+        ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
 
@@ -155,7 +170,7 @@ class Reconciler3
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation: ' . $row['Reject Reason'];
         }
 
         // if already processed

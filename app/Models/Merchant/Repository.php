@@ -14,9 +14,8 @@ use RZP\Error\ErrorCode;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Merchant';
+    protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
 
@@ -81,6 +80,14 @@ class Repository extends Base\Repository
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
+    public function fetchBySettlementScheduleId($settlementScheduleIds)
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
+                    ->get();
+    }
+
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()
@@ -91,7 +98,7 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            Methods\Entity::getTableName(),
+            $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
@@ -130,9 +137,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = $this->repo;
-
-        return $repo::setConnection(Mode::TEST)
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }

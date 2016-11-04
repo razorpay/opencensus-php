@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Order;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
@@ -11,7 +11,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT          =>  'required|integer|max:50000000',
+        Entity::AMOUNT          =>  'required|integer|min:100|max:50000000',
         Entity::CURRENCY        =>  'required|size:3|in:INR',
         Entity::RECEIPT         =>  'required|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',

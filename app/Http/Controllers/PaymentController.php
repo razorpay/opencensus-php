@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -17,7 +17,7 @@ class PaymentController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     public function getPayment($id)
@@ -186,16 +186,9 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments($filter)
+    public function postVerifyPayments($filter)
     {
         $data = $this->payment->verifyMultiplePayments($filter);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
-    {
-        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
 
         return ApiResponse::json($data);
     }
@@ -240,6 +233,13 @@ class PaymentController extends Controller
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
         $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAuthorizeLockTimeOut($paymentIds)
+    {
+        $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
 
         return ApiResponse::json($data);
     }

@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -20,7 +20,7 @@ class PaymentCreateController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     /**
@@ -36,6 +36,22 @@ class PaymentCreateController extends Controller
 
         }
 
+        $ret = $this->createPayment();
+
+        if ((is_array($ret)) and
+            (isset($ret['request']) === false))
+        {
+            return ApiResponse::json($ret);
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Creates an S2S payment
+     */
+    public function postCreateS2SPayment()
+    {
         $ret = $this->createPayment();
 
         if ((is_array($ret)) and
@@ -80,6 +96,10 @@ class PaymentCreateController extends Controller
             ($this->app['basicauth']->isPublicAuth()))
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+        else if ($this->app['basicauth']->isPrivateAuth())
+        {
+            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
 
         $data = $this->payment->process($input);
@@ -176,7 +196,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
@@ -317,7 +337,8 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'async')
             {
-                return $data;
+                return View::make('gateway.gatewayAsyncForm')
+                           ->with('data', $data);
             }
             else
             {

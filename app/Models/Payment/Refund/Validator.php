@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -64,11 +64,12 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (ctype_digit($amountToRefund) === false)
+        if ((ctype_digit($amountToRefund) === false) and
+            (is_int($amountToRefund) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount should only have digits',
-                'amount');
+                'Amount should be in paise and only have digits',
+                Entity::AMOUNT);
         }
 
         $amountCaptured = $payment->getAmount();

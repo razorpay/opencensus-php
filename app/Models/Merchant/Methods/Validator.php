@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Models\Base;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::AIRTELMONEY => 'sometimes|boolean',
         Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
+        Entity::FREECHARGE  => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
         Entity::CREDIT_CARD => 'sometimes_if:card,1|required_with:debit_card|boolean',
         Entity::DEBIT_CARD  => 'sometimes_if:card,1|required_with:credit_card|boolean',

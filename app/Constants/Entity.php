@@ -22,11 +22,13 @@ class Entity
     const CARD                  = 'card';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const BATCH                 = 'batch';
     const REFUND                = 'refund';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
     const METHODS               = 'methods';
     const PRICING               = 'pricing';
+    const SCHEDULE              = 'schedule';
     const PAYMENT               = 'payment';
     const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
@@ -64,21 +66,24 @@ class Entity
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const AXIS_MIGS             = 'axis_migs';
-    const UPI_ICICI             = 'upi_icici';
-    const NETBANKING            = 'netbanking';
+    const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
+    const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
+    const UPI_ICICI             = 'upi_icici';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
@@ -99,6 +104,7 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
@@ -118,6 +124,7 @@ class Entity
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
     );
 
     protected static $repository = array(
@@ -128,9 +135,11 @@ class Entity
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
-    public static function getEntityNamespace($entity)
+    public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
 
@@ -144,7 +153,7 @@ class Entity
         return '\RZP\Models\\' . studly_case($entity);
     }
 
-    public static function getEntityClass($entity)
+    public static function getEntityClass(string $entity)
     {
         $ns = self::getEntityNamespace($entity);
 
@@ -166,7 +175,7 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity, $repositoryType = 'Repository')
+    public static function getEntityRepository(string $entity, $repositoryType = 'Repository')
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
@@ -186,9 +195,14 @@ class Entity
         return $class;
     }
 
-    public static function getEntityEsRepository($entity)
+    public static function getEntityEsRepository(string $entity)
     {
         return self::getEntityRepository($entity, 'EsRepository');
+    }
+
+    public static function getTableNameForEntity(string $entity)
+    {
+        return Table::getTableNameForEntity($entity);
     }
 
     public static function validateIsEntity($entity)
@@ -207,6 +221,15 @@ class Entity
     public static function isValidEntity($entity)
     {
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFail($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid entity.');
+        }
     }
 
     public static function validateEntityOrFailPublic($entity)

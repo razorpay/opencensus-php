@@ -30,13 +30,32 @@ class UPIGatewayTest extends TestCase
     {
         unset($this->payment['description']);
 
-        $response = $this->doAuthPayment($this->payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
         $paymentId = $response['payment_id'];
 
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
         $this->checkPaymentStatus($paymentId, $status);
+
+        return $paymentId;
+    }
+
+    public function testPaymentViaRedirection()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        // Payment status is a polling API which checkout hits
+        // continously. Replicating the same in test case
+        $this->checkPaymentStatus($paymentId, 'created');
+        $this->checkPaymentStatus($paymentId, 'created');
 
         return $paymentId;
     }
@@ -66,7 +85,7 @@ EOT;
         $payment['vpa'] = 'dontencrypt@icici';
         $payment['notes']['status'] = 'created';
 
-        $response = $this->doAuthPayment($payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $paymentId = $response['payment_id'];
 
@@ -100,21 +119,7 @@ EOT;
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
-        });
-    }
-
-    public function testPhonePeVPA()
-    {
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $payment['vpa'] = 'nemo@ybl';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -129,7 +134,7 @@ EOT;
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -138,7 +143,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['vpa'] = 's@dcb';
 
-        $this->doAuthPayment($payment);
+        $this->doAuthPaymentViaAjaxRoute($payment);
     }
 
     public function testInvalidResponsePayment()
@@ -153,7 +158,7 @@ EOT;
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+            $this->doAuthPaymentViaAjaxRoute($payment);
         });
     }
 
@@ -164,12 +169,16 @@ EOT;
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         if ($assert)
         {
             $this->assertEquals($response, ['success' => true]);
         }
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
 
         return $payment;
     }
@@ -183,11 +192,15 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function () use ($upiEntity, $payment) {
-            $this->makeAsyncCallbackAndGetContent($upiEntity, $payment, function (&$content)
-            {
-                $content['TxnStatus'] = 'REJECT';
-            });
+        $server = $this->mockServerContentFunction(function (&$content)
+        {
+            $content['TxnStatus'] = 'REJECT';
+        });
+
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->runRequestResponseFlow($data, function () use ($content) {
+            $this->makeS2SCallbackAndGetContent($content);
         });
 
         $data = $this->testData['testStatusRejectPayment'];
@@ -219,12 +232,13 @@ EOT;
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -236,12 +250,13 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['notes']['encrypt'] = 'true';
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $response = $this->makeAsyncCallbackAndGetContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -257,7 +272,7 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['notes']['status'] = 'success';
 
-        $authPayment = $this->doAuthPayment($payment);
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
@@ -322,25 +337,28 @@ EOT;
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function makeAsyncCallbackAndGetContent($upiEntity, $payment, Closure $closure = null)
+    /**
+     * TODO: Move this test to Payment Test
+     * But we can only do that once we have sharp support for async
+     */
+    public function testAsyncPaymentAutoCaptured()
     {
-        $server = $this->mockServer();
+        $this->ba->privateAuth();
 
-        if ($closure !== null)
-        {
-            $server = $this->mockServerContentFunction($closure);
-        }
+        $res = $this->startTest($this->testData['testCreateAutoCaptureOrder']);
 
-        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
+        $this->payment['order_id'] = $res['id'];
 
-        $request = [
-            'url'    => '/callback/upi_icici',
-            'method' => 'post',
-            'raw'    => $content
-        ];
+        $payment = $this->testPaymentWithS2S(true);
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('captured', $payment['status']);
 
-        return $response;
+        $response = $this->getPaymentStatus($payment['id']);
+
+        $this->assertEquals([
+            'razorpay_payment_id',
+            'razorpay_order_id',
+            'razorpay_signature'],
+        array_keys($response));
     }
 }

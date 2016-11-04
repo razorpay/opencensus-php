@@ -96,12 +96,37 @@ class PublicCollection extends Collection
         return $dictionary;
     }
 
+    public function getStringAttributesByKey($field = null, $items = null)
+    {
+        $items = is_null($items) ? $this->items : $items;
+
+        $dictionary = array();
+
+        foreach ($items as $value)
+        {
+            $key = is_null($field) ? $value->getKey() : $value->getAttribute($field);
+
+            $dictionary[$key] = array_map('strval', $value->getAttributes());
+        }
+
+        return $dictionary;
+    }
+
     public function filterEntitiesFromEntityIds($entityIds)
     {
         $filteredEntities = $this->only($entityIds)->items;
 
         // This is required to remove all null entries from the array
         return array_filter($filteredEntities);
+    }
+
+    public function callOnEveryItem($function)
+    {
+        return array_map(function($item) use ($function)
+        {
+            return $item->$function();
+
+        }, $this->items);
     }
 
     protected function itemsToArrayPublic()

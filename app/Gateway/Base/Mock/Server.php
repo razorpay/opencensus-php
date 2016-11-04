@@ -5,8 +5,7 @@ namespace RZP\Gateway\Base\Mock;
 use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use Request;
-use Requests_Response;
+use RZP\Models\Payment;
 
 class Server
 {
@@ -18,6 +17,15 @@ class Server
 
     protected $app;
 
+    protected $trace;
+
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
     /**
      * Namespace of the current gateway server
      * @var string
@@ -26,9 +34,13 @@ class Server
 
     public function __construct()
     {
-        $this->request = Request::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->app     = App::getFacadeRoot();
+        $this->request = $this->app['request'];
+
+        $this->route = $this->app['api.route'];
+
+        $this->trace = $this->app['trace'];
     }
 
     protected function authorize($input)
@@ -149,6 +161,16 @@ class Server
         return $this->validator;
     }
 
+    public function processSoap($input, $location, $action)
+    {
+        $wsdlFile = $this->getWsdlFile();
+
+        $server = new SoapServer($wsdlFile);
+        $server->setObject($this);
+
+        return $server->handle($input);
+    }
+
     protected function getRepo()
     {
         $class = $this->getGatewayNamespace() . '\Repository';
@@ -241,5 +263,10 @@ class Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function getSignedPaymentId($pid)
+    {
+        return Payment\Entity::getSignedId($pid);
     }
 }

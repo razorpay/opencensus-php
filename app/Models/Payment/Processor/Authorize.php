@@ -19,7 +19,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Action;
@@ -27,7 +26,6 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Error;
@@ -43,11 +41,7 @@ trait Authorize
      */
     protected $type;
 
-    protected $terminalSelector;
-
-    protected $terminalsSelected;
-
-    public function authorize($payment, $input)
+    public function authorize(Payment\Entity $payment, array $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
@@ -55,23 +49,18 @@ trait Authorize
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
-        $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->getTerminalsForPayment($payment);
+        $this->runPaymentInputValidations($payment, $input);
 
-        return $this->authorizeAcrossTerminals($gatewayInput, $payment, $input);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+        return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
-    protected function getTerminalsForPayment($payment)
+    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
     {
-        $this->terminalSelector = new Terminal\Selector($payment, $this->mode);
-
-        $this->terminalsSelected = $this->terminalSelector->selectTerminals();
-    }
-
-    protected function authorizeAcrossTerminals($gatewayInput, $payment, $input)
-    {
-        $totalTerminals = count($this->terminalsSelected);
+        $totalTerminals = count($this->selectedTerminals);
 
         $maxRetryAttempts = min($totalTerminals, self::MAX_RETRY_ATTEMPTS);
 
@@ -93,31 +82,35 @@ trait Authorize
         {
             $terminalGatewayInput = $gatewayInput;
 
-            $currentTerminal = $this->terminalsSelected[$retryAttempts];
+            $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             $payment->associateTerminal($currentTerminal);
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            // data for payment analytics
-            $rawData = [
-                            'payment_id' => $payment['id'],
-                            'input' => $input,
-                            'terminal_id' => $payment['terminal_id']
-                        ];
+            $segmentCustomProps = [
+                'selected_terminal' => $currentTerminal->getId(),
+                'retry_attempt' => $retryAttempts
+            ];
+
+            $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $this->createAnalyticsLog($rawData);
+                $this->createAnalyticsLog($payment);
 
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
 
                 return $request;
             }
 
-            $terminalData = $rawData;
-
-            $terminalData['start'] = microtime(true);
+            // data for terminal analytics
+            $terminalData = [
+                            'payment_id'    => $payment['id'],
+                            'input'         => $input,
+                            'terminal_id'   => $payment['terminal_id'],
+                            'start'         => microtime(true),
+                        ];
 
             try
             {
@@ -158,12 +151,12 @@ trait Authorize
             {
                 $terminalData['end'] = microtime(true);
 
-                $this->recordTerminalAudit($terminalData);
+                $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
 
                 if (($retry === false) or
                     ($retryAttempts >= $maxRetryAttempts))
                 {
-                    $this->createAnalyticsLog($rawData);
+                    $this->createAnalyticsLog($payment);
                 }
             }
         }
@@ -182,6 +175,8 @@ trait Authorize
 
         $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
 
+        $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
+
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
                 ($e->getSafeRetry() === true));
@@ -196,15 +191,8 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount($payment)
     {
-        // Ignore the pricing rule not found exception for authorization.
+        // try calculating the fees, throws exception if fees is more than amount
         list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        if ($payment->getAmount() < $fee)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
-        }
     }
 
     protected function processAuthResponse($request, $payment)
@@ -249,6 +237,8 @@ trait Authorize
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             ['payment_id' => $payment->getId()]);
 
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
+
         $this->runAuthorizeFailedTransaction($payment);
 
         $this->traceAuthorizeFailedOperationData($payment);
@@ -267,7 +257,7 @@ trait Authorize
      * @return array $payment
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function forceAuthorizeFailedPayment($payment, $input)
+    public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = [])
     {
         $this->setPayment($payment);
 
@@ -282,6 +272,8 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'Can force authorize only on axis migs gateway');
         }
+
+        $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
         {
@@ -314,29 +306,84 @@ trait Authorize
         return $payment->reload()->toArrayAdmin();
     }
 
-
-    /**
-     * It does the following -
-     * Verifies payment method, if it's enabled for the merchant or not.
-     * Saves card entities, bank account, etc.
-     * Selects a terminal, based on the gateway.
-     * Validates if international is allowed or not.
-     *
-     * @param RZP /Models/Payment/Entity $payment Payment entity that needs to be processed.
-     * @param array $input Input data received from checkout/merchant.
-     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
-     * @return array
-     * @throws Exception\BadRequestException
-     * @throws Exception\RuntimeException
-     */
-    protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
+    protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
-        // also sets the card details in $gatewayInput (passed by reference), if applicable.
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+        $this->validateCardAndCvv($payment, $input);
 
-        $this->verifyPaymentMethodEnabled($payment, $input);
+        $this->validateRecurringIfApplicable($payment, $input);
 
-        return $gatewayInput;
+        $this->validateS2SIfApplicable($payment);
+
+        $this->verifyPaymentMethodEnabled($payment);
+    }
+
+    protected function validateS2SIfApplicable(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        // We need to check if S2S is enabled only if the payment create
+        // call has been made via private auth.
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            return;
+        }
+
+        // For first recurring payments, if it's coming via private auth, the merchant
+        // should have S2S enabled, along with recurring.
+        // For second recurring payments, if it's coming via private auth, the merchant
+        // need not have S2S enabled. The merchant needs to be enabled only for recurring.
+        if ($payment->isSecondRecurring() === true)
+        {
+            return;
+        }
+
+        if ($payment->isWallet())
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+        }
+        else
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+        }
+    }
+
+    protected function validateRecurringIfApplicable(Payment\Entity $payment, array $input)
+    {
+        $recurring = $payment->isRecurring();
+
+        if ($recurring === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        // Ensure that the merchant is allowed to do recurring payments.
+        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+
+        // Validate that the card supports recurring
+        $this->validateRecurringCard($payment);
+
+        // The first recurring will be on public auth for non-S2S enabled merchants.
+        // The second recurring MUST always be via private auth.
+        // But, if token IS PRESENT, it could just mean a different recurring payment
+        // with the same token. It need not necessarily be the initial recurring payment
+        // for which the token was created in the first place. Hence, here, second recurring
+        // is not really second recurring and could be in fact first recurring only.
+        if ((empty($input[Payment\Entity::TOKEN]) === false) and
+            ($payment->isSecondRecurring() === true))
+        {
+            $this->verifyPrivateAuth();
+        }
+    }
+
+    protected function validateRecurringCard(Payment\Entity $payment)
+    {
+        if ($payment->card->isRecurringSupported() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+        }
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
@@ -354,6 +401,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
         //
         // Call gateway input
@@ -362,49 +410,25 @@ trait Authorize
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+
         if ($payment->order)
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
-    }
 
-    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
-    {
-        $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
-
-        $terminalPickedId = $terminalPicked->getId();
-
-        if ($terminalSelected)
+        // set token for local card saving in gateway input
+        if ($payment->getTokenId() !== null)
         {
-            $terminalSelectedId = $terminalSelected->getId();
-
-            if ($terminalSelectedId === $terminalPickedId)
-            {
-                $terminalSelectionStatus = 'TERMINAL_SELECTION_MATCH';
-            }
-        }
-        else
-        {
-            $terminalSelectedId = '';
+            $gatewayInput['token'] = $payment->localToken;
         }
 
-        $traceData = [
-            'picked'     => $terminalPickedId,
-            'selected'   => $terminalSelectedId,
-            'status'     => $terminalSelectionStatus,
-            'payment_id' => $payment->getId(),
+        $customProperties = [
+            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
+            'callbackUrl' => $this->getCallbackUrl()
         ];
 
-        if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
-        {
-            $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
-
-            $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
-        }
-        else
-        {
-            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
-        }
+        $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -482,6 +506,10 @@ trait Authorize
 
             if ($flag === false)
             {
+                $this->segment->trackPayment($payment,
+                                                    TraceCode::PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
@@ -491,6 +519,10 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
+                $this->segment->trackPayment($payment,
+                                                    TraceCode::PAYMENT_ALREADY_AUTHORIZED,
+                                                    $data);
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
                     null,
@@ -510,9 +542,57 @@ trait Authorize
         });
     }
 
-    protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
+    protected function verifyMerchantFeatures(Payment\Entity $payment, array $input)
     {
-        $this->checkAndFillSavedAppToken($input);
+        $merchant = $payment->merchant;
+
+        if ($payment->isRecurring() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        }
+
+        if ((empty($input[Payment\Entity::TOKEN]) === false) and
+            ($payment->isSecondRecurring() === true))
+        {
+            $this->verifyPrivateAuth();
+        }
+        else if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            if ($payment->isWallet())
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            }
+            else
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            }
+        }
+    }
+
+    protected function verifyPrivateAuth()
+    {
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
+        }
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param array $input Input data received from checkout/merchant.
+     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     */
+    protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
+    {
+        //
+        // Either the customer ID or the app token ID is required to get the customer.
+        // Hence, fill the app token in the input if customer ID is not present.
+        //
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $this->checkAndFillSavedAppToken($input);
+        }
 
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
@@ -549,29 +629,40 @@ trait Authorize
         {
             $payment->setSave(false);
 
-            $vault = $payment->isMethod(Payment\Method::EMI);
+            $payment->setRecurring(false);
+
+            $vault = $payment->isEmi();
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
         }
     }
 
-    protected function preProcessPaymentForLocalCustomer($customer, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentForLocalCustomer(Customer\Entity $customer,
+                                                         Payment\Entity $payment,
+                                                         array & $input,
+                                                         array & $gatewayInput)
     {
         $this->payment->customer()->associate($customer);
 
-        // if token is set, payment is from a saved card
+        //
+        // if token is set, payment is either from a saved card or is second recurring
+        // else, the card needs to be saved or need to mark the payment as recurring (first recurring)
+        //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
-            // Does processing like creating card entity, saving card if passed in the input, etc..
             $this->preProcessPaymentFromUserDataLocal($customer, $payment, $input, $gatewayInput);
         }
     }
 
-    protected function preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
+                                                          Customer\AppToken\Entity $customerApp,
+                                                          Payment\Entity $payment,
+                                                          array & $input,
+                                                          array & $gatewayInput)
     {
         $this->payment->app()->associate($customerApp);
 
@@ -589,31 +680,37 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedCardLocal($customer, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentFromSavedCardLocal(Customer\Entity $customer,
+                                                           Payment\Entity $payment,
+                                                           array & $input,
+                                                           array & $gatewayInput)
     {
         $this->trace->info(
             TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
             [
-                'token' => $input[Payment\Entity::TOKEN]
+                'token_id' => $input[Payment\Entity::TOKEN]
             ]);
 
         $tokenId = $input[Payment\Entity::TOKEN];
 
-        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
+        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
-            $payment->token()->associate($token);
+            $payment->localToken()->associate($token);
 
-            $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
+            $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
         else
         {
-            //TODO for netbanking/wallets
+            // @todo for netbanking/wallets
         }
     }
 
-    protected function preProcessPaymentFromSavedCardGlobal($customer, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
+                                                            Payment\Entity $payment,
+                                                            array & $input,
+                                                            array & $gatewayInput)
     {
         $this->trace->info(
             TraceCode::PAYMENT_PROCESS_FROM_SAVED_GLOBAL,
@@ -624,7 +721,7 @@ trait Authorize
         // Token should definitely exist in database.
         $tokenId = $input[Payment\Entity::TOKEN];
 
-        $token = (new Token\Core)->getByTokenAndCustomer($tokenId, $customer);
+        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -646,10 +743,15 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromUserDataLocal($customer, $payment, $input, & $gatewayInput)
+    protected function preProcessPaymentFromUserDataLocal(Customer\Entity $customer,
+                                                          Payment\Entity $payment,
+                                                          array $input,
+                                                          array & $gatewayInput)
     {
-        // Flow if card details are entered with save set to true/false
-        $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
+        // If save is set to true or recurring is set to true,
+        // we save the card details while processing the payment
+        $saveMethod = (($payment->getSave() === true) or
+                       ($payment->isRecurring() === true));
 
         if ($saveMethod === false)
         {
@@ -661,10 +763,13 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromUserDataGlobal($customer, $payment, $input, & $gatewayInput)
+    protected function preProcessPaymentFromUserDataGlobal(Customer\Entity $customer,
+                                                           Payment\Entity $payment,
+                                                           array $input,
+                                                           array & $gatewayInput)
     {
         // Flow if card details are entered with save set to true/false
-        $saveMethod = ((isset($input['save'])) and (boolval($input['save']) === true));
+        $saveMethod = $payment->getSave();
 
         if ($saveMethod === false)
         {
@@ -676,7 +781,10 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethodLocal($customer, $payment, $input, array & $gatewayInput)
+    protected function savePaymentMethodLocal(Customer\Entity $customer,
+                                              Payment\Entity $payment,
+                                              array $input,
+                                              array & $gatewayInput)
     {
         // create local saved card and link to payment
         $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
@@ -688,11 +796,14 @@ trait Authorize
 
         if ($token !== null)
         {
-            $this->payment->token()->associate($token);
+            $this->payment->localToken()->associate($token);
         }
     }
 
-    protected function savePaymentMethodGlobal($customer, $payment, $input, array & $gatewayInput)
+    protected function savePaymentMethodGlobal(Customer\Entity $customer,
+                                               Payment\Entity $payment,
+                                               array $input,
+                                               array & $gatewayInput)
     {
         // create global saved card and link to payment
         $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
@@ -716,7 +827,7 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethod($customer, $payment, $savedCardId)
+    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId)
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
@@ -748,11 +859,11 @@ trait Authorize
             $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
 
+        $token = null;
+
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-
-            return $token;
         }
         catch (Exception\RecoverableException $e)
         {
@@ -766,14 +877,14 @@ trait Authorize
         return $token;
     }
 
-    protected function verifyPaymentMethodEnabled($payment, $input)
+    protected function verifyPaymentMethodEnabled($payment)
     {
         $paymentMethod = $payment->getMethod();
 
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
-                $this->verifyCardEnabledInLive($payment, $input);
+                $this->verifyCardEnabledInLive($payment);
                 break;
 
             case Payment\Method::NETBANKING:
@@ -785,7 +896,7 @@ trait Authorize
                 break;
 
             case Payment\Method::EMI:
-                $this->verifyEmiEnabled($input);
+                $this->verifyEmiEnabled($payment);
                 break;
 
             case Payment\Method::UPI:
@@ -800,7 +911,7 @@ trait Authorize
         }
     }
 
-    protected function setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration)
+    protected function setBankAndEmiPlanDetails(Payment\Entity $payment, $cardNumber, $emiDuration)
     {
         $iinEntity = $payment->card->iinRelation;
 
@@ -840,11 +951,6 @@ trait Authorize
 
     protected function checkAndFillSavedAppToken(array & $input)
     {
-        if (isset($input['customer_id']) === true)
-        {
-            return;
-        }
-
         if ($this->request->hasSession() === false)
         {
             return;
@@ -866,12 +972,7 @@ trait Authorize
         }
     }
 
-    protected function getMerchantCallbackUrl($payment)
-    {
-        return $this->payment->getCallbackUrl();
-    }
-
-    protected function getPaymentGatewayRequestData($request, $payment)
+    protected function getPaymentGatewayRequestData($request, Payment\Entity $payment)
     {
         if (Payment\Gateway::supportsAsync($payment->getGateway()))
         {
@@ -883,21 +984,28 @@ trait Authorize
 
     /**
      * @see  CoProto supports async payments https://github.com/razorpay/api/wiki/COPROTO
+     * @param $request
+     * @param Payment\Entity $payment
      * @return array payment response
      */
     protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
     {
         $id = $payment->getPublicId();
 
-        return [
+        $response = [
             'type'          => 'async',
             'version'       => 1,
             'payment_id'    => $id,
+            'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'request'       => [
-                'url'    => Route::getUrl('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
             ]
         ];
+
+        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+
+        return $response;
     }
 
     protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
@@ -918,6 +1026,16 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
+        $segmentData = $data;
+
+        // this might log sensitive data. Remove it
+        if (isset($segmentData['request']['content']))
+        {
+            unset($segmentData['request']['content']);
+        }
+
+        $this->segment->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
+
         return $data;
     }
 
@@ -926,6 +1044,14 @@ trait Authorize
         $payment = $this->payment;
 
         $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_TOKEN,
+            [
+                'payment_id'      => $payment->getId(),
+                'token_id'        => $payment->getTokenId(),
+                'global_token_id' => $payment->getGlobalTokenId()
+            ]);
 
         // update token stats, assuming same token is not getting used in
         // multiple payments, actually we should locking
@@ -936,6 +1062,14 @@ trait Authorize
             $token->setUsedAt($createdAt);
 
             $token->incrementUsedCount();
+
+            if (($token->isLocal()) and
+                ($payment->isCard()) and
+                ($payment->isRecurring() == true) and
+                ($token->isRecurring() === false))
+            {
+                $token->setRecurring(true);
+            }
 
             $this->repo->saveOrFail($token);
         }
@@ -983,7 +1117,7 @@ trait Authorize
      * @param  Payment\Entity $payment
      * @return array
      */
-    protected function processAuthorizeResponse($payment)
+    protected function processAuthorizeResponse(Payment\Entity $payment)
     {
         //
         // If callback url has been set, then we need to redirect
@@ -996,9 +1130,9 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
-        if ($payment->getAutoCaptured() === true)
+        if ($payment->getApiOrderId() !== null)
         {
-            $this->fillReturnDataForAutoCaptureOrders($payment, $returnData);
+            $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
         if ($payment->getCallbackUrl())
@@ -1009,7 +1143,7 @@ trait Authorize
         return $returnData;
     }
 
-    protected function fillReturnDataForAutoCaptureOrders($payment, & $data)
+    protected function fillReturnDataWithOrder(Payment\Entity $payment, & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
@@ -1073,7 +1207,7 @@ trait Authorize
             'error' => $payment->getErrorDetails(),
         );
 
-        $message = 'Payment failed earlier converte to authorized';
+        $message = 'Payment failed earlier converted to authorized';
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
@@ -1083,42 +1217,12 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
-    }
 
-    protected function rethrowFailedPaymentErrorException($payment)
-    {
-        $internalErrorCode = $payment->getInternalErrorCode();
-        $publicErrorCode = $payment->getErrorCode();
-        $errorDesc = $payment->getErrorDescription();
-
-        Error\Map::throwExceptionFromErrorDetails(
-            $publicErrorCode, $internalErrorCode, $errorDesc);
-
-        //
-        // If it has reached here, then an edge case occurred, for which
-        // a suitable exception was not found and which must be handled.
-        // So, we trace an error message, ringing alerts to our devs.
-        //
-
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
-
-        // If no appropriate exception mapping was found then show
-        // the usual message that payment already processed.
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
     }
 
 
-    protected function recordTerminalAudit($terminalData)
+    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, $retryAttempts)
     {
         try
         {
@@ -1154,10 +1258,18 @@ trait Authorize
             }
 
             (new TerminalAnalytics\Core)->create($log);
+
+            $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
+
+            $terminalStatus = ($tStatus === 1) ? TraceCode::TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
+
+            $log['retry_attempt'] = $retryAttempts;
+
+            $this->segment->trackPayment($payment, $terminalStatus, $log);
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(
+            $this->trace->error(
                 TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
                 ['terminalData' => $terminalData]
             );
@@ -1166,44 +1278,16 @@ trait Authorize
         }
     }
 
-    protected function createAnalyticsLog($rawData)
+    protected function createAnalyticsLog(Payment\Entity $payment)
     {
         try
         {
-            $log = [
-                AnalyticsEntity::PAYMENT_ID     => $rawData['payment_id'],
-                AnalyticsEntity::TERMINAL_ID    => $rawData['terminal_id'],
-            ];
-
-            $row = (new Analytics\Service)->createAuditLog($log, $rawData);
-
-            // log invalid data
-            $invalidData = [];
-
-            foreach ($row as $key => $value) {
-                if (Analytics\Metadata::isInvalidValue($value))
-                {
-                    $invalidData[$key] = $value;
-                }
-            }
-
-            if (empty($invalidData) === false)
-            {
-                $checkoutMetadataToLog = null;
-
-                if (isset($rawData['input']) and isset($rawData['input']['_']))
-                {
-                    $checkoutMetadataToLog = $rawData['input']['_'];
-                }
-
-                $this->trace->warning(TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
-                    ['invalid_data' => $invalidData,
-                     'raw_data'     => $checkoutMetadataToLog]);
-            }
+            $analyticsEntity = (new Analytics\Core)->create($payment);
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
+            $this->trace->traceException($e, Trace::WARNING,
+                TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
 
@@ -1219,7 +1303,7 @@ trait Authorize
      * @param  array $input
      * @return boolean
      */
-    protected function canRunOtpPaymentFlow($payment, $input)
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input)
     {
         $wallet = $payment->getWallet();
 
@@ -1251,35 +1335,22 @@ trait Authorize
         return true;
     }
 
-    protected function runOtpPaymentFlow($gatewayInput, $payment)
+    protected function runOtpPaymentFlow(array $gatewayInput, Payment\Entity $payment)
     {
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 
-    protected function callGatewayOtpGenerate($data, $payment)
+    protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
     {
         try
         {
             $this->type = 'otp_generate';
 
-            $this->callGatewayFunction('otpGenerate', $data);
+            $data['otp_resend'] = $otpResend;
 
-            $payment->incrementOtpCount();
-            $payment->save();
+            $request = $this->callGatewayFunction('otpGenerate', $data);
 
-            return array(
-                'type' => 'otp',
-                'request' => [
-                    'url' => $this->getOtpSubmitUrl(),
-                    'method' => 'post',
-                ],
-                'version' => 1,
-                'payment_id' => $payment->getPublicId(),
-                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
-                // TODO: Return metadata in a better format
-                'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount()/100), 2),
-            );
+            return $this->processOtpFlowResponse($request, $payment);
         }
         catch (Exception\BaseException $e)
         {
@@ -1289,24 +1360,44 @@ trait Authorize
         }
     }
 
-    protected function createCardEntity(array $cardInput, $vault, $merchant)
+    protected function processOtpFlowResponse($request, $payment): array
+    {
+        if ($request !== null)
+        {
+            $payment->incrementOtpCount();
+
+            $payment->save();
+
+            $response = [
+                'type' => 'otp',
+                'request' => $request,
+                'version' => 1,
+                'payment_id' => $payment->getPublicId(),
+                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+                // TODO: Return metadata in a better format
+                'contact' => $payment->getContact(),
+                'amount'  => number_format(($payment->getAmount()/100), 2),
+                'wallet'  => $payment->getWallet()
+            ];
+
+            $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+
+            return $response;
+        }
+    }
+
+    protected function createCardEntity(array $cardInput, $vault, Merchant\Entity $merchant)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
 
-        if ($vault)
+        if ($vault === true)
         {
-            $vaultToken = Card\Tokenex::getVaultToken($cardInput['number']);
-
-            if (empty($vaultToken) === false)
-            {
-                $cardInput[Card\Entity::VAULT_TOKEN] = $vaultToken;
-                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
-            }
+            $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
         }
 
-        $cardCore = new Card\Core();
+        $cardCore = new Card\Core;
 
         $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
 
@@ -1326,12 +1417,22 @@ trait Authorize
 
     }
 
-    protected function getCardArrayForSavedToken($token, $input)
+    /**
+     * creates gateway input using saved card token, this method is used for
+     * local card saving and we can associate the same card with the payment
+     * @param $token
+     * @param $input
+     * @return
+     * @throws \Exception
+     */
+    protected function associateAndGetCardArrayForSavedToken($token, array & $input)
     {
         $card = $token->card;
 
         $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
-        $cvv = $input['card']['cvv'];
+
+        // Recurring terminals accept null cvv.
+        $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
         $this->payment->card()->associate($card);
 
@@ -1343,17 +1444,27 @@ trait Authorize
                 ]);
     }
 
-    protected function createCardEntityFromSavedToken($token, $input)
+    /**
+     * creates gateway input using saved card token, this method is used for
+     * global card saving. we need to create a new card entity for merchant
+     * and associate with the payment
+     * @param $token
+     * @param array $input
+     * @return
+     * @throws \Exception
+     */
+    protected function createCardEntityFromSavedToken($token, array & $input)
     {
         $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
-        $cvv = $input['card']['cvv'];
+
+        $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
         $savedCard = $token->card->toArray();
         $savedCard['number'] = $cardNumber;
         $savedCard['cvv'] = $cvv;
 
         //create a card entity for merchant
-        $cardCore = new Card\Core();
+        $cardCore = new Card\Core;
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
@@ -1367,7 +1478,7 @@ trait Authorize
             ]);
     }
 
-    protected function verifyBankEnabled($payment)
+    protected function verifyBankEnabled(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
 
@@ -1379,12 +1490,17 @@ trait Authorize
 
         if (in_array($paymentBank, $merchantBanks) === false)
         {
+            $customProperties = [
+                'merchant_banks' => $merchantBanks,
+                'payment_bank' => $paymentBank,
+            ];
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
-    protected function verifyWalletEnabled($payment)
+    protected function verifyWalletEnabled(Payment\Entity $payment)
     {
         $merchantMethods = $this->methods;
 
@@ -1398,7 +1514,7 @@ trait Authorize
         }
     }
 
-    protected function verifyEmiEnabled($input)
+    protected function verifyEmiEnabled(Payment\Entity $payment)
     {
         $merchantMethods = $this->methods;
 
@@ -1409,7 +1525,7 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
 
-        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
     }
 
     protected function verifyUpiEnabled()
@@ -1424,13 +1540,13 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($payment, $input)
+    protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
         $card = $payment->card;
 
         $merchantMethods = $this->methods;
 
-        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $input['card']);
+        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $card);
 
         // Only check enabled or not on live mode
         if ($this->mode === Mode::TEST)
@@ -1463,33 +1579,37 @@ trait Authorize
         }
     }
 
+    protected function verifyFeatureForMerchant(Merchant\Entity $merchant, $feature)
+    {
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    "$feature is not supported");
+        }
+    }
+
+    protected function validateCardAndCvv(Payment\Entity $payment, array $input)
+    {
+        // if not recurring, validate that card data and cvv in card data is present
+        if (($payment->isRecurring() === false) and
+            ($payment->getTokenId() !== null) and
+            ($payment->localToken->isRecurring() === false))
+        {
+            $payment->getValidator()->validateCardAndCvv($input);
+        }
+    }
+
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
     {
-        if (isset($card['number']) === false)
-        {
-            return;
-        }
-
         $amex = $methods->getAmex();
 
-        $cardNumber = $card['number'];
-
-        $prefix = substr($cardNumber, 0, 2);
-
-        if ((($prefix === '34') or ($prefix === '37')) and
+        if (($card->isAmex() === true) and
             ($amex === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
                 'number');
         }
-    }
-
-    protected function savePaymentAndCard()
-    {
-        $this->repo->saveOrFail($this->payment->card);
-
-        $this->repo->saveOrFail($this->payment);
     }
 
     protected function updatePaymentAuthorized($wasFailed = false)
@@ -1539,11 +1659,15 @@ trait Authorize
             // set the order to be paid
             $this->updateAuthorizedOrderStatus($payment);
 
+            $customProperties = $payment->toArrayTraceRelevant();
+
+            $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
     }
 
-    protected function isGatewayActuallyAuthorizingPayment($payment)
+    protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)
     {
         $gateway = $payment->getGateway();
 
@@ -1591,7 +1715,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }
@@ -1600,7 +1724,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+        $otpSubmitUrl = $this->route->getUrlWithPublicAuth('payment_otp_submit', $params);
 
         return $otpSubmitUrl;
     }

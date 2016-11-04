@@ -50,9 +50,10 @@ trait Enroll
         $network = $input['card']['network_code'];
 
         // Only required in case of Rupay
-        if ($network === Card\Network::RUPAY)
+        if (($network === Card\Network::RUPAY) and
+            ($this->proxyEnabled === true))
         {
-            $this->enrollRequest['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+            $this->enrollRequest['options']['proxy'] = $this->proxy;
         }
 
         //
@@ -177,6 +178,9 @@ trait Enroll
             $data['merchantResponseUrl'] = $url;
             $data['merchantErrorUrl'] = $url;
         }
+
+        // This is crucial, please do not remove it
+        unset($this->enrollRequest['content']);
     }
 
     /**

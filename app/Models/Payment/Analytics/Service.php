@@ -11,22 +11,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createAuditLog($log, $rawData)
-    {
-        (new Analytics\Parser)->recordPaymentRequestData($rawData, $log);
-
-        $action = (new Analytics\Core)->create($log);
-
-        return $action->toArrayPublic();
-    }
-
-    public function getAuditsForTerminal($id)
-    {
-        $audits = $this->repo->payment_analytics->findForTerminal($id);
-
-        return $audits->toArrayPublic();
-    }
-
     public function getAuditsForPayment($id)
     {
         $audits = $this->repo->payment_analytics->findForPayment($id);
@@ -34,17 +18,16 @@ class Service extends Base\Service
         return $audits->toArrayPublic();
     }
 
-    public function getAuditsForPaymentAndTerminal($paymentId, $terminalId)
+    // set the payment request as s2s for analytics
+    public function setMetadataForS2SPayment($input)
     {
-        $audits = $this->repo->payment_analytics->findForPayment($paymentId, $terminalId);
+        $input['_'] = isset($input['_']) ? $input['_'] : [];
 
-        return $audits->toArrayPublic();
-    }
+        if (isset($input['_'][Entity::LIBRARY]) === false)
+        {
+            $input['_'][Entity::LIBRARY] = Metadata::DIRECT;
+        }
 
-    public function getAuditsForTerminalBetween($from, $to, $id)
-    {
-        $audits = $this->repo->payment_analytics->findBetweenTimestampsForTerminal($from, $to, $id);
-
-        return $audits->toArrayPublic();
+        return $input;
     }
 }

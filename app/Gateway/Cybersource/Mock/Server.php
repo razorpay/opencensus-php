@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Cybersource\Mock;
 
+use DOMDocument;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
@@ -13,6 +14,52 @@ use RZP\Gateway\Cybersource;
 class Server extends Base\Mock\Server
 {
     protected $repo;
+
+    protected function getWsdlFile()
+    {
+        return dirname(__DIR__) . '/Wsdl/cybstest.wsdl.xml';
+    }
+
+    // Dummy function for mock soap client
+    public function Security($header)
+    {
+
+    }
+
+    public function runTransaction($request)
+    {
+        $request = json_decode(json_encode($request), true);
+
+        switch(true)
+        {
+            case isset($request['payerAuthEnrollService']):
+                $action = 'auth_enroll';
+                break;
+
+            case isset($request['payerAuthValidateService']):
+                $action = 'auth_validate';
+                break;
+
+            case isset($request['ccAuthService']):
+                $action = 'authorize';
+                break;
+
+            case isset($request['ccCaptureService']):
+                $action = 'capture';
+                break;
+
+            case isset($request['ccCreditService']):
+                $action = 'refund';
+                break;
+
+            default:
+                throw new Exception\LogicException('Unrecognized request type');
+        }
+
+        $action = camel_case($action);
+
+        return $this->{$action}($request);
+    }
 
     public function authorize($input)
     {
@@ -32,9 +79,9 @@ class Server extends Base\Mock\Server
         return $this->getCaptureResponse($input);
     }
 
-    public function enroll($input)
+    public function authEnroll($input)
     {
-        $this->validateActionInput($input, 'enroll');
+        $this->validateEnrollInput($input);
 
         return $this->getEnrollResponse($input);
     }
@@ -45,15 +92,20 @@ class Server extends Base\Mock\Server
 
         $response = array();
 
+        $this->content($input);
+
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
-        $response['requestID'] = '4661549029556297301014';
-        $response['merchantReferenceCode'] = 'razorpay';
+        $response['requestID'] = '46614684554' . random_int(10000000, 99999999);
+        $response['requestToken'] = 'Ahj/7wSTAcEZoFEIuaqZcxzajCZxNLabo68ZU+moqPpXZM4CUVH0rsmcs' . \Str::quickRandom(15);
+        $response['merchantReferenceCode'] = $input['merchantReferenceCode'];
 
         $ccCreditReply = array();
-        $ccCreditReply['reconciliationID'] = 'razorpay';
+        $ccCreditReply['reconciliationID'] = $input['merchantReferenceCode'];
+        $ccCreditReply['reasonCode'] = Cybersource\Result::SUCCESS;
+        $ccCreditReply['amount'] = $input['purchaseTotals']['grandTotalAmount'] / 100;
+        $ccCreditReply['requestDateTime'] = \Carbon\Carbon::now()->format('Y-m-d\TH:i:s\Z');
 
-        $response['ccCreditReply'] = $ccCreditReply;
         $response['ccCreditReply'] = $ccCreditReply;
 
         return $response;
@@ -87,10 +139,13 @@ class Server extends Base\Mock\Server
 
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
-        $response['requestID'] = '4661468455476856801016';
+        $response['requestID'] = '46614684554' . random_int(10000000, 99999999);
+        $response['requestToken'] = 'Ahj/7wSTAcEZoFEIuaqZcxzajCZxNLabo68ZU+moqPpXZM4CUVH0rsmcs' . \Str::quickRandom(15);
+
 
         $ccCaptureReply = array();
-        $ccCaptureReply['reconciliationID'] = $input['merchantReferenceCode'];;
+        $ccCaptureReply['reconciliationID'] = $input['merchantReferenceCode'];
+        $ccCaptureReply['reasonCode'] = Cybersource\Result::SUCCESS;
 
         $response['ccCaptureReply'] = $ccCaptureReply;
 
@@ -103,6 +158,8 @@ class Server extends Base\Mock\Server
 
         $response['decision'] = 'ACCEPT';
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
+        $response['requestID'] = '46614684554' . random_int(10000000, 99999999);
+        $response['requestToken'] = 'Ahj/7wSTAcEZoFEIuaqZcxzajCZxNLabo68ZU+moqPpXZM4CUVH0rsmcs' . \Str::quickRandom(15);
 
         $payerAuthValidateReply = array();
         $payerAuthValidateReply['eci'] = '05';
@@ -110,6 +167,7 @@ class Server extends Base\Mock\Server
         $payerAuthValidateReply['paresStatus'] = 'Y';
         $payerAuthValidateReply['commerceIndicator'] = 'Internet';
         $payerAuthValidateReply['cavv'] = '1';
+        $payerAuthValidateReply['reasonCode'] = Cybersource\Result::SUCCESS;
 
         if ($input['card']['accountNumber'] === '4111460212312338')
         {
@@ -125,14 +183,70 @@ class Server extends Base\Mock\Server
 
     protected function getEnrollAuthorizeResponse($input)
     {
+        if ((isset($input['ccAuthService']['commerceIndicator']) === true) and
+            ($input['ccAuthService']['commerceIndicator'] === 'recurring'))
+        {
+            return [
+                'merchantReferenceCode' => "64VOYMNaWmKfQv",
+                'requestID' => "4707408464166875104008",
+                'decision' => "ACCEPT",
+                'reasonCode' => 100,
+                'requestToken' => "Ahj/7wSR/mDU4ntLegYQ5lmjdg3aMHDRs0Ytmzhu1YsGjBg4S36dGFvgFLfp0YW+WQPkYToZNJMt0gPFojgGkf5g1OJ7S3oGEAAA/wYA",
+                'purchaseTotals' => [
+                    'currency' => "INR",
+                ],
+                'ccAuthReply' => [
+                    'reasonCode' => 100,
+                    'amount' => "1.00",
+                    'authorizationCode' => "831000",
+                    'avsCode' => "Y",
+                    'avsCodeRaw' => "Y",
+                    'authorizedDateTime' => "2016-08-09T11:07:26Z",
+                    'processorResponse' => "00",
+                    'reconciliationID' => "4707408464166875104008",
+                    'merchantAdviceCode' => "01",
+                    'merchantAdviceCodeRaw' => "M001",
+                    'cavvResponseCode' => "2",
+                    'cavvResponseCodeRaw' => "2",
+                    'paymentNetworkTransactionID' => "016153570198200",
+                ],
+                'receiptNumber' => "166565",
+                'additionalData' => "ABC",
+            ];
+        }
+
         $response = array();
 
-        $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Cybersource\Result::SUCCESS;
-        $response['requestID'] = '4661454138166750401025';
+        $result = Cybersource\Result::SUCCESS;
+        $decision = 'ACCEPT';
+
+        if ($input['card']['accountNumber'] === '4000000000000002')
+        {
+            $decision = 'REJECT';
+            $result = 203;
+        }
+
+        $response['decision'] = $decision;
+        $response['reasonCode'] = $result;
+        $response['requestID'] = '46614684554' . random_int(10000000, 99999999);
+        $response['requestToken'] = 'Ahj/7wSTAcEZoFEIuaqZcxzajCZxNLabo68ZU+moqPpXZM4CUVH0rsmcs' . \Str::quickRandom(15);
 
         $ccAuthReply = array();
         $ccAuthReply['reconciliationID'] = $input['ccAuthService']['reconciliationID'];
+        $ccAuthReply['reasonCode'] = Cybersource\Result::SUCCESS;
+        $ccAuthReply['authorizationCode'] = random_int(100000, 999999);
+        $ccAuthReply['authorizedDateTime'] = \Carbon\Carbon::now()->format('Y-m-d\TH:i:s\Z');
+        $ccAuthReply['avsCode'] = 'G';
+        $ccAuthReply['avsCodeRaw'] = 'G';
+        $ccAuthReply['avsCodeRaw'] = 'G';
+        $ccAuthReply['cardCategory'] = 'M';
+        $ccAuthReply['cardGroup'] = '0';
+        $ccAuthReply['cvCode'] = 'M';
+        $ccAuthReply['cvCodeRaw'] = 'M';
+        $ccAuthReply['paymentNetworkTransactionID'] = strtoupper(\Str::random(8));
+        $ccAuthReply['processorResponse'] = '00';
+        $ccAuthReply['reconciliationID'] = $input['merchantReferenceCode'];
+
 
         $response['ccAuthReply'] = $ccAuthReply;
 
@@ -143,11 +257,11 @@ class Server extends Base\Mock\Server
     {
         $response = array();
 
-        $payerAuthEnrollReply = array();
-        $response['payerAuthEnrollReply'] = $payerAuthEnrollReply;
+        $response['payerAuthEnrollReply'] = [];
 
-        $response['merchantReferenceCode'] = 'razorpay';
-        $response['requestID'] = '4661468455476856801012';
+        $response['merchantReferenceCode'] = $request['merchantReferenceCode'];
+        $response['requestID'] = '46614684554' . random_int(10000000000, 99999999999);
+        $response['requestToken'] = 'Ahj/7wSTAcEZoFEIuaqZcxzajCZxNLabo68ZU+moqPpXZM4CUVH0rsmcs' . \Str::quickRandom(15);
 
         switch ($request['card']['accountNumber'])
         {
@@ -160,10 +274,11 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
                 $params = array('gateway' => 'cybersource');
-                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['acsURL'] = $this->route->getUrl('mock_cybersource_acs', $params);
                 $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
                 $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                $response['payerAuthEnrollReply']['reasonCode'] = Cybersource\Result::ENROLLED;
                 break;
 
             case '4111460212312338':
@@ -171,10 +286,11 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
                 $params = array('gateway' => 'cybersource');
-                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['acsURL'] = $this->route->getUrl('mock_cybersource_acs', $params);
                 $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
                 $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                $response['payerAuthEnrollReply']['reasonCode'] = Cybersource\Result::ENROLLED;
                 break;
 
             case '4280951000002433':
@@ -184,7 +300,6 @@ class Server extends Base\Mock\Server
                     'reasonCode' => 101
                 ];
                 $response['missingField'] = 'c:authRequestID';
-                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
                 break;
 
             case '4000400000000004':
@@ -194,10 +309,9 @@ class Server extends Base\Mock\Server
                     'reasonCode' => 151
                 ];
 
-                $response['merchantReferenceCode'] = '5vrAvHg6CqQlkS';
+                $response['merchantReferenceCode'] = $request['merchantReferenceCode'];
                 $response['missingField'] = 'c:authRequestID';
                 $response['requestID'] = '4690000690226079802108';
-                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
                 break;
 
             case '555555555555558':
@@ -205,16 +319,42 @@ class Server extends Base\Mock\Server
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
                 $response['payerAuthEnrollReply']['veresEnrolled'] = 'U';
+                $response['payerAuthEnrollReply']['reasonCode'] = Cybersource\Result::SUCCESS;
                 $response['payerAuthEnrollReply']['commerceIndicator'] = 'spa';
                 $response['payerAuthEnrollReply']['ucafCollectionIndicator'] = '1';
+                $response['payerAuthEnrollReply']['authorizationCode'] = random_int(100000, 999999);
+                $response['payerAuthEnrollReply']['authorizedDateTime'] = \Carbon\Carbon::now()->format('Y-m-d\TH:i:s\Z');
+                $response['payerAuthEnrollReply']['avsCode'] = 'G';
+                $response['payerAuthEnrollReply']['avsCodeRaw'] = 'G';
+                $response['payerAuthEnrollReply']['avsCodeRaw'] = 'G';
+                $response['payerAuthEnrollReply']['cardCategory'] = 'M';
+                $response['payerAuthEnrollReply']['cardGroup'] = '0';
+                $response['payerAuthEnrollReply']['cvCode'] = 'M';
+                $response['payerAuthEnrollReply']['cvCodeRaw'] = 'M';
+                $response['payerAuthEnrollReply']['paymentNetworkTransactionID'] = strtoupper(\Str::random(8));
+                $response['payerAuthEnrollReply']['processorResponse'] = '00';
+                $response['payerAuthEnrollReply']['reconciliationID'] = $request['merchantReferenceCode'];
                 break;
 
             default:
                 $response['decision'] = 'ACCEPT';
                 $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
+                $response['payerAuthEnrollReply']['reasonCode'] = Cybersource\Result::SUCCESS;
+                $response['payerAuthEnrollReply']['veresEnrolled'] = 'U';
                 $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
-                $response['payerAuthEnrollReply']['veresEnrolled']= 'U';
+                $response['payerAuthEnrollReply']['authorizationCode'] = random_int(100000, 999999);
+                $response['payerAuthEnrollReply']['authorizedDateTime'] = \Carbon\Carbon::now()->format('Y-m-d\TH:i:s\Z');
+                $response['payerAuthEnrollReply']['avsCode'] = 'G';
+                $response['payerAuthEnrollReply']['avsCodeRaw'] = 'G';
+                $response['payerAuthEnrollReply']['avsCodeRaw'] = 'G';
+                $response['payerAuthEnrollReply']['cardCategory'] = 'M';
+                $response['payerAuthEnrollReply']['cardGroup'] = '0';
+                $response['payerAuthEnrollReply']['cvCode'] = 'M';
+                $response['payerAuthEnrollReply']['cvCodeRaw'] = 'M';
+                $response['payerAuthEnrollReply']['paymentNetworkTransactionID'] = strtoupper(\Str::random(8));
+                $response['payerAuthEnrollReply']['processorResponse'] = '00';
+                $response['payerAuthEnrollReply']['reconciliationID'] = $request['merchantReferenceCode'];
                 $response['payerAuthEnrollReply']['eci'] = '05';
                 break;
         }
@@ -312,3 +452,4 @@ class Server extends Base\Mock\Server
         return $response;
     }
 }
+

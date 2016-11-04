@@ -12,7 +12,7 @@ class TerminalTest extends TestCase
 
     public function setUp()
     {
-//        $this->testDataFilePath = __DIR__.'/helpers/TerminalData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/TerminalTestData.php';
 
         parent::setUp();
 
@@ -66,18 +66,14 @@ class TerminalTest extends TestCase
 
         $e = null;
 
-        try
-        {
+        $data = $this->testData['testDeleteTerminalAndDoPayment'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
             // Do a transaction which should throw an exception
             // because terminal is already soft-deleted
             $payment = $this->doAuthAndCapturePayment();
-        }
-        catch (RuntimeException $e)
-        {
-            ;
-        }
+        });
 
-        $this->assertNotNull($e, 'null or ' . get_class($e) . ' thrown when RuntimeException expected');
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
         $payment = $this->doAuthAndCapturePayment();

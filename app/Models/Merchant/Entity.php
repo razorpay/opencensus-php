@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
+    const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
@@ -45,8 +46,6 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = \RZP\Constants\Table::MERCHANT;
-
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -63,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::FEATURES,
         self::LOGO_URL,
         self::FEE_BEARER,
@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
@@ -97,12 +98,14 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::WEBSITE,
         self::CATEGORY,
+        self::CATEGORY2,
         self::INTERNATIONAL,
         self::FEE_BEARER,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
         self::BRAND_COLOR,
         self::RISK_RATING,
@@ -112,19 +115,20 @@ class Entity extends Base\PublicEntity
      );
 
     protected $defaults = array(
-        self::CATEGORY2             => null,
-        self::LIVE                  => false,
-        self::ACTIVATED             => false,
-        self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true,
-        self::HOLD_FUNDS            => false,
-        self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES              => Features::CARD_SAVING,
-        self::FEE_BEARER            => FeeBearer::PLATFORM,
-        self::BRAND_COLOR           => null,
-        self::RISK_RATING           => 3,
-        self::LOGO_URL              => null,
-        self::MAX_PAYMENT_AMOUNT    => null,
+        self::CATEGORY2              => null,
+        self::LIVE                   => false,
+        self::ACTIVATED              => false,
+        self::ACTIVATED_AT           => null,
+        self::RECEIPT_EMAIL_ENABLED  => true,
+        self::HOLD_FUNDS             => false,
+        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE_ID => null,
+        self::FEATURES               => Features::CARD_SAVING,
+        self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::BRAND_COLOR            => null,
+        self::RISK_RATING            => 3,
+        self::LOGO_URL               => null,
+        self::MAX_PAYMENT_AMOUNT     => null,
     );
 
     protected $publicSetters = array(
@@ -197,6 +201,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
     }
 
+    public function hasSchedule()
+    {
+        return ($this->getSettlementScheduleId() !== null);
+    }
+
     public function keys()
     {
         return $this->hasMany('RZP\Models\Key\Entity');
@@ -205,6 +214,12 @@ class Entity extends Base\PublicEntity
     public function pricing()
     {
         return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
     }
 
     public function payments()
@@ -486,7 +501,7 @@ class Entity extends Base\PublicEntity
         return $logoUrlBasedOnSize;
     }
 
-    public function getTransactionReportEmailAttribute()
+    protected function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 
@@ -560,6 +575,11 @@ class Entity extends Base\PublicEntity
     public function getSettlementSchedule()
     {
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
+    }
+
+    public function getSettlementScheduleId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_SCHEDULE_ID);
     }
 
     public function holdFunds()

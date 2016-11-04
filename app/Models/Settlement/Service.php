@@ -2,23 +2,17 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Gateway;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Kotak;
 
 class Service extends Base\Service
 {
-    public function gatewayMprReconcile($input)
-    {
-        $reconciler = new Mpr\Reconciler;
-
-        $txns = $reconciler->process($input);
-
-        return $txns->toArrayPublic();
-    }
-
     public function initiateSettlements($input, $channel = null)
     {
         $settler = new Settler();
@@ -26,11 +20,24 @@ class Service extends Base\Service
         return $settler->settle($input, $channel);
     }
 
-    public function gatewayMprGenerate($input)
+    public function initiateSettlementsV2($input, $channel)
     {
-        $generator = new Mpr\Generator($this->mode);
+        $data = (new Settlement\Processor)->process($input, $channel);
 
-        return $generator->generateTestMpr($input);
+        return $data;
+    }
+
+    public function generateSettlementFile($input)
+    {
+        $to = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $from = Carbon::now('Asia/Kolkata')->subDay(1)->timestamp;
+
+        $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
+
+        $urls = (new Kotak\Service)->generateSettlementFile($setls);
+
+        return $urls;
     }
 
     public function fetch($id)
@@ -109,9 +116,6 @@ class Service extends Base\Service
 
     public function deleteSetlFile($setlFileType)
     {
-        if ($setlFileType === 'hdfc_mpr')
-            return $this->app['gateway']->call(\RZP\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, Mode::TEST);
-
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 
