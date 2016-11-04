@@ -1,7 +1,9 @@
+import 'merchant/styles/layout.styl'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import NgRouterProvider from 'rzp/NgRouterProvider'
+import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
+import SessionProvider from './SessionProvider'
 import store from './store'
 
 import InvoicesList from './containers/Invoices/List'
@@ -23,7 +25,7 @@ window.ReactDOM = ReactDOM
  *  2. https://facebook.github.io/react/docs/context.html
  */
 
-function contextProvider({ component, ngRouter, store }) {
+function contextProvider({ component, ngRouter, store, user }) {
   return (props) => {
     return React.createElement(
       Provider,
@@ -31,20 +33,30 @@ function contextProvider({ component, ngRouter, store }) {
       React.createElement(
         NgRouterProvider,
         { ngRouter },
-        React.createElement(component, props)
+        React.createElement(
+          SessionProvider,
+          { user },
+          React.createElement(component, props)
+        )
       )
     )
   }
 }
 
 function createNgDirective(directiveName, component, ...args) {
-  app.directive(directiveName, ['reactDirective', '$state', (reactDirective, $state) => {
-    return reactDirective(contextProvider({
-      component,
-      ngRouter: $state,
-      store
-    }), ...args)
-  }])
+  app.directive(directiveName, [
+    'reactDirective',
+    '$state',
+    'user',
+    (reactDirective, $state, user) => {
+      return reactDirective(contextProvider({
+        component,
+        ngRouter: $state,
+        store,
+        user
+      }), ...args)
+    }
+  ])
 }
 
 createNgDirective('invoicesList', InvoicesList)

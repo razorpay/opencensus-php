@@ -1,0 +1,69 @@
+// Only page layout styles should reside in this file.
+// This will be moved under `rzp` later
+
+@import './bootstrap-ext'
+
+.content-wrapper {
+  padding: 30px 20px;
+}
+
+
+body.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+.ReactModal__Content h4 {
+  margin: 0;
+}
+
+
+.ReactModal__Content {
+  transition: transform 300ms ease-in-out;
+  transform: translateY(-15%);
+
+  &--after-open {
+    transform: translateY(0);
+  }
+  &--before-close {
+    transform: translateY(-15%);
+  }
+}
+
+.ReactModalPortal > * {
+  // When the modal is closed, overlay div has no css class
+  // This selector should be overridden by the `&--after-open` class below
+  opacity: 0;
+}
+
+.ReactModal__Overlay {
+  transition: opacity 250ms ease-in-out;
+  opacity: 0;
+
+  &--after-open {
+    opacity: 1;
+  }
+  &--before-close {
+    opacity: 0;
+  }
+}
+
+.butterbar {
+  position: fixed;
+  top: 50px;
+  left: 200px;
+  right: 0;
+  z-index: 1;
+}
+
+.page-spinner-container {
+  display: flex;
+  height: 350px;
+
+  .spinner {
+    margin: auto;
+  }
+}
+
+.modal-body .page-spinner-container {
+  height: 150px;
+}
