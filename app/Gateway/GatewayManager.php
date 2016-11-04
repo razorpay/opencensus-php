@@ -57,7 +57,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function createDriver($driver)
     {
-        if (in_array($driver, $this->getGateways()) === false)
+        if (in_array($driver, $this->getGateways(), true) === false)
         {
             throw new Exception\LogicException($driver . ' is not an available gateway');
         }

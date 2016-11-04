@@ -36,7 +36,7 @@ class Validator extends Base\Validator
     {
         $period = $input[Entity::PERIOD];
 
-        if (in_array($period, Period::PERIOD_LIST) === false)
+        if (in_array($period, Period::PERIOD_LIST, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD);
@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         $weekend = [Carbon::SATURDAY, Carbon::SUNDAY];
 
         if ((isset($input[Entity::ANCHOR]) === true) and
-            (in_array($input[Entity::ANCHOR], $weekend) === true))
+            (in_array($input[Entity::ANCHOR], $weekend, true) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);

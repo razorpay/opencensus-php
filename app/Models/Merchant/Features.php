@@ -45,7 +45,7 @@ class Features
         {
             $feature = trim($feature); // Remove whitespace
 
-            if (in_array($feature, self::$allowedFeatures) === false)
+            if (in_array($feature, self::$allowedFeatures, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "The provided beta feature is invalid: $feature",

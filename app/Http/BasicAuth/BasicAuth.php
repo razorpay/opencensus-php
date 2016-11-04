@@ -581,7 +581,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->getCurrentRouteName(), $appRoutes) === false)
+        if (in_array($this->getCurrentRouteName(), $appRoutes, true) === false)
         {
             return false;
         }
