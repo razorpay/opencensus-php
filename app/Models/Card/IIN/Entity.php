@@ -4,7 +4,6 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {

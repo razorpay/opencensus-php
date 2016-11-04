@@ -3,7 +3,6 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -23,8 +22,6 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
 
     protected $entity           = 'emi_plan';
-
-    protected $table            = Table::EMI_PLAN;
 
     protected $generateIdOnCreate = true;
 

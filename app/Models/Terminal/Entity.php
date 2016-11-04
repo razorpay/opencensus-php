@@ -105,8 +105,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal';
 
-    protected static $delimiter = '';
-
     protected static $generators = array('method');
 
     protected static $modifiers = array('inputRemoveBlanks');
