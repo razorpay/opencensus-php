@@ -32,23 +32,23 @@ class Entity
     const PAYMENT               = 'payment';
     const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
-    const ADDRESS               = 'address';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
+    const ADDRESS               = 'address';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
+    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSACTION           = 'transaction';
     const BANK_ACCOUNT          = 'bank_account';
-    const INVOICE_ITEM          = 'invoice_item';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const INVOICE_ITEM          = 'invoice_item';
     const TERMINAL_ACTION       = 'terminal_action';
-    const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     //
@@ -56,9 +56,9 @@ class Entity
     //
 
     const EBS                   = 'ebs';
-    const UPI                   = 'upi';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
+    const UPI                   = 'upi';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
@@ -126,13 +126,13 @@ class Entity
     );
 
     protected static $repository = array(
-        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
-        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
-        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 

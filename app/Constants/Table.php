@@ -49,10 +49,10 @@ class Table
     const WALLET                = 'wallet';
 
     // Sessions table
-    const SESSION                   = 'sessions';
+    const SESSION               = 'sessions';
 
     // Internal Purposes
-    const CREDITS                   = 'credits';
+    const CREDITS               = 'credits';
 
     // Terminal Performance
 
