@@ -42,8 +42,6 @@ class Entity extends Base\Entity
         self::AMOUNT => 'int',
     ];
 
-    protected $table = Constants\Table::FIRST_DATA;
-
     protected $primaryKey = self::ID;
 
     protected $entity = Constants\Entity::FIRST_DATA;

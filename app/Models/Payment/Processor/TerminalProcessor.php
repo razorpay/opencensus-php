@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
@@ -10,25 +11,8 @@ use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Analytics;
 
-class TerminalProcessor
+class TerminalProcessor extends Base\Core
 {
-    protected $repo;
-
-    protected $mode;
-
-    protected $trace;
-
-    public function __construct()
-    {
-        $app = App::getFacadeRoot();
-
-        $this->repo = $app['repo'];
-
-        $this->mode = $app['rzp.mode'];
-
-        $this->trace = $app['trace'];
-    }
-
     /**
      * Method to extract the terminals that failed. We first get the past payments
      * for a given payment flow, and get the terminals that were used as part of the

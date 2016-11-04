@@ -94,8 +94,6 @@ class Entity extends Base\PublicEntity
         self::ENABLED
     ];
 
-    protected $table = 'terminals';
-
     protected $hidden = [
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,

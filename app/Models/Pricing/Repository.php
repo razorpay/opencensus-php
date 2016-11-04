@@ -10,10 +10,9 @@ use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'Pricing';
+    protected $entity = 'pricing';
 
     protected $appFetchParamRules = array(
         Entity::PLAN_ID         => 'sometimes|string',

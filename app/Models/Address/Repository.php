@@ -7,7 +7,7 @@ use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    protected $entity = 'address';
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
