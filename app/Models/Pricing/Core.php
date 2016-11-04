@@ -16,6 +16,8 @@ class Core extends Base\Core
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
+        $rule = $rule->generateId();
+
         $rule->getValidator()->matchPaymentRules($plan);
 
         $this->repo->saveOrFail($rule);
@@ -30,6 +32,8 @@ class Core extends Base\Core
             $input);
 
         $pricing = (new Pricing\Entity)->build($input);
+
+        $pricing = $pricing->generateId();
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
