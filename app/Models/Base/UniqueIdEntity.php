@@ -135,11 +135,14 @@ class UniqueIdEntity extends Entity
 
         $value = $this->getAttribute($key);
 
-        if ($this->getGenerateIdOnCreate() === true)
+        if ($this->getIncrementing() === false)
         {
             if ($value === null)
             {
-                $this->generateAndSetUniqueId();
+                if ($this->getGenerateIdOnCreate() === true)
+                {
+                    $this->generateAndSetUniqueId();
+                }
             }
             else
             {
@@ -183,7 +186,8 @@ class UniqueIdEntity extends Entity
         // preg_match() returns int 0 when the pattern does not match
         // and int 1 if a match is found. false (boolean) is returned
         // whenever any error happens.
-        if ((($res === 0) or ($res === false)) and ($throw))
+        if ((in_array($res, [0, false], true) === true) and
+            ($throw === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                         $id . ' is not a valid id');
