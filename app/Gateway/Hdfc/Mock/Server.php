@@ -277,7 +277,7 @@ class Server extends Base\Mock\Server
 
         if (($type === 'credit') or
             ($type === '') or
-            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers) === true))
+            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers, true) === true))
         {
             $res['result'] = 'NOT ENROLLED';
             $res['eci'] = $this->getEci($network);
@@ -522,7 +522,7 @@ class Server extends Base\Mock\Server
 
     protected function handleSpecialCardNumber($cardNumber)
     {
-        if (in_array($cardNumber, $this->specialCardNumbers) === false)
+        if (in_array($cardNumber, $this->specialCardNumbers, true) === false)
         {
             throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
         }

@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     {
         $state = $input['beneficiary_state'];
 
-        if (in_array($state, self::$beneficiaryStateCodes) === false)
+        if (in_array($state, self::$beneficiaryStateCodes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');

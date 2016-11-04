@@ -28,7 +28,7 @@ class VerifyHttps
 
         $productionHosts = $this->getProductionHosts();
 
-        if ((in_array($host, $productionHosts)) and
+        if ((in_array($host, $productionHosts, true)) and
             ($request->secure() === false))
         {
             return ApiResponse::onlyHttpsAllowed();

@@ -71,7 +71,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -90,7 +90,7 @@ class Base
     {
         $this->stripSign($id);
 
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
