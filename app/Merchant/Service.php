@@ -601,7 +601,7 @@ class Service extends Base\Service
             ]
         );
 
-        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($user);
+        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
 
         return [$error, $merchant];
     }
