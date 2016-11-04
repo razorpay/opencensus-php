@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Paytm;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -18,7 +19,38 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
+        // This is a hack and is being done only for PayTm because there seem
+        // to be payments in the recon which are not there in our DB.
+        // This is probably because these were done on local.
+        $paymentExists = $this->checkPaymentExists($paymentId);
+
+        if ($paymentExists === false)
+        {
+            return null;
+        }
+
         return $paymentId;
+    }
+
+    protected function checkPaymentExists($paymentId)
+    {
+        $payment = $this->paymentRepo->find($paymentId);
+
+        if ($payment === null)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'    => 'Payment not found in DB.',
+                    'info_code'  => 'PAYMENT_ABSENT',
+                    'payment_id' => $paymentId,
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function getGatewayServiceTax($row)

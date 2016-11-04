@@ -44,12 +44,23 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-
     protected function editTerminal($tid, $input)
     {
         $request = array(
             'url' => '/terminals/'.$tid,
             'method' => 'put',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function copyTerminal($tid, $mid, $input)
+    {
+        $request = array(
+            'url' => '/merchants/'. $mid .'/terminals/'. $tid .'/copy',
+            'method' => 'post',
             'content' => $input);
 
         $this->ba->appAuth();
