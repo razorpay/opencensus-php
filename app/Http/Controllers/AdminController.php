@@ -3,14 +3,16 @@ namespace App\Http\Controllers;
 
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
+
 use App\Admin;
+use App\Admin\Entity;
 use App\Merchant;
+
+use App;
 use Auth;
 use Input;
-use OAuth;
 use Config;
-use App;
-use App\Admin\Entity;
+use OAuthFacade;
 use Redirect;
 
 class AdminController extends Controller
@@ -36,7 +38,7 @@ class AdminController extends Controller
     public function getIndex()
     {
         $code = Input::get('code');
-        $googleService = (new OAuth)->consumer('Google');
+        $googleService = OAuthFacade::consumer('Google');
 
         // If the user is not logged in
         if (!Auth::guard('admin')->check())

@@ -241,7 +241,10 @@ return array(
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Debugbar'        => Barryvdh\Debugbar\Facade::class,
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
-        'OAuth'           => Artdarek\OAuth\OAuth::class,
+
+        // Don't name it OAuth (http://php.net/manual/en/book.oauth.php)
+        'OAuthFacade'     => Artdarek\OAuth\Facade\OAuth::class,
+        
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
         'Slack'           => Maknz\Slack\Facades\Slack::class,
