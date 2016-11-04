@@ -338,8 +338,7 @@ class TraceCode
     const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
-    // Trace code for feature lokup
-    const OLD_FEATURE_LOOKUP                        = 'OLD_FEATURE_LOOKUP';
+    // Trace code for features
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
@@ -449,7 +448,6 @@ class TraceCode
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
-        self::OLD_FEATURE_LOOKUP                        => 'Feature found in old features string',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'

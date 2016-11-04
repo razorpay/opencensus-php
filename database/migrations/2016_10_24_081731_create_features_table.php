@@ -19,8 +19,8 @@ class CreateFeaturesTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(Feature::ID);
-
+            $table->char(Feature::ID, Feature::ID_LENGTH)
+                  ->primary();
             $table->string(Feature::NAME, 25);
             $table->char(Feature::ENTITY_ID, Feature::ID_LENGTH);
             $table->string(Feature::ENTITY_TYPE, 255);

@@ -125,6 +125,30 @@ class Service extends Base\Service
             unset($input['logo']);
         }
     }
+
+    public function addOrUpdateMerchantFeatures($id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        foreach ($input as $key => $value)
+        {
+            $input[$key] = strtolower($input[$key]);
+        }
+
+        $merchant = (new Merchant\Core)->addOrUpdateMerchantFeatures($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function getMerchantFeatures($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $features = $merchant->getFeatures();
+
+        return $features;
+    }
+
     // This is on internal auth
     public function fetch($id)
     {

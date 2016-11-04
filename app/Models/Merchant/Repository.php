@@ -168,12 +168,22 @@ class Repository extends Base\Repository
      * records and passes that to the closure argument for processing
      * @param  Closure $processData Function to process the merchant records
      */
-    public function fetchMerchantFeatures(Closure $processData)
+    public function fetchMerchantsWithoutFeatureEntries()
     {
-        $this->newQuery()->whereNotNull(Entity::FEATURES)
-            ->orderBy(ENTITY::ID)->chunk(200, function ($merchants) use ($processData)
-            {
-                return $processData($merchants);
-            });
+        $merchantIds = $this->db->select('SELECT DISTINCT id from merchants
+            WHERE features IS NOT NULL AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id FROM merchants JOIN features ON
+                merchants.id = features.entity_id) LIMIT 200');
+
+        $merchantIds = json_decode(json_encode($merchantIds), true);
+
+        $merchantIds = array_map(function ($mid)
+        {
+            return $mid['id'];
+        }, $merchantIds);
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
     }
 }

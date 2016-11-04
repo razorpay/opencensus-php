@@ -75,11 +75,13 @@ trait RepositoryUpdateTestAndLive
             $testEntity = clone $entity;
             $liveEntity = clone $entity;
 
-            $res1 = $liveEntity->delete();
-            $res2 = $testEntity->delete();
+            $res1 = $liveEntity->setConnection('live')->delete();
+            $res2 = $testEntity->setConnection('test')->delete();
 
             if ($res1 !== $res2)
             {
+                $this->db->connection('live')->rollBack();
+                $this->db->connection('test')->rollBack();
                 throw new Exception\RuntimeException(
                     'Delete query on live and test did not give same results. ' .
                     'Live: ' . $res1 . ' Test: ' . $res2);

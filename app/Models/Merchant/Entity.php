@@ -411,8 +411,13 @@ class Entity extends Base\PublicEntity
 
     public function features()
     {
-        return $this->morphMany(\RZP\Models\Feature\Entity::class, 'entity')
+        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
+    }
+
+    public function getFeatures()
+    {
+        return $this->getAttribute(self::FEATURES);
     }
 
     protected function getOldFeatures()
@@ -424,10 +429,6 @@ class Entity extends Base\PublicEntity
     {
         if (in_array($feature, $this->getOldFeatures()) === true)
         {
-            $this->app['trace']->warn(TraceCode::OLD_FEATURE_LOOKUP, [
-                'msg' => TraceCode::getMessage(TraceCode::OLD_FEATURE_LOOKUP)
-            ]);
-
             return true;
         }
         return false;

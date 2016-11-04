@@ -14,9 +14,7 @@ class Entity extends Base\PublicEntity
 
 	protected $entity = 'feature';
 
-	public $incrementing = true;
-
-	protected $primaryKey = 'id';
+    protected $generateIdOnCreate = false;
 
 	protected $fillable = [
 		self::NAME,

@@ -39,7 +39,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
-        $this->repo->deleteOrFail($feature);
+        $this->repo->feature->delete($feature);
 
         return $feature->toArrayPublic();
     }
@@ -48,31 +48,27 @@ class Service extends Base\Service
 	{
 		$response = new Base\Collection;
 
-		$this->repo->merchant->fetchMerchantFeatures(function ($merchantFeatures)
-			use ($response)
-		{
-			foreach ($merchantFeatures as $merchantFeature)
-			{
-				$featureParam = [
-					Entity::ENTITY_ID      => $merchantFeature->getId(),
-					Constants::NAMES       => $merchantFeature->features,
-					Entity::ENTITY_TYPE	   => \RZP\Constants\Entity::MERCHANT
-				];
-                try
-                {
-                    $response->push($this->addFeatures($featureParam));
-                    $merchantFeature->features = null;
-                    $this->repo->saveOrFail($merchantFeature);
-                }
-                catch (Exception $e)
-                {
-                    $this->trace->warn(TraceCode::FEATURE_MIGRATION_EXCEPTION, [
-                        Entity::ENTITY_ID   => $merchantFeature->id,
-                        'msg'               => $e->getMessage()
-                    ]);
-                }
+        $merchants = $this->repo->merchant->fetchMerchantsWithoutFeatureEntries();
+
+        foreach ($merchants as $merchant) {
+            $featureParam = [
+                Entity::ENTITY_ID      => $merchant->getId(),
+                Constants::NAMES       => $merchant->features,
+                Entity::ENTITY_TYPE    => \RZP\Constants\Entity::MERCHANT
+            ];
+
+            try
+            {
+                $response->push($this->addFeatures($featureParam));
             }
-        });
+            catch (Exception $e)
+            {
+                $this->trace->warn(TraceCode::FEATURE_MIGRATION_EXCEPTION, [
+                    Entity::ENTITY_ID   => $merchant->id,
+                    'msg'               => $e->getMessage()
+                ]);
+            }
+        }
         return $response->collapse();
 	}
 
