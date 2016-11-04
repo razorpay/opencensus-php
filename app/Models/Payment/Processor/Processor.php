@@ -868,7 +868,7 @@ class Processor
             {
                 $feeSplit->transaction()->associate($txn);
 
-                $this->repo->fee_breakup->saveOrFail($feeSplit);
+                $this->repo->saveOrFail($feeSplit);
             }
         });
     }

@@ -2,14 +2,13 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
-
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Transaction;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
@@ -35,6 +34,8 @@ class DataMigration extends Base\Service
 
     public function postMigrateOlderTransactions($input)
     {
+        $this->increaseAllowedSystemLimits();
+
         list($batch1From, $batch1To, $batch2From, $batch2To) = $this->getTimestamps($input);
 
         $response = $this->processEntries($batch1From, $batch1To);
@@ -65,7 +66,7 @@ class DataMigration extends Base\Service
 
             $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
 
-            $feesSplit = new PublicCollection;
+            $feesSplit = new Base\PublicCollection;
 
             $this->feeCalculator = new FeeCalculator($payment);
 
@@ -215,7 +216,7 @@ class DataMigration extends Base\Service
 
                 $feeSplit->setCreatedAt($captureTime);
 
-                $this->repo->fee_breakup->saveOrFail($feeSplit);
+                $this->repo->saveOrFail($feeSplit);
             }
         });
     }
@@ -251,5 +252,12 @@ class DataMigration extends Base\Service
                         ->timestamp;
 
         return [ $from, $mid, $mid + 1, $end];
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(1000);
     }
 }

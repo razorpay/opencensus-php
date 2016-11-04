@@ -104,6 +104,7 @@ class Entity
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
@@ -121,7 +122,6 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
-        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
     );
 
     protected static $repository = array(
