@@ -14,15 +14,15 @@ class CreateAdminRoles extends Migration
     {
         Schema::create('admin_roles', function (Blueprint $table) {
             $table->engine = 'InnoDB';
-            
+
             $table->char('admin_id', 14);
             $table->char('role_id', 14);
 
             $table->unique(['admin_id', 'role_id']);
 
             $table->foreign('admin_id')
-                ->references('id')
-                ->on('admins');
+                  ->references('id')
+                  ->on('admins');
 
             $table->foreign('role_id')
                   ->references('id')

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Permissions;
+namespace RZP\Models\Admin\Permission;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Admins;
+namespace RZP\Models\Admin\Admin;
 
 use App;
 use RZP\Constants\Table;

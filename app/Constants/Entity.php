@@ -48,6 +48,11 @@ class Entity
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const ORG                   = 'org';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+
 
     //
     // Gateway entities
@@ -121,6 +126,10 @@ class Entity
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
+        self::ROLE                  => \RZP\Models\Admin\Role::class,
+        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
+        self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
     );
 
     protected static $repository = array(
