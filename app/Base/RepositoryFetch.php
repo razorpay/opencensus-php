@@ -416,9 +416,9 @@ trait RepositoryFetch
     {
         // Using created_at and not updated_at because updated_at is not indexed.
         return $this->newQuery()
-                    ->select('id', 'notes', 'merchant_id', 'created_at')
-                    ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
-                    ->orderBy('id', 'desc')
+                    ->select(Common::ID, 'notes', Common::MERCHANT_ID, Common::CREATED_AT)
+                    ->where(Common::CREATED_AT, '>=', $createdAt)
+                    ->orderBy(Common::ID, 'desc')
                     ->skip($skip)
                     ->take($count)
                     ->get();
