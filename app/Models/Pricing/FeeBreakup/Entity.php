@@ -9,13 +9,12 @@ class Entity extends Base\PublicEntity
 {
     const ID                           = 'id';
     const TRANSACTION_ID               = 'transaction_id';
+    const PRICING_RULE_ID              = 'pricing_rule_id';
     const NAME                         = 'name';
     const PERCENTAGE                   = 'percentage';
     const AMOUNT                       = 'amount';
-    const TYPE                         = 'type';
 
     const NAME_LENGTH                  = 100;
-    const TYPE_LENGTH                  = 20;
 
     protected $table = Table::FEE_BREAKUP;
 
@@ -27,18 +26,18 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::NAME,
-        self::TYPE,
         self::AMOUNT,
         self::PERCENTAGE,
+        self::PRICING_RULE_ID,
     );
 
     protected $public = array(
         self::ID,
         self::NAME,
-        self::TYPE,
         self::AMOUNT,
         self::PERCENTAGE,
         self::TRANSACTION_ID,
+        self::PRICING_RULE_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
@@ -76,11 +75,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getType()
+    public function getPricingRule()
     {
-        return $this->getAttribute(self::TYPE);
+        return $this->getAttribute(self::PRICING_RULE_ID);
     }
-
 
     // ----------------------- Setters ---------------------------------------------
 
@@ -99,9 +97,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setType($type)
+    public function setPricingRule($ruleId)
     {
-        $this->setAttribute(self::TYPE, $typ);
+        $this->setAttribute(self::PRICING_RULE_ID, $ruleId);
     }
 
     public function setCreatedAt($createdAt)

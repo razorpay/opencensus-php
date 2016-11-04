@@ -23,15 +23,17 @@ class CreateFeesBreakupTable extends Migration
             $table->char(FeeBreakup::ID, FeeBreakup::ID_LENGTH)
                   ->primary();
 
-            $table->char(FeeBreakup::TRANSACTION_ID, FeeBreakup::ID_LENGTH);
-
             $table->char(FeeBreakup::NAME, FeeBreakup::NAME_LENGTH);
 
-            $table->integer(FeeBreakup::PERCENTAGE);
+            $table->char(FeeBreakup::TRANSACTION_ID, FeeBreakup::ID_LENGTH);
+
+            $table->char(FeeBreakup::PRICING_RULE_ID, FeeBreakup::ID_LENGTH)
+                  ->nullable();
+
+            $table->integer(FeeBreakup::PERCENTAGE)
+                  ->nullable();
 
             $table->integer(FeeBreakup::AMOUNT);
-
-            $table->char(FeeBreakup::TYPE, FeeBreakup::TYPE_LENGTH);
 
             $table->integer(FeeBreakup::CREATED_AT);
 

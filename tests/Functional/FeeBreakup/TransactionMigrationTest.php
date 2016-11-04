@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
-use RZP\Models\Pricing\FeeBreakup\Type as FeeBreakupType;
 use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
 
 

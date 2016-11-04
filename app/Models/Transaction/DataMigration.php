@@ -12,7 +12,6 @@ use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Pricing\FeeBreakup as FeeBreakup;
-use RZP\Models\Pricing\FeeBreakup\Type as FeeBreakupType;
 use RZP\Models\Pricing\FeeBreakup\Name as FeeBreakupName;
 
 
@@ -83,7 +82,8 @@ class DataMigration extends Base\Service
                                             $amount,
                                             $pricing->getPercentRate(),
                                             $pricing->getFixedRate(),
-                                            $feesSplit);
+                                            $feesSplit,
+                                            $pricingRuleId);
 
             $this->calculateServiceTaxes($fees, $feesSplit, $payment->getCaptureTimestamp());
 
@@ -205,8 +205,8 @@ class DataMigration extends Base\Service
             foreach ($feesSplit as $feeSplit)
             {
                 // If SB or KB is 0 then we don't save it.
-                if (($feeSplit->getType() === FeeBreakupType::PERCENTAGE) and
-                    ($feeSplit->getPercentage() === 0))
+                if (($feeSplit->getPricingRule() === null) and
+                    ($feeSplit->getAmount() === 0))
                 {
                     continue;
                 }
