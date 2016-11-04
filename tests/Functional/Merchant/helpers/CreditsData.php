@@ -135,7 +135,6 @@ return [
 
     'testFailNegativeUpdateCredits' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
                 'value' => 1,
@@ -157,7 +156,6 @@ return [
 
     'testFailDeductCreditsCampaign' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/123/',
             'method' => 'put',
             'content' => [
                 'value' => -150,

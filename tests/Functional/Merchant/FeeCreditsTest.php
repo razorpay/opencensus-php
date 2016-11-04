@@ -81,19 +81,21 @@ class FeeCreditsTest extends TestCase
 
     public function testFailNegativeUpdateCredits()
     {
-        // ID 123 is given in the data so it should match
-        $creditsLog = $this->fixtures->create(
-            'credits', ['id' => '123', 'value' => 150, 'type' => Credits\Type::FEE]);
+        $creditsLog = $this->fixtures->create('credits', ['value' => 150, 'type' => Credits\Type::FEE]);
         $merchant = $creditsLog->merchant;
+
         $balance = (new Merchant\Balance\Repository)->editMerchantAmountCredits($merchant, 10);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/10000000000000/credits/' . $creditsLog->getId();
+
         $this->startTest();
     }
 
     public function testFailDeductCreditsCampaign()
     {
-        // id 123 is given in the data so it should match
-        $creditslog = $this->fixtures->create(
-            'credits', ['id' => '123', 'value' => 90, 'type' => Credits\Type::FEE]);
+        $creditslog = $this->fixtures->create('credits', ['value' => 90, 'type' => Credits\Type::FEE]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/10000000000000/credits/' . $creditslog->getId();
         $this->startTest();
     }
 
@@ -120,15 +122,15 @@ class FeeCreditsTest extends TestCase
         $this->fixtures->create(
             'credits',
             [
-                'id' => '123', 'value' => 90, 'campaign' => 'noisy-ads',
+                'value' => 90, 'campaign' => 'noisy-ads',
                 'type' => Credits\Type::FEE
             ]);
         $this->fixtures->create(
             'credits',
-            ['id' => '124', 'value' => 90, 'type' => Credits\Type::FEE]);
+            ['value' => 90, 'type' => Credits\Type::FEE]);
         $this->fixtures->create(
             'credits',
-            ['id' => '125', 'value' => 90, 'type' => Credits\Type::AMOUNT]);
+            ['value' => 90, 'type' => Credits\Type::AMOUNT]);
 
         $this->ba->proxyAuth();
         $this->startTest();
@@ -138,16 +140,16 @@ class FeeCreditsTest extends TestCase
     {
         $this->testData[__FUNCTION__]['request']['url'] .= '?type=fee';
 
-        $this->fixtures->create('merchant', ['id' => '10000']);
+        $this->fixtures->create('merchant');
         $this->fixtures->create(
             'credits',
             [
-                'id' => '123', 'value' => 90,
+                'value' => 90,
                 'type' => Credits\Type::AMOUNT
             ]);
         $this->fixtures->create(
             'credits',
-            ['id' => '125', 'value' => 90, 'type' => Credits\Type::FEE]);
+            ['value' => 90, 'type' => Credits\Type::FEE]);
 
         $this->ba->proxyAuth();
         $this->startTest();
