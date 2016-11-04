@@ -38,7 +38,12 @@
     "react-dom": "^15.3.2",
     "react-modal": "^1.5.2",
     "react-redux": "^4.4.5",
+    "react-select2-wrapper": "^1.0.3",
+    "react-sortable-hoc": "^0.1.1",
+    "react-time": "^4.2.0",
+    "react-tooltip": "^3.2.1",
     "redux": "^3.6.0",
+    "redux-form": "github:selvagsz/redux-form#b8be7f8",
     "redux-thunk": "^2.1.0"
   }
 }
