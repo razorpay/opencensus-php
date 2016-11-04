@@ -41,21 +41,23 @@ class FeeCalculator
 
     }
 
-    public function calculate($pricing, $feesSplit, $preCalculationOfFees = false)
+    public function calculate($pricing, $preCalculationOfFees = false)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $feesSplit, $preCalculationOfFees);
+        list($fee, $serviceTax, $feesSplit) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
 
-        return array($fee, $serviceTax, $rule->getKey());
+        return array($fee, $serviceTax, $rule->getKey(), $feesSplit);
     }
 
 
-    protected function getFees($rule, $amount, $feesSplit, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
         list($percent, $fixed) = $rule->getRates();
+
+        $feesSplit = new Base\PublicCollection;
 
         $fee = $this->getUnroundedFees($amount, $percent, $fixed, $feesSplit, $rule->getKey(), $preCalculationOfFees);
 
@@ -72,7 +74,7 @@ class FeeCalculator
                 Payment\Entity::AMOUNT);
         }
 
-        return  array($totalFees, $totaltaxes);
+        return  array($totalFees, $totaltaxes, $feesSplit);
     }
 
     public static function getServiceTaxRate()
@@ -574,11 +576,12 @@ class FeeCalculator
 
     public function calculateServiceTaxesFromFees(
             $fee,
-            $feesSplit,
             $serviceTaxPercentage = self::SERVICE_TAX_PERCENTAGE,
             $swachhBharatCessPercentage = self::SWACHH_BHARAT_CESS_PERCENTAGE,
             $krishiKalyanCessPercentage = self::KRISHI_KALYAN_CESS_PERCENTAGE)
     {
+        $feesSplit = new Base\PublicCollection;
+
         $serviceTaxValue = $this->calculateTaxFromFees($fee, $serviceTaxPercentage);
 
         $serviceTaxFeeBreakup = $this->createFeeBreakup(
@@ -606,10 +609,10 @@ class FeeCalculator
 
         $totaltaxes = $serviceTaxValue + $krishiKalyanCessValue + $swachhBharatCessValue;
 
-        return $totaltaxes;
+        return [$totaltaxes, $feesSplit];
     }
 
-    public function calculateTaxFromFees($fee, $taxPercentage)
+    protected function calculateTaxFromFees($fee, $taxPercentage)
     {
         // Solving these
         // rzpFee + servTax = totFee;

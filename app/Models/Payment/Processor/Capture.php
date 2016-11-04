@@ -295,9 +295,8 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-            $feesSplit = new PublicCollection;
 
-            $txn = $txnCore->createFromPaymentAuthorized($payment, $feesSplit);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
 
             $this->repo->saveOrFail($txn);
             $this->repo->saveOrFail($payment);
@@ -373,7 +372,7 @@ trait Capture
 
         if ($auth === true)
         {
-            $txn = $txnCore->createFromPaymentCaptured($payment, $feesSplit);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
         }
         else
         {

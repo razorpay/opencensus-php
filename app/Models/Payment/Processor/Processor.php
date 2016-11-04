@@ -177,10 +177,8 @@ class Processor
 
         $preCalculationOfFees = true;
 
-        $feesSplit = new PublicCollection;
-
-        list($fee, $serviceTax, $ruleKey) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit, $preCalculationOfFees);
+        list($fee, $serviceTax, $ruleKey, $feesSplit) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
         $data = array(
             'originalAmount'    => $input['amount'],

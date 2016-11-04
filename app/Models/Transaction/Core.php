@@ -35,15 +35,15 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment, $feesSplit)
+    public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateOnCapture(Payment\Entity $payment)
@@ -69,9 +69,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment, $feesSplit)
+    public function createFromPaymentCaptured(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment, $feesSplit);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
@@ -88,7 +88,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -109,12 +109,12 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation($payment, $feesSplit)
+    protected function txnCreationFromPaymentOperation($payment)
     {
         $txn = new Transaction\Entity;
         $txn->generateId();
 
-        $txn = $this->fillTxnFeesAndAmount($txn, $payment, $feesSplit);
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
@@ -131,10 +131,10 @@ class Core extends Base\Core
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
-    protected function fillTxnFeesAndAmount($txn, $payment, $feesSplit)
+    protected function fillTxnFeesAndAmount($txn, $payment)
     {
         $pricingRuleId = null;
 
@@ -147,6 +147,8 @@ class Core extends Base\Core
         $amount = $payment->getAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
+
+        $feesSplit = new Base\PublicCollection;
 
         if ($oldTransaction === true)
         {
@@ -179,12 +181,12 @@ class Core extends Base\Core
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
             $fee                              = $payment->getFee();
-            $serviceTax                       = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee, $feesSplit);
+            list($serviceTax, $feesSplit)     = (new Pricing\Fee)->calculateServiceTaxFromFees($payment, $fee);
             $credit                           = $amount - $fee;
         }
         else
         {
-            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment, $feesSplit);
+            list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->calculateMerchantFees($payment);
 
             if ($feeCredits >= $fee)
             {
@@ -206,7 +208,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setServiceTax($serviceTax);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     protected function checkIfOldPayment($payment)
@@ -361,9 +363,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Payment\Entity $payment, $feesSplit)
+    protected function calculateMerchantFees(Payment\Entity $payment)
     {
-        return (new Pricing\Fee)->calculateMerchantFees($payment, $feesSplit);
+        return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)

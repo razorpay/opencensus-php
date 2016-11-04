@@ -104,9 +104,8 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $feesSplit = new PublicCollection;
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
@@ -192,9 +191,7 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $feesSplit = new PublicCollection;
-
-        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
 
         $txn->saveOrFail();
 
@@ -233,9 +230,8 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $feesSplit = new PublicCollection;
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment, $feesSplit);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
