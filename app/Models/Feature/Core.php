@@ -14,8 +14,7 @@ class Core extends Base\Core
 
         $assignedFeatureNames = $this->repo
             ->feature
-            ->findByEntityIdAndType($feature->getEntityId(),
-                $feature->getEntityType())
+            ->findByEntityId($feature->getEntityId())
             ->pluck(Entity::NAME)
             ->toArray();
 

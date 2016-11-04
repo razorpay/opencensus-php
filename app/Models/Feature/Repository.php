@@ -9,15 +9,15 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-	use Base\RepositoryFetch;
+	use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryFetch;
 
 	protected $entity = 'feature';
 
-	public function findByEntityIdAndType(string $entityId, string $entityType)
+	public function findByEntityId(string $entityId)
 	{
 		return $this->newQuery()
 				->where(Entity::ENTITY_ID, '=', $entityId)
-                ->where(Entity::ENTITY_TYPE, '=', $entityType)
 				->get();
 	}
 

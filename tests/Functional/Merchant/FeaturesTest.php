@@ -40,7 +40,7 @@ class FeaturesTest extends TestCase
         $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
         $request = [
-            'url'       => '/features/'.$features->first()->getId(),
+            'url'       => '/features/10000000000000/dummy',
             'method'    => 'delete'
         ];
 

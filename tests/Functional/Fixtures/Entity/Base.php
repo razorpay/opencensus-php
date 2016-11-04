@@ -59,6 +59,7 @@ class Base
         'emi_plan',
         'iin',
         'schedule',
+        'feature'
     );
 
     public function create(array $attributes = array())

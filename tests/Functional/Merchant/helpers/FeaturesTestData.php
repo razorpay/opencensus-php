@@ -167,7 +167,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/merchant/10000000000000',
+            'url' => '/features/10000000000000',
             'method' => 'GET'
         ],
         'response' => [
@@ -203,7 +203,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/1',
+            'url' => '/features/10000000000000/dummy',
             'method' => 'DELETE'
         ],
         'response' => [
@@ -219,7 +219,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/dummy',
+            'url' => '/dummy',
             'method' => 'GET'
         ],
         'response' => [
@@ -237,7 +237,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/dummy',
+            'url' => '/dummy',
             'method' => 'GET'
         ],
         'response' => [

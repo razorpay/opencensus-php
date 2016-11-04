@@ -20,12 +20,12 @@ class Service extends Base\Service
 		return $features->toArray();
 	}
 
-	public function getFeatures(string $entityId, string $entityType)
+	public function getFeatures(string $entityId)
 	{
 		$response = new Base\Collection;
 
 		$response['assigned_features'] = $this->repo->feature->
-				findByEntityIdAndType($entityId, $entityType);
+				findByEntityId($entityId);
 
 		// all_features is a list of currently available features in the system
 		$response['all_features'] = Constants::$allFeatures;
@@ -33,16 +33,16 @@ class Service extends Base\Service
 		return $response;
 	}
 
-	public function deleteFeature(int $id)
+	public function deleteFeature(string $entityId, string $featureName)
 	{
-		$feature = $this->repo->feature->findOrFailPublic($id);
+        $feature = $this->repo->feature->findByEntityIdAndName($entityId, $featureName);
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
-		$this->repo->deleteOrFail($feature);
+        $this->repo->deleteOrFail($feature);
 
-		return $feature->toArrayPublic();
-	}
+        return $feature->toArrayPublic();
+    }
 
 	public function migrateMerchantFeatures()
 	{

@@ -36,16 +36,16 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-	public function deleteFeature(int $id)
+	public function deleteFeature(string $entityId, string $featureName)
 	{
-		$data = (new Feature\Service)->deleteFeature($id);
+		$data = (new Feature\Service)->deleteFeature($entityId, $featureName);
 
 		return ApiResponse::json($data);
 	}
 
-	public function getFeatures(string $entityType, string $entityId)
+	public function getFeatures(string $entityId)
 	{
-		$data = (new Feature\Service)->getFeatures($entityId, $entityType);
+		$data = (new Feature\Service)->getFeatures($entityId);
 
 		return ApiResponse::json($data);
 	}
