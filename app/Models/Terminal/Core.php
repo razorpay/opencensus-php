@@ -26,12 +26,6 @@ class Core extends Base\Core
 
     public function copy($input, $terminal)
     {
-        if ($terminal->isDeleted() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DELETED_TERMINAL_CANNOT_BE_COPIED);
-        }
-
         if ($terminal->isShared() === true)
         {
             throw new Exception\BadRequestException(

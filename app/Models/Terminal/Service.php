@@ -20,11 +20,11 @@ class Service extends Base\Service
 
     public function copyTerminal($mid, $tid, $input)
     {
-        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
+        $terminal = $this->repo->terminal->findByIdAndMerchantId($tid, $mid);
 
         $terminals = (new Terminal\Core)->copy($input, $terminal);
 
-        return $terminals->toArrayPublic();
+        return $terminals;
     }
 
     public function getTerminals($mid)

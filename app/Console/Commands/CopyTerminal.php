@@ -51,19 +51,13 @@ class CopyTerminal extends Command
 
         $terminalId = $this->argument('terminalId');
 
-        if (Terminal::verifyUniqueId($terminalId) === false)
-        {
-            return $this->error('Invalid terminal ID given.');
-        }
+        Terminal::verifyUniqueId($terminalId);
 
         $merchantIds = $this->argument('merchantIds');
 
         foreach ($merchantIds as $merchantId)
         {
-            if (Merchant::verifyUniqueId($merchantId) === false)
-            {
-                return $this->error('Invalid merchant ID ' . $merchantId . ' given.');
-            }
+            Merchant::verifyUniqueId($merchantId);
         }
 
         $mode = $this->option('mode');
@@ -87,9 +81,9 @@ class CopyTerminal extends Command
         $terminalHeaders = ['key', 'value'];
         $terminalRow = [];
 
-        foreach($terminal as $k => $v)
+        foreach($terminal as $key => $value)
         {
-            $terminalRow[] = [$k, $v];
+            $terminalRow[] = [$key, $value];
         }
 
         $this->table($terminalHeaders, $terminalRow);
