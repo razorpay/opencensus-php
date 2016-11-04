@@ -3,6 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Constants\Table;
+
 use RZP\Gateway\AxisMigs;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -16,7 +18,7 @@ class CreateAxisGateway extends Migration
      */
     public function up()
     {
-        Schema::create('axis', function(Blueprint $table)
+        Schema::create(Table::MIGS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 

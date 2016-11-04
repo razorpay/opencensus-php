@@ -22,8 +22,6 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
 
-    protected $table = \RZP\Constants\Table::DAILY_SETTLEMENT;
-
     protected $entity = 'daily_settlement';
 
     protected $generateIdOnCreate = true;

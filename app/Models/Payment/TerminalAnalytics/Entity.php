@@ -16,9 +16,6 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
 
-
-    protected $table = Table::TERMINAL_ANALYTICS;
-
     protected $entity = 'terminal_analytics';
 
     protected $fillable = array(

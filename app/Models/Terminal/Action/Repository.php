@@ -9,23 +9,19 @@ use RZP\Models\Terminal\Action;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'terminal_action';
 
     public function findForTerminal($id)
     {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Entity::TERMINAL_ID, '=', $id)
                     ->get();
     }
 
     public function findBetweenTimesampsForTerminal($from, $to, $id)
     {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::TERMINAL_ID, '=', $id)
+        return $this->newQuery()
+                    ->where(Entity::TERMINAL_ID, '=', $id)
                     ->where(Entity::CREATED_AT, '>=', $from)
                     ->where(Entity::CREATED_AT, '<=', $to)
                     ->get();

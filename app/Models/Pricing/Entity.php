@@ -47,8 +47,6 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::FIXED_RATE);
 
-    protected $table = \RZP\Constants\Table::PRICING;
-
     protected $entity = 'pricing';
 
     protected $generateIdOnCreate = true;

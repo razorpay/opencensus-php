@@ -39,8 +39,6 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE      = 'network_code';
 
-    protected $table = \RZP\Constants\Table::CARD;
-
     protected static $sign = 'card';
 
     protected $entity = 'card';

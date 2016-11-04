@@ -9,8 +9,6 @@ use RZP\Models\Merchant\Credits;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'credits';
 
     // These are admin allowed params to search on.
