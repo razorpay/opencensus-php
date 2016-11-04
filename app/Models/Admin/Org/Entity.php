@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Org;
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
 
 class Entity extends Base\PublicEntity
 {
@@ -63,5 +64,10 @@ class Entity extends Base\PublicEntity
     public function owners()
     {
         // Returns the list of org's owners
+    }
+
+    public function admins()
+    {
+        return $this->hasMany('Admin\Entity');
     }
 }
