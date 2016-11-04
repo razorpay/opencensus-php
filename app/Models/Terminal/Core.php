@@ -34,23 +34,14 @@ class Core extends Base\Core
 
         $merchantIds = $input['merchant_ids'];
 
-        $terminalInput = $terminal->toArrayWithSecrets();
-
-        $terminalRules = (new Validator)->getExpectedInputKeys($terminalInput['gateway']);
-        $notRequiredKeys = array_diff(array_keys($terminal), $terminalRules);
-
-        foreach ($notRequiredKeys as $key)
-        {
-            unset($terminalInput[$key]);
-        }
-
         $response = [];
+
+        unset($terminal['used_count']);
 
         foreach ($merchantIds as $merchantId)
         {
-            $terminalInput['merchant_id'] = $merchantId;
-
-            $newTerminal = (new Terminal\Entity)->build($terminalInput);
+            $newTerminal = $terminal->replicate();
+            $newTerminal['merchant_id'] = $merchantId;
 
             $this->repo->saveOrFail($newTerminal);
 

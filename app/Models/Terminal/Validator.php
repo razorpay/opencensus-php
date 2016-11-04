@@ -169,15 +169,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     );
 
-    protected static $defaultUnsets = array(
-        Entity::CARD,
-        Entity::SHARED,
-        Entity::NETBANKING,
-        Entity::MERCHANT_ID,
-        Entity::CATEGORY,
-        Entity::NETWORK_CATEGORY
-    );
-
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -187,10 +178,13 @@ class Validator extends Base\Validator
                 Entity::GATEWAY);
         }
 
-        foreach(static::$defaultUnsets as $unset)
-        {
-            unset($input[$unset]);
-        }
+        unset(
+            $input['card'],
+            $input['shared'],
+            $input['netbanking'],
+            $input['merchant_id'],
+            $input['category'],
+            $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -286,24 +280,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
         }
-    }
-
-    public function getExpectedInputKeys(string $gateway)
-    {
-        if (Payment\Gateway::isValidGateway($gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid gateway: ' . $gateway,
-                Entity::GATEWAY);
-        }
-
-        $op = $gateway . '_terminal';
-
-        $ruleOp = $this->getRulesVariableName($op);
-
-        $inputKeys = array_keys(static::$$ruleOp);
-
-        return array_merge(static::$defaultUnsets, $inputKeys);
     }
 
     public function usedTerminalValidator($terminal, $input)

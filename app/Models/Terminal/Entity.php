@@ -271,18 +271,6 @@ class Entity extends Base\PublicEntity
         return Crypt::decrypt($secret);
     }
 
-    protected function getGatewayReconPasswordAttribute()
-    {
-        $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
-
-        if ($reconPassword === null)
-        {
-            return $reconPassword;
-        }
-
-        return Crypt::decrypt($reconPassword);
-    }
-
     protected function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
@@ -429,17 +417,6 @@ class Entity extends Base\PublicEntity
         $terminal = $this->toArray();
 
         $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPasswordAttribute();
-
-        return $terminal;
-    }
-
-    public function toArrayWithSecrets()
-    {
-        $terminal = $this->toArray();
-
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPasswordAttribute();
-        $terminal[self::GATEWAY_SECURE_SECRET] = $this->getGatewaySecureSecretAttribute();
-        $terminal[self::GATEWAY_RECON_PASSWORD] = $this->getGatewayReconPasswordAttribute();
 
         return $terminal;
     }

@@ -8,7 +8,6 @@ use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Merchant\Entity as Merchant;
 use Database\DefaultConnection as DefaultDbConn;
 use Symfony\Component\Console\Input\InputOption;
-use RZP\Models\Terminal\Validator as TerminalValidator;
 
 class CopyTerminal extends Command
 {
@@ -59,24 +58,17 @@ class CopyTerminal extends Command
 
         DefaultDbConn::set($mode);
 
-        $terminal = $this->repo->terminal->findOrFail($terminalId)->toArrayWithSecrets();
+        $terminal = $this->repo->terminal->findOrFail($terminalId);
 
-        if ($terminal['shared'] === true)
+        if ($terminal->isShared() === true)
         {
             return $this->error('Shared terminal cannot be copied.');
         }
 
-        unset(
-            $terminal['created_at'],
-            $terminal['updated_at'],
-            $terminal['deleted_at'],
-            $terminal['used_count'],
-            $terminal['enabled']);
-
         $terminalHeaders = ['key', 'value'];
         $terminalRow = [];
 
-        foreach($terminal as $key => $value)
+        foreach($terminal->toArray() as $key => $value)
         {
             $terminalRow[] = [$key, $value];
         }
@@ -88,27 +80,20 @@ class CopyTerminal extends Command
             return;
         }
 
-        $terminalRules = (new TerminalValidator)->getExpectedInputKeys($terminal['gateway']);
-        $notRequiredKeys = array_diff(array_keys($terminal), $terminalRules);
-
-        foreach ($notRequiredKeys as $key)
-        {
-            unset($terminal[$key]);
-        }
-
         $tableData = [];
+
+        unset($terminal['used_count']);
 
         foreach ($merchantIds as $merchantId)
         {
-            $terminal['merchant_id'] = $merchantId;
-
             if (($mode === 'live') and
                 ($this->confirm('Do you want to proceed for ' . $merchantId . '?') === false))
             {
                 continue;
             }
 
-            $newTerminal = (new Terminal)->build($terminal);
+            $newTerminal = $terminal->replicate();
+            $newTerminal['merchant_id'] = $merchantId;
 
             $this->repo->saveOrFail($newTerminal);
 
