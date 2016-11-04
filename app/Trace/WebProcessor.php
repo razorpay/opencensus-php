@@ -54,12 +54,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected function addMerchantId()
     {
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        if (empty($merchant) === false)
-        {
-            $this->serverData['merchant_id'] = $merchant->getId();
-        }
+        $this->serverData['merchant_id'] = $this->app['basicauth']->getMerchantIdOfKey();
     }
 
     public function getServerData()
