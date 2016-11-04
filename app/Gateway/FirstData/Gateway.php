@@ -23,11 +23,8 @@ class Gateway extends Base\Gateway
 {
     use Base\AuthorizeFailed;
 
-    const CERTIFICATE_DIRECTORY_NAME        = 'cert_dir_name';
-    const CERTIFICATE_FORMAT_P12            = 'p12';
-
-    const PROCESSING                        = 'PROCESSING';
-    const SERVICES                          = 'SERVICES';
+    const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
+    const CERTIFICATE_FORMAT_P12     = 'p12';
 
     const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
 
@@ -339,6 +336,16 @@ class Gateway extends Base\Gateway
         {
             foreach ($verifyResponse->children('a1', true) as $transactionValue)
             {
+                // FirstData has several components or services
+                // The auth request is sent to the Connect service,
+                // so here we're only interested in that one.
+                $component = $transactionValue->children('a1', true)->SubmissionComponent->__toString();
+
+                if ($component !== Component::CONNECT)
+                {
+                    continue;
+                }
+
                 $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
@@ -533,7 +540,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getRelativeUrl($type)
+    protected function getRelativeUrl($component)
     {
         $servicesApiActionList = [
             Action::CAPTURE,
@@ -543,16 +550,16 @@ class Gateway extends Base\Gateway
 
         if (in_array($this->action, $servicesApiActionList))
         {
-            $type = self::SERVICES;
+            $component = Component::API;
         }
         else
         {
-            $type = self::PROCESSING;
+            $component = Component::CONNECT;
         }
 
         $ns = $this->getGatewayNamespace();
 
-        return constant($ns . '\Url::' . $type);
+        return constant($ns . '\Url::' . $component);
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $options = [])
