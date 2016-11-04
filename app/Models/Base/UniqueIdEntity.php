@@ -180,6 +180,9 @@ class UniqueIdEntity extends Entity
 
         $res = preg_match($uniqueIdCheckRegex, $id);
 
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
         if ((($res === 0) or ($res === false)) and ($throw))
         {
             throw new Exception\BadRequestValidationFailureException(
