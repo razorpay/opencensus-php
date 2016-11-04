@@ -26,8 +26,6 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
     const FILE                      = 'file';
 
-    protected $table = Table::BATCH;
-
     protected static $sign = 'batch';
 
     protected $entity = 'batch';

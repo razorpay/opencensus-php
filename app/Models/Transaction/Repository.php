@@ -18,9 +18,7 @@ use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Transaction';
+    protected $entity = 'transaction';
 
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',

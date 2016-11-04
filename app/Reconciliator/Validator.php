@@ -109,7 +109,7 @@ class Validator
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
 
         if ((isset($acceptedExtensionsMap[$extension]) === false) or
-            (in_array($mimeType, $acceptedExtensionsMap[$extension]) === false))
+            (in_array($mimeType, $acceptedExtensionsMap[$extension], true) === false))
         {
             return false;
         }

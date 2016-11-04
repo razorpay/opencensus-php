@@ -9,9 +9,7 @@ use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'BankAccount';
+    protected $entity = 'bank_account';
 
     const WITH_TRASHED = 'deleted';
 

@@ -1326,7 +1326,7 @@ trait Authorize
             $sources = ['checkoutjs', 's2s'];
 
             if ((isset($input['_']['source']) === false) or
-                (in_array($input['_']['source'], $sources) === false))
+                (in_array($input['_']['source'], $sources, true) === false))
             {
                 return false;
             }
@@ -1488,7 +1488,7 @@ trait Authorize
 
         $paymentBank = $payment->getBank();
 
-        if (in_array($paymentBank, $merchantBanks) === false)
+        if (in_array($paymentBank, $merchantBanks, true) === false)
         {
             $customProperties = [
                 'merchant_banks' => $merchantBanks,

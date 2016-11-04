@@ -75,8 +75,6 @@ class Entity extends Base\Entity
         'vpc_VerType',
     );
 
-    protected $table = 'axis';
-
     protected $guarded = array();
 
     protected $entity = 'axis_migs';

@@ -19,13 +19,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT    = 'created_at';
     const UPDATED_AT    = 'updated_at';
 
-    protected $table = Constants\Table::SETTLEMENT_DETAIL;
-
     protected $entity = 'settlement_details';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected $generateIdOnCreate = true;
 

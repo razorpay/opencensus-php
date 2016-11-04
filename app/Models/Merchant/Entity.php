@@ -46,13 +46,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = \RZP\Constants\Table::MERCHANT;
-
     protected $entity = 'merchant';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);
