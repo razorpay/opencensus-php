@@ -10,9 +10,8 @@ use RZP\Models\Merchant;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Methods';
+    protected $entity = 'methods';
 
     protected $appFetchParamRules = array(
         Entity::AMEX        => 'sometimes|in:0,1',

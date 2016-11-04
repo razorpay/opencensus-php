@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const ACTION        = 'action';
     const RECEIVED      = 'received';
 
+    public $incrementing = true;
+
     public function getReceived()
     {
         return $this->getAttribute(self::RECEIVED);

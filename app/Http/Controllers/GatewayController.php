@@ -135,7 +135,7 @@ class GatewayController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        $result = $this->getGatewayEntityAndModeByTraceId($input[3]);
+        $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
 
         $nb = $result['nb'];
 
@@ -173,11 +173,11 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    protected function getGatewayEntityAndModeByTraceId($traceId)
+    protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
 
-        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
+        $repo = $app['repo']->netbanking;
 
         $mode = 'test';
 

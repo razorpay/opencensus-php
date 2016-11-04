@@ -14,8 +14,6 @@ class Entity extends Base\PublicEntity
     const AMOUNT_CREDITS = 'credits';
     const FEE_CREDITS    = 'fee_credits';
 
-    protected $table = Table::BALANCE;
-
     protected $fillable = array(
         self::ID);
 

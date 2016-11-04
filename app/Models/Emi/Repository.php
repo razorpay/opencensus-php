@@ -7,7 +7,6 @@ use RZP\Models\Card\Network;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'emi_plan';

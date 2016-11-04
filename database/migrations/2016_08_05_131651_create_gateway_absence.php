@@ -14,7 +14,7 @@ class CreateGatewayAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::GATEWAY_STATUS_ABSENCE, function(Blueprint $table) {
+        Schema::create(Table::GATEWAY_ABSENCE, function(Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->char(DowntimeTrace::ID, DowntimeTrace::ID_LENGTH);
@@ -57,6 +57,6 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::GATEWAY_STATUS_ABSENCE);
+        Schema::drop(Table::GATEWAY_ABSENCE);
     }
 }

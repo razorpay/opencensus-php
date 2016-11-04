@@ -190,7 +190,7 @@ class PublicEntity extends UniqueIdEntity
     {
         static::stripSignOrFail($id);
 
-        UniqueIdEntity::verifyUniqueId($id, true);
+        static::verifyUniqueId($id, true);
 
         return $id;
     }
@@ -199,7 +199,7 @@ class PublicEntity extends UniqueIdEntity
     {
         static::stripSign($id);
 
-        UniqueIdEntity::verifyUniqueId($id, true);
+        static::verifyUniqueId($id, true);
 
         return $id;
     }

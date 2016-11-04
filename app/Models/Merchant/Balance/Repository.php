@@ -8,8 +8,6 @@ use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'balance';
 
     // protected $appFetchParamRules = array(

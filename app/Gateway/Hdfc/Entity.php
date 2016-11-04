@@ -46,10 +46,6 @@ class Entity extends Base\Entity
         'error_text',
     );
 
-    protected $table = 'hdfc';
-
-    protected $primaryKey = 'id';
-
     protected $entity = 'hdfc';
 
     public $incrementing = true;

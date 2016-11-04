@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Base;
 
 use RZP\Base\JitValidator;
 use RZP\Constants;
@@ -348,30 +348,14 @@ trait RepositoryFetch
 
     protected function addQueryParamFrom($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
-    }
-
-    protected function addQueryParamEmail($query, $params)
-    {
-        $repo = $this->repo;
-
-        $attribute = $repo::getAttributeWithTableName(Common::EMAIL);
-
-        // Email should be case insensitive
-        $email = mb_strtolower($params['email']);
-
-        $query = $query->where($attribute, '=', $email);
     }
 
     protected function addQueryOrder($query)
@@ -432,18 +416,11 @@ trait RepositoryFetch
     {
         // Using created_at and not updated_at because updated_at is not indexed.
         return $this->newQuery()
-                    ->select('id', 'notes', 'merchant_id', 'created_at')
-                    ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
-                    ->orderBy('id', 'desc')
+                    ->select(Common::ID, 'notes', Common::MERCHANT_ID, Common::CREATED_AT)
+                    ->where(Common::CREATED_AT, '>=', $createdAt)
+                    ->orderBy(Common::ID, 'desc')
                     ->skip($skip)
                     ->take($count)
                     ->get();
-    }
-
-    protected function getAttributeWithTableName($col)
-    {
-        $repo = $this->repo;
-
-        return $repo::getTableName() . '.' . $col;
     }
 }

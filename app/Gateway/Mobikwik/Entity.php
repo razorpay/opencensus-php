@@ -44,8 +44,6 @@ class Entity extends Base\PublicEntity
         'ispartial'
     );
 
-    protected $table = 'mobikwik';
-
     protected $guarded = array();
 
     protected static $sign = 'pay';
