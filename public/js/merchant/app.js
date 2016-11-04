@@ -173,6 +173,9 @@ var app = angular.module('app', [
     .state('app.invoices', {
       url: '/invoices',
       template: '<invoices-list />'
+    }).state('app.invoicesnew', {
+      url: '/invoices/new',
+      template: '<invoices-new />'
     })
 
 

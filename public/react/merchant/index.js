@@ -6,7 +6,8 @@ import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
 import SessionProvider from './SessionProvider'
 import store from './store'
 
-import InvoicesList from './containers/Invoices/List'
+import InvoicesListContainer from './containers/Invoices/List'
+import InvoicesNewContainer from './containers/Invoices/New'
 
 // This is required for ngReact. Remove this finally
 window.React = React
@@ -59,4 +60,5 @@ function createNgDirective(directiveName, component, ...args) {
   ])
 }
 
-createNgDirective('invoicesList', InvoicesList)
+createNgDirective('invoicesList', InvoicesListContainer)
+createNgDirective('invoicesNew', InvoicesNewContainer)

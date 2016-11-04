@@ -11,7 +11,6 @@ export default class SessionProvider extends Component {
   componentWillMount() {
     let user = this.props.user
     let identity = user.getIdentity()
-    debugger
     this.session = session.initialize(identity)
   }
 

@@ -19,7 +19,13 @@ export default class InvoicesListContainer extends Component {
 
     return (
       <div>
-        <Header title='Invoices' />
+        <Header title='Invoices'>
+          <a href='#/app/invoices/new' className='pull-right btn btn-primary btn-rounded'>
+            <i className='fa fa-plus'></i>
+            <span>New Invoice</span>
+          </a>
+        </Header>
+
         <div className='content-wrapper'>
           <div className='panel panel-default'>
             <InvoicesList invoices={invoices} isLoading={loading} />
