@@ -81,7 +81,6 @@ class Entity
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
-        self::EBS                   => \RZP\Gateway\Ebs::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
@@ -116,7 +115,6 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
@@ -135,7 +133,6 @@ class Entity
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 

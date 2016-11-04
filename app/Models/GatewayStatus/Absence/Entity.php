@@ -33,7 +33,6 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::TO,
         self::CREATED_AT,
-
         self::UPDATED_AT,
         self::REASON,
         self::SCHEDULED
