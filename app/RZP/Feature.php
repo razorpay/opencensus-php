@@ -7,9 +7,9 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 
 class Feature extends Entity
 {
-	public function getFeatures($entityType, $entityId)
+	public function getFeatures($entityId)
 	{
-		$relativeUrl = $this->getEntityUrl().$entityType.'/'.$entityId;
+		$relativeUrl = $this->getEntityUrl().$entityId;
 
 		return $this->request('GET', $relativeUrl)->toArray();
 	}
@@ -21,9 +21,9 @@ class Feature extends Entity
         return $this->request('POST', $relativeUrl, $params)->toArray();
     }
 
-    public function deleteFeature($featureId)
+    public function deleteFeature($entityId, $featureName)
     {
-        $relativeUrl = $this->getEntityUrl().$featureId;
+        $relativeUrl = $this->getEntityUrl().$entityId.'/'.$featureName;
 
         return $this->request('DELETE', $relativeUrl)->toArray();
     }

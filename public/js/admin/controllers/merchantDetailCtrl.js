@@ -861,7 +861,7 @@ app.controller('MerchantDetailCtrl', [
     }
 
     function getMerchantFeatures() {
-      var request = $http.get('/admin/features/merchant/' + $scope.merchant.id);
+      var request = $http.get('/admin/features/' + $scope.merchant.id);
       request.success(function (data) {
         $scope.alerts.resetAlerts(true);
         if (data.success) {
@@ -894,8 +894,8 @@ app.controller('MerchantDetailCtrl', [
       });
     }
 
-    $scope.deleteFeature = function(id) {
-      var request = $http.delete('/admin/features/merchant/' + $scope.merchant.id + '/' + id);
+    $scope.deleteFeature = function(featureName) {
+      var request = $http.delete('/admin/features/' + $scope.merchant.id + '/' + featureName);
       request.success(function(data) {
         if (data.success) {
           $scope.merchant.details.allowedFeatures = data.data.all_features;

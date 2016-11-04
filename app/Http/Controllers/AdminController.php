@@ -292,9 +292,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getEntityFeatures($entityType, $entityId)
+    public function getEntityFeatures($entityId)
     {
-        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityType, $entityId);
+        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -667,10 +667,10 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function deleteEntityFeature($entityType, $entityId, $featureId)
+    public function deleteEntityFeature($entityId, $featureName)
     {
         list($error, $response) = (new Admin\Service)
-            ->deleteEntityFeature($entityType, $entityId, $featureId);
+            ->deleteEntityFeature($entityId, $featureName);
 
         return AppResponse::jsonResponse($error, $response);
     }

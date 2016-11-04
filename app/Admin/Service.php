@@ -443,11 +443,11 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchEntityFeatures($entityType, $entityId)
+    public function fetchEntityFeatures($entityId)
     {
         $this->setApiCredentials();
 
-        $response = $this->api->feature->getFeatures($entityType, $entityId);
+        $response = $this->api->feature->getFeatures($entityId);
 
         return [[], $response];
     }
@@ -1913,7 +1913,7 @@ class Service extends Base\Service
 
             $response = $this->api->feature->setFeatures($params);
 
-            $features = $this->api->feature->getFeatures($entityType, $entityId);
+            $features = $this->api->feature->getFeatures($entityId);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1930,15 +1930,15 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    public function deleteEntityFeature($entityType, $entityId, $featureId)
+    public function deleteEntityFeature($entityId, $featureName)
     {
         $this->setApiCredentials();
 
         try
         {
-            $response = $this->api->feature->deleteFeature($featureId);
+            $response = $this->api->feature->deleteFeature($entityId, $featureName);
 
-            $features = $this->api->feature->getFeatures($entityType, $entityId);
+            $features = $this->api->feature->getFeatures($entityId);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1947,10 +1947,19 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            $this->removeMerchantTag($entityId, $featureName);
+
             return [null, $features];
         }
 
         return [$error, null];
+    }
+
+    private function removeMerchantTag($entityId, $featureName)
+    {
+        $merchant = Merchant\Entity::findOrFail($entityId);
+
+        $merchant->untag($featureName);
     }
 
     private function retagMerchant($entityId, $features)

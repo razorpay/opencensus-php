@@ -146,9 +146,9 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
     Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
 
-    Route::get('/admin/features/{entityType}/{entityId}', 'AdminController@getEntityFeatures');
+    Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
     Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
-    Route::delete('/admin/features/{entityType}/{entityId}/{featureId}', 'AdminController@deleteEntityFeature');
+    Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature');
 
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
