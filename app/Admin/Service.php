@@ -2201,4 +2201,22 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function getOrg($orgId)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials(null, 'live'); // $input['mode']
+
+        try
+        {
+            $data = $this->api->org->fetch($orgId)->toArray();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
 }

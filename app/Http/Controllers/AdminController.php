@@ -21,6 +21,12 @@ class AdminController extends Controller
     protected $redirectTo = '/admin';
     protected $guard = 'admin';
 
+    // Org Name/Key => Org ID
+    // We'll hardcode this for now
+    const ORG_CHART = [
+        'RZP' => 1
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | Admin Controller
@@ -36,6 +42,30 @@ class AdminController extends Controller
     }
 
     public function getIndex()
+    {
+        // Fetch Org details
+
+        list($error, $org) = (new Admin\Service)->getOrg(self::ORG_CHART['RZP']);
+
+        // Do whatever you want to with $org now ...
+
+        if ($org['auth_type'] === 'password')
+        {
+            // It is the default anyway
+            // return view('admin.tmpgetIndex');
+        }
+        else if ($org['auth_type'] === 'google_oauth')
+        {
+            $googleOAuth = $this->triggerGoogleOAuth();
+
+            if (! empty($googleOAuth)) return $googleOAuth;
+        }
+
+        // Default is auth_type = 'password'
+        return view('admin.tmpgetIndex');
+    }
+
+    public function triggerGoogleOAuth()
     {
         $code = Input::get('code');
         $googleService = OAuthFacade::consumer('Google');
@@ -62,7 +92,6 @@ class AdminController extends Controller
                 return redirect((string) $googleService->getAuthorizationUri());
             }
         }
-        return view('admin.tmpgetIndex');
     }
 
     public function postSignin()
