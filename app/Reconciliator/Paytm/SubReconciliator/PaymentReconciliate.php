@@ -4,35 +4,72 @@ namespace RZP\Reconciliator\Paytm;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID          = 'ORDER ID';
-    const COLUMN_TRANSACTION_AMOUNT  = 'TXN_AMOUNT';
-    const COLUMN_SETTLED_AMOUNT      = 'SETTLED AMOUNT';
+    const COLUMN_PAYMENT_ID             = 'order_id';
+    const COLUMN_SERVICE_TAX            = 's_tax';
+    const COLUMN_FEE                    = 'rev_commm';
 
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
+        // This is a hack and is being done only for PayTm because there seem
+        // to be payments in the recon which are not there in our DB.
+        // This is probably because these were done on local.
+        $paymentExists = $this->checkPaymentExists($paymentId);
+
+        if ($paymentExists === false)
+        {
+            return null;
+        }
+
         return $paymentId;
+    }
+
+    protected function checkPaymentExists($paymentId)
+    {
+        $payment = $this->paymentRepo->find($paymentId);
+
+        if ($payment === null)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'    => 'Payment not found in DB.',
+                    'info_code'  => 'PAYMENT_ABSENT',
+                    'payment_id' => $paymentId,
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function getGatewayServiceTax($row)
     {
-        // Paytm recon files do not contain service tax
-        return 0;
+        // Convert service tax into basic unit of currency. (ex: paise)
+        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+
+        return round($serviceTax);
     }
 
     protected function getGatewayFee($row)
     {
-        $fee = $row[self::COLUMN_TRANSACTION_AMOUNT] - $row[self::COLUMN_SETTLED_AMOUNT];
-
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($fee) * 100;
+        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+
+        // Already in basic unit of currency. Hence, no conversion needed
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        $fee += $serviceTax;
 
         return round($fee);
     }
