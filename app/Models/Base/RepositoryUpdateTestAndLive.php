@@ -14,6 +14,7 @@ trait RepositoryUpdateTestAndLive
     public function saveOrFail($entity, array $options = array())
     {
         $this->validateInstanceIsOfCurrentEntity($entity);
+        $this->validateIdGenerated($entity);
 
         $exists = $entity->exists;
 
