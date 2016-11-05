@@ -125,6 +125,8 @@ Route::group([], function()
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
         Route::post('/user/password/reset', 'PasswordController@postRemind');
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
+
+        Route::post('/user/track_lead', 'UserController@trackLead');
     });
 });
 
