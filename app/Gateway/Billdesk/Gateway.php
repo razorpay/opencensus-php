@@ -10,8 +10,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
-use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -32,7 +30,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getRequestArrayForAuthorize($content, $input);
+        $request = $this->getRequestArrayForAuthorize($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -172,7 +170,6 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
-        $input = $verify->input;
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -563,9 +560,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArrayForAuthorize($content, $input)
+    protected function getRequestArrayForAuthorize($content)
     {
-        $request = $this->getRequestArray($content, $input);
+        $request = $this->getRequestArray($content);
 
         $request['content']['hidRequestId'] = 'PGIME1000';
         $request['content']['hidOperation'] = 'ME100';
@@ -573,7 +570,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content, $input = null)
+    protected function getRequestArray($content)
     {
         $msg = $this->getMessageStringWithHash($content);
 

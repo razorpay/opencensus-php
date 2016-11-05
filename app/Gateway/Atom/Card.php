@@ -47,7 +47,7 @@ class Card
 
     public static  function encode($data)
     {
-        $blockSize = mcrypt_get_block_size(MCRYPT_DES, MCRYPT_MODE_ECB);
+        $blockSize = mcrypt_get_block_size(MCRYPT_DES);
 
         $padded = self::pkcs5_pad($data, $blockSize);
 

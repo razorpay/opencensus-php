@@ -53,7 +53,7 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
-    public function fetchOrderBankAndAccountNumberForMerchant($id, $merchant)
+    public function fetchOrderBankAndAccountNumberForMerchant($id)
     {
         Order\Entity::verifyIdAndStripSign($id);
 

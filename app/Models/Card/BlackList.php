@@ -2,12 +2,9 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Trace\TraceCode;
 
 class BlackList
 {

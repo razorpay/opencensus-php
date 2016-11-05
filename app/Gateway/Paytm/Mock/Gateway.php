@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Paytm\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Paytm;
 

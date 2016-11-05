@@ -2,10 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
-use Carbon\Carbon;
-use RZP\Gateway\Paytm;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
+use RZP\Gateway\Paytm;
 
 class Server extends Base\Mock\Server
 {
@@ -65,7 +64,7 @@ class Server extends Base\Mock\Server
             'Message'           => $payment['error_message'],
         );
 
-        $html = $this->prepareVerifyResponseHtml($content);
+        $html = $this->prepareVerifyResponseHtml();
 
         return $this->prepareResponse($html);
     }
@@ -99,8 +98,6 @@ class Server extends Base\Mock\Server
             'Message',
         );
 
-        $str = '';
-
         $data = [];
 
         foreach ($paramsOrder as $param)
@@ -119,14 +116,8 @@ class Server extends Base\Mock\Server
         return parse_url($url, PHP_URL_HOST);
     }
 
-    protected function prepareVerifyResponseHtml($content)
+    protected function prepareVerifyResponseHtml()
     {
-        $content = http_build_query($content);
-
-        $appUrl = $this->app['config']->get('app.url');
-
-        $redirectUrl = $this->getHostname($appUrl) . '?' . $content;
-
         ob_start();
 
         require ('VerifyResponseHtml.php');

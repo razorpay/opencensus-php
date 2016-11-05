@@ -5,7 +5,6 @@ namespace RZP\Constants;
 use App;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models;

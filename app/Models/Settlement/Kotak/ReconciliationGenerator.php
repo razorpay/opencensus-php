@@ -4,13 +4,13 @@ namespace RZP\Models\Settlement\Kotak;
 
 use App;
 use Carbon\Carbon;
-use RZP\Exception;
 use Excel;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Exception;
 use RZP\Models\Merchant;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement\Kotak;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
+
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode

@@ -2,10 +2,9 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {

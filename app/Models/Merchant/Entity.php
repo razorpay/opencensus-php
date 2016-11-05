@@ -4,9 +4,6 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Terminal\Category;
-use RZP\Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
 {

@@ -3,9 +3,8 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use RZP\Gateway\GatewayManager;
-use CreditCardFraudDetection;
 use RZP;
+use RZP\Gateway\GatewayManager;
 
 class ApiServiceProvider extends BaseServiceProvider
 {

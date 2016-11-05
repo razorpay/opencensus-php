@@ -2,16 +2,14 @@
 
 namespace RZP\Gateway\Mobikwik;
 
+use Lib\PhoneBook;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Mobikwik\Type;
-use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
@@ -507,16 +505,6 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentHash($content)
     {
-        $fieldsInOrder = array(
-            'cell',
-            'email',
-            'amount',
-            'orderid',
-            'redirecturl',
-            'mid');
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
         return $this->getHashOfArray($content);
     }
 

@@ -2,21 +2,19 @@
 
 namespace RZP\Models\Settlement;
 
-use RZP\Constants\Mode;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement\Kotak;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Models\Settlement\Kotak;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
 {
@@ -156,7 +154,7 @@ class Processor extends Base\Core
 
         $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
 
-        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
+        $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
@@ -252,7 +250,6 @@ class Processor extends Base\Core
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
-                                        $setlGatewayFee,
                                         $serviceTax);
 
             $settlements->push($setl);

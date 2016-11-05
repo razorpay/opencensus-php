@@ -2,22 +2,20 @@
 
 namespace RZP\Gateway\Wallet\Olamoney;
 
-use RZP\Trace\Trace;
-use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
-use RZP\Models\Customer\Token;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Wallet\Base;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
-use RZP\Http\Route;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Constants\HashAlgo;
-use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

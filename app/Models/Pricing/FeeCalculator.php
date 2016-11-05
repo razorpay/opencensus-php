@@ -2,14 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Merchant;
-use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -32,25 +30,25 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
+        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount());
 
         return array($fee, $serviceTax, $rule->getKey());
     }
 
 
-    protected function getFees($rule, $amount, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount)
     {
         $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
@@ -352,7 +350,7 @@ class FeeCalculator
      * amount only. This implies that only the merchant subvention rule selection
      * will be applied, irrespective of the subvention type.
      */
-    protected function chooseRuleWithAmount($rules, $amount, $subventionType)
+    protected function chooseRuleWithAmount($rules, $amount)
     {
         return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
     }
@@ -404,10 +402,8 @@ class FeeCalculator
      * and the new amount after using merchant
      * subvention is same then use the given rule
      */
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
+    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount)
     {
-        $fees = [];
-
         foreach ($rules as $rule)
         {
             list($fee, $st) = $this->getFees($rule, $amount);
@@ -453,9 +449,9 @@ class FeeCalculator
      * @param boolean $preCalculationOfFees
      * @return fees
      */
-    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
+    protected function getUnroundedFees($amount, $percent, $fixed)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
     }
 
     /**
@@ -481,7 +477,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
     {
         return (($amount * $percent) / 10000) + $fixed;
     }

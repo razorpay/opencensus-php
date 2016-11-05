@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\App;
 
 use RZP\Models;
 use RZP\Exception;
-use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 

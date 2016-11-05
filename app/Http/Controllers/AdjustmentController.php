@@ -3,9 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Adjustment;
 use Request;
+use RZP\Models\Adjustment;
 
 class AdjustmentController extends Controller
 {

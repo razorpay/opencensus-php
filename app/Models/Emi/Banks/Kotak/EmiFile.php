@@ -2,13 +2,9 @@
 
 namespace RZP\Models\Emi\Banks\Kotak;
 
-use Gateway;
-use RZP\Models\Emi;
-use RZP\Services\TokenEx;
-use RZP\Models\Emi\Banks\Base;
-use RZP\Gateway\Base\Action;
-
 use Carbon\Carbon;
+use RZP\Models\Emi;
+use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
 {
@@ -49,8 +45,6 @@ class EmiFile extends Base\EmiFile
 
     protected function getEmiData($input)
     {
-        $emiPayments = [];
-
         $data = [];
 
         foreach ($input as $emiPayment)
@@ -58,8 +52,6 @@ class EmiFile extends Base\EmiFile
             $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('M d,Y h:i:s A');
 
             $emiPlan = $emiPayment->emiPlan;
-
-            $emiPercent = $emiPlan['rate']/100;
 
             $authCode = $this->getAuthCode($emiPayment);
 

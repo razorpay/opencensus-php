@@ -3,14 +3,12 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception;
-use RZP\Http\Route;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-use Request;
 use Redirect;
+use Request;
+use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class GatewayController extends Controller
 {
@@ -50,8 +48,6 @@ class GatewayController extends Controller
 
     protected function callbackEbs($input)
     {
-        $msg = $input['msg'];
-
         $gateway = $this->app['gateway']->gateway('ebs');
 
         //TODO validate callback

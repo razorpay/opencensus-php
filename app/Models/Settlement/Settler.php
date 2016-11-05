@@ -3,20 +3,15 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-
-use RZP\Constants\Mode;
-use RZP\Models\Base;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
+use RZP\Dashboard\Dashboard;
+use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Dashboard\Dashboard;
-
 use RZP\Trace\TraceCode;
-
 
 class Settler
 {
@@ -90,7 +85,7 @@ class Settler
 
         foreach ($channels as $channel)
         {
-            $res = $this->getOrCreateDailySettlementForToday($input, $channel);
+            $res = $this->getOrCreateDailySettlementForToday($input);
 
             if ($res !== null)
             {
@@ -141,8 +136,6 @@ class Settler
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
-            $urlText = '';
-
             $data['count'] = $settlements->count();
             $data['transaction_count'] = $txns->count();
 
@@ -170,7 +163,7 @@ class Settler
 
         if ($settlements->count() !== 0)
         {
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements);
 
             $data['settlement_text_file'] = $urlText;
 
@@ -313,7 +306,6 @@ class Settler
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
-                $setlAmount = 0;
                 continue;
             }
 
@@ -322,7 +314,6 @@ class Settler
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
-                                        $setlGatewayFee,
                                         $serviceTax);
 
             $settlements->push($setl);
@@ -486,7 +477,7 @@ class Settler
             ]);
     }
 
-    protected function getOrCreateDailySettlementForToday(array $input, $channel)
+    protected function getOrCreateDailySettlementForToday(array $input)
     {
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
