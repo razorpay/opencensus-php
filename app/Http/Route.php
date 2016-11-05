@@ -582,6 +582,7 @@ final class Route
             'setl_post_details_old',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'merchant_migrate_features',
         ),
 
         'mailgun' => array(
