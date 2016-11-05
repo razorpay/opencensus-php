@@ -14,7 +14,7 @@ class Core extends Base\Core
 
         $feature = $feature->generateId();
 
-        $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId())
+        $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId());
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 

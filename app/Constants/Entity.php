@@ -94,7 +94,7 @@ class Entity
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,
         self::PRICING               => \RZP\Models\Pricing::class,
-        self::FEATURE               => \RZP\Models\Feature::class
+        self::FEATURE               => \RZP\Models\Feature::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,

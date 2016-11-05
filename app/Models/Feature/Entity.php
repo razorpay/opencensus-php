@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE
     ];
 
-    protected $modifiers = [
+    protected static $modifiers = [
         self::NAME,
     ];
 
