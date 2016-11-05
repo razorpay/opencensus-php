@@ -141,11 +141,12 @@ class AdminController extends Controller
         $data = (new Admin\Permission\Service)->createPermission($orgId, $input);
 
         return $data;
+    }
 
     /**
     * Admin related functons
     */
-    public function passwordLogin(Admin\Service $Service)
+    public function passwordLogin(Admin\Service $service)
     {
         $input = Request::all();
 
