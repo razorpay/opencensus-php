@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create($orgId, array $input)
     {
         $permission = (new Entity)->build($input);
 

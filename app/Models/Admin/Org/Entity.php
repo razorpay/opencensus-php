@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,
         self::EMAIL,
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,
         self::EMAIL,

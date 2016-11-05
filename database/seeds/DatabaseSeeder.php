@@ -238,6 +238,20 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    => time(),
                 )
             );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'            => '6dLbNSpv5XbCOF',
+                    'auth_type'     => 'password',
+                    'business_name' => 'rzp',
+                    'display_name'  => 'razorpay pvt ltd',
+                    'email'         => 'admin@rzp.in',
+                    'email_domains' => 'rzp.in',
+                    'logo_url'      => '',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ]
+            );
         });
     }
 

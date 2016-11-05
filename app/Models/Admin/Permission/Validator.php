@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Org;
+namespace RZP\Models\Admin\Permission;
 
 use RZP\Models\Base;
 

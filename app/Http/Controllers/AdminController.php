@@ -114,4 +114,35 @@ class AdminController extends Controller
     /**
      * Admin related functons
      */
+    public function createRole(string $orgId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Role\Service)->createRole($orgId, $input);
+
+        return $data;
+    }
+
+    public function getRole(string $orgId, string $roleId)
+    {
+        $data = (new Admin\Role\Service)->getRole($orgId, $roleId);
+
+        return $data;
+    }
+
+    public function getMultipleRoles(string $orgId)
+    {
+        $data = (new Admin\Role\Service)->getMultipleRoles($orgId);
+
+        return $data;
+    }
+
+    public function createPermission(string $orgId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Permission\Service)->createPermission($orgId, $input);
+
+        return $data;
+    }
 }

@@ -24,4 +24,17 @@ class PermissionTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetPermission()
+    {
+        $permission = $this->testCreatePermission();
+
+        $testData = $this->testData['testGetPermission'];
+
+        $testData['request']['url'] = $testData['request']['url'].'/'.$permission['id'];
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest($testData);
+    }
 }

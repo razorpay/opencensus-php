@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'perm';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::ID,
         self::NAME,
@@ -46,4 +48,6 @@ class Entity extends Base\PublicEntity
     {
 
     }
+
+
 }

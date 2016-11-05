@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Role;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Constants;
 
 class Entity extends Base\PublicEntity
@@ -17,6 +18,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'role';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::ID,
         self::NAME,
@@ -26,12 +29,18 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
         self::CREATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ORG_ID,
+    ];
     /**
      * Returns all admins in org for role.
      *
@@ -57,5 +66,13 @@ class Entity extends Base\PublicEntity
     public function permissions()
     {
         return $this->belongsToMany('RZP\Models\Admin\Permission\Entity', Constants\Table::PERMISSION_MAP, 'role_id', 'permission_id');
+    }
+
+    /**
+     * Public setters
+     * */
+    public function setPublicOrgIdAttribute(array &$array)
+    {
+        $array[self::ORG_ID] = Org::getSignedId($array[self::ORG_ID]);
     }
 }
