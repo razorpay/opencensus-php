@@ -64,7 +64,7 @@ class Server extends Base\Mock\Server
             'Message'           => $payment['error_message'],
         );
 
-        $html = $this->prepareVerifyResponseHtml();
+        $html = $this->prepareVerifyResponseHtml($content);
 
         return $this->prepareResponse($html);
     }
@@ -116,8 +116,14 @@ class Server extends Base\Mock\Server
         return parse_url($url, PHP_URL_HOST);
     }
 
-    protected function prepareVerifyResponseHtml()
+    protected function prepareVerifyResponseHtml($content)
     {
+        $content = http_build_query($content);
+
+        $appUrl = $this->app['config']->get('app.url');
+
+        $redirectUrl = $this->getHostname($appUrl) . '?' . $content;
+
         ob_start();
 
         require ('VerifyResponseHtml.php');
