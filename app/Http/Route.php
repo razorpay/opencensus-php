@@ -223,8 +223,7 @@ final class Route
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
         'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',                   'SettlementController@postComputeDailySettlementServiceTax'         ],
-        'features_fetch'                          => ['get',      'features',                                       'MerchantController@getAllFeatures'                                 ],
-        'feature_dummy'                           => ['get',      'features/dummy',                                 'MerchantController@getDummyFeatures'                               ],
+        'feature_dummy'                           => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
@@ -269,6 +268,12 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
+        'merchant_migrate_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'                         ],
+        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
     );
 
     public static $public = array(
@@ -456,7 +461,6 @@ final class Route
         'send_newsletter',
         'merchant_add_features',
         'merchant_get_features',
-        'features_fetch',
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
@@ -481,6 +485,12 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
+        'feature_get_multiple',
+        'feature_add',
+        'feature_delete',
+        'merchant_migrate_features',
+        'feature_bulk_assign',
+        'feature_bulk_remove'
     );
 
     public static $proxy = array(
