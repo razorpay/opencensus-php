@@ -166,20 +166,9 @@ class UserController extends Controller
 
     public function trackLead()
     {
-        $error = $data = null;
-
         $input = Input::all();
 
-        $lead = new Lead\Entity;
-
-        $error = $lead->build($input);
-
-        if (! empty($error))
-        {
-            $error = [ current(array_values($error)) ];
-        }
-
-        $lead->save();
+        list($error, $data) = (new User\Service)->createLead($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

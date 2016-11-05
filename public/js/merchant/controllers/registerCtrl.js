@@ -15,6 +15,7 @@ app.controller('RegisterCtrl', [
     $scope.data = {};
 
     if ($location.search().email) {
+      
       $scope.data.email = $location.search().email;
 
       // XHR to save this email in a generic table
