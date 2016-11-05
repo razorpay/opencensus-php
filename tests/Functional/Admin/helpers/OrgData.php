@@ -4,7 +4,7 @@ return [
 
     'testCreateOrg' => [
         'request' => [
-            'url' => '/org',
+            'url' => '/orgs',
             'method' => 'post',
             'content' => [
                 'email_domains' => 'hdfc.com,fbapi.com',
