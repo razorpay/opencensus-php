@@ -682,12 +682,12 @@ app.controller('ActionsCtrl', [
       };
       if (from && to) {
         // Date from the date api is in GMT
-        fromInGMT = new Date(from).getTime()/1000;
-        toInGMT = new Date(to).getTime()/1000;
+        var fromInGMT = new Date(from).getTime()/1000;
+        var toInGMT = new Date(to).getTime()/1000;
 
-        // Add 19800 to each to convert timestamps to IST
-        fromInIST = fromInGMT + tzGMTToIST;
-        toInIST = toInGMT + tzGMTToIST;
+        // Subtract 19800 from GMT to convert timestamps to IST
+        var fromInIST = fromInGMT - tzGMTToIST;
+        var toInIST = toInGMT - tzGMTToIST;
 
         // Final variable to be sent
         data.from = fromInIST;
