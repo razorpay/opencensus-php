@@ -6,6 +6,7 @@ use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Admin\Token;
 
 class Entity extends Base\PublicEntity
 {
@@ -63,6 +64,11 @@ class Entity extends Base\PublicEntity
     public function roles()
     {
         return $this->belongsToMany('RZP\Models\Admin\Role\Entity', Constants\Table::ADMIN_ROLE, 'admin_id', 'role_id');
+    }
+
+    public function token()
+    {
+        return $this->hasMany('Token\Entity');
     }
 
 }

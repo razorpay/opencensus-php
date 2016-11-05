@@ -52,6 +52,7 @@ class Entity
     const PERMISSION            = 'permission';
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
 
 
     //
@@ -130,6 +131,7 @@ class Entity
         self::PERMISSION            => \RZP\Models\Admin\Permission::class,
         self::GROUP                 => \RZP\Models\Admin\Group::class,
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
+        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
     );
 
     protected static $repository = array(

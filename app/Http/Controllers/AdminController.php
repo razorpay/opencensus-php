@@ -111,9 +111,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    /**
-     * Admin related functons
-     */
     public function createRole(string $orgId)
     {
         $input = Request::all();
@@ -144,5 +141,16 @@ class AdminController extends Controller
         $data = (new Admin\Permission\Service)->createPermission($orgId, $input);
 
         return $data;
+
+    /**
+    * Admin related functons
+    */
+    public function passwordLogin(Admin\Service $Service)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->login($input);
+
+        return ApiResponse::json($data);
     }
 }

@@ -283,6 +283,7 @@ final class Route
         'permission_get'                        => ['get',      'orgs/{id}/permissions',                          'AdminController@getPermission'                                     ],
         'permission_edit'                       => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermission'                                     ],
         'permission_delete'                     => ['delete',   'orgs/{id}/permissions/{permission_id}',          'AdminController@deletePermission'                                  ],
+        'password_login'                        => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
     );
 
     public static $public = array(
@@ -506,6 +507,7 @@ final class Route
         'permission_get',
         'permission_edit',
         'permission_delete',
+        'password_login',
     );
 
     public static $proxy = array(
