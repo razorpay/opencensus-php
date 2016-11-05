@@ -886,12 +886,13 @@ app.controller('MerchantDetailCtrl', [
      * @return {array}
      */
     function getFeatureNames(features) {
-      return features.map(function (feature) {
+      var featureNames = features.map(function (feature) {
         return {
           id: feature.id,
           name: feature.name
         };
       });
+      return featureNames;
     }
 
     $scope.deleteFeature = function(featureName) {
