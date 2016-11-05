@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Exception;
 use Crypt;
@@ -23,8 +22,6 @@ class Entity extends Base\PublicEntity
     protected $entity       = 'webhook';
 
     const MAX_FAILURE_COUNT = 3;
-
-    protected $table        = Table::WEBHOOK;
 
     protected $generateIdOnCreate = true;
 

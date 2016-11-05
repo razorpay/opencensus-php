@@ -49,7 +49,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'pricing';
 
-    protected $generateIdOnCreate = true;
+    // We are explicitly generating Id so that same Id gets stored in live and test db
+    protected $generateIdOnCreate = false;
 
     /**
      * Fields which will be modified before

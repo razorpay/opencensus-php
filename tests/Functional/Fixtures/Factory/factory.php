@@ -306,3 +306,8 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
     'contact'       => '9918899029',
     'email'         => 'a@b.com',
 ]);
+
+$factory(\RZP\Models\Feature\Entity::class, [
+    'id'                => $faker->uniqueid,
+    'entity_type'       => 'merchant'
+]);

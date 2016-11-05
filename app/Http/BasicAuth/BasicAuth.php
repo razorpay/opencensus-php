@@ -416,9 +416,8 @@ class BasicAuth
             //
 
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
-            $allowedFeatures = $this->merchant->getFeatures();
 
-            if (in_array($accessedFeature, $allowedFeatures))
+            if ($this->merchant->isFeatureEnabled($accessedFeature))
             {
                 return null;
             }
@@ -581,7 +580,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->getCurrentRouteName(), $appRoutes) === false)
+        if (in_array($this->getCurrentRouteName(), $appRoutes, true) === false)
         {
             return false;
         }

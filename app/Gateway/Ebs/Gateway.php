@@ -275,7 +275,7 @@ class Gateway extends Base\Gateway
 
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
 
-            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect) !== false)
+            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect, true) !== false)
             {
                 // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
                 $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);

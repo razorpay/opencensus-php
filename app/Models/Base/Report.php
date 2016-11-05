@@ -308,7 +308,7 @@ class Report extends Core
 
     protected function checkAllowedEntity($entity)
     {
-        if (in_array($entity, $this->allowed) === false)
+        if (in_array($entity, $this->allowed, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Pricing\Service as PricingService;
+use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
@@ -47,10 +48,6 @@ class Entity extends Base\PublicEntity
     const ORIGINAL_SIZE             = 'original';
 
     protected $entity = 'merchant';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);
@@ -181,7 +178,8 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures());
+        return (in_array($feature, $this->features(), true)) or
+            $this->checkOldFeatures($feature);
     }
 
     public function activate()
@@ -417,9 +415,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
+    public function features()
+    {
+        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
+                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
+    }
+
     public function getFeatures()
     {
         return $this->getAttribute(self::FEATURES);
+    }
+
+    protected function checkOldFeatures($feature)
+    {
+        if (in_array($feature, $this->getFeatures(), true) === true)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function getBrandColor()
@@ -485,6 +498,21 @@ class Entity extends Base\PublicEntity
         return $awsLogoUrl;
     }
 
+    protected function getFeaturesAttribute()
+    {
+        $features = $this->attributes[self::FEATURES];
+        if (empty($features) === true)
+        {
+            return [];
+        }
+        else
+        {
+            $features = explode(Features::DELIMITER, $features);
+
+            return array_map('trim', $features);
+        }
+    }
+
     protected function getLogoUrlBasedOnSize($logoUrl, $size)
     {
         // Gets the position of last dot.
@@ -507,34 +535,6 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
-    }
-
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-
-        if (empty($features))
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-            return array_map('trim', $features);
-        }
-    }
-
-    protected function setFeaturesAttribute($features)
-    {
-        if (is_array($features))
-        {
-            $this->attributes[self::FEATURES] =
-                implode(Features::DELIMITER, $features);
-        }
-        else
-        {
-            $this->attributes[self::FEATURES] = $features;
-        }
     }
 
     protected function setEmailAttribute($email)
