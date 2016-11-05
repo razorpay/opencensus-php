@@ -230,15 +230,15 @@ class Repository extends Base\Repository
         //                      'wallet_olamoney', 'wallet_freecharge' )
         //        AND `status` = 'failed'
         //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
-        //              OR ( `verify_bucket` = '1'  AND `created_at` < '1478022368' )
+        //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
         //              OR ( `verify_bucket` = '2' AND `created_at` < '1478019668' )
         //              OR ( `verify_bucket` = '3' AND `created_at` < '1477936868' )
         //              OR ( `verify_bucket` = '4' AND `created_at` < '1477850468' )
-        //              OR ( `verify_bucket` = '5'  AND `created_at` < '1477764068' )
+        //              OR ( `verify_bucket` = '5' AND `created_at` < '1477764068' )
         //              OR ( `verify_bucket` = '6' AND `created_at` < '1477677668' )
         //              OR ( `verify_bucket` = '7' AND `created_at` < '1477591268' )
         //              OR ( `verify_bucket` = '8' AND `created_at` < '1477504868' )
-        //              OR ( `verify_bucket` = '9'  AND `created_at` < '1477418468' )
+        //              OR ( `verify_bucket` = '9' AND `created_at` < '1477418468' )
         //            )
         // ORDER  BY Rand()
         // LIMIT  100
