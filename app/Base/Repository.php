@@ -271,4 +271,13 @@ class Repository extends \Razorpay\Spine\Repository
                 'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
         }
     }
+
+    protected function validateIdGenerated($entity)
+    {
+        if ($entity->getKey() === null)
+        {
+            throw new Exception\LogicException(
+                'Unique id not generated for the entity');
+        }
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Closure;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -156,5 +157,33 @@ class Repository extends Base\Repository
         $entity->merchant()->associate($merchant);
 
         return $merchant;
+    }
+
+    /**
+     * Fetches merchant records which have features assigned in chunks of 200
+     * records and passes that to the closure argument for processing
+     * @param  Closure $processData Function to process the merchant records
+     */
+    public function fetchMerchantsWithoutFeatureEntries()
+    {
+        $merchantIds = $this->db->select(
+           'SELECT DISTINCT id
+            FROM merchants
+            WHERE features IS NOT NULL
+              AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id
+                 FROM merchants
+                 JOIN features ON merchants.id = features.entity_id) LIMIT 200');
+
+        $merchantIds = json_decode(json_encode($merchantIds), true);
+
+        $merchantIds = array_map(function ($mid)
+        {
+            return $mid['id'];
+        }, $merchantIds);
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
     }
 }

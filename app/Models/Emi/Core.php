@@ -11,6 +11,8 @@ class Core extends Base\Core
     {
         $emiPlan = (new Entity)->build($input);
 
+        $emiPlan->generateId();
+
         $this->repo->saveOrFail($emiPlan);
 
         return $emiPlan;
