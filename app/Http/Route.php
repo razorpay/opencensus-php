@@ -274,6 +274,7 @@ final class Route
         'org_delete'                              => ['delete',   'orgs/{id}',                                       'AdminController@deleteOrg'                                         ],
         'org_edit'                                => ['put',      'orgs/{id}',                                       'AdminController@putOrg'                                            ],
         'org_get'                                 => ['get',      'orgs/{id}',                                       'AdminController@getOrg'                                            ],
+        'password_login'                          => ['post',     'admin/password_login',                            'AdminController@passwordLogin'                                     ],
     );
 
     public static $public = array(
@@ -487,7 +488,8 @@ final class Route
         'schedule_assign',
 
         'org_create',
-        'org_get'
+        'org_get',
+        'password_login',
     );
 
     public static $proxy = array(

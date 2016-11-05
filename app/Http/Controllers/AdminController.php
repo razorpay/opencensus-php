@@ -114,4 +114,13 @@ class AdminController extends Controller
     /**
      * Admin related functons
      */
+
+    public function passwordLogin(Admin\Service $Service)
+    {
+        $input = Request::all();
+        
+        $data = (new Admin\Admin\Service)->login($input);
+
+        return ApiResponse::json($data);
+    }
 }
