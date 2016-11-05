@@ -99,22 +99,21 @@ print_r($hashedvalue);
 # Beware that you will need to include the submit button to your hash also.
 -->
 <body onload="document.order.submit()">
-<body>
-	<form name="order" action="<?=$vpcURL?>" method="post">
+	<form name="order" action="<?php echo $vpcURL?>" method="post">
 	<p>Please wait while your payment is being processed...</p>
-<?
+<?php
 	// Add all the fields from the input form, except for the Submit Button and the VPCURL.
 	//For Each item In Request.Form
 	foreach($_POST as $key => $value) {
 		if (strlen($value) > 0) {
 ?>
-        	<input type="text" name="<?=$key?>" value="<?=$value?>"/><br>
-<?
+        	<input type="text" name="<?php echo $key?>" value="<?php echo $value?>"/><br>
+<?php
     	}
 	}
 ?>
 	<!-- attach SecureHash -->
-    <input type="text" name="vpc_SecureHash" value="<?=$hashedvalue?>"/>
+    <input type="text" name="vpc_SecureHash" value="<?php echo $hashedvalue?>"/>
 	</form>
 </body>
 </html>
