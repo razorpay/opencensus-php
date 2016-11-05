@@ -69,4 +69,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('Admin\Entity');
     }
+
+    public function roles()
+    {
+        return $this->hasMany('RZP\Models\Admin\Admin\Entity');
+    }
 }
