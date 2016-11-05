@@ -32,13 +32,20 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing, $preCalculationOfFees = false, $isFeeBearer = false)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
+        $amount = $entity->getAmount();
+
+        if ($isFeeBearer === true)
+        {
+            $amount = $amount - $entity->getFee();
+        }
+
+        list($fee, $serviceTax) = $this->getFees($rule, $amount, $preCalculationOfFees);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
