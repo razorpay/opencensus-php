@@ -55,6 +55,8 @@ class Formatter
 
             foreach ($columns as $column)
             {
+                $row[$index] = trim($row[$index]);
+
                 switch (strtolower($column))
                 {
                     case 'type':

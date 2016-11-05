@@ -147,10 +147,8 @@ class XLSImporter
      *
      * @param array $cleaned        the input entries.
      */
-    protected function enterIntoDB($cleaned, $chunkSize=5000)
+    protected function enterIntoDB($cleaned, $chunkSize = 5000)
     {
-        $time = time();
-
         // Too many entries crashes the sql query
         foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
@@ -207,9 +205,8 @@ class XLSImporter
 
         foreach ($columns as $column)
         {
-            if (($column === IIN\Entity::COUNTRY) or
-                ((empty($dbEntry[$column]) === false) and
-                 (empty($fileEntry[$column]) === false)))
+            if ((empty($dbEntry[$column]) === false) and
+                (empty($fileEntry[$column]) === false))
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
                 {
