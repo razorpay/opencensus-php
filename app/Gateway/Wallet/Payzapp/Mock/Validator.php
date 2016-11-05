@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {
@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         'login_id'                       => 'required|in:random',
         'pgName'                         => 'required|in:hdfcpg',
         'message_hash'                   => 'required|string',
+        'amount'                         => 'required|numeric'
     );
 
     protected static $verifyRules = array(

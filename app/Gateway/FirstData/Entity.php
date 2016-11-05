@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const GATEWAY_TRANSACTION_ID        = 'gateway_transaction_id';
     const ENDPOINT_TRANSACTION_ID       = 'endpoint_transaction_id';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
+    const AUTH_CODE                     = 'auth_code';
     const APPROVAL_CODE                 = 'approval_code';
     const ERROR_MESSAGE                 = 'error_message';
 
@@ -32,6 +33,7 @@ class Entity extends Base\Entity
         self::GATEWAY_TRANSACTION_ID,
         self::ENDPOINT_TRANSACTION_ID,
         self::GATEWAY_TERMINAL_ID,
+        self::AUTH_CODE,
         self::APPROVAL_CODE,
         self::ERROR_MESSAGE,
     ];
@@ -39,8 +41,6 @@ class Entity extends Base\Entity
     protected $casts = [
         self::AMOUNT => 'int',
     ];
-
-    protected $table = Constants\Table::FIRST_DATA;
 
     protected $primaryKey = self::ID;
 
@@ -53,6 +53,11 @@ class Entity extends Base\Entity
     public function getApprovalCode()
     {
         return $this->getAttribute(self::APPROVAL_CODE);
+    }
+
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTH_CODE);
     }
 
     // ----------------------- Setters ---------------------------------------------

@@ -28,11 +28,7 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \RZP\Constants\Table::METHODS;
-
     protected $entity = 'methods';
-
-    protected static $sign = '';
 
     protected $fillable = array(
         self::MERCHANT_ID,

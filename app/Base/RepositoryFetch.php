@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Base;
 
+use RZP\Base\JitValidator;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
@@ -189,7 +190,12 @@ trait RepositoryFetch
                 $this->fetchParamRules, $this->entityFetchParamRules);
         }
 
-        if (($this->auth->isProxyAuth()) and
+        //
+        // In case of privilege auth, we will merge proxyFetchParamRules
+        // also here otherwise we won't be able to access those filters
+        // in admin fetch
+        //
+        if (($this->auth->isProxyOrPrivilegeAuth()) and
             (isset($this->proxyFetchParamRules)))
         {
             $this->fetchParamRules = array_merge(
@@ -203,7 +209,10 @@ trait RepositoryFetch
                     $this->fetchParamRules, $this->appFetchParamRules);
         }
 
-        validate($this->fetchParamRules, $params);
+        (new JitValidator)->rules($this->fetchParamRules)
+                          ->caller($this)
+                          ->input($params)
+                          ->validate();
 
         $this->validateAdditional($params);
     }
@@ -237,7 +246,7 @@ trait RepositoryFetch
         return $newParams;
     }
 
-    protected function validateAdditional($params)
+    protected function validateAdditional(array $params)
     {
         ;
     }
@@ -289,6 +298,15 @@ trait RepositoryFetch
                     ->findOrFailPublic($id);
     }
 
+    public function validateCustom($func, $attribute, $value, $parameters)
+    {
+        // Function name should start from 'validator'
+
+        assert (strpos($func, 'validator') === 0);
+
+        $this->$func($attribute, $value, $parameters);
+    }
+
     protected function addQueryParamDefault($query, $params, $key)
     {
         if ($params[$key] === 'null')
@@ -330,30 +348,14 @@ trait RepositoryFetch
 
     protected function addQueryParamFrom($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $repo = $this->repo;
-
-        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
-    }
-
-    protected function addQueryParamEmail($query, $params)
-    {
-        $repo = $this->repo;
-
-        $attribute = $repo::getAttributeWithTableName(Common::EMAIL);
-
-        // Email should be case insensitive
-        $email = mb_strtolower($params['email']);
-
-        $query = $query->where($attribute, '=', $email);
     }
 
     protected function addQueryOrder($query)
@@ -414,18 +416,11 @@ trait RepositoryFetch
     {
         // Using created_at and not updated_at because updated_at is not indexed.
         return $this->newQuery()
-                    ->select('id', 'notes', 'merchant_id', 'created_at')
-                    ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
-                    ->orderBy('id', 'desc')
+                    ->select(Common::ID, 'notes', Common::MERCHANT_ID, Common::CREATED_AT)
+                    ->where(Common::CREATED_AT, '>=', $createdAt)
+                    ->orderBy(Common::ID, 'desc')
                     ->skip($skip)
                     ->take($count)
                     ->get();
-    }
-
-    protected function getAttributeWithTableName($col)
-    {
-        $repo = $this->repo;
-
-        return $repo::getTableName() . '.' . $col;
     }
 }

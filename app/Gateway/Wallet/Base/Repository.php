@@ -9,7 +9,7 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Wallet';
+    protected $entity = 'wallet';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',

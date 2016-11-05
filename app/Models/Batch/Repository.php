@@ -10,12 +10,16 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'batch';
 
     protected $proxyFetchParamRules = array(
         Entity::TYPE           => 'sometimes|in:refund',
+    );
+
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::TYPE               => 'sometimes|in:refund',
+        Entity::STATUS             => 'sometimes|in:created,processing,processed',
     );
 
     public function findUnprocessedEntries($limit = 10)

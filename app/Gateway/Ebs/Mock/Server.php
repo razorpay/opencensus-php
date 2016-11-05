@@ -70,9 +70,14 @@ class Server extends Base\Mock\Server
             Response::REQUEST_ID            => random_alpha_string(8),
         );
 
+        $this->content($content);
+
         $content[Response::SECURE_HASH] = $this->generateHash($content);
 
-        $this->content($content);
+        if ($content['IsFlagged'] === 'YES')
+        {
+            $content['IsFlagged'] = 'NO';
+        }
 
         $request = array(
             'url' => $input['return_url'],

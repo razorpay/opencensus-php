@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Key;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Key;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

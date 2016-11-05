@@ -21,8 +21,6 @@ class Entity extends Base\Entity
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
 
-    protected $table = Table::UPI;
-
     public $incrementing = true;
 
     protected $entity = 'upi';

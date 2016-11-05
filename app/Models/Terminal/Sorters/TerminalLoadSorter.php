@@ -15,7 +15,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 5,
+            'load'       => 0,
         ],
 
         // Test terminals, won't be used on prod.
@@ -116,7 +116,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $terminalId = $terminal->getId();
 
-            if (in_array($terminalId, $ruledTerminals) === true)
+            if (in_array($terminalId, $ruledTerminals, true) === true)
             {
                 $applicableRules[$terminalId] = $allRules[$terminalId];
             }

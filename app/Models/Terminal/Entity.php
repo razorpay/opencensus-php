@@ -94,8 +94,6 @@ class Entity extends Base\PublicEntity
         self::ENABLED
     ];
 
-    protected $table = 'terminals';
-
     protected $hidden = [
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
@@ -106,10 +104,6 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $entity = 'terminal';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected static $generators = array('method');
 

@@ -138,7 +138,7 @@ class Server extends Base\Mock\Server
                 $res['result'] = 'AUTH ERROR';
             }
         }
-        elseif ($cardNumber === '4000000000000002')
+        else if ($cardNumber === '4000000000000002')
         {
             // mock timeout exception for enroll
             throw new \Requests_Exception("operation timed out", "operation timed out");
@@ -210,7 +210,7 @@ class Server extends Base\Mock\Server
 
         $cardNumber = $this->data['card'];
 
-        $network = Card\Network::detectNetwork($cardNumber);
+        $network = $this->getCardNetwork($cardNumber);
 
         if ($this->isSpecialCardNumber($cardNumber))
         {
@@ -265,10 +265,8 @@ class Server extends Base\Mock\Server
     {
         $cardNumber = $this->data['card'];
 
-        // @todo: move this to iin
-        $iin = substr($cardNumber, 0, 6);
-        $network = Card\Network::detectNetwork($cardNumber);
-        $type = $this->getCardType($cardNumber, $iin);
+        $network = $this->getCardNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $network);
 
         $res = array();
 
@@ -279,7 +277,7 @@ class Server extends Base\Mock\Server
 
         if (($type === 'credit') or
             ($type === '') or
-            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers) === true))
+            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers, true) === true))
         {
             $res['result'] = 'NOT ENROLLED';
             $res['eci'] = $this->getEci($network);
@@ -304,17 +302,18 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function getCardType($cardNumber, $iin)
+    protected function getCardType($cardNumber, $network)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
         {
             return 'debit';
         }
-        else if (Card\Network::detectNetwork($cardNumber) === Card\Network::MAES)
+        else if ($network === Card\Network::MAES)
         {
             return 'debit';
         }
 
+        $iin = substr($cardNumber, 0, 6);
         $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
 
         if ($cardDetails === null)
@@ -409,7 +408,7 @@ class Server extends Base\Mock\Server
 
         if (isset($this->data['card']))
         {
-            $network = Card\Network::detectNetwork($this->data['card']);
+            $network = $this->getCardNetwork($this->data['card']);
         }
 
         if ($txn === null)
@@ -523,7 +522,7 @@ class Server extends Base\Mock\Server
 
     protected function handleSpecialCardNumber($cardNumber)
     {
-        if (in_array($cardNumber, $this->specialCardNumbers) === false)
+        if (in_array($cardNumber, $this->specialCardNumbers, true) === false)
         {
             throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
         }
@@ -567,5 +566,12 @@ class Server extends Base\Mock\Server
         $error['result'] = $code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
 
         return $error;
+    }
+
+    protected function getCardNetwork($number)
+    {
+        $iin = substr($number, 0, 6);
+
+        return Card\Network::detectNetwork($iin);
     }
 }

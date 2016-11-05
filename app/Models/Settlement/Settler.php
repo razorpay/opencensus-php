@@ -45,8 +45,6 @@ class Settler
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
-        $this->increaseAllowedSystemLimits();
-
         $this->preSettlementProcessing();
 
         $this->input = $input;
@@ -397,6 +395,13 @@ class Settler
 
         assert ($merchant->bankAccount !== null);
 
+        // If merchant has a hourly schedule entity assigned to him, his settlements
+        // will be handled by the new Settler defined in Settlement\Processor
+        if ($merchant->hasSchedule() === true)
+        {
+            return false;
+        }
+
         if (($this->mode !== Mode::TEST) and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
@@ -406,9 +411,9 @@ class Settler
         return $shouldSettle;
     }
 
-    protected function createSettlementFile($settlements, $txns)
+    protected function createSettlementFile($settlements)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -431,7 +436,7 @@ class Settler
 
     protected function fetchTransactionsToSettle($input)
     {
-        $ts = $this->initSettlementTimestamp($input);
+        $ts = $this->initSettlementTimestamp();
 
         $ts = time();
 
@@ -448,25 +453,20 @@ class Settler
 
     protected function fetchMerchantTransactionsToSettle($input, $merchant)
     {
-        $ts = time();
-
-        if (($this->mode === Mode::TEST) and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $ts = $input['testSettleTimeStamp'];
-        }
+        $ts = $this->initSettlementTimestamp();
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         return $txns;
     }
 
-    protected function initSettlementTimestamp($input)
+    protected function initSettlementTimestamp()
     {
         if (self::$settlementTimestamp === null)
         {
             // Get the timestamp today at 12 am
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
             self::$settlementTimestamp = $timestamp;
         }
 
@@ -488,29 +488,13 @@ class Settler
 
     protected function getOrCreateDailySettlementForToday(array $input, $channel)
     {
-        $force = $this->isInputValue($input, 'force', '1');
-
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
-        $dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
-
-        if ($dailySettlement !== null)
+        if ($overwrite === true)
         {
-            if ($force === false)
-            {
-                $data['message'] = 'Settlement already done for today!';
-
-                $dailySettlement = null;
-
-                return $data;
-            }
-            else
-            {
-                $this->dailySettlement = $dailySettlement;
-            }
+            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
         }
-
-        if ($overwrite === false)
+        else
         {
             $this->dailySettlement = Settlement\Daily\Entity::newForToday();
         }

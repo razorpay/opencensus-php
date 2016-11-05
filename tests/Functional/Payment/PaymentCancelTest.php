@@ -14,7 +14,7 @@ class PaymentCancelTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
+        $this->testDataFilePath = __DIR__.'/helpers/AuthorizeTestData.php';
 
         parent::setUp();
 

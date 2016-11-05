@@ -60,7 +60,7 @@ final class Route
         'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'              => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
-        'payment_verify_multiple'                 => ['get',      'payments/verify/{filter}',                       'PaymentController@getVerifyPayments'                               ],
+        'payment_verify_multiple'                 => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
@@ -110,12 +110,13 @@ final class Route
         'merchant_get_terminal'                   => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
         'merchant_delete_terminal'                => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
+        'merchant_copy_terminal'                  => ['post',     'merchants/{mid}/terminals/{tid}/copy',           'MerchantController@postCopyTerminal'                               ],
         'merchant_put_payment_methods'            => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
-        'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postFreeCredits',                               ],
+        'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_add_features'                   => ['post',     'merchants/{id}/features',                        'MerchantController@postMerchantFeatures'                           ],
@@ -149,6 +150,10 @@ final class Route
         'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPricingPlanRule'                          ],
         'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePricingPlanRule'                           ],
         'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePricingPlanRuleForce'                      ],
+        'schedule_create'                         => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
+        'schedule_get'                            => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
+        'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                      ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -159,6 +164,8 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
+        'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
@@ -372,6 +379,7 @@ final class Route
         'merchant_daily_report',
         'merchant_delete_terminal',
         'merchant_get_terminals',
+        'merchant_copy_terminal',
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
@@ -403,6 +411,8 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'setl_initiate_schedule',
+        'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
@@ -467,6 +477,10 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
+        'schedule_create',
+        'schedule_get',
+        'schedule_update',
+        'schedule_assign',
     );
 
     public static $proxy = array(
@@ -508,7 +522,7 @@ final class Route
         'batch_fetch_multiple',
         'batch_fetch_by_id',
         'batch_retry',
-        'batch_download_file'
+        'batch_download_file',
     );
 
     public static $direct = array(
@@ -538,6 +552,7 @@ final class Route
 
         'cron' => array(
             'setl_initiate',
+            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',

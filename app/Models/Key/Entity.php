@@ -18,8 +18,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'key';
 
-    protected $table  = \RZP\Constants\Table::KEY;
-
     protected $generateIdOnCreate = true;
 
     protected $public = array(

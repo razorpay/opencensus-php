@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Models\Base;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {

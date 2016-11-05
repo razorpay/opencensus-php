@@ -7,10 +7,9 @@ use RZP\Models\Card;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'IIN';
+    protected $entity = 'iin';
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',

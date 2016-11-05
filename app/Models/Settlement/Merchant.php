@@ -112,6 +112,7 @@ class Merchant
         $details = [];
         $totalServiceTax = 0;
         $totalFee = 0;
+        $totalFeeCredits = 0;
 
         foreach ($entityTypes as $componentType)
         {
@@ -144,6 +145,10 @@ class Merchant
             $totalServiceTax += $txn->getServiceTax();
 
             $totalFee += ($txn->getFee() - $txn->getServiceTax());
+
+            // FeeCredits is either zero or equal to fees.
+            $totalFeeCredits += $txn->getFeeCredits();
+
         }
 
         foreach ($entityTypes as $componentType)
@@ -178,6 +183,15 @@ class Merchant
             'debit',
             null,
             $totalFee);
+
+        if ($totalFeeCredits > 0)
+        {
+            $this->createSetlDetailsEntity(
+                SetlDetails\Component::FEE_CREDITS,
+                'credit',
+                null,
+                $totalFeeCredits);
+        }
     }
 
     protected function createSetlDetailsEntity($component, $type, $count, $amount)
