@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::USERNAME            => 'alpha_dash|between:3,50',
         Entity::PASSWORD            => 'between:6,50',
         Entity::REMEMBER_TOKEN      => 'string|max:250',
-        Entity::OAUTH_ACCESS_TOKEN  => 'string|max:250'
+        Entity::OAUTH_ACCESS_TOKEN  => 'string|max:250',
         Entity::OAUTH_PROVIDER_ID   => 'string|max:250',
         Entity::ORG_ID              => 'required'
     ];
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::USERNAME            => 'alpha_dash|between:3,50',
         Entity::PASSWORD            => 'between:6,50',
         Entity::REMEMBER_TOKEN      => 'string|max:250',
-        Entity::OAUTH_ACCESS_TOKEN  => 'string|max:250'
+        Entity::OAUTH_ACCESS_TOKEN  => 'string|max:250',
         Entity::OAUTH_PROVIDER_ID   => 'string|max:250',
         Entity::ORG_ID              => 'required'
     ];
