@@ -457,8 +457,6 @@ final class Route
         'iin_generate_post',
         'send_test_newsletter',
         'send_newsletter',
-        'merchant_add_features',
-        'merchant_get_features',
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
