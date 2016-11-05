@@ -250,13 +250,37 @@ angular.module('app.services', [])
   '$state',
   'admin',
   '$location',
-  function ($rootScope, $state, admin, $location) {
+  '$http',
+  function ($rootScope, $state, admin, $location, $http) {
     return {
       authorize: function () {
-        return admin.identity().then(function () {
+
+        var promise = admin.identity().then(function () {
+
+          // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
-            if (admin.isAuthenticated() === false)
-              location.reload();
+            if (admin.isAuthenticated() === false) {
+              // location.reload();
+
+              // Fetch org details
+              $http.get('/admin/org').success(function (data) {
+                if (data.success) {
+                  switch (data.data.auth_type) {
+                    case 'password':
+                      $state.go('access.auth.password');
+                      break;
+                    case 'google_oauth':
+                      $state.go('access.auth.google_oauth');
+                      break;
+                  }
+                }
+                else {
+                  // Will cause redirect ?!
+                  $state.go('app.dashboard');
+                }
+              });
+            }
+
             // user is signed in but not authorized for desired state
             if ($rootScope.toState.data.superadmin) {
               admin.identity().then(function (data) {
@@ -264,11 +288,16 @@ angular.module('app.services', [])
                   $state.go('app.dashboard');
               });
             }
-          } else if ($rootScope.toState.data.role === 'guest') {
-            if (admin.isAuthenticated() === true)
+          }
+          // Don't need auth!
+          else if ($rootScope.toState.data.role === 'guest') {
+            if (admin.isAuthenticated() === true) {
               $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+            }
           }
         });
+
+        return promise;
       }
     };
   }

@@ -17,7 +17,11 @@ Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
 
 // Org
-Route::get('/org', 'AdminController@getOrg');
+Route::group(['prefix' => 'admin'], function () {
+    Route::get('/org', 'AdminController@getOrg');
+
+    Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
+});
 
 Route::group([], function()
 {

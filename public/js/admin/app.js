@@ -138,6 +138,26 @@ var app = angular.module('app', [
     }).state('access.signin', {
       url: '/signin',
       templateUrl: 'tpl/admin/page_signin.html'
+    }).state('access.auth', {
+      url: '/auth',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('access.auth.password', {
+      url: '/password',
+      templateUrl: 'tpl/admin/page_signin.html'
+    }).state('access.auth.google_oauth', {
+      url: '/google_oauth',
+      resolve: {
+        http: function ($http) {
+          return $http;
+        }
+      },
+      controller: function (http) {
+        http.get('/admin/google_oauth_url').success(function (data) {
+          if (data.success) {
+            location.href = data.data;
+          }
+        });
+      }
     }).state('access.lockme', {
       url: '/lockme/:username',
       templateUrl: 'tpl/page_lockme.html'

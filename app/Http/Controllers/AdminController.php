@@ -55,20 +55,45 @@ class AdminController extends Controller
 
         // Do whatever you want to with $org now ...
 
-        if ($org->auth_type === 'password')
+        // If the admin is not logged in
+        if (!Auth::guard('admin')->check())
         {
-            // It is the default anyway
-            // return view('admin.tmpgetIndex');
-        }
-        else if ($org->auth_type === 'google_oauth')
-        {
-            $googleOAuth = $this->triggerGoogleOAuth();
+            // Check for google oauth if the admin is not logged in
+            if ($org->auth_type === 'google_oauth')
+            {
+                $response = $this->triggerGoogleOAuth();
 
-            if (! empty($googleOAuth)) return $googleOAuth;
+                if (! empty($response))
+                {
+                    return $response;
+                }
+            }
         }
 
         // Default is auth_type = 'password'
-        // return view('admin.tmpgetIndex');
+        // if ($org->auth_type === 'password')
+        // {
+        //     // It is the default anyway
+        //     return view('admin.tmpgetIndex');
+        // }
+        // else if ($org->auth_type === 'google_oauth')
+        // {
+        //     // $googleOAuth = $this->triggerGoogleOAuth();
+        //     //
+        //     // if (! empty($googleOAuth)) return $googleOAuth;
+        //
+        //     return view('admin.tmpgetIndex');
+        // }
+
+        return view('admin.tmpgetIndex');
+    }
+
+    public function getGoogleOAuthUrl() {
+        $googleService = OAuthFacade::consumer('Google');
+
+        $url = (string) $googleService->getAuthorizationUri();
+
+        return AppResponse::jsonResponse(null, $url);
     }
 
     public function triggerGoogleOAuth()
@@ -76,28 +101,45 @@ class AdminController extends Controller
         $code = Input::get('code');
         $googleService = OAuthFacade::consumer('Google');
 
-        // If the user is not logged in
-        if (!Auth::guard('admin')->check())
+        // if code is provided get user data and sign in
+        if ($code !== null or env('OAUTH_MOCK') === true)
         {
-            // if code is provided get user data and sign in
-            if ($code !== null or env('OAUTH_MOCK') === true)
-            {
-                $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
+            $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
 
-                if (empty($error))
-                {
-                    return redirect('/admin');
-                }
-                else
-                {
-                    return AppResponse::jsonResponse($error, []);
-                }
+            if (empty($error))
+            {
+                // sort of a page reload/refresh
+                return redirect('/admin');
             }
             else
             {
-                return redirect((string) $googleService->getAuthorizationUri());
+                return AppResponse::jsonResponse($error, []);
             }
         }
+
+        // Old code replica
+        // // If the user is not logged in
+        // if (!Auth::guard('admin')->check())
+        // {
+        //     // if code is provided get user data and sign in
+        //     if ($code !== null or env('OAUTH_MOCK') === false)
+        //     {
+        //         $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
+        //
+        //         if (empty($error))
+        //         {
+        //             return redirect('/admin');
+        //         }
+        //         else
+        //         {
+        //             return AppResponse::jsonResponse($error, []);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         return redirect((string) $googleService->getAuthorizationUri());
+        //     }
+        // }
     }
 
     public function postSignin()
