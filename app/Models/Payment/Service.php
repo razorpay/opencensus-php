@@ -756,9 +756,16 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyMultiplePayments($filter)
+    public function verifyMultiplePayments($filter, $input)
     {
-        return (new Verify)->verifyPaymentsWithFilter($filter);
+        $bucket = null;
+
+        if (isset($input['bucket']) === true)
+        {
+            $bucket = $input['bucket'];
+        }
+
+        return (new Verify)->verifyPaymentsWithFilter($filter, $bucket);
     }
 
     public function verifyPayment($payment)

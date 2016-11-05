@@ -261,7 +261,9 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
     {
-            $query->where(Payment\Entity::CREATED_AT, '<=', $minimumTime);
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minimumTime);
     }
 
     /**
@@ -275,13 +277,6 @@ class Repository extends Base\Repository
     protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        // This Condition will give all newly created payments,
-        // which have crossed minimum time threshold.
-        $whereConditions[] = [
-            [Payment\Entity::VERIFY_BUCKET, '=', 0],
-            [Payment\Entity::CREATED_AT , '<', $minimumTime]
-        ];
 
         // Each or condition will fetch payments which are
         // in next Verify Bucket and not processed by previous cron

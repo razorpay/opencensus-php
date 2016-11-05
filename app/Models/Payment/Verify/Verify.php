@@ -20,15 +20,15 @@ class Verify extends Base\Core
      * verify for the payment will be run once for in every boundary bucket.
      */
     protected static $failureStartBoundary = [
-        900,           // 15 Minutes
-        2600,          // 60 Minutes
-        86400,         // 1 Day
-        172800,        // 2 Day
-        259200,        // 3 Day
-        345600,        // 4 Day
-        432000,        // 5 Day
-        518400,        // 6 Day
-        604800,        // 7 Day
+        0 => 900,           // 15 Minutes
+        1 => 2600,          // 60 Minutes
+        2 => 86400,         // 1 Day
+        3 => 172800,        // 2 Day
+        4 => 259200,        // 3 Day
+        5 => 345600,        // 4 Day
+        6 => 432000,        // 5 Day
+        7 => 518400,        // 6 Day
+        8 => 604800,        // 7 Day
         // TODO: Decide on the boundaries.
     ];
 
@@ -102,7 +102,7 @@ class Verify extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function verifyPaymentsWithFilter($filter)
+    public function verifyPaymentsWithFilter($filter, $bucket = null)
     {
         $verifyStatus = null;
 
@@ -114,22 +114,22 @@ class Verify extends Base\Core
         {
             case Filter::PAYMENTS_FAILED:
                 $paymentStatus = Payment\Status::FAILED;
-                $minimumTime = $currentTime - self::FAILURE_MIN_TIME;
+                $minimumTime = self::FAILURE_MIN_TIME;
                 break;
 
             case Filter::PAYMENTS_CREATED:
                 $paymentStatus = Payment\Status::CREATED;
-                $minimumTime = $currentTime - self::CREATED_MIN_TIME;
+                $minimumTime = self::CREATED_MIN_TIME;
                 break;
 
             case Filter::VERIFY_FAILED:
                 $verifyStatus = Status::FAILED;
-                $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
+                $minimumTime =  self::ERRORED_MIN_TIME;
                 break;
 
             case Filter::VERIFY_ERROR:
                 $verifyStatus = Status::ERROR;
-                $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
+                $minimumTime = self::ERRORED_MIN_TIME;
                 break;
 
             default:
@@ -137,6 +137,13 @@ class Verify extends Base\Core
         }
 
         $boundary = $this->getBoundaryInSeconds($filter);
+
+        $boundary[-1] = $minimumTime;
+
+        if ($bucket !== null)
+        {
+            $boundary = [$bucket - 1 => $boundary[$bucket - 1]];
+        }
 
         $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
             $minimumTime, $boundary, $verifyStatus, $paymentStatus);
@@ -477,7 +484,7 @@ class Verify extends Base\Core
      * @return array verify boundary array
      * @throws Exception\LogicException
      */
-    public function getBoundaryInSeconds($filter)
+    public function getBoundaryInSeconds($filter, $bucket = null)
     {
         switch($filter)
         {
