@@ -572,20 +572,20 @@ class FeeCalculator
         return $totaltaxes;
     }
 
-    public function calculateServiceTaxesFromFees($fee, $taxComponents)
+    public function calculateServiceTaxesFromFees($fee, $taxComponents = self::TAX_COMPONENTS)
     {
         $totaltaxes = 0;
 
         foreach ($taxComponents as $name => $percentage)
         {
-            $taxValue = $this->calculateTaxFromFees($fee, $$percentage);
+            $taxValue = $this->calculateTaxFromFees($fee, $percentage);
 
             $taxBreakup = $this->createFeeBreakup(
                                             $name,
                                             $percentage,
                                             $taxValue);
 
-            $this->feesSplit->push($serviceTaxFeeBreakup);
+            $this->feesSplit->push($taxBreakup);
 
             $totaltaxes += $taxValue;
         }
