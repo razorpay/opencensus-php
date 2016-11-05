@@ -302,7 +302,7 @@ trait RepositoryFetch
     {
         // Function name should start from 'validator'
 
-        assert (strpos($func, 'validator') === 0);
+        assert (strpos($func, 'validate') === 0);
 
         $this->$func($attribute, $value, $parameters);
     }
