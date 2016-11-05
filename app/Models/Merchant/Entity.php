@@ -178,8 +178,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return (in_array($feature, $this->features(), true)) or
-            $this->checkOldFeatures($feature);
+        return in_array($feature, $this->features(), true);
     }
 
     public function activate()
@@ -407,20 +406,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
-    }
-
-    public function getFeatures()
-    {
-        return $this->getAttribute(self::FEATURES);
-    }
-
-    protected function checkOldFeatures($feature)
-    {
-        if (in_array($feature, $this->getFeatures(), true) === true)
-        {
-            return true;
-        }
-        return false;
     }
 
     public function getBrandColor()
