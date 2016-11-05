@@ -8,17 +8,15 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-	public function create($input)
-	{
-		$feature = (new Entity)->build($input);
+    public function create($input)
+    {
+        $feature = (new Entity)->build($input);
 
         $feature = $feature->generateId();
 
-        $assignedFeatureNames = $this->repo
-            ->feature
-            ->findByEntityId($feature->getEntityId())
-            ->pluck(Entity::NAME)
-            ->toArray();
+        $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId())
+
+        $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
         if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
         {
@@ -28,5 +26,5 @@ class Core extends Base\Core
         }
 
         return null;
-	}
+    }
 }

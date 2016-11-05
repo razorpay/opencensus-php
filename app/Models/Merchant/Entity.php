@@ -414,14 +414,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEATURES);
     }
 
-    protected function getOldFeatures()
-    {
-        return $this->getAttribute(self::FEATURES);
-    }
-
     protected function checkOldFeatures($feature)
     {
-        if (in_array($feature, $this->getOldFeatures(), true) === true)
+        if (in_array($feature, $this->getFeatures(), true) === true)
         {
             return true;
         }

@@ -6,36 +6,40 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-	const NAME             = 'name';
-	const ENTITY_ID        = 'entity_id';
-	const ENTITY_TYPE      = 'entity_type';
+    const NAME             = 'name';
+    const ENTITY_ID        = 'entity_id';
+    const ENTITY_TYPE      = 'entity_type';
 
-	protected $table = \RZP\Constants\Table::FEATURE;
+    protected $table = \RZP\Constants\Table::FEATURE;
 
-	protected $entity = 'feature';
+    protected $entity = 'feature';
 
     // We are explicitly generating Id so that same Id gets stored in live and test db
     protected $generateIdOnCreate = false;
 
-	protected $fillable = [
-		self::NAME,
-		self::ENTITY_ID,
-		self::ENTITY_TYPE
-	];
+    protected $fillable = [
+        self::NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
+    ];
 
-	protected $public = [
-		self::ID,
-		self::NAME,
-		self::ENTITY_ID,
-		self::ENTITY_TYPE
-	];
+    protected $public = [
+        self::ID,
+        self::NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
+    ];
 
-	protected $visible = [
-		self::ID,
-		self::NAME,
-		self::ENTITY_ID,
-		self::ENTITY_TYPE
-	];
+    protected $visible = [
+        self::ID,
+        self::NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
+    ];
+
+    protected $modifiers = [
+        self::NAME,
+    ];
 
     public function getName()
     {
@@ -52,14 +56,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
-	/**
-	 * Creates a polymorphic relation woth entities
-	 * implementing a morphMany association on the
-	 * 'entity' key
-	 */
-	public function entity()
-	{
-		return $this->morphTo();
-	}
+    /**
+     * Creates a polymorphic relation woth entities
+     * implementing a morphMany association on the
+     * 'entity' key
+     */
+    public function entity()
+    {
+        return $this->morphTo();
+    }
 
+    protected function modifyName(& $input)
+    {
+        if (isset($input[self::NAME]) === true)
+        {
+            $input[self::NAME] = strtolower($input[self::NAME]);
+        }
+    }
 }

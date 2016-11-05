@@ -9,14 +9,14 @@ use Request;
 
 class FeatureController extends Controller
 {
-	public function addFeatures()
-	{
-		$input = Request::all();
+    public function addFeatures()
+    {
+        $input = Request::all();
 
-		$data = (new Feature\Service)->addFeatures($input);
+        $data = (new Feature\Service)->addFeatures($input);
 
-		return ApiResponse::json($data);
-	}
+        return ApiResponse::json($data);
+    }
 
     public function multiAssignFeature()
     {
@@ -36,24 +36,24 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-	public function deleteFeature(string $entityId, string $featureName)
-	{
-		$data = (new Feature\Service)->deleteFeature($entityId, $featureName);
+    public function deleteFeature(string $entityId, string $featureName)
+    {
+        $data = (new Feature\Service)->deleteFeature($entityId, $featureName);
 
-		return ApiResponse::json($data);
-	}
+        return ApiResponse::json($data);
+    }
 
-	public function getFeatures(string $entityId)
-	{
-		$data = (new Feature\Service)->getFeatures($entityId);
+    public function getFeatures(string $entityId)
+    {
+        $data = (new Feature\Service)->getFeatures($entityId);
 
-		return ApiResponse::json($data);
-	}
+        return ApiResponse::json($data);
+    }
 
-	public function migrateMerchantFeatures()
-	{
-		$data = (new Feature\Service)->migrateMerchantFeatures();
+    public function migrateMerchantFeatures()
+    {
+        $data = (new Feature\Service)->migrateMerchantFeatures();
 
-		return ApiResponse::json($data);
-	}
+        return ApiResponse::json($data);
+    }
 }

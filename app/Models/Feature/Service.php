@@ -9,32 +9,31 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-	public function addFeatures($input)
-	{
-		$featureParams = $this->buildFeatureParams($input);
+    public function addFeatures($input)
+    {
+        $featureParams = $this->buildFeatureParams($input);
 
-		$features = $featureParams->map(function ($item) {
-			return (new Core)->create($item);
-		});
+        $features = $featureParams->map(function ($item) {
+            return (new Core)->create($item);
+        });
 
-		return $features->toArray();
-	}
+        return $features->toArray();
+    }
 
-	public function getFeatures(string $entityId)
-	{
-		$response = new Base\Collection;
+    public function getFeatures(string $entityId)
+    {
+        $response = new Base\Collection;
 
-		$response['assigned_features'] = $this->repo->feature->
-				findByEntityId($entityId);
+        $response['assigned_features'] = $this->repo->feature->findByEntityId($entityId);
 
-		// all_features is a list of currently available features in the system
-		$response['all_features'] = Constants::$allFeatures;
+        // all_features is a list of currently available features in the system
+        $response['all_features'] = Constants::$allFeatures;
 
-		return $response;
-	}
+        return $response;
+    }
 
-	public function deleteFeature(string $entityId, string $featureName)
-	{
+    public function deleteFeature(string $entityId, string $featureName)
+    {
         $feature = $this->repo->feature->findByEntityIdAndName($entityId, $featureName);
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
@@ -44,33 +43,37 @@ class Service extends Base\Service
         return $feature->toArrayPublic();
     }
 
-	public function migrateMerchantFeatures()
-	{
-		$response = new Base\Collection;
+    public function migrateMerchantFeatures()
+    {
+        $response = new Base\Collection;
 
         $merchants = $this->repo->merchant->fetchMerchantsWithoutFeatureEntries();
 
         foreach ($merchants as $merchant) {
             $featureParam = [
                 Entity::ENTITY_ID      => $merchant->getId(),
-                Constants::NAMES       => $merchant->features,
+                Constants::NAMES       => $merchant->getFeatures(),
                 Entity::ENTITY_TYPE    => \RZP\Constants\Entity::MERCHANT
             ];
 
             try
             {
-                $response->push($this->addFeatures($featureParam));
+                $features = $this->addFeatures($featureParam);
+
+                $response->push($features);
             }
-            catch (Exception $e)
+            catch (\Exception $e)
             {
-                $this->trace->warn(TraceCode::FEATURE_MIGRATION_EXCEPTION, [
-                    Entity::ENTITY_ID   => $merchant->id,
-                    'msg'               => $e->getMessage()
-                ]);
+                $this->trace->warn(
+                    TraceCode::FEATURE_MIGRATION_EXCEPTION,
+                    [
+                        Entity::ENTITY_ID   => $merchant->getId(),
+                        'msg'               => $e->getMessage()
+                    ]);
             }
         }
         return $response->collapse();
-	}
+    }
 
     public function multiAssignFeature($input)
     {
@@ -78,21 +81,27 @@ class Service extends Base\Service
 
         $response = new Base\Collection;
 
-        foreach ($entityIds as $entityId) {
+        foreach ($entityIds as $entityId)
+        {
             $featureParam = [
                 Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
                 Entity::ENTITY_ID       => $entityId,
                 Entity::NAME            => $input[Entity::NAME]
             ];
+
             try
             {
-                $response->push((new Core)->create($featureParam));
+                $feature = (new Core)->create($featureParam);
+
+                $response->push($feature);
             }
-            catch (Exception $e)
+            catch (\Exception $e)
             {
-                $this->trace->warn(TraceCode::FEATURE_ASSIGNMENT_EXCEPTION, [
-                    'msg' => $e->getMessage()
-                ]);
+                $this->trace->warn(
+                    TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
+                    [
+                        'msg' => $e->getMessage()
+                    ]);
             }
         }
 
@@ -124,26 +133,26 @@ class Service extends Base\Service
         return $response->toArray();
     }
 
-	private function buildFeatureParams($input)
-	{
-		$featureParams = new Base\Collection;
+    private function buildFeatureParams($input)
+    {
+        $featureParams = new Base\Collection;
 
-		$entityType = $input[Entity::ENTITY_TYPE];
+        $entityType = $input[Entity::ENTITY_TYPE];
 
-		$entityId = $input[Entity::ENTITY_ID];
+        $entityId = $input[Entity::ENTITY_ID];
 
-		$featureNames = $input[Constants::NAMES];
+        $featureNames = $input[Constants::NAMES];
 
-		foreach ($featureNames as $featureName)
-		{
-			$featureParams->push([
-				Entity::ENTITY_TYPE     => $entityType,
-				Entity::ENTITY_ID       => $entityId,
-				Entity::NAME            => $featureName
-			]);
-		}
+        foreach ($featureNames as $featureName)
+        {
+            $featureParams->push([
+                Entity::ENTITY_TYPE     => $entityType,
+                Entity::ENTITY_ID       => $entityId,
+                Entity::NAME            => $featureName
+            ]);
+        }
 
-		return $featureParams;
-	}
+        return $featureParams;
+    }
 }
 

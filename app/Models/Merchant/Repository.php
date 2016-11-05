@@ -167,10 +167,14 @@ class Repository extends Base\Repository
      */
     public function fetchMerchantsWithoutFeatureEntries()
     {
-        $merchantIds = $this->db->select('SELECT DISTINCT id from merchants
-            WHERE features IS NOT NULL AND merchants.id NOT IN
-                (SELECT DISTINCT merchants.id FROM merchants JOIN features ON
-                merchants.id = features.entity_id) LIMIT 200');
+        $merchantIds = $this->db->select(
+           'SELECT DISTINCT id
+            FROM merchants
+            WHERE features IS NOT NULL
+              AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id
+                 FROM merchants
+                 JOIN features ON merchants.id = features.entity_id) LIMIT 200');
 
         $merchantIds = json_decode(json_encode($merchantIds), true);
 

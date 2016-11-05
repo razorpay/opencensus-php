@@ -9,22 +9,22 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-	use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive;
 
-	protected $entity = 'feature';
+    protected $entity = 'feature';
 
-	public function findByEntityId(string $entityId)
-	{
-		return $this->newQuery()
-				->where(Entity::ENTITY_ID, '=', $entityId)
-				->get();
-	}
+    public function findByEntityId(string $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->get();
+    }
 
     public function findByEntityIdAndName(string $entityId, string $featureName)
     {
         return $this->newQuery()
-                ->where(Entity::ENTITY_ID, '=', $entityId)
-                ->where(Entity::NAME, '=', $featureName)
-                ->first();
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->where(Entity::NAME, '=', $featureName)
+                    ->first();
     }
 }
