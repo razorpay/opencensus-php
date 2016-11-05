@@ -661,7 +661,7 @@ final class Route
             $key = '';
         }
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         $url = $this->getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
@@ -686,7 +686,7 @@ final class Route
 
         $parameters['key_id'] = $key;
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         return $schema . $host . $urlSegment;
     }

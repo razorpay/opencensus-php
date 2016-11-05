@@ -112,6 +112,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateCurrency($input)
+    {
+        $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
