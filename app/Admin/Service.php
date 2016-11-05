@@ -1973,10 +1973,12 @@ class Service extends Base\Service
 
     private function getFeatureNames($features)
     {
-        return array_map(function ($f)
+        $featureNames = array_map(function ($feature)
         {
-            return $f['name'];
+            return $feature['name'];
         }, $features);
+
+        return $featureNames;
     }
 
     public function getMerchantTags($merchantId)
