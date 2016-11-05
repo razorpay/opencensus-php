@@ -9,30 +9,25 @@ return [
     'testAddFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'features'    => 'dummy',
+                'names'             => ['dummy', 's2s'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000',
-                //'features' => 'dummy'
-            ],
-        ],
-    ],
-
-    'testResetFeatureForMerchant' => [
-        'request' => [
-            'content' => [
-                'features'    => '',
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'id' => '10000000000000',
+                [
+                    'name'              => 'dummy',
+                    'entity_id'         => '10000000000000',
+                    'entity_type'       => "merchant"
+                ],
+                [
+                    'name'              => 's2s',
+                    'entity_id'         => '10000000000000',
+                    'entity_type'       => "merchant"
+                ]
             ],
         ],
     ],
@@ -40,9 +35,11 @@ return [
     'testAddInvalidFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'features'    => 'invalid',
+                'names'             => ['invalid'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features',
             'method' => 'POST'
         ],
         'response' => [
@@ -59,39 +56,170 @@ return [
         ],
     ],
 
+    'testAddDuplicateFeatureToMerchant' => [
+        'request' => [
+            'content' => [
+                'names'             => ['dummy'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
+            ],
+            'url' => '/features',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                null
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testMigrateMerchantFeature' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/features/migrate',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "merchant"
+                ],
+            ]
+        ]
+    ],
+
+    'testMultiAssignFeature' => [
+        'request' => [
+            'content' => [
+                'name'          => 'dummy',
+                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"],
+                'entity_type'   => 'merchant'
+            ],
+            'url' => '/features/assign',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "merchant"
+                ],
+            ]
+        ]
+    ],
+
+    'testMultiRemoveFeature' => [
+        'request' => [
+            'content' => [
+                'name'          => 'dummy',
+                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"]
+            ],
+            'url' => '/features/remove',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000001',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000002',
+                    'entity_type'   => "merchant"
+                ],
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000003',
+                    'entity_type'   => "merchant"
+                ],
+            ]
+        ]
+    ],
+
     'testGetFeatureListForMerchant' => [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/features/10000000000000',
             'method' => 'GET'
         ],
         'response' => [
-            'content' => [
-                "dummy"
-            ],
-        ],
+            "content" => [
+                "assigned_features" => [
+                    [
+                        "name"              => "dummy",
+                        "entity_id"         => "10000000000000",
+                        "entity_type"       => "merchant"
+                    ],
+                    [
+                        "name"              => "s2s",
+                        "entity_id"         => "10000000000000",
+                        "entity_type"       => "merchant"
+                    ],
+                ],
+                "all_features" => [
+                    "dummy",
+                    "webhooks",
+                    "aggregator",
+                    "tokens",
+                    "s2swallet",
+                    "setl_report",
+                    "cardsaving",
+                    "recurring",
+                    "s2s"
+                ]
+            ]
+        ]
     ],
 
-    'testGetAllFeatures' => [
+    'testDeleteFeatureFromMerchant' => [
         'request' => [
             'content' => [
             ],
-            'url' => '/features',
-            'method' => 'GET'
+            'url' => '/features/10000000000000/dummy',
+            'method' => 'DELETE'
         ],
         'response' => [
             'content' => [
-                "dummy","webhooks"
-            ],
-        ],
+                'name' => 'dummy',
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ]
+        ]
     ],
 
     'testDummyFeatureRouteWithoutAccess' => [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/dummy',
+            'url' => '/dummy',
             'method' => 'GET'
         ],
         'response' => [
@@ -109,7 +237,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/features/dummy',
+            'url' => '/dummy',
             'method' => 'GET'
         ],
         'response' => [

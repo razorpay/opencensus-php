@@ -3,6 +3,8 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use CreditCardFraudDetection;
 use RZP;
@@ -95,6 +97,16 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+    }
+
+    /**
+     * Defines string to className map for polymorphic associations
+     */
+    public function boot()
+    {
+        Relation::morphMap([
+            'merchant' => Constants\Entity::getEntityClass(Constants\Entity::MERCHANT),
+        ]);
     }
 
     /**
