@@ -143,9 +143,16 @@ class Verify extends Base\Core
 
         $boundary = $this->getBoundaryInSeconds($filter);
 
-        // We Fetch Twice the number of required payments, and filtering extra payments in later stage
+        //
+        // We Fetch Twice the number of required payments,
+        // and filtering extra payments in later stage
+        //
         $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
-            $minimumTime, $boundary, $verifyStatus, $paymentStatus, self::ROWS_TO_FETCH * 2);
+                                                                $minimumTime,
+                                                                $boundary,
+                                                                $verifyStatus,
+                                                                $paymentStatus,
+                                                                self::ROWS_TO_FETCH * 2);
 
         $payments = $paymentsCollectionWithCount['payments'];
 
@@ -240,7 +247,9 @@ class Verify extends Base\Core
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
-        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
+        // Get payment ids to lock
+        $lockedPaymentIds = $this->mutex->acquireMultiple(
+            $paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
 
         $this->trace->info(
             TraceCode::VERIFY_LOCKED_PAYMENTS,
@@ -250,9 +259,11 @@ class Verify extends Base\Core
                 'filter'                 => $filter,
             ]);
 
+        // Lock all payments by payment ids
         $lockedPayments = $payments->whereIn(Payment\Entity::ID, $lockedPaymentIds['locked']);
 
-        // If more payments are locked, release lock on extra payments
+        // If more payments are locked,
+        // release lock on extra payments
         if ($lockedPayments->count() > self::ROWS_TO_FETCH)
         {
             $chunkedLockedPayments = $lockedPayments->chunk(self::ROWS_TO_FETCH);
@@ -262,6 +273,7 @@ class Verify extends Base\Core
             $lockedPayments = $chunkedLockedPayments[0];
         }
 
+        // Return final locked payments
         return $lockedPayments;
     }
 
