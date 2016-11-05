@@ -44,17 +44,23 @@ class AdminController extends Controller
     public function getIndex()
     {
         // Fetch Org details
+        $org = $this->getOrg()->getData();
 
-        list($error, $org) = (new Admin\Service)->getOrg(self::ORG_CHART['RZP']);
+        if (!$org->success)
+        {
+            return AppResponse::jsonResponse('Something is broken.');
+        }
+
+        $org = $org->data;
 
         // Do whatever you want to with $org now ...
 
-        if ($org['auth_type'] === 'password')
+        if ($org->auth_type === 'password')
         {
             // It is the default anyway
             // return view('admin.tmpgetIndex');
         }
-        else if ($org['auth_type'] === 'google_oauth')
+        else if ($org->auth_type === 'google_oauth')
         {
             $googleOAuth = $this->triggerGoogleOAuth();
 
@@ -62,7 +68,7 @@ class AdminController extends Controller
         }
 
         // Default is auth_type = 'password'
-        return view('admin.tmpgetIndex');
+        // return view('admin.tmpgetIndex');
     }
 
     public function triggerGoogleOAuth()
@@ -101,6 +107,13 @@ class AdminController extends Controller
         list($error, $data) = (new Admin\Service)->login($input);
 
         return AppResponse::jsonResponse($error);
+    }
+
+    public function getOrg()
+    {
+        list($error, $data) = (new Admin\Service)->getOrg(self::ORG_CHART['RZP']);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdmin()

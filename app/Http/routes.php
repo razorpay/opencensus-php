@@ -11,9 +11,27 @@
 */
 Route::get('/', 'UserController@getIndex')->name('dashboard');
 Route::get('/admin', 'AdminController@getIndex');
+
 // This is for enabling CORS support on contact form submissions
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
+
+// Org
+Route::get('/org', 'AdminController@getOrg');
+
+Route::group([], function()
+{
+    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
+    Route::group([], function()
+    {
+        Route::post('/user/signin', 'UserController@postSignin');
+        Route::post('/user/register', 'UserController@postRegister');
+        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
+        Route::post('/user/password/reset', 'PasswordController@postRemind');
+        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
+    });
+});
+
 Route::group(['middleware'  =>  'auth:user'], function()
 {
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
@@ -114,18 +132,6 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     // Registers a sub-merchant account
     Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
-});
-Route::group([], function()
-{
-    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
-    Route::group([], function()
-    {
-        Route::post('/user/signin', 'UserController@postSignin');
-        Route::post('/user/register', 'UserController@postRegister');
-        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
-        Route::post('/user/password/reset', 'PasswordController@postRemind');
-        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
-    });
 });
 
 Route::group(['middleware'  =>  'slack'], function ()

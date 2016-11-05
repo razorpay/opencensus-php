@@ -29,11 +29,14 @@ var app = angular.module('app', [
       // track the state the user wants to go to; authorization service needs this
       $rootScope.toState = toState;
       $rootScope.toStateParams = toStateParams;
+
       // if the user is resolved, do an authorization check immediately. otherwise,
       // it'll be done when the state it resolved.
-      if (admin.isIdentityResolved())
+      if (admin.isIdentityResolved()) {
         adminAuthorization.authorize();
+      }
     });
+
     $rootScope.$on('$stateChangeError', function (event) {
       $state.go('500');
     });
