@@ -138,8 +138,11 @@ class Verify extends Base\Core
 
         $boundary = $this->getBoundaryInSeconds($filter);
 
+        // Value signifies end of boundary, index is incremented while doing query
+        // As we want to get Payments which have passed that boundary, and should be verified
         $boundary[-1] = $minimumTime;
 
+        // If bucket filter is passed, get rid of other bucket values
         if ($bucket !== null)
         {
             $boundary = [$bucket - 1 => $boundary[$bucket - 1]];
