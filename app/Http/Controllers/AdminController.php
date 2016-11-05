@@ -146,9 +146,9 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->login($input);
+        list($error, $data) = (new Admin\Service)->passwordLogin($input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getOrg()

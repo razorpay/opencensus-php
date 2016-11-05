@@ -202,4 +202,11 @@ class Admin extends Entity
         $className = lcfirst($className);
         return $className.'/';
     }
+
+    public function passwordLogin(array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().'password_login';
+        
+        return $this->request('POST', $relativeUrl, $params);
+    }
 }

@@ -19,8 +19,9 @@ Route::post('/contact', 'MerchantController@postContact');
 // Org
 Route::group(['prefix' => 'admin'], function () {
     Route::get('/org', 'AdminController@getOrg');
-
     Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
+
+    Route::post('/signin', 'AdminController@postSignin');
 });
 
 Route::group([], function()
@@ -276,7 +277,6 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 });
 
-Route::post('/admin/signin', 'AdminController@postSignin');
 Route::group(['middleware' => ['auth.internal']], function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');

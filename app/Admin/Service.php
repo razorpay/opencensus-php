@@ -50,25 +50,46 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function login(array $input)
+    // public function login(array $input)
+    // {
+    //     $error = (new Admin\Validator)->validateInput('login', $input)->messages();
+    //
+    //     $verify = false;
+    //
+    //     if (empty($error))
+    //     {
+    //         $verify = Auth::guard('admin')->attempt($input);
+    //
+    //         if ($verify)
+    //         {
+    //             Session::put('timeout', time());
+    //         }
+    //     }
+    //
+    //     $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
+    //
+    //     return [$error, null];
+    // }
+
+    public function passwordLogin(array $input)
     {
-        $error = (new Admin\Validator)->validateInput('login', $input)->messages();
+        $error = $data = null;
 
-        $verify = false;
+        $this->setApiCredentials();
 
-        if (empty($error))
+        try
         {
-            $verify = Auth::guard('admin')->attempt($input);
+            // This is password based login
+            $res = $this->api->admin->passwordLogin($input)->toArray();
 
-            if ($verify)
-            {
-                Session::put('timeout', time());
-            }
+            sd($res);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
         }
 
-        $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
-
-        return [$error, null];
+        return [$error, $data];
     }
 
     public function loginWithGoogle($code, $googleService)
@@ -2205,7 +2226,7 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials(null, 'live'); // $input['mode']
+        $this->setApiCredentials(); // $input['mode']
 
         try
         {
