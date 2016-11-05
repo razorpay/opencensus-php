@@ -13,6 +13,12 @@ class Repository extends Base\Repository
 
     protected $entity = 'feature';
 
+    protected $appFetchParamRules = array(
+        Entity::ENTITY_ID   => 'sometimes|string|max:14',
+        Entity::ENTITY_TYPE => 'sometimes|string|max:255',
+        Entity::NAME        => 'sometimes|string|max:25'
+    );
+
     public function findByEntityId(string $entityId)
     {
         return $this->newQuery()
