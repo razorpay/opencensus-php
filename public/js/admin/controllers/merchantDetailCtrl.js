@@ -148,7 +148,7 @@ app.controller('MerchantDetailCtrl', [
     $scope.featureMerchant = function(features) {
       // Tags will be a csv field
       var request = $http({
-        url: '/admin/merchant/' + $scope.merchant.id + '/features',
+        url: '/admin/features/merchant/' + $scope.merchant.id,
         method: 'POST',
         transformRequest: transformRequestAsFormPost,
         data: {
@@ -159,7 +159,8 @@ app.controller('MerchantDetailCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Features has been added successfully.', true);
-          $scope.merchant.details.features = data.data.features;
+          $scope.merchant.details.allowedFeatures = data.data.all_features;
+          $scope.merchant.details.features = getFeatureNames(data.data.assigned_features);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value) {
@@ -584,14 +585,24 @@ app.controller('MerchantDetailCtrl', [
         $scope.markMerchantAsReferred(referral);
       }, $.noop);
     };
+
     $scope.openFeatureMerchant = function () {
       var features = $scope.merchant.details.features || [];
+      features = features.map(function (f) {
+        return f.name;
+      });
+      var allowedFeatures = $scope.merchant.details.allowedFeatures;
+      // availableFeatures is a list of features which are not yet assigned to
+      // the merchant. Used to populate the features dropdown
+      var availableFeatures = allowedFeatures.filter(function (f) {
+        return features.indexOf(f) === -1;
+      });
       var modalInstance = $modal.open({
         templateUrl: 'featureModalContent.html',
         controller: 'featureModalCtrl',
         resolve: {
           current: function () {
-            return features;
+            return [availableFeatures, features];
           }
         }
       });
@@ -850,11 +861,14 @@ app.controller('MerchantDetailCtrl', [
     }
 
     function getMerchantFeatures() {
-      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/features');
+      var request = $http.get('/admin/features/' + $scope.merchant.id);
       request.success(function (data) {
         $scope.alerts.resetAlerts(true);
         if (data.success) {
-          $scope.merchant.details.features = data.data;
+          // Full list of features which can be assigned to merchant
+          $scope.merchant.details.allowedFeatures = data.data.all_features;
+          // List of features currently assigned to merchant
+          $scope.merchant.details.features = getFeatureNames(data.data.assigned_features);
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value) {
@@ -863,6 +877,36 @@ app.controller('MerchantDetailCtrl', [
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null);
+      });
+    }
+
+    /**
+     * Plucks the id and name from array of feature objects
+     * @param  {array} features [Array of feature objects]
+     * @return {array}
+     */
+    function getFeatureNames(features) {
+      var featureNames = features.map(function (feature) {
+        return {
+          id: feature.id,
+          name: feature.name
+        };
+      });
+      return featureNames;
+    }
+
+    $scope.deleteFeature = function(featureName) {
+      var request = $http.delete('/admin/features/' + $scope.merchant.id + '/' + featureName);
+      request.success(function(data) {
+        if (data.success) {
+          $scope.merchant.details.allowedFeatures = data.data.all_features;
+          $scope.merchant.details.features = getFeatureNames(data.data.assigned_features);
+        } else {
+          $scope.alerts.resetAlerts(true);
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
       });
     }
 
@@ -1146,7 +1190,9 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   function ($scope, $modalInstance, current) {
-    $scope.features = current.join();
+    $scope.features = current.shift();
+    $scope.assigned_features = current.shift().join(',');
+    $scope.selectedFeatures = [];
     $scope.ok = function (features) {
       $modalInstance.close(features);
     };

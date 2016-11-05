@@ -144,10 +144,13 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
     Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
-    Route::get('/admin/merchant/{id}/features', 'AdminController@getMerchantFeatures');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
     Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
+
+    Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
+    Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
+    Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature');
 
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
@@ -187,7 +190,6 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
     Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
     Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-    Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
     Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
     Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
     Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');

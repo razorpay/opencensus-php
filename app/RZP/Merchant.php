@@ -159,20 +159,6 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function getFeatures()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/features';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
-    public function setFeatures($params)
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/features';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function fetchBalance()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
