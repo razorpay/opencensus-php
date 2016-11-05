@@ -9,7 +9,7 @@ class Checksum
     public static function encrypt_e($input, $ky)
     {
         $key = $ky;
-        $size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128);
+        $size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, 'cbc');
         $input = self::pkcs5_pad_e($input, $size);
         $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', 'cbc', '');
         $iv = "@@@@&&&&####$$$$";

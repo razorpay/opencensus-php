@@ -160,9 +160,7 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
-        $subventionType = $payment->merchant->getSubventionType();
-
-        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
+        $rule = $this->chooseRuleWithAmount($rules, $amount);
 
         if ($rule === null)
         {
@@ -410,9 +408,7 @@ class FeeCalculator
 
             $newAmount = $amount + $fee;
 
-            $newSubventionType = Merchant\FeeBearer::PLATFORM;
-
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
+            $newRule = $this->chooseRuleWithAmount($rules, $newAmount);
 
             if ($rule === $newRule)
             {
