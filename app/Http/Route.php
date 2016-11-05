@@ -268,13 +268,17 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
-
         // Routes for the admin roles project
-        'org_create'                              => ['post',     'orgs',                                            'AdminController@createOrg'                                         ],
-        'org_delete'                              => ['delete',   'orgs/{id}',                                       'AdminController@deleteOrg'                                         ],
-        'org_edit'                                => ['put',      'orgs/{id}',                                       'AdminController@putOrg'                                            ],
-        'org_get'                                 => ['get',      'orgs/{id}',                                       'AdminController@getOrg'                                            ],
-        'password_login'                          => ['post',     'admin/password_login',                            'AdminController@passwordLogin'                                     ],
+
+        'org_create'                              => ['post',     'orgs',                                           'AdminController@createOrg'                                         ],
+        'org_delete'                              => ['delete',   'orgs/{id}',                                      'AdminController@deleteOrg'                                         ],
+        'org_edit'                                => ['put',      'orgs/{id}',                                      'AdminController@putOrg'                                            ],
+        'org_get'                                 => ['get',      'orgs/{id}',                                      'AdminController@getOrg'                                            ],
+        'role_create'                             => ['post',     'orgs/{id}/roles',                                'AdminController@createOrg'                                         ],
+        'role_get'                                => ['get',      'orgs/{id}/roles',                                'AdminController@getOrg'                                            ],
+        'role_edit'                               => ['put',      'orgs/{id}/roles/{role_id}',                      'AdminController@putOrg'                                            ],
+        'role_delete'                             => ['delete',   'orgs/{id}/roles/{role_id}',                      'AdminController@deleteOrg'                                         ]
+        'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                    ],
     );
 
     public static $public = array(

@@ -57,6 +57,12 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        $this->belongsTo('Org\Entity');
+        return $this->belongsTo('Org\Entity');
     }
+
+    public function roles()
+    {
+        return $this->belongsToMany('RZP\Models\Admin\Role\Entity', Constants\Table::ADMIN_ROLE, 'admin_id', 'role_id');
+    }
+
 }

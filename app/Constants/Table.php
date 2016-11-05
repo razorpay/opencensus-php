@@ -32,7 +32,7 @@ class Table
     const SETTLEMENT_DETAIL     = 'settlement_details';
 
     // organization roles permissions
-    const ORG                   = 'org';
+    const ORG                   = 'orgs';
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
@@ -70,7 +70,4 @@ class Table
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
-
-    // Admin Roles and Organization
-    const ORGANIZATION          = 'organization';
 }

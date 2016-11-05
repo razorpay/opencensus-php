@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
      **/
     public function admins()
     {
-
+        return $this->belongsToMany('RZP\Models\Admin\Admin\Entity', Constants\Table::ADMIN_ROLE, 'role_id', 'admin_id');
     }
 
     /**
@@ -47,7 +47,7 @@ class Entity extends Base\PublicEntity
      **/
     public function org()
     {
-
+        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
     /**
@@ -56,6 +56,6 @@ class Entity extends Base\PublicEntity
      **/
     public function permissions()
     {
-
+        return $this->belongsToMany('RZP\Models\Admin\Permission\Entity', Constants\Table::PERMISSION_MAP, 'role_id', 'permission_id');
     }
 }
