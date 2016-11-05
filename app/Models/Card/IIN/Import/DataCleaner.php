@@ -70,15 +70,17 @@ class DataCleaner
      *
      * @return array   cleaned data
      */
-    public function parse($network, $data, $checkForConflicts=TRUE)
+    public function parse($network, $data, $checkForConflicts = true)
     {
         $uniqueRecords = $this->removeDuplicate($data, $network);
 
         if ($checkForConflicts)
         {
             $cleaned = $this->removeDBConflicts($uniqueRecords);
+
             return $cleaned;
         }
+
         return $uniqueRecords;
     }
 
@@ -99,12 +101,13 @@ class DataCleaner
 
         foreach ($dbRecords as $entity)
         {
-
-            $iin = (string) $entity->getIin();
+            $iin = $entity->getIin();
 
             $this->dbConflicts[$iin] = array(
-                                'db_entry'   => $entity->toArray(),
-                                'file_entry' => $uniqueRecords[$iin]);
+                'db_entry'   => $entity->toArray(),
+                'file_entry' => $uniqueRecords[$iin]
+            );
+
             unset($uniqueRecords[$iin]);
         }
 

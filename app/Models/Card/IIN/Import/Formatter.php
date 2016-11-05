@@ -71,10 +71,6 @@ class Formatter
                         $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
                         break;
 
-                    case 'card_brand':
-                        // $input[IIN::CATEGORY] = $row[$index];
-                        break;
-
                     default:
                         //ignore extra columns
                         break;

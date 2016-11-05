@@ -56,10 +56,10 @@ class XLSImporter
         $successCount = count($cleaned);
 
         return array(
-            'duplicates'   => $duplicates,
-            'db_conflicts' => $conflicts,
+            'duplicates'     => $duplicates,
+            'db_conflicts'   => $conflicts,
             'network_errors' => $networkCheckFails,
-            'success' => $successCount,
+            'success'        => $successCount,
         );
     }
 
@@ -199,6 +199,7 @@ class XLSImporter
     protected function getInputForIinUpdate($dbEntry, $fileEntry, $columns)
     {
         unset($fileEntry[IIN\Entity::IIN]);
+        unset($fileEntry[IIN\Entity::NETWORK]);
 
         $conflict = false;
 
@@ -206,7 +207,7 @@ class XLSImporter
 
         foreach ($columns as $column)
         {
-            if (($column === 'country') or
+            if (($column === IIN\Entity::COUNTRY) or
                 ((empty($dbEntry[$column]) === false) and
                  (empty($fileEntry[$column]) === false)))
             {
