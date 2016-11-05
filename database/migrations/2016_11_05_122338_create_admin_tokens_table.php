@@ -23,6 +23,7 @@ class CreateAdminTokensTable extends Migration
             $table->string('token', 250)->unique();
 
             $table->integer('created_at');
+            $table->integer('updated_at');
             $table->integer('expires_at');
 
             $table->foreign('admin_id')
@@ -38,6 +39,6 @@ class CreateAdminTokensTable extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::ADMIN_TOKENS);
+        Schema::drop(Table::ADMIN_TOKEN);
     }
 }

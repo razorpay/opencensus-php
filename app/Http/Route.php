@@ -277,8 +277,8 @@ final class Route
         'role_create'                             => ['post',     'orgs/{id}/roles',                                'AdminController@createOrg'                                         ],
         'role_get'                                => ['get',      'orgs/{id}/roles',                                'AdminController@getOrg'                                            ],
         'role_edit'                               => ['put',      'orgs/{id}/roles/{role_id}',                      'AdminController@putOrg'                                            ],
-        'role_delete'                             => ['delete',   'orgs/{id}/roles/{role_id}',                      'AdminController@deleteOrg'                                         ]
-        'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                    ],
+        'role_delete'                             => ['delete',   'orgs/{id}/roles/{role_id}',                      'AdminController@deleteOrg'                                         ],
+        'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
     );
 
     public static $public = array(

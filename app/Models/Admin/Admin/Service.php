@@ -14,9 +14,22 @@ class Service extends Base\Service
         // Valid password ?
         if (\Hash::check($input['password'], $admin->password))
         {
+            // Create a token for the user
+            $token = $this->createAuthToken($admin);
+
+            $admin = $admin->toArrayPublic();
+            $admin['token'] = $token->token;
+
             return $admin;
         }
 
         return null;
+    }
+
+    private function createAuthToken($admin)
+    {
+        $token = $this->repo->admin_token->createToken($admin);
+
+        return $token;
     }
 }
