@@ -47,7 +47,12 @@ class Entity extends Base\PublicEntity
      **/
     public function admins()
     {
-        return $this->belongsToMany('RZP\Models\Admin\Admin\Entity', Constants\Table::ADMIN_ROLE, 'role_id', 'admin_id');
+        return $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::ROLE_MAP);
+    }
+
+    public function groups()
+    {
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
     }
 
     /**

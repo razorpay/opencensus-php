@@ -5,8 +5,6 @@ namespace RZP\Tests\Functional\Admin;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-use Mockery;
-
 class OrgTest extends TestCase
 {
     use RequestResponseFlowTrait;

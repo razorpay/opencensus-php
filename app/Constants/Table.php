@@ -42,6 +42,7 @@ class Table
     const ADMIN_GROUP           = 'admin_group';
     const MERCHANT_MAP          = 'merchant_map';
     const ADMIN_TOKEN           = 'admin_tokens';
+    const ROLE_MAP              = 'role_map';
 
     // Gateway related
     const EBS                   = 'ebs';

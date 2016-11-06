@@ -63,7 +63,18 @@ class Entity extends Base\PublicEntity
 
     public function roles()
     {
-        return $this->belongsToMany('RZP\Models\Admin\Role\Entity', Constants\Table::ADMIN_ROLE, 'admin_id', 'role_id');
+        $this->morphedToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
+    }
+
+    // Admins can be part of multiple groups
+    public function groups()
+    {
+        return $this->morphedToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP);
+    }
+
+    public function merchants()
+    {
+        $this->morphedToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
     public function token()

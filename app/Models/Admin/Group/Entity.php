@@ -11,4 +11,55 @@ class Entity extends Base\PublicEntity
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const ORG_ID           = 'org_id';
+
+    protected $table = Table::GROUP;
+
+    protected $entity = 'group';
+
+    protected static $sign = 'grp';
+
+    protected $fillable = [
+        self::ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::ORG_ID,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::ORG_ID,
+        self::CREATED_AT,
+    ];
+
+    // Immediate higher groups which have access to this group and its
+    // merchants
+    public function parents()
+    {
+        $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
+    }
+
+    // Admins part of this group who have defined permissions
+    // over the merchants in this group
+    public function admins()
+    {
+        $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::ADMIN_GROUP);
+    }
+
+
+    public function subGroups()
+    {
+        $this->morphedToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
+    }
+
+    public function merchants()
+    {
+        $this->morphedToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function roles()
+    {
+        $this->morphedToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
+    }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\Category;
@@ -46,7 +47,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = \RZP\Constants\Table::MERCHANT;
+    protected $table = Table::MERCHANT;
 
     protected $entity = 'merchant';
 
@@ -677,5 +678,16 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
+    }
+
+    // Role based access methods
+    public function groups()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Group', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function admins()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Admin', 'entity', Table::MERCHANT_MAP);
     }
 }

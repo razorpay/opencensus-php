@@ -315,5 +315,23 @@ $factory(\RZP\Models\Admin\Org\Entity::class, [
     'email'         => 'test@hdfc.com',
     'display_name'  => 'HDFC Bank',
     'business_name' => 'HDFC Bank Public Limited',
-    'auth'          => 'password',
+    'auth_type'     => 'password',
+]);
+
+$factory(\RZP\Models\Admin\Group\Entity::class, [
+    'id'          => $faker->uniqueid,
+    'name'        => 'test_group',
+    'description' => 'This is a test group',
+]);
+
+$factory(\RZP\Models\Admin\Admin\Entity::class, [
+    'id'                 => $faker->uniqueid,
+    'name'               => 'test_group',
+    'email'              => 'xyz@abc.com',
+    'username'           => 'harshil',
+    'password'           => 'test123456',
+    'remember_token'     => 'yes',
+    'access_token'       => 'oauth123',
+    'oauth_provider_id'  => 'google',
+    'deleted_at'         => time(),
 ]);
