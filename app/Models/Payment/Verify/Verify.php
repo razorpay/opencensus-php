@@ -83,12 +83,12 @@ class Verify extends Base\Core
      * Minimum duration a payment should be old before it gets picked up
      * for verify for a particular payment verify filter.
      */
-    const MINIMUM_TIME_MAP = array(
+    const MINIMUM_TIME_MAP = [
         Filter::PAYMENTS_FAILED     => self::FAILURE_MIN_TIME,
         Filter::PAYMENTS_CREATED    => self::CREATED_MIN_TIME,
         Filter::VERIFY_FAILED       => self::ERRORED_MIN_TIME,
         Filter::VERIFY_ERROR        => self::ERRORED_MIN_TIME,
-    );
+    ];
 
     // ================== End Configurations ==================
 
@@ -130,6 +130,8 @@ class Verify extends Base\Core
      */
     public function verifyPaymentsWithFilter($filter, $bucket = null)
     {
+        Filter::isValidFilter($filter);
+
         $paymentStatus = $this->getPaymentStatusForFilter($filter);
         $verifyStatus = $this->getVerifyStatusForFilter($filter);
 
