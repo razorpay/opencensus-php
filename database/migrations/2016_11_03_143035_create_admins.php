@@ -49,6 +49,11 @@ class CreateAdmins extends Migration
      */
     public function down()
     {
+        Schema::table(Table::ADMIN, function($table)
+        {
+            $table->dropForeign(Table::ADMIN . '_' . Admin::ORG_ID . '_foreign');
+        });
+
         Schema::drop(Table::ADMIN);
     }
 }
