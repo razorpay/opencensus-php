@@ -519,13 +519,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getAllFeatures()
-    {
-        $data = Merchant\Features::$allowedFeatures;
-
-        return ApiResponse::json($data);
-    }
-
     public function getDummyFeatures()
     {
         $input = Request::all();

@@ -20,6 +20,7 @@ class Table
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
+    const FEATURE               = 'features';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
     const FEE_BREAKUP           = 'fees_breakup';

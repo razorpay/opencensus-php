@@ -83,6 +83,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::ERROR_DESCRIPTION, 255)
                   ->nullable();
 
+            $table->string(Payment::CANCELLATION_REASON, 255)
+                  ->nullable();
+
             $table->string(Payment::CUSTOMER_ID, 14)
                   ->nullable();
 

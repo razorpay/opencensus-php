@@ -345,6 +345,12 @@ class Processor
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
         }
 
+        if ((isset($input['_']['reason']) === true) and
+            (is_string($input['_']['reason']) === true))
+        {
+            $this->payment->setCancellationReason($input['_']['reason']);
+        }
+
         $e = new Exception\BadRequestException($errorCode);
 
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);

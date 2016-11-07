@@ -50,6 +50,7 @@ class Base
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
         'fee_breakup'   => \RZP\Models\Transaction\FeeBreakup\Entity::class,
+        'feature'       => \RZP\Models\Feature\Entity::class
     );
 
     protected static $liveAndTest = array(
@@ -59,6 +60,7 @@ class Base
         'emi_plan',
         'iin',
         'schedule',
+        'feature'
     );
 
     public function create(array $attributes = array())

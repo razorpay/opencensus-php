@@ -342,7 +342,10 @@ class TraceCode
     const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
-
+    // Trace code for features
+    const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
+    const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
+    const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -452,6 +455,9 @@ class TraceCode
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
+        self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
+        self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
     );
 
     /**
