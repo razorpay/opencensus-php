@@ -215,7 +215,8 @@ class SegmentClient extends Base\Core
 
     protected function sendLumberjackRequest($headers, $url, $events)
     {
-        if ($this->mock)
+        if (($this->mock) or
+            ($this->mode === Mode::TEST))
         {
             return;
         }
