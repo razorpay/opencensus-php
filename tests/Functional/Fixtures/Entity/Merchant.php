@@ -257,6 +257,21 @@ class Merchant extends Base
         return $this->edit($id, ['international' => '0']);
     }
 
+    public function addFeatures($featureNames, $id = '10000000000000')
+    {
+        $features = collect();
+
+        foreach ($featureNames as $featureName) {
+            $attributes = [
+                'name'      => $featureName,
+                'entity_id' => $id
+            ];
+            $features->push($this->fixtures->create('feature', $attributes));
+        }
+
+        return $features;
+    }
+
     public function editFeatures($features, $id = '10000000000000')
     {
         return $this->edit($id, ['features' => $features]);
