@@ -67,7 +67,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $this->assertEquals($payment['fee'], 1150);
 
-        $this->assertEquals($payment['service_tax'], 154);
+        $this->assertEquals($payment['service_tax'], 150);
     }
 
     public function testInvalidCaptureAmount()
@@ -180,7 +180,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $this->assertEquals($payment['fee'], 1150);
 
-        $this->assertEquals($payment['service_tax'], 154);
+        $this->assertEquals($payment['service_tax'], 150);
     }
 
     // TODO Fail tests for create with order

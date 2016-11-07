@@ -64,6 +64,11 @@ class DataMigration extends Base\Service
 
             $pricingRuleId = $txn->getPricingRule();
 
+            if (isset($pricingRuleId) === false)
+            {
+                continue;
+            }
+
             $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
 
             $feesSplit = new Base\PublicCollection;
