@@ -20,33 +20,24 @@ class Entity extends Base\PublicEntity
     protected $table = Table::LOGIN_ATTEMPT;
 
     protected $fillable = [
-        self::EMAIL,
-        self::NAME,
-        self::USERNAME,
-        self::PASSWORD,
-        self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
-        self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ADMIN_ID,
+        self::VALID,
+        self::USER_AGENT,
+        self::IP_ADDRESS
     ];
 
     protected $visible = [
-        self::EMAIL,
-        self::NAME,
-        self::USERNAME,
-        self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
-        self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ADMIN_ID,
+        self::VALID,
+        self::USER_AGENT,
+        self::IP_ADDRESS
     ];
 
     protected $public = [
-        self::EMAIL,
-        self::NAME,
-        self::USERNAME,
-        self::OAUTH_ACCESS_TOKEN,
-        self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ADMIN_ID,
+        self::VALID,
+        self::USER_AGENT,
+        self::IP_ADDRESS
     ];
 
     public function admin() {
