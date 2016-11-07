@@ -345,6 +345,11 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'remember_token'     => 'yes',
     'access_token'       => 'oauth123',
     'oauth_provider_id'  => 'google',
+    'employee_code'      => 'rzp_1',
+    'branch_code'        => 'krmgla',
+    'supervisor_code'    => 'shk',
+    'location_code'      => '560030',
+    'department_code'    => 'tech',
     'deleted_at'         => time(),
     'org_id'             => '6dLbNSpv5XbCOD'
 ]);

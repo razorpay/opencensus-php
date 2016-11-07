@@ -90,7 +90,7 @@ class GroupTest extends TestCase
 
         $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '123']);
+        $merchant = $this->fixtures->create('merchant');
 
         $group->roles()->saveMany($roles);
 

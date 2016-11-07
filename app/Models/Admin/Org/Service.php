@@ -22,7 +22,7 @@ class Service extends Base\Service
 
     public function getOrg(string $id)
     {
-        $org = $this->repo->org->findOrFail($id);
+        $org = $this->repo->org->findOrFailPublic($id);
 
         return $org->toArrayPublic();
     }

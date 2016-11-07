@@ -16,10 +16,15 @@ class RoleTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/RoleData.php';
 
         parent::setUp();
+
+        $this->orgId = '6dLbNSpv5XbCOF';
     }
 
     public function testCreateRole()
     {
+        // TODO inform giri to remove dependency with id
+        $org = $this->fixtures->create('org', ['id' => $this->orgId]);
+
         $this->ba->appAuth();
 
         return $this->startTest();

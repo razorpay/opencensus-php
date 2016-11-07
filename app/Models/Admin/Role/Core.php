@@ -11,9 +11,11 @@ class Core extends Base\Core
     {
         Org::verifyIdAndStripSign($orgId);
 
-        $input['org_id'] = $orgId;
-
         $role = (new Entity)->build($input);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $role->org()->associate($org);
 
         $this->repo->saveOrFail($role);
 

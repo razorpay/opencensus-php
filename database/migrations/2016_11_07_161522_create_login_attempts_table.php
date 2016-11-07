@@ -48,6 +48,11 @@ class CreateLoginAttemptsTable extends Migration
      */
     public function down()
     {
+        Schema::table(Table::LOGIN_ATTEMPT, function($table)
+        {
+            $table->dropForeign(Table::LOGIN_ATTEMPT.'_'.LoginAttempt::ADMIN_ID.'_foreign');
+        });
+
         Schema::drop(Table::LOGIN_ATTEMPT);
     }
 }

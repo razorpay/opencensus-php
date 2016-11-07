@@ -26,7 +26,7 @@ class Repository extends Base\Repository
     public function findValidToken($token)
     {
         return $this->newQuery()
-            ->where('token', $token)
-            ->first();
+                    ->where(Entity::TOKEN, '=', $token)
+                    ->first();
     }
 }
