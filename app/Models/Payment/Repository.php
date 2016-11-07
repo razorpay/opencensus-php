@@ -186,7 +186,8 @@ class Repository extends Base\Repository
                         $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        $random = true)
+                        $random = true,
+                        $rowsToFetch = 100)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -245,7 +246,7 @@ class Repository extends Base\Repository
         // We want total number of Payments which are awaiting verify, for logging
         $verifiableCount = $query->count();
 
-        $payments = $query->take(100)
+        $payments = $query->take($rowsToFetch)
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];

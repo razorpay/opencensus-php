@@ -64,6 +64,11 @@ class Verify extends Base\Core
      */
     const DEFAULT_LOCK_TIME = 900; // 15 Minutes
 
+    /**
+     * Max number of payments on which single instance of verify cron should operate
+     */
+    const ROWS_TO_FETCH = 100;
+
     // ================== End Configurations ==================
 
     protected $core;
@@ -138,8 +143,16 @@ class Verify extends Base\Core
 
         $boundary = $this->getBoundaryInSeconds($filter);
 
+        //
+        // We Fetch Twice the number of required payments,
+        // and filtering extra payments in later stage
+        //
         $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
-            $minimumTime, $boundary, $verifyStatus, $paymentStatus);
+                                                                $minimumTime,
+                                                                $boundary,
+                                                                $verifyStatus,
+                                                                $paymentStatus,
+                                                                self::ROWS_TO_FETCH * 2);
 
         $payments = $paymentsCollectionWithCount['payments'];
 
@@ -234,7 +247,9 @@ class Verify extends Base\Core
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
-        $lockedPaymentIds = $this->mutex->acquireMultiple($paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
+        // Get payment ids to lock
+        $lockedPaymentIds = $this->mutex->acquireMultiple(
+            $paymentIds, self::DEFAULT_LOCK_TIME, self::KEY_SUFFIX);
 
         $this->trace->info(
             TraceCode::VERIFY_LOCKED_PAYMENTS,
@@ -244,8 +259,21 @@ class Verify extends Base\Core
                 'filter'                 => $filter,
             ]);
 
+        // Lock all payments by payment ids
         $lockedPayments = $payments->whereIn(Payment\Entity::ID, $lockedPaymentIds['locked']);
 
+        // If more payments are locked,
+        // release lock on extra payments
+        if ($lockedPayments->count() > self::ROWS_TO_FETCH)
+        {
+            $chunkedLockedPayments = $lockedPayments->chunk(self::ROWS_TO_FETCH);
+
+            $this->mutex->releaseMultiple($chunkedLockedPayments[1], self::KEY_SUFFIX);
+
+            $lockedPayments = $chunkedLockedPayments[0];
+        }
+
+        // Return final locked payments
         return $lockedPayments;
     }
 
