@@ -2,8 +2,11 @@
 
 namespace RZP\Models\LineItem;
 
+use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -73,6 +76,12 @@ class Entity extends Base\PublicEntity
         self::QUANTITY  => 'int',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::INVOICE_ID,
+    ];
+
     // -------------------------- Getters --------------------------
 
     public function getAmount()
@@ -91,6 +100,26 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------- Getters Ends --------------------------
+
+    protected function setPublicInvoiceIdAttribute(array & $array)
+    {
+        if (isset($array[self::INVOICE_ID]))
+        {
+            $invoiceId = $this->getAttribute(self::INVOICE_ID);
+
+            $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+        }
+        else
+        {
+            $app = App::getFacadeRoot();
+
+            $app['trace']->error(
+                TraceCode::INVOICE_ID_ABSENT,
+                [
+                    'line_item_id' => $this->getId()
+                ]);
+        }
+    }
 
     // -------------------- Relations ---------------------------
 

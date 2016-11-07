@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Invoice;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -156,9 +159,10 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::CUSTOMER_ID,
         self::LINE_ITEMS_DETAILS,
     ];
-    
+
     public function build(array $input = array())
     {
         $this->input = $input;
@@ -282,10 +286,27 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicLineItemsDetailsAttribute(array & $array)
     {
-        // TODO: This will output a collection of items directly.
-        // Should we instead iterate through each item in the collection
-        // and return back an array of items instead of an entity collection?
-        $array[self::LINE_ITEMS_DETAILS] = $this->lineItems()->getResults()->toArrayPublic();
+        $array[self::LINE_ITEMS_DETAILS] = $this->lineItems()->getResults()->toArrayPublicEmbedded();
+    }
+
+    protected function setPublicCustomerIdAttribute(array & $array)
+    {
+        if (isset($array[self::CUSTOMER_ID]))
+        {
+            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        }
+        else
+        {
+            $app = App::getFacadeRoot();
+
+            $app['trace']->error(
+                TraceCode::INVOICE_ID_ABSENT,
+                [
+                    'line_item_id' => $this->getId()
+                ]);
+        }
     }
 
     // -------------------------------------- End Public Setters --------------------------------------
