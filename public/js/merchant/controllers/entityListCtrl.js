@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Entities Listing Controller
  */
@@ -62,7 +63,7 @@ app.controller('EntityListCtrl', [
     };
 
     $scope.showSettlementBreakup = function (settlement_id) {
-      var modalInstance = $modal.open({
+      $modal.open({
         templateUrl: 'settlementBreakupModalContent.html',
         controller: 'settlementBreakupModalCtrl',
         resolve: {
@@ -74,7 +75,7 @@ app.controller('EntityListCtrl', [
           }
         }
       });
-    }
+    };
 
     function clear(field) {
       if (field === 'id')
@@ -96,7 +97,7 @@ app.controller('EntityListCtrl', [
 
       // TODO: This is a hack, will need a proper pluralizer
       if ($scope.entity.type === 'batch') {
-        var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
+        baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
       }
 
       var request;
@@ -145,7 +146,7 @@ app.controller('EntityListCtrl', [
 
           $scope.entity.countStart = $scope.entity.skip + 1;
 
-          if (data.data.count == 0) {
+          if (data.data.count === 0) {
             $scope.entity.countEnd = $scope.entity.countStart;
           }
           else {
@@ -155,7 +156,7 @@ app.controller('EntityListCtrl', [
           $scope.allowPrev = $scope.entity.countStart != 1;
           $scope.allowNext = $scope.entity.count >= $scope.query.count;
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -187,11 +188,11 @@ app.controller('EntityListCtrl', [
           });
         }
         else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      }, function (response) {
+      }, function () {
         $scope.alerts.addAlert('danger', null, true);
       });
     };
