@@ -85,7 +85,7 @@ class Settler
 
         foreach ($channels as $channel)
         {
-            $res = $this->getOrCreateDailySettlementForToday($input);
+            $res = $this->getOrCreateDailySettlementForToday($input, $channel);
 
             if ($res !== null)
             {
@@ -477,13 +477,13 @@ class Settler
             ]);
     }
 
-    protected function getOrCreateDailySettlementForToday(array $input)
+    protected function getOrCreateDailySettlementForToday(array $input, $channel)
     {
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
         if ($overwrite === true)
         {
-            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
+            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday($channel);
         }
         else
         {
