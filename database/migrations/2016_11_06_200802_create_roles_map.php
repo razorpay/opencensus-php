@@ -22,7 +22,7 @@ class CreateRolesMap extends Migration
 
             $table->char('entity_id', 14);
 
-            $table->string('entity_type');
+            $table->string('entity_type'); // groups or admins
         });
     }
 

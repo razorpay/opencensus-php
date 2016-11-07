@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateAdmins extends Migration
 {
@@ -26,14 +27,18 @@ class CreateAdmins extends Migration
             $table->string(Admin::NAME, 250);
             $table->string(Admin::USERNAME, 250)->nullable();
             $table->string(Admin::PASSWORD, 250)->nullable();
-            $table->string(Admin::REMEMBER_TOKEN, 250);
+            $table->string(Admin::REMEMBER_TOKEN, 250)->nullable();
             $table->string(Admin::OAUTH_ACCESS_TOKEN, 250)->nullable();
             $table->string(Admin::OAUTH_PROVIDER_ID, 250)->nullable();
             $table->char(Admin::ORG_ID, 14);
 
             $table->integer(Admin::CREATED_AT);
             $table->integer(Admin::UPDATED_AT);
-            $table->integer(Admin::DELETED_AT);
+            $table->integer(Admin::DELETED_AT)->nullable();
+
+            $table->foreign(Admin::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG);
         });
     }
 

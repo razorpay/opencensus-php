@@ -2,7 +2,7 @@
 
 use RZP\Constants\Table;
 
-use RZP\Models\Admin\Org\Entity as Orgs;
+use RZP\Models\Admin\Org\Entity as Org;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -21,33 +21,33 @@ class CreateOrgs extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Orgs::ID, 14)
+            $table->char(Org::ID, 14)
                   ->primary();
 
-            $table->string(Orgs::BUSINESS_NAME, 250);
+            $table->string(Org::BUSINESS_NAME, 250);
 
-            $table->string(Orgs::DISPLAY_NAME, 250);
+            $table->string(Org::DISPLAY_NAME, 250);
 
-            $table->string(Orgs::EMAIL, 250)
+            $table->string(Org::EMAIL, 250)
                   ->unique();
 
-            $table->string(Orgs::AUTH_TYPE, 250);
+            $table->string(Org::AUTH_TYPE, 250);
 
-            $table->text(Orgs::EMAIL_DOMAINS);
+            $table->text(Org::EMAIL_DOMAINS);
 
-            $table->text(Orgs::LOGO_URL)
+            $table->text(Org::LOGO_URL)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Orgs::CREATED_AT);
-            $table->integer(Orgs::UPDATED_AT);
-            $table->integer(Orgs::DELETED_AT)
+            $table->integer(Org::CREATED_AT);
+            $table->integer(Org::UPDATED_AT);
+            $table->integer(Org::DELETED_AT)
                   ->nullable();
 
-            $table->index(Orgs::CREATED_AT);
-            $table->index(Orgs::UPDATED_AT);
-            $table->index(Orgs::DELETED_AT);
-            $table->index(Orgs::EMAIL);
+            $table->index(Org::CREATED_AT);
+            $table->index(Org::UPDATED_AT);
+            $table->index(Org::DELETED_AT);
+            $table->index(Org::EMAIL);
         });
     }
 

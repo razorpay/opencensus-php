@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
 
     protected $table = Table::ADMIN;
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::EMAIL,
         self::NAME,
@@ -70,7 +72,7 @@ class Entity extends Base\PublicEntity
     // Admins can be part of multiple groups
     public function groups()
     {
-        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP);
+        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
     }
 
     public function merchants()

@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'grp';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::ID,
         self::NAME,
