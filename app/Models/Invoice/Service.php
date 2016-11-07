@@ -38,6 +38,17 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
+    public function sendNotification($id, $medium)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $this->merchant->getId());
+        
+        $data = $this->core->sendNotification($invoice, $medium);
+
+        return $data;
+    }
+
     public function sendNotificationsInBulk()
     {
         return (new Notifier())->sendNotificationsInBulk();

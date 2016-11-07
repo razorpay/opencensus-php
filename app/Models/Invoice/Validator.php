@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes',
+        Entity::NOTES               => 'sometimes|notes',
     ];
 
     // protected static $createValidators = [

@@ -257,7 +257,8 @@ final class Route
         'invoice_create'                          => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
-        'invoice_send_notifications'              => ['post',     'invoices',                                       'InvoiceController@sendNotifications'                               ],
+        'invoice_send_notifications'              => ['post',     'invoices/notify',                                'InvoiceController@sendNotifications'                               ],
+        'invoice_send_notification'               => ['post',     'invoices/{id}/notify/{medium}',                  'InvoiceController@sendNotification'                                ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
         'invoice_get_details'                     => ['get',      'invoices/{id}/details',                          'InvoiceController@getInvoiceDetails'                               ],
         'line_item_create'                        => ['post',     'line_items',                                     'LineItemController@createLineItem'                                 ],
@@ -371,6 +372,7 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
+        'invoice_send_notification',
         'line_item_create',
         'line_item_fetch',
         'line_item_fetch_multiple',
@@ -684,7 +686,7 @@ final class Route
             $key = '';
         }
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         $url = $this->getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
@@ -709,7 +711,7 @@ final class Route
 
         $parameters['key_id'] = $key;
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         return $schema . $host . $urlSegment;
     }

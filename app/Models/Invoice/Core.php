@@ -48,6 +48,24 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function sendNotification(Entity $invoice, $medium)
+    {
+        $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
+
+        $response = (new Notifier($invoice))->$commFunc();
+
+        $this->repo->saveOrFail($invoice);
+
+        if ($response === true)
+        {
+            return ['success' => true];
+        }
+        else
+        {
+            return ['success' => false];
+        }
+    }
+
     protected function validateRequest(array $input)
     {
         assert(isset($input[Entity::CUSTOMER]));

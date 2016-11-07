@@ -61,6 +61,8 @@ class CreateInvoices extends Migration
             $table->integer(Entity::DATE)
                   ->nullable();
 
+            $table->text(Entity::NOTES);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 

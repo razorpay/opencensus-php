@@ -15,6 +15,9 @@ class Notifier
     // 300 seconds (5*60)
     const SCHEDULE_TIME_LEEWAY = 300;
 
+    /**
+     * @var Entity
+     */
     protected $invoice;
     protected $app;
     protected $repo;
