@@ -22,7 +22,7 @@ class PermissionTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->startTest();
+        return $this->startTest();
     }
 
     public function testGetPermission()

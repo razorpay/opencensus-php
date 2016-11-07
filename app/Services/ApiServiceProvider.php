@@ -3,6 +3,8 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Models\Admin as Admin;
 use RZP\Gateway\GatewayManager;
 use CreditCardFraudDetection;
 use RZP;
@@ -95,6 +97,9 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+
+        // Used for admin role org permission.
+        $this->registerAdminRelationMap();
     }
 
     /**
@@ -131,6 +136,17 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new \RZP\Base\QueueEntityResolver;
         });
+    }
+
+    protected function registerAdminRelationMap()
+    {
+        Relation::morphMap([
+            'org'        => Admin\Org\Entity::class,
+            'group'      => Admin\Group\Entity::class,
+            'admin'      => Admin\Admin\Entity::class,
+            'role'       => Admin\Role\Entity::class,
+            'permission' => Admin\Permission\Entity::class,
+        ]);
     }
 
     protected function registerValidatorResolver()

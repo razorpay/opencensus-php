@@ -49,5 +49,4 @@ class Entity extends Base\PublicEntity
 
     }
 
-
 }

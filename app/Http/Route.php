@@ -280,8 +280,9 @@ final class Route
         'role_delete'                           => ['delete',   'orgs/{id}/roles/{role_id}',                      'AdminController@deleteRole'                                        ],
         // Permission can only be created by certain organisations.
         'permission_create'                     => ['post',     'orgs/{id}/permissions',                          'AdminController@createPermission'                                  ],
-        'permission_get'                        => ['get',      'orgs/{id}/permissions',                          'AdminController@getPermission'                                     ],
-        'permission_edit'                       => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermission'                                     ],
+        'permission_get_multiple'               => ['get',      'orgs/{id}/permissions',                          'AdminController@getMultiplePermissions'                            ],
+        'permission_get'                        => ['get',      'orgs/{id}/permissions/{permission_id}',          'AdminController@getPermission'                                     ],
+        'permission_edit'                       => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermissions'                                    ],
         'permission_delete'                     => ['delete',   'orgs/{id}/permissions/{permission_id}',          'AdminController@deletePermission'                                  ],
         'password_login'                        => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
     );
@@ -504,6 +505,7 @@ final class Route
         'role_edit',
         'role_delete',
         'permission_create',
+        'permission_get_multiple',
         'permission_get',
         'permission_edit',
         'permission_delete',

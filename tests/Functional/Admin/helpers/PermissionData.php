@@ -14,22 +14,19 @@ return [
             'content' => [
                 'name'        => 'see_all_merchants',
                 'description' => 'Ability to see all merchants',
-                'org_id'      => 'org_6dLbNSpv5XbCOF',
             ],
             'status_code' => 200,
         ],
     ],
-    'testGetRole' => [
+    'testGetPermission' => [
         'request' => [
-            'url' => '/orgs/org_6dLbNSpv5XbCOF/roles',
+            'url' => '/orgs/org_6dLbNSpv5XbCOF/permissions',
             'method' => 'get',
         ],
         'response' => [
             'content' => [
-                'entity'      => 'role',
-                'name'        => 'manager',
-                'description' => 'Manager of roles',
-                'org_id'      => 'org_6dLbNSpv5XbCOF',
+                'name'        => 'see_all_merchants',
+                'description' => 'Ability to see all merchants',
             ],
             'status_code' => 200,
         ],

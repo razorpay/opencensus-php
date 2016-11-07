@@ -143,6 +143,20 @@ class AdminController extends Controller
         return $data;
     }
 
+    public function getPermission(string $orgId, string $permissionId)
+    {
+        $data = (new Admin\Permission\Service)->getPermission($orgId, $permissionId);
+
+        return $data;
+    }
+
+    public function getMultiplePermissions(string $orgId)
+    {
+        $data = (new Admin\Permission\Service)->getMultiplePermissions($orgId);
+
+        return $data;
+    }
+
     /**
     * Admin related functons
     */
