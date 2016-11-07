@@ -151,8 +151,10 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processAndReturnFees(array & $input)
+    public function processAndReturnFees(Payment\Entity $payment, array & $input)
     {
+        $this->payment = $payment;
+
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
@@ -163,13 +165,6 @@ class Processor
                 'Please provide appropriate payment method',
                 Payment\Entity::METHOD);
         }
-
-        //
-        // We only create a dummy payment entity for purpose
-        // of pre-calculating fees and returning it.
-        // It's not going to be saved in the database.
-        //
-        $payment = $this->createDummyPaymentEntity($input);
 
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
@@ -601,7 +596,7 @@ class Processor
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.
-        $feesArray = $this->processAndReturnFees($input);
+        $feesArray = $this->processAndReturnFees($payment, $input);
 
         // The difference between the fees received from checkout and
         // and the fees re-calculated again. Ideally, this should be 0.
