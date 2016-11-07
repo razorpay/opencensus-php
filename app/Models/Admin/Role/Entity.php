@@ -4,7 +4,7 @@ namespace RZP\Models\Admin\Role;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;
-use RZP\Constants;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const ORG_ID            = 'org_id';
 
-    protected $table = Constants\Table::ROLE;
+    protected $table = Table::ROLE;
 
     protected $entity = 'role';
 

@@ -52,6 +52,7 @@ class Base
         'org'           => \RZP\Models\Admin\Org\Entity::class,
         'group'         => \RZP\Models\Admin\Group\Entity::class,
         'admin'         => \RZP\Models\Admin\Admin\Entity::class,
+        'role'          => \RZP\Models\Admin\Role\Entity::class,
     );
 
     protected static $liveAndTest = array(

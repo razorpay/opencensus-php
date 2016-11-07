@@ -318,6 +318,12 @@ $factory(\RZP\Models\Admin\Org\Entity::class, [
     'auth_type'     => 'password',
 ]);
 
+$factory(\RZP\Models\Admin\Role\Entity::class, [
+    'id' => $faker->uniqueid,
+    'name' => 'test_role',
+    'description' => 'Role is in test',
+]);
+
 $factory(\RZP\Models\Admin\Group\Entity::class, [
     'id'          => $faker->uniqueid,
     'name'        => 'test_group',

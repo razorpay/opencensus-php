@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Admin;
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin\Token;
 
@@ -63,18 +64,18 @@ class Entity extends Base\PublicEntity
 
     public function roles()
     {
-        $this->morphedToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
     }
 
     // Admins can be part of multiple groups
     public function groups()
     {
-        return $this->morphedToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP);
+        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP);
     }
 
     public function merchants()
     {
-        $this->morphedToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
+        return $this->morphToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
     public function token()
@@ -82,4 +83,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Token\Entity');
     }
 
+    public function saveOrFailMerchant(Merchant\Entity $merchant)
+    {
+        // TODO: Restrict No of merchants per admin to 1.
+        $this->merchants()->save($merchant);
+
+        return $merchant;
+    }
 }
