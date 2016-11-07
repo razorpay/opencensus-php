@@ -2,15 +2,19 @@
 
 namespace RZP\Base;
 
-use RZP\Constants\Entity as E;
-use RZP\Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
+
+use RZP\Models;
+use RZP\Exception;
+use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
-use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     protected $app;
 
     protected $db;
@@ -45,6 +49,11 @@ class Repository extends \Razorpay\Spine\Repository
         $this->manager = $this->app['repo'];
     }
 
+    public static function getTableNameForEntity(string $entity)
+    {
+        return E::getTableNameForEntity($entity);
+    }
+
     public function createOrFail(array $attributes)
     {
         $class = $this->getEntityClass();
@@ -66,6 +75,28 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findMany($ids, $columns);
     }
 
+    public function saveOrFail($entity, array $options = array())
+    {
+        // Gets the attributes which are being newly inserted or updated.
+        $dirty = $entity->getDirty();
+
+        // Saves the entity in MySql.
+        $entity->saveOrFail($options);
+
+        // [Queue] saves in ES if certain conditions are met.
+        $this->saveInEs($entity, $dirty);
+    }
+
+    public function getEntityClass()
+    {
+        return E::getEntityClass($this->entity);
+    }
+
+    public function getTableName()
+    {
+        return E::getTableNameForEntity($this->entity);
+    }
+
     protected function processDbQueryFailure($operation, $attributes = null)
     {
         $e = $this->getExceptionDataArray($operation, $attributes);
@@ -85,7 +116,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function throwException(array $e)
     {
-        throw new DbQueryException($e);
+        throw new Exception\DbQueryException($e);
     }
 
     public function isTransactionActive()
@@ -124,9 +155,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         foreach ($relationships as $type => $ids)
         {
-            $repo = E::getEntityRepository($type);
-
-            $typeEntities = (new $repo)->findMany($ids);
+            $typeEntities = $this->manager->$type->findMany($ids);
 
             foreach ($typeEntities as $entity)
             {
@@ -155,18 +184,6 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->merchantId($merchantId);
-    }
-
-    public function saveOrFail($entity, array $options = array())
-    {
-        // Gets the attributes which are being newly inserted or updated.
-        $dirty = $entity->getDirty();
-
-        // Saves the entity in MySql.
-        $entity->saveOrFail($options);
-
-        // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
     }
 
     protected function saveInEs($entity, $dirty)
@@ -220,7 +237,12 @@ class Repository extends \Razorpay\Spine\Repository
         return join('\\', explode('\\', get_called_class(), -1));
     }
 
-    // Override this method in entity/repository in case the type name is different for that entity.
+    /**
+     * Override this method in entity/repository in case the type name is
+     * different for that entity.
+     *
+     * @return string
+     */
     protected function getEsType()
     {
         $parentNamespace = $this->getParentNamespace();
@@ -235,5 +257,28 @@ class Repository extends \Razorpay\Spine\Repository
         $typeName = constant("RZP\\Constants\\Table::$className");
 
         return $typeName;
+    }
+
+    protected function getAttributeWithTableName($col)
+    {
+        return $this->getTableName() . '.' . $col;
+    }
+
+    protected function validateInstanceIsOfCurrentEntity(Models\Base\Entity $entity)
+    {
+        if ($entity->getEntityName() !== $this->entity)
+        {
+            throw new Exception\LogicException(
+                'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
+        }
+    }
+
+    protected function validateIdGenerated($entity)
+    {
+        if ($entity->getKey() === null)
+        {
+            throw new Exception\LogicException(
+                'Unique id not generated for the entity');
+        }
     }
 }

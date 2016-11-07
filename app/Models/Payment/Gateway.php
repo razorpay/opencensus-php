@@ -133,6 +133,7 @@ class Gateway
         self::HDFC => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
+        self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
         self::FIRST_DATA => [],

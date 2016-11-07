@@ -69,11 +69,7 @@ class Entity extends Base\Entity
         self::AMOUNT      => 'int'
     ];
 
-    protected $table = Constants\Table::CYBERSOURCE;
-
-    protected $primaryKey = self::ID;
-
-    protected $entity = Constants\Table::CYBERSOURCE;
+    protected $entity = Constants\Entity::CYBERSOURCE;
 
     public $incrementing = true;
 

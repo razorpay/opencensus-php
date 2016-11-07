@@ -60,6 +60,42 @@ class PaymentCancelTest extends TestCase
         $this->assertEquals($content, $content2);
     }
 
+    public function testCancelPaymentWithReason()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create(
+            'payment',
+            ['created_at' => time() - 10 * 60, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->cancelPayment($payment->getPublicId(), ['_' => ['reason' => 'failed_in_app']]);
+        });
+
+        $payment = $this->getEntityById('payment', $payment->getId(), true);
+
+        $this->assertEquals('failed_in_app', $payment['cancellation_reason']);
+    }
+
+    public function testCancelPaymentWithArrayReason()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create(
+            'payment',
+            ['created_at' => time() - 10 * 60, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->cancelPayment($payment->getPublicId(), ['_' => ['reason' => ['failed_in_app']]]);
+        });
+
+        $payment = $this->getEntityById('payment', $payment->getId(), true);
+
+        $this->assertEquals(null, $payment['cancellation_reason']);
+    }
+
     public function testCancelPaymentAfterAutoCaptureAndRecentlyProcessed()
     {
         $order = $this->createOrder(['payment_capture' => '1']);

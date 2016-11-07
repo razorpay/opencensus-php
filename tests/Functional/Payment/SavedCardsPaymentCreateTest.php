@@ -557,7 +557,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         // create payments and fetch on public auth
         $this->testPaymentCreateAndSaveCardGlobal();
 
-        $this->mockSession('capp_ksjdfkjsaf');
+        $this->mockSession('capp_ad32ksjdfkjsaf');
 
         $this->ba->publicAuth();
 
@@ -603,7 +603,7 @@ class SavedCardsPaymentCreateTest extends TestCase
             ],
         ];
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $this->runRequestResponseFlow($data);
 

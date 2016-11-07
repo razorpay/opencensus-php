@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Exception;

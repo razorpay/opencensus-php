@@ -10,14 +10,14 @@ use RZP\Models\Settlement\Details\Entity;
 
 class CreateSettlementDetailsTable extends Migration
 {
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create(Table::SETTLEMENT_DETAIL, function(Blueprint $table)
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::SETTLEMENT_DETAILS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -64,15 +64,15 @@ class CreateSettlementDetailsTable extends Migration
      */
     public function down()
     {
-        Schema::table(Table::SETTLEMENT_DETAIL, function($table)
+        Schema::table(Table::SETTLEMENT_DETAILS, function($table)
         {
             $table->dropForeign(
-                Table::SETTLEMENT_DETAIL.'_'.Entity::MERCHANT_ID.'_foreign');
+                Table::SETTLEMENT_DETAILS.'_'.Entity::MERCHANT_ID.'_foreign');
 
             $table->dropForeign(
-                Table::SETTLEMENT_DETAIL.'_'.Entity::SETTLEMENT_ID.'_foreign');
+                Table::SETTLEMENT_DETAILS.'_'.Entity::SETTLEMENT_ID.'_foreign');
         });
 
-        Schema::drop(Table::SETTLEMENT_DETAIL);
+        Schema::drop(Table::SETTLEMENT_DETAILS);
     }
 }

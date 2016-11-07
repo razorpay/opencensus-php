@@ -39,8 +39,6 @@ class Entity extends Base\PublicEntity
 
     const RECONCILED        = 'reconciled';
 
-    protected $table = Table::TRANSACTION;
-
     protected static $sign = 'txn';
 
     protected $entity = 'transaction';
