@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use RZP\Constants\Mode;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
@@ -20,9 +21,21 @@ use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 
 class Processor extends Base\Core
 {
+    use SettlementMutex;
+
     protected $setlTime;
 
     protected $input;
+
+    protected $mutex;
+
+    const MUTEX_RESOURCE  = 'SETTLMENT_PROCESSING';
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function process(array $input, $channel, $schedule = true)
     {
@@ -39,6 +52,8 @@ class Processor extends Base\Core
 
         $data = $this->processSettlements($input, $channel, $schedule);
 
+        $this->releaseMutexOnSettlement();
+
         return $data;
     }
 
@@ -54,6 +69,8 @@ class Processor extends Base\Core
         $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $this->input = $input;
+
+        $this->acquireMutexOnSettlement();
 
         //set channel
         if ($channel === null)

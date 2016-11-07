@@ -20,11 +20,17 @@ use RZP\Trace\TraceCode;
 
 class Settler
 {
+    use SettlementMutex;
+
     protected $settlements;
 
     protected $input;
 
+    protected $mutex;
+
     const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+
+    const MUTEX_RESOURCE  = 'SETTLMENT_PROCESSING';
 
     /**
      * Used for testing purposes. Default should
@@ -41,6 +47,7 @@ class Settler
         $this->env = $app['env'];
         $this->trace = $app['trace'];
         $this->repo = $app['repo'];
+        $this->mutex = $app['api.mutex'];
     }
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
@@ -67,16 +74,24 @@ class Settler
 
         if ($this->checkForHolidays())
         {
+            $this->releaseMutexOnSettlement();
+
             return self::HOLIDAY_MESSAGE;
         }
 
         $txns = $this->fetchTransactionsToSettle($input);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->processSettlements($input, $channel, $txns);
+
+        $this->releaseMutexOnSettlement();
+
+        return $data;
     }
 
     protected function preSettlementProcessing()
     {
+        $this->acquireMutexOnSettlement();
+
         $this->increaseAllowedSystemLimits();
 
         $this->checkTime();
