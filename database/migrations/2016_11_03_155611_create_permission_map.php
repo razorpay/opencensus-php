@@ -18,9 +18,11 @@ class CreatePermissionMap extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->string('entity_type', 250);
-            $table->char('entity_id', 14);
             $table->char('permission_id', 14);
+
+            $table->char('entity_id', 14);
+
+            $table->string('entity_type', 250); // org or roles
         });
     }
 

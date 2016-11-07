@@ -20,9 +20,9 @@ class CreateAdminGroup extends Migration
 
             $table->char('group_id', 14);
 
-            $table->string('entity_type'); // admin or group
+            $table->char('entity_id', 14);
 
-            $table->char('entity_id', 14); // admin_id or group_id
+            $table->string('entity_type'); // admin or group
         });
     }
 

@@ -22,7 +22,7 @@ class CreateMerchantMap extends Migration
 
             $table->char('entity_id');
 
-            $table->char('entity_type');
+            $table->char('entity_type'); // admin or group
 
             $table->foreign('merchant_id')
                   ->references('id')
