@@ -54,6 +54,7 @@ class Base
         'group'         => \RZP\Models\Admin\Group\Entity::class,
         'admin'         => \RZP\Models\Admin\Admin\Entity::class,
         'role'          => \RZP\Models\Admin\Role\Entity::class,
+        'admin_token'   => \RZP\Models\Admin\Admin\Token\Entity::class,
     );
 
     protected static $liveAndTest = array(

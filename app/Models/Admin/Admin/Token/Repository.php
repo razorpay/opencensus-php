@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Admin\Token;
 
 use RZP\Base;
 use Carbon\Carbon;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
 {
@@ -24,9 +25,8 @@ class Repository extends Base\Repository
 
     public function findValidToken($token)
     {
-        return $this->repo
+        return $this->newQuery()
             ->where('token', $token)
-            ->whereIsNull('expires_at')
             ->first();
     }
 }

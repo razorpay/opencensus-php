@@ -24,7 +24,7 @@ class CreateAdminTokensTable extends Migration
 
             $table->integer('created_at');
             $table->integer('updated_at');
-            $table->integer('expires_at');
+            $table->integer('expires_at')->nullable();
 
             $table->foreign('admin_id')
                   ->references('id')

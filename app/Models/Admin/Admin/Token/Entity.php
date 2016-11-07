@@ -18,8 +18,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'admin_token';
 
-    protected $table = Table::ADMIN_TOKEN;
-
     protected $fillable = [
         self::ADMIN_ID,
         self::TOKEN,
@@ -40,7 +38,7 @@ class Entity extends Base\PublicEntity
 
     public function admin()
     {
-        return $this->belongsTo('Admin\Entity');
+        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
 }

@@ -6,8 +6,6 @@ use RZP\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'admin';
 
     public function getByUsername($username)

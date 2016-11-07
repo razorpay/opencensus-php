@@ -337,7 +337,7 @@ $factory(\RZP\Models\Admin\Group\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Entity::class, [
-    'id'                 => $faker->uniqueid,
+    'id'                 => '6dLbNSpv5bbbbb',
     'name'               => 'test_group',
     'email'              => 'xyz@abc.com',
     'username'           => 'harshil',
@@ -346,10 +346,11 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'access_token'       => 'oauth123',
     'oauth_provider_id'  => 'google',
     'deleted_at'         => time(),
+    'org_id'             => '6dLbNSpv5XbCOD'
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Entity::class, [
-    'id'            =>  '6dLbNSpv5aaaa',
+    'id'            =>  '6dLbNSpv5aaaaa',
     'name'          =>  'Shashank',
     'username'      =>  'shk',
     'password'      =>  null,
@@ -362,8 +363,8 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-    'admin_id'      =>  '6dLbNSpv5aaaa',
+    'admin_id'      =>  '6dLbNSpv5bbbbb',
     'token'         =>  'd986ee4a08c10b610c2e1afd10fea7c9a99c2084182f27749bc853e06c57d970',
     'created_at'    =>  $faker->timestamp,
-    'expires_at'    =>  null,
+    'expires_at'    =>  $faker->timestamp,
 ]);
