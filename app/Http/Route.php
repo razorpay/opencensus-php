@@ -294,7 +294,7 @@ final class Route
         'password_login'                        => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
 
         // Admin Auth
-        'hello_admin'                           => ['get',      'admin/hello_world',                              'AdminController@helloWorld'                                        ],
+        'hello_world'                           => ['get',      'world',                                          'AdminController@helloWorld'                                        ],
     );
 
     public static $public = array(

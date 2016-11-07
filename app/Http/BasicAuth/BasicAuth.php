@@ -255,9 +255,14 @@ class BasicAuth
             return $res;
         }
 
+        if ($this->getKey() !== 'admin')
+        {
+            return $res;
+        }
+
         $token = $this->getSecret();
 
-        $admin = $this->fetchAdminOfToken();
+        $admin = $this->fetchAdminOfToken($token);
 
         if ($admin)
         {

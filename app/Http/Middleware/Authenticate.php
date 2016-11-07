@@ -39,7 +39,6 @@ class Authenticate
         $router = $this->app['router'];
 
         $route = $router->currentRouteName();
-
         $ba = $this->app['basicauth'];
 
         $ba->init($this->app);

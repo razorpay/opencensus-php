@@ -78,16 +78,14 @@ return [
 
     'testAdminAuth' => [
         'request' => [
-            'url' => '/hello_admin',
+            'url' => '/world',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
-                [
-                    'hello world'
-                ]
+                'hello_world'
             ],
-            'status_code' => 400,
+            'status_code' => 200,
         ]
     ],
 

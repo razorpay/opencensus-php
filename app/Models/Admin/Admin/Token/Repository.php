@@ -7,8 +7,6 @@ use Carbon\Carbon;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'admin_token';
 
     public function createToken($admin)
