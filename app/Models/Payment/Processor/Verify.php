@@ -65,6 +65,12 @@ trait Verify
 
             throw $e;
         }
+        catch (\Error $e)
+        {
+            $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
+
+            throw $e;
+        }
 
         $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS);
 

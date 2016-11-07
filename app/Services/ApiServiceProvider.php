@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Models\Admin as Admin;
+use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use CreditCardFraudDetection;
 use RZP;
@@ -100,6 +101,16 @@ class ApiServiceProvider extends BaseServiceProvider
 
         // Used for admin role org permission.
         $this->registerAdminRelationMap();
+    }
+
+    /**
+     * Defines string to className map for polymorphic associations
+     */
+    public function boot()
+    {
+        Relation::morphMap([
+            'merchant' => Constants\Entity::getEntityClass(Constants\Entity::MERCHANT),
+        ]);
     }
 
     /**

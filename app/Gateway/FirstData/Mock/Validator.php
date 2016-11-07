@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\FirstData\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\FirstData\Constants;
 use RZP\Gateway\FirstData\Mapping;
 use RZP\Gateway\FirstData\ConnectRequestFields;
@@ -54,7 +54,7 @@ class Validator extends Base\Validator
     protected function validateTxntype($input)
     {
         if ((isset($input['txntype']) === false) or
-            (in_array($input['txntype'], TxnType::$typeList) === false))
+            (in_array($input['txntype'], TxnType::$typeList, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid txntype');
@@ -64,7 +64,7 @@ class Validator extends Base\Validator
     protected function validateMode($input)
     {
         if ((isset($input['mode']) === true) and
-            (in_array($input['mode'], PaymentMode::MODE_LIST) === false))
+            (in_array($input['mode'], PaymentMode::MODE_LIST, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid mode');
@@ -74,7 +74,7 @@ class Validator extends Base\Validator
     protected function validatePaymentMethod($input)
     {
         if ((isset($input['paymentMethod']) === false) or
-            (in_array($input['paymentMethod'], array_values(PaymentMethod::METHOD_MAP)) === false))
+            (in_array($input['paymentMethod'], array_values(PaymentMethod::METHOD_MAP), true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid paymentMethod');

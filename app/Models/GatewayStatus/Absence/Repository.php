@@ -6,8 +6,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'gateway_absence';
 
     // These are proxy allowed params to search on.

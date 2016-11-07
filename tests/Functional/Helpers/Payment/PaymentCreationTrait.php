@@ -86,7 +86,7 @@ trait PaymentCreationTrait
             '/payments/create/recurring',
             '/payments');
 
-        return in_array($url, $urls);
+        return in_array($url, $urls, true);
     }
 
     protected function isOtpCallbackUrl($uri)

@@ -50,7 +50,7 @@ class Dashboard
     {
         foreach ($data as $key => $value)
         {
-            if (in_array($key, static::$fields) === false)
+            if (in_array($key, static::$fields, true) === false)
                 unset($data[$key]);
         }
 

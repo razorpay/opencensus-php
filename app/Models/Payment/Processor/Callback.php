@@ -133,7 +133,7 @@ trait Callback
 
         $gateway = $payment->getGateway();
 
-        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways) === false)
+        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
         {
             throw new Exception\LogicException(
                 'Invalid gateway provided: ' . $gateway);

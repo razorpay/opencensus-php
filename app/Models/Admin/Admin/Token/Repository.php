@@ -2,13 +2,11 @@
 
 namespace RZP\Models\Admin\Admin\Token;
 
-use RZP\Models\Base;
+use RZP\Base;
 use Carbon\Carbon;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'admin_token';
 
     public function createToken($admin)
@@ -22,5 +20,13 @@ class Repository extends Base\Repository
         $token->save();
 
         return $token;
+    }
+
+    public function findValidToken($token)
+    {
+        return $this->repo
+            ->where('token', $token)
+            ->whereIsNull('expires_at')
+            ->first();
     }
 }

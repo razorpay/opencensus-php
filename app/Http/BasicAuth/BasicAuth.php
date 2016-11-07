@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Admin Auth
+     * rzp_mode_admin:auth_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -143,10 +146,12 @@ class BasicAuth
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
      * 3 + 1 + 4 + 1 + 14
+     * 3 + 1 + 4 + 1 + 5 (rzp_$mode_admin)
      * @var array
      */
-    protected static $validKeyLengths = array(
-        8, 23, 33);
+    protected static $validKeyLengths = [
+        8, 23, 33, 14
+    ];
 
     public function __construct($app)
     {
@@ -232,6 +237,35 @@ class BasicAuth
         {
             $this->setProxyTrue();
 
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    public function adminAuth()
+    {
+        $this->settype(Type::ADMIN_AUTH);
+
+        $res =  $this->setCredentials();
+
+        // null is the good value here
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->getKey() !== 'admin')
+        {
+            return $res;
+        }
+
+        $token = $this->getSecret();
+
+        $admin = $this->fetchAdminOfToken($token);
+
+        if ($admin)
+        {
             return;
         }
 
@@ -416,9 +450,8 @@ class BasicAuth
             //
 
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
-            $allowedFeatures = $this->merchant->getFeatures();
 
-            if (in_array($accessedFeature, $allowedFeatures))
+            if ($this->merchant->isFeatureEnabled($accessedFeature))
             {
                 return null;
             }
@@ -505,12 +538,18 @@ class BasicAuth
 
         if ($secret === '')
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
@@ -575,7 +614,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->getCurrentRouteName(), $appRoutes) === false)
+        if (in_array($this->getCurrentRouteName(), $appRoutes, true) === false)
         {
             return false;
         }
@@ -691,6 +730,16 @@ class BasicAuth
         return $this->merchant->getKey();
     }
 
+    public function getMerchantIdOfKey()
+    {
+        if ($this->key === null)
+        {
+            return null;
+        }
+
+        return $this->key->getMerchantId();
+    }
+
     public function getPublicKey()
     {
         return $this->creds['public_key'];
@@ -728,6 +777,11 @@ class BasicAuth
         $this->type = $type;
     }
 
+    protected function setAdminTrue()
+    {
+        $this->isAdmin = true;
+    }
+
     protected function setProxyTrue()
     {
         $this->proxy = true;
@@ -745,6 +799,11 @@ class BasicAuth
     public function isProxyAuth()
     {
         return $this->proxy;
+    }
+
+    public function isAdminAuth()
+    {
+        return $this->isAdmin;
     }
 
     public function isAppAuth()
@@ -765,6 +824,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isProxyOrPrivilegeAuth()
+    {
+        return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
     }
 
     protected function setKeyFromQueryParams()
@@ -813,6 +877,13 @@ class BasicAuth
         return $this->merchant;
     }
 
+    protected function fetchAdminOfToken($token)
+    {
+        $this->admin = $this->repo->admin_token->findValidToken($token)->admin();
+
+        return $this->admin;
+    }
+
     protected function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
@@ -832,9 +903,9 @@ class BasicAuth
     protected function invalidApiKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+            TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 

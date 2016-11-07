@@ -49,6 +49,7 @@ class Base
         'address'       => \RZP\Models\Address\Entity::class,
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
+    	'feature'       => \RZP\Models\Feature\Entity::class,
         'org'           => \RZP\Models\Admin\Org\Entity::class,
         'group'         => \RZP\Models\Admin\Group\Entity::class,
         'admin'         => \RZP\Models\Admin\Admin\Entity::class,
@@ -62,6 +63,7 @@ class Base
         'emi_plan',
         'iin',
         'schedule',
+        'feature'
     );
 
     public function create(array $attributes = array())
@@ -73,7 +75,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -92,7 +94,7 @@ class Base
     {
         $this->stripSign($id);
 
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }

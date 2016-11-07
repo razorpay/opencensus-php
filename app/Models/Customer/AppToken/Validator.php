@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Customer\AppToken;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Customer\AppToken\Entity;
 
 class Validator extends Base\Validator

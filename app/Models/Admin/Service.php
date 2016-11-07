@@ -17,9 +17,7 @@ class Service extends Base\Service
 
         $id = $entityClass::verifyIdAndSilentlyStripSign($id);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $entity = (new $repo)->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailPublic($id);
 
         return $entity->toArrayAdmin();
     }
@@ -28,11 +26,7 @@ class Service extends Base\Service
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $repo = new $repo;
-
-        $entities = $repo->fetch($input);
+        $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
     }

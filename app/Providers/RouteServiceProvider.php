@@ -109,7 +109,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                $this->route->addRouteGroups(['internal', 'private', 'proxy']);
+                $this->route->addRouteGroups(['internal', 'private', 'proxy', 'admin']);
             }
         );
     }

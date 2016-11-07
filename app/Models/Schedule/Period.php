@@ -15,10 +15,10 @@ class Period
     const MONTHLY_WEEK = 'monthly-week';
 
     const PERIOD_LIST = [
-    	self::HOURLY,
-		self::DAILY,
-		self::WEEKLY,
-		self::MONTHLY_DATE,
-		self::MONTHLY_WEEK,
+        self::HOURLY,
+        self::DAILY,
+        self::WEEKLY,
+        self::MONTHLY_DATE,
+        self::MONTHLY_WEEK,
     ];
 }

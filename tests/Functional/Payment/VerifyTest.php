@@ -255,6 +255,54 @@ class VerifyTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testErrorPaymentVerify()
+    {
+        $this->gateway = 'ebs';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $this->getErrorInCallback();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $payment = $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $prevBucket = $payment['verify_bucket'];
+
+        $this->getFatalErrorInVerify();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $newBucket = $payment['verify_bucket'];
+
+        $this->assertNotEquals($prevBucket, $newBucket);
+    }
+
     public function testTimeoutPaymentVerify()
     {
         $this->gateway = 'ebs';
@@ -325,6 +373,10 @@ class VerifyTest extends TestCase
             'timeout' => 1,
             'filter'  => 'verify_error'
         ];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['verify_bucket'], 0);
 
         $this->assertContent($content,  $resultData);
 
@@ -565,6 +617,9 @@ class VerifyTest extends TestCase
 
         unset($content['authorize_time']);
 
+        // TODO : built it from previous values
+        unset($content['verifiable_count']);
+
         $defaultParams = [
             'success'       => 0,
             'authorized'    => 0,
@@ -574,10 +629,9 @@ class VerifyTest extends TestCase
 
         $total = array_sum($defaultParams);
 
-
         $defaultParams = array_merge($defaultParams, $param);
 
-        $defaultParams['total_payments'] = $defaultParams['success'] +
+        $defaultParams['verified_payments'] = $defaultParams['success'] +
             $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'];
 
         $this->assertEquals($defaultParams, $content);

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Role;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Repository extends Base\Repository
 {

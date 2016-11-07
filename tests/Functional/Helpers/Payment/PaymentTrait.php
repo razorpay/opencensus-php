@@ -517,11 +517,13 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function cancelPayment($id)
+    protected function cancelPayment($id, $content = [])
     {
         $request = array(
             'method' => 'GET',
-            'url' => '/payments/'.$id.'/cancel');
+            'url' => '/payments/'.$id.'/cancel',
+            'content' => $content
+        );
 
         $this->ba->publicAuth();
         return $this->makeRequestAndGetContent($request);

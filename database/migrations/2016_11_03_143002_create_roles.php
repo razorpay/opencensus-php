@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Role\Entity as Role;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateRoles extends Migration
 {
@@ -29,6 +30,10 @@ class CreateRoles extends Migration
 
             $table->integer(Role::CREATED_AT);
             $table->integer(Role::UPDATED_AT);
+
+            $table->foreign(Role::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG);
         });
     }
 
@@ -39,6 +44,11 @@ class CreateRoles extends Migration
      */
     public function down()
     {
+        Schema::table(Table::ROLE, function($table)
+        {
+            $table->dropForeign(Table::ROLE.'_'.Role::ORG_ID.'_foreign');
+        });
+
         Schema::drop(Table::ROLE);
     }
 }

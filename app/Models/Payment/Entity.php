@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE            = 'error_code';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const CANCELLATION_REASON   = 'cancellation_reason';
     const CUSTOMER_ID           = 'customer_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
@@ -78,8 +79,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
-
-    protected $table            = \RZP\Constants\Table::PAYMENT;
 
     protected $metadata         = array();
 
@@ -132,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::CANCELLATION_REASON,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
@@ -393,6 +393,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setCancellationReason($cancellationReason)
+    {
+        $this->setAttribute(self::CANCELLATION_REASON, $cancellationReason);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
@@ -544,6 +549,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setCancellationReasonAttribute(string $reason)
+    {
+        $reason = mb_strtolower($reason);
+
+        $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -643,7 +655,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNull(self::TRANSACTION_ID));
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+    }
+
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ORDER_ID));
     }
 
     public function isCaptured()
@@ -936,7 +953,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::OTP_ATTEMPTS);
     }
-    
+
     public function getVerifyBucket()
     {
         return $this->getAttribute(self::VERIFY_BUCKET);
@@ -1053,16 +1070,23 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    public function setPublicOrderIdAttribute(Array & $array)
+    public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
         {
-            $array[self::ORDER_ID] =
-                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+            $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
     }
 
-    public function setPublicCardIdAttribute(Array & $array)
+    public function getPublicOrderId()
+    {
+        if ($this->hasOrder())
+        {
+            return Order\Entity::getSignedId($this->getApiOrderId());
+        }
+    }
+
+    public function setPublicCardIdAttribute(array & $array)
     {
         if (isset($array[self::CARD_ID]))
         {
@@ -1071,7 +1095,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicCustomerIdAttribute(Array & $array)
+    public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
         {
@@ -1085,7 +1109,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicTokenIdAttribute(Array & $array)
+    public function setPublicTokenIdAttribute(array & $array)
     {
         if (isset($array[self::TOKEN_ID]))
         {

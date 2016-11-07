@@ -143,6 +143,25 @@ class Authorization
         $this->basicAuth($key, $secret);
     }
 
+    public function adminAuth($mode = 'live', $token = null)
+    {
+        $this->type = 'admin';
+
+        $this->key = "rzp_{$mode}_admin";
+
+        if ($token === null)
+        {
+            $this->setSecret($this->defaultSecret);
+            $token = $this->defaultSecret;
+        }
+        else
+        {
+            $this->setSecret($token);
+        }
+
+        $this->basicAuth($this->key, $token);
+    }
+
     public function dashboardAuth($mode = 'test')
     {
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');

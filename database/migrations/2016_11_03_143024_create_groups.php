@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Group\Entity as Group;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateGroups extends Migration
 {
@@ -29,6 +30,10 @@ class CreateGroups extends Migration
 
             $table->integer(Group::CREATED_AT);
             $table->integer(Group::UPDATED_AT);
+
+            $table->foreign(Group::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG);
         });
     }
 
@@ -39,6 +44,11 @@ class CreateGroups extends Migration
      */
     public function down()
     {
+        Schema::table(Table::GROUP, function($table)
+        {
+            $table->dropForeign(Table::GROUP.'_'.Group::ORG_ID.'_foreign');
+        });
+
         Schema::drop(Table::GROUP);
     }
 }
