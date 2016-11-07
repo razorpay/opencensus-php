@@ -29,8 +29,6 @@ class Entity extends Base\Entity
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
 
-    protected $table = Table::WALLET;
-
     protected $entity = 'wallet';
 
     protected $fields = array(

@@ -6,9 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Key';
+    protected $entity = 'key';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',

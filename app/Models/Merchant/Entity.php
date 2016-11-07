@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Pricing\Service as PricingService;
+use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
@@ -184,7 +185,8 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures());
+        return (in_array($feature, $this->features(), true)) or
+            $this->checkOldFeatures($feature);
     }
 
     public function activate()
@@ -408,9 +410,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
+    public function features()
+    {
+        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
+                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
+    }
+
     public function getFeatures()
     {
         return $this->getAttribute(self::FEATURES);
+    }
+
+    protected function checkOldFeatures($feature)
+    {
+        if (in_array($feature, $this->getFeatures(), true) === true)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function getBrandColor()
@@ -678,16 +695,5 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
-    }
-
-    // Role based access methods
-    public function groups()
-    {
-        return $this->morphedByMany('\RZP\Models\Admin\Group', 'entity', Table::MERCHANT_MAP);
-    }
-
-    public function admins()
-    {
-        return $this->morphedByMany('\RZP\Models\Admin\Admin', 'entity', Table::MERCHANT_MAP);
     }
 }

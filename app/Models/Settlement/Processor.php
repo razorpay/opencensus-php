@@ -121,13 +121,13 @@ class Processor extends Base\Core
 
                 $data['settlement_text_file']  = $urlText;
                 $data['settlement_excel_file'] = $urlExcel;
+
+                $this->successNotification($data, $settlements);
             }
             else
             {
                 $data['message'] = 'No settlements found!';
             }
-
-            $this->successNotification($data, $settlements);
         }
         catch (\Exception $e)
         {

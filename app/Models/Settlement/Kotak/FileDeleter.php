@@ -24,7 +24,7 @@ class FileDeleter
 
     public function deleteFileIfExists($setlFileType)
     {
-        if (in_array($setlFileType, $this->fileType) === false)
+        if (in_array($setlFileType, $this->fileType, true) === false)
         {
             throw new Exception\InvalidArgumentException('Not a valid type: ' . $setlFileType);
         }

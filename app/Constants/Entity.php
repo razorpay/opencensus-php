@@ -24,19 +24,20 @@ class Entity
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
     const REFUND                = 'refund';
+    const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
     const METHODS               = 'methods';
     const PRICING               = 'pricing';
-    const SCHEDULE              = 'schedule';
     const PAYMENT               = 'payment';
+    const FEATURE               = 'feature';
     const WEBHOOK               = 'webhook';
+    const SCHEDULE              = 'schedule';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
-    const ADDRESS               = 'address';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
@@ -100,7 +101,9 @@ class Entity
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,
         self::PRICING               => \RZP\Models\Pricing::class,
+        self::FEATURE               => \RZP\Models\Feature::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
+        self::MERCHANT              => \RZP\Models\Merchant::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
@@ -145,7 +148,7 @@ class Entity
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
-    public static function getEntityNamespace($entity)
+    public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
 
@@ -159,7 +162,7 @@ class Entity
         return '\RZP\Models\\' . studly_case($entity);
     }
 
-    public static function getEntityClass($entity)
+    public static function getEntityClass(string $entity)
     {
         $ns = self::getEntityNamespace($entity);
 
@@ -181,7 +184,7 @@ class Entity
         return new $class;
     }
 
-    public static function getEntityRepository($entity, $repositoryType = 'Repository')
+    public static function getEntityRepository(string $entity, $repositoryType = 'Repository')
     {
         $class = self::getEntityNamespace($entity) . '\\' . $repositoryType;
 
@@ -201,9 +204,14 @@ class Entity
         return $class;
     }
 
-    public static function getEntityEsRepository($entity)
+    public static function getEntityEsRepository(string $entity)
     {
         return self::getEntityRepository($entity, 'EsRepository');
+    }
+
+    public static function getTableNameForEntity(string $entity)
+    {
+        return Table::getTableNameForEntity($entity);
     }
 
     public static function validateIsEntity($entity)
@@ -222,6 +230,15 @@ class Entity
     public static function isValidEntity($entity)
     {
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
+    }
+
+    public static function validateEntityOrFail($entity)
+    {
+        if (self::isValidEntity($entity) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid entity.');
+        }
     }
 
     public static function validateEntityOrFailPublic($entity)

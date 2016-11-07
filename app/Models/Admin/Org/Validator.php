@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Org;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {

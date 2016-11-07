@@ -49,6 +49,7 @@ class TraceCode
     const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
     const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
+    const PAYMENT_AUTHORIZE_REMINDER_FAILURE        = 'PAYMENT_AUTHORIZE_REMINDER_FAILURE';
     const PAYMENT_CHECKOUT_INVALID_ID               = 'PAYMENT_CHECKOUT_INVALID_ID';
     const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
@@ -101,10 +102,13 @@ class TraceCode
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
     const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
+    const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
+    const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
+    const BAD_REQUEST_API_SECRET_NOT_PROVIDED       = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
 
     const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
 
@@ -320,7 +324,6 @@ class TraceCode
     /**
      * Additional trace codes for Segment integration
      */
-    const SEGMENT_ID_UNAVAILABLE                    = 'SEGMENT_ID_UNAVAILABLE';
     const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
     const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
     const OTP_GENERATE                              = 'OTP_GENERATE';
@@ -336,7 +339,10 @@ class TraceCode
     const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
-
+    // Trace code for features
+    const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
+    const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
+    const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -382,6 +388,9 @@ class TraceCode
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
+        self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
+        self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
+
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
 
         self::RUNTIME_ERROR                             => 'The request failed at runtime',
@@ -440,6 +449,9 @@ class TraceCode
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
+        self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
+        self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
     );
 
     /**

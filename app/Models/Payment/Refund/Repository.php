@@ -10,8 +10,6 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = array(
@@ -121,28 +119,27 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $ptable = Payment\Entity::getTableName();
-
-        $attrs = Refund\Entity::getAttributeWithTableName('*');
+        $attrs = $this->getAttributeWithTableName('*');
 
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(
-            $ptable,
+            $this->manager->payment->getTableName(),
             function ($join) use ($from, $to, $type, $gatewayCode, $gateway)
             {
-                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
+                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
-                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-                $ptype = Payment\Entity::getAttributeWithTableName($type);
-                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pRepo = $this->manager->payment;
+                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+                $pType = $pRepo->getAttributeWithTableName($type);
+                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
-                $join->on($rPaymentId, '=', $pid)
+                $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
-                     ->where($ptype, '=', $gatewayCode)
-                     ->where($pgateway, '=', $gateway);
+                     ->where($pType, '=', $gatewayCode)
+                     ->where($pGateway, '=', $gateway);
             })
             ->with('payment')
             ->get();

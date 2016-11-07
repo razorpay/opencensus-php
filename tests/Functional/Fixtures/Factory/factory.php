@@ -307,6 +307,12 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
     'email'         => 'a@b.com',
 ]);
 
+$factory(\RZP\Models\Feature\Entity::class, [
+    'id'                => $faker->uniqueid,
+    'entity_type'       => 'merchant'
+]);
+
+
 // Admin Roles related fixtures
 
 $factory(\RZP\Models\Admin\Org\Entity::class, [

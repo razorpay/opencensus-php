@@ -92,6 +92,45 @@ class TerminalTest extends TestCase
         $this->assertNull($t['deleted_at']);
     }
 
+    public function testCopyTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+        $mid = $terminal['merchant_id'];
+
+        $input = ['merchant_ids' => ['100000Razorpay']];
+
+        $response = $this->copyTerminal($tid, $mid, $input);
+
+        $newTerminal = $this->getEntityById('terminal', $response[0]['terminal'], true);
+
+        $oldTerminal = $terminal->toArray();
+        unset($oldTerminal['id']);
+        unset($oldTerminal['merchant_id']);
+
+        $this->assertEquals('100000Razorpay', $newTerminal['merchant_id']);
+        $this->assertEquals(0, $newTerminal['used_count']);
+        $this->assertArraySelectiveEquals($oldTerminal, $newTerminal);
+    }
+
+    public function testCopySharedTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_axis_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+        $mid = $terminal['merchant_id'];
+
+        $input = ['merchant_ids' => ['100000Razorpay']];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($tid, $mid, $input)
+        {
+            $this->copyTerminal($tid, $mid, $input);
+        });
+    }
+
     public function testEditAxisMigsTerminal()
     {
         $terminal = $this->fixtures->create(

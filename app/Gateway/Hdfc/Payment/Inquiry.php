@@ -74,7 +74,7 @@ trait Inquiry
             //   cases as we discover them.
             //
 
-            if ((in_array($gatewayPayment['status'], $successStatusArray) === true) and
+            if ((in_array($gatewayPayment['status'], $successStatusArray, true) === true) and
                 ($input['payment']['status'] !== 'failed') and
                 ($input['payment']['status'] !== 'created'))
             {
@@ -83,7 +83,7 @@ trait Inquiry
             // api's payment entity could be in either authorized or captured state
             // and gateway's payment entity status is in failed state. This is an issue
             // and should ideally never happen.
-            else if ((in_array($gatewayPayment['status'], $successStatusArray) === false) and
+            else if ((in_array($gatewayPayment['status'], $successStatusArray, true) === false) and
                      ($input['payment']['status'] !== 'failed') and
                      ($input['payment']['status'] !== 'created'))
             {
@@ -113,11 +113,11 @@ trait Inquiry
             // returned false. This is an issue and should ideally never happen.
             if ((($input['payment']['status'] !== 'failed') and
                  ($input['payment']['status'] !== 'created')) or
-                (in_array($gatewayPayment['status'], $successStatusArray) === true))
+                (in_array($gatewayPayment['status'], $successStatusArray, true) === true))
             {
                 // Ideally both api payment entity status and gateway payment entity status should be true,
                 // to reach this block. In case even if one of them is not true, we log it.
-                if ((in_array($gatewayPayment['status'], $successStatusArray) === false) or
+                if ((in_array($gatewayPayment['status'], $successStatusArray, true) === false) or
                     (($input['payment']['status'] === 'failed') or ($input['payment']['status'] === 'created')))
                 {
                     $this->trace->info(
@@ -152,6 +152,16 @@ trait Inquiry
             }
 
             $this->fillPaymentStatusAndContent($verify);
+        }
+
+        if (($gatewayPayment->getResult() !== null) and
+            ($gatewayPayment->getAction() === Action::PURCHASE))
+        {
+            if ((isset($content['result']) === true) and
+                ($content['result'] === Result::CAPTURED))
+            {
+                $gatewayPayment->setStatus(Status::CAPTURED);
+            }
         }
 
         $gatewayPayment->saveOrFail();
@@ -250,21 +260,20 @@ trait Inquiry
         $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
-        $responseContent = $this->inquiryResponse['data'];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $payment->getPaymentId(),
                 'xml' => $inquiryResponse['xml'],
-                'response_content' => $responseContent
+                'response_content' => $inquiryResponse['data']
             ]);
 
         $verify->verifyResponse = $inquiryResponse;
         $verify->verifyResponseBody = $inquiryResponse['xml'];
-        $verify->verifyResponseContent = $responseContent;
+        $verify->verifyResponseContent = $inquiryResponse['data'];
 
-        return $responseContent;
+        return $inquiryResponse['data'];
     }
 
     protected function getPaymentVerifyRequestContentArray($verify)

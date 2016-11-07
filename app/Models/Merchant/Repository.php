@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Closure;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -14,9 +15,8 @@ use RZP\Error\ErrorCode;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Merchant';
+    protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
 
@@ -99,7 +99,7 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            Methods\Entity::getTableName(),
+            $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
@@ -138,9 +138,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = $this->repo;
-
-        return $repo::setConnection(Mode::TEST)
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }
@@ -160,5 +158,33 @@ class Repository extends Base\Repository
         $entity->merchant()->associate($merchant);
 
         return $merchant;
+    }
+
+    /**
+     * Fetches merchant records which have features assigned in chunks of 200
+     * records and passes that to the closure argument for processing
+     * @param  Closure $processData Function to process the merchant records
+     */
+    public function fetchMerchantsWithoutFeatureEntries()
+    {
+        $merchantIds = $this->db->select(
+           'SELECT DISTINCT id
+            FROM merchants
+            WHERE features IS NOT NULL
+              AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id
+                 FROM merchants
+                 JOIN features ON merchants.id = features.entity_id) LIMIT 200');
+
+        $merchantIds = json_decode(json_encode($merchantIds), true);
+
+        $merchantIds = array_map(function ($mid)
+        {
+            return $mid['id'];
+        }, $merchantIds);
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
     }
 }

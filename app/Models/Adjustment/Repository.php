@@ -7,9 +7,7 @@ use RZP\Exception;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Adjustment';
+    protected $entity = 'adjustment';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
