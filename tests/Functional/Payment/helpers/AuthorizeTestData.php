@@ -753,5 +753,37 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_CANNOT_TOPUP,
         ],
+    ],
+
+    'testCancelPaymentWithReason' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+                'http_status_code' => 400,
+            ],
+            'status_code' => 200,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER
+        ],
+    ],
+
+    'testCancelPaymentWithArrayReason' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+                'http_status_code' => 400,
+            ],
+            'status_code' => 200,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER
+        ],
     ]
 ];
