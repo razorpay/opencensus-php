@@ -24,11 +24,11 @@ class CreateAdmins extends Migration
 
             $table->string(Admin::EMAIL, 250);
             $table->string(Admin::NAME, 250);
-            $table->string(Admin::USERNAME, 250);
-            $table->string(Admin::PASSWORD, 250);
+            $table->string(Admin::USERNAME, 250)->nullable();
+            $table->string(Admin::PASSWORD, 250)->nullable();
             $table->string(Admin::REMEMBER_TOKEN, 250);
-            $table->string(Admin::OAUTH_ACCESS_TOKEN, 250);
-            $table->string(Admin::OAUTH_PROVIDER_ID, 250);
+            $table->string(Admin::OAUTH_ACCESS_TOKEN, 250)->nullable();
+            $table->string(Admin::OAUTH_PROVIDER_ID, 250)->nullable();
             $table->char(Admin::ORG_ID, 14);
 
             $table->integer(Admin::CREATED_AT);
