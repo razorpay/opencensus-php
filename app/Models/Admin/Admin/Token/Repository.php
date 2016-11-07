@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Admin\Token;
 
-use RZP\Models\Base;
+use RZP\Base;
 use Carbon\Carbon;
 
 class Repository extends Base\Repository
