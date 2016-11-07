@@ -19,6 +19,18 @@ class Entity extends Base\PublicEntity
     const OAUTH_ACCESS_TOKEN        = 'access_token';
     const OAUTH_PROVIDER_ID         = 'oauth_provider_id';
     const ORG_ID                    = 'org_id';
+    const USER_TYPE                 = 'user_type';
+    const EMPLOYEE_CODE             = 'employee_code';
+    const BRANCH_CODE               = 'branch_code';
+    const DEPARTMENT_CODE           = 'department_code';
+    const SUPERVISOR_CODE           = 'supervisor_code';
+    const LOCATION_CODE             = 'location_code';
+    const DISABLED                  = 'disabled';
+    const LOCKED                    = 'locked';
+    const LAST_LOGIN_AT             = 'last_login_at';
+    const RECENT_PASSWORD           = 'recent_password';
+    const PASSWORD_EXPIRY           = 'password_expiry';
+    const EXPIRY_AT                 = 'expiry_at';
     const DELETED_AT                = 'deleted_at';
 
     protected static $sign = 'admin';

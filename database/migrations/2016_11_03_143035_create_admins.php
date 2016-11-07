@@ -32,6 +32,22 @@ class CreateAdmins extends Migration
             $table->string(Admin::OAUTH_PROVIDER_ID, 250)->nullable();
             $table->char(Admin::ORG_ID, 14);
 
+            $table->string(Admin::USER_TYPE, 250)->nullable();
+
+            $table->string(Admin::EMPLOYEE_CODE, 250);
+            $table->string(Admin::BRANCH_CODE, 250);
+            $table->string(Admin::DEPARTMENT_CODE, 250);
+            $table->string(Admin::SUPERVISOR_CODE, 250);
+            $table->string(Admin::LOCATION_CODE, 250);
+
+            $table->boolean(Admin::DISABLED)->default(0);
+            $table->boolean(Admin::LOCKED)->default(0);
+
+            $table->text(Admin::RECENT_PASSWORD)->nullable();
+
+            $table->integer(Admin::LAST_LOGIN_AT)->nullable();
+            $table->integer(Admin::PASSWORD_EXPIRY)->nullable();
+            $table->integer(Admin::EXPIRY_AT)->nullable(); // When hit make Admin::DISABLED=1
             $table->integer(Admin::CREATED_AT);
             $table->integer(Admin::UPDATED_AT);
             $table->integer(Admin::DELETED_AT)->nullable();
