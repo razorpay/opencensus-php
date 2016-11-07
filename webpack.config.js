@@ -12,7 +12,10 @@ const webpackConfig = {
     ],
     extensions: ['', '.js', '.jsx', '.styl']
   },
-  module: {}
+  module: {},
+  externals: {
+    'jquery': 'jQuery'
+  }
 }
 
 // ------------------------------------

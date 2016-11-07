@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 
-import { fetchInvoices } from 'merchant/modules/invoices'
+import { fetchInvoices } from 'merchant/modules/invoices/list'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 
 @connect(

@@ -2,11 +2,14 @@
 // This will be moved under `rzp` later
 
 @import './bootstrap-ext'
+@import 'react-select2-wrapper/css/select2.css';
+@import 'react-dates/lib/css/_datepicker.css';
 
 .content-wrapper {
   padding: 30px 20px;
 }
 
+// React Modal Style Overrides
 
 body.ReactModal__Body--open {
   overflow: hidden;
@@ -46,6 +49,80 @@ body.ReactModal__Body--open {
     opacity: 0;
   }
 }
+
+// Select2 style overrides
+
+.select2-container {
+  width: 100% !important;
+}
+
+.select2-container .select2-selection--single {
+  height: 34px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 32px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 32px;
+}
+
+.select2-container--default .select2-selection--single {
+  border-color: #cfdadd;
+}
+
+// react-dates style overrides
+
+.SingleDatePicker {
+  display: block;
+}
+
+.SingleDatePickerInput {
+  border-color: #cfdadd;
+}
+
+.DateInput {
+  font-weight: inherit;
+  font-size: 14px;
+  padding: 0;
+  width: 100%;
+}
+
+.DateInput__display-text {
+  color: #aaa;
+}
+
+.DateInput__display-text--focused {
+  background-color: #fff;
+  border-color: inherit;
+  color: inherit;
+}
+
+.DateInput__display-text--has-input {
+  color: #555;
+}
+
+.DateInput--with-caret::before {
+  top: 34px;
+}
+
+.DateInput--with-caret::after {
+  top: 35px;
+}
+
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected-start,
+.CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected {
+  background-color: #23b7e5;
+  border-color: #23b7e5;
+}
+
+
+
+// End of third party style overrides
 
 .butterbar {
   position: fixed;
