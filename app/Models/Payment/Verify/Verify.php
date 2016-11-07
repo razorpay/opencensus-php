@@ -139,8 +139,6 @@ class Verify extends Base\Core
         $paymentStatus = $this->getPaymentStatusForFilter($filter);
         $verifyStatus = $this->getVerifyStatusForFilter($filter);
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
         $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
         $boundary = [];
