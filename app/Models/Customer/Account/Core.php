@@ -264,7 +264,7 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
+    protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
         if ($customer->merchant->isShared() === true)
         {

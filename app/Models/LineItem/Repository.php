@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    protected $entity = 'line_item';
 
     // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = [

@@ -69,7 +69,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT => 'int',
+        self::AMOUNT    => 'int',
+        self::QUANTITY  => 'int',
     ];
 
     // -------------------------- Getters --------------------------
@@ -82,6 +83,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getQuantity()
+    {
+        return $this->getAttribute(self::QUANTITY);
     }
 
     // -------------------------- Getters Ends --------------------------

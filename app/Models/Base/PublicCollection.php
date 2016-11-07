@@ -43,6 +43,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayReport();
     }
 
+    public function toArrayPublicEmbedded()
+    {
+        return $this->itemsToArrayPublic();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)

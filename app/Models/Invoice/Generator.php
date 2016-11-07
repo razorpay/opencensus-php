@@ -76,7 +76,7 @@ class Generator
         $this->invoice->setCustomerName($this->customer->getName());
         $this->invoice->setCustomerContact($this->customer->getContact());
         $this->invoice->setCustomerEmail($this->customer->getEmail());
-        $this->invoice->setCustomerAddress($this->customer->getAddress());
+        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddress()->getId());
     }
 
     protected function associateLineItemsToInvoice()
@@ -111,8 +111,12 @@ class Generator
             // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
             if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
             {
+                $lineItemId = $lineItemDetails[LineItem\Entity::ID];
+
+                LineItem\Entity::verifyIdAndStripSign($lineItemId);
+
                 $lineItem = $this->repo->line_item
-                             ->findByIdAndMerchantId($lineItemDetails[LineItem\Entity::ID], $this->merchant->getId());
+                             ->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
 
             }
             else
@@ -150,8 +154,12 @@ class Generator
     {
         if (isset($customerDetails[Customer\Entity::ID]) === true)
         {
+            $customerId = $customerDetails[Customer\Entity::ID];
+
+            Customer\Entity::verifyIdAndStripSign($customerId);
+
             $customer = $this->repo->customer
-                ->findByIdAndMerchantId($customerDetails[Customer\Entity::ID], $this->merchant->getId());
+                ->findByIdAndMerchantId($customerId, $this->merchant->getId());
         }
         else
         {

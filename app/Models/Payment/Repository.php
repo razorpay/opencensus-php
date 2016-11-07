@@ -10,7 +10,6 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
-use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;

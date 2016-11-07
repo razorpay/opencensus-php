@@ -26,6 +26,8 @@ class Entity extends Base\PublicEntity
     const SCHEDULED_AT          = 'scheduled_at';
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
+    const DATE                  = 'date';
+    const TERMS                 = 'terms';
 
     const TOTAL_AMOUNT          = 'total_amount';
     const CURRENCY              = 'currency';
@@ -93,6 +95,8 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
+        self::DATE,
+        self::TERMS,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -117,6 +121,8 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
+        self::DATE,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -133,6 +139,8 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
+        self::DATE,
+        self::TERMS,
         self::CREATED_AT,
     ];
 
@@ -164,7 +172,7 @@ class Entity extends Base\PublicEntity
 
         $this->generate($input);
 
-        $this->unsetInput('create', $input);
+        // $this->unsetInput('create', $input);
 
         $this->fill($input);
 

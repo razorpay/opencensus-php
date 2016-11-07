@@ -4,7 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Invoice;
 
 class InvoiceController extends Controller

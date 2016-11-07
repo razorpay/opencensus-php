@@ -35,10 +35,10 @@ class Core extends Base\Core
 
         array_map(function($item) use (& $totalAmount)
         {
-            foreach ($item->getQuantity() as $i)
-            {
-                $totalAmount += $item->getAmount();
-            }
+            $quantity = $item->getQuantity();
+            $amount = $item->getAmount();
+
+            $totalAmount += ($amount * $quantity);
         }, $items);
 
         return $totalAmount;

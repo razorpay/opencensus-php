@@ -110,6 +110,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ACTIVE);
     }
+    
+    public function getCurrentShippingAddress()
+    {
+        $app = App::getFacadeRoot();
+        
+        $shippingAddress = $app['repo']->address
+            ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
+        
+        return $shippingAddress;
+    }
 
     // ----------------------------------- END GETTERS -----------------------------------
 
@@ -133,7 +143,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $shippingAddresses->toArrayPublic();
+        return $shippingAddresses->toArrayPublicEmbedded();
     }
 
     // ----------------------------------- END ACCESSORS -----------------------------------

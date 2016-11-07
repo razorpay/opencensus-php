@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {
@@ -17,6 +17,8 @@ class Validator extends Base\Validator
         Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes',
     ];
 
     // protected static $createValidators = [
