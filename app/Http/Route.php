@@ -278,6 +278,13 @@ final class Route
         'role_get'                              => ['get',      'orgs/{id}/roles/{role_id}',                      'AdminController@getRole'                                           ],
         'role_edit'                             => ['put',      'orgs/{id}/roles/{role_id}',                      'AdminController@putRole'                                           ],
         'role_delete'                           => ['delete',   'orgs/{id}/roles/{role_id}',                      'AdminController@deleteRole'                                        ],
+        'admin_delete'                          => ['delete',   'orgs/{id}/admins/{admin_id}',                    'AdminController@deleteAdmin'                                       ],
+        'admin_roles_create'                    => ['post',     'orgs/{id}/admins/{admin_id}/roles',              'AdminController@addRoleToAdmin'                                    ],
+        'group_merchants_create'                => ['put',      'orgs/groups/{id}/merchants',                     'AdminController@addMerchantToGroup'                                ],
+        'group_merchants_delete'                => ['delete',   'orgs/groups/{id}/merchants',                     'AdminController@deleteMerchantFromGroup'                           ],
+        'admin_merchants_create'                => ['put',      'orgs/admins/{id}/merchants',                     'AdminController@addMerchantToAdmin'                                ],
+        'admin_merchants_delete'                => ['delete',   'orgs/admin/{id}/merchants',                      'AdminController@deleteMerchantFromAdmin'                           ],
+        'group_admins_create'                   => ['put',      'orgs/groups/{id}/admins/{admin_id}',             'AdminController@addAdminToGroup'                                   ],
         // Permission can only be created by certain organisations.
         'permission_create'                     => ['post',     'orgs/{id}/permissions',                          'AdminController@createPermission'                                  ],
         'permission_get_multiple'               => ['get',      'orgs/{id}/permissions',                          'AdminController@getMultiplePermissions'                            ],
