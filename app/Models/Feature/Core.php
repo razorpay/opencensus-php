@@ -5,6 +5,8 @@ namespace RZP\Models\Feature;
 use Illuminate\Database\QueryException;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -20,6 +22,10 @@ class Core extends Base\Core
 
         if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
         {
+            $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
+                array('old_features' => $assignedFeatureNames,
+                      'new_feature'  => $feature->getName()));
+
             $this->repo->saveOrFail($feature);
 
             return $feature;

@@ -342,6 +342,7 @@ class TraceCode
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
+    const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -450,7 +451,8 @@ class TraceCode
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
-        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
+        self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
     );
 
     /**
