@@ -5,7 +5,6 @@ namespace RZP\Models\Settlement;
 use RZP\Constants\Mode;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
