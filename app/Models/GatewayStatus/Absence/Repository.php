@@ -16,4 +16,31 @@ class Repository extends Base\Repository
         Entity::TO             => 'sometimes|integer',
         Entity::PARTIAL        => 'sometimes|bool',
     );
+
+    public function fetchAbsent($input)
+    {
+        $query = $this->newQuery();
+
+        if (isset($input[Entity::GATEWAY]))
+        {
+            $query->where(Entity::GATEWAY, '=', $input[Entity::GATEWAY]);
+        }
+
+        if (isset($input[Entity::BANK]))
+        {
+            $query->where(Entity::BANK, '=', $input[Entity::BANK]);
+        }
+
+        if (isset($input[Entity::FROM]))
+        {
+            $query->where(Entity::FROM, '<=', $input[Entity::FROM]);
+        }
+
+        if (isset($input[Entity::TO]))
+        {
+            $query->where(Entity::TO, '>=', $input[Entity::TO]);
+        }
+
+        return $query->get();
+    }
 }

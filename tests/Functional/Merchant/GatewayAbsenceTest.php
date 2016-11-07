@@ -176,6 +176,25 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
+    public function testGatewayAbsenceFetchWithEmptyTo()
+    {
+        $content1 = $this->createGatewayAbsenceWithEmptyTo('netbanking_hdfc', strtotime('-1 hour'));
+
+        $content2 = $this->createGatewayAbsenceWithEmptyTo('netbanking_kotak', strtotime('+1 hour'));
+
+        $from = time();
+
+        $request = [
+            'content' => ['from' => $from],
+            'url' => '/gateway/absence',
+            'method' => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['count'], 1);
+    }
+
     //----- helpers -----
 
     protected function fillDefaultsForTests($functionName)
@@ -227,6 +246,28 @@ class GatewayAbsenceTest extends TestCase
         {
             unset($request['content']['to']);
         }
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['gateway'], $gatewayName);
+
+        return $content;
+    }
+
+    protected function createGatewayAbsenceWithEmptyTo($gatewayName, $from)
+    {
+        $bank = $this->gatewayBankMap[$gatewayName];
+
+        $request = [
+            'content' => [
+                'gateway' => $gatewayName,
+                'reason'  => 'Test Reason',
+                'bank'  => $bank,
+                'from'  => $from,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
