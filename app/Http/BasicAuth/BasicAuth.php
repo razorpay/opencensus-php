@@ -725,6 +725,11 @@ class BasicAuth
         return $this->merchant;
     }
 
+    public function getAdmin()
+    {
+        return $this->admin;
+    }
+
     public function getMerchantId()
     {
         return $this->merchant->getKey();
