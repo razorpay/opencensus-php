@@ -37,16 +37,19 @@ class Entity extends Base\PublicEntity
      **/
     public function roles()
     {
-
+        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSON_MAP);
     }
 
     /**
      * Returns organisation for permission
      *
+     * TODO : Check if required
      **/
     public function org()
     {
-
+        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSON_MAP);
     }
+
+
 
 }

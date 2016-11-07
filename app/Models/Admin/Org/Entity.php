@@ -79,6 +79,6 @@ class Entity extends Base\PublicEntity
 
     public function permissions()
     {
-        return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'permissionable');
+        return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
     }
 }

@@ -70,7 +70,7 @@ class Entity extends Base\PublicEntity
      **/
     public function permissions()
     {
-        return $this->belongsToMany('RZP\Models\Admin\Permission\Entity', Constants\Table::PERMISSION_MAP, 'role_id', 'permission_id');
+        return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
     }
 
     /**
