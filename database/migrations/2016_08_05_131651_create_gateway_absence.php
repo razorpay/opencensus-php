@@ -41,6 +41,9 @@ class CreateGatewayAbsence extends Migration
             $table->tinyInteger(DowntimeTrace::SCHEDULED)
                     ->default(1);
 
+            $table->tinyInteger(DowntimeTrace::PARTIAL)
+                    ->default(0);
+
             $table->index(DowntimeTrace::GATEWAY);
 
             $table->index(DowntimeTrace::FROM);

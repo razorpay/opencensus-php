@@ -16,7 +16,24 @@ return [
         ],
         'response' => [
             'content' => [
-                'reason' => 'Test Reason'
+                'reason' => 'Test Reason',
+            ]
+        ]
+    ],
+    'testGatewayCreateAbsencePartial' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason'  => 'Test Reason',
+                'partial' => true,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'reason' => 'Test Reason',
+                'partial' => true
             ]
         ]
     ],
@@ -25,7 +42,7 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'Some Bank'
+                'bank' => 'HDFC Bank'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -33,7 +50,7 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
-                'bank'   => 'Some Bank'
+                'bank'   => 'HDFC Bank'
             ]
         ]
     ],
@@ -60,6 +77,54 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+    'testCreateAbsenceInvalidBank' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason'  => 'Test Reason',
+                'bank' => 'SOME BANK',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bank: SOME BANK is not a valid Bank Name',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testCreateAbsenceNonSupportedBank' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason'  => 'Test Reason',
+                'bank' => 'ICICI Bank',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bank: ICICI Bank is not supported for Gateway: netbanking_hdfc',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
     'testGatewayInvalidTo' =>[
         'request' => [
             'content' => [
@@ -72,8 +137,7 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    //'description' => 'Gateway [UNKNOWN_GATEWAY] does not exist',
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
             'status_code'   => 400,

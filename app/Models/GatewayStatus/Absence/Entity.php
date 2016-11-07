@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const FROM                          = 'from';
     const TO                            = 'to';
     const REASON                        = 'reason';
+    const PARTIAL                       = 'partial';
     const SCHEDULED                     = 'scheduled';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
@@ -23,7 +24,8 @@ class Entity extends Base\PublicEntity
         self::TO,
         self::REASON,
         self::BANK,
-        self::SCHEDULED
+        self::SCHEDULED,
+        self::PARTIAL
     ];
 
     protected $public = [
@@ -35,13 +37,15 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::REASON,
-        self::SCHEDULED
+        self::SCHEDULED,
+        self::PARTIAL
     ];
 
     protected $casts = [
         self::FROM      => 'int',
         self::TO        => 'int',
-        self::SCHEDULED => 'bool'
+        self::SCHEDULED => 'bool',
+        self::PARTIAL   => 'bool'
     ];
 
     const END_OF_TIME = 2147483647;

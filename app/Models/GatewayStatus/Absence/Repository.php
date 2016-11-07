@@ -13,6 +13,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY        => 'sometimes|string|max:255',
         Entity::BANK           => 'sometimes|string|max:255',
         Entity::FROM           => 'sometimes|integer',
-        Entity::TO             => 'sometimes|integer'
+        Entity::TO             => 'sometimes|integer',
+        Entity::PARTIAL        => 'sometimes|bool',
     );
 }

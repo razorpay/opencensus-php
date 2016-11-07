@@ -5,6 +5,7 @@ namespace RZP\Models\GatewayStatus\Absence;
 use RZP\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
@@ -14,7 +15,8 @@ class Validator extends Base\Validator
         Entity::TO              => 'sometimes|integer',
         Entity::REASON          => 'sometimes|string|max:500',
         Entity::BANK            => 'sometimes|string|max:255',
-        Entity::SCHEDULED       => 'sometimes|bool'
+        Entity::SCHEDULED       => 'sometimes|bool',
+        Entity::PARTIAL         => 'sometimes|bool',
     ];
 
     protected static $editRules = [
@@ -23,11 +25,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'to'
+        'to', 'bank'
     ];
 
     protected static $editValidators = [
-        'to'
+        'to', 'bank'
     ];
 
     public function validateGateway($attribute, $gateway)
@@ -70,6 +72,42 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'To: '. $to. ' is greater than End of Time:' .Entity::END_OF_TIME
+            );
+        }
+    }
+
+    public function validateBank($input)
+    {
+        if (empty($input[Entity::BANK]) === true)
+        {
+            return;
+        }
+
+        $bank = $input[Entity::BANK];
+
+        $supportedBankCodes = Netbanking::getAllBanks();
+
+        $bankNamesMap = array_flip(Netbanking::getNames($supportedBankCodes));
+
+        // check if the given bank name is valid
+        if (array_key_exists($bank, $bankNamesMap) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank: '. $bank. ' is not a valid Bank Name'
+            );
+        }
+        // TODO: check if the bank is valid for the given gateway
+
+        $bankCode = $bankNamesMap[$bank];
+
+        $gatewaysForBank = Gateway::getGatewaysForNetbankingBank($bankCode);
+
+        $gateway = $input[Entity::GATEWAY];
+
+        if (in_array($gateway, $gatewaysForBank) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank: '. $bank. ' is not supported for Gateway: '. $gateway
             );
         }
     }

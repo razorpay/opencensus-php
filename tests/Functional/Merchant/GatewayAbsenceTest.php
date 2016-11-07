@@ -9,6 +9,11 @@ class GatewayAbsenceTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $gatewayBankMap = [
+        'netbanking_hdfc' => 'HDFC Bank',
+        'netbanking_kotak' => 'Kotak Mahindra Bank'
+    ];
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/GatewayAbsenceTestData.php';
@@ -25,6 +30,13 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGatewayCreateAbsencePartial()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testCreateAbsenceWithBank()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
@@ -33,6 +45,20 @@ class GatewayAbsenceTest extends TestCase
     }
 
     public function testCreateAbsenceInvalidGateway()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateAbsenceInvalidBank()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateAbsenceNonSupportedBank()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -183,11 +209,13 @@ class GatewayAbsenceTest extends TestCase
 
     protected function __createGatewayAbsence($gatewayName, $from, $to)
     {
+        $bank = $this->gatewayBankMap[$gatewayName];
+
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
                 'reason'  => 'Test Reason',
-                'bank'  => 'hdfc',
+                'bank'  => $bank,
                 'from'  => $from,
                 'to' => $to
             ],
