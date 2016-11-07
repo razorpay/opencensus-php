@@ -168,4 +168,9 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function helloWorld()
+    {
+        return ApiResponse::json(['hello_world']);
+    }
 }

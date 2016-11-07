@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Admin Auth
+     * rzp_mode_admin:auth_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -143,10 +146,12 @@ class BasicAuth
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
      * 3 + 1 + 4 + 1 + 14
+     * 3 + 1 + 4 + 1 + 5 (rzp_$mode_admin)
      * @var array
      */
-    protected static $validKeyLengths = array(
-        8, 23, 33);
+    protected static $validKeyLengths = [
+        8, 23, 33, 14
+    ];
 
     public function __construct($app)
     {
@@ -232,6 +237,30 @@ class BasicAuth
         {
             $this->setProxyTrue();
 
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    public function adminAuth()
+    {
+        $this->settype(Type::ADMIN_AUTH);
+
+        $res =  $this->setCredentials();
+
+        // null is the good value here
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        $token = $this->getSecret();
+
+        $admin = $this->fetchAdminOfToken();
+
+        if ($admin)
+        {
             return;
         }
 
@@ -728,6 +757,11 @@ class BasicAuth
         $this->type = $type;
     }
 
+    protected function setAdminTrue()
+    {
+        $this->isAdmin = true;
+    }
+
     protected function setProxyTrue()
     {
         $this->proxy = true;
@@ -745,6 +779,11 @@ class BasicAuth
     public function isProxyAuth()
     {
         return $this->proxy;
+    }
+
+    public function isAdminAuth()
+    {
+        return $this->isAdmin;
     }
 
     public function isAppAuth()
@@ -811,6 +850,13 @@ class BasicAuth
         $this->checkMerchantActivatedForLive();
 
         return $this->merchant;
+    }
+
+    protected function fetchAdminOfToken($token)
+    {
+        $this->admin = $this->repo->admin_token->findValidToken($token)->admin();
+
+        return $this->admin;
     }
 
     protected function checkMerchantActivatedForLive()

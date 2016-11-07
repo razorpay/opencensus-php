@@ -54,6 +54,13 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminAuth()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testUnauthorizedOnJsonpRoute()
     {
         $this->ba->publicAuth('rzp_test_TheTestAusdKey');

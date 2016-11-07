@@ -23,4 +23,12 @@ class Repository extends Base\Repository
 
         return $token;
     }
+
+    public function findValidToken($token)
+    {
+        return $this->repo
+            ->where('token', $token)
+            ->whereIsNull('expires_at')
+            ->first();
+    }
 }

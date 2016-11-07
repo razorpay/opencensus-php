@@ -76,6 +76,21 @@ return [
         ]
     ],
 
+    'testAdminAuth' => [
+        'request' => [
+            'url' => '/hello_admin',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'hello world'
+                ]
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
     'testAppRoutesWithInvalidPrivateAuth' => [
         'response' => [
             'content' => [

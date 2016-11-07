@@ -292,6 +292,9 @@ final class Route
         'permission_edit'                       => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermissions'                                    ],
         'permission_delete'                     => ['delete',   'orgs/{id}/permissions/{permission_id}',          'AdminController@deletePermission'                                  ],
         'password_login'                        => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
+
+        // Admin Auth
+        'hello_admin'                           => ['get',      'admin/hello_world',                              'AdminController@helloWorld'                                        ],
     );
 
     public static $public = array(
@@ -560,6 +563,10 @@ final class Route
         'batch_retry',
         'batch_download_file',
     );
+
+    public static $admin = [
+        'hello_world'
+    ];
 
     public static $direct = array(
         'account',
