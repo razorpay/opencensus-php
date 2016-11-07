@@ -489,7 +489,6 @@ final class Route
         'send_newsletter',
         'merchant_add_features',
         'merchant_get_features',
-        'features_fetch',
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
@@ -514,12 +513,12 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
-	'feature_get_multiple',
+    	'feature_get_multiple',
         'feature_add',
         'feature_delete',
         'merchant_migrate_features',
         'feature_bulk_assign',
-        'feature_bulk_remove'
+        'feature_bulk_remove',
 
         'org_create',
         'org_get',

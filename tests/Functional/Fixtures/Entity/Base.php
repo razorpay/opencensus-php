@@ -49,7 +49,7 @@ class Base
         'address'       => \RZP\Models\Address\Entity::class,
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
-	'feature'       => \RZP\Models\Feature\Entity::class
+    	'feature'       => \RZP\Models\Feature\Entity::class,
         'org'           => \RZP\Models\Admin\Org\Entity::class,
         'group'         => \RZP\Models\Admin\Group\Entity::class,
         'admin'         => \RZP\Models\Admin\Admin\Entity::class,
