@@ -17,11 +17,10 @@ use RZP\Models\Transaction;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Error\ErrorCode;
 
 class Processor extends Base\Core
 {
-    use SettlementMutex;
-
     protected $setlTime;
 
     protected $input;
@@ -49,11 +48,10 @@ class Processor extends Base\Core
             return $message;
         }
 
-        $data = $this->processSettlements($input, $channel, $schedule);
-
-        $this->releaseMutexOnSettlement();
-
-        return $data;
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function () use ($input, $channel, $schedule)
+        {
+            return $this->processSettlements($input, $channel, $schedule);
+        }, 900);
     }
 
     protected function increaseAllowedSystemLimits()
@@ -68,8 +66,6 @@ class Processor extends Base\Core
         $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $this->input = $input;
-
-        $this->acquireMutexOnSettlement();
 
         //set channel
         if ($channel === null)

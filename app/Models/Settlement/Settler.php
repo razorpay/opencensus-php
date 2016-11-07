@@ -20,7 +20,6 @@ use RZP\Trace\TraceCode;
 
 class Settler
 {
-    use SettlementMutex;
 
     protected $settlements;
 
@@ -63,7 +62,12 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, 900);
+
+        return $data;
     }
 
     public function settle($input = array(), $channel = null)
@@ -74,24 +78,21 @@ class Settler
 
         if ($this->checkForHolidays())
         {
-            $this->releaseMutexOnSettlement();
-
             return self::HOLIDAY_MESSAGE;
         }
 
         $txns = $this->fetchTransactionsToSettle($input);
 
-        $data = $this->processSettlements($input, $channel, $txns);
-
-        $this->releaseMutexOnSettlement();
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, 900);
 
         return $data;
     }
 
     protected function preSettlementProcessing()
     {
-        $this->acquireMutexOnSettlement();
-
         $this->increaseAllowedSystemLimits();
 
         $this->checkTime();
