@@ -32,7 +32,7 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false, $isFeeBearer = false)
+    public function calculate($pricing, $preCalculationOfFees = false)
     {
         $entity = $this->entity;
 
@@ -40,7 +40,7 @@ class FeeCalculator
 
         $amount = $entity->getAmount();
 
-        if ($isFeeBearer === true)
+        if ($entity->merchant->isFeeBearerCustomer())
         {
             $amount = $amount - $entity->getFee();
         }

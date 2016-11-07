@@ -589,8 +589,9 @@ class Processor
      */
     protected function verifyProvidedFee($payment, $input)
     {
-        // Set the amount back to the base amount (without our fee and tax).
-        $input['amount'] = $payment->getAmount() - $payment->getFee();
+        // This is not needed because FeeCalculater:calculateFee()
+        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.

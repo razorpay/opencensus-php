@@ -178,7 +178,7 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment, true);
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
             $credit = $amount - $fee;
         }
@@ -361,9 +361,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Payment\Entity $payment, $isFeeBearer = false)
+    protected function calculateMerchantFees(Payment\Entity $payment)
     {
-        return (new Pricing\Fee)->calculateMerchantFees($payment, false, $isFeeBearer);
+        return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
