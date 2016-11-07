@@ -43,16 +43,4 @@ class Core extends Base\Core
 
         return $totalAmount;
     }
-
-    public function getIdsFromLineItems(array $items)
-    {
-        $itemIds = [];
-
-        array_map(function($item) use (& $itemIds)
-        {
-            $itemIds[] = $item->getId();
-        }, $items);
-
-        return $itemIds;
-    }
 }

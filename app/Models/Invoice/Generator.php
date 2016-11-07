@@ -117,7 +117,6 @@ class Generator
 
                 $lineItem = $this->repo->line_item
                              ->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
-
             }
             else
             {
@@ -140,9 +139,10 @@ class Generator
         $orderReceipt = 'Invoice Order';
 
         $orderInput = [
-            Order\Entity::AMOUNT    => $orderAmount,
-            Order\Entity::CURRENCY  => $orderCurrency,
-            Order\Entity::RECEIPT   => $orderReceipt,
+            Order\Entity::AMOUNT            => $orderAmount,
+            Order\Entity::CURRENCY          => $orderCurrency,
+            Order\Entity::RECEIPT           => $orderReceipt,
+            Order\Entity::PAYMENT_CAPTURE   => true,
         ];
 
         $order = (new Order\Core())->create($orderInput, $this->merchant);

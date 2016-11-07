@@ -431,8 +431,11 @@ trait Capture
     {
         $invoice = $order->invoice;
 
-        assert($invoice);
+        assert($invoice !== null);
 
+        // TODO: This check should be done before authorize itself.
+        // We should not authorize the payment if the invoice is already paid.
+        // That gets handled by the order mostly. Check the flow again.
         if ($invoice->getStatus() === Invoice\Status::PAID)
         {
             throw new Exception\LogicException(

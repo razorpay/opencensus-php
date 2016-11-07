@@ -18,7 +18,6 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
-    const ADDRESS               = 'address';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -38,7 +37,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
-        self::ADDRESS,
         self::MERCHANT_ID,
     );
 
@@ -110,14 +108,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ACTIVE);
     }
-    
+
     public function getCurrentShippingAddress()
     {
         $app = App::getFacadeRoot();
-        
+
         $shippingAddress = $app['repo']->address
             ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
-        
+
         return $shippingAddress;
     }
 
