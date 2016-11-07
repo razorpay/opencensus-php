@@ -79,6 +79,7 @@ class AdminController extends Controller
      * Organization related functions
      */
 
+// --------------------- CRUD for ORG  -----------------------------------------
     public function getOrg($id)
     {
         $data = (new Admin\Org\Service)->getOrg($id);
@@ -110,7 +111,42 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+// --------------------- END CRUD for ORG  ---------------------------------------
 
+// --------------------- CRUD for Admins   ---------------------------------------
+
+    public function getAdmin($id, $admin_id)
+    {
+        $data = (new Admin\Admin\Service)->getAdmin($id, $admin_id);
+
+        return $data;
+    }
+
+    public function getMultipleAdmins($id)
+    {
+        $data = (new Admin\Admin\Service)->getMultipleAdmins($id, $admin_id);
+
+        return $data;
+    }
+
+    public function createAdmin($id)
+    {
+        $data = (new Admin\Admin\Service)->createAdmin($id);
+
+        return $data;
+    }
+
+    public function deleteAdmin($id, $admin_id)
+    {
+        $data = (new Admin\Admin\Service)->deleteAdmin($id, $admin_id);
+
+        return $data;
+    }
+// --------------------- END CRUD for Admins   ---------------------------------------
+
+
+
+// --------------------- CRUD for roles  -----------------------------------------
     public function createRole(string $orgId)
     {
         $input = Request::all();
@@ -134,6 +170,10 @@ class AdminController extends Controller
         return $data;
     }
 
+// --------------------- END CRUD for roles  -----------------------------------------
+
+// --------------------- CRUD for Permissions ----------------------------------------
+
     public function createPermission(string $orgId)
     {
         $input = Request::all();
@@ -156,6 +196,8 @@ class AdminController extends Controller
 
         return $data;
     }
+
+// --------------------- END CRUD for Permissions ----------------------------------------
 
     /**
     * Admin related functons
