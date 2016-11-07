@@ -104,6 +104,7 @@ class TraceCode
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
     const CUSTOMER_ID_ABSENT                        = 'CUSTOMER_ID_ABSENT';
     const INVOICE_ID_ABSENT                         = 'INVOICE_ID_ABSENT';
+    const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 

@@ -43,10 +43,15 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
 
         $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $this->merchant->getId());
-        
+
         $data = $this->core->sendNotification($invoice, $medium);
 
         return $data;
+    }
+
+    public function expireInvoices()
+    {
+        return $this->core->expireInvoices();
     }
 
     public function sendNotificationsInBulk()

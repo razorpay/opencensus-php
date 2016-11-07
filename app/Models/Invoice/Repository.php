@@ -31,8 +31,18 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where($medium . '_status', '=', Status::PENDING)
-                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
+                    ->get();
+    }
+
+    public function getExpiredInvoices()
+    {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->where(Entity::DUE_BY, '<', $currentTime)
                     ->get();
     }
 }

@@ -57,6 +57,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function expireInvoices()
+    {
+        $summary = $this->service->expireInvoices();
+
+        return ApiResponse::json($summary);
+    }
+
     public function updateInvoiceNotificationStatus($medium)
     {
         // TODO: Fill this up once we finalize on how to update

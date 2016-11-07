@@ -11,7 +11,8 @@ class Status
     const FAILED        = 'failed';
 
     // -------- Invoice Statuses -----------
-    const CREATED       = 'created';
+    const DRAFT         = 'draft';
+    const ISSUED        = 'issued';
     const PAID          = 'paid';
     const EXPIRED       = 'expired';
     const DELETED       = 'deleted';

@@ -10,6 +10,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -64,6 +65,30 @@ class Core extends Base\Core
         {
             return ['success' => false];
         }
+    }
+
+    public function expireInvoices()
+    {
+        $expiredInvoices = $this->repo->invoice->getExpiredInvoices();
+
+        // TODO: Ensure that when the payment is being made, the invoice is in `issued` state only.
+        foreach ($expiredInvoices as $expiredInvoice)
+        {
+            $expiredInvoice->setStatus(Status::EXPIRED);
+            $this->repo->saveOrFail($expiredInvoice);
+        }
+
+        $summary = [
+            'total'         => $expiredInvoices->count(),
+            'invoice_ids'   => $expiredInvoices->getIds(),
+        ];
+
+        $this->trace->info(
+            TraceCode::EXPIRE_INVOICES,
+            $summary
+        );
+
+        return $summary;
     }
 
     protected function validateRequest(array $input)

@@ -75,7 +75,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::STATUS            => Status::CREATED,
+        self::STATUS            => Status::DRAFT,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
         self::EMAIL_STATUS      => Status::PENDING,
