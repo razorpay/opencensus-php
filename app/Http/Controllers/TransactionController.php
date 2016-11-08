@@ -32,4 +32,11 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postMigrateOlderTransactions()
+    {
+        $data = (new Transaction\Service)->postMigrateOlderTransactions();
+
+        return ApiResponse::json($data);
+    }
 }

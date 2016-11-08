@@ -56,7 +56,7 @@ trait AtomFeeTrait
     {
         $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $serviceTax = $fee * FeeCalculator::getServiceTaxRate() / 100;
+        $serviceTax = $fee * FeeCalculator::getServiceTaxRate() / 10000;
 
         $fee += $serviceTax;
 
@@ -69,6 +69,5 @@ trait AtomFeeTrait
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
-
 
 }

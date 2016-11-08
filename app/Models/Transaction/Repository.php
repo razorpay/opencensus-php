@@ -295,4 +295,35 @@ class Repository extends Base\Repository
             $query->whereNotNull(Entity::RECONCILED_AT);
         }
     }
+
+    public function getTransactionsToBeMigrated()
+    {
+        $txns = $this->newQuery()
+                    ->where(Entity::TYPE, 'payment')
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNotIn("transactions.id", function($query)
+                        {
+                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                                  ->from(TABLE::FEE_BREAKUP);
+                        })
+                    ->limit(1000)
+                    ->select('transactions.*')
+                    ->get();
+        return $txns;
+    }
+
+    public function getTransactionForReport($merchantId, $from, $to)
+    {
+        $txnIds = $this->newQuery()
+                       ->where("transactions.merchant_id", $merchantId)
+                       ->where(Entity::TYPE, 'payment')
+                       ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                       ->betweenTime($from, $to)
+                       ->select("transactions.id")
+                       ->get();
+
+        return $txnIds;
+    }
 }
