@@ -2,10 +2,8 @@
 
 namespace RZP\Models\Card\IIN;
 
-use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 
 class Service extends Base\Service
 {

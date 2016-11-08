@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank;
 use RZP\Models\Emi;
 
+use Config;
+
 class Core extends Base\Core
 {
     /**
@@ -249,9 +251,15 @@ class Core extends Base\Core
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
-            $this->app['slack']->queue($message, $data, ['channel' => '#operations_log',
-                                                         'username' => 'Jordan Belfort',
-                                                         'icon' => ':boom:']);
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:'
+                ]
+            );
         }
     }
 

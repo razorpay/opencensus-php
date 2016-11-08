@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
+
 class Wallet
 {
     const PAYTM       = 'paytm';
@@ -25,6 +29,16 @@ class Wallet
     public static function exists($wallet)
     {
         return defined(get_class().'::'.strtoupper($wallet));
+    }
+
+    public static function validateExists($wallet)
+    {
+        if (self::exists($wallet) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                Payment\Entity::WALLET);
+        }
     }
 
     public static function getWalletNetworkNamesMap()

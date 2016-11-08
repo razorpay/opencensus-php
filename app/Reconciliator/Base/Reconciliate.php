@@ -160,7 +160,7 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if ((in_array($reconciliationType, self::VALID_RECON_TYPES) === false) or
+        if ((in_array($reconciliationType, self::VALID_RECON_TYPES, true) === false) or
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert(

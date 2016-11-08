@@ -2,12 +2,10 @@
 
 namespace RZP\Dashboard;
 
-use Base;
+use RZP\Base;
 
 class Repository extends Base\Repository
 {
-    protected $repo = '\Dashboard\Logs';
-
     public function persistAfterFail($data)
     {
         $attributes = array(

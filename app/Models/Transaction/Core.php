@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -38,8 +39,6 @@ class Core extends Base\Core
     {
         $txn = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateFreeCredits($txn, $payment);
-
         $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
@@ -54,6 +53,8 @@ class Core extends Base\Core
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->updateCredits($txn, $payment);
 
         $this->updateMerchantBalance($txn);
 
@@ -83,7 +84,7 @@ class Core extends Base\Core
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->updateFreeCredits($txn, $payment);
+        $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn);
 
@@ -139,7 +140,9 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
 
-        $freeCredits = $merchantBalance->getCredits();
+        $amountCredits = $merchantBalance->getAmountCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
 
         $amount = $payment->getAmount();
 
@@ -153,14 +156,14 @@ class Core extends Base\Core
             $serviceTax = 0;
             $credit = $amount;
         }
-        else if ($freeCredits > 0)
+        else if ($amountCredits > 0)
         {
             $this->trace->info(
                 TraceCode::TRANSACTION_FREE_CREDITS,
                 [
                     'payment_id' => $payment->getId(),
                     'amount' => $amount,
-                    'free_credits' => $freeCredits,
+                    'free_credits' => $amountCredits,
                 ]
             );
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
@@ -175,14 +178,25 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            $fee            = $payment->getFee();
-            $serviceTax     = (new Pricing\Fee)->calculateServiceTaxFromFees($fee);
-            $credit         = $amount - $fee;
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
+
+            $credit = $amount - $fee;
         }
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
-            $credit = $amount - $fee;
+
+            if ($feeCredits >= $fee)
+            {
+                $credit         = $amount;
+                $feeCredits     = $fee;
+
+                $txn->setFeeCredits($feeCredits);
+            }
+            else
+            {
+                $credit = $amount - $fee;
+            }
         }
 
         $txn->setPricingRule($pricingRuleId);
@@ -396,7 +410,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateFreeCredits($txn, $payment)
+    public function updateAmountCredits($txn, $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -409,24 +423,69 @@ class Core extends Base\Core
             return;
         }
 
+        // While filling the txn fees and amount, we have not used amount credits.
+        if ($txn->isGratis() === false)
+        {
+            return;
+        }
+
         $amount = $txn->getAmount();
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $freeCredits = $merchantBalance->getCredits();
+        $amountCredits = $merchantBalance->getAmountCredits();
 
-        assertTrue($freeCredits > 0);
+        assert($amountCredits > 0);
 
-        if ($freeCredits < $amount)
+        //
+        // Even if free credits is less than txn amount, we still give full
+        // amount as free credits. However, in balance we only go ahead with
+        // updating the actual free credits so that it does not go negative.
+        //
+        if ($amountCredits < $amount)
         {
-            $amount = $freeCredits;
+            $amount = $amountCredits;
         }
 
         $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractCredits($amount);
+        $nodalBalance->subtractAmountCredits($amount);
 
-        $merchantBalance->subtractCredits($amount);
+        $merchantBalance->subtractAmountCredits($amount);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateFeeCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        // While filling the txn fees and amount, we have not used fee credits.
+        if ($txn->getFeeCredits() === 0)
+        {
+            return;
+        }
+
+        $fee = $txn->getFee();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        if ($feeCredits < $fee)
+        {
+            throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
+        }
+
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractFeeCredits($fee);
+
+        $merchantBalance->subtractFeeCredits($fee);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -461,9 +520,22 @@ class Core extends Base\Core
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
-        $addDays = $payment->merchant->getSettlementSchedule();
+        $merchant = $payment->merchant;
 
-        return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        $returnTime = null;
+
+        if ($merchant->getSettlementScheduleId() === null)
+        {
+            $addDays = $merchant->getSettlementSchedule();
+
+            $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        }
+        else
+        {
+            $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
+        }
+
+        return $returnTime;
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
@@ -478,5 +550,17 @@ class Core extends Base\Core
     protected function getSettlementSchedule($payment)
     {
         return $payment->merchant->getSettlementSchedule();
+    }
+
+    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        if ($txn->isGratis() === true)
+        {
+            return $this->updateAmountCredits($txn, $payment);
+        }
+        else if ($txn->getFeeCredits() > 0)
+        {
+            return $this->updateFeeCredits($txn, $payment);
+        }
     }
 }

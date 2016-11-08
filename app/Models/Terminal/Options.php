@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Terminal;
 
-use RZP\Constants\Mode;
-
 class Options
 {
     protected $chance;

@@ -3,7 +3,6 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -47,8 +46,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::BANK,
     );
-
-    protected $table = Table::ORDER;
 
     protected $generateIdOnCreate = true;
 

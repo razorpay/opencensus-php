@@ -2,10 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
-use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 
 class Validator extends Base\Validator
 {
@@ -23,6 +22,7 @@ class Validator extends Base\Validator
         RequestFields::BILL . '.' . RequestFields::AMOUNT                   => 'required|numeric',
         RequestFields::BILL . '.' . RequestFields::COMMENTS                 => 'sometimes|string',
         RequestFields::BILL . '.' . RequestFields::UDF                      => 'required|string',
+        RequestFields::PHONE                                                => 'sometimes|string|size:10',
     );
 
     protected static $otpGenerateRules = array(

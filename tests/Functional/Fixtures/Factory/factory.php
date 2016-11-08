@@ -299,6 +299,7 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',
     'value'         => 150,
+    'type'          => 'amount',
     'campaign'      => 'silent-ads',
 ]);
 
@@ -313,4 +314,9 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
     'amount'        => 0,
     'contact'       => '9918899029',
     'email'         => 'a@b.com',
+]);
+
+$factory(\RZP\Models\Feature\Entity::class, [
+    'id'                => $faker->uniqueid,
+    'entity_type'       => 'merchant'
 ]);

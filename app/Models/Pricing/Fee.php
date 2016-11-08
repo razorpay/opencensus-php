@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 
-class Fee
+class Fee extends Base\Core
 {
     use AtomFeeTrait;
 
@@ -20,9 +21,9 @@ class Fee
 
     public function __construct()
     {
-        $this->repo = new Pricing\Repository;
+        parent::__construct();
 
-        $this->trace = \Trace::getFacadeRoot();
+        $this->repo = new Pricing\Repository;
     }
 
     /**
@@ -43,7 +44,7 @@ class Fee
         return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
     }
 
-    public function calculateMerchantFees($entity, $preCalculationOfFees = false)
+    public function calculateMerchantFees($entity)
     {
         $calculator = new FeeCalculator($entity, $this->repo);
 
@@ -51,7 +52,7 @@ class Fee
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
-        return $calculator->calculate($pricing, $preCalculationOfFees);
+        return $calculator->calculate($pricing);
     }
 
     public function calculateServiceTaxFromFees($fee)

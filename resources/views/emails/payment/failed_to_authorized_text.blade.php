@@ -6,8 +6,8 @@ This payment (earlier marked as failed) has now been converted to authorized.
 
 This means that money was deducted from the customer's account. Please capture this payment and process it immediately.
 
-Date: {{\Carbon\Carbon::createFromTimeStamp($payment['captured_at'], "Asia/Kolkata")->format('jS F Y')}}
-Time: {{\Carbon\Carbon::createFromTimeStamp($payment['captured_at'], "Asia/Kolkata")->format('g:i a T (P)')}}
+Date: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('jS F Y')}}
+Time: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('g:i a T (P)')}}
 
 Payment Id:         {{$payment['public_id']}}
 Amount:             {{$payment['amount']}}

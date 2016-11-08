@@ -141,7 +141,6 @@ class XLSFileHandler
         $sheet = $excelReader->getSheet(0);
         $highestRow = $sheet->getHighestRow();
         $highestColumn = $sheet->getHighestDataColumn();
-        $columnNames = array();
 
         $data = $sheet->rangeToArray('A1' . ':' . $highestColumn . $highestRow,
                                     null,

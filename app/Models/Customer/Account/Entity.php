@@ -4,7 +4,6 @@ namespace RZP\Models\Customer;
 
 use App;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -28,8 +27,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
-
-    protected $table            = Table::CUSTOMER;
 
     protected $generateIdOnCreate = true;
 

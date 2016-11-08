@@ -66,15 +66,7 @@ class Entity extends Base\Entity
         'paymentmode',
     );
 
-    protected $table = 'paytm';
-
-    protected $guarded = array();
-
-    protected static $sign = 'pay';
-
     protected $entity = 'paytm';
-
-    public $incrementing = true;
 
     public function setPaymentId($paymentId)
     {

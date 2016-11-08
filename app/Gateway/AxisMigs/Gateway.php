@@ -2,16 +2,16 @@
 
 namespace RZP\Gateway\AxisMigs;
 
+use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Payment\Processor\Notify;
+use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\AxisMigs;
-use Requests;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Notify;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -19,7 +19,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'axis_migs';
 
-    protected $authorize = false;
+    protected $authorize = true;
 
     const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
 
@@ -32,6 +32,7 @@ class Gateway extends Base\Gateway
         $this->addSubMerchantDetails($content, $input);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
+        $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
 
         $request = $this->getAuthRequestArray($content);
 
@@ -572,11 +573,29 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function getStringToHash($content, $glue = '')
+    {
+        unset($content['vpc_SecureHashType']);
+
+        $input = [];
+
+        foreach ($content as $k => $v)
+        {
+            if ((strlen($k) !== 0) and
+                (strlen($v) !== 0))
+            {
+                $input[] = $k . '=' . $v;
+            }
+        }
+
+        return parent::getStringToHash($input, '&');
+    }
+
     protected function getHashOfString($str)
     {
-        $str = $this->getSecret() . $str;
+        $secret = pack("H*", $this->getSecret());
 
-        return strtoupper(md5($str));
+        return strtoupper(hash_hmac(HashAlgo::SHA256, $str, $secret));
     }
 
     protected function getHashValueFromContent(array $input)

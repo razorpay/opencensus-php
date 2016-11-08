@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\Entity
 {
@@ -20,8 +19,6 @@ class Entity extends Base\Entity
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
-
-    protected $table = Table::UPI;
 
     public $incrementing = true;
 

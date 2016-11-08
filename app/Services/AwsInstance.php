@@ -87,7 +87,7 @@ class AwsInstance
 
             $key = $pair[0];
 
-            if ((in_array($key, $this->attributes)) and
+            if ((in_array($key, $this->attributes, true)) and
                 (isset($pair[1])))
             {
                 $instanceData[$key] = $pair[1];

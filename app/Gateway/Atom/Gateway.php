@@ -4,7 +4,6 @@ namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -37,8 +36,9 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param  array  $input
-     * @return void
+     * @param  array $input
+     *
+     * @return mixed|void
      */
     public function authorize(array $input)
     {
@@ -126,8 +126,6 @@ class Gateway extends Base\Gateway
 
         // Convert xml body to array of fields
         $content = $this->verifiedXmlToArray($response['response']->body);
-
-        $values = [];
 
         $atomStatus = ($content['VERIFIED'] === 'SUCCESS');
 
@@ -475,7 +473,7 @@ class Gateway extends Base\Gateway
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $request['options']['timeout'] = 30;
-        $domain = ($this->mode === MODE::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         $request['url'] = $domain . $request['url'];
 
         $this->request = $request;

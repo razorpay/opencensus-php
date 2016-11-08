@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
-class Entity extends EloquentEx
+class Entity extends \RZP\Base\EloquentEx
 {
     protected function asDateTime($value)
     {

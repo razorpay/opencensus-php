@@ -39,22 +39,15 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected $table = \RZP\Constants\Table::TERMINAL_ACTION;
-
     protected $entity = 'terminal_action';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     public function getTerminalId()
     {
-        return $this->getAttributes(self::TERMINAL_ID);
+        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getAction()
     {
-        return $this->getAttributes(self::ACTION);
+        return $this->getAttribute(self::ACTION);
     }
-
 }

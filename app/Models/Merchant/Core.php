@@ -9,7 +9,10 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
 use RZP\Exception;
+
+use Config;
 
 class Core extends Base\Core
 {
@@ -62,6 +65,17 @@ class Core extends Base\Core
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
         (new Methods\Core)->setDefaultMethods($merchant);
+
+        $this->setDefaultFeatures($merchant);
+    }
+
+    protected function setDefaultFeatures($merchant)
+    {
+        (new Feature\Core)->create([
+            'name'          => Feature\Constants::CARD_SAVING,
+            'entity_id'     => $merchant->getId(),
+            'entity_type'   => 'merchant'
+        ]);
     }
 
     /**
@@ -179,9 +193,15 @@ class Core extends Base\Core
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
-            $this->app['slack']->queue($message, $data, ['channel' => '#operations_log',
-                                               'username' => 'Jordan Belfort',
-                                               'icon' => ':boom:']);
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:'
+                ]
+            );
         }
     }
 

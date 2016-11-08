@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Address;
 
+use RZP\Base;
 use RZP\Constants\Country;
-use RZP\Error\ErrorCode;
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {

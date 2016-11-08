@@ -170,7 +170,7 @@ class Reconciler3
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation: ' . $row['Reject Reason'];
         }
 
         // if already processed
@@ -260,7 +260,7 @@ class Reconciler3
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

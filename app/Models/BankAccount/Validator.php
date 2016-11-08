@@ -2,11 +2,10 @@
 
 namespace RZP\Models\BankAccount;
 
+use Razorpay\IFSC\IFSC;
+use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use Razorpay\IFSC\IFSC;
-use RZP\Models\Base;
-use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
 {
@@ -42,7 +41,7 @@ class Validator extends Base\Validator
     {
         $state = $input['beneficiary_state'];
 
-        if (in_array($state, self::$beneficiaryStateCodes) === false)
+        if (in_array($state, self::$beneficiaryStateCodes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');

@@ -39,6 +39,7 @@ class Base
         'terminal'      => \RZP\Models\Terminal\Entity::class,
         'emi_plan'      => \RZP\Models\Emi\Entity::class,
         'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
+        'billdesk'      => \RZP\Gateway\Billdesk\Entity::class,
         'app_token'     => \RZP\Models\Customer\AppToken\Entity::class,
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
@@ -49,6 +50,7 @@ class Base
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
         'plan'          => \RZP\Models\Plan\Entity::class,
+        'feature'       => \RZP\Models\Feature\Entity::class
     );
 
     protected static $liveAndTest = array(
@@ -56,7 +58,9 @@ class Base
         'pricing',
         'methods',
         'emi_plan',
-        'iin'
+        'iin',
+        'schedule',
+        'feature'
     );
 
     public function create(array $attributes = array())
@@ -68,7 +72,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -87,7 +91,7 @@ class Base
     {
         $this->stripSign($id);
 
-        if (in_array($entity, self::$liveAndTest))
+        if (in_array($entity, self::$liveAndTest, true))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }

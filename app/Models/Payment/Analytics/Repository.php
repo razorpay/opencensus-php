@@ -6,8 +6,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'payment_analytics';
 
     // These are admin allowed params to search on.

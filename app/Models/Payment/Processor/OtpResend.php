@@ -26,8 +26,12 @@ trait OtpResend
             $payment->resetOtpAttempts();
             $payment->saveOrFail();
 
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND);
+
             return $data;
         }
+
+        $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
         throw new LogicException(
             'Gateway does not support OTP resend',
@@ -42,7 +46,7 @@ trait OtpResend
 
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
     {
-        $this->verifyPaymentMethodEnabled($payment, $input);
+        $this->verifyPaymentMethodEnabled($payment);
 
         //
         // Call gateway input
@@ -50,5 +54,7 @@ trait OtpResend
         $gatewayInput['payment'] = $payment->toArray();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
     }
 }

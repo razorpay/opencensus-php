@@ -49,6 +49,7 @@ class TraceCode
     const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
     const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
+    const PAYMENT_AUTHORIZE_REMINDER_FAILURE        = 'PAYMENT_AUTHORIZE_REMINDER_FAILURE';
     const PAYMENT_CHECKOUT_INVALID_ID               = 'PAYMENT_CHECKOUT_INVALID_ID';
     const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
@@ -68,6 +69,7 @@ class TraceCode
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED             = 'PAYMENT_ANALYTICS_SAVE_FAILED';
     const PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       = 'PAYMENT_ANALYTICS_UNRECOGNIZED_DATA';
+    const PAYMENT_ANALYTICS_INCORRECT_DATA          = 'PAYMENT_ANALYTICS_INCORRECT_DATA';
     const TERMINAL_ANALYTICS_SAVE_FAILED            = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
@@ -96,10 +98,13 @@ class TraceCode
     const SUBSCRIPTION_CHARGE_QUEUE_SUMMARY         = 'SUBSCRIPTION_CHARGE_QUEUE_SUMMARY';
     const SUBSCRIPTION_RETRY_QUEUE_SUMMARY          = 'SUBSCRIPTION_RETRY_QUEUE_SUMMARY';
     const SUBSCRIPTION_RETRY_QUEUE_FAILED           = 'SUBSCRIPTION_RETRY_QUEUE_FAILED';
+    const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
+    const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
+    const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -113,10 +118,13 @@ class TraceCode
     const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
     const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
+    const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
+    const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
+    const BAD_REQUEST_API_SECRET_NOT_PROVIDED       = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
 
     const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
 
@@ -149,6 +157,11 @@ class TraceCode
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                 = 'ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                 = 'ADJUSTMENT_CREATE_SUCCESS';
+
+    const VERIFY_LOCKED_PAYMENTS                    = 'VERIFY_LOCKED_PAYMENTS';
+    const VERIFY_PROCESSED_SUMMARY                  = 'VERIFY_PROCESSED_SUMMARY';
+    const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
+    const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     /*
      * Gateway component error messages
@@ -226,6 +239,19 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
+
+    const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
+    const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
+    const SCHEDULE_UNANCHORED_RESOLUTION            = 'SCHEDULE_UNANCHORED_RESOLUTION';
+    const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
+    const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
+    const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
+    const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
+    const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
+    const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
+    const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
+    const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
+    const SCHEDULE_UNSETTLED_TXNS                   = 'SCHEDULE_UNSETTLED_TXNS';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -311,6 +337,29 @@ class TraceCode
      */
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
+    /**
+     * Additional trace codes for Segment integration
+     */
+    const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
+    const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
+    const OTP_GENERATE                              = 'OTP_GENERATE';
+    const OTP_POSTPROCESSING                        = 'OTP_POSTPROCESSING';
+    const OTP_RESEND_EXCEPTION                      = 'OTP_RESEND_EXCEPTION';
+    const OTP_RESEND                                = 'OTP_RESEND';
+    const TERMINAL_SUCCESS                          = 'TERMINAL_SUCCESS';
+    const PAYMENT_CALL_GATEWAY_FUNC                 = 'PAYMENT_CALL_GATEWAY_FUNC';
+    const ASYNC_PAYMENT_RESPONSE                    = 'ASYNC_PAYMENT_RESPONSE';
+    const FIRST_PAYMENT_RESPONSE                    = 'FIRST_PAYMENT_RESPONSE';
+    const FORCE_AUTH_FAILED_PAYMENT                 = 'FORCE_AUTH_FAILED_PAYMENT';
+    const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS   = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
+    const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
+    const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
+
+    // Trace code for features
+    const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
+    const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
+    const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -324,7 +373,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS                   => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE                   => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                     => 'Payment verification with gateway failed',
-        self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeded on gateway, converting it to authorized',
+        self::PAYMENT_FAILED_TO_AUTHORIZED              => 'Payment failed but which succeeded on gateway, converting it to authorized',
         self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     => 'Payment request does not have checkout id',
         self::PAYMENT_QUEUE_CAPTURE_REQUEST             => 'Payment capture request via queue',
         self::PAYMENT_QUEUE_CAPTURE_SUCCESS             => 'Payment captured successfully via queue',
@@ -342,6 +391,7 @@ class TraceCode
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
+        self::PAYMENT_ANALYTICS_INCORRECT_DATA          => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
         self::MANUAL_GATEWAY_REFUND_RESPONSE            => 'Response received on manual gateway refund',
         self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       => 'Response received for all refunds on manual gateway refund',
@@ -356,6 +406,10 @@ class TraceCode
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
+        self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
+        self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
+
+        self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
 
         self::RUNTIME_ERROR                             => 'The request failed at runtime',
 
@@ -413,6 +467,9 @@ class TraceCode
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
+        self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
+        self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
     );
 
     /**

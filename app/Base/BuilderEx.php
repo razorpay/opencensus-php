@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Base;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;

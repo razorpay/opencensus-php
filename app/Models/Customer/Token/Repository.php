@@ -9,9 +9,7 @@ use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Token';
+    protected $entity = 'token';
 
     protected $appFetchParamRules = array(
         Entity::METHOD          => 'sometimes|alpha',

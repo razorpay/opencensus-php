@@ -2,26 +2,23 @@
 
 namespace RZP\Gateway\Wallet\Payumoney;
 
-use View;
 use Cache;
-use RZP\Error;
-use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Constants\Mode;
-use RZP\Models\Payment;
-use RZP\Models\Customer;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Wallet\Base;
-use RZP\Models\Customer\Token;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base\Action;
+use RZP\Constants\Mode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Wallet\Base\Action;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Token;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use View;
 
 class Gateway extends Base\Gateway
 {
@@ -210,15 +207,6 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
-
         $request = $this->getTopupWalletRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -229,7 +217,7 @@ class Gateway extends Base\Gateway
 
         if ($content['status'] === Status::SUCCESS)
         {
-            return $this->getTopupWalletRedirectRequestArray($content);
+            return $this->getTopupWalletRedirectRequestArray($input, $content);
         }
 
         throw new Exception\GatewayErrorException(
@@ -270,6 +258,8 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -283,6 +273,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
+
+        $data = [];
 
         if (isset($content['result']['body']['access_token']))
         {
@@ -318,25 +310,17 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         // Not verifying hash as it's generated with different secret by payu
-        if ((isset($content['status']) === true) and
-            ($content['status'] === Status::TOPUP_SUCCESS))
+        if ((isset($content['status']) === false) or
+            ($content['status'] !== Status::TOPUP_SUCCESS))
         {
-            $token = $this->getValidWalletToken($input);
+            $status = isset($content['status']) ? $content['status']: null;
+            $message = isset($content['error_Message']) ? $content['error_Message']: null;
 
-            if ($token !== null)
-            {
-                $this->accessToken = $token->getGatewayToken();
-                return;
-            }
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $status,
+                $message);
         }
-
-        $status = isset($content['status']) ? $content['status']: null;
-        $message = isset($content['error_Message']) ? $content['error_Message']: null;
-
-        throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            $status,
-            $message);
     }
 
     public function debit(array $input)
@@ -444,8 +428,6 @@ class Gateway extends Base\Gateway
 
     protected function getUserWalletLimitRequestArray($input)
     {
-        $content = [];
-
         $content = array(
             'email'     => $input['payment']['email'],
             'client_id' => $this->getClientId($input['terminal']),
@@ -459,7 +441,7 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
@@ -467,8 +449,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray($input)
     {
-        $content = [];
-
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $content =  array(
@@ -506,7 +486,7 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
@@ -592,8 +572,6 @@ class Gateway extends Base\Gateway
 
     protected function getTopupWalletRequestArray($input)
     {
-        $content = [];
-
         $key = $this->getBalanceKeyForCache($input['payment']);
 
         $userWalletLimit = Cache::get($key);
@@ -638,19 +616,19 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken
+            'Authorization' => 'Bearer ' . $input['token']['gateway_token']
         );
 
         return $request;
     }
 
-    protected function getTopupWalletRedirectRequestArray($input)
+    protected function getTopupWalletRedirectRequestArray(array $input, $content)
     {
         $this->action($input, Action::TOPUP_REDIRECT);
 
         $content = array(
-            'paymentId'     => $input['result'],
-            'accessToken'   => $this->accessToken
+            'paymentId'     => $content['result'],
+            'accessToken'   => $input['token']['gateway_token']
         );
 
         $request = $this->getStandardRequestArray($content);

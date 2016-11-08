@@ -3,7 +3,6 @@
 namespace RZP\Gateway\AxisMigs\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 

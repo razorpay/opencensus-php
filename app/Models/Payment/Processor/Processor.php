@@ -86,6 +86,8 @@ class Processor
     protected $request;
     protected $methods;
     protected $refund;
+    protected $order;
+    protected $segment;
 
     protected $verifyRefundStatus;
 
@@ -118,6 +120,8 @@ class Processor
         $this->mutex = $this->app['api.mutex'];
 
         $this->route = $this->app['api.route'];
+
+        $this->segment = $this->app['segment'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -170,10 +174,8 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        $preCalculationOfFees = true;
-
         list($fee, $serviceTax, $ruleKey) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
+                            (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -292,6 +294,8 @@ class Processor
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
@@ -336,6 +340,12 @@ class Processor
         else
         {
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
+        }
+
+        if ((isset($input['_']['reason']) === true) and
+            (is_string($input['_']['reason']) === true))
+        {
+            $this->payment->setCancellationReason($input['_']['reason']);
         }
 
         $e = new Exception\BadRequestException($errorCode);
@@ -431,6 +441,16 @@ class Processor
 
         $status = $payment->getStatus();
 
+        $segmentCustomProperties = [
+            'error'                 => $error,
+            'code'                  => $code,
+            'description'           => $desc,
+            'internal_error_code'   => $internalCode,
+            'status'                => $status
+        ];
+
+        $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
+
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
             throw new Exception\LogicException(
@@ -447,6 +467,7 @@ class Processor
         $payment->setError($code, $desc, $internalCode);
 
         $payment->setVerified(null);
+        $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
 
@@ -499,18 +520,24 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
+
+        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)
     {
-        $this->tracePaymentNewRequest($input);
-
         $payment = new Payment\Entity;
 
         $payment->generateId();
 
+        $this->tracePaymentNewRequest($input);
+
         $payment->merchant()->associate($this->merchant);
+
+        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         $payment->build($input);
 
@@ -567,8 +594,9 @@ class Processor
      */
     protected function verifyProvidedFee($payment, $input)
     {
-        // Set the amount back to the base amount (without our fee and tax).
-        $input['amount'] = $payment->getAmount() - $payment->getFee();
+        // This is not needed because FeeCalculater:calculateFee()
+        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.
@@ -670,6 +698,8 @@ class Processor
         $this->trace->$level(
             $traceCode,
             $traceData);
+
+        $this->segment->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)
@@ -684,10 +714,8 @@ class Processor
 
     protected function retrieve($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getId());
+        $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
+                                                $id, $this->merchant);
 
         return $this->payment;
     }

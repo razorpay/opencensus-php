@@ -2,27 +2,22 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Constants\Mode;
-use RZP\Http\Route;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
+use Mail;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
-use RZP\Models\Order;
-use RZP\Exception;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use Mail;
 
 trait Callback
 {
@@ -51,6 +46,8 @@ trait Callback
             ]);
 
         $payment = $this->retrieve($id);
+
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
         // For redirect flow
         $this->checkForMerchantCallbackUrl($payment);
@@ -104,12 +101,16 @@ trait Callback
         {
             $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
 
+            $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
+
             return $this->postPaymentAuthorizeProcessing($payment);
         }
 
         // If it failed recently, then throw relevant exception
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
+
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
@@ -127,7 +128,7 @@ trait Callback
 
         $gateway = $payment->getGateway();
 
-        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways) === false)
+        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
         {
             throw new Exception\LogicException(
                 'Invalid gateway provided: ' . $gateway);
@@ -135,6 +136,8 @@ trait Callback
 
         if ($payment->isCreated() === false)
         {
+            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }
@@ -151,9 +154,14 @@ trait Callback
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
-        if ($payment->globalCustomer !== null)
+        if ($payment->getGlobalCustomerId() !== null)
         {
             $input['customer'] = $payment->globalCustomer;
+        }
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $input['token'] = $payment->globalToken->toArray();
         }
 
         if ($payment->card !== null)
@@ -209,7 +217,7 @@ trait Callback
         }
     }
 
-    protected function postPaymentOtpCallbackProcessing($input, $data)
+    protected function postPaymentOtpCallbackProcessing(array &$input, $data)
     {
         $payment = $this->payment;
 
@@ -236,6 +244,8 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
+
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_POSTPROCESSING, ['is_customer_set' => true]);
         }
 
         if (isset($data['token']) === true)
@@ -243,6 +253,10 @@ trait Callback
             $token = $this->createOrUpdateToken($input, $data);
 
             $payment->globalToken()->associate($token);
+
+            $input['token'] = $token->toArray();
+
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_POSTPROCESSING, ['is_token_set' => true]);
         }
 
         $this->repo->saveOrFail($payment);
@@ -280,7 +294,12 @@ trait Callback
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();
+
                 $this->repo->saveOrFail($payment);
+
+                $this->app['segment']->trackPayment($payment,
+                                                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+
                 break;
         }
 
@@ -296,24 +315,26 @@ trait Callback
         Error\Map::throwExceptionFromErrorDetails(
             $publicErrorCode, $internalErrorCode, $errorDesc);
 
+        $errors = [
+            'payment_id' => $payment->getPublicId(),
+            'public_error_code'     => $publicErrorCode,
+            'internal_error_code'   => $internalErrorCode,
+            'error_description'     => $errorDesc,
+            'message'               => 'Failed to convert error code to the appropriate exception'
+        ];
+
         //
         // If it has reached here, then an edge case occurred, for which
         // a suitable exception was not found and which must be handled.
         // So, we trace an error message, ringing alerts to our devs.
         //
 
-        $this->trace->error(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [
-                'payment_id' => $payment->getPublicId(),
-                'public_error_code' => $publicErrorCode,
-                'internal_error_code' => $internalErrorCode,
-                'error_description' => $errorDesc,
-                'message' => 'Failed to convert error code to the appropriate exception'
-            ]);
+        $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE, $errors);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
+
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_FAILURE, $errors);
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);

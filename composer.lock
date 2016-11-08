@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.19.13",
+            "version": "3.19.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "57b0efed8fcf5d8c854bc1c26cf4a685af9108d9"
+                "reference": "04d2a027cac94674b52dfb4d68667bfe225b0fb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/57b0efed8fcf5d8c854bc1c26cf4a685af9108d9",
-                "reference": "57b0efed8fcf5d8c854bc1c26cf4a685af9108d9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/04d2a027cac94674b52dfb4d68667bfe225b0fb5",
+                "reference": "04d2a027cac94674b52dfb4d68667bfe225b0fb5",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-10-06 21:17:44"
+            "time": "2016-11-02 22:24:48"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -408,16 +408,16 @@
         },
         {
             "name": "elasticsearch/elasticsearch",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elastic/elasticsearch-php.git",
-                "reference": "7b34186a58730d0a8963741bd62fa5ab45658ada"
+                "reference": "2f54f5c5301075b993da5505e406d2a4d6113222"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/7b34186a58730d0a8963741bd62fa5ab45658ada",
-                "reference": "7b34186a58730d0a8963741bd62fa5ab45658ada",
+                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/2f54f5c5301075b993da5505e406d2a4d6113222",
+                "reference": "2f54f5c5301075b993da5505e406d2a4d6113222",
                 "shasum": ""
             },
             "require": {
@@ -458,20 +458,20 @@
                 "elasticsearch",
                 "search"
             ],
-            "time": "2016-07-14 14:13:40"
+            "time": "2016-10-17 19:43:19"
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "7.7.2",
+            "version": "7.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "245324b87d59fe122945f5cf4521c75af2bd472a"
+                "reference": "e55e956a7a8211af3dfbd9dd5372ccc5eb79e495"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/245324b87d59fe122945f5cf4521c75af2bd472a",
-                "reference": "245324b87d59fe122945f5cf4521c75af2bd472a",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/e55e956a7a8211af3dfbd9dd5372ccc5eb79e495",
+                "reference": "e55e956a7a8211af3dfbd9dd5372ccc5eb79e495",
                 "shasum": ""
             },
             "require": {
@@ -520,20 +520,20 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2016-10-06 13:02:39"
+            "time": "2016-10-26 13:35:16"
         },
         {
             "name": "giggsey/locale",
-            "version": "1.1",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/Locale.git",
-                "reference": "d936229da2187025f693f25724c5af2a090f5e7c"
+                "reference": "8238764fa3f2c5bd8bdf981e2e019401d49229e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/Locale/zipball/d936229da2187025f693f25724c5af2a090f5e7c",
-                "reference": "d936229da2187025f693f25724c5af2a090f5e7c",
+                "url": "https://api.github.com/repos/giggsey/Locale/zipball/8238764fa3f2c5bd8bdf981e2e019401d49229e3",
+                "reference": "8238764fa3f2c5bd8bdf981e2e019401d49229e3",
                 "shasum": ""
             },
             "require": {
@@ -569,20 +569,20 @@
                 }
             ],
             "description": "Locale functions required by libphonenumber-for-php",
-            "time": "2016-10-05 20:26:22"
+            "time": "2016-10-24 20:49:55"
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "6.2.1",
+            "version": "6.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "3f808fba627f2c5b69e2501217bf31af349c1427"
+                "reference": "ebf29dee597f02f09f4d5bbecc68230ea9b08f60"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/3f808fba627f2c5b69e2501217bf31af349c1427",
-                "reference": "3f808fba627f2c5b69e2501217bf31af349c1427",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ebf29dee597f02f09f4d5bbecc68230ea9b08f60",
+                "reference": "ebf29dee597f02f09f4d5bbecc68230ea9b08f60",
                 "shasum": ""
             },
             "require": {
@@ -631,7 +631,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2016-07-15 17:22:37"
+            "time": "2016-10-08 15:01:37"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1255,20 +1255,20 @@
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.27",
+            "version": "1.0.32",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "50e2045ed70a7e75a5e30bc3662904f3b67af8a9"
+                "reference": "1b5c4a0031697f46e779a9d1b309c2e1b24daeab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/50e2045ed70a7e75a5e30bc3662904f3b67af8a9",
-                "reference": "50e2045ed70a7e75a5e30bc3662904f3b67af8a9",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/1b5c4a0031697f46e779a9d1b309c2e1b24daeab",
+                "reference": "1b5c4a0031697f46e779a9d1b309c2e1b24daeab",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.4.0"
+                "php": ">=5.5.9"
             },
             "conflict": {
                 "league/flysystem-sftp": "<1.0.6"
@@ -1334,7 +1334,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2016-08-10 08:55:11"
+            "time": "2016-10-19 20:38:46"
         },
         {
             "name": "maatwebsite/excel",
@@ -1502,23 +1502,22 @@
         },
         {
             "name": "minfraud/http",
-            "version": "v1.70",
+            "version": "v1.71",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maxmind/ccfd-api-php.git",
-                "reference": "941e9345f9c237a253be8b908ecef951698a1a99"
+                "reference": "5f6c2a5454e755f1c56be17a1fc0c97576ff010e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maxmind/ccfd-api-php/zipball/941e9345f9c237a253be8b908ecef951698a1a99",
-                "reference": "941e9345f9c237a253be8b908ecef951698a1a99",
+                "url": "https://api.github.com/repos/maxmind/ccfd-api-php/zipball/5f6c2a5454e755f1c56be17a1fc0c97576ff010e",
+                "reference": "5f6c2a5454e755f1c56be17a1fc0c97576ff010e",
                 "shasum": ""
             },
             "type": "library",
             "autoload": {
-                "files": [
-                    "src/HTTPBase.php",
-                    "src/CreditCardFraudDetection.php"
+                "classmap": [
+                    "src"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1539,7 +1538,7 @@
                 "maxmind",
                 "minfraud"
             ],
-            "time": "2015-07-21 14:49:48"
+            "time": "2016-10-13 14:35:01"
         },
         {
             "name": "mobiledetect/mobiledetectlib",
@@ -1920,16 +1919,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "4ff7e1ac2a7fa46eb4390691f02f9b60dd97e1f6"
+                "reference": "5a236c5e43486286efbd6b36f5151e0b962cfdb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/4ff7e1ac2a7fa46eb4390691f02f9b60dd97e1f6",
-                "reference": "4ff7e1ac2a7fa46eb4390691f02f9b60dd97e1f6",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/5a236c5e43486286efbd6b36f5151e0b962cfdb5",
+                "reference": "5a236c5e43486286efbd6b36f5151e0b962cfdb5",
                 "shasum": ""
             },
             "require": {
@@ -1943,13 +1942,13 @@
                 "puli/composer-plugin": "1.0.0-beta10"
             },
             "suggest": {
-                "php-http/message": "Allow to use Guzzle or Diactoros factories",
+                "php-http/message": "Allow to use Guzzle, Diactoros or Slim Framework factories",
                 "puli/composer-plugin": "Sets up Puli which is recommended for Discovery to work. Check http://docs.php-http.org/en/latest/discovery.html for more details."
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -1978,7 +1977,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2016-07-18 09:37:58"
+            "time": "2016-10-20 08:05:06"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -2098,16 +2097,16 @@
         },
         {
             "name": "php-http/message",
-            "version": "v1.3.1",
+            "version": "v1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/message.git",
-                "reference": "6d9c2d682dcf80cb2cc641eebc5693eacee95fa4"
+                "reference": "20ffbdc291a127e93f66007742693fbdf020d223"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/message/zipball/6d9c2d682dcf80cb2cc641eebc5693eacee95fa4",
-                "reference": "6d9c2d682dcf80cb2cc641eebc5693eacee95fa4",
+                "url": "https://api.github.com/repos/php-http/message/zipball/20ffbdc291a127e93f66007742693fbdf020d223",
+                "reference": "20ffbdc291a127e93f66007742693fbdf020d223",
                 "shasum": ""
             },
             "require": {
@@ -2117,22 +2116,25 @@
                 "psr/http-message": "^1.0"
             },
             "require-dev": {
+                "akeneo/phpspec-skip-example-extension": "^1.0",
                 "coduo/phpspec-data-provider-extension": "^1.0",
                 "ext-zlib": "*",
                 "guzzlehttp/psr7": "^1.0",
                 "henrikbjorn/phpspec-code-coverage": "^1.0",
                 "phpspec/phpspec": "^2.4",
+                "slim/slim": "^3.0",
                 "zendframework/zend-diactoros": "^1.0"
             },
             "suggest": {
                 "ext-zlib": "Used with compressor/decompressor streams",
                 "guzzlehttp/psr7": "Used with Guzzle PSR-7 Factories",
+                "slim/slim": "Used with Slim Framework PSR-7 implementation",
                 "zendframework/zend-diactoros": "Used with Diactoros Factories"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4-dev"
+                    "dev-master": "1.5-dev"
                 }
             },
             "autoload": {
@@ -2160,7 +2162,7 @@
                 "message",
                 "psr-7"
             ],
-            "time": "2016-07-15 14:48:03"
+            "time": "2016-10-20 06:59:05"
         },
         {
             "name": "php-http/message-factory",
@@ -2626,16 +2628,16 @@
         },
         {
             "name": "psr/log",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "5277094ed527a1c4477177d102fe4c53551953e0"
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/5277094ed527a1c4477177d102fe4c53551953e0",
-                "reference": "5277094ed527a1c4477177d102fe4c53551953e0",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
                 "shasum": ""
             },
             "require": {
@@ -2669,7 +2671,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-09-19 16:02:08"
+            "time": "2016-10-10 12:19:37"
         },
         {
             "name": "psy/psysh",
@@ -2782,12 +2784,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "4c123b9a44610a66fe0c943e9b8ca92702a26ec7"
+                "reference": "98b03ae27a76d5c91eed10d75fe116ecfa914ab1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/4c123b9a44610a66fe0c943e9b8ca92702a26ec7",
-                "reference": "4c123b9a44610a66fe0c943e9b8ca92702a26ec7",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/98b03ae27a76d5c91eed10d75fe116ecfa914ab1",
+                "reference": "98b03ae27a76d5c91eed10d75fe116ecfa914ab1",
                 "shasum": ""
             },
             "require": {
@@ -2830,7 +2832,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2016-09-21 12:32:37"
+            "time": "2016-10-12 12:15:02"
         },
         {
             "name": "razorpay/spine",
@@ -2838,12 +2840,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "92d2a103ade3da8abe239c59e469fe49d70af95b"
+                "reference": "0df12b6cf7d5532eb2f067175ee79c96c566ac38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/92d2a103ade3da8abe239c59e469fe49d70af95b",
-                "reference": "92d2a103ade3da8abe239c59e469fe49d70af95b",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/0df12b6cf7d5532eb2f067175ee79c96c566ac38",
+                "reference": "0df12b6cf7d5532eb2f067175ee79c96c566ac38",
                 "shasum": ""
             },
             "require": {
@@ -2877,7 +2879,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-09-02 20:14:33"
+            "time": "2016-10-31 18:58:04"
         },
         {
             "name": "react/promise",
@@ -3197,16 +3199,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.12",
+            "version": "v2.8.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "889983a79a043dfda68f38c38b6dba092dd49cd8"
+                "reference": "25c576abd4e0f212e678fe8b2bd9a9a98c7ea934"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/889983a79a043dfda68f38c38b6dba092dd49cd8",
-                "reference": "889983a79a043dfda68f38c38b6dba092dd49cd8",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/25c576abd4e0f212e678fe8b2bd9a9a98c7ea934",
+                "reference": "25c576abd4e0f212e678fe8b2bd9a9a98c7ea934",
                 "shasum": ""
             },
             "require": {
@@ -3253,7 +3255,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-07-28 16:56:28"
+            "time": "2016-10-13 01:43:15"
         },
         {
             "name": "symfony/finder",
@@ -3962,12 +3964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/codacy/php-codacy-coverage.git",
-                "reference": "c598e10d6a30ae964b69f59cd31167b46ca259d8"
+                "reference": "2c80784a95f844e6988700e7373225284b713dd2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/c598e10d6a30ae964b69f59cd31167b46ca259d8",
-                "reference": "c598e10d6a30ae964b69f59cd31167b46ca259d8",
+                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/2c80784a95f844e6988700e7373225284b713dd2",
+                "reference": "2c80784a95f844e6988700e7373225284b713dd2",
                 "shasum": ""
             },
             "require": {
@@ -3999,7 +4001,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2016-08-23 16:24:08"
+            "time": "2016-10-14 09:44:29"
         },
         {
             "name": "doctrine/instantiator",
@@ -4321,16 +4323,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.5.4",
+            "version": "1.5.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "ea74994a3dc7f8d2f65a06009348f2d63c81e61f"
+                "reference": "399c1f9781e222f6eb6cc238796f5200d1b7f108"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/ea74994a3dc7f8d2f65a06009348f2d63c81e61f",
-                "reference": "ea74994a3dc7f8d2f65a06009348f2d63c81e61f",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/399c1f9781e222f6eb6cc238796f5200d1b7f108",
+                "reference": "399c1f9781e222f6eb6cc238796f5200d1b7f108",
                 "shasum": ""
             },
             "require": {
@@ -4359,7 +4361,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2016-09-16 13:37:59"
+            "time": "2016-10-31 17:19:45"
         },
         {
             "name": "orchestra/database",
@@ -4688,16 +4690,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "4.0.1",
+            "version": "4.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "5f3f7e736d6319d5f1fc402aff8b026da26709a3"
+                "reference": "6cba06ff75a1a63a71033e1a01b89056f3af1e8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/5f3f7e736d6319d5f1fc402aff8b026da26709a3",
-                "reference": "5f3f7e736d6319d5f1fc402aff8b026da26709a3",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/6cba06ff75a1a63a71033e1a01b89056f3af1e8d",
+                "reference": "6cba06ff75a1a63a71033e1a01b89056f3af1e8d",
                 "shasum": ""
             },
             "require": {
@@ -4747,7 +4749,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-07-26 14:39:29"
+            "time": "2016-11-01 05:06:24"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -4932,16 +4934,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.6.0",
+            "version": "5.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "a7f2db56518e50ab92f28f739810dfad2f223b6b"
+                "reference": "cd13b23ac5a519a4708e00736c26ee0bb28b2e01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a7f2db56518e50ab92f28f739810dfad2f223b6b",
-                "reference": "a7f2db56518e50ab92f28f739810dfad2f223b6b",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/cd13b23ac5a519a4708e00736c26ee0bb28b2e01",
+                "reference": "cd13b23ac5a519a4708e00736c26ee0bb28b2e01",
                 "shasum": ""
             },
             "require": {
@@ -5010,20 +5012,20 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-10-06 15:20:39"
+            "time": "2016-10-25 07:40:25"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
-            "version": "3.3.1",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-                "reference": "03500345483e1e17b52e2e4d34a89c9408ab2902"
+                "reference": "238d7a2723bce689c79eeac9c7d5e1d623bb9dc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/03500345483e1e17b52e2e4d34a89c9408ab2902",
-                "reference": "03500345483e1e17b52e2e4d34a89c9408ab2902",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/238d7a2723bce689c79eeac9c7d5e1d623bb9dc2",
+                "reference": "238d7a2723bce689c79eeac9c7d5e1d623bb9dc2",
                 "shasum": ""
             },
             "require": {
@@ -5069,7 +5071,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2016-10-04 11:03:26"
+            "time": "2016-10-09 07:01:45"
         },
         {
             "name": "raveren/kint",
@@ -5693,16 +5695,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.1.5",
+            "version": "v3.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "368b9738d4033c8b93454cb0dbd45d305135a6d3"
+                "reference": "7ff51b06c6c3d5cc6686df69004a42c69df09e27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/368b9738d4033c8b93454cb0dbd45d305135a6d3",
-                "reference": "368b9738d4033c8b93454cb0dbd45d305135a6d3",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/7ff51b06c6c3d5cc6686df69004a42c69df09e27",
+                "reference": "7ff51b06c6c3d5cc6686df69004a42c69df09e27",
                 "shasum": ""
             },
             "require": {
@@ -5738,7 +5740,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-25 08:27:07"
+            "time": "2016-10-24 18:41:13"
         },
         {
             "name": "webmozart/assert",

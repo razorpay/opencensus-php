@@ -19,8 +19,6 @@ class TerminalController extends Controller
 
     public function restoreTerminal($tid)
     {
-        $input = Request::all();
-
         $data = (new Terminal\Service)->restoreTerminal($tid);
 
         return ApiResponse::json($data);

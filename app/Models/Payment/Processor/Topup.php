@@ -74,17 +74,23 @@ trait Topup
 
         if (($gateway !== Payment\Gateway::SHARP) and
             ($payment->getWallet() !== Wallet::MOBIKWIK) and
-            ($payment->globalCustomer === null))
+            ($payment->getGlobalCustomerId() === null))
         {
             throw new Exception\LogicException(
                 'Customer does not exist', null, $input);
+        }
+
+        if (($gateway !== Payment\Gateway::SHARP) and
+            ($payment->getWallet() !== Wallet::MOBIKWIK) and
+            ($payment->getGlobalTokenId() === null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TOPUP_INVALID_WALLET_TOKEN);
         }
     }
 
     protected function fillTopupGatewayInput($payment, $input, array & $gatewayInput)
     {
-        $gateway = $payment->getGateway();
-
         //
         // Call gateway input
         //
@@ -93,6 +99,11 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $gatewayInput['token'] = $payment->globalToken->toArray();
+        }
 
         if ($payment->analytics !== null)
         {

@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE            = 'error_code';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const CANCELLATION_REASON   = 'cancellation_reason';
     const CUSTOMER_ID           = 'customer_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
@@ -62,6 +63,8 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    // This is the bucket for the next verify and not the current verify.
+    const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -81,8 +84,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
-
-    protected $table            = Table::PAYMENT;
 
     protected $metadata         = array();
 
@@ -135,6 +136,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::CANCELLATION_REASON,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
@@ -147,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::VERIFY_BUCKET,
         self::CALLBACK_URL,
         self::RECURRING,
         self::SAVE,
@@ -228,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED   => null,
         self::RECURRING         => false,
         self::INTERNATIONAL     => null,
+        self::VERIFY_BUCKET     => null,
     );
 
     protected $amounts = array(
@@ -397,6 +401,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setCancellationReason($cancellationReason)
+    {
+        $this->setAttribute(self::CANCELLATION_REASON, $cancellationReason);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
@@ -432,6 +441,11 @@ class Entity extends Base\PublicEntity
     public function setAutoCaptured($autoCaptured)
     {
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
+    }
+
+    public function setVerifyBucket($verifyBucket = 0)
+    {
+        $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
     }
 
     public function setVerified($verified)
@@ -543,6 +557,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setCancellationReasonAttribute(string $reason)
+    {
+        $reason = mb_strtolower($reason);
+
+        $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -642,7 +663,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNull(self::TRANSACTION_ID));
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+    }
+
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ORDER_ID));
     }
 
     public function isCaptured()
@@ -876,6 +902,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getGlobalCustomerId()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER_ID);
+    }
+
     public function getGlobalTokenId()
     {
         return $this->getAttribute(self::GLOBAL_TOKEN_ID);
@@ -929,6 +960,16 @@ class Entity extends Base\PublicEntity
     public function getOtpAttempts()
     {
         return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
+    public function getVerifyBucket()
+    {
+        return $this->getAttribute(self::VERIFY_BUCKET);
+    }
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function isSecondRecurring()
@@ -1037,16 +1078,23 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    public function setPublicOrderIdAttribute(Array & $array)
+    public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
         {
-            $array[self::ORDER_ID] =
-                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+            $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
     }
 
-    public function setPublicCardIdAttribute(Array & $array)
+    public function getPublicOrderId()
+    {
+        if ($this->hasOrder())
+        {
+            return Order\Entity::getSignedId($this->getApiOrderId());
+        }
+    }
+
+    public function setPublicCardIdAttribute(array & $array)
     {
         if (isset($array[self::CARD_ID]))
         {
@@ -1055,7 +1103,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicCustomerIdAttribute(Array & $array)
+    public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
         {
@@ -1159,6 +1207,9 @@ class Entity extends Base\PublicEntity
 
         $data[self::NOTES] = $this->getNotesJson();
 
+        $data['card_type'] = null;
+        $data['card_network'] = null;
+
         if ($this->isMethodCardOrEmi())
         {
             $data['card_type'] = $this->card->getType();
@@ -1204,7 +1255,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
-    
+
     public function subscription()
     {
         return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');

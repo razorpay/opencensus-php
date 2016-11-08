@@ -368,9 +368,9 @@ class Gateway
     {
         // This payment is the gateway entity payment.
         // Also sets this gateway payment in the verify object's payment.
-        $payment = $this->getPaymentToVerify($verify->input, $verify);
+        $gatewayPayment = $this->getPaymentToVerify($verify->input, $verify);
 
-        if (($payment === null) and
+        if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
             $this->trace->warning(
@@ -646,6 +646,16 @@ class Gateway
             'method'    => $method,
             'content'   => $content,
         );
+
+        return $request;
+    }
+
+    protected function getOtpSubmitRequest(array $input): array
+    {
+        $request = [
+            'url' => $input['otpSubmitUrl'],
+            'method' => 'post'
+        ];
 
         return $request;
     }

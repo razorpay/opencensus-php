@@ -2,8 +2,6 @@
 
 namespace RZP\Trace;
 
-use Requests;
-
 /**
  * Adds cloud instance data to trace
  */

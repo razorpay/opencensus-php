@@ -3,13 +3,11 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-
-use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\Gateway;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
+use RZP\Models\Transaction;
+use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -20,6 +18,13 @@ class Service extends Base\Service
         return $settler->settle($input, $channel);
     }
 
+    public function initiateSettlementsV2($input, $channel)
+    {
+        $data = (new Settlement\Processor)->process($input, $channel);
+
+        return $data;
+    }
+
     public function generateSettlementFile($input)
     {
         $to = Carbon::now('Asia/Kolkata')->timestamp;
@@ -28,7 +33,7 @@ class Service extends Base\Service
 
         $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
 
-        $urls = (new Kotak\Service)->generateSettlementFile($setls, null);
+        $urls = (new Kotak\Service)->generateSettlementFile($setls);
 
         return $urls;
     }
@@ -109,7 +114,7 @@ class Service extends Base\Service
 
     public function deleteSetlFile($setlFileType)
     {
-        return (new Kotak\Service)->deleteSetlFile($setlFileType);
+        (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 
     public function getSettlementCombinedReport($input)
@@ -146,7 +151,7 @@ class Service extends Base\Service
         return ['fees' => $totalFees, 'count' => $totalCount];
     }
 
-    public function calculatePrevousSettlementServiceTax()
+    public function calculatePreviousSettlementServiceTax()
     {
         $settlements = $this->repo->settlement->getSettlementWithServiceTaxNullOrZero();
 
@@ -175,11 +180,11 @@ class Service extends Base\Service
                 $totalCount ++;
             }
 
-            $repo->commit();
+            $this->repo->commit();
        }
-       catch (Exception $e)
+       catch (\Exception $e)
        {
-            $repo->rollback();
+            $this->repo->rollback();
             throw new Exception\RuntimeException(
                         'Failed generating Service Tax',
                        $e->getTrace());
