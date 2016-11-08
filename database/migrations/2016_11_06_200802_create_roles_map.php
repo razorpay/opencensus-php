@@ -23,6 +23,8 @@ class CreateRolesMap extends Migration
             $table->char('entity_id', 14);
 
             $table->string('entity_type'); // groups or admins
+
+            $table->unique(['role_id', 'entity_id']);
         });
     }
 

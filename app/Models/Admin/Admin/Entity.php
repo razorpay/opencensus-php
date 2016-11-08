@@ -110,7 +110,7 @@ class Entity extends Base\PublicEntity
     // Admins can be part of multiple groups
     public function groups()
     {
-        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
+        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()

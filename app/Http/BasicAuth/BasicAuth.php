@@ -70,6 +70,12 @@ class BasicAuth
     private $merchant = null;
 
     /**
+     * Admin who is authenticating himself
+     * through adminAuth
+     */
+    private $isAdmin = null;
+
+    /**
      * During app authentication, the app
      * which has been authenticated.
      *
@@ -247,7 +253,7 @@ class BasicAuth
     {
         $this->settype(Type::ADMIN_AUTH);
 
-        $res =  $this->setCredentials();
+        $res = $this->setCredentials();
 
         // null is the good value here
         if ($res !== null)
@@ -259,6 +265,8 @@ class BasicAuth
         {
             return $res;
         }
+
+        $this->setAdminTrue();
 
         $token = $this->getSecret();
 
@@ -884,7 +892,7 @@ class BasicAuth
 
     protected function fetchAdminOfToken($token)
     {
-        $this->admin = $this->repo->admin_token->findValidToken($token)->admin();
+        $this->admin = $this->repo->admin_token->findValidToken($token)->admin;
 
         return $this->admin;
     }

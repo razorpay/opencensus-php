@@ -39,19 +39,19 @@ class Entity extends Base\PublicEntity
     // merchants
     public function parents()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     // Admins part of this group who have defined permissions
     // over the merchants in this group
     public function admins()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::ADMIN_GROUP);
+        return $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function subGroups()
     {
-        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ADMIN_GROUP);
+        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()

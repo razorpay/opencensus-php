@@ -24,6 +24,8 @@ class CreateMerchantMap extends Migration
 
             $table->char('entity_type'); // admin or group
 
+            $table->unique(['merchant_id', 'entity_id']);
+
             $table->foreign('merchant_id')
                   ->references('id')
                   ->on(Table::MERCHANT);

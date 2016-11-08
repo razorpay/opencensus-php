@@ -23,6 +23,8 @@ class CreatePermissionMap extends Migration
             $table->char('entity_id', 14);
 
             $table->string('entity_type', 250); // org or roles
+
+            $table->unique(['permission_id', 'entity_id']);
         });
     }
 

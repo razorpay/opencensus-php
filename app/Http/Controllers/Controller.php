@@ -29,5 +29,7 @@ abstract class Controller extends BaseController
         $this->config = $this->app['config'];
 
         $this->route = $this->app['api.route'];
+
+        $this->ba = $this->app['basicauth'];
     }
 }

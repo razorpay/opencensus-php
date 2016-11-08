@@ -10,6 +10,8 @@ class Service extends Base\Service
 {
     public function login($input)
     {
+        // TODO: add validation for username and password (required fields)
+        
         // Get the admin record
         $admin = $this->repo->admin->getByUsername($input['username']);
 

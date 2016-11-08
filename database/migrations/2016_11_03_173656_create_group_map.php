@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 
-class CreateAdminGroup extends Migration
+class CreateGroupMap extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class CreateAdminGroup extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ADMIN_GROUP, function (Blueprint $table)
+        Schema::create(Table::GROUP_MAP, function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -23,6 +23,8 @@ class CreateAdminGroup extends Migration
             $table->char('entity_id', 14);
 
             $table->string('entity_type'); // admin or group
+
+            $table->unique(['group_id', 'entity_id']);
         });
     }
 
@@ -33,6 +35,6 @@ class CreateAdminGroup extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::ADMIN_GROUP);
+        Schema::drop(Table::GROUP_MAP);
     }
 }

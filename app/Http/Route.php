@@ -306,7 +306,7 @@ final class Route
         'password_login'                        => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
 
         // Admin Auth
-        'hello_world'                           => ['get',      'world',                                          'AdminController@helloWorld'                                        ],
+        'hello_world'                           => ['get',      'world/{mid}',                                          'AdminController@helloWorld'                                        ],
     );
 
     public static $public = array(
@@ -584,6 +584,10 @@ final class Route
 
     public static $admin = [
         'hello_world'
+    ];
+
+    public static $adminPermission = [
+        'hello_world' => ['view_hello_world']
     ];
 
     public static $direct = array(

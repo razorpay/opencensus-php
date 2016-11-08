@@ -39,8 +39,7 @@ class Table
     const PERMISSION_MAP        = 'permission_map';
     const GROUP                 = 'groups';
     const ADMIN                 = 'admins';
-    const ADMIN_ROLE            = 'admin_role';
-    const ADMIN_GROUP           = 'admin_group';
+    const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';
     const ADMIN_TOKEN           = 'admin_tokens';
     const ROLE_MAP              = 'role_map';
