@@ -223,6 +223,9 @@ app.controller('EntitiesCtrl', [
         ref: ['Reference'],
         capture_ref: ['Capture Reference']
       },
+      fee_breakup: {
+        transaction_id: ['Transaction Id'],
+      },
       first_data: {
         payment_id: ['Payment ID'],
         action: ['Action'],
