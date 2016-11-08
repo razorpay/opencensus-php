@@ -136,15 +136,44 @@ class AdminController extends Controller
         return $data;
     }
 
-    public function deleteAdmin($id, $admin_id)
+    public function deleteAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->deleteAdmin($id, $admin_id);
+        $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
 
         return $data;
     }
+
+    public function addMerchantToAdmin($id, $adminId, $mid)
+    {
+        $data = (new Admin\Admin\Service)->addMerchantToAdmin(
+            $id, $adminId, $mid);
+
+        return $data;
+    }
+
+    public function addRoleToAdmin(
+        string $id,
+        string $adminId,
+        string $roleId)
+    {
+        $data = (new Admin\Admin\Service)->addRoleToAdmin(
+            $id, $adminId, $roleId);
+
+        return $data;
+    }
+
+    public function revokeRoleFromAdmin(
+        string $id,
+        string $adminId,
+        string $roleId)
+    {
+        $data = (new Admin\Admin\Service)->revokeRoleFromAdmin(
+            $id, $adminId, $roleId);
+
+        return $data;
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
-
-
 
 // --------------------- CRUD for roles  -----------------------------------------
     public function createRole(string $orgId)
