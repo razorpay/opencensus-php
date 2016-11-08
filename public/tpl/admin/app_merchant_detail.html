@@ -152,10 +152,10 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-click="openTagMerchant()">
+        <div class="list-group-item" ng-click="openTagMerchant()">
           <span class="pull-right">{{merchant.details.tags.join()}}</span>
           Tags
-        </a>
+        </div>
         <div href class="list-group-item" ng-init="isFeaturesCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs"  ng-click="isFeaturesCollapsed = !isFeaturesCollapsed" ng-show="merchant.details.features.length != 0">Show/Hide</button>
@@ -182,81 +182,80 @@
             </div>
           </div>
 
-        <a class="list-group-item" ng-show="referer!=false">
+        <div class="list-group-item" ng-show="referer!=false">
           <span class="pull-right">{{referer}}</span>
           Referer
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.activated == 1">
+        </div>
+        <div href class="list-group-item" ng-show="merchant.details.activated == 1">
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
-        </a>
-        <a href="mailto:{{merchant.details.email}}" class="list-group-item"
-        >
-          <span class="pull-right">{{merchant.details.email}}</span>
+        </div>
+        <div class="list-group-item">
+          <span class="pull-right"><a href="mailto:{{merchant.details.email}}">{{merchant.details.email}}</a></span>
           Email
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
-        </a>
-        <a href="{{merchant.details.website}}" class="list-group-item">
+        </div>
+        <div href="{{merchant.details.website}}" class="list-group-item">
           <span class="pull-right">{{merchant.details.website}}</span>
           Website
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.category}}</span>
           MCC
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.category2|titlecase}}</span>
           Category 2
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.transaction_report_email}}</span>
           Transaction Report Email
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.international}}</span>
           International
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.submitted_at">{{merchant.details.submitted_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.submitted_at">NULL</span>
           Submission Date
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
           <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
           Activation Date
-        </a>
+        </div>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
           </span>
           Confirmed
         </a>
-        <a href class="list-group-item">
+        <div href class="list-group-item">
           <span class="pull-right">
             <b class="badge bg-success dk">{{merchant.details.activation_progress}}%</b>
           </span>
           Activation Form Progress
-        </a>
+        </div>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.details.submitted == 1, ' fa-times text-danger':merchant.details.submitted == 0}"></i>
@@ -281,24 +280,24 @@
           <span class="pull-right" tooltip="{{merchant.details.hold_funds == 1 ? 'Yes' : 'No'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.hold_funds == 1, 'fa-times text-danger':merchant.details.hold_funds == 0}"></i></span>
           Funds on Hold
         </a>
-        <a href class="list-group-item">
+        <div href class="list-group-item">
           <span class="label text-base pull-right"
             ng-class="riskMap[merchant.details.risk_rating][1]"
           >
             {{riskMap[merchant.details.risk_rating][0]}}
           </span>
           Risk Rating
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right">
             {{merchant.details.fee_bearer|titlecase}}
           </span>
           Fee Bearer
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
           Settlement Schedule <i class="fa fa-clock-o"></i>
-        </a>
+        </div>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
           Amex
@@ -363,10 +362,10 @@
           Pricing Plan
         </div>
           <div collapse="isPricingCollapsed" class="panel-body">
-            <a ui-sref="app.pricingdetail({id:merchant.pricing_plan.id})" class="list-group-item">
+            <div ui-sref="app.pricingdetail({id:merchant.pricing_plan.id})" class="list-group-item">
               <span class="pull-right">{{merchant.pricing_plan.id}}</span>
               Plan Id
-            </a>
+            </div>
             <div class="list-group-item">
               <span class="pull-right">
                 <a ui-sref="app.pricingdetail({id:merchant.pricing_plan.id})"
