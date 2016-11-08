@@ -8,6 +8,13 @@ use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Core;
+    }
+
     public function login($input)
     {
         // TODO: add validation for username and password (required fields)
