@@ -1185,6 +1185,9 @@ class Entity extends Base\PublicEntity
 
         $data[self::NOTES] = $this->getNotesJson();
 
+        $data['card_type'] = null;
+        $data['card_network'] = null;
+
         if ($this->isMethodCardOrEmi())
         {
             $data['card_type'] = $this->card->getType();
