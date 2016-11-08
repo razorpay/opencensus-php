@@ -38,7 +38,17 @@ class FeeCalculator
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
+        $amount = $entity->getAmount();
+
+        if ($entity->merchant->isFeeBearerCustomer())
+        {
+            // 1. The first call will have the fee = 0,
+            //    hence fees will be calculated on the original amount
+            // 2. On validation/capture call, the fee will be set
+            $amount = $amount - $entity->getFee();
+        }
+
+        list($fee, $serviceTax) = $this->getFees($rule, $amount, $preCalculationOfFees);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
