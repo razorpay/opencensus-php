@@ -115,16 +115,16 @@ class AdminController extends Controller
 
 // --------------------- CRUD for Admins   ---------------------------------------
 
-    public function getAdmin($id, $admin_id)
+    public function getAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->getAdmin($id, $admin_id);
+        $data = (new Admin\Admin\Service)->getAdmin($id, $adminId);
 
         return $data;
     }
 
     public function getMultipleAdmins($id)
     {
-        $data = (new Admin\Admin\Service)->getMultipleAdmins($id, $admin_id);
+        $data = (new Admin\Admin\Service)->getMultipleAdmins($id, $adminId);
 
         return $data;
     }
@@ -143,19 +143,22 @@ class AdminController extends Controller
         return $data;
     }
 
-    public function addMerchantToAdmin($id, $adminId, $mid)
+    public function addMerchantToAdmin($id, $adminId)
     {
+        $input = Request::all();
+
         $data = (new Admin\Admin\Service)->addMerchantToAdmin(
-            $id, $adminId, $mid);
+            $id, $adminId, $input);
 
         return $data;
     }
 
     public function addRoleToAdmin(
         string $id,
-        string $adminId,
-        string $roleId)
+        string $adminId)
     {
+        $input = Request::all();
+
         $data = (new Admin\Admin\Service)->addRoleToAdmin(
             $id, $adminId, $roleId);
 
@@ -164,11 +167,12 @@ class AdminController extends Controller
 
     public function revokeRoleFromAdmin(
         string $id,
-        string $adminId,
-        string $roleId)
+        string $adminId)
     {
+        $input = Request::all();
+
         $data = (new Admin\Admin\Service)->revokeRoleFromAdmin(
-            $id, $adminId, $roleId);
+            $id, $adminId, $input);
 
         return $data;
     }
@@ -176,52 +180,104 @@ class AdminController extends Controller
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
-    public function createRole(string $orgId)
+    public function createRole(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->createRole($orgId, $input);
+        $data = (new Admin\Role\Service)->createRole($id, $input);
 
         return $data;
     }
 
-    public function getRole(string $orgId, string $roleId)
+    public function getRole(string $id, string $roleId)
     {
-        $data = (new Admin\Role\Service)->getRole($orgId, $roleId);
+        $data = (new Admin\Role\Service)->getRole($id, $roleId);
 
         return $data;
     }
 
-    public function getMultipleRoles(string $orgId)
+    public function getMultipleRoles(string $id)
     {
-        $data = (new Admin\Role\Service)->getMultipleRoles($orgId);
+        $data = (new Admin\Role\Service)->getMultipleRoles($id);
 
         return $data;
     }
 
-// --------------------- END CRUD for roles  -----------------------------------------
+// --------------------- END CRUD for roles  --------------------------------------
+
+// --------------------- CRUD for Groups  -----------------------------------------
+    public function createGroup(string $id)
+    {
+        $input == Request::all();
+
+        $data = (new Admin\Group\Service)->createRole($id, $input);
+
+        return $data;
+    }
+
+    public function getGroup(string $id, string $groupId)
+    {
+        $data = (new Admin\Group\Service)->getGroup($id, $groupId);
+
+        return $data;
+    }
+
+
+    public function deleteGroup(string $id, string $groupId)
+    {
+        $data = (new Admin\Group\Service)->deleteGroup($id, $groupId);
+
+        return $data;
+    }
+
+    public function addRolesToGroup(string $id, string $groupId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->addRolesToGroup(
+            $id, $groupId, $input);
+
+        return $data;
+    }
+
+    public function addMerchantsToGroup(string $id, string $groupId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->addMerchantsToGroup(
+            $id, $groupId, $input);
+    }
+
+    public function addAdminsToGroup(string $id, string $groupId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->addAdminsToGroup(
+            $id, $groupId, $input);
+    }
+// --------------------- END CRUD for Groups  -------------------------------------
 
 // --------------------- CRUD for Permissions ----------------------------------------
 
-    public function createPermission(string $orgId)
+    public function createPermission(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->createPermission($orgId, $input);
+        $data = (new Admin\Permission\Service)->createPermission($id, $input);
 
         return $data;
     }
 
-    public function getPermission(string $orgId, string $permissionId)
+    public function getPermission(string $id, string $permissionId)
     {
-        $data = (new Admin\Permission\Service)->getPermission($orgId, $permissionId);
+        $data = (new Admin\Permission\Service)->getPermission($id, $permissionId);
 
         return $data;
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $id)
     {
-        $data = (new Admin\Permission\Service)->getMultiplePermissions($orgId);
+        $data = (new Admin\Permission\Service)->getMultiplePermissions($id);
 
         return $data;
     }

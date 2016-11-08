@@ -32,7 +32,7 @@ class Repository extends Base\Repository
 
     public function addRoleToAdmin(Admin\Entity $admin, Role\Entity $role)
     {
-        $admin->roles()->save($role);
+        $admin->roles()->attach($role);
     }
 
     public function addMerchantToAdmin(

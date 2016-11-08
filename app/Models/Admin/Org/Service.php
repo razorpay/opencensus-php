@@ -13,6 +13,13 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
+    public function fetchMultiple(array $input)
+    {
+        $orgs = $this->repo->org->fetch($input);
+
+        return $orgs->toArrayPublic();
+    }
+
     public function createOrg(array $input)
     {
         $org = $this->core->create($input);
@@ -29,6 +36,7 @@ class Service extends Base\Service
 
     public function deleteOrg(string $id)
     {
+        return $this->core->delete($id);
     }
 
     public function editOrg(string $id, array $input)
