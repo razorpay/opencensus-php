@@ -47,12 +47,12 @@ class Entity extends Base\PublicEntity
      **/
     public function admins()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::ROLE_MAP);
+        return $this->morphByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::ROLE_MAP);
     }
 
     public function groups()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
+        return $this->morphByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
     }
 
     /**
@@ -70,7 +70,7 @@ class Entity extends Base\PublicEntity
      **/
     public function permissions()
     {
-        return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
     }
 
     /**

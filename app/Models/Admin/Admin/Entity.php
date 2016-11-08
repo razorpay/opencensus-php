@@ -123,6 +123,24 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Token\Entity');
     }
 
+    public function getPermissionsList()
+    {
+        $permissions = [];
+
+        // Create a list of all the permissions from all the roles
+        foreach ($this->roles as $role)
+        {
+            foreach ($role->permissions->toArray() as $permission)
+            {
+                $permissions[] = $permission['name'];
+            }
+        }
+
+        $permissions = array_unique($permissions);
+
+        return $permissions;
+    }
+
     public function saveOrFailMerchant(Merchant\Entity $merchant)
     {
         // TODO: Restrict No of merchants per admin to 1.

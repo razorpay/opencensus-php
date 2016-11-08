@@ -598,7 +598,7 @@ final class Route
     ];
 
     public static $adminPermission = [
-        'hello_world' => ['view_hello_world']
+        'hello_world' => ['view_merchant_credits']
     ];
 
     public static $direct = array(

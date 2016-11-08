@@ -301,6 +301,46 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    => time(),
                 ]
             );
+
+            DB::table(Table::ROLE)->insert(
+                [
+                    'id'            => '6dLbNSpv5XbC5F',
+                    'name'          => 'Manager',
+                    'description'   => 'A manager',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ]
+            );
+
+            DB::table(Table::ROLE_MAP)->insert(
+                [
+                    'role_id'       => '6dLbNSpv5XbC5F',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin'
+                ]
+            );
+
+            DB::table(Table::PERMISSION)->insert(
+                [
+                    'id'            => '6ebwLI58cCaj92',
+                    'name'          => 'view_merchant_credits',
+                    'description'   => 'View Merchant Credits',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ],
+                [
+                    'id'            => '6ebyTmvzhAbQvi',
+                    'name'          => 'add_merchant_credits',
+                    'description'   => 'Add Merchant Credits',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ],
+            );
+
+            DB::table(Table::PERMISSION_MAP)->insert(
+
+            );
         });
     }
 

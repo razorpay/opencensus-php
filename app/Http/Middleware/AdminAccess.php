@@ -70,11 +70,41 @@ class AdminAccess
         // - admin
         // - merchant (when available)
 
-        // 1. Get all the roles of the first
+        // TODO: Move most of the logic to Admin/Admin/Repository
 
-        // $repo->admin->
-        dd($admin->roles);
+        // === Do a Role check
+
+        // 1. Get all the permissions by all the roles first
+
+        $roles = $admin->roles->toArray();
+
+        $adminPermissions = $admin->getPermissionsList();
+
+        // 2. Check if the specified permissions exist in our
+        // generated white list
+
+        $allowed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
+
+        // === Do a Group check.
+
+        if ($allowed)
+        {
+            return true;
+        }
 
         return false;
+    }
+
+    private function checkPermissionsAllowed($toCheck, $haystack)
+    {
+        foreach ($toCheck as $permission)
+        {
+            if (! in_array($permission, $haystack))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
