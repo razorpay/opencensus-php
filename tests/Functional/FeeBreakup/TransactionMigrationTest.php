@@ -10,7 +10,6 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
-
 class TransactionMigrationTest extends TestCase
 {
     use PaymentTrait;
@@ -34,7 +33,9 @@ class TransactionMigrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertContent($content, $transaction->getPublicId(), $transaction->getFee(), $transaction->getServiceTax());
+        $this->assertEquals($content['migrated'][0], $transaction->getPublicId());
+
+        $this->assertEquals($content['migrated'][0], $transaction->getPublicId());
     }
 
     // Captured At: 31st May 2015 ST = 12.36
@@ -58,7 +59,7 @@ class TransactionMigrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
+        $this->assertEquals($content['migrated'][0], $transaction['id']);
     }
 
     // Captured At: 1st June 2015 ST = 14
@@ -82,7 +83,7 @@ class TransactionMigrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
+        $this->assertEquals($content['migrated'][0], $transaction['id']);
     }
 
     // Captured At: 15th Nov 2015 ST = 14, SB = 0.5
@@ -106,7 +107,7 @@ class TransactionMigrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
+        $this->assertEquals($content['migrated'][0], $transaction['id']);
     }
 
     // Captured At: 1st June 2016 ST = 14, SB = 0.5, KK = 0.5
@@ -130,7 +131,7 @@ class TransactionMigrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
+        $this->assertEquals($content['migrated'][0], $transaction['id']);
     }
 
     public function testMigrationWithTaxMistmatch()
@@ -169,37 +170,5 @@ class TransactionMigrationTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $this->startTest();
-    }
-
-    protected function assertContent($content, $txnId, $fee, $serviceTax)
-    {
-        $feesCollection = $content[$txnId];
-
-        $feesSplit = $feesCollection['items'];
-
-        list($rzpFee, $taxes) = $this->getFeesSplit($feesSplit);
-
-        $this->assertEquals($rzpFee + $taxes, $fee);
-
-        $this->assertEquals($taxes, $serviceTax);
-    }
-
-    protected function getFeesSplit($feesSplit)
-    {
-        $rzpFee = 0;
-        $taxes = 0;
-
-        foreach ($feesSplit as $feeSplit)
-        {
-            if ($feeSplit['name'] === FeeBreakupName::RZP)
-            {
-                $rzpFee += $feeSplit['amount'];
-            }
-            else
-            {
-                $taxes += $feeSplit['amount'];
-            }
-        }
-        return [$rzpFee, $taxes];
     }
 }
