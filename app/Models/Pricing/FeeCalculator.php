@@ -32,7 +32,7 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing)
     {
         $entity = $this->entity;
 
@@ -48,18 +48,19 @@ class FeeCalculator
             $amount = $amount - $entity->getFee();
         }
 
-        list($fee, $serviceTax) = $this->getFees($rule, $amount, $preCalculationOfFees);
+        list($fee, $serviceTax) = $this->getFees($rule, $amount);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
 
-    protected function getFees($rule, $amount, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount)
     {
         $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
+
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
@@ -317,11 +318,13 @@ class FeeCalculator
      * If the value is not found, and a default value is allowed,
      * matches based on default value will be returned.
      *
-     * @param  $rules       List of rules
-     * @param  $filedName   Field name to be filtered on
-     * @param  $filedValue  Filed value to be filtered on
-     * @param  $chooseDefault Default value to be considered if field value not found
-     * @param  $defaultValue  Default value to be filtered on if $chooseDefualt is true
+     * @param  array       $rules         List of rules
+     * @param  string      $fieldName     Field name to be filtered on
+     * @param  string      $fieldValue    Field value to be filtered on
+     * @param  bool        $chooseDefault Default value to be considered if field value not found
+     * @param  string|null $defaultValue  Default value to be filtered on if $chooseDefault is true
+     *
+     * @return array
      */
     protected function filterRulesOnFieldByValue(
         $rules,
@@ -405,35 +408,6 @@ class FeeCalculator
         return $relevantRule;
     }
 
-    /**
-     * NOT USED CURRENTLY
-     *
-     * In customer subvention,
-     * If the rule before applying the amount
-     * and the new amount after using merchant
-     * subvention is same then use the given rule
-     */
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
-    {
-        $fees = [];
-
-        foreach ($rules as $rule)
-        {
-            list($fee, $st) = $this->getFees($rule, $amount);
-
-            $newAmount = $amount + $fee;
-
-            $newSubventionType = Merchant\FeeBearer::PLATFORM;
-
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
-
-            if ($rule === $newRule)
-            {
-                return $rule;
-            }
-        }
-    }
-
     protected function validateAndGetOnePricingRule($pricing)
     {
         $this->traceAllRules($pricing);
@@ -458,13 +432,11 @@ class FeeCalculator
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
-     * @param float $serviceTaxPercentage  15.0
-     * @param boolean $preCalculationOfFees
-     * @return fees
+     * @return int
      */
-    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
+    protected function getUnroundedFees($amount, $percent, $fixed)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
     }
 
     /**
@@ -490,7 +462,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
