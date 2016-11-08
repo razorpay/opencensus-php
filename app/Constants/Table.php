@@ -26,7 +26,7 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
-    const FILESTORE             = 'files';
+    const FILE                  = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';

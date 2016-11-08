@@ -16,7 +16,7 @@ class CreateFileStore extends Migration
      */
     public function up()
     {
-        Schema::create(Table::FILESTORE, function(Blueprint $table)
+        Schema::create(Table::FILE, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 

@@ -31,10 +31,10 @@ class RefundFile extends Base\RefundFile
 
         $creator->format('txt')
                 ->content($txt)
-                ->name('')
+                ->name($name)
                 ->save();
 
-        $fileId = $creator->getFileId();
+        $file = $creator->get();
 
         $fileFullPath = $this->getFullFilePath($name);
 

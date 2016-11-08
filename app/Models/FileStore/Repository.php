@@ -6,8 +6,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'file';
 
     public function getByEntityIdAndEntityType($entityId, $entityType)

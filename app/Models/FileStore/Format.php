@@ -22,6 +22,7 @@ class Format
 
     public static function validateContentTypeForFormat($content, $format)
     {
+        //TODO : Fix content checking
         if ($content !== null)
         {
             return in_array($format, self::SUPPORTED_CONTENT_TYPES);

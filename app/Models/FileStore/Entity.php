@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = 'file';
 
-    protected $table  = \RZP\Constants\Table::FILESTORE;
+    protected $table  = \RZP\Constants\Table::FILE;
 
     protected $generateIdOnCreate = true;
 
@@ -118,6 +118,11 @@ class Entity extends Base\PublicEntity
     public function setFormat($format)
     {
         $this->setAttribute(self::FORMAT, $format);
+    }
+
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
     }
 
     public function getFormat()

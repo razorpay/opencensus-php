@@ -2,8 +2,12 @@
 
 namespace RZP\Models\FileStore;
 
-use RZP\Models\Base;
+use Storage;
+
 use RZP\Exception;
+use RZP\Models\Base;
+
+use Symfony\Component\HttpFoundation\File\File;
 
 class Creator extends Base\Core
 {
@@ -18,26 +22,42 @@ class Creator extends Base\Core
      */
     protected $localFile;
 
+    //TODO : Add comments for each variable
     protected $fileType;
 
     protected $type;
 
-    protected $name;
-
     protected $delimiter;
+
+    protected $filePath;
+
+    protected $storageHandler;
+
+    protected $serviceProvider;
+
+    const DEFAULT_SERVICE_PROVIDER = 's3';
 
     public function __construct()
     {
         parent::__construct();
 
         $this->file = new Entity;
+
+        $this->setDefaults();
     }
 
     public function name($name)
     {
-        $this->name = $name;
+        $this->file->name = $name;
 
         return $this;
+    }
+
+    public function setDefaults()
+    {
+        $this->file->encryption_method = 'none';
+
+        $this->file->merchant_id = '10000000000000';
     }
 
     public function content($content)
@@ -83,28 +103,102 @@ class Creator extends Base\Core
             $this->writeToLocalFile();
         }
 
+        $this->upload();
+
+        $this->file->type = 'abc';
+
+        $this->file->size = $this->getFileSize();
+
+        $this->repo->saveOrFail($this->file);
+
         return $this;
     }
 
-    public function getFileId()
+    protected function getFileSize()
     {
-        return $this;
+        $file = new File($this->filePath);
+
+        return $file->getSize();
+    }
+
+    protected function upload()
+    {
+        $this->file->service = self::DEFAULT_SERVICE_PROVIDER;
+
+        $this->getStorageHandle($this->file->service);
+
+        $this->file->location = $this->storageHandler->save(
+            'default_bucket', // TODO : fix bucket
+            $this->file->name,
+            $this->filePath,
+            $this->file->getformat(),
+            []
+        );
+    }
+
+    public function get()
+    {
+        return $this->file->toArrayPublic();
+    }
+
+    protected function getStorageHandle($service)
+    {
+        $class = 'RZP\Models\FileStore\StorageService\\';
+
+        if ($this->serviceProvider !== $service)
+        {
+            switch ($service)
+            {
+                // TODO : change to constants
+                case 's3':
+                    $class  = $class . 'AwsS3' . '\Handler';
+                    break;
+
+                case 'default':
+                    throw new Exception\InvalidArgumentException('Invalid storage service ' . $service);
+            }
+
+            $this->storageHandler = (new $class);
+
+            $this->serviceProvider = $service;
+        }
     }
 
     protected function writeToLocalFile()
     {
-        if ($this->file->getFormat() === Format::CSV)
+        if ($this->file->getFormat() === Format::TXT)
         {
             $content = $this->content;
-            $fullpath = $this->getFullFilePath($name);
 
-            $file = fopen($fullpath, 'w');
-            fwrite($file, $txt);
-            fclose($file);
+            $fullpath = $this->getFullFilePath($this->file->name);
+
+            file_put_contents($fullpath, $content);
 
             chmod($fullpath, 0777);  // keep it 0777. This step is important.
 
-            return $fullpath;
+            $this->filePath = $fullpath;
         }
+        else
+        {
+            //TODO : Throw proper error
+            throw new Exception\BadRequestValidationFailureException(
+                'Local file not found');
+        }
+    }
+
+    protected function getFullFilePath()
+    {
+        $filePath = $this->getStorageDir();
+
+        return $filePath . $this->file->name;
+    }
+
+    protected function getStorageDir()
+    {
+        $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+
+        $storageDirectory = 'files/file_handler/';
+
+        return $path . $storageDirectory;
     }
 }
