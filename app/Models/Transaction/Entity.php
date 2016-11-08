@@ -467,6 +467,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::SETTLEMENT);
     }
 
+    public function isTypeAdjustment()
+    {
+        return ($this->getType() === Type::ADJUSTMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -523,6 +528,12 @@ class Entity extends Base\PublicEntity
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
+        }
+        else if ($this->isTypeAdjustment())
+        {
+            $adjustment = $this->source;
+
+            $reportTxn['description'] = $adjustment->getDescription();
         }
 
         return $reportTxn;
