@@ -368,4 +368,8 @@ class ErrorCode
     const BAD_REQUEST_INCORRECT_OTP                                                 = 'BAD_REQUEST_INCORRECT_OTP';
     const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
+
+    // Heimdall Error Codes
+    const BAD_REQUEST_ROLE_NOT_ASSIGNED = 'BAD_REQUEST_ROLE_NOT_ASSIGNED';
+    const BAD_REQUEST_MERCHANT_NOT_ASSIGNED = 'BAD_REQUEST_MERCHANT_NOT_ASSIGNED';
 }

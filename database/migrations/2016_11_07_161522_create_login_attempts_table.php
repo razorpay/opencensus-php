@@ -27,7 +27,7 @@ class CreateLoginAttemptsTable extends Migration
             // Meta data
             $table->string(LoginAttempt::USER_AGENT, 250)->nullable();
 
-            $table->string(LoginAttempt::IP_ADDRESS, 17)->nullable();
+            $table->ipAddress(LoginAttempt::IP_ADDRESS)->nullable();
 
             $table->integer(LoginAttempt::CREATED_AT);
 

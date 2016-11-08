@@ -18,5 +18,15 @@ class Core extends Base\Core
 
         return $admin;
     }
+
+    public function delete(string $orgId, string $adminId)
+    {
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $adminId);
+
+        $this->repo->deleteOrFail($admin);
+
+        return $admin;
+    }
 }
 
