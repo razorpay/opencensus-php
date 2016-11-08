@@ -242,12 +242,61 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ORG)->insert(
                 [
                     'id'            => '6dLbNSpv5XbCOF',
-                    'auth_type'     => 'password',
+                    'auth_type'     => 'google_auth',
                     'business_name' => 'rzp',
                     'display_name'  => 'razorpay pvt ltd',
                     'email'         => 'admin@rzp.in',
-                    'email_domains' => 'rzp.in',
+                    'email_domains' => 'razorpay.com',
                     'logo_url'      => '',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ]
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'            => '6dLbNSpv5XbCOG',
+                    'auth_type'     => 'password',
+                    'business_name' => 'HDFC',
+                    'display_name'  => 'HDFC Bank Pvt Ltd',
+                    'email'         => 'hdfc@bank.rzp.in',
+                    'email_domains' => 'hdfcbank.in',
+                    'logo_url'      => '',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ]
+            );
+
+            DB::table(Table::ADMIN)->insert(
+                [
+                    'id'            => '6dLbNSpv5Ybbbb',
+                    'email'         => 'test@hdfcbank.in',
+                    'name'          => 'Test HDFC Account',
+                    'username'      => 'nemo',
+                    'password'      => \Hash::make('123456'),
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => time(),
+                    'employee_code' => '010',
+                    'department_code'=> 'ADMIN',
+                    'branch_code'   => 'HDFC010',
+                    'supervisor_code' => '001',
+                    'location_code' => 'BLR',
+                    'updated_at'    => time(),
+                ]
+            );
+
+            DB::table(Table::ADMIN)->insert(
+                [
+                    'id'            => '6dLbNSpv5Ycccc',
+                    'email'         => 'abhay.rana@razorpay.com',
+                    'name'          => 'Abhay Rana',
+                    'username'      => 'nemo',
+                    'org_id'        => '6dLbNSpv5XbCOF',
+                    'employee_code' => '010',
+                    'branch_code'   => 'RZP010',
+                    'department_code'=> 'ADMIN',
+                    'supervisor_code' => '001',
+                    'location_code' => 'BLR',
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 ]
