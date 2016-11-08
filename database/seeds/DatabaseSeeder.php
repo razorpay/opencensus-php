@@ -317,11 +317,11 @@ class DatabaseSeeder extends Seeder
                 [
                     'role_id'       => '6dLbNSpv5XbC5F',
                     'entity_id'     => '6dLbNSpv5Ybbbb',
-                    'entity_type'   => 'admin'
+                    'entity_type'   => 'admin',
                 ]
             );
 
-            DB::table(Table::PERMISSION)->insert(
+            DB::table(Table::PERMISSION)->insert([
                 [
                     'id'            => '6ebwLI58cCaj92',
                     'name'          => 'view_merchant_credits',
@@ -335,12 +335,21 @@ class DatabaseSeeder extends Seeder
                     'description'   => 'Add Merchant Credits',
                     'created_at'    => time(),
                     'updated_at'    => time()
+                ]
+            ]);
+
+            DB::table(Table::PERMISSION_MAP)->insert([
+                [
+                    'permission_id'     => '6ebwLI58cCaj92',
+                    'entity_id'         => '6dLbNSpv5XbC5F',
+                    'entity_type'       => 'role',
                 ],
-            );
-
-            DB::table(Table::PERMISSION_MAP)->insert(
-
-            );
+                [
+                    'permission_id'     => '6ebyTmvzhAbQvi',
+                    'entity_id'         => '6dLbNSpv5XbC5F',
+                    'entity_type'       => 'role',
+                ]
+            ]);
         });
     }
 
