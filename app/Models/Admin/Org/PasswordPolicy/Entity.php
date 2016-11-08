@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const MAX_FAILED_ATTEMPTS           = 'max_failed_attempts';
     const FORCE_CHANGE_INITIAL_PASSWORD = 'force_change_initial_password';
     const MAX_PASSWORD_RETAIN           = 'max_password_retain';
-    const EXPIRIES_IN                   = 'expiries_in';
+    const EXPIRES_IN                    = 'expires_in';
 
     protected $entity = 'password_policy';
 
@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::FORCE_CHANGE_INITIAL_PASSWORD,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRIES_IN,
+        self::EXPIRES_IN,
     ];
 
     protected $visible = [
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::FORCE_CHANGE_INITIAL_PASSWORD,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRIES_IN,
+        self::EXPIRES_IN,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::FORCE_CHANGE_INITIAL_PASSWORD,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRIES_IN,
+        self::EXPIRES_IN,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -72,7 +72,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS           => 10,
         self::FORCE_CHANGE_INITIAL_PASSWORD => true,
         self::MAX_PASSWORD_RETAIN           => 10,
-        self::EXPIRIES_IN                   => 30,
+        self::EXPIRES_IN                    => 30,
     ];
 
     protected $casts = [
@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS           => 'int',
         self::FORCE_CHANGE_INITIAL_PASSWORD => 'bool',
         self::MAX_PASSWORD_RETAIN           => 'int',
-        self::EXPIRIES_IN                   => 'int',
+        self::EXPIRES_IN                    => 'int',
     ];
 
     protected $createRules = [
@@ -100,7 +100,7 @@ class Entity extends Base\PublicEntity
             self::MAX_FAILED_ATTEMPTS           => 10,
             self::FORCE_CHANGE_INITIAL_PASSWORD => true,
             self::MAX_PASSWORD_RETAIN           => 10,
-            self::EXPIRIES_IN                   => 30,
+            self::EXPIRES_IN                    => 30,
         ];
     }
 

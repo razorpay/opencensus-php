@@ -17,8 +17,8 @@ class MaxLengthRule extends Rule
     {
         if (strlen($password) > $maxLength)
         {
-            throw new Exception\BadRequestException(
-                );
+            throw new Exception\BadRequestValidationFailureException(
+                'Password should be maximum ' . $minLength . ' characters');
         }
     }
 }

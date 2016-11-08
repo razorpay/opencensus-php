@@ -17,8 +17,8 @@ class MinLengthRule extends Rule
     {
         if (strlen($password) < $minLength)
         {
-            throw new Exception\BadRequestException(
-                );
+            throw new Exception\BadRequestValidationFailureException(
+                'Password should be atleast ' . $minLength . ' characters long');
         }
     }
 }

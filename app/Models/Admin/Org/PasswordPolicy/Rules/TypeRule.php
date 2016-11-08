@@ -15,6 +15,13 @@ class TypeRule extends Rule
         'alpha'                    => 'a-zA-Z',
     ];
 
+    protected $description = [
+        'alpha_numeric_underscore' => 'alphabets, digits and underscore (_)',
+        'alpha_numeric'            => 'alphabets and digits',
+        'numeric'                  => 'alphabets',
+        'alpha'                    => 'digits',
+    ];
+
     public function __construct($type)
     {
         $this->type = $type;
@@ -22,14 +29,16 @@ class TypeRule extends Rule
 
     public function validate(string $password)
     {
-        $pattern = $this->types[$this->type];
+        $type = $this->type;
+
+        $pattern = $this->types[$type];
 
         $matchingCharacters = preg_replace($pattern, '', $password);
 
         if (strlen($matchingCharacters) < 1)
         {
-            throw new Exception\BadRequestException(
-                );
+            throw new Exception\BadRequestValidationFailureException(
+                'Password can contain ' . $this->description[$type] . ' only');
         }
     }
 }
