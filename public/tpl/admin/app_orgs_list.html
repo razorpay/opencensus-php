@@ -1,0 +1,54 @@
+<div ng-controller="OrgsCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Organisations - Total {{count}}
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of all Organzations
+      </div>
+      <div class="row wrapper">
+        <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div>
+        <div class="col-md-6">
+          <button id='addOrgButton' class='btn btn-default pull-right'>
+            Add an organization
+          </button>
+        </div>
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Organization Id</th>
+              <th>Business Name</th>
+              <th>Display Name</th>
+              <th>Email</th>
+              <th>Email Domains</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in orgs" class="merchants-table-body">
+              <td><a ui-sref="a" target="_blank">{{row.id}}</a></td>
+              <td>{{row.name}}</td>
+              <td>{{row.business_name}}</td>
+              <td>{{row.display_name}}</td>
+              <td>{{row.email}}</td>
+              <td>{{row.email_domains}}</td>
+              <td>{{row.business_name}}</td>
+              <td>{{row.business_name}}</td>
+            </tr>
+            <tr ng-show="merchants.length == 0">
+              <td colspan="7">No Organizations</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
