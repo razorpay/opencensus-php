@@ -10,7 +10,8 @@ class Store
     const LOCAL = 'local';
 
     const STORE_MAP = [
-        self::S3 => Storage\AwsS3\Handler::class,
+        self::S3    => Storage\AwsS3\Handler::class,
+        self::LOCAL => Storage\Local\Handler::class,
     ];
 
     public static function validateStore($store)

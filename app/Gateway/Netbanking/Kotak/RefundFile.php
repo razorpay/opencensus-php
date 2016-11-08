@@ -32,6 +32,7 @@ class RefundFile extends Base\RefundFile
         $creator->format('txt')
                 ->content($txt)
                 ->name($name)
+                ->store('local')
                 ->type('kotak_netbanking_refund')
                 ->save();
 

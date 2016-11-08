@@ -32,11 +32,9 @@ class Creator extends Base\Core
 
     protected $storageHandler;
 
-    protected $serviceProvider;
-
     protected $merchant;
 
-    const DEFAULT_SERVICE_PROVIDER = 's3';
+    const DEFAULT_STORE = 's3';
 
     const DEFAULT_ENCRYPTION_METHOD = 'none';
 
@@ -85,6 +83,13 @@ class Creator extends Base\Core
     public function format($format)
     {
         $this->file->setformat($format);
+
+        return $this;
+    }
+
+    public function store($store)
+    {
+        $this->file->setStore($store);
 
         return $this;
     }
@@ -139,9 +144,12 @@ class Creator extends Base\Core
 
     protected function upload()
     {
-        $this->file->service = self::DEFAULT_SERVICE_PROVIDER;
+        if ($this->file->getStore() === null)
+        {
+            $this->file->setStore(self::DEFAULT_STORE);
+        }
 
-        $this->storageHandler = Store::getHandler($this->file->service);
+        $this->storageHandler = Store::getHandler($this->file->getStore());
 
         $bucket = $this->storageHandler->getBucketName($this->file->type);
 

@@ -120,6 +120,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
+    public function setStore($store)
+    {
+        $this->setAttribute(self::STORE, $store);
+    }
+
     public function setFormat($format)
     {
         $this->setAttribute(self::FORMAT, $format);
@@ -133,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function getId()
     {
         return $this->getAttribute(self::ID);
+    }
+
+    public function getStore()
+    {
+        return $this->getAttribute(self::STORE);
     }
 
     public function getFormat()
