@@ -10,6 +10,9 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
     const BANK                          = 'bank';
+    const CARD_TYPE                     = 'card_type';
+    const NETWORK                       = 'network';
+    const METHOD                        = 'method';
     const FROM                          = 'from';
     const TO                            = 'to';
     const REASON                        = 'reason';
@@ -25,7 +28,10 @@ class Entity extends Base\PublicEntity
         self::REASON,
         self::BANK,
         self::SCHEDULED,
-        self::PARTIAL
+        self::PARTIAL,
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::METHOD,
     ];
 
     protected $public = [
@@ -38,7 +44,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::REASON,
         self::SCHEDULED,
-        self::PARTIAL
+        self::PARTIAL,
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::METHOD
     ];
 
     protected $casts = [

@@ -21,7 +21,7 @@ class CreateGatewayAbsence extends Migration
 
             $table->string(DowntimeTrace::GATEWAY, 255);
 
-            $table->string(DowntimeTrace::BANK, 255)
+            $table->string(DowntimeTrace::BANK, 10)
                   ->nullable();
 
             $table->integer(DowntimeTrace::FROM);
@@ -43,6 +43,14 @@ class CreateGatewayAbsence extends Migration
 
             $table->tinyInteger(DowntimeTrace::PARTIAL)
                     ->default(0);
+
+            $table->string(DowntimeTrace::CARD_TYPE, 10)
+                    ->nullable();
+
+            $table->string(DowntimeTrace::NETWORK, 10)
+                    ->nullable();
+
+            $table->string(DowntimeTrace::METHOD, 30);
 
             $table->index(DowntimeTrace::GATEWAY);
 

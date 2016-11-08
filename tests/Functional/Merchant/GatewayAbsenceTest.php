@@ -10,8 +10,8 @@ class GatewayAbsenceTest extends TestCase
     use PaymentTrait;
 
     protected $gatewayBankMap = [
-        'netbanking_hdfc' => 'HDFC Bank',
-        'netbanking_kotak' => 'Kotak Mahindra Bank'
+        'netbanking_hdfc' => 'HDFC',
+        'netbanking_kotak' => 'KKBK'
     ];
 
     public function setUp()

@@ -42,7 +42,7 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'HDFC Bank'
+                'bank' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -50,7 +50,7 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
-                'bank'   => 'HDFC Bank'
+                'bank'   => 'HDFC'
             ]
         ]
     ],
@@ -106,7 +106,7 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'ICICI Bank',
+                'bank' => 'ICIC',
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -115,7 +115,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bank: ICICI Bank is not supported for Gateway: netbanking_hdfc',
+                    'description' => 'Bank: ICIC is not supported for Gateway: netbanking_hdfc',
                 ]
             ],
             'status_code'   => 400,
