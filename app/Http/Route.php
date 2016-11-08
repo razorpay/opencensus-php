@@ -277,8 +277,8 @@ final class Route
 
 // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'AdminController@createOrg'                                         ],
-        'org_delete'                              => ['delete',   'orgs/{id}',                                      'AdminController@deleteOrg'                                         ],
         'org_edit'                                => ['put',      'orgs/{id}',                                      'AdminController@putOrg'                                            ],
+        'org_delete'                              => ['delete',   'orgs/{id}',                                      'AdminController@deleteOrg'                                         ],
         'org_get'                                 => ['get',      'orgs/{id}',                                      'AdminController@getOrg'                                            ],
         'org_get_multiple'                        => ['get',      'orgs',                                           'AdminController@fetchMultiple'                                     ],
         'role_create'                             => ['post',     'orgs/{id}/roles',                                'AdminController@createRole'                                        ],
@@ -536,6 +536,7 @@ final class Route
         'feature_bulk_remove',
 
         'org_create',
+        'org_edit',
         'org_get',
         'role_create',
         'role_get_multiple',

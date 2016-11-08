@@ -23,4 +23,15 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testEditOrg()
+    {
+        $this->ba->appAuth();
+
+        $org = $this->fixtures->create('org');
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getId();
+
+        $this->startTest();
+    }
 }
