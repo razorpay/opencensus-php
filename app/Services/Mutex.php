@@ -160,7 +160,11 @@ class Mutex
         return false;
     }
 
-    public function acquireAndRelease($resource, callable $callback, $ttl = 60)
+    public function acquireAndRelease(
+        $resource,
+        callable $callback,
+        $ttl = 60,
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS)
     {
         $ret = null;
 
@@ -170,8 +174,7 @@ class Mutex
 
             if ($acquired === false)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                throw new Exception\BadRequestException($errorCode);
             }
 
             $ret = call_user_func($callback);
