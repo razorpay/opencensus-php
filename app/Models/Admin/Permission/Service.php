@@ -32,4 +32,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
+    public function createPermissionsFromJson($orgId, array $input)
+    {
+        foreach ($input['permissions'] as $key => $value)
+        {
+            $permission = (new Core)->create($orgId, ['name' => $value, 'description' => '']);
+        }
+
+        return "Created";
+    }
 }

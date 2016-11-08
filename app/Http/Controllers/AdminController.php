@@ -268,9 +268,18 @@ class AdminController extends Controller
         return $data;
     }
 
-    public function getPermission(string $id, string $permissionId)
+    public function createPermissionsFromJson(string $orgId)
     {
-        $data = (new Admin\Permission\Service)->getPermission($id, $permissionId);
+        $input = Request::all();
+
+        $data = (new Admin\Permission\Service)->createPermissionsFromJson($orgId, $input);
+
+        return $data;
+    }
+
+    public function getPermission(string $orgId, string $permissionId)
+    {
+        $data = (new Admin\Permission\Service)->getPermission($orgId, $permissionId);
 
         return $data;
     }

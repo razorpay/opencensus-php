@@ -308,6 +308,7 @@ final class Route
                  ],
         // Permission can only be created by certain organisations.
         'permission_create'                       => ['post',     'orgs/{id}/permissions',                          'AdminController@createPermission'                                  ],
+        'permission_create_json'                  => ['post',     'orgs/{id}/permissions/json',                     'AdminController@createPermissionsFromJson'                         ],
         'permission_get_multiple'                 => ['get',      'orgs/{id}/permissions',                          'AdminController@getMultiplePermissions'                            ],
         'permission_get'                          => ['get',      'orgs/{id}/permissions/{permission_id}',          'AdminController@getPermission'                                     ],
         'permission_edit'                         => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermissions'                                    ],
@@ -315,7 +316,7 @@ final class Route
         'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
 
         // Admin Auth
-        'hello_world'                           => ['get',      'world',                                          'AdminController@helloWorld'                                        ],
+        'hello_world'                             => ['get',      'world',                                          'AdminController@helloWorld'                                        ],
     );
 
     public static $public = array(
@@ -542,6 +543,7 @@ final class Route
         'role_edit',
         'role_delete',
         'permission_create',
+        'permission_create_json',
         'permission_get_multiple',
         'permission_get',
         'permission_edit',
