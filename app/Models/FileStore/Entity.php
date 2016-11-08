@@ -9,7 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
-    const TYPE                  = 'TYPE';
+    const TYPE                  = 'type';
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
     const COMMENTS              = 'comments';
@@ -115,9 +115,19 @@ class Entity extends Base\PublicEntity
         $this->source()->associate($entity);
     }
 
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
     public function setFormat($format)
     {
         $this->setAttribute(self::FORMAT, $format);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getId()

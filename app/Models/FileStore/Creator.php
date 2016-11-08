@@ -81,6 +81,13 @@ class Creator extends Base\Core
         return $this;
     }
 
+    public function type($type)
+    {
+        $this->file->setType($type);
+
+        return $this;
+    }
+
     public function delimiter($delimiter = ',')
     {
         $this->delimiter = $delimiter;
@@ -88,15 +95,16 @@ class Creator extends Base\Core
         return $this;
     }
 
+    protected function validateBeforeSave()
+    {
+        Format::validateContentTypeForFormat($this->content, $this->file->getFormat());
+
+        Type::validateType($this->file->getType());
+    }
+
     public function save()
     {
-        $result = Format::validateContentTypeForFormat($this->content, $this->file->getFormat());
-
-        if ($result === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Content type not valid for file format specified.');
-        }
+        $this->validateBeforeSave();
 
         if ($this->localFile === null)
         {
@@ -104,8 +112,6 @@ class Creator extends Base\Core
         }
 
         $this->upload();
-
-        $this->file->type = 'abc';
 
         $relativePath = $this->getRelativePath($this->file->name);
 
@@ -122,8 +128,10 @@ class Creator extends Base\Core
 
         $this->getStorageHandle($this->file->service);
 
+        $bucket = $this->storageHandler->getBucketName($this->file->type);
+
         $this->file->location = $this->storageHandler->save(
-            'default_bucket', // TODO : fix bucket
+            $bucket,
             $this->file->name,
             $this->filePath,
             $this->file->getformat(),
@@ -178,9 +186,7 @@ class Creator extends Base\Core
         }
         else
         {
-            //TODO : Throw proper error
-            throw new Exception\BadRequestValidationFailureException(
-                'Local file not found');
+            throw new Exception\LogicException('Not A Valid Format');
         }
     }
 

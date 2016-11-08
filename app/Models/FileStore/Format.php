@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FileStore;
 
+use RZP\Exception;
+
 class Format
 {
     const CSV   = 'csv';
@@ -23,11 +25,13 @@ class Format
     public static function validateContentTypeForFormat($content, $format)
     {
         // TODO : Fix content checking
-        if ($content !== null)
+
+        if (in_array($format, self::SUPPORTED_CONTENT_TYPES) === true)
         {
-            return in_array($format, self::SUPPORTED_CONTENT_TYPES);
+            return true;
         }
 
-        return false;
+        throw new Exception\BadRequestValidationFailureException(
+            'Content type not valid for file format specified.');
     }
 }

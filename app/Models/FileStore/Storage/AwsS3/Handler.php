@@ -40,7 +40,6 @@ class Handler extends Base\Handler
             throw $e;
         }
 
-
         return $result['ObjectURL'];
     }
 
@@ -161,7 +160,9 @@ class Handler extends Base\Handler
             return 'rzp-test-bucket';
         }
 
-        return $this->config[$entityName];
+        $bucketType = Bucket::BUCKET_MAP[$this->file->type];
+
+        return $this->config[$bucketType];
     }
 
     protected function getClient()
