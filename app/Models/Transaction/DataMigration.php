@@ -86,11 +86,11 @@ class DataMigration extends Base\Service
 
             $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $this->calculateServiceTaxes($fees, $payment->getCaptureTimestamp());
+            $totalTax = $this->calculateServiceTaxes($fees, $payment->getCaptureTimestamp());
 
             $feesSplit = $this->feeCalculator->getFeesSplit();
 
-            $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $feesSplit);
+            $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $fees, $totalTax);
 
             if ($shouldSaveFeeDetails === true)
             {
@@ -129,18 +129,16 @@ class DataMigration extends Base\Service
             $taxComponents[FeeBreakupName::KRISHI_KALYAN_CESS] = self::KRISHI_KALYAN_CESS_PERCENTAGE;
         }
 
-        $this->feeCalculator->calculateServiceTaxes($fee, $taxComponents);
+        return $this->feeCalculator->calculateServiceTaxes($fee, $taxComponents);
     }
 
-    protected function matchTaxesAndFeesWithOriginal($txn, $feesSplit)
+    protected function matchTaxesAndFeesWithOriginal($txn, $rzpFee, $taxes)
     {
         $originalFee = $txn->getFee();
 
         $originalTax = $txn->getServiceTax();
 
         $originalRzpFee = $originalFee - $originalTax;
-
-        list($rzpFee, $taxes) = $this->getFeesSplit($feesSplit);
 
         if ($taxes !== $originalTax)
         {
@@ -169,25 +167,6 @@ class DataMigration extends Base\Service
         return true;
     }
 
-    protected function getFeesSplit($feesSplit)
-    {
-        $rzpFee = 0;
-        $taxes = 0;
-
-        foreach ($feesSplit as $feeSplit)
-        {
-            if ($feeSplit['name'] === FeeBreakupName::RZP)
-            {
-                $rzpFee += $feeSplit['amount'];
-            }
-            else
-            {
-                $taxes += $feeSplit['amount'];
-            }
-        }
-        return [$rzpFee, $taxes];
-    }
-
     protected function saveFeeDetails($txn, $feesSplit, $captureTime)
     {
         if (empty($feesSplit) === true)
@@ -195,17 +174,30 @@ class DataMigration extends Base\Service
             return;
         }
 
+        // If ZeroPricing Plan then we save only the RZP Fee.
+        if ($txn->getFee() === 0)
+        {
+            foreach ($feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::RZP)
+                {
+                    $feeSplit->transaction()->associate($txn);
+
+                    $feeSplit->setCreatedAt($captureTime);
+
+                    $this->repo->saveOrFail($feeSplit);
+
+                    break;
+                }
+            }
+
+            return;
+        }
+
         $this->repo->transaction(function() use ($txn, $feesSplit, $captureTime)
         {
             foreach ($feesSplit as $feeSplit)
             {
-                // If SB or KB is 0 then we don't save it.
-                if (($feeSplit->getPricingRule() === null) and
-                    ($feeSplit->getAmount() === 0))
-                {
-                    continue;
-                }
-
                 $feeSplit->transaction()->associate($txn);
 
                 $feeSplit->setCreatedAt($captureTime);

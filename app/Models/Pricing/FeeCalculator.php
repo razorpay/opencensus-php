@@ -25,9 +25,9 @@ class FeeCalculator
     const KRISHI_KALYAN_CESS_PERCENTAGE     = 50;
 
     const TAX_COMPONENTS = [
-         FeeBreakupName::SERVICE_TAX        => self::SERVICE_TAX_PERCENTAGE,
-         FeeBreakupName::SWACHH_BHARAT_CESS => self::SWACHH_BHARAT_CESS_PERCENTAGE,
-         FeeBreakupName::KRISHI_KALYAN_CESS => self::KRISHI_KALYAN_CESS_PERCENTAGE
+        FeeBreakupName::KRISHI_KALYAN_CESS => self::KRISHI_KALYAN_CESS_PERCENTAGE,
+        FeeBreakupName::SWACHH_BHARAT_CESS => self::SWACHH_BHARAT_CESS_PERCENTAGE,
+        FeeBreakupName::SERVICE_TAX        => self::SERVICE_TAX_PERCENTAGE,
     ];
 
     /**
@@ -556,6 +556,7 @@ class FeeCalculator
                                 $fee,
                                 $rule->getId());
 
+
         $this->feesSplit->push($rzpFee);
 
         return $fee;
@@ -565,9 +566,20 @@ class FeeCalculator
     {
         $totaltaxes = 0;
 
+        $splitTaxes = 0;
+
+        $totalTaxPercentage = 0;
+
+        foreach ($taxComponents as $taxPercentage)
+        {
+            $totalTaxPercentage += $taxPercentage;
+        }
+
+        $totaltaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+
         foreach ($taxComponents as $name => $percentage)
         {
-            $taxValue = (int) ceil(($fee * $percentage)/10000);
+            $taxValue = (int) round(($percentage * $totaltaxes) / $totalTaxPercentage);
 
             $taxBreakup = $this->createFeeBreakup(
                                             $name,
@@ -576,7 +588,18 @@ class FeeCalculator
 
             $this->feesSplit->push($taxBreakup);
 
-            $totaltaxes += $taxValue;
+            $splitTaxes += $taxValue;
+        }
+
+        if ($totaltaxes !== $splitTaxes)
+        {
+            foreach ($this->feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
+                {
+                    $this->feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totaltaxes - $splitTaxes);
+                }
+            }
         }
 
         return $totaltaxes;
