@@ -145,7 +145,7 @@ class Report extends Core
 
         $fees = $feesBreakup->getStringAttributesByKey('name');
 
-        $totalFee = $fees['razorpay']['sum'] + $fees['service_tax']['sum'];
+        $totalFee = $fees['payment']['sum'] + $fees['service_tax']['sum'];
         $totalTax = $fees['service_tax']['sum'];
 
         if (empty($fees['swachh_bharat_cess']) === false)
@@ -162,7 +162,7 @@ class Report extends Core
 
         return [
             self::TOTAL_FEE    => $totalFee,
-            self::RAZORPAY_FEE => $fees['razorpay']['sum'],
+            self::RAZORPAY_FEE => $fees['payment']['sum'],
             self::TAX          => $totalTax,
             self::TAXES        => [
                 self::SERVICE_TAX        => $fees['service_tax']['sum'],

@@ -27,4 +27,14 @@ class Repository extends Base\Repository
 
         return $feesBreakup;
     }
+
+    public function fetchLatestMigratedTransaction()
+    {
+        $feeBreakup = $this->newQuery()
+                            ->where(Entity::CREATED_AT, '<', 1478626564)
+                            ->latest()
+                            ->first();
+
+        return $feeBreakup;
+    }
 }
