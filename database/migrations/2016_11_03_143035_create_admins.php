@@ -24,33 +24,64 @@ class CreateAdmins extends Migration
                   ->primary();
 
             $table->string(Admin::EMAIL, 250);
+
             $table->string(Admin::NAME, 250);
-            $table->string(Admin::USERNAME, 250)->nullable();
-            $table->string(Admin::PASSWORD, 250)->nullable();
-            $table->string(Admin::REMEMBER_TOKEN, 250)->nullable();
-            $table->string(Admin::OAUTH_ACCESS_TOKEN, 250)->nullable();
-            $table->string(Admin::OAUTH_PROVIDER_ID, 250)->nullable();
+
+            $table->string(Admin::USERNAME, 250)
+                  ->nullable();
+
+            $table->string(Admin::PASSWORD, 250)
+                  ->nullable();
+
+            $table->string(Admin::REMEMBER_TOKEN, 250)
+                  ->nullable();
+
+            $table->string(Admin::OAUTH_ACCESS_TOKEN, 250)
+                  ->nullable();
+
+            $table->string(Admin::OAUTH_PROVIDER_ID, 250)
+                  ->nullable();
+
             $table->char(Admin::ORG_ID, 14);
 
-            $table->string(Admin::USER_TYPE, 250)->nullable();
+            $table->string(Admin::USER_TYPE, 250)
+                  ->nullable();
 
             $table->string(Admin::EMPLOYEE_CODE, 250);
+
             $table->string(Admin::BRANCH_CODE, 250);
+
             $table->string(Admin::DEPARTMENT_CODE, 250);
+
             $table->string(Admin::SUPERVISOR_CODE, 250);
+
             $table->string(Admin::LOCATION_CODE, 250);
 
-            $table->boolean(Admin::DISABLED)->default(0); // account disabled by supervisor
-            $table->boolean(Admin::LOCKED)->default(0); // use account has been locked due to max password failure attempts
+            // account disabled by supervisor
+            $table->boolean(Admin::DISABLED)
+                  ->default(0);
 
-            $table->text(Admin::RECENT_PASSWORD)->nullable();
+            // use account has been locked due to max password failure attempts
+            $table->boolean(Admin::LOCKED)
+                  ->default(0);
 
-            $table->integer(Admin::LAST_LOGIN_AT)->nullable();
-            $table->integer(Admin::PASSWORD_EXPIRY)->nullable();
-            $table->integer(Admin::EXPIRY_AT)->nullable(); // When hit make Admin::DISABLED=1
+            $table->text(Admin::RECENT_PASSWORD)
+                  ->nullable();
+
+            $table->integer(Admin::LAST_LOGIN_AT)
+                  ->nullable();
+
+            $table->integer(Admin::PASSWORD_EXPIRY)
+                  ->nullable();
+
+            // When hit make Admin::DISABLED=1
+            $table->integer(Admin::EXPIRY_AT)
+                  ->nullable();
+
             $table->integer(Admin::CREATED_AT);
             $table->integer(Admin::UPDATED_AT);
-            $table->integer(Admin::DELETED_AT)->nullable();
+            $table->integer(Admin::DELETED_AT)
+                  ->nullable();
 
             $table->foreign(Admin::ORG_ID)
                   ->references(Org::ID)
