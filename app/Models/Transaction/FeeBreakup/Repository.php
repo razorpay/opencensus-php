@@ -10,6 +10,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'fee_breakup';
 
+    protected $appFetchParamRules = array(
+        Entity::TRANSACTION_ID        => 'sometimes|alpha_num|size:14',
+    );
+
     public function fetchFeesBreakupInvoice($merchantId, $from, $to)
     {
         $txnIds = (new Transaction\Repository)->getTransactionForReport($merchantId, $from, $to);
@@ -23,5 +27,4 @@ class Repository extends Base\Repository
 
         return $feesBreakup;
     }
-
 }
