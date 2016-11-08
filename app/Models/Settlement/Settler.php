@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
