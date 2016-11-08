@@ -5,6 +5,7 @@ namespace RZP\Models\Card\IIN\Import;
 use RZP\Models\Card\IIN\Entity as IIN;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\Name;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Exception;
 
@@ -69,8 +70,11 @@ class Formatter
                         break;
 
                     case 'issuer':
-                        $input[IIN::ISSUER] = $row[$index];
-                        $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
+                        if (IFSC::exists($row[$index]) === true)
+                        {
+                            $input[IIN::ISSUER] = $row[$index];
+                            $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
+                        }
                         break;
 
                     default:
@@ -80,6 +84,7 @@ class Formatter
 
                 $index++;
             }
+
             $iins[] = $input;
         }
 
