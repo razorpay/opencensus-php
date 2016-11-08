@@ -6,6 +6,7 @@ use Storage;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
 
 class Creator extends Base\Core
 {
@@ -33,11 +34,13 @@ class Creator extends Base\Core
 
     protected $serviceProvider;
 
+    protected $merchant;
+
     const DEFAULT_SERVICE_PROVIDER = 's3';
 
     const DEFAULT_ENCRYPTION_METHOD = 'none';
 
-    const DEFAULT_MERCHANT_ID = '10000000000000';
+    const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
 
     const STORAGE_DIRECTORY = 'files/file_handler/';
 
@@ -120,6 +123,13 @@ class Creator extends Base\Core
 
         $relativePath = $this->getRelativePath($this->file->name);
 
+        $merchantId = $this->file->getMerchantId();
+
+        if ($merchantId === null)
+        {
+            $this->setDefaultMerchantId();
+        }
+
         $this->file->size = Storage::size($relativePath);
 
         $this->repo->saveOrFail($this->file);
@@ -168,6 +178,16 @@ class Creator extends Base\Core
         else
         {
             throw new Exception\LogicException('Not A Valid Format');
+        }
+    }
+
+    protected function setDefaultMerchantId()
+    {
+        $type = $this->file->getType();
+
+        if (Type::isTypeForSharedAccount($type))
+        {
+            $this->file->setMerchantId(self::DEFAULT_MERCHANT_ID);
         }
     }
 

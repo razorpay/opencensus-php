@@ -7,19 +7,23 @@ use RZP\Exception;
 
 class Type
 {
-    const KOTAK_NETBANKING_REFUND  = 'kotak_netbanking_refund';
+    const KOTAK_NETBANKING_REFUND   = 'kotak_netbanking_refund';
 
-    const BATCH                    = 'batch';
-
-    const REFUND                   = 'refund';
+    const INPUT                     = 'input';
+    const OUTPUT                    = 'output';
 
     const TYPE_MAP = [
         null => [
             self::KOTAK_NETBANKING_REFUND,
         ],
         E::BATCH => [
-            self::BATCH,
+            self::INPUT,
+            self::OUTPUT,
         ],
+    ];
+
+    const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::KOTAK_NETBANKING_REFUND,
     ];
 
     public static function validateType($type)
@@ -30,4 +34,8 @@ class Type
         }
     }
 
+    public static function isTypeForSharedAccount($type)
+    {
+        return (self::SHARED_ACCOUNT_ALLOWED_TYPES[$type]);
+    }
 }

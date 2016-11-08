@@ -139,4 +139,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::FORMAT);
     }
+
+    public function setMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
 }
