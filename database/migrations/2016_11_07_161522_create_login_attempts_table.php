@@ -27,18 +27,14 @@ class CreateLoginAttemptsTable extends Migration
             // Meta data
             $table->string(LoginAttempt::USER_AGENT, 250)->nullable();
 
+            $table->string(LoginAttempt::IP_ADDRESS, 17)->nullable();
+
             $table->integer(LoginAttempt::CREATED_AT);
 
             $table->foreign(LoginAttempt::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN);
         });
-
-        // Adding IP Address
-        $sql = 'ALTER TABLE `'.Table::LOGIN_ATTEMPT.'` ADD `'
-                .LoginAttempt::IP_ADDRESS.'` VARBINARY(16) AFTER `'
-                .LoginAttempt::USER_AGENT.'`';
-        DB::statement($sql);
     }
 
     /**
