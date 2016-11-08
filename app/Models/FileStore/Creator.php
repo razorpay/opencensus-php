@@ -32,6 +32,8 @@ class Creator extends Base\Core
      */
     protected $filePath;
 
+    protected $content;
+
     /**
      * @var Store Handler
      */
@@ -161,6 +163,8 @@ class Creator extends Base\Core
 
         $this->file->size = filesize($fullPath);
 
+        $this->file->setSize(filesize($fullPath));
+
         $this->repo->saveOrFail($this->file);
 
         return $this;
@@ -221,11 +225,11 @@ class Creator extends Base\Core
 
             $fullPath = $this->getFullFilePath($this->file->name);
 
-            $relativePath = $this->getRelativePath($this->file->name);
+            $file = fopen($fullPath, 'w');
+            fwrite($file, $content);
+            fclose($file);
 
-            LaravelStorage::put($relativePath, $content);
-
-            chmod($fullPath, 0777);
+            chmod($fullPath, 0777);  // keep it 0777. This step is important.
 
             $this->filePath = $fullPath;
         }
@@ -274,8 +278,6 @@ class Creator extends Base\Core
 
     protected function getStorageDir()
     {
-        $path = LaravelStorage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
-
-        return $path . self::STORAGE_DIRECTORY;
+        return $path = storage_path(self::STORAGE_DIRECTORY);
     }
 }
