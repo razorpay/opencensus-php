@@ -41,5 +41,12 @@ class Service extends Base\Service
 
     public function editOrg(string $id, array $input)
     {
+        $org = $this->repo->org->findOrFailPublic($id);
+
+        $org->fill($input);
+
+        $this->repo->saveOrFail($org);
+
+        return $org->toArrayPublic();
     }
 }
