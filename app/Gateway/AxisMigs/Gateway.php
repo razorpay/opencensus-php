@@ -2,17 +2,16 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Payment\Processor\Notify;
+use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\AxisMigs;
-use Requests;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Notify;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

@@ -2,14 +2,13 @@
 
 namespace RZP\Gateway\Cybersource\Mock;
 
-use DOMDocument;
+use RZP\App;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Gateway\Cybersource;
+use RZP\Http;
 use RZP\Models\Card;
 use RZP\Models\Payment;
-use RZP\App;
-use RZP\Http;
-use RZP\Gateway\Cybersource;
 
 class Server extends Base\Mock\Server
 {

@@ -14,21 +14,36 @@ use RZP\Trace\TraceCode;
 
 class Verify extends Base\Core
 {
-     // ================== Configurations ==================
+    // ================== Configurations ==================
+
     /**
      * For all the payments which are in failed state,
-     * verify for the payment will be run once for in every boundary bucket.
+     * verify for the payment will be run once for every boundary bucket.
+     * For each bucket, we define the time boundary here.
+     *
+     * Initially, payment's default bucket value is null.
+     * When the payment moves to failed state the bucket is set to 0.
+     *
+     * Then the failed filter verify cron will pick up
+     * all failed payments older than 'self::FAILURE_MIN_TIME'.
+     *
+     * So, a failed payment with bucket 0 and older than two minutes gets picked
+     * by the cron for verification. After verify, the bucket is set to 1.
+     *
+     * When the cron runs again, it will pick this payment if bucket is 1
+     * and it is older than bucket 0's end time which currently is set to 15 mins.
+     * We verify it and move it to bucket 2. And this cycle keeps repeating
      */
     protected static $failureStartBoundary = [
-        900,           // 15 Minutes
-        2600,          // 60 Minutes
-        86400,         // 1 Day
-        172800,        // 2 Day
-        259200,        // 3 Day
-        345600,        // 4 Day
-        432000,        // 5 Day
-        518400,        // 6 Day
-        604800,        // 7 Day
+        0 => 900,           // 15 Minutes
+        1 => 3600,          // 60 Minutes
+        2 => 86400,         // 1 Day
+        3 => 172800,        // 2 Day
+        4 => 259200,        // 3 Day
+        5 => 345600,        // 4 Day
+        6 => 432000,        // 5 Day
+        7 => 518400,        // 6 Day
+        8 => 604800,        // 7 Day
         // TODO: Decide on the boundaries.
     ];
 
@@ -64,6 +79,16 @@ class Verify extends Base\Core
      */
     const DEFAULT_LOCK_TIME = 900; // 15 Minutes
 
+    /**
+     * Minimum duration a payment should be old before it gets picked up
+     * for verify for a particular payment verify filter.
+     */
+    const MINIMUM_TIME_MAP = [
+        Filter::PAYMENTS_FAILED     => self::FAILURE_MIN_TIME,
+        Filter::PAYMENTS_CREATED    => self::CREATED_MIN_TIME,
+        Filter::VERIFY_FAILED       => self::ERRORED_MIN_TIME,
+        Filter::VERIFY_ERROR        => self::ERRORED_MIN_TIME,
+    ];
     /**
      * Max number of payments on which single instance of verify cron should operate
      */
@@ -107,41 +132,37 @@ class Verify extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function verifyPaymentsWithFilter($filter)
+    public function verifyPaymentsWithFilter($filter, $bucket = null)
     {
-        $verifyStatus = null;
+        Filter::isValidFilter($filter);
 
-        $paymentStatus = null;
+        $paymentStatus = $this->getPaymentStatusForFilter($filter);
+        $verifyStatus = $this->getVerifyStatusForFilter($filter);
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
-        switch($filter)
+        $boundary = [];
+
+        if (($filter === Filter::PAYMENTS_FAILED) or
+            ($filter === Filter::VERIFY_FAILED))
         {
-            case Filter::PAYMENTS_FAILED:
-                $paymentStatus = Payment\Status::FAILED;
-                $minimumTime = $currentTime - self::FAILURE_MIN_TIME;
-                break;
+            // Return the proper boundary array
+            $boundary = self::$failureStartBoundary;
 
-            case Filter::PAYMENTS_CREATED:
-                $paymentStatus = Payment\Status::CREATED;
-                $minimumTime = $currentTime - self::CREATED_MIN_TIME;
-                break;
+            // Value being set here signifies end of boundary.
+            // index is incremented while doing query
+            // As we want to get Payments which have passed that boundary,
+            // and should be verified.
+            $boundary[-1] = $minimumTime;
 
-            case Filter::VERIFY_FAILED:
-                $verifyStatus = Status::FAILED;
-                $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
-                break;
+            // If bucket filter is passed, get rid of other bucket values
+            if ($bucket !== null)
+            {
+                $bucketEndTime = $boundary[$bucket - 1];
 
-            case Filter::VERIFY_ERROR:
-                $verifyStatus = Status::ERROR;
-                $minimumTime = $currentTime - self::ERRORED_MIN_TIME;
-                break;
-
-            default:
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS, 'filter', $filter);
+                $boundary = [$bucket - 1 => $bucketEndTime];
+            }
         }
-
-        $boundary = $this->getBoundaryInSeconds($filter);
 
         //
         // We Fetch Twice the number of required payments,
@@ -447,6 +468,43 @@ class Verify extends Base\Core
         return $result;
     }
 
+    protected function getPaymentStatusForFilter($filter)
+    {
+        $paymentStatus = null;
+
+        switch ($filter)
+        {
+            case Filter::PAYMENTS_FAILED:
+                $paymentStatus = Payment\Status::FAILED;
+                break;
+
+            case Filter::PAYMENTS_CREATED:
+                $paymentStatus = Payment\Status::CREATED;
+                break;
+        }
+
+        return $paymentStatus;
+    }
+
+    protected function getVerifyStatusForFilter($filter)
+    {
+        $verifyStatus = null;
+
+        switch ($filter)
+        {
+            case Filter::VERIFY_FAILED:
+                $verifyStatus = Status::FAILED;
+                break;
+
+            case Filter::VERIFY_ERROR:
+                $verifyStatus = Status::ERROR;
+                break;
+
+        }
+
+        return $verifyStatus;
+    }
+
     /**
      * Gets the verify bucket in which the current
      * diff (current_time - payment_created_at) falls in.
@@ -505,23 +563,13 @@ class Verify extends Base\Core
      * @return array verify boundary array
      * @throws Exception\LogicException
      */
-    public function getBoundaryInSeconds($filter)
+    public function getBoundaryInSeconds($filter, $bucket = null)
     {
-        switch($filter)
+        switch ($filter)
         {
-            /**
-             * Verify will run for all the created payments every 2 minutes.
-             * All the created payments will be converted to failed in 10 minutes via timeout cron.
-             * Hence, at max, verify for the payment (when it is in created state) will be run 5 times.
-             * For Verify Error, Cron will pick the payments till Verify Status Changes
-             */
-            case Filter::PAYMENTS_CREATED:
-            case Filter::VERIFY_ERROR:
-                $boundaries = [];
-                break;
-
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
+                // Return the proper boundary array
                 $boundaries = self::$failureStartBoundary;
                 break;
 

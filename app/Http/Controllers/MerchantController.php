@@ -4,13 +4,12 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
-use RZP\Models\Key;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class MerchantController extends Controller
 {
@@ -290,13 +289,6 @@ class MerchantController extends Controller
         $data = (new Merchant\Service)->setPaymentMethods($merchantId, $input);
 
         return ApiResponse::json($data);
-    }
-
-    public function putBanksForAllMerchants()
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->setBanksForAllMerchants($input);
     }
 
     public function getBalance($id)

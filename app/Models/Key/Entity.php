@@ -136,8 +136,6 @@ class Entity extends Base\PublicEntity
      */
     public function generateSecret()
     {
-        $len = self::ID_LENGTH;
-
         $secret = '';
         $x = range(1,8);
         foreach ($x as $n)

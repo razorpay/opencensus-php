@@ -55,14 +55,14 @@ class Checkout
             ]);
     }
 
-    protected function fetchTPVOrderInfo($input, $merchant)
+    protected function fetchTPVOrderInfo($input)
     {
         $orderData = null;
 
         try
         {
             $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
+                $input[Payment\Entity::ORDER_ID]);
         }
         catch(\Exception $ex)
         {
@@ -143,7 +143,7 @@ class Checkout
         if (($merchant->isTPVRequired()) and
             (isset($input[Payment\Entity::ORDER_ID])))
         {
-            $orderData = $this->fetchTPVOrderInfo($input, $merchant);
+            $orderData = $this->fetchTPVOrderInfo($input);
 
             if ($orderData !== null)
             {

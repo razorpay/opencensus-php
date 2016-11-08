@@ -3,20 +3,16 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-
-use RZP\Constants\Mode;
-use RZP\Models\Base;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
+use RZP\Dashboard\Dashboard;
+use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Dashboard\Dashboard;
-
 use RZP\Trace\TraceCode;
-
 
 class Settler
 {
@@ -28,7 +24,7 @@ class Settler
 
     const HOLIDAY_MESSAGE       = ['message' => 'Today is a holiday! Happy holidays :)'];
 
-    const MUTEX_RESOURCE        = 'SETTLMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -158,8 +154,6 @@ class Settler
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
-            $urlText = '';
-
             $data['count'] = $settlements->count();
             $data['transaction_count'] = $txns->count();
 
@@ -187,7 +181,7 @@ class Settler
 
         if ($settlements->count() !== 0)
         {
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements);
 
             $data['settlement_text_file'] = $urlText;
 
@@ -330,7 +324,6 @@ class Settler
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
-                $setlAmount = 0;
                 continue;
             }
 
@@ -339,7 +332,6 @@ class Settler
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
-                                        $setlGatewayFee,
                                         $serviceTax);
 
             $settlements->push($setl);
@@ -509,7 +501,7 @@ class Settler
 
         if ($overwrite === true)
         {
-            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
+            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday($channel);
         }
         else
         {

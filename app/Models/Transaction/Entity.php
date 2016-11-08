@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {

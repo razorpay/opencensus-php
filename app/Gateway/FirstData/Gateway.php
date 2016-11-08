@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\FirstData;
 
+use Carbon\Carbon;
+use Requests_Hooks;
 use RZP\Constants;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -13,11 +15,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use Requests;
-use Requests_Hooks;
-use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {

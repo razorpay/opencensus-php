@@ -11,8 +11,6 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -124,11 +122,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function reconcileRefunds($excel, $input)
-    {
-        return (new RefundExcel)->reconcile($excel, $input);
     }
 
     protected function validateCallbackChecksum($input)

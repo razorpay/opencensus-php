@@ -2,12 +2,11 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Exception;
 use Lib\PhoneBook;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use libphonenumber\NumberParseException;
-use Symfony\Component\Translation\TranslatorInterface;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {

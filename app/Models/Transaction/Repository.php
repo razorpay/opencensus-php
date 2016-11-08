@@ -2,18 +2,16 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Models\Payment;
 use RZP\Constants\Table;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement;
-use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Schedule\Entity as Schedule;
-use RZP\Models\Schedule\Repository as ScheduleRepo;
-use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
+use RZP\Models\Base;
+use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Models\Payment;
+use RZP\Models\Schedule\Repository as ScheduleRepo;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {

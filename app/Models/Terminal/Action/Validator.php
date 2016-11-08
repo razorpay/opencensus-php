@@ -4,7 +4,6 @@ namespace RZP\Models\Terminal\Action;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 
 class Validator extends Base\Validator

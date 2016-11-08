@@ -273,7 +273,7 @@ class Reconciler3
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

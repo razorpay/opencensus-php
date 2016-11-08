@@ -159,7 +159,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = static::generateUniqueId($this->secureUid);
+            $value = static::generateUniqueId();
 
             $this->setAttribute($key, $value);
         }

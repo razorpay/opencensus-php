@@ -3,7 +3,6 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity

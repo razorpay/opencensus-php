@@ -3,7 +3,6 @@
 namespace RZP\Console\Commands;
 
 use Illuminate\Console\Command;
-use RZP\Models\Base\UniqueIdEntity;
 use Symfony\Component\Console\Input\InputOption;
 
 use RZP\Constants\Table;

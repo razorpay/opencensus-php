@@ -2,15 +2,9 @@
 
 namespace RZP\Gateway\Billdesk;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Billdesk;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 
 trait ResponseFieldsTrait
 {

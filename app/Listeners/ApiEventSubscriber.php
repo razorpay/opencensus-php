@@ -10,7 +10,6 @@ use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 
 class ApiEventSubscriber
 {
