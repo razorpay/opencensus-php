@@ -14,7 +14,7 @@
   </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-repeat="key in getKeys()"
+        <div class="list-group-item" ng-repeat="key in getKeys()"
           ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
         >
           <span ng-show="!isStatusKey(key)" class="pull-right {{displayClass(value)}}" title="{{value}}">
@@ -24,7 +24,7 @@
             {{displayValue(value, valueType)}}
           </span>
           {{key|titlecase}}
-        </a>
+        </div>
         <div class="list-group-item" style="overflow:auto;">
           <pre class="col-lg-8 pull-right">{{toJson(entity)}}</pre>
           Raw
