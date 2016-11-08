@@ -2226,18 +2226,9 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials(); // $input['mode']
+        $this->setApiCredentials();
 
-        try
-        {
-            $data = $this->api->org->fetch($orgId)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
+        return $this->api->org->fetch($orgId)->toArray();
     }
 
 }

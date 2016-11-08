@@ -18,9 +18,10 @@ Route::post('/contact', 'MerchantController@postContact');
 
 // Org
 Route::group(['prefix' => 'admin'], function () {
+    Route::get('/auth', 'AdminController@initiateAuth');
+
     Route::get('/org', 'AdminController@getOrg');
     Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
-
     Route::post('/signin', 'AdminController@postSignin');
 });
 

@@ -24,7 +24,7 @@ class AdminController extends Controller
     // Org Name/Key => Org ID
     // We'll hardcode this for now
     const ORG_CHART = [
-        'RZP' => 1
+        'RZP' => '6dLbNSpv5XbCOF'
     ];
 
     /*
@@ -41,59 +41,45 @@ class AdminController extends Controller
         $this->admin = Auth::guard('admin')->user();
     }
 
+    /**
+     * Route = /admin/auth
+     * @return
+     */
+    public function initiateAuth()
+    {
+        // If already logged in
+        if ($this->admin)
+        {
+            return redirect('/admin/');
+        }
+
+        $orgName = Input::get('org', 'RZP');
+
+        $org = $this->getOrg($orgName);
+
+        switch($org['auth_type'])
+        {
+            case 'google_oauth':
+                return redirect($this->getGoogleOAuthUrl());
+            case 'password':
+                return redirect('/admin/#access/auth/password');
+        }
+    }
+
+    /**
+     * We always return the view, since it does not
+     * contain anything sensitive
+     */
     public function getIndex()
     {
-        // Fetch Org details
-        $org = $this->getOrg()->getData();
-
-        if (!$org->success)
-        {
-            return AppResponse::jsonResponse('Something is broken.');
-        }
-
-        $org = $org->data;
-
-        // Do whatever you want to with $org now ...
-
-        // If the admin is not logged in
-        if (!Auth::guard('admin')->check())
-        {
-            // Check for google oauth if the admin is not logged in
-            if ($org->auth_type === 'google_oauth')
-            {
-                $response = $this->triggerGoogleOAuth();
-
-                if (! empty($response))
-                {
-                    return $response;
-                }
-            }
-        }
-
-        // Default is auth_type = 'password'
-        // if ($org->auth_type === 'password')
-        // {
-        //     // It is the default anyway
-        //     return view('admin.tmpgetIndex');
-        // }
-        // else if ($org->auth_type === 'google_oauth')
-        // {
-        //     // $googleOAuth = $this->triggerGoogleOAuth();
-        //     //
-        //     // if (! empty($googleOAuth)) return $googleOAuth;
-        //
-        //     return view('admin.tmpgetIndex');
-        // }
-
         return view('admin.tmpgetIndex');
     }
 
-    public function getGoogleOAuthUrl() {
+    protected function getGoogleOAuthUrl()
+    {
         $googleService = OAuthFacade::consumer('Google');
 
-        $url = (string) $googleService->getAuthorizationUri();
-
-        return AppResponse::jsonResponse(null, $url);
+        return (string) $googleService->getAuthorizationUri();
     }
 
     public function triggerGoogleOAuth()
@@ -151,11 +137,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getOrg()
+    protected function getOrg($orgName)
     {
-        list($error, $data) = (new Admin\Service)->getOrg(self::ORG_CHART['RZP']);
-
-        return AppResponse::jsonResponse($error, $data);
+        return (new Admin\Service)->getOrg(self::ORG_CHART[$orgName]);
     }
 
     public function getAdmin()

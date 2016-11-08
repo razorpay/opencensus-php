@@ -97,7 +97,7 @@ angular.module('app.services', [])
     }
     $rootScope.$watch(function () {
       return currentMode;
-    }, function watchCallback(newValue, oldValue) {
+    }, function watchCallback(newValue) {
       $localStorage.rzp_mode = newValue;
     }, true);
     return {
@@ -127,7 +127,7 @@ angular.module('app.services', [])
   function serializeData(data) {
     // If this is not an object, defer to native stringification.
     if (!angular.isObject(data)) {
-      return data == null ? '' : data.toString();
+      return data === null ? '' : data.toString();
     }
     var buffer = [];
     // Serialize each key in the object.
@@ -136,7 +136,7 @@ angular.module('app.services', [])
         continue;
       }
       var value = data[name];
-      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value == null ? '' : value));
+      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value === null ? '' : value));
     }
     // Serialize the buffer and clean it up for transportation.
     var source = buffer.join('&').replace(/%20/g, '+');
@@ -145,36 +145,46 @@ angular.module('app.services', [])
 })  //Alerts factory.
     //Used for creating/removing alerts for display in a page.
 .factory('alertsFactory', function () {
-  function handler() {
+  var handler = function() {
     this.alerts = [];
     this.getAlerts = function () {
       return this.alerts;
-    }, this.closeAlert = function (index) {
+    };
+
+    this.closeAlert = function (index) {
       this.alerts.splice(index, 1);
-    }, this.addAlert = function ($type, $message, reset) {
+    };
+
+    this.addAlert = function ($type, $message, reset) {
       $message = $message || 'An error occured.';
-      if (reset)
+      if (reset) {
         this.alerts = [];
+      }
       this.alerts.push({
         type: $type,
         msg: $message
       });
-    }, this.resetAlerts = function (last) {
-      if (!last)
-        this.alerts = [];
-      else
-        this.alerts.pop();
     };
-  }
+
+    this.resetAlerts = function (last) {
+      if (!last) {
+        this.alerts = [];
+      }
+      else {
+        this.alerts.pop();
+      }
+    };
+  };
   return {
     getHandler: function () {
       return new handler();
     }
   };
 }).factory('dateFactory', function () {
-  function handler($scope) {
+  var handler = function($scope) {
     this.endDate = new Date();
-    this.startDate = new Date(new Date().setMonth(new Date().getMonth() - 1)), this.opened = {};
+    this.startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
+    this.opened = {};
     this.dateOptions = {
       formatYear: 'yy',
       startingDay: 1,
@@ -190,7 +200,7 @@ angular.module('app.services', [])
       $scope.date.opened = {};
       $scope.date.opened[key] = true;
     };
-  }
+  };
   return {
     getHandler: function ($scopeVar) {
       return new handler($scopeVar);
@@ -214,7 +224,7 @@ angular.module('app.services', [])
       },
       authenticate: function (identity) {
         _identity = identity;
-        _authenticated = identity != null;
+        _authenticated = identity !== null;
       },
       identity: function (force) {
         var deferred = $q.defer();
@@ -251,7 +261,7 @@ angular.module('app.services', [])
   'admin',
   '$location',
   '$http',
-  function ($rootScope, $state, admin, $location, $http) {
+  function ($rootScope, $state, admin) {
     return {
       authorize: function () {
 
@@ -259,26 +269,11 @@ angular.module('app.services', [])
 
           // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
-            if (admin.isAuthenticated() === false) {
-              // location.reload();
 
-              // Fetch org details
-              $http.get('/admin/org').success(function (data) {
-                if (data.success) {
-                  switch (data.data.auth_type) {
-                    case 'password':
-                      $state.go('access.auth.password');
-                      break;
-                    case 'google_oauth':
-                      $state.go('access.auth.google_oauth');
-                      break;
-                  }
-                }
-                else {
-                  // Will cause redirect ?!
-                  $state.go('app.dashboard');
-                }
-              });
+            // If you are not logged in and not on the signin page
+            if (admin.isAuthenticated() === false) {
+              // Will cause redirect ?!
+              $state.go('access.signin');
             }
 
             // user is signed in but not authorized for desired state
@@ -392,7 +387,7 @@ angular.module('app.services', [])
     3: ['Default', 'bg-info'],
     4: ['High', 'bg-danger'],
     5: ['Very High', 'bg-danger']
-  }
+  };
 }])
 .factory('jqTourbusService', function() {
   return {

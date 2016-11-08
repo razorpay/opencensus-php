@@ -137,13 +137,14 @@ var app = angular.module('app', [
       data: { role: 'guest' }
     }).state('access.signin', {
       url: '/signin',
-      templateUrl: 'tpl/admin/page_signin.html'
+      templateUrl: 'tpl/admin/page_auth_select.html'
     }).state('access.auth', {
       url: '/auth',
       template: '<div ui-view class="fade-in-down"></div>'
     }).state('access.auth.password', {
       url: '/password',
-      templateUrl: 'tpl/admin/page_signin.html'
+      templateUrl: 'tpl/admin/page_signin.html',
+      data: { role: 'guest' }
     }).state('access.auth.google_oauth', {
       url: '/google_oauth',
       resolve: {

@@ -10,6 +10,13 @@ use Slack;
 
 class Service
 {
+    public function setAdminCredentials($mode, $token)
+    {
+        ApiRequest::addHeader('X-Dashboard', 'true');
+
+        $this->api = new Api("rzp_$mode_admin", $token);
+    }
+
     public function setApiCredentials($merchant_id = null, $mode = 'live')
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
