@@ -522,7 +522,7 @@ class FeeCalculator
         $fee = (int) ceil($fee);
 
         $rzpFee = $this->createFeeBreakup(
-                                FeeBreakupName::RZP,
+                                FeeBreakupName::PAYMENT,
                                 null,
                                 $fee,
                                 $rule->getId());

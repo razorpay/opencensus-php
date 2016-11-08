@@ -27,4 +27,15 @@ class Repository extends Base\Repository
 
         return $feesBreakup;
     }
+
+    // 1478618133: The first fee split transaction after the code went live
+    public function fetchLatestMigratedTransaction()
+    {
+        $feeBreakup = $this->newQuery()
+                            ->where(Entity::CREATED_AT, '<', 1478618133)
+                            ->latest()
+                            ->first();
+
+        return $feeBreakup;
+    }
 }

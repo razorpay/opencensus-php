@@ -298,19 +298,27 @@ class Repository extends Base\Repository
 
     public function getTransactionsToBeMigrated()
     {
-        $txns = $this->newQuery()
-                    ->where(Entity::TYPE, 'payment')
+        $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
+
+        $query = $this->newQuery()
+                    ->select('transactions.*')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                    ->where(Entity::TYPE, 'payment')
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNotIn("transactions.id", function($query)
                         {
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
                                   ->from(TABLE::FEE_BREAKUP);
-                        })
-                    ->limit(1000)
-                    ->select('transactions.*')
-                    ->get();
-        return $txns;
+                        });
+
+        if ($latestFeeBreakup !== null)
+        {
+            $txnId = $latestFeeBreakup->getTransactionId();
+
+            $query->where('transactions.id', '>', $txnId);
+        }
+
+        return $query->limit(1000)->get();
     }
 
     public function getTransactionForReport($merchantId, $from, $to)
