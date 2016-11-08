@@ -152,17 +152,17 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <div class="list-group-item" ng-click="openTagMerchant()">
+        <a class="list-group-item" ng-click="openTagMerchant()">
           <span class="pull-right">{{merchant.details.tags.join()}}</span>
           Tags
-        </div>
-        <div href class="list-group-item" ng-init="isFeaturesCollapsed = true">
+        </a>
+        <a href class="list-group-item" ng-init="isFeaturesCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs"  ng-click="isFeaturesCollapsed = !isFeaturesCollapsed" ng-show="merchant.details.features.length != 0">Show/Hide</button>
               <span ng-hide="merchant.details.features.length != 0">No Features Assigned</span>
             </span>
           Features
-        </div>
+        </a>
           <div collapse="isFeaturesCollapsed" class="panel-body">
             <div class="list-group-item">
               <div class="m-t list-group-item">
