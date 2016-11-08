@@ -28,7 +28,7 @@ class Settler
 
     const HOLIDAY_MESSAGE       = ['message' => 'Today is a holiday! Happy holidays :)'];
 
-    const MUTEX_RESOURCE        = 'SETTLMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
