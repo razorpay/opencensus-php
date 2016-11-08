@@ -7,8 +7,6 @@ use Storage;
 use RZP\Exception;
 use RZP\Models\Base;
 
-use Symfony\Component\HttpFoundation\File\File;
-
 class Creator extends Base\Core
 {
     /**
@@ -36,6 +34,8 @@ class Creator extends Base\Core
     protected $serviceProvider;
 
     const DEFAULT_SERVICE_PROVIDER = 's3';
+
+    const STORAGE_DIRECTORY = 'files/file_handler/';
 
     public function __construct()
     {
@@ -107,18 +107,13 @@ class Creator extends Base\Core
 
         $this->file->type = 'abc';
 
-        $this->file->size = $this->getFileSize();
+        $relativePath = $this->getRelativePath($this->file->name);
+
+        $this->file->size = Storage::size($relativePath);
 
         $this->repo->saveOrFail($this->file);
 
         return $this;
-    }
-
-    protected function getFileSize()
-    {
-        $file = new File($this->filePath);
-
-        return $file->getSize();
     }
 
     protected function upload()
@@ -170,13 +165,15 @@ class Creator extends Base\Core
         {
             $content = $this->content;
 
-            $fullpath = $this->getFullFilePath($this->file->name);
+            $fullPath = $this->getFullFilePath($this->file->name);
 
-            file_put_contents($fullpath, $content);
+            $relativePath = $this->getRelativePath($this->file->name);
 
-            chmod($fullpath, 0777);  // keep it 0777. This step is important.
+            Storage::put($relativePath, $content);
 
-            $this->filePath = $fullpath;
+            chmod($fullPath, 0777);
+
+            $this->filePath = $fullPath;
         }
         else
         {
@@ -186,19 +183,20 @@ class Creator extends Base\Core
         }
     }
 
+    protected function getRelativePath()
+    {
+        return self::STORAGE_DIRECTORY . $this->file->name;
+    }
+
     protected function getFullFilePath()
     {
-        $filePath = $this->getStorageDir();
-
-        return $filePath . $this->file->name;
+        return $this->getStorageDir() . $this->file->name;
     }
 
     protected function getStorageDir()
     {
         $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
 
-        $storageDirectory = 'files/file_handler/';
-
-        return $path . $storageDirectory;
+        return $path . self::STORAGE_DIRECTORY;
     }
 }
