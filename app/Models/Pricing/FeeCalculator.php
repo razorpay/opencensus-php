@@ -32,7 +32,7 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing)
     {
         $entity = $this->entity;
 
@@ -48,18 +48,19 @@ class FeeCalculator
             $amount = $amount - $entity->getFee();
         }
 
-        list($fee, $serviceTax) = $this->getFees($rule, $amount, $preCalculationOfFees);
+        list($fee, $serviceTax) = $this->getFees($rule, $amount);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
 
-    protected function getFees($rule, $amount, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount)
     {
         $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
+        
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
@@ -405,35 +406,6 @@ class FeeCalculator
         return $relevantRule;
     }
 
-    /**
-     * NOT USED CURRENTLY
-     *
-     * In customer subvention,
-     * If the rule before applying the amount
-     * and the new amount after using merchant
-     * subvention is same then use the given rule
-     */
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
-    {
-        $fees = [];
-
-        foreach ($rules as $rule)
-        {
-            list($fee, $st) = $this->getFees($rule, $amount);
-
-            $newAmount = $amount + $fee;
-
-            $newSubventionType = Merchant\FeeBearer::PLATFORM;
-
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
-
-            if ($rule === $newRule)
-            {
-                return $rule;
-            }
-        }
-    }
-
     protected function validateAndGetOnePricingRule($pricing)
     {
         $this->traceAllRules($pricing);
@@ -462,9 +434,9 @@ class FeeCalculator
      * @param boolean $preCalculationOfFees
      * @return fees
      */
-    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
+    protected function getUnroundedFees($amount, $percent, $fixed)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
     }
 
     /**
@@ -490,7 +462,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
