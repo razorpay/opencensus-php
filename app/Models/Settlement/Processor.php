@@ -15,12 +15,25 @@ use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Processor extends Base\Core
 {
     protected $setlTime;
 
     protected $input;
+
+    protected $mutex;
+
+    const MUTEX_RESOURCE        = 'SETTLMENT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function process(array $input, $channel, $schedule = true)
     {
@@ -35,7 +48,10 @@ class Processor extends Base\Core
             return $message;
         }
 
-        $data = $this->processSettlements($input, $channel, $schedule);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function () use ($input, $channel, $schedule)
+        {
+            return $this->processSettlements($input, $channel, $schedule);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }

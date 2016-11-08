@@ -19,7 +19,13 @@ class Settler
 
     protected $input;
 
-    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+    protected $mutex;
+
+    const HOLIDAY_MESSAGE       = ['message' => 'Today is a holiday! Happy holidays :)'];
+
+    const MUTEX_RESOURCE        = 'SETTLMENT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
 
     /**
      * Used for testing purposes. Default should
@@ -36,6 +42,7 @@ class Settler
         $this->env = $app['env'];
         $this->trace = $app['trace'];
         $this->repo = $app['repo'];
+        $this->mutex = $app['api.mutex'];
     }
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
@@ -51,7 +58,12 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
     public function settle($input = array(), $channel = null)
@@ -67,7 +79,12 @@ class Settler
 
         $txns = $this->fetchTransactionsToSettle($input);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
     protected function preSettlementProcessing()
