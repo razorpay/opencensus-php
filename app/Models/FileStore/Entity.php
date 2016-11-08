@@ -16,7 +16,7 @@ class Entity extends Base\PublicEntity
     const FORMAT                = 'format';
     const SIZE                  = 'size';
     const NAME                  = 'name';
-    const SERVICE               = 'service';
+    const STORE                 = 'store';
     const LOCATION              = 'location';
     const BUCKET                = 'bucket';
     const PERMISSION            = 'permission';
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::SIZE,
         self::ENCRYPTION_METHOD,
         self::LOCATION,
-        self::SERVICE,
+        self::STORE,
         self::PASSWORD,
         self::BUCKET,
         self::NAME,
@@ -65,7 +65,7 @@ class Entity extends Base\PublicEntity
         self::SIZE,
         self::ENCRYPTION_METHOD,
         self::LOCATION,
-        self::SERVICE,
+        self::STORE,
         self::BUCKET,
         self::NAME,
         self::ENTITY_TYPE,

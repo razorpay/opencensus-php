@@ -8,6 +8,7 @@ class Table
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
+    const FILE                  = 'files';
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
@@ -26,7 +27,6 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
-    const FILE                  = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';

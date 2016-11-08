@@ -138,7 +138,7 @@ class Creator extends Base\Core
 
     protected function getStorageHandle($service)
     {
-        $class = 'RZP\Models\FileStore\StorageService\\';
+        $class = 'RZP\Models\FileStore\Storage\\';
 
         if ($this->serviceProvider !== $service)
         {
@@ -150,7 +150,8 @@ class Creator extends Base\Core
                     break;
 
                 case 'default':
-                    throw new Exception\InvalidArgumentException('Invalid storage service ' . $service);
+                    throw new Exception\InvalidArgumentException(
+                        'Invalid storage service ' . $service);
             }
 
             $this->storageHandler = (new $class);

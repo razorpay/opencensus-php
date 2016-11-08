@@ -39,7 +39,7 @@ class CreateFileStore extends Migration
 
             $table->string(FileStore::NAME);
 
-            $table->string(FileStore::SERVICE);
+            $table->string(FileStore::STORE);
 
             $table->string(FileStore::LOCATION);
 

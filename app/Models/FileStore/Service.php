@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Service extends Base\Service
 {
-    use SoftDeletes;
-
     const DEFAULT_SERVICE   = 's3';
 
     protected $storageHandler;
@@ -28,7 +26,7 @@ class Service extends Base\Service
 
     protected function getStorageHandle($service)
     {
-        $class = 'RZP\Models\FileStore\StorageService\\';
+        $class = 'RZP\Models\FileStore\Storage\\';
 
         if (is_null($this->serviceProvider) !== $service)
         {

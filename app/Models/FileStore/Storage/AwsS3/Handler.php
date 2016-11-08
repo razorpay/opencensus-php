@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Models\FileStore\StorageService\AwsS3;
+namespace RZP\Models\FileStore\Storage\AwsS3;
 
 use AWS;
 use Config;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore\StorageService\Base;
+use RZP\Models\FileStore\Storage\Base;
 
 class Handler extends Base\Handler
 {
@@ -13,7 +13,7 @@ class Handler extends Base\Handler
     {
         parent::__construct();
 
-        $this->config = Config::get('aws');
+        $this->config = $this->app['config']->get('aws');
     }
 
     public function save($bucket, $name, $fullpath, $mime, $metadata = [])
