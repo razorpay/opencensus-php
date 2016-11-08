@@ -155,11 +155,11 @@ class Creator extends Base\Core
 
         $this->upload();
 
-        $relativePath = $this->getRelativePath($this->file->name);
+        $fullPath = $this->getFullFilePath($this->file->name);
 
         $this->associateMerchantWithFile();
 
-        $this->file->size = filesize($relativePath);
+        $this->file->size = filesize($fullPath);
 
         $this->repo->saveOrFail($this->file);
 

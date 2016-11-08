@@ -171,5 +171,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::FORMAT);
     }
+
 // ----------------------- Getters Ends----------------------------------------
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
 }
