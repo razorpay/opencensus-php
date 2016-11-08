@@ -58,7 +58,7 @@ class FeeCalculator
         $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
-        
+
 
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
@@ -318,11 +318,13 @@ class FeeCalculator
      * If the value is not found, and a default value is allowed,
      * matches based on default value will be returned.
      *
-     * @param  $rules       List of rules
-     * @param  $filedName   Field name to be filtered on
-     * @param  $filedValue  Filed value to be filtered on
-     * @param  $chooseDefault Default value to be considered if field value not found
-     * @param  $defaultValue  Default value to be filtered on if $chooseDefualt is true
+     * @param  array       $rules         List of rules
+     * @param  string      $fieldName     Field name to be filtered on
+     * @param  string      $fieldValue    Field value to be filtered on
+     * @param  bool        $chooseDefault Default value to be considered if field value not found
+     * @param  string|null $defaultValue  Default value to be filtered on if $chooseDefault is true
+     *
+     * @return array
      */
     protected function filterRulesOnFieldByValue(
         $rules,
@@ -430,9 +432,7 @@ class FeeCalculator
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
-     * @param float $serviceTaxPercentage  15.0
-     * @param boolean $preCalculationOfFees
-     * @return fees
+     * @return int
      */
     protected function getUnroundedFees($amount, $percent, $fixed)
     {
