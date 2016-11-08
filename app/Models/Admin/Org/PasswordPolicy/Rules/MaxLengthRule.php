@@ -4,7 +4,7 @@ namespace RZP\Models\Admin\Org\PasswordPolicy\Rules;
 
 use RZP\Exception;
 
-class MaxLengthRule extends Rule
+class MaxLengthRule extends Base
 {
     protected $maxLength;
 

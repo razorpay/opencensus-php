@@ -4,7 +4,7 @@ namespace RZP\Models\Admin\Org\PasswordPolicy\Rules;
 
 use RZP\Exception;
 
-class MinLengthRule extends Rule
+class MinLengthRule extends Base
 {
     protected $minLength;
 

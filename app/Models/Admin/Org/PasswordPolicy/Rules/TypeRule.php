@@ -4,7 +4,7 @@ namespace RZP\Models\Admin\Org\PasswordPolicy\Rules;
 
 use RZP\Exception;
 
-class TypeRule extends Rule
+class TypeRule extends Base
 {
     protected $type;
 

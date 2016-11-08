@@ -27,6 +27,6 @@ class Service extends Base\Service
         $validator = new Validator;
 
         $validator->setPolicy($policy)
-                ->validatePassword($password);
+                ->validate($password);
     }
 }
