@@ -8,7 +8,6 @@ use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;

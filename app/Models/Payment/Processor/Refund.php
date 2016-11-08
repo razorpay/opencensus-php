@@ -5,18 +5,15 @@ namespace RZP\Models\Payment\Processor;
 use BasicAuth;
 use Mail;
 use Request;
-use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Batch;
 
 trait Refund
 {
@@ -250,8 +247,6 @@ trait Refund
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
     {
-        $merchant = $batch->merchant;
-
         //
         // Check if a refund already exists.
         // If one exists, then we should not fire a new one else two refunds will happen.

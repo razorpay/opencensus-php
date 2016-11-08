@@ -4,13 +4,11 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment;
-
-use RZP\Trace;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Selector
 {

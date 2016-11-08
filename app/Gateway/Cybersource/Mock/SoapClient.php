@@ -5,8 +5,6 @@ namespace RZP\Gateway\Cybersource\Mock;
 use App;
 use DOMDocument;
 use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Gateway\Cybersource;
 use SoapClient as BaseSoapClient;
 

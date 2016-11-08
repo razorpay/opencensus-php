@@ -2,7 +2,6 @@
 
 namespace RZP\Base;
 
-use RZP\Base\JitValidator;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;

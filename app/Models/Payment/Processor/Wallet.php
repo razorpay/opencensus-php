@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
+
 class Wallet
 {
     const PAYTM       = 'paytm';
@@ -33,7 +37,7 @@ class Wallet
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
-                Entity::WALLET);
+                Payment\Entity::WALLET);
         }
     }
 

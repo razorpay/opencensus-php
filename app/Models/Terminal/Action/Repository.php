@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Terminal\Action;
 
-use RZP\Models\Base;
-use RZP\Models\Terminal\Action\Entity;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Terminal\Action;
 
 class Repository extends Base\Repository

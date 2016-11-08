@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
 class Entity extends \RZP\Base\EloquentEx

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 

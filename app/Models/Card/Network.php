@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
 class Network

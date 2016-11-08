@@ -3,7 +3,6 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {

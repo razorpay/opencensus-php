@@ -3,9 +3,8 @@
 namespace RZP\Gateway\Cybersource\Mock;
 
 use RZP\Base;
-use RZP\Models\Card;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Card;
 
 class Validator extends Base\Validator
 {

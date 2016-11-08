@@ -84,7 +84,6 @@ final class Route
         'merchant_secret'                         => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                      => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
         'merchant_set_banks'                      => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
-        'merchant_set_all_banks'                  => ['put',      'merchants/banks',                                'MerchantController@putBanksForAllMerchants'                        ],
         'merchant_daily_report'                   => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                         => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
         'merchant_fetch'                          => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
@@ -393,7 +392,6 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
-        'merchant_set_all_banks',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_fetch_webhooks',
@@ -693,7 +691,7 @@ final class Route
 
         $parameters['key_id'] = $key;
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         return $schema . $host . $urlSegment;
     }

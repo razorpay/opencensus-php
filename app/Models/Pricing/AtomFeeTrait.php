@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Exception;
 
 trait AtomFeeTrait
 {
@@ -23,9 +22,6 @@ trait AtomFeeTrait
         }
         else if ($method === Payment\Method::CARD)
         {
-            $card = $payment->card;
-            $type = $card->getType();
-
             $type = Card\Type::DEBIT;
 
             if ($type === Card\Type::CREDIT)

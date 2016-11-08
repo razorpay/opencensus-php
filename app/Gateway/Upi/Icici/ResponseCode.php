@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use RZP\Error;
-use RZP\Error\ErrorCode;
 
 class ResponseCode
 {

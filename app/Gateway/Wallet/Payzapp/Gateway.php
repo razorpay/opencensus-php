@@ -11,12 +11,9 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Core;
 use Carbon\Carbon;
 use View;
-use Lib\PhoneBook;
 use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
@@ -50,7 +47,7 @@ class Gateway extends Base\Gateway
     protected $perform;
 
     protected $acosaActions = array(
-        ACTION::VERIFY, ACTION::REFUND
+        Action::VERIFY, Action::REFUND
     );
 
     public function authorize(array $input)
@@ -432,8 +429,6 @@ class Gateway extends Base\Gateway
 
         $this->perform  = 'verify';
 
-        $latestTransactionType = 0;
-
         $responseContent = '';
 
         $response = '';
@@ -481,11 +476,9 @@ class Gateway extends Base\Gateway
             {
                 $responseContent = $content;
 
-                $verify->transactionType = $txnType ;
+                $verify->transactionType = $txnType;
 
                 $response = $requestResponse['response'];
-
-                $latestTransactionType = $txnTypeCode;
             }
         }
 
