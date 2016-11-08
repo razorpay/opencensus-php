@@ -21,7 +21,6 @@ class Repository extends Base\Repository
         Entity::ISSUER          => 'sometimes|string',
     );
 
-
     protected function addQueryOrder($query)
     {
         ;

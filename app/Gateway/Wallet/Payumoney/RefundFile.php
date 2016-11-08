@@ -9,7 +9,7 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Payumoney_Wallet_Refunds';
 
-    protected static $headers = array(
+    protected static $headers = [
         'Sr No',
         'Transaction date',
         'Gateway reference #',
@@ -17,7 +17,7 @@ class RefundFile extends Base\RefundFile
         'Order Amount',
         'Refund Amount',
         'Merchant Code',
-    );
+    ];
 
     public function generate($input)
     {
@@ -32,9 +32,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail()
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $fullPath = $this->getExcelFullFilePath();
 
-        $data['file'] = $fullpath;
+        $data['file'] = $fullPath;
         $data['body'] = 'Please find attached refunds information for PayUMoney';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
@@ -57,12 +57,14 @@ class RefundFile extends Base\RefundFile
     {
         $i = 1;
 
+        $data = [];
+
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
 
-            $data[] = array(
+            $data[] = [
                 'Sr No'               => $i++,
                 'Transaction date'    => $date,
                 'Gateway reference #' => $row['gateway']['gateway_payment_id'],
@@ -70,7 +72,7 @@ class RefundFile extends Base\RefundFile
                 'Order Amount'        => $row['payment']['amount'] / 100,
                 'Refund Amount'       => $row['refund']['amount'] / 100,
                 'Merchant Code'       => $row['terminal']['gateway_merchant_id'],
-            );
+            ];
         }
 
         return $data;

@@ -40,7 +40,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
-        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $id);
+        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         return $terminal->toArrayPublic();
     }

@@ -2,15 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Kotak;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Kotak;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 
 trait ResponseFieldsTrait
 {

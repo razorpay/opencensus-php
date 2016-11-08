@@ -3,6 +3,9 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -10,10 +13,6 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
-use RZP\Constants\Table;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
@@ -49,8 +48,8 @@ class Repository extends Base\Repository
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
-        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
-        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
     );

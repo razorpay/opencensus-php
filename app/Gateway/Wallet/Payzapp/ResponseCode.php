@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Payzapp;
 
-use RZP\ErrorCode;
-
 class ResponseCode
 {
     public static $statusCodes = array(

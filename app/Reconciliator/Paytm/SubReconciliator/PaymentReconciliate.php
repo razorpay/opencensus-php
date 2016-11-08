@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Paytm;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate

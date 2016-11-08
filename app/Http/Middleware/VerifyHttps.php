@@ -6,7 +6,6 @@ use App;
 use Closure;
 use ApiResponse;
 
-
 class VerifyHttps
 {
     protected function getProductionHosts()
@@ -14,8 +13,6 @@ class VerifyHttps
         $app = App::getFacadeRoot();
 
         $config = $app['config'];
-
-        $productionHosts = [];
 
         $productionHosts = $config->get('url.api_hosts');
 

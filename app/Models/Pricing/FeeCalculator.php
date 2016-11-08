@@ -53,7 +53,6 @@ class FeeCalculator
         return array($fee, $serviceTax, $rule->getKey());
     }
 
-
     protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
         $serviceTaxPercentage = self::getServiceTaxRate();

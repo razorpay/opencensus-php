@@ -25,7 +25,7 @@ class Library
             $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
         }
 
-        return $nextRun->getTimeStamp();
+        return $nextRun->getTimestamp();
     }
 
     // ----------------------- Protected methods -----------------------
