@@ -32,6 +32,7 @@ class Processor extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->mutex = $this->app['api.mutex'];
     }
 
