@@ -61,9 +61,6 @@ class Creator extends Base\Core
     public function setDefaults()
     {
         $this->file->encryption_method = self::DEFAULT_ENCRYPTION_METHOD;
-
-        // TODO : Fix default Merhcant ID
-        $this->file->merchant_id = self::DEFAULT_MERCHANT_ID;
     }
 
     public function content($content)

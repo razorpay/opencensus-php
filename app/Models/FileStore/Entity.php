@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
         self::COMMENTS,
         self::TYPE,
         self::CREATED_AT,
+        self::LOCATION,
     ];
 
     protected $fillable = [
@@ -130,6 +131,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FORMAT, $format);
     }
 
+    public function setMerchantId($merchantId)
+    {
+        return $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
@@ -148,10 +154,5 @@ class Entity extends Base\PublicEntity
     public function getFormat()
     {
         return $this->getAttribute(self::FORMAT);
-    }
-
-    public function setMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
     }
 }

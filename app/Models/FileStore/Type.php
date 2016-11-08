@@ -36,6 +36,6 @@ class Type
 
     public static function isTypeForSharedAccount($type)
     {
-        return (self::SHARED_ACCOUNT_ALLOWED_TYPES[$type]);
+        return (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true);
     }
 }
