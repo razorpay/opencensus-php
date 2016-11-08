@@ -122,6 +122,85 @@ class VerifyTest extends TestCase
         $this->runVerifyForMaxPeriod($result);
     }
 
+    public function testVerifySingleFailedPaymentsWithBucketFilter()
+    {
+        $createdAt = time() - 180;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $filter = 'payments_failed';
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $request = [
+            'url'    => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 1,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $request = [
+            'url'     => '/payments/verify/'. $filter,
+            'method'  => 'post',
+            'content' => ['bucket'=> $payment['verify_bucket'] - 1]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 0,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $request = [
+            'url'     => '/payments/verify/'. $filter,
+            'method'  => 'post',
+            'content' => ['bucket'=> $payment['verify_bucket'] + 1]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 0,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $request = [
+            'url'     => '/payments/verify/'. $filter,
+            'method'  => 'post',
+            'content' => ['bucket'=> $payment['verify_bucket'] ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'success' => 1,
+            'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        Carbon::setTestNow();
+    }
+
     public function testVerifyWithLockedPayments()
     {
         $createdAt = time() - 180;
