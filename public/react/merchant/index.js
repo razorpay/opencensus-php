@@ -8,6 +8,8 @@ import store from './store'
 
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
+import SubscriptionsListContainer from './containers/Subscriptions/List'
+import SubscriptionsNewContainer from './containers/Subscriptions/New'
 
 // This is required for ngReact. Remove this finally
 window.React = React
@@ -62,3 +64,5 @@ function createNgDirective(directiveName, component, ...args) {
 
 createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoicesNew', InvoicesNewContainer)
+createNgDirective('subscriptionsList', SubscriptionsListContainer)
+createNgDirective('subscriptionsNew', SubscriptionsNewContainer)

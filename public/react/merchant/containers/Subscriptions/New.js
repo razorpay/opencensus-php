@@ -6,21 +6,18 @@ import AsyncButton from 'react-async-button'
 import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import ReduxSelect2 from 'rzp/ui/Forms/ReduxSelect2'
-import LineItemTable from 'merchant/components/Invoices/LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers/list'
 
 @connect(
-  (state) => state.invoice.toJS(),
+  null,
   { fetchCustomers }
 )
 @reduxForm({
-  form: 'invoiceCreation',
+  form: 'newSubscription',
   initialValues: {
-    due_on: 30,
-    notes: 'Thanks for your business'
   }
 })
-export default class InvoicesNewContainer extends Component {
+export default class SubscriptionsNewContainer extends Component {
   constructor() {
     super(...arguments)
     this.state = {
@@ -52,8 +49,8 @@ export default class InvoicesNewContainer extends Component {
     const { handleSubmit } = this.props
     return (
       <div>
-        <Header title='New Invoice'>
-          <a href='#/app/invoices' className='pull-right btn btn-link btn-sm'>
+        <Header title='New Subscription'>
+          <a href='#/app/subscriptions' className='pull-right btn btn-link btn-sm'>
             <i className='fa fa-close'></i>
           </a>
         </Header>
@@ -82,12 +79,45 @@ export default class InvoicesNewContainer extends Component {
 
                 <div className='form-group'>
                   <label htmlFor='invoice_date' className='col-md-2 control-label'>
-                    Invoice Date
+                    Plan Name
                   </label>
                   <div className='col-md-4'>
                     <Field
-                      name='invoice_date'
-                      id='invoice_date'
+                      name='customer_id'
+                      id='customer_id'
+                      data={this.state.customers}
+                      options={{
+                        placeholder: 'Select a Customer',
+                        allowClear: true
+                      }}
+                      component={ReduxSelect2}
+                    />
+                  </div>
+                </div>
+
+                <div className='form-group'>
+                  <label htmlFor='due_on' className='col-md-2 control-label'>
+                    Quantity
+                  </label>
+                  <div className='col-md-4'>
+                    <Field
+                      name='quantity'
+                      id='quantity'
+                      type='number'
+                      component='input'
+                      className='form-control'
+                    />
+                  </div>
+                </div>
+
+                <div className='form-group'>
+                  <label htmlFor='start_at' className='col-md-2 control-label'>
+                    Starts on
+                  </label>
+                  <div className='col-md-4'>
+                    <Field
+                      name='start_at'
+                      id='start_at'
                       component={DatePickerField}
                       className='form-control'
                     />
@@ -95,22 +125,18 @@ export default class InvoicesNewContainer extends Component {
                 </div>
 
                 <div className='form-group'>
-                  <label htmlFor='due_on' className='col-md-2 control-label'>
-                    Due Date
+                  <label htmlFor='end_at' className='col-md-2 control-label'>
+                    Ends on
                   </label>
                   <div className='col-md-4'>
                     <Field
-                      name='due_on'
-                      id='due_on'
-                      component='input'
+                      name='end_at'
+                      id='end_at'
+                      component={DatePickerField}
                       className='form-control'
                     />
                   </div>
                 </div>
-
-{/*
-                <LineItemTable items={initialValues.items} />
-*/}
 
                 <div className='form-group'>
                   <label htmlFor='notes' className='col-md-2 control-label'>
@@ -120,20 +146,6 @@ export default class InvoicesNewContainer extends Component {
                     <Field
                       name='notes'
                       id='notes'
-                      component='textarea'
-                      className='form-control'
-                    />
-                  </div>
-                </div>
-
-                <div className='form-group'>
-                  <label htmlFor='terms_and_conditions' className='col-md-2 control-label'>
-                    Terms and Conditions
-                  </label>
-                  <div className='col-md-4'>
-                    <Field
-                      name='terms_and_conditions'
-                      id='terms_and_conditions'
                       component='textarea'
                       className='form-control'
                     />
