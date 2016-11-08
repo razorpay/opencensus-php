@@ -143,9 +143,9 @@ class Handler extends Base\Handler
 
             $presignedUrl = (string) $request->getUri();
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            $this->trace()->traceException($e);
+            $this->trace->traceException($e);
 
             throw $e;
         }

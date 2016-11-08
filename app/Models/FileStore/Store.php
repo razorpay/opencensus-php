@@ -7,6 +7,7 @@ use RZP\Exception;
 class Store
 {
     const S3    = 's3';
+
     const LOCAL = 'local';
 
     const STORE_MAP = [
@@ -14,6 +15,13 @@ class Store
         self::LOCAL => Storage\Local\Handler::class,
     ];
 
+    /**
+     * CHeck if store passed is valid or not
+     *
+     * @param  string   $store
+     * @return void
+     * @throws Exception\LogicException
+     */
     public static function validateStore($store)
     {
         if (defined(__CLASS__.'::'.strtoupper($store)) === false)
@@ -23,6 +31,13 @@ class Store
         }
     }
 
+    /**
+     * Returns the Store Handler Object
+     *
+     * @param  string   $store
+     * @return instance of Store Object
+     * @throws Exception\LogicException
+     */
     public static function getHandler($store)
     {
         self::validateStore($store);

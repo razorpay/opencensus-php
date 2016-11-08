@@ -87,17 +87,8 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [];
 
-    protected function getPasswordAttribute()
-    {
-        $pwd = $this->attributes[self::PASSWORD];
 
-        if ($pwd !== null)
-        {
-            $pwd = Crypt::decrypt($pwd);
-        }
-
-        return $pwd;
-    }
+// ----------------------- Setters --------------------------------------------
 
     protected function setPasswordAttribute($password)
     {
@@ -109,19 +100,12 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::PASSWORD] = $password;
     }
 
-    public function entityAssociate($entity)
-    {
-        $this->setEntityType($entity->getEntityName());
-
-        $this->source()->associate($entity);
-    }
-
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
     }
 
-    public function setStore($store)
+    public function setStore(string $store)
     {
         $this->setAttribute(self::STORE, $store);
     }
@@ -134,6 +118,38 @@ class Entity extends Base\PublicEntity
     public function setMerchantId($merchantId)
     {
         return $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setSize(int $size)
+    {
+        $this->setAttribute(self::SIZE, $size);
+    }
+
+// ----------------------- Setters Ends----------------------------------------
+
+// ----------------------- Relations -----------------------------------------
+
+    public function entityAssociate($entity)
+    {
+        $this->setEntityType($entity->getEntityName());
+
+        $this->source()->associate($entity);
+    }
+
+// ----------------------- Relations Ends -------------------------------------
+
+// ----------------------- Getters --------------------------------------------
+
+    protected function getPasswordAttribute()
+    {
+        $pwd = $this->attributes[self::PASSWORD];
+
+        if ($pwd !== null)
+        {
+            $pwd = Crypt::decrypt($pwd);
+        }
+
+        return $pwd;
     }
 
     public function getType()
@@ -155,4 +171,5 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::FORMAT);
     }
+// ----------------------- Getters Ends----------------------------------------
 }

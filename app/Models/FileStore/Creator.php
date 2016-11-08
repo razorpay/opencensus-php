@@ -2,7 +2,7 @@
 
 namespace RZP\Models\FileStore;
 
-use Storage;
+use Storage as LaravelStorage;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -21,26 +21,32 @@ class Creator extends Base\Core
      */
     protected $localFile;
 
-    //TODO : Add comments for each variable
-    protected $fileType;
-
-    protected $type;
-
+    /**
+     * @var delimiter used in file
+     */
     protected $delimiter;
 
+
+    /**
+     * @var file Path of local file
+     */
     protected $filePath;
 
+    /**
+     * @var Store Handler
+     */
     protected $storageHandler;
-
-    protected $merchant;
 
     const DEFAULT_STORE = 's3';
 
     const DEFAULT_ENCRYPTION_METHOD = 'none';
 
+    /**
+     * Default Merchant ID, for File Type which are not part of any merchant
+     */
     const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
 
-    const STORAGE_DIRECTORY = 'files/file_handler/';
+    const STORAGE_DIRECTORY = 'files/filestore/';
 
     public function __construct()
     {
@@ -51,6 +57,15 @@ class Creator extends Base\Core
         $this->setDefaults();
     }
 
+    public function setDefaults()
+    {
+        $this->file->encryption_method = self::DEFAULT_ENCRYPTION_METHOD;
+    }
+
+    /**
+     * Set the File name in File Store
+     * @return FileStore\Creater object
+     */
     public function name($name)
     {
         $this->file->name = $name;
@@ -58,11 +73,10 @@ class Creator extends Base\Core
         return $this;
     }
 
-    public function setDefaults()
-    {
-        $this->file->encryption_method = self::DEFAULT_ENCRYPTION_METHOD;
-    }
-
+    /**
+     * Set the Content of File
+     * @return FileStore\Creater object
+     */
     public function content($content)
     {
         $this->content = $content;
@@ -70,6 +84,10 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /**
+     * Set the Local file
+     * @return FileStore\Creater object
+     */
     public function localFile($file)
     {
         $this->localFile = $file;
@@ -77,6 +95,10 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /**
+     * Set the Format of File Store
+     * @return FileStore\Creater object
+     */
     public function format($format)
     {
         $this->file->setformat($format);
@@ -84,6 +106,10 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /**
+     * Set the Store  of File Store
+     * @return FileStore\Creater object
+     */
     public function store($store)
     {
         $this->file->setStore($store);
@@ -91,6 +117,10 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /**
+     * Set the type of File Store
+     * @return FileStore\Creater object
+     */
     public function type($type)
     {
         $this->file->setType($type);
@@ -98,6 +128,10 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /**
+     * Set the delimiter used for creation of file
+     * @return FileStore\Creater object
+     */
     public function delimiter($delimiter = ',')
     {
         $this->delimiter = $delimiter;
@@ -105,13 +139,11 @@ class Creator extends Base\Core
         return $this;
     }
 
-    protected function validateBeforeSave()
-    {
-        Format::validateContentTypeForFormat($this->content, $this->file->getFormat());
-
-        Type::validateType($this->file->getType());
-    }
-
+    /**
+     * Creates a local file instance,
+     * upload it to service specified and creates file store entity
+     * @return FileStore\Creater object
+     */
     public function save()
     {
         $this->validateBeforeSave();
@@ -125,20 +157,36 @@ class Creator extends Base\Core
 
         $relativePath = $this->getRelativePath($this->file->name);
 
-        $merchantId = $this->file->getMerchantId();
+        $this->associateMerchantWithFile();
 
-        if ($merchantId === null)
-        {
-            $this->setDefaultMerchantId();
-        }
-
-        $this->file->size = Storage::size($relativePath);
+        $this->file->size = filesize($relativePath);
 
         $this->repo->saveOrFail($this->file);
 
         return $this;
     }
 
+    /**
+     * Returns Array of File Store Values
+     * @return array
+     */
+    public function get()
+    {
+        return $this->file->toArrayPublic();
+    }
+
+    protected function validateBeforeSave()
+    {
+        Format::validateContentTypeForFormat($this->content, $this->file->getFormat());
+
+        Type::validateType($this->file->getType());
+    }
+
+    /**
+     * Uploads the file to the service specified by file store
+     * @return void
+     * @throws \Exception
+     */
     protected function upload()
     {
         if ($this->file->getStore() === null)
@@ -159,11 +207,12 @@ class Creator extends Base\Core
         );
     }
 
-    public function get()
-    {
-        return $this->file->toArrayPublic();
-    }
-
+    /**
+     * Write the contents to a local file, fo valid file formats
+     *
+     * @return void
+     * @throws Exception\LogicException
+     */
     protected function writeToLocalFile()
     {
         if ($this->file->getFormat() === Format::TXT)
@@ -174,7 +223,7 @@ class Creator extends Base\Core
 
             $relativePath = $this->getRelativePath($this->file->name);
 
-            Storage::put($relativePath, $content);
+            LaravelStorage::put($relativePath, $content);
 
             chmod($fullPath, 0777);
 
@@ -186,6 +235,23 @@ class Creator extends Base\Core
         }
     }
 
+    protected function associateMerchantWithFile()
+    {
+        if ($this->merchant !== null)
+        {
+            $this->file->merchant()->associate($this->merchant);
+        }
+        else
+        {
+            $this->setDefaultMerchantId();
+        }
+    }
+
+    /**
+     * Sets the Merchant id for file store to shared account's merchant id
+     *
+     * @return void
+     */
     protected function setDefaultMerchantId()
     {
         $type = $this->file->getType();
@@ -208,7 +274,7 @@ class Creator extends Base\Core
 
     protected function getStorageDir()
     {
-        $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+        $path = LaravelStorage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
 
         return $path . self::STORAGE_DIRECTORY;
     }

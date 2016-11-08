@@ -10,8 +10,12 @@ class Type
     const KOTAK_NETBANKING_REFUND   = 'kotak_netbanking_refund';
 
     const INPUT                     = 'input';
+
     const OUTPUT                    = 'output';
 
+    /**
+     * Map of types allowed for each entity.
+     */
     const TYPE_MAP = [
         null => [
             self::KOTAK_NETBANKING_REFUND,
@@ -22,6 +26,9 @@ class Type
         ],
     ];
 
+    /**
+     * Types allowed when no entity is associated
+     */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::KOTAK_NETBANKING_REFUND,
     ];
@@ -34,6 +41,12 @@ class Type
         }
     }
 
+    /**
+     * Check if Filestore Type is valid for shared account
+     *
+     * @param $type    Filestore type value
+     * @return boolean
+     */
     public static function isTypeForSharedAccount($type)
     {
         return (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true);

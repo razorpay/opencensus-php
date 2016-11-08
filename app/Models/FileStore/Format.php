@@ -22,6 +22,14 @@ class Format
         self::TXT
     ];
 
+    /**
+     * Validate if content given given is proper for filetype provided
+     * @param string $content Content of file
+     * @param string $format  Format of file
+     * @return boolean
+     *
+     * @throws Exception\Exception\BadRequestValidationFailureException
+     */
     public static function validateContentTypeForFormat($content, $format)
     {
         // TODO : Fix content checking
