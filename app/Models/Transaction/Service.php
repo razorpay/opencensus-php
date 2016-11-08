@@ -34,8 +34,8 @@ class Service extends Base\Service
         return $report->getReport($input, 'transaction');
     }
 
-    public function postMigrateOlderTransactions($input)
+    public function postMigrateOlderTransactions()
     {
-        return (new Transaction\DataMigration())->postMigrateOlderTransactions($input);
+        return (new Transaction\DataMigration())->postMigrateOlderTransactions();
     }
 }

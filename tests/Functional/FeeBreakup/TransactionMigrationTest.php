@@ -15,21 +15,11 @@ class TransactionMigrationTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $month = null;
-    protected $year = null;
-    protected $url = null;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/TransactionMigrationTestData.php';
 
         parent::setUp();
-
-        $now = Carbon::now();
-        $this->month = $now->month;
-        $this->year = $now->year;
-
-        $this->url = '/transactions/migrate?' .'month=' .$this->month .'&year=' .$this->year;
     }
 
     public function testMigration()
@@ -41,8 +31,6 @@ class TransactionMigrationTest extends TestCase
         $this->ba->appAuth();
 
         $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = $this->url;
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
@@ -68,8 +56,6 @@ class TransactionMigrationTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = $this->url;
-
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
@@ -93,8 +79,6 @@ class TransactionMigrationTest extends TestCase
         $this->ba->appAuth();
 
         $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = $this->url;
 
         $content = $this->makeRequestAndGetContent($testData['request']);
 
@@ -120,8 +104,6 @@ class TransactionMigrationTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = $this->url;
-
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
@@ -146,8 +128,6 @@ class TransactionMigrationTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = $this->url;
-
         $content = $this->makeRequestAndGetContent($testData['request']);
 
         $this->assertContent($content, $transaction['id'], $transaction['fee'], $transaction['service_tax']);
@@ -169,8 +149,6 @@ class TransactionMigrationTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = $this->url;
-
         $this->startTest();
     }
 
@@ -189,8 +167,6 @@ class TransactionMigrationTest extends TestCase
         $this->ba->appAuth();
 
         $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = $this->url;
 
         $this->startTest();
     }

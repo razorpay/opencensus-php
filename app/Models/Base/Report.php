@@ -161,14 +161,14 @@ class Report extends Core
         }
 
         return [
-            self::TOTAL_FEE         => $totalFee,
-            self::RAZORPAY_FEE      => $fees['razorpay']['sum'],
-            self::TAX               => $totalTax,
-            self::TAXES             => [
-                                            self::SERVICE_TAX           =>  $fees['service_tax']['sum'],
-                                            self::SWACH_BHARAT_CESS     =>  $fees['swachh_bharat_cess']['sum'],
-                                            self::KRISHI_KALYAN_CESS    =>  $fees['krishi_kalyan_cess']['sum'],
-                                    ],
+            self::TOTAL_FEE    => $totalFee,
+            self::RAZORPAY_FEE => $fees['razorpay']['sum'],
+            self::TAX          => $totalTax,
+            self::TAXES        => [
+                self::SERVICE_TAX        => $fees['service_tax']['sum'],
+                self::SWACH_BHARAT_CESS  => $fees['swachh_bharat_cess']['sum'],
+                self::KRISHI_KALYAN_CESS => $fees['krishi_kalyan_cess']['sum'],
+            ],
         ];
     }
 

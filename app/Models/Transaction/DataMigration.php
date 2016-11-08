@@ -32,29 +32,21 @@ class DataMigration extends Base\Service
 
     protected $feeCalculator;
 
-    public function postMigrateOlderTransactions($input)
+    public function postMigrateOlderTransactions()
     {
         $this->increaseAllowedSystemLimits();
 
-        list($batch1From, $batch1To, $batch2From, $batch2To) = $this->getTimestamps($input);
-
-        $response = $this->processEntries($batch1From, $batch1To);
-
-        $batchResponse2 = $this->processEntries($batch2From, $batch2To);
-
-        if (empty($batchResponse2) === false)
-        {
-            $response = $response + $batchResponse2;
-        }
+        $response = $this->processEntries();
 
         return $response;
     }
 
-    protected function processEntries($from, $to)
+    protected function processEntries()
     {
-        $txns = $this->repo->transaction->getTransactionsToBeMigrated($from, $to);
+        $txns = $this->repo->transaction->getTransactionsToBeMigrated();
 
-        $response = [];
+        $migratedTxns = [];
+        $notMigratedTxns = [];
 
         foreach ($txns as $txn)
         {
@@ -96,9 +88,18 @@ class DataMigration extends Base\Service
             {
                 $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
 
-                $response[$txn->getPublicId()] = $feesSplit->toArrayPublic();
+                $migratedTxns[] = $txn->getPublicId();
+            }
+            else
+            {
+                $notMigratedTxns[] = $txn->getPublicId();
             }
         }
+
+        $response = [
+                'migrated'      => $migratedTxns,
+                'not_migrated'  => $notMigratedTxns,
+        ];
 
         return $response;
     }
@@ -177,20 +178,6 @@ class DataMigration extends Base\Service
         // If ZeroPricing Plan then we save only the RZP Fee.
         if ($txn->getFee() === 0)
         {
-            foreach ($feesSplit as & $feeSplit)
-            {
-                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::RZP)
-                {
-                    $feeSplit->transaction()->associate($txn);
-
-                    $feeSplit->setCreatedAt($captureTime);
-
-                    $this->repo->saveOrFail($feeSplit);
-
-                    break;
-                }
-            }
-
             return;
         }
 
