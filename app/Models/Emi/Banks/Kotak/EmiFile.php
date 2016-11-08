@@ -56,23 +56,23 @@ class EmiFile extends Base\EmiFile
             $authCode = $this->getAuthCode($emiPayment);
 
             $data[] = [
-            'EMI ID'                     => $emiPayment->getId(),
-            'Card Pan'                   => $this->getCardNumber($emiPayment->card),
-            'Issuer'                     => 'Kotak',
-            'Auth Code'                  => $authCode,
-            'Tx Amount'                  => $emiPayment->getAmount()/ 100,
-            'Tenure'                     => $emiPlan['duration'],
-            'Manufacturer'               => '', // Non Mandatory
-            'Merchant Name'              => 'Razorpay Payments',
-            'Address1'                   => '', // Non Mandatory
-            'Acquirer'                   => '', // Non Mandatory
-            'MID'                        => '', // Non Mandatory
-            'TID'                        => '', // Non Mandatory
-            'Tx Time'                    => $date,
-            'Settlement Time'            => '', // Non Mandatory
-            'Interest Rate'              => '', // Non Mandatory
-            'Discount / Cashback %'      => '0.00%',
-            'Discount / Cashback Amount' => '0'
+                'EMI ID'                     => $emiPayment->getId(),
+                'Card Pan'                   => $this->getCardNumber($emiPayment->card),
+                'Issuer'                     => 'Kotak',
+                'Auth Code'                  => $authCode,
+                'Tx Amount'                  => $emiPayment->getAmount()/ 100,
+                'Tenure'                     => $emiPlan['duration'],
+                'Manufacturer'               => '', // Non Mandatory
+                'Merchant Name'              => 'Razorpay Payments',
+                'Address1'                   => '', // Non Mandatory
+                'Acquirer'                   => '', // Non Mandatory
+                'MID'                        => '', // Non Mandatory
+                'TID'                        => '', // Non Mandatory
+                'Tx Time'                    => $date,
+                'Settlement Time'            => '', // Non Mandatory
+                'Interest Rate'              => '', // Non Mandatory
+                'Discount / Cashback %'      => '0.00%',
+                'Discount / Cashback Amount' => '0'
             ];
         }
 

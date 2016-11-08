@@ -503,11 +503,6 @@ class Gateway extends Base\Gateway
         return $terminal['gateway_merchant_id'];
     }
 
-    protected function getPaymentHash($content)
-    {
-        return $this->getHashOfArray($content);
-    }
-
     protected function verifySecureHash(array $content)
     {
         $fieldsInOrder = array(
