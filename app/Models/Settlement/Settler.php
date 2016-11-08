@@ -20,16 +20,17 @@ use RZP\Trace\TraceCode;
 
 class Settler
 {
-
     protected $settlements;
 
     protected $input;
 
     protected $mutex;
 
-    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+    const HOLIDAY_MESSAGE       = ['message' => 'Today is a holiday! Happy holidays :)'];
 
-    const MUTEX_RESOURCE  = 'SETTLMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLMENT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
 
     /**
      * Used for testing purposes. Default should
@@ -65,7 +66,7 @@ class Settler
         $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
         {
             return $this->processSettlements($input, $channel, $txns);
-        }, 900);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
@@ -86,7 +87,7 @@ class Settler
         $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
         {
             return $this->processSettlements($input, $channel, $txns);
-        }, 900);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
