@@ -591,6 +591,7 @@ class FeeCalculator
             $splitTaxes += $taxValue;
         }
 
+        // TODO: Find a cleaner approach to encounter the difference in tax
         if ($totaltaxes !== $splitTaxes)
         {
             foreach ($this->feesSplit as & $feeSplit)
