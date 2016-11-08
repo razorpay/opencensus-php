@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE            = 'error_code';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const CANCELLATION_REASON   = 'cancellation_reason';
     const CUSTOMER_ID           = 'customer_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
@@ -130,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::CANCELLATION_REASON,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
@@ -391,6 +393,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setCancellationReason($cancellationReason)
+    {
+        $this->setAttribute(self::CANCELLATION_REASON, $cancellationReason);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
@@ -540,6 +547,13 @@ class Entity extends Base\PublicEntity
 
             $this->attributes[self::CONTACT] = $normalizedNumber;
         }
+    }
+
+    protected function setCancellationReasonAttribute(string $reason)
+    {
+        $reason = mb_strtolower($reason);
+
+        $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------

@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -30,25 +32,34 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing)
+    public function calculate($pricing, $preCalculationOfFees = false)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount());
+        $amount = $entity->getAmount();
+
+        if ($entity->merchant->isFeeBearerCustomer())
+        {
+            // 1. The first call will have the fee = 0,
+            //    hence fees will be calculated on the original amount
+            // 2. On validation/capture call, the fee will be set
+            $amount = $amount - $entity->getFee();
+        }
+
+        list($fee, $serviceTax) = $this->getFees($rule, $amount, $preCalculationOfFees);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
 
-
-    protected function getFees($rule, $amount)
+    protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
         $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
 
         $fee = (int) ceil($fee);
 
@@ -160,7 +171,9 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
-        $rule = $this->chooseRuleWithAmount($rules, $amount);
+        $subventionType = $payment->merchant->getSubventionType();
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
         {
@@ -348,7 +361,7 @@ class FeeCalculator
      * amount only. This implies that only the merchant subvention rule selection
      * will be applied, irrespective of the subvention type.
      */
-    protected function chooseRuleWithAmount($rules, $amount)
+    protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
         return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
     }
@@ -400,15 +413,19 @@ class FeeCalculator
      * and the new amount after using merchant
      * subvention is same then use the given rule
      */
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount)
+    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
     {
+        $fees = [];
+
         foreach ($rules as $rule)
         {
             list($fee, $st) = $this->getFees($rule, $amount);
 
             $newAmount = $amount + $fee;
 
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount);
+            $newSubventionType = Merchant\FeeBearer::PLATFORM;
+
+            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
 
             if ($rule === $newRule)
             {
@@ -445,9 +462,9 @@ class FeeCalculator
      * @param boolean $preCalculationOfFees
      * @return fees
      */
-    protected function getUnroundedFees($amount, $percent, $fixed)
+    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
     }
 
     /**
@@ -473,7 +490,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
