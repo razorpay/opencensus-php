@@ -156,16 +156,28 @@ class Reconciler3
     protected function processSettlementStatus($setl, $row)
     {
         // get reconciliation data
-        $utr = $row['UTR number'];;
+        $utr = null;
 
         $status = $row['Status Of transaction'];
 
         $failureReason = $row['Reject Reason'];
 
-        if (($status === 'P') and
-            (empty($failureReason) === true))
+        if ($status === 'P')
         {
-            $status = Settlement\Status::PROCESSED;
+            $utr = $row['UTR number'];
+
+            if (empty($failureReason) === true)
+            {
+                $status = Settlement\Status::PROCESSED;
+
+                $failureReason = null;
+            }
+            else
+            {
+                $status = Settlement\Status::FAILED;
+
+                $failureReason = 'Reconciliation: ' . $failureReason;
+            }
         }
         else
         {
