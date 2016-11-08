@@ -119,6 +119,9 @@ var app = angular.module('app', [
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/admin/app_profile.html'
+    }).state('app.orgs', {
+      url: '/orgs',
+      templateUrl: 'tpl/admin/app_orgs.html'
     })  //Guest Routes
 .state('access', {
       url: '/access',
