@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Org\PasswordPolicy;
+namespace RZP\Models\Admin\Org\AuthPolicy;
 
 use RZP\Models\Base;
 

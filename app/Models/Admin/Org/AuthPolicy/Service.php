@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Org\PasswordPolicy;
+namespace RZP\Models\Admin\Org\AuthPolicy;
 
 use RZP\Models\Base;
 
@@ -28,5 +28,15 @@ class Service extends Base\Service
 
         $validator->setPolicy($policy)
                 ->validate($password);
+    }
+
+    public function validateogin($admin)
+    {
+        $policy = new Entity;
+
+        $validator = new Validator;
+
+        $validator->setPolicy($policy)
+                ->validate($admin, 'login');
     }
 }

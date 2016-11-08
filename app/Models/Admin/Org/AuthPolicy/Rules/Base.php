@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Org\PasswordPolicy\Rules;
+namespace RZP\Models\Admin\Org\AuthPolicy\Rules;
 
 use RZP\Exception;
 

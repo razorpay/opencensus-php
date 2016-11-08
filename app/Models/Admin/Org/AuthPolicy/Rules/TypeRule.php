@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Org\PasswordPolicy\Rules;
+namespace RZP\Models\Admin\Org\AuthPolicy\Rules;
 
 use RZP\Exception;
 
@@ -16,7 +16,7 @@ class TypeRule extends Base
     ];
 
     protected $description = [
-        'alpha_numeric_underscore' => 'alphabets, digits and underscore (_)',
+        'alpha_numeric_underscore' => 'alphabets, digits and underscore(_)',
         'alpha_numeric'            => 'alphabets and digits',
         'numeric'                  => 'alphabets',
         'alpha'                    => 'digits',
