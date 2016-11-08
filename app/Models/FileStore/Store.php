@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FileStore;
 
+use RZP\Exception;
+
 class Store
 {
     const S3    = 's3';
@@ -20,11 +22,11 @@ class Store
         }
     }
 
-    public static function getHandler($storage)
+    public static function getHandler($store)
     {
         self::validateStore($store);
 
-        $class = self::STORE_MAP[$storage];
+        $class = self::STORE_MAP[$store];
 
         return new $class;
     }

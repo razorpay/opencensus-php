@@ -35,6 +35,10 @@ class Creator extends Base\Core
 
     const DEFAULT_SERVICE_PROVIDER = 's3';
 
+    const DEFAULT_ENCRYPTION_METHOD = 'none';
+
+    const DEFAULT_MERCHANT_ID = '10000000000000';
+
     const STORAGE_DIRECTORY = 'files/file_handler/';
 
     public function __construct()
@@ -55,9 +59,10 @@ class Creator extends Base\Core
 
     public function setDefaults()
     {
-        $this->file->encryption_method = 'none';
+        $this->file->encryption_method = self::DEFAULT_ENCRYPTION_METHOD;
 
-        $this->file->merchant_id = '10000000000000';
+        // TODO : Fix default Merhcant ID
+        $this->file->merchant_id = self::DEFAULT_MERCHANT_ID;
     }
 
     public function content($content)
@@ -126,7 +131,7 @@ class Creator extends Base\Core
     {
         $this->file->service = self::DEFAULT_SERVICE_PROVIDER;
 
-        $this->getStorageHandle($this->file->service);
+        $this->storageHandler = Store::getHandler($this->file->service);
 
         $bucket = $this->storageHandler->getBucketName($this->file->type);
 
@@ -142,30 +147,6 @@ class Creator extends Base\Core
     public function get()
     {
         return $this->file->toArrayPublic();
-    }
-
-    protected function getStorageHandle($service)
-    {
-        $class = 'RZP\Models\FileStore\Storage\\';
-
-        if ($this->serviceProvider !== $service)
-        {
-            switch ($service)
-            {
-                // TODO : change to constants
-                case 's3':
-                    $class  = $class . 'AwsS3' . '\Handler';
-                    break;
-
-                case 'default':
-                    throw new Exception\InvalidArgumentException(
-                        'Invalid storage service ' . $service);
-            }
-
-            $this->storageHandler = (new $class);
-
-            $this->serviceProvider = $service;
-        }
     }
 
     protected function writeToLocalFile()
