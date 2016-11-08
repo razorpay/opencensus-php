@@ -44,11 +44,6 @@ class CreateRoles extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ROLE, function($table)
-        {
-            $table->dropForeign(Table::ROLE.'_'.Role::ORG_ID.'_foreign');
-        });
-
         Schema::drop(Table::ROLE);
     }
 }

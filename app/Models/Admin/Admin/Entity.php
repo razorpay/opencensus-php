@@ -49,7 +49,16 @@ class Entity extends Base\PublicEntity
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ORG_ID,
+        self::USER_TYPE,
+        self::EMPLOYEE_CODE,
+        self::BRANCH_CODE,
+        self::DEPARTMENT_CODE,
+        self::SUPERVISOR_CODE,
+        self::LOCATION_CODE,
+        self::DISABLED,
+        self::LOCKED,
+        self::LAST_LOGIN_AT
     ];
 
     protected $visible = [
@@ -59,7 +68,16 @@ class Entity extends Base\PublicEntity
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ORG_ID,
+        self::USER_TYPE,
+        self::EMPLOYEE_CODE,
+        self::BRANCH_CODE,
+        self::DEPARTMENT_CODE,
+        self::SUPERVISOR_CODE,
+        self::LOCATION_CODE,
+        self::DISABLED,
+        self::LOCKED,
+        self::LAST_LOGIN_AT
     ];
 
     protected $public = [
@@ -68,7 +86,15 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
-        self::ORG_ID
+        self::ORG_ID,
+        self::USER_TYPE,
+        self::EMPLOYEE_CODE,
+        self::BRANCH_CODE,
+        self::DEPARTMENT_CODE,
+        self::SUPERVISOR_CODE,
+        self::LOCATION_CODE,
+        self::DISABLED,
+        self::LOCKED
     ];
 
     public function org()

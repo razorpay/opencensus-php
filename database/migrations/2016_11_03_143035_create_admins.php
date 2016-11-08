@@ -40,8 +40,8 @@ class CreateAdmins extends Migration
             $table->string(Admin::SUPERVISOR_CODE, 250);
             $table->string(Admin::LOCATION_CODE, 250);
 
-            $table->boolean(Admin::DISABLED)->default(0);
-            $table->boolean(Admin::LOCKED)->default(0);
+            $table->boolean(Admin::DISABLED)->default(0); // account disabled by supervisor
+            $table->boolean(Admin::LOCKED)->default(0); // use account has been locked due to max password failure attempts
 
             $table->text(Admin::RECENT_PASSWORD)->nullable();
 

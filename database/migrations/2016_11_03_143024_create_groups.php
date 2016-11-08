@@ -44,11 +44,6 @@ class CreateGroups extends Migration
      */
     public function down()
     {
-        Schema::table(Table::GROUP, function($table)
-        {
-            $table->dropForeign(Table::GROUP.'_'.Group::ORG_ID.'_foreign');
-        });
-
         Schema::drop(Table::GROUP);
     }
 }
