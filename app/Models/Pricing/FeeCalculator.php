@@ -597,7 +597,7 @@ class FeeCalculator
             {
                 if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
                 {
-                    $this->feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totaltaxes - $splitTaxes);
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totaltaxes - $splitTaxes);
                 }
             }
         }
