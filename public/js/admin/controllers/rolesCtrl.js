@@ -12,7 +12,7 @@ app.controller('RolesCtrl', [
       $scope.roles.push({
         id          : '6dLbNSpv5XbCOD',
         name        : 'test_role',
-        description : 'Role is in test',
+        description : 'Role is in test'
       });
       $scope.count = 1;
     };

@@ -31,9 +31,32 @@
           </a>
         </div>
         <div class="list-group">
-          <a class="list-group-item" ng-click="openPermissionsListModal()">
+          <div class="list-group-item" ng-init="isPermissionsCollapsed = true">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs" ng-click="isPermissionsCollapsed = !isPermissionsCollapsed">
+              Show/Hide
+            </button>
+          </span>
             Permissions
-          </a>
+          </div>
+          <div collapse="isPermissionsCollapsed" class="panel-body">
+            <div class="list-group-item">
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light">
+                  <thead>
+                    <th>Name</th>
+                    <th>Description</th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="row in role.permissions">
+                      <td>{{row.name}}</td>
+                      <td>{{row.description}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -73,26 +96,23 @@
       <h3 class="modal-title">Add New Permission</h3>
     </div>
     <div class="modal-body">
-        <form class="form-horizontal">
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Name:</label>
-            <div class="col-lg-6">
-              <input type="text" name="name" placeholder="Permission name" ng-model="permission.name">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Description:</label>
-            <div class="col-lg-6">
-              <input type="text" name="description" placeholder="Permission description" ng-model="permission.description">
-            </div>
-          </div>
-          </form>
-        </div>
-      </form>
+      <table class="table table-striped b-light">
+        <thead>
+          <th>Name</th>
+          <th>Description</th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in permissions">
+            <td>{{row.name}}</td>
+            <td>{{row.description}}</td>
+            <td><input type="checkbox" ng-model="row.selected"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(permission)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(permissions)">OK</button>
     </div>
 </script>
 
