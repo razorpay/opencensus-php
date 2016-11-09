@@ -785,4 +785,17 @@ class MerchantTest extends TestCase
             $merchantValidator->validateLogo($imageDetails);
         });
     }
+
+    public function testBatchMethodUpdate()
+    {
+
+        $this->fixtures->merchant->disableCard('10000000000000');
+
+        $this->fixtures->merchant->enableInternational('10000000000000');
+
+        $this->ba->appAuth();
+        
+        $content = $this->startTest();
+        
+    }
 }

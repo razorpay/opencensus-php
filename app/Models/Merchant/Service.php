@@ -665,4 +665,22 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function merchantMethodsBulkUpdate($input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        $response = new Base\Collection;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $paymentMethod = (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input['methods']);
+
+            $response->push($paymentMethod);
+        }
+        return $response;
+    }
+
 }

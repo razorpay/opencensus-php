@@ -479,8 +479,8 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $input = Request::all();
-
+        $input = Request::all()
+        
         $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
 
         return ApiResponse::json($response);
@@ -528,7 +528,16 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- Credits API Handlers -----------------------------------------
+    public function merchantMethodsBulkUpdate()
+    {
+        $input = Request::all();
+        $data = (new Merchant\Service)->merchantMethodsBulkUpdate($input);
+
+        return ApiResponse::json($data);
+
+    }
+
+    // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
     {
