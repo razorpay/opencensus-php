@@ -6,7 +6,7 @@
     </h1>
   </div>
   <div class="wrapper-md">
-    <div class="panel panel-default">
+    <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
       <div class="panel-heading">
         Invitation details
       </div>
@@ -16,6 +16,7 @@
            <label for="channel_code" class="col-lg-3 control-label">Channel Code</label>
             <div class="col-lg-8" >
               <select name="channel_code" ng-model="merchant.channel_code" class="form-control m-b" ng-required='true'>
+                <option value="">Please select a channel code</option>
                 <option value="mrm">MRM</option>
                 <option value="branch">Branch/CANI</option>
                 <option value="db">Database</option>
@@ -119,9 +120,9 @@
 
           <div class="line"></div>
 
-          <h3 class="text-center">
+          <div class="panel-heading">
             Merchant details
-          </h3>
+          </div>
 
           <div class="line"></div>
 

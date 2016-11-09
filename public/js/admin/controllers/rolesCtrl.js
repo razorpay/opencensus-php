@@ -8,14 +8,32 @@ app.controller('RolesCtrl', [
     $scope.roles = [];
     $scope.count = 0;
 
-    $scope.regenerate = function () {
-      $scope.roles.push({
-        id          : '6dLbNSpv5XbCOD',
-        name        : 'test_role',
-        description : 'Role is in test'
+    $scope.getRoles = function () {
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'role_get_multiple',
+
+          url_params: {
+            '{id}': 'org_6dLbNSpv5XbCOG'
+          }
+        }
       });
-      $scope.count = 1;
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.roles = data.data.items
+          $scope.count = data.data.count;
+        }
+        else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+
     };
+
+    $scope.getRoles();
 
     $scope.openCreateRoleModal = function () {
       var role = {};
@@ -34,30 +52,35 @@ app.controller('RolesCtrl', [
     };
 
     $scope.addRole = function (role) {
-      // TODO Mocked new role. Remove later
-      $scope.roles.push({
-        id: '6dLbNSpv5XbCOD',
-        name: role.name,
-        description: role.description
-      });
-      $scope.count += 1;
       var request = $http({
-        url: '/orgs/jdhsakd/roles',
+        url: '/admin/generic',
         method: 'POST',
-        transformRequest: transformRequestAsFormPost,
+        params: {
+          route_name: 'role_create',
+          url_params: {
+            '{id}': 'org_6dLbNSpv5XbCOG'
+          }
+        },
         data: {
-          name: role.name,
-          description: role.description
+          body: {
+            name: role.name,
+            description: role.description
+          }
         }
       });
+
       request.success(function (data) {
-        console.log(data.data);
+        if (data.success) {
+          $scope.roles.push({
+            id: data.data.id,
+            name: data.data.name,
+            description: data.data.description
+          });
+        }
       }).error(function () {
-        console.log('Add Role Request failed');
+        $scope.alerts.addAlert('danger', null, true);
       })
     };
-
-    $scope.regenerate();
   }
 ]).controller('createRoleCtrl', [
   '$scope',
@@ -65,6 +88,7 @@ app.controller('RolesCtrl', [
   'current',
   function ($scope, $modalInstance, current) {
     $scope.role = current;
+
     $scope.ok = function (role) {
       $modalInstance.close(role);
     };

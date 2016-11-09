@@ -8,14 +8,31 @@ app.controller('GroupsCtrl', [
     $scope.groups = [];
     $scope.count = 0;
 
-    $scope.regenerate = function () {
-      $scope.groups.push({
-        id          : '6dLbNSpv5XbCOD',
-        name        : 'test_group',
-        description : 'Some fine description',
+    $scope.getGroups = function () {
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'group_get_multiple',
+
+          url_params: {
+            '{id}': 'org_6dLbNSpv5XbCOF'
+          }
+        }
       });
-      $scope.count = 1;
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.groups = data.data.items;
+          $scope.count = data.data.count;
+        }
+        else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
     };
+
+    $scope.getGroups();
 
     $scope.openCreateGroupModal = function () {
       var group = {};
@@ -57,7 +74,6 @@ app.controller('GroupsCtrl', [
       });
     };
 
-    $scope.regenerate();
   }
 ]).controller('createGroupCtrl', [
   '$scope',
