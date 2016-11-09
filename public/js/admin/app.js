@@ -128,6 +128,10 @@ var app = angular.module('app', [
     }).state('app.orgs.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_orgs_list.html'
+    }).state('app.users', {
+      url: '/users',
+      templateUrl: 'tpl/admin/app_orgs_users.html',
+      data: { superadmin: true }
     }).state('app.roles', {
       url: '/roles',
       template: '<div ui-view class="fade-in-down smooth"></div>'

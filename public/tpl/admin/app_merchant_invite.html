@@ -8,17 +8,10 @@
   <div class="wrapper-md">
     <div class="panel panel-default">
       <div class="panel-heading">
-        List of all Organzations
+        Invitation details
       </div>
       <div class="row wrapper">
         <form class="form-horizontal row">
-          <div class="form-group">
-           <label for="email" class="col-lg-3 control-label">Merchant email</label>
-            <div class="col-lg-8" >
-              <input type="email" class="form-control m-b" name="email"
-                ng-model="merchant.email" placeholder="admin@company.com" ng-required='true'>
-            </div>
-          </div>
           <div class="form-group">
            <label for="channel_code" class="col-lg-3 control-label">Channel Code</label>
             <div class="col-lg-8" >
@@ -121,6 +114,44 @@
             <div class="col-lg-8" >
               <input class="form-control m-b" name="surcharge"
                 ng-model="merchant.surcharge" ng-required='true'>
+            </div>
+          </div>
+
+          <div class="line"></div>
+
+          <h3 class="text-center">
+            Merchant details
+          </h3>
+
+          <div class="line"></div>
+
+          <div class="form-group">
+           <label for="name" class="col-lg-3 control-label">Merchant Name</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="name"
+                ng-model="merchant.name" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="contact_name" class="col-lg-3 control-label">Contact Name</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="contact_name"
+                ng-model="merchant.contact_name" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="contact_email" class="col-lg-3 control-label">Contact email</label>
+            <div class="col-lg-8" >
+              <input type="email" class="form-control m-b" name="contact_email"
+                ng-model="merchant.contact_email" ng-required='true'
+                placeholder="admin@company.com">
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="dba_name" class="col-lg-3 control-label">DBA Name</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="dba_name"
+                ng-model="merchant.dba_name" ng-required='true'>
             </div>
           </div>
         </form>
