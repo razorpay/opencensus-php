@@ -21,11 +21,11 @@ class AdminController extends Controller
     protected $redirectTo = '/admin';
     protected $guard = 'admin';
 
-    // Org Name/Key => Org ID
+    // Org domain => Org ID
     // We'll hardcode this for now
     const ORG_CHART = [
-        'RZP' => '6dLbNSpv5XbCOF',
-        'HDFC'=> '6dLbNSpv5XbCOG',
+        'dashboard.razorpay.dev' => '6dLbNSpv5XbCOF',
+        'heimdall.razorpay.dev'=> '6dLbNSpv5XbCOG',
     ];
 
     /*
@@ -54,9 +54,7 @@ class AdminController extends Controller
             return redirect('/admin/');
         }
 
-        $orgName = Input::get('org', 'RZP');
-
-        $org = $this->getOrg($orgName);
+        $org = $this->getOrg();
 
         switch($org['auth_type'])
         {
@@ -64,7 +62,7 @@ class AdminController extends Controller
                 return redirect($this->getGoogleOAuthUrl());
             case 'password':
 
-                return redirect('/admin/#access/auth/password?org='.$orgName);
+                return redirect('/admin/#access/auth/password');
         }
     }
 
@@ -142,9 +140,10 @@ class AdminController extends Controller
         return AppResponse::jsonResponse(['Invalid Credentials'], []);
     }
 
-    protected function getOrg($orgName)
+    protected function getOrg()
     {
-        return (new Admin\Service)->getOrg(self::ORG_CHART[$orgName]);
+        $domain = request()->server->get('SERVER_NAME');
+        return (new Admin\Service)->getOrg(self::ORG_CHART[$domain]);
     }
 
     public function getAdmin()

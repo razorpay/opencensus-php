@@ -261,7 +261,7 @@ angular.module('app.services', [])
   'admin',
   '$location',
   '$http',
-  function ($rootScope, $state, admin) {
+  function ($rootScope, $state, admin, $location) {
     return {
       authorize: function () {
 
@@ -272,8 +272,8 @@ angular.module('app.services', [])
 
             // If you are not logged in and not on the signin page
             if (admin.isAuthenticated() === false) {
-              // Will cause redirect ?!
-              $state.go('access.signin');
+              // Will cause redirect
+              window.location.href = '/admin/auth';
             }
 
             // user is signed in but not authorized for desired state

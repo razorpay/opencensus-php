@@ -135,9 +135,6 @@ var app = angular.module('app', [
         ]
       },
       data: { role: 'guest' }
-    }).state('access.signin', {
-      url: '/signin',
-      templateUrl: 'tpl/admin/page_auth_select.html'
     }).state('access.auth', {
       url: '/auth',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -145,20 +142,6 @@ var app = angular.module('app', [
       url: '/password',
       templateUrl: 'tpl/admin/page_signin.html',
       data: { role: 'guest' }
-    }).state('access.auth.google_oauth', {
-      url: '/google_oauth',
-      resolve: {
-        http: function ($http) {
-          return $http;
-        }
-      },
-      controller: function (http) {
-        http.get('/admin/google_oauth_url').success(function (data) {
-          if (data.success) {
-            location.href = data.data;
-          }
-        });
-      }
     }).state('access.lockme', {
       url: '/lockme/:username',
       templateUrl: 'tpl/page_lockme.html'

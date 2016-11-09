@@ -68,7 +68,7 @@ class ApiGuard implements Guard
      */
     protected function getToken()
     {
-        $admin = $this->sessions->get('api_admin');
+        $admin = session('api_admin');
 
         $token = $admin['token'];
 
