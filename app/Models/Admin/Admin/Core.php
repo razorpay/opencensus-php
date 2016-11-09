@@ -3,12 +3,17 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Models\Base;
+use RZP\Models\Org\AuthPolicy;
 
 class Core extends Base\Core
 {
     public function create(string $orgId, array $input)
     {
         $org = $this->repo->org->findOrFail($orgId);
+
+        $policy = new AuthPolicy\Entity;
+
+        (new AuthPolicy\Validator)->validate($input['password']);
 
         $admin = (new Entity)->build($input);
 
