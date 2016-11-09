@@ -60,6 +60,17 @@ class GenericController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function deleteGeneric()
+    {
+        $input = ['method' => 'delete'];
+
+        $route = $this->resolveRoute();
+
+        list($error, $data) = (new Generic\Service)->call($input, $route);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     private function resolveRoute()
     {
         $routeName = Input::get('route_name');
