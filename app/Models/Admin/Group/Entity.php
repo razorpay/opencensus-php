@@ -63,4 +63,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
     }
+
+    public function org()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
 }
