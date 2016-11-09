@@ -17,21 +17,21 @@
       </div>
     </div>
     <div class="panel panel-default col-sm-6">
-      <div class="row wrapper">
-        <div class="list-group">
-          <a href class="list-group-item">
+      <div class="row wrapper list-group">
+        <div class="list-group-item">
+          <a>
             <span class="pull-right">{{role.name}}</span>
             Name
           </a>
         </div>
-        <div class="list-group">
-          <a href class="list-group-item">
+        <div class="list-group-item">
+          <a>
             <span class="pull-right">{{role.description}}</span>
             Description
           </a>
         </div>
-        <div class="list-group">
-          <div class="list-group-item" ng-init="isPermissionsCollapsed = true">
+        <div class="list-group-item">
+          <div ng-init="isPermissionsCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs" ng-click="isPermissionsCollapsed = !isPermissionsCollapsed">
               Show/Hide
@@ -40,7 +40,7 @@
             Permissions
           </div>
           <div collapse="isPermissionsCollapsed" class="panel-body">
-            <div class="list-group-item">
+            <div>
               <div class="m-t list-group-item">
                 <table class="table table-striped b-light">
                   <thead>
