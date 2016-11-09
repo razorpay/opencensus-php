@@ -268,6 +268,7 @@ Route::group(['middleware'  =>  'admin'], function()
             ->where('format', 'csv');
     // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
+    
     // Route::get('/generic', 'GenericController@getGeneric');
     Route::post('/generic', 'GenericController@postGeneric');
     // Route::put('/generic', 'GenericController@putGeneric');
