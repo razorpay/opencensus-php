@@ -5,14 +5,12 @@ namespace RZP\Models\Admin\Admin\Token;
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Admin\Admin;
 
 class Entity extends Base\PublicEntity
 {
-    const ADMIN_ID                  = 'admin_id';
-    const TOKEN                     = 'token';
-    const CREATED_AT                = 'created_at';
-    const EXPIRES_AT                = 'expires_at';
+    const ADMIN_ID   = 'admin_id';
+    const TOKEN      = 'token';
+    const EXPIRES_AT = 'expires_at';
 
     protected static $sign = 'token';
 
@@ -27,7 +25,9 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ADMIN_ID,
         self::TOKEN,
-        self::EXPIRES_AT
+        self::EXPIRES_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $public = [

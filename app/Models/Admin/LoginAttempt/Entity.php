@@ -40,7 +40,8 @@ class Entity extends Base\PublicEntity
         self::IP_ADDRESS
     ];
 
-    public function admin() {
+    public function admin()
+    {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 }

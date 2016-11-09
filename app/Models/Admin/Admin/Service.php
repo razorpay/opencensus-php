@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use RZP\Models\Admin\Org;
+use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 
 class Service extends Base\Service
 {
@@ -20,28 +21,27 @@ class Service extends Base\Service
         // TODO: add validation for username and password (required fields)
 
         // Get the admin record
-        $admin = $this->repo->admin->getByUsername($input['username']);
+        $admin = $this->repo->admin->findOrFailByUsername($input['username']);
 
         // Valid password ?
-        if (\Hash::check($input['password'], $admin->password))
+        if (Hash::check($input['password'], $admin->getPassword()))
         {
+            $tokenAttributes = [
+                'token'      => str_random(40),
+                'expires_at' => Carbon::now()->addHours(1)->timestamp
+            ];
+
             // Create a token for the user
-            $token = $this->createAuthToken($admin);
+            $token = $this->core->createAuthToken($admin, $input);
 
             $admin = $admin->toArrayPublic();
-            $admin['token'] = $token->token;
+
+            $admin['token'] = $token->getToken();
 
             return $admin;
         }
 
         return null;
-    }
-
-    private function createAuthToken($admin)
-    {
-        $token = $this->repo->admin_token->createToken($admin);
-
-        return $token;
     }
 
     public function createAdmin(string $orgId, array $input)

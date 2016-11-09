@@ -9,13 +9,13 @@ use RZP\Models\Admin\Admin;
 
 class Entity extends Base\PublicEntity
 {
-    const AUTH_TYPE             = 'auth_type';
-    const BUSINESS_NAME         = 'business_name';
-    const DISPLAY_NAME          = 'display_name';
-    const EMAIL                 = 'email';
-    const EMAIL_DOMAINS         = 'email_domains';
-    const DELETED_AT            = 'deleted_at';
-    const LOGO_URL              = 'logo_url';
+    const AUTH_TYPE     = 'auth_type';
+    const BUSINESS_NAME = 'business_name';
+    const DISPLAY_NAME  = 'display_name';
+    const EMAIL         = 'email';
+    const EMAIL_DOMAINS = 'email_domains';
+    const DELETED_AT    = 'deleted_at';
+    const LOGO_URL      = 'logo_url';
 
     protected static $sign = 'org';
 

@@ -3,9 +3,8 @@
 namespace RZP\Models\Admin\Org\AuthPolicy\Rules;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
-class EnforceInitialPasswordChange extends Base
+class EnforceInitialPasswordChangeRule extends Base
 {
     protected $enforceInitialPasswordChange;
 
@@ -19,8 +18,8 @@ class EnforceInitialPasswordChange extends Base
         if (($admin->isFirstLogin() === true) and
             ($this->enforceInitialPasswordChange === true))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INITIAL_PASSWORD_SHOULD_BE_CHANGED);
+            throw new Exception\BadRequestValidationFailureException(
+                'Please change the password');
         }
     }
 }

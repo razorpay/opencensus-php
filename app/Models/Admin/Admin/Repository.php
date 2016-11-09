@@ -3,23 +3,21 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Base;
-
-use RZP\Models\Merchant;
-use RZP\Models\Admin\Role;
 use RZP\Exception;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Role;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'admin';
 
     // TODO Define the proxyfetch and admin fetch params
-
-    public function getByUsername($username)
+    public function findOrFailByUsername($username)
     {
         return $this->newQuery()
                     ->where(Entity::USERNAME, '=', $username)
-                    ->first();
+                    ->firstOrFail();
     }
 
     public function retrieveByIdAndAdminIdOrFail($orgId, $adminId)
@@ -30,65 +28,64 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function addRoleToAdmin(Admin\Entity $admin, Role\Entity $role)
+    public function addRoleToAdmin(Entity $admin, Role\Entity $role)
     {
         $admin->roles()->attach($role);
     }
 
     public function addMerchantToAdmin(
-        Admin\Entity $admin,
+        Entity $admin,
         Merchant\Entity $merchant)
     {
-        $admin->saveOrFailMerchant($merchant);
+        return $admin->saveOrFailMerchant($merchant);
     }
 
     public function removeMerchantOrFail(
-        Admin\Entity $admin,
+        Entity $admin,
         Merchant\Entity $merchant)
     {
         if ($this->hasMerchant($admin, $merchant) === true)
         {
-            $admins->merchants()->detach($merchant);
+            return $admins->merchants()->detach($merchant);
         }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ASSIGNED);
-        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_NOT_ASSIGNED);
     }
 
-    public function revokeRoleOrFail(Admin\Entity $admin, Role\Entity $role)
+    public function revokeRoleOrFail(Entity $admin, Role\Entity $role)
     {
         if ($this->hasRole($admin, $role) === true)
         {
-            $admin->roles()->detach($role);
+            return $admin->roles()->detach($role);
         }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ROLE_NOT_ASSIGNED);
-        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ROLE_NOT_ASSIGNED);
     }
 
-    public function hasRole(Admin\Entity $admin, Role\Entity $role)
+    public function hasRole(Entity $admin, Role\Entity $role)
     {
         // TODO Check how to do it with the pivot table. Iterating over a collection is bad!
         $roleId = $role->getId();
 
-        return ! $admin->roles()->filter(function ($role) use($roleId)
-            {
-                return $role->getId() === $roleId;
-            })->isEmpty();
+        $isEmpty = $admin->roles()->filter(function($role) use ($roleId)
+        {
+            return ($role->getId() === $roleId);
+        })->isEmpty();
+
+        return ($isEmpty === false);
     }
 
-    public function hasMerchant(Admin\Entity $admin, Merchant\Entity $merchant)
+    public function hasMerchant(Entity $admin, Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
 
-        return ! $admin->merchants->filter(
-            function ($merchant) use($merchantId)
-            {
-                return $merchant->getId() === $merchantId;
-            })->isEmpty();
+        $isEmpty = $admin->merchants->filter(function($merchant) use ($merchantId)
+        {
+            return ($merchant->getId() === $merchantId);
+        })->isEmpty();
+
+        return ($isEmpty === false);
     }
 }
