@@ -29,15 +29,9 @@ class GenericController extends Controller
 
     public function postGeneric()
     {
-        $input['method'] = 'post';
+        $input = ['method' => 'post'];
 
-        $routeName = Input::get('route_name');
-
-        unset($input['route_name']);
-
-        $route = Config::get('api-route-map.'.$routeName);
-
-        $route = $this->parseUrlParams();
+        $route = $this->resolveRoute();
 
         list($error, $data) = (new Generic\Service)->call($input, $route);
 
@@ -46,15 +40,9 @@ class GenericController extends Controller
 
     public function getGeneric()
     {
-        $input['method'] = 'get';
+        $input = ['method' => 'get'];
 
-        $routeName = Input::get('route_name');
-
-        unset($input['route_name']);
-
-        $route = Config::get('api-route-map.'.$routeName);
-
-        $route = $this->parseUrlParams();
+        $route = $this->resolveRoute();
 
         list($error, $data) = (new Generic\Service)->call($input, $route);
 
@@ -63,19 +51,24 @@ class GenericController extends Controller
 
     public function putGeneric()
     {
-        $input['method'] = 'put';
+        $input = ['method' => 'put'];
 
-        $routeName = Input::get('route_name');
-
-        unset($input['route_name']);
-
-        $route = Config::get('api-route-map.'.$routeName);
-
-        $route = $this->parseUrlParams();
+        $route = $this->resolveRoute();
 
         list($error, $data) = (new Generic\Service)->call($input, $route);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    private function resolveRoute()
+    {
+        $routeName = Input::get('route_name');
+
+        $route = Config::get('api-route-map.'.$routeName);
+
+        $route = $this->parseUrlParams($route);
+
+        return $route;
     }
 
     private function parseUrlParams($route)
