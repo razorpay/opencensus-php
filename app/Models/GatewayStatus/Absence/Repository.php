@@ -11,7 +11,7 @@ class Repository extends Base\Repository
     // These are proxy allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::GATEWAY        => 'sometimes|string|max:255',
-        Entity::BANK           => 'sometimes|string|max:255',
+        Entity::ISSUER         => 'sometimes|string|max:255',
         Entity::FROM           => 'sometimes|integer',
         Entity::TO             => 'sometimes|integer',
         Entity::PARTIAL        => 'sometimes|bool',
@@ -26,9 +26,9 @@ class Repository extends Base\Repository
             $query->where(Entity::GATEWAY, '=', $input[Entity::GATEWAY]);
         }
 
-        if (isset($input[Entity::BANK]))
+        if (isset($input[Entity::ISSUER]))
         {
-            $query->where(Entity::BANK, '=', $input[Entity::BANK]);
+            $query->where(Entity::ISSUER, '=', $input[Entity::ISSUER]);
         }
 
         if (isset($input[Entity::FROM]))

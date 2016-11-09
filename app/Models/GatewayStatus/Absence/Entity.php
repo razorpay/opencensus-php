@@ -9,13 +9,15 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const GATEWAY                       = 'gateway';
-    const BANK                          = 'bank';
+    const ISSUER                        = 'issuer';
     const CARD_TYPE                     = 'card_type';
     const NETWORK                       = 'network';
     const METHOD                        = 'method';
     const FROM                          = 'from';
     const TO                            = 'to';
-    const REASON                        = 'reason';
+    const TERMINAL_ID                   = 'terminal_id';
+    const REASON_CODE                   = 'reason_code';
+    const COMMENT                       = 'comment';
     const PARTIAL                       = 'partial';
     const SCHEDULED                     = 'scheduled';
     const CREATED_AT                    = 'created_at';
@@ -25,24 +27,26 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::FROM,
         self::TO,
-        self::REASON,
-        self::BANK,
+        self::COMMENT,
+        self::REASON_CODE,
+        self::ISSUER,
         self::SCHEDULED,
         self::PARTIAL,
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
+        self::TERMINAL_ID
     ];
 
     protected $public = [
         self::ID,
         self::GATEWAY,
         self::FROM,
-        self::BANK,
+        self::ISSUER,
         self::TO,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::REASON,
+        self::REASON_CODE,
         self::SCHEDULED,
         self::PARTIAL,
         self::CARD_TYPE,

@@ -9,7 +9,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
-                'reason'  => 'Test Reason'
+                'reason'  => 'Test Reason',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -17,6 +19,7 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
+                'method' => 'netbanking'
             ]
         ]
     ],
@@ -26,6 +29,8 @@ return [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
                 'partial' => true,
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -33,7 +38,8 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
-                'partial' => true
+                'partial' => true,
+                'method' => 'netbanking'
             ]
         ]
     ],
@@ -42,7 +48,8 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'HDFC'
+                'issuer' => 'HDFC',
+                'method' => 'netbanking'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -50,7 +57,7 @@ return [
         'response' => [
             'content' => [
                 'reason' => 'Test Reason',
-                'bank'   => 'HDFC'
+                'issuer'   => 'HDFC'
             ]
         ]
     ],
@@ -58,7 +65,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'UNKNOWN_GATEWAY',
-                'reason'  => 'Test Reason'
+                'reason'  => 'Test Reason',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -82,7 +91,9 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'SOME BANK',
+                'issuer' => 'SOME BANK',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -106,7 +117,8 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason'  => 'Test Reason',
-                'bank' => 'ICIC',
+                'issuer' => 'ICIC',
+                'method' => 'netbanking',
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -129,7 +141,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
-                'reason'  => 'Test Reason'
+                'reason'  => 'Test Reason',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -161,7 +175,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
-                'reason'  => 'Test Reason'
+                'reason'  => 'Test Reason',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'

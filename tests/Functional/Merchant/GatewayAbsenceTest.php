@@ -11,7 +11,13 @@ class GatewayAbsenceTest extends TestCase
 
     protected $gatewayBankMap = [
         'netbanking_hdfc' => 'HDFC',
-        'netbanking_kotak' => 'KKBK'
+        'netbanking_kotak' => 'KKBK',
+    ];
+
+    protected $gatewayMethodName = [
+        'netbanking_hdfc' => 'netbanking',
+        'netbanking_kotak' => 'netbanking',
+        'axis_migs' => 'card'
     ];
 
     public function setUp()
@@ -195,6 +201,11 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
+    public function testGatewayAbsenceForCard()
+    {
+
+    }
+
     //----- helpers -----
 
     protected function fillDefaultsForTests($functionName)
@@ -230,13 +241,16 @@ class GatewayAbsenceTest extends TestCase
     {
         $bank = $this->gatewayBankMap[$gatewayName];
 
+        $method = $this->gatewayMethodName[$gatewayName];
+
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
                 'reason'  => 'Test Reason',
-                'bank'  => $bank,
+                'issuer'  => $bank,
                 'from'  => $from,
-                'to' => $to
+                'to' => $to,
+                'method' => $method
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -249,6 +263,8 @@ class GatewayAbsenceTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
+        sd($content);
+
         $this->assertEquals($content['gateway'], $gatewayName);
 
         return $content;
@@ -258,12 +274,39 @@ class GatewayAbsenceTest extends TestCase
     {
         $bank = $this->gatewayBankMap[$gatewayName];
 
+        $method = $this->gatewayMethodName[$gatewayName];
+
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
                 'reason'  => 'Test Reason',
-                'bank'  => $bank,
+                'issuer'  => $bank,
                 'from'  => $from,
+                'method' => $method,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['gateway'], $gatewayName);
+
+        return $content;
+    }
+
+    protected function createGatewayAbsenceWithCard($gatewayName, $from, $cardType, $network)
+    {
+        $method = $this->gatewayMethodName[$gatewayName];
+
+        $request = [
+            'content' => [
+                'gateway' => $gatewayName,
+                'reason'  => 'Test Reason',
+                'from'  => $from,
+                'method' => $method,
+                'card_type' => $cardType,
+                'network' => $network
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'

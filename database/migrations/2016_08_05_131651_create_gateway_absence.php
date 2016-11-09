@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\GatewayStatus\Absence\Entity as DowntimeTrace;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class CreateGatewayAbsence extends Migration
 {
@@ -21,8 +22,24 @@ class CreateGatewayAbsence extends Migration
 
             $table->string(DowntimeTrace::GATEWAY, 255);
 
-            $table->string(DowntimeTrace::BANK, 10)
-                  ->nullable();
+            $table->string(DowntimeTrace::ISSUER, 50)
+                ->nullable();
+
+            $table->string(DowntimeTrace::REASON_CODE, 30);
+
+            $table->char(DowntimeTrace::TERMINAL_ID, TerminalEntity::ID_LENGTH)
+                ->nullable();
+
+            $table->string(DowntimeTrace::CARD_TYPE, 10)
+                ->nullable();
+
+            $table->string(DowntimeTrace::NETWORK, 10)
+                ->nullable();
+
+            $table->string(DowntimeTrace::METHOD, 30);
+
+            $table->text(DowntimeTrace::COMMENT, 500)
+                ->nullable();
 
             $table->integer(DowntimeTrace::FROM);
 
@@ -31,32 +48,26 @@ class CreateGatewayAbsence extends Migration
             $table->integer(DowntimeTrace::TO)
                   ->nullable();
 
+            $table->tinyInteger(DowntimeTrace::SCHEDULED)
+                ->default(1);
+
+            $table->tinyInteger(DowntimeTrace::PARTIAL)
+                ->default(0);
+
             $table->integer(DowntimeTrace::CREATED_AT);
 
             $table->integer(DowntimeTrace::UPDATED_AT);
-
-            $table->text(DowntimeTrace::REASON, 500)
-                  ->nullable();
-
-            $table->tinyInteger(DowntimeTrace::SCHEDULED)
-                    ->default(1);
-
-            $table->tinyInteger(DowntimeTrace::PARTIAL)
-                    ->default(0);
-
-            $table->string(DowntimeTrace::CARD_TYPE, 10)
-                    ->nullable();
-
-            $table->string(DowntimeTrace::NETWORK, 10)
-                    ->nullable();
-
-            $table->string(DowntimeTrace::METHOD, 30);
 
             $table->index(DowntimeTrace::GATEWAY);
 
             $table->index(DowntimeTrace::FROM);
 
             $table->index(DowntimeTrace::TO);
+
+            $table->foreign(DowntimeTrace::TERMINAL_ID)
+                ->references(TerminalEntity::ID)
+                ->on(Table::TERMINAL)
+                ->on_delete('restrict');
 
         });
     }
@@ -68,6 +79,11 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
+        Schema::table(Table::GATEWAY_ABSENCE, function($table) {
+            $table->dropForeign(
+                TABLE::GATEWAY_ABSENCE . '_' . DowntimeTrace::TERMINAL_ID . '_foreign');
+        });
+
         Schema::drop(Table::GATEWAY_ABSENCE);
     }
 }
