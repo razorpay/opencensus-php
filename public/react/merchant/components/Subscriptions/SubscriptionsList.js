@@ -1,12 +1,15 @@
 import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import SubscriptionStatus from './SubscriptionStatus'
 import Time from 'rzp/ui/Time'
 
 const SubscriptionListItem = ({ subscription }) => {
   return (
     <tr>
       <td>{subscription.customer_name}</td>
-      <td>{subscription.status}</td>
+      <td>
+        <SubscriptionStatus status={subscription.status} />
+      </td>
       <td>{subscription.plan_name}</td>
       <td>₹ {subscription.amount}</td>
       <td>
