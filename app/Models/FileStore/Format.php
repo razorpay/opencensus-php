@@ -15,31 +15,35 @@ class Format
     const XLSX  = 'xlsx';
     const TXT   = 'txt';
 
-    const SUPPORTED_CONTENT_TYPES = [
+    const SUPPORTED_EXTENSION_TYPES = [
         self::CSV,
         self::XLS,
         self::XLSX,
         self::TXT
     ];
 
+    const VALID_LOCAL_EXTENSIONS = [
+        self::TXT,
+    ];
+
     /**
      * Validate if content given given is proper for filetype provided
-     * @param string $content Content of file
-     * @param string $format  Format of file
+     * @param string $content    Content of file
+     * @param string $extension  Extension of file
      * @return boolean
      *
-     * @throws Exception\Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestValidationFailureException
      */
-    public static function validateContentTypeForFormat($content, $format)
+    public static function validateContentTypeForExtension($content, $extension)
     {
         // TODO : Fix content checking
 
-        if (in_array($format, self::SUPPORTED_CONTENT_TYPES) === true)
+        if (in_array($extension, self::SUPPORTED_EXTENSION_TYPES) === true)
         {
             return true;
         }
 
         throw new Exception\BadRequestValidationFailureException(
-            'Content type not valid for file format specified.');
+            'Content type not valid for file extension specified.');
     }
 }

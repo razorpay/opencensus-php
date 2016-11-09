@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore\Entity as FileStore;
+use RZP\Models\Transaction\Entity as Transaction;
 
 class CreateFileStore extends Migration
 {
@@ -16,7 +17,7 @@ class CreateFileStore extends Migration
      */
     public function up()
     {
-        Schema::create(Table::FILE, function(Blueprint $table)
+        Schema::create(Table::FILE_STORE, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -31,9 +32,11 @@ class CreateFileStore extends Migration
 
             $table->string(FileStore::ENTITY_TYPE)->nullable();
 
-            $table->string(FileStore::COMMENTS)->nullable();
+            $table->text(FileStore::COMMENTS)->nullable();
 
-            $table->string(FileStore::FORMAT);
+            $table->string(FileStore::EXTENSION);
+
+            $table->string(FileStore::MIME)->nullable();
 
             $table->bigInteger(FileStore::SIZE);
 
@@ -47,29 +50,25 @@ class CreateFileStore extends Migration
 
             $table->string(FileStore::PERMISSION)->nullable();
 
-            $table->string(FileStore::ENCRYPTION_METHOD);
+            $table->string(FileStore::ENCRYPTION_METHOD)->nullable();
 
             $table->string(FileStore::PASSWORD)->nullable();
 
             $table->string(FileStore::METADATA)->nullable();
 
-            $table->string(FileStore::CREATED_AT);
+            $table->integer(FileStore::CREATED_AT);
 
-            $table->string(FileStore::UPDATED_AT);
+            $table->integer(FileStore::UPDATED_AT);
 
-            $table->string(FileStore::DELETED_AT)->nullable();
+            $table->integer(FileStore::DELETED_AT)->nullable();
 
             $table->index(FileStore::ENTITY_ID);
-
             $table->index(FileStore::ENTITY_TYPE);
-
             $table->index(FileStore::TYPE);
-
             $table->index(FileStore::CREATED_AT);
-
             $table->index(FileStore::DELETED_AT);
 
-            $table->foreign(FILESTORE::MERCHANT_ID)
+            $table->foreign(FileStore::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
@@ -83,12 +82,12 @@ class CreateFileStore extends Migration
      */
     public function down()
     {
-        Schema::table(Table::FILESTORE, function($table)
+        Schema::table(Table::FILE_STORE, function($table)
         {
             $table->dropForeign(
-                TABLE::FILESTORE . '_' . Transaction::MERCHANT_ID . '_foreign');
+                Table::FILE_STORE . '_' . Transaction::MERCHANT_ID . '_foreign');
         });
 
-        Schema::drop(Table::FILESTORE);
+        Schema::drop(Table::FILE_STORE);
     }
 }

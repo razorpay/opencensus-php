@@ -13,7 +13,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
     const COMMENTS              = 'comments';
-    const FORMAT                = 'format';
+    const EXTENSION             = 'extension';
+    const MIME                  = 'mime';
     const SIZE                  = 'size';
     const NAME                  = 'name';
     const STORE                 = 'store';
@@ -25,57 +26,57 @@ class Entity extends Base\PublicEntity
     const METADATA              = 'metadata';
     const DELETED_AT            = 'deleted_at';
 
-    protected $entity           = 'file';
+    protected $entity           = 'file_store';
 
     protected static $sign      = 'file';
-
-    protected $table  = \RZP\Constants\Table::FILE;
 
     protected $generateIdOnCreate = true;
 
     protected $public = [
         self::ID,
-        self::NAME,
-        self::COMMENTS,
         self::TYPE,
-        self::CREATED_AT,
+        self::COMMENTS,
+        self::NAME,
         self::LOCATION,
+        self::CREATED_AT,
     ];
 
     protected $fillable = [
-        self::FORMAT,
-        self::SIZE,
-        self::ENCRYPTION_METHOD,
-        self::LOCATION,
-        self::STORE,
-        self::PASSWORD,
-        self::BUCKET,
-        self::NAME,
-        self::ENTITY_TYPE,
-        self::ENTITY_ID,
         self::MERCHANT_ID,
-        self::PERMISSION,
-        self::METADATA,
+        self::TYPE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::COMMENTS,
-        self::TYPE
+        self::EXTENSION,
+        self::MIME,
+        self::SIZE,
+        self::NAME,
+        self::STORE,
+        self::LOCATION,
+        self::BUCKET,
+        self::PERMISSION,
+        self::ENCRYPTION_METHOD,
+        self::PASSWORD,
+        self::METADATA,
     ];
 
     protected $visible = [
         self::ID,
-        self::FORMAT,
-        self::SIZE,
-        self::ENCRYPTION_METHOD,
-        self::LOCATION,
-        self::STORE,
-        self::BUCKET,
-        self::NAME,
-        self::ENTITY_TYPE,
-        self::ENTITY_ID,
         self::MERCHANT_ID,
-        self::PERMISSION,
-        self::METADATA,
-        self::COMMENTS,
         self::TYPE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::COMMENTS,
+        self::EXTENSION,
+        self::MIME,
+        self::SIZE,
+        self::NAME,
+        self::STORE,
+        self::LOCATION,
+        self::BUCKET,
+        self::PERMISSION,
+        self::ENCRYPTION_METHOD,
+        self::METADATA,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -85,10 +86,19 @@ class Entity extends Base\PublicEntity
         self::PASSWORD
     ];
 
-    protected $defaults = [];
+    protected $defaults = [
+        self::ENTITY_ID         => null,
+        self::ENTITY_TYPE       => null,
+        self::COMMENTS          => null,
+        self::MIME              => null,
+        self::BUCKET            => null,
+        self::PERMISSION        => null,
+        self::ENCRYPTION_METHOD => null,
+        self::PASSWORD          => null,
+        self::METADATA          => null,
+    ];
 
-
-// ----------------------- Setters --------------------------------------------
+    // ----------------------- Mutators -------------------------------------------
 
     protected function setPasswordAttribute($password)
     {
@@ -98,6 +108,16 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::PASSWORD] = $password;
+    }
+
+    // ----------------------- Mutators Ends --------------------------------------
+
+
+    // ----------------------- Setters --------------------------------------------
+
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
     }
 
     public function setType($type)
@@ -110,9 +130,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STORE, $store);
     }
 
-    public function setFormat($format)
+    public function setExtension($extension)
     {
-        $this->setAttribute(self::FORMAT, $format);
+        $this->setAttribute(self::EXTENSION, $extension);
     }
 
     public function setMerchantId($merchantId)
@@ -125,9 +145,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIZE, $size);
     }
 
-// ----------------------- Setters Ends----------------------------------------
+    public function setLocation($location)
+    {
+        $this->setAttribute(self::LOCATION, $location);
+    }
 
-// ----------------------- Relations -----------------------------------------
+    // ----------------------- Setters Ends----------------------------------------
+
+    // ----------------------- Relations -----------------------------------------
 
     public function entityAssociate($entity)
     {
@@ -136,20 +161,18 @@ class Entity extends Base\PublicEntity
         $this->source()->associate($entity);
     }
 
-// ----------------------- Relations Ends -------------------------------------
-
-// ----------------------- Getters --------------------------------------------
-
-    protected function getPasswordAttribute()
+    public function merchant()
     {
-        $pwd = $this->attributes[self::PASSWORD];
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
 
-        if ($pwd !== null)
-        {
-            $pwd = Crypt::decrypt($pwd);
-        }
+    // ----------------------- Relations Ends -------------------------------------
 
-        return $pwd;
+    // ----------------------- Getters --------------------------------------------
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
     }
 
     public function getType()
@@ -167,15 +190,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STORE);
     }
 
-    public function getFormat()
+    public function getExtension()
     {
-        return $this->getAttribute(self::FORMAT);
+        return $this->getAttribute(self::EXTENSION);
     }
 
-// ----------------------- Getters Ends----------------------------------------
+    // ----------------------- Getters Ends----------------------------------------
 
-    public function merchant()
+    protected function getPasswordAttribute()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        $password = $this->attributes[self::PASSWORD];
+
+        if ($password !== null)
+        {
+            $password = Crypt::decrypt($password);
+        }
+
+        return $password;
     }
 }

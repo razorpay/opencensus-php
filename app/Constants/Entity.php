@@ -18,7 +18,6 @@ class Entity
 
     const IIN                   = 'iin';
     const KEY                   = 'key';
-    const FILE                  = 'file';
     const CARD                  = 'card';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
@@ -39,6 +38,7 @@ class Entity
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
+    const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
@@ -100,15 +100,11 @@ class Entity
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
-<<<<<<< HEAD
-=======
-        self::EBS                   => \RZP\Gateway\Ebs::class,
-        self::FILE                  => \RZP\Models\FileStore::class,
->>>>>>> 84f5128... changed filehandler to filestore
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,

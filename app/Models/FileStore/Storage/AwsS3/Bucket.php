@@ -8,6 +8,7 @@ class Bucket
 {
     const BUCKET_MAP = [
         Type::KOTAK_NETBANKING_REFUND => 'settlement_bucket',
-        Type::BATCH                   => 'batch_bucket',
+        Type::BATCH_INPUT             => 'batch_bucket',
+        Type::BATCH_OUTPUT            => 'batch_bucket',
     ];
 }

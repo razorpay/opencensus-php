@@ -2,8 +2,6 @@
 
 namespace RZP\Models\FileStore;
 
-use Storage as LaravelStorage;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
@@ -11,7 +9,7 @@ use RZP\Models\Merchant\Account;
 class Creator extends Base\Core
 {
     /**
-     * @var FileStore\Entity
+     * @var Entity
      */
     protected $file;
 
@@ -22,13 +20,12 @@ class Creator extends Base\Core
     protected $localFile;
 
     /**
-     * @var delimiter used in file
+     * @var string delimiter used in file
      */
     protected $delimiter;
 
-
     /**
-     * @var file Path of local file
+     * @var string file Path of local file
      */
     protected $filePath;
 
@@ -40,8 +37,6 @@ class Creator extends Base\Core
     protected $storageHandler;
 
     const DEFAULT_STORE = 's3';
-
-    const DEFAULT_ENCRYPTION_METHOD = 'none';
 
     /**
      * Default Merchant ID, for File Type which are not part of any merchant
@@ -61,23 +56,23 @@ class Creator extends Base\Core
 
     public function setDefaults()
     {
-        $this->file->encryption_method = self::DEFAULT_ENCRYPTION_METHOD;
+        $this->store(self::DEFAULT_STORE);
     }
 
     /**
      * Set the File name in File Store
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function name($name)
     {
-        $this->file->name = $name;
+        $this->file->setName($name);
 
         return $this;
     }
 
     /**
      * Set the Content of File
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function content($content)
     {
@@ -88,7 +83,7 @@ class Creator extends Base\Core
 
     /**
      * Set the Local file
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function localFile($file)
     {
@@ -98,30 +93,32 @@ class Creator extends Base\Core
     }
 
     /**
-     * Set the Format of File Store
-     * @return FileStore\Creater object
+     * Set the Extention of File Store
+     * @return Creator object
      */
-    public function format($format)
+    public function extension($extension)
     {
-        $this->file->setformat($format);
+        $this->file->setExtension($extension);
 
         return $this;
     }
 
     /**
      * Set the Store  of File Store
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function store($store)
     {
         $this->file->setStore($store);
+
+        $this->storageHandler = Store::getHandler($store);
 
         return $this;
     }
 
     /**
      * Set the type of File Store
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function type($type)
     {
@@ -132,7 +129,7 @@ class Creator extends Base\Core
 
     /**
      * Set the delimiter used for creation of file
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function delimiter($delimiter = ',')
     {
@@ -144,7 +141,7 @@ class Creator extends Base\Core
     /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
-     * @return FileStore\Creater object
+     * @return Creator object
      */
     public function save()
     {
@@ -154,16 +151,13 @@ class Creator extends Base\Core
         {
             $this->writeToLocalFile();
         }
+        // TODO : add else condition and add filePath
 
         $this->upload();
 
-        $fullPath = $this->getFullFilePath($this->file->name);
-
         $this->associateMerchantWithFile();
 
-        $this->file->size = filesize($fullPath);
-
-        $this->file->setSize(filesize($fullPath));
+        $this->file->setSize(filesize($this->filePath));
 
         $this->repo->saveOrFail($this->file);
 
@@ -181,7 +175,7 @@ class Creator extends Base\Core
 
     protected function validateBeforeSave()
     {
-        Format::validateContentTypeForFormat($this->content, $this->file->getFormat());
+        Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
 
         Type::validateType($this->file->getType());
     }
@@ -193,40 +187,39 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        if ($this->file->getStore() === null)
-        {
-            $this->file->setStore(self::DEFAULT_STORE);
-        }
+        $bucket = $this->storageHandler->getBucketName($this->file->getType());
 
-        $this->storageHandler = Store::getHandler($this->file->getStore());
+        $fileDetails = [
+            'name'      => $this->file->getName(),
+            'path'      => $this->filePath,
+            'extension' => $this->file->getExtension(),
+            'metadata'  => [],
+        ];
 
-        $bucket = $this->storageHandler->getBucketName($this->file->type);
+        $location = $this->storageHandler->save($bucket, $fileDetails);
 
-        $this->file->location = $this->storageHandler->save(
-            $bucket,
-            $this->file->name,
-            $this->filePath,
-            $this->file->getformat(),
-            []
-        );
+        $this->file->setLocation($location);
     }
 
     /**
-     * Write the contents to a local file, fo valid file formats
+     * Write the contents to a local file, for valid file extension
      *
      * @return void
      * @throws Exception\LogicException
      */
     protected function writeToLocalFile()
     {
-        if ($this->file->getFormat() === Format::TXT)
+        if (in_array($this->file->getExtension(), Format::VALID_LOCAL_EXTENSIONS))
         {
-            $content = $this->content;
+            $fullPath = $this->getFullFilePath();
 
-            $fullPath = $this->getFullFilePath($this->file->name);
+            if (file_exists($this->getStorageDir()) === false)
+            {
+                mkdir($this->getStorageDir(), 0777, true);
+            }
 
             $file = fopen($fullPath, 'w');
-            fwrite($file, $content);
+            fwrite($file, $this->content);
             fclose($file);
 
             chmod($fullPath, 0777);  // keep it 0777. This step is important.
@@ -235,7 +228,7 @@ class Creator extends Base\Core
         }
         else
         {
-            throw new Exception\LogicException('Not A Valid Format');
+            throw new Exception\LogicException('Not A Valid Extension');
         }
     }
 
@@ -258,6 +251,7 @@ class Creator extends Base\Core
      */
     protected function setDefaultMerchantId()
     {
+        // TODO : Add logs
         $type = $this->file->getType();
 
         if (Type::isTypeForSharedAccount($type))
@@ -268,16 +262,16 @@ class Creator extends Base\Core
 
     protected function getRelativePath()
     {
-        return self::STORAGE_DIRECTORY . $this->file->name;
+        return self::STORAGE_DIRECTORY . $this->file->getName();
     }
 
     protected function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->name;
+        return $this->getStorageDir() . $this->file->getName();
     }
 
     protected function getStorageDir()
     {
-        return $path = storage_path(self::STORAGE_DIRECTORY);
+        return storage_path(self::STORAGE_DIRECTORY);
     }
 }

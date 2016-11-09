@@ -2,27 +2,29 @@
 
 namespace RZP\Models\FileStore;
 
-use RZP\Constants\Entity as E;
+use RZP\Constants;
 use RZP\Exception;
 
 class Type
 {
     const KOTAK_NETBANKING_REFUND   = 'kotak_netbanking_refund';
 
-    const INPUT                     = 'input';
+    const BATCH_INPUT               = 'batch_input';
 
-    const OUTPUT                    = 'output';
+    const BATCH_OUTPUT              = 'batch_output';
+
+    const BLANK                     = 'blank';
 
     /**
      * Map of types allowed for each entity.
      */
     const TYPE_MAP = [
-        null => [
+        self::BLANK => [
             self::KOTAK_NETBANKING_REFUND,
         ],
-        E::BATCH => [
-            self::INPUT,
-            self::OUTPUT,
+        Constants\Entity::BATCH => [
+            self::BATCH_INPUT,
+            self::BATCH_OUTPUT,
         ],
     ];
 
@@ -35,10 +37,15 @@ class Type
 
     public static function validateType($type)
     {
-        if (defined(__CLASS__.'::'.strtoupper($type)) === false)
+        foreach(self::TYPE_MAP as $entity => $typeArray)
         {
-            throw new Exception\LogicException('Not A Valid Type: '. $type);
+            if (in_array($type, $typeArray) === true)
+            {
+                return true;
+            }
         }
+
+        throw new Exception\LogicException('Not A Valid Type: '. $type);
     }
 
     /**

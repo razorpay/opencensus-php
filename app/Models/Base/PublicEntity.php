@@ -306,6 +306,11 @@ class PublicEntity extends UniqueIdEntity
         return date('d/m/y h:i:s', $value);
     }
 
+    /**
+     * After Deleting Entity Contents are irrelevant
+     * returning entity id and deleted key with value as true
+     * @return array
+     */
     public function toArrayDeleted()
     {
         return [static::ID => $this->getPublicId(), 'deleted' => true];
