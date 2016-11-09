@@ -24,7 +24,8 @@ class AdminController extends Controller
     // Org Name/Key => Org ID
     // We'll hardcode this for now
     const ORG_CHART = [
-        'RZP' => '6dLbNSpv5XbCOF'
+        'RZP' => '6dLbNSpv5XbCOF',
+        'HDFC'=> '6dLbNSpv5XbCOG',
     ];
 
     /*
@@ -59,7 +60,7 @@ class AdminController extends Controller
 
         switch($org['auth_type'])
         {
-            case 'google_oauth':
+            case 'google_auth':
                 return redirect($this->getGoogleOAuthUrl());
             case 'password':
                 return redirect('/admin/#access/auth/password');

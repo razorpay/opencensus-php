@@ -14,6 +14,8 @@ class Service
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
 
+        // $token = session('admin.token');
+
         $this->api = new Api("rzp_$mode_admin", $token);
     }
 
