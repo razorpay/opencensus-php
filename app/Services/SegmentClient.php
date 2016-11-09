@@ -108,8 +108,6 @@ class SegmentClient extends Base\Core
 
         $data['method'] = $method;
 
-        $methodDetails = $payment->getMethodWithDetail();
-
         // note: using individual here instead of getMethodWithDetail
         // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
         if ($method === Method::NETBANKING)

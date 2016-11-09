@@ -4,13 +4,12 @@ namespace RZP\Models\Merchant;
 
 use Closure;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {

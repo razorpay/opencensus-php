@@ -2,27 +2,22 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Constants\Mode;
-use RZP\Http\Route;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
+use Mail;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
-use RZP\Models\Order;
-use RZP\Exception;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use Mail;
 
 trait Callback
 {

@@ -3,9 +3,8 @@
 namespace RZP\Exception;
 
 use DB;
-use RZP\Error\Error;
-use RZP\Error\ErrorCode;
 use Razorpay\Spine\Exception\DbQueryExceptionTrait;
+use RZP\Error\ErrorCode;
 
 class DbQueryException extends ServerErrorException
 {

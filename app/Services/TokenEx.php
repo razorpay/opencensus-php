@@ -2,9 +2,8 @@
 
 namespace RZP\Services;
 
-use RZP\Exception;
 use Requests;
-use RZP\Trace\Trace;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class TokenEx

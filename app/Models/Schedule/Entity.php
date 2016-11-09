@@ -4,7 +4,6 @@ namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {

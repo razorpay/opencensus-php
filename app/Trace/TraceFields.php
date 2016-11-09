@@ -2,7 +2,6 @@
 
 namespace RZP\Trace;
 
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as Payment;
 
 class TraceFields

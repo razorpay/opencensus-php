@@ -3,11 +3,10 @@
 namespace RZP\Models\Terminal;
 
 use Crypt;
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal\Recurring;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {

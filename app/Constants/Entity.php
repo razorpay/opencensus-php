@@ -5,7 +5,6 @@ namespace RZP\Constants;
 use App;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models;
@@ -41,7 +40,9 @@ class Entity
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
+    const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
+
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ACTION       = 'terminal_action';
@@ -105,6 +106,7 @@ class Entity
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,

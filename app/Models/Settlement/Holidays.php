@@ -70,6 +70,7 @@ class Holidays
                 31 => 'Diwali (Balipratipada)/Deepavali',
             ],
             11 => [
+                9  => 'Unscheduled Bank Holiday',
                 14 => 'Guru Nanak Jayanti/Kartik Poornima',
             ],
             12 => [

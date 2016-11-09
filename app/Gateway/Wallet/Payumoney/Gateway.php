@@ -2,26 +2,23 @@
 
 namespace RZP\Gateway\Wallet\Payumoney;
 
-use View;
 use Cache;
-use RZP\Error;
-use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Constants\Mode;
-use RZP\Models\Payment;
-use RZP\Models\Customer;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Wallet\Base;
-use RZP\Models\Customer\Token;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base\Action;
+use RZP\Constants\Mode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Wallet\Base\Action;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Token;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use View;
 
 class Gateway extends Base\Gateway
 {
@@ -277,6 +274,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
+        $data = [];
+
         if (isset($content['result']['body']['access_token']))
         {
             $data['token'] = $this->getTokenAttributes($content);
@@ -429,8 +428,6 @@ class Gateway extends Base\Gateway
 
     protected function getUserWalletLimitRequestArray($input)
     {
-        $content = [];
-
         $content = array(
             'email'     => $input['payment']['email'],
             'client_id' => $this->getClientId($input['terminal']),
@@ -452,8 +449,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray($input)
     {
-        $content = [];
-
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
         $content =  array(
@@ -577,8 +572,6 @@ class Gateway extends Base\Gateway
 
     protected function getTopupWalletRequestArray($input)
     {
-        $content = [];
-
         $key = $this->getBalanceKeyForCache($input['payment']);
 
         $userWalletLimit = Cache::get($key);

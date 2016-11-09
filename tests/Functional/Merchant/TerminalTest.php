@@ -106,8 +106,12 @@ class TerminalTest extends TestCase
         $newTerminal = $this->getEntityById('terminal', $response[0]['terminal'], true);
 
         $oldTerminal = $terminal->toArray();
-        unset($oldTerminal['id']);
-        unset($oldTerminal['merchant_id']);
+
+        $unsetKeys = ['id', 'created_at', 'updated_at', 'merchant_id'];
+        foreach ($unsetKeys as $key)
+        {
+            unset($oldTerminal[$key]);
+        }
 
         $this->assertEquals('100000Razorpay', $newTerminal['merchant_id']);
         $this->assertEquals(0, $newTerminal['used_count']);

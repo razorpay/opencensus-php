@@ -2,7 +2,6 @@
 
 namespace RZP\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
 class Validator extends \Razorpay\Spine\Validation\Validator

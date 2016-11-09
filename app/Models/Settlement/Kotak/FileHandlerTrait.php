@@ -220,8 +220,6 @@ trait FileHandlerTrait
     {
         $alphabet = range('A','Z');
 
-        $alpha_flip = array_flip($alphabet);
-
         if ($data <= 25)
         {
           return $alphabet[$data];
@@ -231,8 +229,6 @@ trait FileHandlerTrait
           $dividend = ($data + 1);
 
           $alpha = '';
-
-          $modulo;
 
           while ($dividend > 0)
           {
@@ -431,7 +427,7 @@ trait FileHandlerTrait
 
             if ($success === false)
             {
-                throw new Exception\RuntimeErrorException(
+                throw new Exception\RuntimeException(
                     'Failed to delete file: ' . $fullPath);
             }
         }
@@ -654,9 +650,9 @@ trait FileHandlerTrait
 
         if ($res === false)
         {
-            throw new Exception\RuntimeErrorException(
+            throw new Exception\RuntimeException(
                 'Failed to rename file. File : ' . $file .
-                ' Renamed name: ' . $newFilepath);
+                ' Renamed name: ' . $newName);
         }
 
         return $newName;
@@ -679,7 +675,7 @@ trait FileHandlerTrait
 
         if ($res === false)
         {
-            throw new Exception\RuntimeErrorException(
+            throw new Exception\RuntimeException(
                 'Failed to rename file. Uploaded name: ' . $uploadedFilePath .
                 ' Renamed name: ' . $newFilepath);
         }

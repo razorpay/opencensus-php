@@ -43,11 +43,11 @@ class Entity extends Base\PublicEntity
 
     public function getTerminalId()
     {
-        return $this->getAttributes(self::TERMINAL_ID);
+        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getAction()
     {
-        return $this->getAttributes(self::ACTION);
+        return $this->getAttribute(self::ACTION);
     }
 }

@@ -2,20 +2,18 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
+use Carbon\Carbon;
 use Config;
+use Mail;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Batch\Header;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Processor extends Base\Core
 {

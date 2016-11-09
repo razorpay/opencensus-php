@@ -66,10 +66,6 @@ class ClaimsFile extends Base\RefundFile
             $totalAmount = $totalAmount + ($row['payment']['amount'] / 100);
         }
 
-        $name = $this->getFileToWriteName();
-
-        $i--;
-
         $txt = $this->getTextData($data);
 
         return [$txt, $totalAmount];

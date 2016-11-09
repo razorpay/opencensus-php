@@ -3,11 +3,9 @@
 namespace RZP\Models\Card\IIN;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Models\Card;
-use RZP\Models\Card\Network;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class Validator extends Base\Validator
 {

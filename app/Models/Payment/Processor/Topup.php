@@ -91,8 +91,6 @@ trait Topup
 
     protected function fillTopupGatewayInput($payment, $input, array & $gatewayInput)
     {
-        $gateway = $payment->getGateway();
-
         //
         // Call gateway input
         //

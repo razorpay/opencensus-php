@@ -58,6 +58,6 @@ class Service extends Base\Service
 
     public function deleteSetlFile($setlFileType)
     {
-        return (new FileDeleter)->deleteFileIfExists($setlFileType);
+        (new FileDeleter)->deleteFileIfExists($setlFileType);
     }
 }

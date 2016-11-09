@@ -2,27 +2,39 @@
 
 namespace RZP\Models\Settlement;
 
-use RZP\Constants\Mode;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement\Kotak;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Models\Settlement\Kotak;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Processor extends Base\Core
 {
     protected $setlTime;
 
     protected $input;
+
+    protected $mutex;
+
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function process(array $input, $channel, $schedule = true)
     {
@@ -37,7 +49,10 @@ class Processor extends Base\Core
             return $message;
         }
 
-        $data = $this->processSettlements($input, $channel, $schedule);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function () use ($input, $channel, $schedule)
+        {
+            return $this->processSettlements($input, $channel, $schedule);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
@@ -156,7 +171,7 @@ class Processor extends Base\Core
 
         $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
 
-        $txns = $this->filterTransactionsForSettlement($txns, $channel, $schedule);
+        $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
@@ -252,7 +267,6 @@ class Processor extends Base\Core
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
-                                        $setlGatewayFee,
                                         $serviceTax);
 
             $settlements->push($setl);
@@ -331,13 +345,13 @@ class Processor extends Base\Core
         $shouldSettle = (($txn->getChannel() === $channel) and
                          ($merchant->holdFunds() === false));
 
-        // assert ($merchant->bankAccount !== null);
+        assert ($merchant->bankAccount !== null);
 
-        // if (($this->mode !== Mode::TEST) and
-        //     ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
-        // {
-        //     $shouldSettle = false;
-        // }
+        if (($this->mode !== Mode::TEST) and
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
+        {
+            $shouldSettle = false;
+        }
 
         return $shouldSettle;
     }
