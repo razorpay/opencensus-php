@@ -7,4 +7,6 @@ return [
     'org_create' => 'orgs',
 
     'org_get_multiple' => 'orgs',
+
+    'org_get' => 'orgs/{id}'
 ];

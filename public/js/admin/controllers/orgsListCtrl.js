@@ -72,6 +72,24 @@ app.controller('OrgsListCtrl', [
     }
 
     $scope.fetchOrgs();
+
+    $scope.fetchOrgById = function (id) {
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'org_get',
+          
+          url_params: {
+            '{id}': id
+          }
+        }
+      });
+
+      request.success(function (data) {
+
+      });
+    };
+
+    $scope.fetchOrgById('6dLbNSpv5XbCOG');
   }
 ]).controller('addOrgModalCtrl', [
   '$scope',
