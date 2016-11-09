@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::ENTITY,
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
@@ -38,7 +37,6 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::ENTITY,
         self::ORG_ID,
     ];
     /**

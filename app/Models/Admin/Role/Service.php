@@ -28,7 +28,7 @@ class Service extends Base\Service
     public function getMultipleRoles($orgId)
     {
         Org::verifyIdAndStripSign($orgId);
-
+        
         $role = $this->repo->role->fetchRolesForOrg($orgId);
 
         return $role->toArrayPublic();
