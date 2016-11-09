@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
@@ -116,6 +117,7 @@ class Reconciler3
 
                 if ($setl->isStatusFailed())
                 {
+                    $this->createAdjustmentForSettlement($setl);
                     $failures->push($setl);
                 }
             }
@@ -299,5 +301,18 @@ class Reconciler3
         }
 
         return $reconcileFile;
+    }
+
+    protected function createAdjustmentForSettlement($setl)
+    {
+        $merchant = $setl->merchant();
+
+        $input = [
+            'amount'        => $setl->getAmount(),
+            'currency'      => 'INR',
+            'description'   => 'Settlement Failure:'.$setl->getId().$setl->getAttribute('failure_reason')
+        ];
+
+        $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
     }
 }

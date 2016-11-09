@@ -184,6 +184,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function adjustment()
+    {
+        return $this->hasOne('RZP\Models\Adjustment\Entity');
+    }
+
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];

@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL           = 'channel';
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
+    const SETTLEMENT_ID     = 'settlement_id';
 
     protected static $sign = 'adj';
 
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::DESCRIPTION,
         self::TRANSACTION_ID,
+        self::SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::DESCRIPTION,
         self::TRANSACTION_ID,
+        self::SETTLEMENT_ID,
         self::CREATED_AT);
 
     public function getChannel()
@@ -80,6 +83,11 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    public function settlement()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
     public function setChannel($channel)
