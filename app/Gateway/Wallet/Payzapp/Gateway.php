@@ -41,6 +41,7 @@ class Gateway extends Base\Gateway
     protected $performMap = array(
         'void'              => 'processMerchantAPI#DirectVoid',
         'refund'            => 'processMerchantAPI#DirectRefund',
+        'voidOrRefund'      => 'processMerchantAPI#DirectVoidORRefund',
         'verify'            => 'getPaymentResult',
     );
 
@@ -615,20 +616,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPerformForPayment($payment, $forceRefund = false)
     {
-        $now                = Carbon::now('Asia/Kolkata');
-        $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-
-        if (($forceRefund  === false) and
-            ($paymentCreatedDate->isSameDay($now)))
-        {
-            $this->perform = 'void';
-        }
-        else
-        {
-            $this->perform = 'refund';
-        }
-
-        return $this->performMap[$this->perform];
+        return $this->performMap['voidOrRefund'];
     }
 
     protected function getHashForDataPickupRequest($content)
