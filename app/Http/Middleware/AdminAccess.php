@@ -6,6 +6,7 @@ use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 use RZP\Http\Route;
+use RZP\Models\Admin;
 
 class AdminAccess
 {
@@ -89,6 +90,8 @@ class AdminAccess
 
         if ($allowed)
         {
+            $this->groupCheck($admin);
+
             return true;
         }
 
@@ -106,5 +109,73 @@ class AdminAccess
         }
 
         return true;
+    }
+
+    private function groupCheck($admin)
+    {
+        // 1. Get all the groups of the admin
+
+        $groups = $admin->groups->toArray();
+
+        $parentGroupIds = [];
+
+        foreach ($groups as $group)
+        {
+            $parentGroupIds[] = $group['id'];
+        }
+
+        // We have all the parent group IDs now
+        // 2. Get all the sub groups of the parent groups now
+
+        // To get the sub/child groups, raw query would be something
+        // like this:
+        // SELECT entity_id FROM group_map WHERE group_id IN ($groupIds)
+        // This gets all the groups that belong to (child/sub) $groupIds
+
+        $allSubGroupIds = [];
+        $allSubAdminIds = [];
+
+        $groupIds = $parentGroupIds;
+
+        $exit = false;
+
+        while (!$exit)
+        {
+            $subGroups = \DB::table('group_map')
+                            ->whereIn('group_id', $groupIds)
+                            ->where('entity_type', 'group')
+                            ->get();
+
+            $groupIds = [];
+
+            foreach ($subGroups as $subGroup)
+            {
+                $groupIds[] = $subGroup->entity_id;
+
+                $allSubGroupIds[] = $subGroup->entity_id;
+            }
+
+            if (count($groupIds) === 0)
+            {
+                $exit = true;
+            }
+
+            // Also get all the admins
+
+            $subAdmins = \DB::table('group_map')
+                            ->whereIn('group_id', $groupIds)
+                            ->where('entity_type', 'admin')
+                            ->get();
+
+            foreach ($subAdmins as $subAdmin)
+            {
+                $allSubAdminIds[] = $subAdmin->entity_id;
+            }
+        }
+
+        // We have all the subgroups (recursively) in $allSubGroupIds now
+        dd($allSubGroupIds, $allSubAdminIds);
+
+        
     }
 }

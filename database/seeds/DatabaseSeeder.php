@@ -267,7 +267,7 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            DB::table(Table::ADMIN)->insert(
+            DB::table(Table::ADMIN)->insert([
                 [
                     'id'            => '6dLbNSpv5Ybbbb',
                     'email'         => 'test@hdfcbank.in',
@@ -282,10 +282,25 @@ class DatabaseSeeder extends Seeder
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
                     'updated_at'    => time(),
+                ],
+                [
+                    'id'            => '6dLbNSpv5Ybbbc',
+                    'email'         => 'test2@hdfcbank.in',
+                    'name'          => 'Test HDFC Account',
+                    'username'      => 'nemo2',
+                    'password'      => \Hash::make('123456'),
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => time(),
+                    'employee_code' => '011',
+                    'department_code'=> 'ADMIN',
+                    'branch_code'   => 'HDFC010',
+                    'supervisor_code' => '001',
+                    'location_code' => 'BLR',
+                    'updated_at'    => time(),
                 ]
-            );
+            ]);
 
-            DB::table(Table::ADMIN)->insert(
+            DB::table(Table::ADMIN)->insert([
                 [
                     'id'            => '6dLbNSpv5Ycccc',
                     'email'         => 'abhay.rana@razorpay.com',
@@ -300,7 +315,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 ]
-            );
+            ]);
 
             DB::table(Table::ROLE)->insert(
                 [
@@ -348,6 +363,60 @@ class DatabaseSeeder extends Seeder
                     'permission_id'     => '6ebyTmvzhAbQvi',
                     'entity_id'         => '6dLbNSpv5XbC5F',
                     'entity_type'       => 'role',
+                ]
+            ]);
+
+            DB::table(Table::GROUP)->insert([
+                [
+                    'id'            => '6euDnqS4zQR4ke',
+                    'name'          => 'Karnataka',
+                    'description'   => 'Karnataka Group',
+                    'org_id'        => '6dLbNSpv5XbCOF',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kf',
+                    'name'          => 'Bangalore',
+                    'description'   => 'Bangalore Group',
+                    'org_id'        => '6dLbNSpv5XbCOF',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kg',
+                    'name'          => 'Indiranagar',
+                    'description'   => 'Indiranagar Group',
+                    'org_id'        => '6dLbNSpv5XbCOF',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ]
+            ]);
+
+            DB::table(Table::GROUP_MAP)->insert([
+                // G1 -> A1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin',
+                ],
+                // G2 -> G1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6euDnqS4zQR4kf',
+                    'entity_type'   => 'group',
+                ],
+                // G3 -> G2
+                [
+                    'group_id'      => '6euDnqS4zQR4kf',
+                    'entity_id'     => '6euDnqS4zQR4kg',
+                    'entity_type'   => 'group',
+                ],
+                // G2 -> A2
+                [
+                    'group_id'      => '6euDnqS4zQR4kf',
+                    'entity_id'     => '6dLbNSpv5Ybbbc',
+                    'entity_type'   => 'admin',
                 ]
             ]);
         });
