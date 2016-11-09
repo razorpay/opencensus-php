@@ -668,7 +668,7 @@ class Service extends Base\Service
 
     public function merchantMethodsBulkUpdate($input)
     {
-        $merchantIds = $input['merchant_ids'];
+        $merchantIds = $input['merchants'];
 
         $response = new Base\Collection;
 
@@ -680,7 +680,7 @@ class Service extends Base\Service
 
             $response->push($paymentMethod);
         }
-        return $response;
+        return $response->toArray();
     }
 
 }

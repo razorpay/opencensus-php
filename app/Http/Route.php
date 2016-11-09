@@ -274,7 +274,7 @@ final class Route
         'merchant_migrate_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'                         ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'method_bulk_merchants'                   => ['put',      'merchants/methods',                              'MerchantController@merchantMethodsBulkUpdate'                      ],        
+        'method_bulk_merchants'                   => ['put',      'merchants/bulkupdate',                           'MerchantController@merchantMethodsBulkUpdate'                      ],        
       );
 
     public static $public = array(
@@ -491,7 +491,8 @@ final class Route
         'feature_delete',
         'merchant_migrate_features',
         'feature_bulk_assign',
-        'feature_bulk_remove'
+        'feature_bulk_remove',
+        'method_bulk_merchants',
     );
 
     public static $proxy = array(

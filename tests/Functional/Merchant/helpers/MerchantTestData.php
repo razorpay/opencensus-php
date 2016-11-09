@@ -1078,24 +1078,5 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
         ],
-    ],
-
-    'testBatchMethodUpdate' => [
-        'request' => [
-            'url' => 'merchants/methods',
-            'method' => 'put',
-            'content' => [
-              'merchant_ids' => ['10000000000000'],
-              'methods' => [
-                'card' => true,
-                'international' => false
-              ]
-            ]
-        ],
-        'response' => [
-            'content' => [
-                
-            ]
-        ]
     ]
 ];

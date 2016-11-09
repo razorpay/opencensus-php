@@ -479,7 +479,7 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $input = Request::all()
+        $input = Request::all();
         
         $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
 
