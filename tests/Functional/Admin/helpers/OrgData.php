@@ -49,4 +49,15 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testOrgMultiple' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

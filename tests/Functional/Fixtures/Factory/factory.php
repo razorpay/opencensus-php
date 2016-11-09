@@ -316,7 +316,7 @@ $factory(\RZP\Models\Feature\Entity::class, [
 // Admin Roles related fixtures
 
 $factory(\RZP\Models\Admin\Org\Entity::class, [
-    'id'            => '6dLbNSpv5XbCOD',
+    'id'            => $faker->uniqueid,
     'email_domains' => 'hdfc.com,fbapi.com',
     'email'         => 'test@hdfc.com',
     'display_name'  => 'HDFC Bank',

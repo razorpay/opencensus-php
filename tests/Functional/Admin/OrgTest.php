@@ -34,4 +34,14 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testOrgMultiple()
+    {
+        $this->ba->appAuth();
+
+        $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
+        $org = $this->fixtures->create('org', ['email' => 'sreeram@gmail.com']);
+
+        $this->startTest();
+    }
 }

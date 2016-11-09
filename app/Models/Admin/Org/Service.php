@@ -49,4 +49,11 @@ class Service extends Base\Service
 
         return $org->toArrayPublic();
     }
+
+    public function getOrgMultiple(array $input)
+    {
+        $orgs = $this->repo->org->fetch($input);
+
+        return $orgs->toArrayPublic();
+    }
 }

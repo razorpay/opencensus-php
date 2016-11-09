@@ -103,4 +103,8 @@ class GroupTest extends TestCase
         $this->assertEquals($merchant->getId(), $admin->merchants()->getRelatedIds()[0]);
 
     }
+
+    public function testCreateGroup()
+    {
+    }
 }

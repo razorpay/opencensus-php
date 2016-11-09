@@ -277,10 +277,10 @@ final class Route
 
 // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'AdminController@createOrg'                                         ],
+        'org_get_multiple'                        => ['get',      'orgs',                                           'AdminController@fetchOrgMultiple'                                  ],
         'org_edit'                                => ['put',      'orgs/{id}',                                      'AdminController@putOrg'                                            ],
         'org_delete'                              => ['delete',   'orgs/{id}',                                      'AdminController@deleteOrg'                                         ],
         'org_get'                                 => ['get',      'orgs/{id}',                                      'AdminController@getOrg'                                            ],
-        'org_get_multiple'                        => ['get',      'orgs',                                           'AdminController@fetchMultiple'                                     ],
         'role_create'                             => ['post',     'orgs/{id}/roles',                                'AdminController@createRole'                                        ],
         'role_get_multiple'                       => ['get',      'orgs/{id}/roles',                                'AdminController@getMultipleRoles'                                  ],
         'role_get'                                => ['get',      'orgs/{id}/roles/{roleId}',                       'AdminController@getRole'                                           ],
@@ -538,6 +538,7 @@ final class Route
         'org_create',
         'org_edit',
         'org_get',
+        'org_get_multiple',
         'role_create',
         'role_get_multiple',
         'role_get',

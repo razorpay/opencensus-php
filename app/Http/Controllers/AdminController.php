@@ -103,6 +103,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchOrgMultiple()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Org\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putOrg(string $id)
     {
         $input = Request::all();
