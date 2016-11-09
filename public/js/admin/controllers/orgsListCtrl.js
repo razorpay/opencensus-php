@@ -119,8 +119,14 @@ app.controller('OrgsListCtrl', [
 
     // Edit Organization
 
-    $scope.editOrgById = function (id) {
-      var request = $http.put('/admin/generic', {
+    $scope.editOrgById = function (id, organization) {
+      var data = {};
+      data.body = organization;
+      data.route_name = organization.route_name;
+
+      delete data.body.route_name;
+
+      var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'org_edit',
 
