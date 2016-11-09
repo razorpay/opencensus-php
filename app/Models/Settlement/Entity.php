@@ -129,6 +129,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function setAmount($amount)
     {
         if (($amount <= 0) or

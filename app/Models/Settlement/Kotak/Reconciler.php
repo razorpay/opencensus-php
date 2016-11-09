@@ -138,7 +138,9 @@ class Reconciler
                 $failureReason = 'Reconciliation: ' . $failureReason;
             }
 
-            (new Failure)->markFailed($setl, $reason);
+            $failureHandler = new Failurehandler($setl);
+
+            $failureHandler->markFailed($failureReason);
 
             if (($status !== 'C') or
                 ($failureReason === ''))

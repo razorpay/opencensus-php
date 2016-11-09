@@ -117,7 +117,6 @@ class Reconciler3
 
                 if ($setl->isStatusFailed())
                 {
-                    $this->createAdjustmentForSettlement($setl);
                     $failures->push($setl);
                 }
             }
@@ -203,11 +202,20 @@ class Reconciler3
         }
         else
         {
-            $setl->setUtr($utr);
-            $setl->setStatus($status);
-            $setl->setFailureReason($failureReason);
+            if ($status === Settlement\Status::FAILED)
+            {
+                $failureHandler = new Failurehandler($setl);
 
-            $this->repo->settlement->save($setl);
+                $failureHandler->markFailed($failureReason);
+            }
+            else
+            {
+                $setl->setUtr($utr);
+                $setl->setStatus($status);
+                $setl->setFailureReason($failureReason);
+
+                $this->repo->settlement->save($setl);
+            }
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
             $this->repo->transaction->save($setl->transaction);
@@ -301,18 +309,5 @@ class Reconciler3
         }
 
         return $reconcileFile;
-    }
-
-    protected function createAdjustmentForSettlement($setl)
-    {
-        $merchant = $setl->merchant();
-
-        $input = [
-            'amount'        => $setl->getAmount(),
-            'currency'      => 'INR',
-            'description'   => 'Settlement Failure:'.$setl->getId().$setl->getAttribute('failure_reason')
-        ];
-
-        $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
     }
 }

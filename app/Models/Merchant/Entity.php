@@ -572,6 +572,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
+    public function setHoldFunds($holdFunds)
+    {
+        $this->setAttribute(self::HOLD_FUNDS, (int)$holdFunds);
+    }
+
     public function isReceiptEmailsEnabled()
     {
         return $this->getReceiptEmailEnabledAttribute();
