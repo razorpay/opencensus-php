@@ -295,8 +295,6 @@ class Notify
 
         $amount = $this->template['payment']['raw_amount'];
 
-        $mode = $this->mode;
-
         // The priority order is important here
         if ($riskRating == self::MAX_HIGH_RISK_RATING)
         {
@@ -613,7 +611,7 @@ class Notify
             // Convert timestamps to readable versions
             if ($this->isTimestamp($key, $value))
             {
-                $data[$key] = Carbon::createFromTimeStamp($value, "Asia/Kolkata")->format('j M Y h:i a');
+                $data[$key] = Carbon::createFromTimestamp($value, "Asia/Kolkata")->format('j M Y h:i a');
             }
         }
 

@@ -5,23 +5,19 @@ namespace RZP\Gateway\Wallet\Freecharge;
 use Cache;
 use Carbon\Carbon;
 use Config;
-use Lib\PhoneBook;
-use View;
-
-use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
-use RZP\Models\Payment\Core;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use View;
 
 class Gateway extends Base\Gateway
 {
@@ -696,7 +692,6 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
-        $response = $verify->verifyResponse;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 

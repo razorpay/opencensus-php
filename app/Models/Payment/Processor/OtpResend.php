@@ -46,7 +46,7 @@ trait OtpResend
 
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
     {
-        $this->verifyPaymentMethodEnabled($payment, $input);
+        $this->verifyPaymentMethodEnabled($payment);
 
         //
         // Call gateway input

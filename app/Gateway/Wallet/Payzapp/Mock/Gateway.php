@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Wallet\Payzapp;
 

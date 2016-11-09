@@ -2,9 +2,7 @@
 
 namespace RZP\Gateway\Atom\Mock;
 
-use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
@@ -46,8 +44,6 @@ class Gateway extends Atom\Gateway
 
         if ($request['action'] === 'authorize')
         {
-            $key = 'rzp_test';
-
             $mockGatewaysConfig = \Config::get('applications.mock_gateways');
             $secret = $mockGatewaysConfig['secret'];
 

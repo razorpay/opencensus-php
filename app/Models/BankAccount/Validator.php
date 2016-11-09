@@ -2,11 +2,10 @@
 
 namespace RZP\Models\BankAccount;
 
+use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use Razorpay\IFSC\IFSC;
-use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
 {

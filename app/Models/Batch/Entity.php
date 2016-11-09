@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {

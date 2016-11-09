@@ -4,7 +4,6 @@ namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

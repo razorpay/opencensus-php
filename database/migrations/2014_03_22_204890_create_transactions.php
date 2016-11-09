@@ -136,7 +136,7 @@ class CreateTransactions extends Migration
         Schema::table(Table::TRANSACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
+                Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

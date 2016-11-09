@@ -4,7 +4,7 @@ namespace RZP\Exception;
 
 use RZP\Error\ErrorCode;
 
-class AssertionException extends RuntimeException
+class AssertionException extends ServerErrorException
 {
     public function __construct(
         $message = null,

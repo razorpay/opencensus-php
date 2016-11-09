@@ -24,8 +24,6 @@ class ResponseCodeMap
 
     public static function getApiErrorCode($code)
     {
-        $class = 'RZP\Error\ErrorCode::';
-
         if ((empty($code) === true) or
             (isset(self::$codes[$code]) === false))
         {

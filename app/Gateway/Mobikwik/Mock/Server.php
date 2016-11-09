@@ -2,12 +2,10 @@
 
 namespace RZP\Gateway\Mobikwik\Mock;
 
-use Carbon\Carbon;
-use RZP\Gateway\Mobikwik;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
-use RZP\Models\Payment;
+use RZP\Gateway\Mobikwik;
 use RZP\Gateway\Wallet\Base\Otp;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -16,8 +14,6 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
-
-        $method = $this->getAuthMethod($input);
 
         $content = array(
             'statuscode'    => '0',
@@ -98,8 +94,6 @@ class Server extends Base\Mock\Server
             'statusdescription' => 'User Exists',
             'emailaddress'      => 'random@gmail.com',
             'range'             => '100-500',
-            'statuscode'        => '0',
-            'statusdescription' => 'User exists',
             'nonzeroflag'       => 'y'
         );
 
@@ -119,8 +113,6 @@ class Server extends Base\Mock\Server
             'statusdescription' => 'Message Sent to xxxxxx784',
             'emailaddress'      => 'random@gmail.com',
             'range'             => '100-500',
-            'statuscode'        => '0',
-            'statusdescription' => 'User exists',
             'nonzeroflag'       => 'y',
             'checksum'          => 'a44e07b54a5df145d722407617318c2f8a7d6fefd2ab1df9b4766b768741b6ad',
         );
