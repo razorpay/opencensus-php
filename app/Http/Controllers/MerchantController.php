@@ -152,6 +152,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function migrateToSchedules()
+    {
+        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules();
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);

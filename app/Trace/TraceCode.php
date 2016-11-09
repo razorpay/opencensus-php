@@ -236,6 +236,9 @@ class TraceCode
     const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
     const SCHEDULE_UNSETTLED_TXNS                   = 'SCHEDULE_UNSETTLED_TXNS';
+    const SCHEDULE_MIGRATION_INITIATED              = 'SCHEDULE_MIGRATION_INITIATED';
+    const SCHEDULE_MIGRATION_FAILED                 = 'SCHEDULE_MIGRATION_FAILED';
+    const SCHEDULE_MIGRATION_COMPLETE               = 'SCHEDULE_MIGRATION_COMPLETE';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -444,7 +447,7 @@ class TraceCode
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
-        
+
         self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
