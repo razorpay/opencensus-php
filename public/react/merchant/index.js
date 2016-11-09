@@ -11,6 +11,44 @@ import InvoicesNewContainer from './containers/Invoices/New'
 import SubscriptionsListContainer from './containers/Subscriptions/List'
 import SubscriptionsNewContainer from './containers/Subscriptions/New'
 
+import DFaqApi from 'dfaqapi'
+import customers from './mocks/customers'
+import plans from './mocks/plans'
+import subscriptions from './mocks/subscriptions'
+
+let fakeApi = new DFaqApi({
+  factories: {
+    plans,
+    customers,
+    subscriptions
+  }
+})
+
+fakeApi.createList('customers', 10)
+fakeApi.createList('plans', 5)
+fakeApi.createList('subscriptions', 3)
+
+fakeApi.get('/test/subscriptions', (db, request) => {
+  return {
+    success: true,
+    data: {
+      count: 10,
+      items: db.getCollection('subscriptions').data
+    }
+  }
+})
+
+fakeApi.get('/test/customers', (db, request) => {
+  return {
+    success: true,
+    data: {
+      count: 10,
+      items: db.getCollection('customers').data
+    }
+  }
+})
+
+
 // This is required for ngReact. Remove this finally
 window.React = React
 window.ReactDOM = ReactDOM

@@ -4,9 +4,7 @@ import customers from 'merchant/mocks/customers'
 export const fetchCustomers = () => {
   return (dispatch) => {
     return ajax('/customers').then((response) => {
-
-    }).catch((err) => {
-      return customers
+      return response.data.items
     })
   }
 }

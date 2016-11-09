@@ -27,8 +27,8 @@ export default class SubscriptionsNewContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchCustomers().then((response) => {
-      let customers = response.data.items.map((item) => {
+    this.props.fetchCustomers().then((customers) => {
+      customers = customers.map((item) => {
         item.text = item.text || item.name
         return item
       })

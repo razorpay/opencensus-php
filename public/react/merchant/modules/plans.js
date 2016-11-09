@@ -1,37 +1,40 @@
 import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
+// import plans from 'merchant/mocks/plans'
 
-const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH'
+const PLANS_FETCH = 'PLANS_FETCH'
 
-export const fetchSubscriptions = () => {
+export const fetchPlans = () => {
   return (dispatch) => {
     return dispatch({
-      type: SUBSCRIPTIONS_FETCH,
-      payload: ajax(`/subscriptions`)
+      type: PLANS_FETCH,
+      payload: ajax(`/plans`).then((response) => {
+      }).catch((err) => {
+        return plans
+      })
     })
   }
 }
 
 let initialState = {
   loading: true,
-  subscriptions: [],
+  plans: [],
   count: 0
 }
 
 export default function (state = fromJS(initialState), action) {
-  debugger
   switch(action.type) {
-    case `${SUBSCRIPTIONS_FETCH}::PENDING`:
+    case `${PLANS_FETCH}::PENDING`:
       return state.set('loading', true)
 
-    case `${SUBSCRIPTIONS_FETCH}::SUCCESS`:
+    case `${PLANS_FETCH}::SUCCESS`:
       return state.merge({
         loading: false,
-        subscriptions: action.payload.data.items,
+        plans: action.payload.data.items,
         count: action.payload.data.count
       })
 
-    case `${SUBSCRIPTIONS_FETCH}::ERROR`:
+    case `${PLANS_FETCH}::ERROR`:
       return state.merge({
         loading: false,
         error: action.error

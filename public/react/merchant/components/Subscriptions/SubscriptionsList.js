@@ -1,5 +1,6 @@
 import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import Time from 'rzp/ui/Time'
 
 const SubscriptionListItem = ({ subscription }) => {
   return (
@@ -7,9 +8,13 @@ const SubscriptionListItem = ({ subscription }) => {
       <td>{subscription.customer_name}</td>
       <td>{subscription.status}</td>
       <td>{subscription.plan_name}</td>
-      <td>{subscription.amount}</td>
-      <td>{subscription.last_billing_date}</td>
-      <td>{subscription.next_billing_date}</td>
+      <td>₹ {subscription.amount}</td>
+      <td>
+        <Time value={subscription.processed_at} />
+      </td>
+      <td>
+        <Time value={subscription.charge_at} />
+      </td>
     </tr>
   )
 }
