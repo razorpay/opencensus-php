@@ -7,13 +7,23 @@
 <div class="wrapper-md">
   <div class="panel panel-default" ng-controller="OrgsUsersCtrl">
     <div class="panel-heading">
-      List of all Admins
+      List of all Users
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="panel-body b-b b-light">
-      Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+        <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div>
+        <div class="col-md-6">
+          <a ui-sref='app.adduser' id='addAdminBtn' class='btn btn-default pull-right'>
+            <i class="fa fa-user-plus"></i>
+            Add new User
+          </a>
+        </div>
     </div>
     <div>
       <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="admins-table table-responsive table table-striped b-t b-light">
@@ -47,15 +57,7 @@
             </td>
           </tr>
         </tbody>
-        <tfoot >
-          <tr>
-            <td colspan="6">
-              <a href ng-click="createAdmin()">
-                <i class="fa fa-user-plus" tooltip="Make Admin"></i>
-                Add new Admin
-              </a>
-            </td>
-          </tr>
+        <tfoot>
           <tr>
               <td colspan="6" class="text-center">
                   <ul class="pagination"></ul>
@@ -66,60 +68,6 @@
     </div>
   </div>
 </div>
-<script type="text/ng-template" id="newAdminModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">New Admin</h3>
-  </div>
-  <div class="modal-body new-admin-modal">
-    <form class="form-horizontal form-validation" ng-init="admin={superadmin:'0'}">
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Full Name:</label>
-        <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="name" ng-model="admin.name" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Username:</label>
-        <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="username" ng-model="admin.username" />
-          <span class="help-block">Required to login to admin panel.</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Email:</label>
-        <div class="col-lg-10" >
-          <input type="email" class="form-control m-b" name="email" ng-model="admin.email" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Password:</label>
-        <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" name="password" ng-model="admin.password" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Confirm Password:</label>
-        <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" name="password_confirmation" ng-model="admin.password_confirmation" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Role:</label>
-        <div class="col-lg-10" >
-          <select class="form-control m-b" ng-model="admin.superadmin">
-             <option value="0" selected>Standard Admin</option>
-             <option value="1">Super Admin</option>
-          </select>
-          <span class="help-block">Super Admins can add/remove other admins.</span>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(admin)">OK</button>
-  </div>
-</script>
 
 <script type="text/ng-template" id="editAdminModalContent.html">
   <div class="modal-header">
