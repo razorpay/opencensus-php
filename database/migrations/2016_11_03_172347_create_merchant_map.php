@@ -39,11 +39,6 @@ class CreateMerchantMap extends Migration
      */
     public function down()
     {
-        Schema::table(Table::MERCHANT_MAP, function($table)
-        {
-            $table->dropForeign(Table::MERCHANT_MAP.'_merchant_id_foreign');
-        });
-
         Schema::drop(Table::MERCHANT_MAP);
     }
 }
