@@ -55,7 +55,11 @@ app.controller('OrgsListCtrl', [
     }
 
     $scope.fetchOrgs = function () {
-      var request = $http.get('/admin/generic', { params: { route_name: 'org_get_multiple' } });
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'org_get_multiple'
+        }
+      });
 
       /**
        * TODO: remove mocked data
@@ -97,6 +101,7 @@ app.controller('OrgsListCtrl', [
   '$http',
   function ($scope, $modalInstance, $http) {
     $scope.organization = {
+      auth_type: 'password',
       route_name: 'org_create'
     };
 
