@@ -20,6 +20,13 @@ app.controller('RoleDetailCtrl', [
       var request = $http.get('/admin/role/' + $scope.role.id);
       $scope.role.name = 'fdfasd';
       $scope.role.description = 'Some fine description';
+      $scope.role.permissions = [
+        {
+          id : '6dLbNSpv5XbCOD',
+          name : 'test_permission',
+          description : 'Permission description'
+        }
+      ];
       request.success(function (data) {
         console.log(data.data);
       }).error(function () {
@@ -42,18 +49,25 @@ app.controller('RoleDetailCtrl', [
     };
 
     $scope.openAddPermissionModal = function () {
+      var permissions = $scope.role.permissions;
       var modalInstance = $modal.open({
         templateUrl: 'addPermissionModal.html',
         controller: 'AddPermissionCtrl',
         resolve: {
           current: function () {
-            return $scope.role.id;
+            return permissions;
           }
         }
       });
-      modalInstance.result.then(function () {
+      modalInstance.result.then(function (selected_permissions) {
+        console.log("SELECTED_PERMISSIONS", selected_permissions);
+        $scope.addPermissions(selected_permissions);
       }, $.noop);
     };
+
+    $scope.addPermissions = function () {
+      // TODO code to make add permissions request
+    }
   }
 ]).controller('PermissionsListCtrl', [
   '$scope',
@@ -82,16 +96,31 @@ app.controller('RoleDetailCtrl', [
   'current',
   'transformRequestAsFormPost',
   function ($scope, $modalInstance, $http, current, transformRequestAsFormPost) {
-    $scope.roleId = current;
-    $scope.permission = {};
+    $scope.assigned_permissions = current;
+    $scope.permissions = fetchPermissions();
     //TODO: Add http post request for creating permission
 
-    $scope.ok = function (permission) {
-      $modalInstance.close(permission);
+    $scope.ok = function (permissions) {
+      var selected_permissions = permissions.filter(function (permission) {
+        return permission.selected;
+      });
+      $modalInstance.close(selected_permissions);
     };
 
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
+    };
+
+    function fetchPermissions() {
+      return [{
+      id: "dasdeer",
+      name: "permission 1",
+      description: "permission description"
+      }, {
+      id: "uydadsa",
+      name: "permission 2",
+      description: "permission description"
+      }];
     }
   }
 ]);
