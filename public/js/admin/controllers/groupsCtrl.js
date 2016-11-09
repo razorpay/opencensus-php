@@ -51,26 +51,30 @@ app.controller('GroupsCtrl', [
     };
 
     $scope.addGroup = function (group) {
-      // TODO Mocked new group. Remove later
-      $scope.groups.push({
-        id: '6dLbNSpv5XbCOD',
-        name: group.name,
-        description: group.description
-      });
-      $scope.count += 1;
       var request = $http({
-        url: '/orgs/jdhsakd/groups',
+        url: '/admin/generic',
         method: 'POST',
-        transformRequest: transformRequestAsFormPost,
+        params: {
+          route_name: 'group_create',
+          url_params: {
+            '{id}': 'org_6dLbNSpv5XbCOF'
+          }
+        },
         data: {
-          name: group.name,
-          description: group.description
+          body: {
+            name: group.name,
+            description: group.description
+          }
         }
       });
+
       request.success(function (data) {
-        console.log(data.data);
+        if (data.success) {
+          $scope.groups.push(data.data);
+          $scope.count += 1;
+        }
       }).error(function () {
-        console.log('Add Group Request failed');
+        $scope.alerts.addAlert('danger', null, true);
       });
     };
 

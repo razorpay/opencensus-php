@@ -79,7 +79,7 @@ app.controller('RolesCtrl', [
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
-      })
+      });
     };
   }
 ]).controller('createRoleCtrl', [

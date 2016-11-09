@@ -15,4 +15,5 @@ return [
 
     // Groups
     'group_get_multiple'                => 'orgs/{id}/groups',
+    'group_create'                      => 'orgs/{id}/groups'
 ];
