@@ -173,6 +173,7 @@ class Verify extends Base\Core
                                                                 $boundary,
                                                                 $verifyStatus,
                                                                 $paymentStatus,
+                                                                true,
                                                                 self::ROWS_TO_FETCH * 2);
 
         $payments = $paymentsCollectionWithCount['payments'];
