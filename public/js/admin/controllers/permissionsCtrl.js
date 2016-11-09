@@ -26,11 +26,13 @@ app.controller('PermissionsCtrl', [
      */
 
     $scope.addPermission = function(permission) {
+      var params = {};
+      params.route_name = 'add_permission';
+      params.body = permission;
       var request = $http({
         method: 'post',
-        url: '/permissions',
-        transformRequest: transformRequestAsFormPost,
-        data: permission
+        url: '/generic',
+        data: params
       });
       request.success(function (data) {
         if (data.success) {
