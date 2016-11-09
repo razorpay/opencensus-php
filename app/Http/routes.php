@@ -269,7 +269,7 @@ Route::group(['middleware'  =>  'admin'], function()
     // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 
-    // Route::get('/generic', 'GenericController@getGeneric');
+    Route::get('/admin/generic', 'GenericController@getGeneric');
     Route::post('/admin/generic', 'GenericController@postGeneric');
     // Route::put('/generic', 'GenericController@putGeneric');
     // Route::delete('/generic', 'GenericController@deleteGeneric');

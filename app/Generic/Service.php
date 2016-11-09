@@ -16,18 +16,20 @@ class Service extends Base\Service
 
     public function call(array $input, $route)
     {
-        $response = $this->makeRawApiCall($input, $route);
+        list($error, $response) = $this->makeRawApiCall($input, $route);
 
-        return [null, $response];
+        return [$error, $response];
     }
 
     public function makeRawApiCall($input, $path)
     {
         $input['mode'] = 'live';
 
+        $input['auth'] = 'internal'; // app auth
+
         $input['file'] = null;
 
-        $request = new Admin\RawApiRequest($input, $path);
+        $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery = false);
 
         return $request->send();
     }

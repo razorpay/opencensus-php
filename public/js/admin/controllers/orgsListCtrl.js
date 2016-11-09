@@ -26,10 +26,16 @@ app.controller('OrgsListCtrl', [
      */
 
     $scope.addOrg = function(organization) {
+      var data = {};
+      data.body = organization;
+      data.route_name = organization.route_name;
+
+      delete data.body.route_name;
+
       var request = $http({
         method: 'post',
         url: '/admin/generic',
-        data: organization
+        data: data
       });
 
       request.success(function (data) {
@@ -49,25 +55,14 @@ app.controller('OrgsListCtrl', [
     }
 
     $scope.fetchOrgs = function () {
-      var request = $http.get('/orgs');
+      var request = $http.get('/generic');
 
       /**
        * TODO: remove mocked data
        */
-      $scope.organizations = [{
-        id: '2sGsPw5xI4aNn',
-        business_name: 'Govinda',
-        display_name: 'Raja Babu',
-        email: 'raja@babu.com',
-        email_domains: 'babu.com, raja.com'
-      },{
-        id: 'Uy3A6sNq0P5hA',
-        business_name: 'Batman',
-        display_name: 'Batman Kumar',
-        email: 'batman@kumar.com',
-        email_domains: 'babu.com, raja.com'
-      }]
-      $scope.count= 2;
+      $scope.organizations = []
+      $scope.count = 0;
+
       request.success(function (data) {
         if (data.success) {
           $scope.organizations = data.data.data;
@@ -83,6 +78,10 @@ app.controller('OrgsListCtrl', [
   '$modalInstance',
   '$http',
   function ($scope, $modalInstance, $http) {
+    $scope.organization = {
+      route_name: 'org_create'
+    };
+
     $scope.ok = function (organization) {
       $modalInstance.close(organization);
     };

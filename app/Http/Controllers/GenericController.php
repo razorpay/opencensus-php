@@ -7,6 +7,8 @@ use Config;
 use App;
 use App\Generic;
 
+use App\Http\AppResponse;
+
 class GenericController extends Controller
 {
     protected $guard = 'admin';
@@ -28,8 +30,6 @@ class GenericController extends Controller
     public function postGeneric()
     {
         $input['method'] = 'post';
-        
-        $input['auth'] = 'admin';
 
         $routeName = Input::get('route_name');
 
@@ -38,6 +38,23 @@ class GenericController extends Controller
         $route = Config::get('api-route-map.'.$routeName);
 
         list($error, $data) = (new Generic\Service)->call($input, $route);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getGeneric()
+    {
+        $input['method'] = 'get';
+
+        $routeName = Input::get('route_name');
+
+        unset($input['route_name']);
+
+        $route = Config::get('api-route-map.'.$routeName);
+
+        list($error, $data) = (new Generic\Service)->call($input, $route);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
 }
