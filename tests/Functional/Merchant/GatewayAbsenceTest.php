@@ -29,21 +29,23 @@ class GatewayAbsenceTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testGatewayCreateAbsence()
+    //----- Create Tests -----
+
+    public function testGatewayCreateAbsenceNetbanking()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
     }
 
-    public function testGatewayCreateAbsencePartial()
+    public function testGatewayCreateAbsenceNetbankingPartial()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
     }
 
-    public function testCreateAbsenceWithBank()
+    public function testCreateAbsenceNBEmptyIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -57,19 +59,133 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateAbsenceInvalidBank()
+    public function testCreateAbsenceNBInvalidIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
     }
 
-    public function testCreateAbsenceNonSupportedBank()
+    public function testCreateAbsenceNBNonSupportedIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
     }
+
+    public function testGatewayInvalidTo()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $from = $this->testData[__FUNCTION__]['request']['content']['from'];
+
+        $this->testData[__FUNCTION__]['request']['content']['to'] = $from - 10;
+
+        $this->startTest();
+    }
+
+    public function testGatewayCreateNullTo()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        unset($this->testData[__FUNCTION__]['request']['content']['to']);
+
+        $this->startTest();
+    }
+
+    public function testGatewayInvalidReasonCode()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+
+    public function testGatewayAbsenceForCard()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceForCardWithoutIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceForCardUnsupportedNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceForCardInvalidNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceForCardInvalidCardType()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceCardWithTypeIssuerNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceWithWallet()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayAbsenceWithInvalidWallet()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+
+    public function testGatewayAbsenceWithTerminal()
+    {
+        //$terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
+        $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
+        
+        $tid = $terminal['id'];
+
+        $request = [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'from'  => time(),
+                'method' => 'netbanking',
+                'terminal_id' => $tid,
+                'issuer' => 'HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+        
+        $this->assertEquals($content['terminal_id'], $tid);
+    }
+
+
+
+    //----- Update Tests -----
 
     public function testGatewayAbsenceUpdate()
     {
@@ -97,6 +213,8 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['to'], $to);
     }
 
+    //----- Delete Tests -----
+
     public function testGatewayAbsenceDelete()
     {
         $content = $this->createGatewayAbsence();
@@ -108,25 +226,8 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
-    public function testGatewayCreateNullTo()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
 
-        unset($this->testData[__FUNCTION__]['request']['content']['to']);
-
-        $this->startTest();
-    }
-
-    public function testGatewayInvalidTo()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $from = $this->testData[__FUNCTION__]['request']['content']['from'];
-
-        $this->testData[__FUNCTION__]['request']['content']['to'] = $from - 10;
-
-        $this->startTest();
-    }
+    //----- Fetch Tests -----
 
     public function testGatewayAbsenceFetchForNullTo()
     {
@@ -201,10 +302,7 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
-    public function testGatewayAbsenceForCard()
-    {
 
-    }
 
     //----- helpers -----
 
@@ -246,7 +344,7 @@ class GatewayAbsenceTest extends TestCase
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
-                'reason'  => 'Test Reason',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
                 'issuer'  => $bank,
                 'from'  => $from,
                 'to' => $to,
@@ -263,8 +361,6 @@ class GatewayAbsenceTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        sd($content);
-
         $this->assertEquals($content['gateway'], $gatewayName);
 
         return $content;
@@ -279,7 +375,7 @@ class GatewayAbsenceTest extends TestCase
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
-                'reason'  => 'Test Reason',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
                 'issuer'  => $bank,
                 'from'  => $from,
                 'method' => $method,
@@ -302,7 +398,7 @@ class GatewayAbsenceTest extends TestCase
         $request = [
             'content' => [
                 'gateway' => $gatewayName,
-                'reason'  => 'Test Reason',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
                 'from'  => $from,
                 'method' => $method,
                 'card_type' => $cardType,

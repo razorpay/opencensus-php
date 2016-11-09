@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Models\GatewayStatus\Absence;
+
 class ReasonCode
 {
     const LOW_SUCCESS_RATE      = 'LOW_SUCCESS_RATE';
@@ -15,4 +17,9 @@ class ReasonCode
         self::SCHEDULED_DOWNTIME    => 'Scheduled Downtime',
         self::OTHER                 => 'Uncategorized/other'
     ];
+
+    public static function isValidReasonCode($code)
+    {
+        return defined('self::'.strtoupper($code));
+    }
 }

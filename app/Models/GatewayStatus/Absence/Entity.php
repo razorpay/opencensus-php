@@ -50,7 +50,9 @@ class Entity extends Base\PublicEntity
         self::PARTIAL,
         self::CARD_TYPE,
         self::NETWORK,
-        self::METHOD
+        self::METHOD,
+        self::COMMENT,
+        self::TERMINAL_ID
     ];
 
     protected $casts = [
@@ -65,4 +67,9 @@ class Entity extends Base\PublicEntity
     protected $entity = 'gateway_absence';
 
     protected $generateIdOnCreate = true;
+
+    public function terminal()
+    {
+        return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
+    }
 }

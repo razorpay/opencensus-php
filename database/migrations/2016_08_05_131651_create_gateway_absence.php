@@ -57,7 +57,7 @@ class CreateGatewayAbsence extends Migration
             $table->integer(DowntimeTrace::CREATED_AT);
 
             $table->integer(DowntimeTrace::UPDATED_AT);
-            
+
             $table->foreign(DowntimeTrace::TERMINAL_ID)
                 ->references(TerminalEntity::ID)
                 ->on(Table::TERMINAL)

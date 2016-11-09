@@ -61,7 +61,7 @@ class Validator extends Base\Validator
 
     public function validateReasonCode($attribute, $reasonCode)
     {
-        if (defined('ReasonCode::'.strtoupper($reasonCode)) === false)
+        if (ReasonCode::isValidReasonCode($reasonCode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Reason Code: '. $reasonCode . ' is not valid'
@@ -104,9 +104,31 @@ class Validator extends Base\Validator
 
     public function validateIssuer($input)
     {
-        $issuer = $input[Entity::ISSUER];
+        $issuer = (isset($input[Entity::ISSUER]) === true) ? $input[Entity::ISSUER] :  null;
 
         $method = $input[Entity::METHOD];
+
+        $gateway = $input[Entity::GATEWAY];
+
+        // we need the name of the bank for netbanking and it cannot be empty
+        if ($method == Method::NETBANKING)
+        {
+            if (empty($issuer) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Issuer: '. $issuer .' cannot be empty for method: '.$method
+                );
+            }
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
+
+            if (in_array($gateway, $gateways) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Issuer: '. $issuer .' is not supported for gateway: '.$gateway
+                );
+            }
+        }
 
         if ($issuer === null)
         {
@@ -130,14 +152,14 @@ class Validator extends Base\Validator
 
     public function validateCardType($input)
     {
-        $method = $input['method'];
-
-        $cardType = $input['card_type'];
+        $cardType = (isset($input[Entity::CARD_TYPE]) === true) ? $input[Entity::CARD_TYPE] : null;
 
         if (empty($cardType) === true)
         {
             return;
         }
+
+        $method = $input[Entity::METHOD];
 
         // card type is not applicable for netbanking
         if ((strtolower($method) === Method::CARD) and (in_array(strtolower($cardType), ['debit', 'credit']) == false))
@@ -150,19 +172,32 @@ class Validator extends Base\Validator
 
     public function validateNetwork($input)
     {
-        $method = $input['method'];
-
-        $network = $input['network'];
+        $network = (isset($input[Entity::NETWORK]) === true) ? $input[Entity::NETWORK] : null;
 
         if (empty($network) === true)
         {
             return;
         }
 
-        if ((strtolower($method) === Method::CARD) and (isset(Network::$networks[strtoupper($network)]) === false))
+        $network = strtoupper($network);
+
+        if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                  'Network: '. $input['network'] . ' is not a valid network'
+                'Network: '. $input[Entity::NETWORK] . ' is not a valid network'
+            );
+        }
+
+        $method = $input[Entity::METHOD];
+
+        $gateway = $input[Entity::GATEWAY];
+
+        $cardNetWork = Gateway::$cardNetworkMap[$gateway];
+
+        if ((strtolower($method) === Method::CARD) and (in_array($network, $cardNetWork) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                  'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: '.$gateway
             );
         }
     }
@@ -171,7 +206,7 @@ class Validator extends Base\Validator
     {
         $methods = Method::getAllPaymentMethods();
 
-        $method = strtolower($input['method']);
+        $method = strtolower($input[Entity::METHOD]);
 
         if (in_array($method, $methods) === false)
         {
@@ -180,9 +215,9 @@ class Validator extends Base\Validator
             );
         }
 
-        $gateway = $input['gateway'];
+        $gateway = $input[Entity::GATEWAY];
 
-        if (Gateway::isMethodSupported($input['method'], $gateway) === false)
+        if (Gateway::isMethodSupported($input[Entity::METHOD], $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Method: '.$input['method'] .' is not supported for gateway: '. $gateway
