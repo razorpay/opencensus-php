@@ -37,6 +37,8 @@ class GenericController extends Controller
 
         $route = Config::get('api-route-map.'.$routeName);
 
+        $route = $this->parseUrlParams();
+
         list($error, $data) = (new Generic\Service)->call($input, $route);
 
         return AppResponse::jsonResponse($error, $data);
@@ -52,6 +54,32 @@ class GenericController extends Controller
 
         $route = Config::get('api-route-map.'.$routeName);
 
+        $route = $this->parseUrlParams();
+
+        list($error, $data) = (new Generic\Service)->call($input, $route);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putGeneric()
+    {
+        $input['method'] = 'put';
+
+        $routeName = Input::get('route_name');
+
+        unset($input['route_name']);
+
+        $route = Config::get('api-route-map.'.$routeName);
+
+        $route = $this->parseUrlParams();
+
+        list($error, $data) = (new Generic\Service)->call($input, $route);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    private function parseUrlParams($route)
+    {
         // Logic to parse URL Params
         // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
 
@@ -66,9 +94,7 @@ class GenericController extends Controller
             $route = str_replace($keys, $vals, $route);
         }
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
-
-        return AppResponse::jsonResponse($error, $data);
+        return $route;
     }
 
 }

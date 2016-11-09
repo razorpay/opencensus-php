@@ -271,7 +271,7 @@ Route::group(['middleware'  =>  'admin'], function()
 
     Route::get('/admin/generic', 'GenericController@getGeneric');
     Route::post('/admin/generic', 'GenericController@postGeneric');
-    // Route::put('/generic', 'GenericController@putGeneric');
+    Route::put('/generic', 'GenericController@putGeneric');
     // Route::delete('/generic', 'GenericController@deleteGeneric');
 });
 
