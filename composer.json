@@ -22,7 +22,8 @@
         "php-http/guzzle6-adapter": "^1.1",
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
-        "minfraud/http": "^1.70"
+        "minfraud/http": "^1.70",
+        "northox/stupid-password": "dev-master"
     },
     "repositories": [
         {
