@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Auth;
 use Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
         $this->setupBlade();
 
         $this->registerValidatorResolver();
+
+        $this->registerCustomAuthProvider();
     }
 
     protected function setupBlade()
@@ -37,6 +40,19 @@ class AppServiceProvider extends ServiceProvider
             return new \Razorpay\Spine\Validation\LaravelValidatorEx(
                 $translator, $data, $rules, $messages, $customAttributes
             );
+        });
+    }
+
+    protected function registerCustomAuthProvider()
+    {
+        Auth::provider('api', function($app, $config)
+        {
+            return new ApiUserProvider($app, $config);
+        });
+
+        Auth::extend('api', function($app, $name, array $config)
+        {
+            return new ApiGuard(Auth::createUserProvider($config['provider']), $app);
         });
     }
 

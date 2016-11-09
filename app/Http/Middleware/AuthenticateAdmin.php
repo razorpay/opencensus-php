@@ -16,7 +16,7 @@ class AuthenticateAdmin {
      */
     public function handle($request, Closure $next)
     {
-        $admin = Auth::guard('admin')->user();
+        $admin = Auth::guard('api')->user();
 
         if (!$admin)
         {

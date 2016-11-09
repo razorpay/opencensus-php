@@ -80,9 +80,9 @@ class Service extends Base\Service
         try
         {
             // This is password based login
-            $res = $this->api->admin->passwordLogin($input)->toArray();
+            $data = $this->api->admin->passwordLogin($input)->toArray();
 
-            sd($res);
+            Session::put('admin', $data);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

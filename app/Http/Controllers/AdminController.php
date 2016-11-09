@@ -63,7 +63,8 @@ class AdminController extends Controller
             case 'google_auth':
                 return redirect($this->getGoogleOAuthUrl());
             case 'password':
-                return redirect('/admin/#access/auth/password');
+
+                return redirect('/admin/#access/auth/password?org='.$orgName);
         }
     }
 
@@ -133,9 +134,12 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->passwordLogin($input);
+        if (Auth::guard('api')->validate($input) === true)
+        {
+            return redirect('/admin');
+        }
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse(['Invalid Credentials'], []);
     }
 
     protected function getOrg($orgName)
