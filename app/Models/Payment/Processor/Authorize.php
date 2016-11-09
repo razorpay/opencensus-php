@@ -3,35 +3,32 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Crypt;
-use Mail;
-use Config;
-
 use Carbon\Carbon;
+use Config;
+use Crypt;
 use Lib\PhoneBook;
-use RZP\Models\Emi;
-use RZP\Http\Route;
+use Mail;
+use RZP\Constants\Mode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Token;
+use RZP\Models\Emi;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Pricing;
-use RZP\Constants\Mode;
-use RZP\Models\Card\IIN;
-use RZP\Models\Merchant;
-use RZP\Models\Customer;
-use RZP\Models\Transaction;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\TerminalAnalytics;
-
-use RZP\Error;
-use RZP\Exception;
+use RZP\Models\Pricing;
+use RZP\Models\Transaction;
 use RZP\Trace\Trace;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 trait Authorize
@@ -192,7 +189,8 @@ trait Authorize
     protected function verifyFeesLessThanAmount($payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        list($fee, $serviceTax, $ruleKey, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     protected function processAuthResponse($request, $payment)
@@ -1645,9 +1643,12 @@ trait Authorize
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
+
+                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);

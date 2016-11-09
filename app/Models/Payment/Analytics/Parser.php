@@ -5,9 +5,8 @@ namespace RZP\Models\Payment\Analytics;
 use RZP\Exception;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
-use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Order;
+use RZP\Models\Payment\Analytics;
 use RZP\Trace\TraceCode;
 
 class Parser extends Base\Core

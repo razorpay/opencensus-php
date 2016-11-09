@@ -84,7 +84,6 @@ final class Route
         'merchant_secret'                         => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                      => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
         'merchant_set_banks'                      => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
-        'merchant_set_all_banks'                  => ['put',      'merchants/banks',                                'MerchantController@putBanksForAllMerchants'                        ],
         'merchant_daily_report'                   => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                         => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
         'merchant_fetch'                          => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
@@ -155,6 +154,7 @@ final class Route
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
+        'migrate_transactions'                    => ['post',     'transactions/migrate',                           'TransactionController@postMigrateOlderTransactions'                ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -233,6 +233,7 @@ final class Route
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
+        'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
@@ -388,7 +389,6 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
-        'merchant_set_all_banks',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_fetch_webhooks',
@@ -476,6 +476,7 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
+        'migrate_transactions',
         'schedule_create',
         'schedule_get',
         'schedule_update',
@@ -507,6 +508,7 @@ final class Route
         'webhook_fetch_multiple',
         'balance_fetch',
         'reports_monthly_invoice',
+        'reports_monthly_invoice_v2',
         'reports_public_entity',
         'bank_account_fetch',
         'merchant_edit_config',
@@ -576,6 +578,7 @@ final class Route
             'setl_post_details_old',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'migrate_transactions',
             'merchant_migrate_features',
         ),
 
@@ -682,7 +685,7 @@ final class Route
 
         $parameters['key_id'] = $key;
 
-        $urlSegment = \Url::route($routeName, $parameters, false);
+        $urlSegment = \URL::route($routeName, $parameters, false);
 
         return $schema . $host . $urlSegment;
     }

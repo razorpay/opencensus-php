@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Customer\AppToken;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer\AppToken;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {

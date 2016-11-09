@@ -3,6 +3,9 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -10,10 +13,6 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
-use RZP\Constants\Table;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
@@ -49,8 +48,8 @@ class Repository extends Base\Repository
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
-        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
-        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
     );
@@ -231,15 +230,15 @@ class Repository extends Base\Repository
         //                      'wallet_olamoney', 'wallet_freecharge' )
         //        AND `status` = 'failed'
         //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
-        //              OR ( `verify_bucket` = '1'  AND `created_at` < '1478022368' )
+        //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
         //              OR ( `verify_bucket` = '2' AND `created_at` < '1478019668' )
         //              OR ( `verify_bucket` = '3' AND `created_at` < '1477936868' )
         //              OR ( `verify_bucket` = '4' AND `created_at` < '1477850468' )
-        //              OR ( `verify_bucket` = '5'  AND `created_at` < '1477764068' )
+        //              OR ( `verify_bucket` = '5' AND `created_at` < '1477764068' )
         //              OR ( `verify_bucket` = '6' AND `created_at` < '1477677668' )
         //              OR ( `verify_bucket` = '7' AND `created_at` < '1477591268' )
         //              OR ( `verify_bucket` = '8' AND `created_at` < '1477504868' )
-        //              OR ( `verify_bucket` = '9'  AND `created_at` < '1477418468' )
+        //              OR ( `verify_bucket` = '9' AND `created_at` < '1477418468' )
         //            )
         // ORDER  BY Rand()
         // LIMIT  100
@@ -262,7 +261,9 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
     {
-            $query->where(Payment\Entity::CREATED_AT, '<=', $minimumTime);
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minimumTime);
     }
 
     /**
@@ -276,13 +277,6 @@ class Repository extends Base\Repository
     protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        // This Condition will give all newly created payments,
-        // which have crossed minimum time threshold.
-        $whereConditions[] = [
-            [Payment\Entity::VERIFY_BUCKET, '=', 0],
-            [Payment\Entity::CREATED_AT , '<', $minimumTime]
-        ];
 
         // Each or condition will fetch payments which are
         // in next Verify Bucket and not processed by previous cron

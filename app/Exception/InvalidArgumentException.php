@@ -2,7 +2,6 @@
 
 namespace RZP\Exception;
 
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
 class InvalidArgumentException extends ServerErrorException

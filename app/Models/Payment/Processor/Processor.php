@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Base\PublicCollection;
 
 class Processor
 {
@@ -174,10 +175,8 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        $preCalculationOfFees = true;
-
-        list($fee, $serviceTax, $ruleKey) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
+        list($fee, $serviceTax, $ruleKey, $feesSplit) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -595,8 +594,9 @@ class Processor
      */
     protected function verifyProvidedFee($payment, $input)
     {
-        // Set the amount back to the base amount (without our fee and tax).
-        $input['amount'] = $payment->getAmount() - $payment->getFee();
+        // This is not needed because FeeCalculater:calculateFee()
+        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.
@@ -858,5 +858,23 @@ class Processor
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    public function saveFeeDetails($txn, $feesSplit)
+    {
+        if (empty($feesSplit) == true)
+        {
+            return;
+        }
+
+        $this->repo->transaction(function() use ($txn, $feesSplit)
+        {
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
+            }
+        });
     }
 }

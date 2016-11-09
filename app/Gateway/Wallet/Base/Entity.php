@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Base;
 
-use RZP\Constants\Table;
 use RZP\Gateway\Base;
 
 class Entity extends Base\Entity

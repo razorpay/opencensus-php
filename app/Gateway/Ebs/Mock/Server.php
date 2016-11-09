@@ -4,14 +4,12 @@ namespace RZP\Gateway\Ebs\Mock;
 
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Ebs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Card;
-use RZP\Models\Payment\Core;
+use RZP\Gateway\Ebs;
 use RZP\Gateway\Ebs\RequestConstants as Request;
 use RZP\Gateway\Ebs\ResponseConstants as Response;
+use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
 {

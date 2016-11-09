@@ -2,8 +2,8 @@ Hi,
 
 This is just a confirmation email to let you know that a payment was successful.
 
-Date: {{\Carbon\Carbon::createFromTimeStamp($payment['captured_at'], "Asia/Kolkata")->format('jS F Y')}}
-Time: {{\Carbon\Carbon::createFromTimeStamp($payment['captured_at'], "Asia/Kolkata")->format('g:i a T (P)')}}
+Date: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('jS F Y')}}
+Time: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('g:i a T (P)')}}
 
 Payment Id:         {{$payment['public_id']}}
 Amount:             {{$payment['amount']}}

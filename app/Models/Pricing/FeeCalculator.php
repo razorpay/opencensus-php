@@ -7,14 +7,28 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Transaction;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Merchant;
+use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
+
 class FeeCalculator
 {
     const SERVICE_TAX_PERCENT = 15.0;
+
+    const SERVICE_TAX_PERCENTAGE            = 1400;
+    const SWACHH_BHARAT_CESS_PERCENTAGE     = 50;
+    const KRISHI_KALYAN_CESS_PERCENTAGE     = 50;
+
+    const TAX_COMPONENTS = [
+        FeeBreakupName::KRISHI_KALYAN_CESS => self::KRISHI_KALYAN_CESS_PERCENTAGE,
+        FeeBreakupName::SWACHH_BHARAT_CESS => self::SWACHH_BHARAT_CESS_PERCENTAGE,
+        FeeBreakupName::SERVICE_TAX        => self::SERVICE_TAX_PERCENTAGE,
+    ];
 
     /**
      * For which fees needs to be calculate.
@@ -25,52 +39,66 @@ class FeeCalculator
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
+    protected $feesSplit = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
 
+        $this->feesSplit = new Base\PublicCollection;
+
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing, $preCalculationOfFees = false)
+    public function calculate($pricing)
     {
         $entity = $this->entity;
 
         $rule = $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $entity->getAmount(), $preCalculationOfFees);
+        $amount = $entity->getAmount();
 
-        return array($fee, $serviceTax, $rule->getKey());
+        if ($entity->merchant->isFeeBearerCustomer())
+        {
+            // 1. The first call will have the fee = 0,
+            //    hence fees will be calculated on the original amount
+            // 2. On validation/capture call, the fee will be set
+            $amount = $amount - $entity->getFee();
+        }
+
+        list($fee, $serviceTax) = $this->getFees($rule, $amount);
+
+        return array($fee, $serviceTax, $rule->getKey(), $this->feesSplit);
     }
 
-
-    protected function getFees($rule, $amount, $preCalculationOfFees = false)
+    protected function getFees($rule, $amount)
     {
-        $serviceTaxPercentage = self::getServiceTaxRate();
+        $fee = $this->calculateRzpFee($rule, $amount);
 
-        list($percent, $fixed) = $rule->getRates();
+        $totaltaxes = $this->calculateServiceTaxes($fee, self::TAX_COMPONENTS);
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
+        $totalFees = $fee + $totaltaxes;
 
-        $fee = (int) ceil($fee);
-
-        $serviceTax = (int) ceil(($fee * $serviceTaxPercentage) / 100);
-
-        $fee += $serviceTax;
-
-        if ($fee > $amount)
+        if ($totalFees > $amount)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
                 Payment\Entity::AMOUNT);
         }
 
-        return  array($fee, $serviceTax);
+        return  array($totalFees, $totaltaxes);
     }
 
     public static function getServiceTaxRate()
     {
-        return self::SERVICE_TAX_PERCENT;
+        return self::SERVICE_TAX_PERCENTAGE +
+                self::KRISHI_KALYAN_CESS_PERCENTAGE +
+                self::SWACHH_BHARAT_CESS_PERCENTAGE;
+    }
+
+    public function getFeesSplit()
+    {
+        return $this->feesSplit;
     }
 
     protected function getRelevantPricingRule($pricing)
@@ -308,11 +336,13 @@ class FeeCalculator
      * If the value is not found, and a default value is allowed,
      * matches based on default value will be returned.
      *
-     * @param  $rules       List of rules
-     * @param  $filedName   Field name to be filtered on
-     * @param  $filedValue  Filed value to be filtered on
-     * @param  $chooseDefault Default value to be considered if field value not found
-     * @param  $defaultValue  Default value to be filtered on if $chooseDefualt is true
+     * @param  array       $rules         List of rules
+     * @param  string      $fieldName     Field name to be filtered on
+     * @param  string      $fieldValue    Field value to be filtered on
+     * @param  bool        $chooseDefault Default value to be considered if field value not found
+     * @param  string|null $defaultValue  Default value to be filtered on if $chooseDefault is true
+     *
+     * @return array
      */
     protected function filterRulesOnFieldByValue(
         $rules,
@@ -396,35 +426,6 @@ class FeeCalculator
         return $relevantRule;
     }
 
-    /**
-     * NOT USED CURRENTLY
-     *
-     * In customer subvention,
-     * If the rule before applying the amount
-     * and the new amount after using merchant
-     * subvention is same then use the given rule
-     */
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
-    {
-        $fees = [];
-
-        foreach ($rules as $rule)
-        {
-            list($fee, $st) = $this->getFees($rule, $amount);
-
-            $newAmount = $amount + $fee;
-
-            $newSubventionType = Merchant\FeeBearer::PLATFORM;
-
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
-
-            if ($rule === $newRule)
-            {
-                return $rule;
-            }
-        }
-    }
-
     protected function validateAndGetOnePricingRule($pricing)
     {
         $this->traceAllRules($pricing);
@@ -449,13 +450,11 @@ class FeeCalculator
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
-     * @param float $serviceTaxPercentage  15.0
-     * @param boolean $preCalculationOfFees
-     * @return fees
+     * @return int
      */
-    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
+    protected function getUnroundedFees($amount, $percent, $fixed)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
     }
 
     /**
@@ -481,7 +480,7 @@ class FeeCalculator
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
@@ -498,5 +497,122 @@ class FeeCalculator
         $this->trace->debug(
             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
             ['rules' => $array]);
+    }
+
+    protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)
+    {
+        $params = [
+            Transaction\FeeBreakup\Entity::NAME                 => $name,
+            Transaction\FeeBreakup\Entity::PERCENTAGE           => $percent,
+            Transaction\FeeBreakup\Entity::AMOUNT               => $amount,
+            Transaction\FeeBreakup\Entity::PRICING_RULE_ID      => $pricingRuleId,
+        ];
+
+        $feeBreakup = (new Transaction\FeeBreakup\Entity)->build($params);
+
+        return $feeBreakup;
+    }
+
+    public function calculateRzpFee($rule, $amount)
+    {
+        list($percent, $fixed) = $rule->getRates();
+
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+
+        $fee = (int) ceil($fee);
+
+        $rzpFee = $this->createFeeBreakup(
+                                FeeBreakupName::PAYMENT,
+                                null,
+                                $fee,
+                                $rule->getId());
+
+
+        $this->feesSplit->push($rzpFee);
+
+        return $fee;
+    }
+
+    public function calculateServiceTaxes($fee, $taxComponents)
+    {
+        $totaltaxes = 0;
+
+        $splitTaxes = 0;
+
+        $totalTaxPercentage = 0;
+
+        foreach ($taxComponents as $taxPercentage)
+        {
+            $totalTaxPercentage += $taxPercentage;
+        }
+
+        $totaltaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+
+        foreach ($taxComponents as $name => $percentage)
+        {
+            $taxValue = (int) round(($percentage * $totaltaxes) / $totalTaxPercentage);
+
+            $taxBreakup = $this->createFeeBreakup(
+                                            $name,
+                                            $percentage,
+                                            $taxValue);
+
+            $this->feesSplit->push($taxBreakup);
+
+            $splitTaxes += $taxValue;
+        }
+
+        // TODO: Find a cleaner approach to encounter the difference in tax
+        if ($totaltaxes !== $splitTaxes)
+        {
+            foreach ($this->feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
+                {
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totaltaxes - $splitTaxes);
+                }
+            }
+        }
+
+        return $totaltaxes;
+    }
+
+    public function calculateServiceTaxesFromFees($fee, $taxComponents = self::TAX_COMPONENTS)
+    {
+        $totaltaxes = 0;
+
+        foreach ($taxComponents as $name => $percentage)
+        {
+            $taxValue = $this->calculateTaxFromFees($fee, $percentage);
+
+            $taxBreakup = $this->createFeeBreakup(
+                                            $name,
+                                            $percentage,
+                                            $taxValue);
+
+            $this->feesSplit->push($taxBreakup);
+
+            $totaltaxes += $taxValue;
+        }
+
+        return $totaltaxes;
+    }
+
+    protected function calculateTaxFromFees($fee, $taxPercentage)
+    {
+        // Solving these
+        // rzpFee + servTax = totFee;
+        // servTax = ST_PERC * rzpFee;
+        //         = ST_PERC * (totFee - servTax);
+
+        // servTax = ( ST_PERC * totFee ) / ( 10000 + ST_PERC ) ;
+
+        //10000 as percentage is 1400 instead of 14
+
+        $numerator = $fee * $taxPercentage;
+
+        $denominator = 10000 + $taxPercentage ;
+
+        return ceil($numerator / $denominator);
     }
 }

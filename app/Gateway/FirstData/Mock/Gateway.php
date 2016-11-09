@@ -3,9 +3,8 @@
 namespace RZP\Gateway\FirstData\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\FirstData;
 use RZP\Gateway\Base;
+use RZP\Gateway\FirstData;
 
 class Gateway extends FirstData\Gateway
 {

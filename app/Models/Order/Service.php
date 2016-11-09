@@ -8,29 +8,23 @@ use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
-    protected $core;
-
     public function __construct()
     {
         parent::__construct();
-
-        $this->core = new Core;
     }
 
     public function create(array $input)
     {
         $merchant = $this->merchant;
 
-        $order = $this->core->create($input, $merchant);
+        $order = (new Core)->create($input, $merchant);
 
         return $order->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        Order\Entity::verifyIdAndStripSign($id);
-
-        $order = $this->repo->order->findByIdAndMerchantId($id, $this->merchant->getId());
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $order->toArrayPublic();
     }
@@ -44,20 +38,16 @@ class Service extends Base\Service
 
     public function fetchPaymentsFor($id)
     {
-        $options = [
-            'order_id' => $id,
-        ];
+        $options = ['order_id' => $id];
 
         $payments = $this->repo->payment->fetch($options, $this->merchant->getKey());
 
         return $payments->toArrayPublic();
     }
 
-    public function fetchOrderBankAndAccountNumberForMerchant($id, $merchant)
+    public function fetchOrderBankAndAccountNumberForMerchant($id)
     {
-        Order\Entity::verifyIdAndStripSign($id);
-
-        $order = $this->repo->order->findByIdAndMerchantId($id, $this->merchant->getId());
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
 
         return [
             'bank'           => $order->getBank(),

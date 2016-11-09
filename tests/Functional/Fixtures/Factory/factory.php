@@ -294,6 +294,11 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'campaign'      => 'silent-ads',
 ]);
 
+
+$factory(\RZP\Models\Transaction\FeeBreakup\Entity::class, [
+    'id'            => $faker->uniqueid,
+]);
+
 $factory(\RZP\Models\Batch\Entity::class, [
     'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',

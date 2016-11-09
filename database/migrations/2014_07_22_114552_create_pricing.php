@@ -4,7 +4,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Entity as Pricing;
 
 class CreatePricing extends Migration

@@ -756,9 +756,16 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyMultiplePayments($filter)
+    public function verifyMultiplePayments($filter, $input)
     {
-        return (new Verify)->verifyPaymentsWithFilter($filter);
+        $bucket = null;
+
+        if (isset($input['bucket']) === true)
+        {
+            $bucket = $input['bucket'];
+        }
+
+        return (new Verify)->verifyPaymentsWithFilter($filter, $bucket);
     }
 
     public function verifyPayment($payment)
@@ -800,18 +807,35 @@ class Service extends Base\Service
         $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
 
         // Put the counts in for debug purposes
-        $result['counts']['payments'] = count($authorizedPayments);
-        $result['counts']['merchants'] = count($grouped);
+        $result['counts'] = [
+            'payments'  => count($authorizedPayments),
+            'merchants' => count($grouped),
+            'failures'  => 0,
+        ];
 
         foreach ($grouped as $merchantId => $payments)
         {
             // Send mail only if we have some payments
             if (count($payments) > 0)
             {
-                $this->sendAuthorizedPaymentsReminderMail(
-                    $merchantId, $payments, $final);
+                try
+                {
+                    $this->sendAuthorizedPaymentsReminderMail(
+                        $merchantId, $payments, $final);
 
-                $result['counts'][$merchantId] = count($payments);
+                    $result['counts'][$merchantId] = count($payments);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->warning(TraceCode::PAYMENT_AUTHORIZE_REMINDER_FAILURE,
+                        [
+                            'merchant_id' => $merchantId,
+                            'payments'    => count($payments),
+
+                        ]);
+
+                    $result['counts']['failures'] += 1;
+                }
             }
         }
 

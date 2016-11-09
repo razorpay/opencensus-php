@@ -2,9 +2,8 @@
 
 namespace RZP\Gateway\Ebs;
 
-use RZP\Gateway\Base;
-use RZP\Constants\Table;
 use RZP\Constants;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
