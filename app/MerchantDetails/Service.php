@@ -4,6 +4,7 @@ namespace App\MerchantDetails;
 
 use Auth;
 use Aws\Laravel\AwsFacade as AWS;
+use Aws\Sdk;
 use Illuminate\Support\Facades\App as App;
 use Carbon\Carbon;
 use Config;
@@ -187,10 +188,15 @@ class Service extends Base\Service
         $extension = $data['file']->getClientOriginalExtension();
         $mime = $data['file']->getMimeType();
 
-        $s3 = App::make('aws')->createClient('s3');
+        $config = config('aws');
+
+        $config['region'] = getenv('AWS_BUCKET_REGION');
 
         try
         {
+            $client = new \Aws\Sdk($config);
+
+            $s3 = $client->createClient('S3');
             $s3Obj = [
                 'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
                 'Key'           => $id.'/'.$data['key'].'.'.$extension,
