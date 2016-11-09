@@ -402,7 +402,7 @@ class Service extends Base\Service
             $extension_position = strrpos($file, '.', -1);
             $extension  = substr($file, $extension_position + 1);
 
-            $s3 = App::make('aws')->createClient('s3');
+            $s3 = $this->getS3Client();
 
             try
             {
@@ -1576,7 +1576,7 @@ class Service extends Base\Service
      */
     protected function getBeneficiaryFileUrl($date)
     {
-        $s3 = App::make('aws')->createClient('s3');
+        $s3 = $this->getS3Client();
 
         $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
         $filename = $date.'.xls';
@@ -1668,7 +1668,8 @@ class Service extends Base\Service
      */
     protected function uploadToS3($objectPath, $filePath)
     {
-        $s3 = App::make('aws')->createClient('s3');
+        $s3 = $this->getS3Client();
+
         $s3Obj = [
             'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
             'Key'           => $objectPath,
@@ -1686,7 +1687,8 @@ class Service extends Base\Service
      */
     public function getScreenshot($id)
     {
-        $s3 = App::make('aws')->createClient('s3');
+        $s3 = $this->getS3Client();
+
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
         $keys = MerchantDetails\Entity::getUrlKeys();
 

@@ -188,15 +188,10 @@ class Service extends Base\Service
         $extension = $data['file']->getClientOriginalExtension();
         $mime = $data['file']->getMimeType();
 
-        $config = config('aws');
-
-        $config['region'] = getenv('AWS_BUCKET_REGION');
-
         try
         {
-            $client = new \Aws\Sdk($config);
+            $s3 = $this->getS3Client();
 
-            $s3 = $client->createClient('S3');
             $s3Obj = [
                 'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
                 'Key'           => $id.'/'.$data['key'].'.'.$extension,
