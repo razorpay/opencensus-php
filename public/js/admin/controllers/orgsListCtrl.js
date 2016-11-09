@@ -28,16 +28,17 @@ app.controller('OrgsListCtrl', [
     $scope.addOrg = function(organization) {
       var request = $http({
         method: 'post',
-        url: '/orgs',
-        transformRequest: transformRequestAsFormPost,
+        url: '/admin/generic',
         data: organization
       });
+
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization added successfully',
-            true);
-        } else {
+          $scope.alerts.addAlert('success', 'Organization added successfully', true);
+        }
+        else {
           $scope.alerts.resetAlerts();
+
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
           });
