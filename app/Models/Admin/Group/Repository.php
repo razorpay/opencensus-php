@@ -21,11 +21,13 @@ class Repository extends Base\Repository
     ];
 
 
-    public function retrieveByIdAndGroupIdOrFail($orgId, $adminId)
+    public function retrieveByOrgIdAndIdOrFail(
+        string $orgId,
+        string $groupId)
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where(Entity::ID, '=', $adminId)
+                    ->where(Entity::ID, '=', $groupId)
                     ->firstOrFail();
     }
 

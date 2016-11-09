@@ -186,6 +186,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchAdminMultiple(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
