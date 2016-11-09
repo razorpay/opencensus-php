@@ -10,7 +10,7 @@ class Core extends Base\Core
     {
         $org = $this->repo->org->findOrFailPublic($orgId);
 
-        $admin = (new Entity)->build($input);
+        $group = (new Entity)->build($input);
 
         $group->org()->associate($org);
 
