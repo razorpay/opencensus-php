@@ -55,7 +55,7 @@ app.controller('OrgsListCtrl', [
     }
 
     $scope.fetchOrgs = function () {
-      var request = $http.get('/generic');
+      var request = $http.get('/admin/generic', { params: { route_name: 'org_get_multiple' } });
 
       /**
        * TODO: remove mocked data
@@ -65,7 +65,7 @@ app.controller('OrgsListCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.organizations = data.data.data;
+          $scope.organizations = data.data.items;
           $scope.count = data.data.count;
         }
       });
