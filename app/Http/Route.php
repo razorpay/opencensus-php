@@ -307,12 +307,12 @@ final class Route
         'group_admins_delete'                     => ['delete',   'orgs/{id}/groups/{groupId}/admins',              'AdminController@removeAdminsFromGroup'
                  ],
         // Permission can only be created by certain organisations.
-        'permission_create'                       => ['post',     'orgs/{id}/permissions',                          'AdminController@createPermission'                                  ],
-        'permission_create_json'                  => ['post',     'orgs/{id}/permissions/json',                     'AdminController@createPermissionsFromJson'                         ],
-        'permission_get_multiple'                 => ['get',      'orgs/{id}/permissions',                          'AdminController@getMultiplePermissions'                            ],
-        'permission_get'                          => ['get',      'orgs/{id}/permissions/{permission_id}',          'AdminController@getPermission'                                     ],
-        'permission_edit'                         => ['put',      'orgs/{id}/permissions/{permission_id}',          'AdminController@putPermissions'                                    ],
-        'permission_delete'                       => ['delete',   'orgs/{id}/permissions/{permission_id}',          'AdminController@deletePermission'                                  ],
+        'permission_create'                       => ['post',     'permissions',                                    'AdminController@createPermission'                                  ],
+        'permission_create_json'                  => ['post',     'permissions/json',                               'AdminController@createPermissionsFromJson'                         ],
+        'permission_get_multiple'                 => ['get',      'permissions',                                    'AdminController@getMultiplePermissions'                            ],
+        'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
+        'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermissions'                                    ],
+        'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
         'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
 
         // Admin Auth
@@ -528,7 +528,7 @@ final class Route
         'schedule_get',
         'schedule_update',
         'schedule_assign',
-    	'feature_get_multiple',
+        'feature_get_multiple',
         'feature_add',
         'feature_delete',
         'merchant_migrate_features',

@@ -259,34 +259,37 @@ class AdminController extends Controller
 
 // --------------------- CRUD for Permissions ----------------------------------------
 
-    public function createPermission(string $id)
+    public function createPermission()
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->createPermission($id, $input);
+        $data = (new Admin\Permission\Service)->createPermission($input);
 
         return $data;
     }
 
-    public function createPermissionsFromJson(string $orgId)
+    public function createPermissionsFromJson()
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->createPermissionsFromJson($orgId, $input);
+        $data = (new Admin\Permission\Service)->createPermissionsFromJson(
+            $input);
 
         return $data;
     }
 
-    public function getPermission(string $orgId, string $permissionId)
+    public function getPermission(string $permissionId)
     {
-        $data = (new Admin\Permission\Service)->getPermission($orgId, $permissionId);
+        $data = (new Admin\Permission\Service)->getPermission($permissionId);
 
         return $data;
     }
 
-    public function getMultiplePermissions(string $id)
+    public function getMultiplePermissions()
     {
-        $data = (new Admin\Permission\Service)->getMultiplePermissions($id);
+        $input = Request::all();
+
+        $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
 
         return $data;
     }

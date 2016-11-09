@@ -49,7 +49,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSON_MAP);
     }
-
-
-
 }

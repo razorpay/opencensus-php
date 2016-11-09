@@ -7,38 +7,33 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function createPermission($orgId, array $input)
+    public function createPermission(array $input)
     {
-        $permission = (new Core)->create($orgId, $input);
+        $permission = (new Core)->create($input);
 
         return $permission->toArrayPublic();
     }
 
-    public function getPermission($orgId, $permissionId)
+    public function getPermission(string $permissionId)
     {
-        Org::verifyIdAndStripSign($orgId);
-
         Entity::verifyIdAndStripSign($permissionId);
 
-        $permission = $this->repo->permission->fetchPermissionForOrg($permissionId, $orgId);
+        $permission = $this->repo->permission->findOrFail($permissionId);
 
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions($orgId)
+    public function getMultiplePermissions(array $input)
     {
-        $permission = $this->repo->permission->fetchPermissionsForOrg($orgId);
+        $permission = $this->repo->permission->fetch($input);
 
         return $permission->toArrayPublic();
     }
 
-    public function createPermissionsFromJson($orgId, array $input)
+    public function createPermissionsFromJson(array $input)
     {
-        foreach ($input['permissions'] as $key => $value)
-        {
-            $permission = (new Core)->create($orgId, ['name' => $value, 'description' => '']);
-        }
+        $permission = (new Core)->create($input);
 
-        return "Created";
+        return $permission->toArrayPublic();
     }
 }

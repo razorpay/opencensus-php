@@ -3,7 +3,7 @@
 return [
     'testCreatePermission' => [
         'request' => [
-            'url' => '/orgs/org_6dLbNSpv5XbCOF/permissions',
+            'url' => '/permissions',
             'method' => 'post',
             'content' => [
                 'name' => 'see_all_merchants',
@@ -20,7 +20,7 @@ return [
     ],
     'testGetPermission' => [
         'request' => [
-            'url' => '/orgs/org_6dLbNSpv5XbCOF/permissions',
+            'url' => '/permissions',
             'method' => 'get',
         ],
         'response' => [
