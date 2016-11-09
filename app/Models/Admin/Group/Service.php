@@ -45,9 +45,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function fetchMultiple(array $input)
+    public function fetchMultiple(string $orgId, array $input)
     {
-        $groups = $this->repo->group->fetch($input);
+        $groups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
 
         return $groups->toArrayPublic();
     }

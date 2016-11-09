@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Admin;
+namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Base;
 

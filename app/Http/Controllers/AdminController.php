@@ -128,28 +128,28 @@ class AdminController extends Controller
     {
         $data = (new Admin\Admin\Service)->getAdmin($id, $adminId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getMultipleAdmins($id)
     {
         $data = (new Admin\Admin\Service)->getMultipleAdmins($id, $adminId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function createAdmin($id)
     {
         $data = (new Admin\Admin\Service)->createAdmin($id);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function deleteAdmin($id, $adminId)
     {
         $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function addMerchantToAdmin($id, $adminId)
@@ -159,7 +159,7 @@ class AdminController extends Controller
         $data = (new Admin\Admin\Service)->addMerchantToAdmin(
             $id, $adminId, $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function addRoleToAdmin(
@@ -171,7 +171,7 @@ class AdminController extends Controller
         $data = (new Admin\Admin\Service)->addRoleToAdmin(
             $id, $adminId, $roleId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function revokeRoleFromAdmin(
@@ -183,7 +183,7 @@ class AdminController extends Controller
         $data = (new Admin\Admin\Service)->revokeRoleFromAdmin(
             $id, $adminId, $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
 // --------------------- END CRUD for Admins   ---------------------------------------
@@ -195,21 +195,21 @@ class AdminController extends Controller
 
         $data = (new Admin\Role\Service)->createRole($id, $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getRole(string $id, string $roleId)
     {
         $data = (new Admin\Role\Service)->getRole($id, $roleId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getMultipleRoles(string $id)
     {
         $data = (new Admin\Role\Service)->getMultipleRoles($id);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
 // --------------------- END CRUD for roles  --------------------------------------
@@ -221,14 +221,23 @@ class AdminController extends Controller
 
         $data = (new Admin\Group\Service)->createRole($id, $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getGroup(string $id, string $groupId)
     {
         $data = (new Admin\Group\Service)->getGroup($id, $groupId);
 
-        return $data;
+        return ApiResponse::json($data);
+    }
+
+    public function getGroupsMultiple(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($data);
     }
 
 
@@ -236,7 +245,7 @@ class AdminController extends Controller
     {
         $data = (new Admin\Group\Service)->deleteGroup($id, $groupId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function addRolesToGroup(string $id, string $groupId)
@@ -246,7 +255,7 @@ class AdminController extends Controller
         $data = (new Admin\Group\Service)->addRolesToGroup(
             $id, $groupId, $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function addMerchantsToGroup(string $id, string $groupId)
@@ -255,6 +264,8 @@ class AdminController extends Controller
 
         $data = (new Admin\Group\Service)->addMerchantsToGroup(
             $id, $groupId, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function addAdminsToGroup(string $id, string $groupId)
@@ -263,6 +274,8 @@ class AdminController extends Controller
 
         $data = (new Admin\Group\Service)->addAdminsToGroup(
             $id, $groupId, $input);
+
+        return ApiResponse::json($data);
     }
 // --------------------- END CRUD for Groups  -------------------------------------
 
@@ -274,7 +287,7 @@ class AdminController extends Controller
 
         $data = (new Admin\Permission\Service)->createPermission($input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function createPermissionsFromJson()
@@ -284,14 +297,14 @@ class AdminController extends Controller
         $data = (new Admin\Permission\Service)->createPermissionsFromJson(
             $input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getPermission(string $permissionId)
     {
         $data = (new Admin\Permission\Service)->getPermission($permissionId);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getMultiplePermissions()
@@ -300,7 +313,7 @@ class AdminController extends Controller
 
         $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
 // --------------------- END CRUD for Permissions ----------------------------------------

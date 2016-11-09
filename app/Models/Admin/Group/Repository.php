@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Admin;
+namespace RZP\Models\Admin\Group;
 
 use RZP\Base;
 
@@ -111,5 +111,12 @@ class Repository extends Base\Repository
     public function removeSubGroup(Group\Entity $group, Group\Entity $subGroup)
     {
         $group->subGroups()->detach($subGroup);
+    }
+
+    public function fetchGroupsForOrg(string $orgId, array $input)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
     }
 }
