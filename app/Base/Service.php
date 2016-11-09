@@ -78,7 +78,7 @@ class Service
     {
         $config = config('aws');
 
-        $config['region'] = getenv('AWS_BUCKET_REGION');
+        $config['region'] = env('AWS_BUCKET_REGION', 'us-east-1');
 
         $client = new \Aws\Sdk($config);
 

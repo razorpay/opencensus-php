@@ -222,6 +222,7 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $error[] = 'An error occured in file upload.';
+            $error[] = $e->getMessage();
         }
 
         return $error;
