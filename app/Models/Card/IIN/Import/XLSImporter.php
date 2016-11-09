@@ -167,7 +167,7 @@ class XLSImporter
 
     protected function updateIntoDB(& $conflicts)
     {
-        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY, IIN\Entity::ISSUER);
+        $columns = array(IIN\Entity::TYPE, IIN\Entity::COUNTRY, IIN\Entity::ISSUER);
 
         foreach ($conflicts as $iinId => $entry)
         {
@@ -205,6 +205,13 @@ class XLSImporter
 
         foreach ($columns as $column)
         {
+            if (empty($fileEntry[$column]) === true)
+            {
+                unset($fileEntry[$column]);
+
+                continue;
+            }
+
             if (empty($dbEntry[$column]) === false)
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
