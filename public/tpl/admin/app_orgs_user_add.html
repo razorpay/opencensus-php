@@ -1,0 +1,93 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Users
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="OrgsAddUsersCtrl">
+    <div class="panel-heading">
+      Add a new User
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="panel-body b-b b-light">
+      <form class="form-horizontal form-validation">
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Full Name</label>
+          <div class="col-lg-10" >
+            <input type="text" class="form-control m-b" name="name" ng-model="user.name" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Username</label>
+          <div class="col-lg-10" >
+            <input type="text" class="form-control m-b" name="username" ng-model="user.username" />
+            <span class="help-block">Required to login to user panel.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Email</label>
+          <div class="col-lg-10" >
+            <input type="email" class="form-control m-b" name="email" ng-model="user.email" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Password</label>
+          <div class="col-lg-10" >
+            <input type="password" class="form-control m-b" name="password" ng-model="user.password" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Confirm Password</label>
+          <div class="col-lg-10" >
+            <input type="password" class="form-control m-b" name="password_confirmation" ng-model="user.password_confirmation" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Role</label>
+          <div class="col-lg-10" >
+            <select class="form-control m-b" ng-model="user.role">
+               <option ng-repeat="(key, value) in roles" value='{{key}}'>{{value}}</option>
+            </select>
+            <span class="help-block">Super Admins can add/remove other admins.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-2 text-right">Groups</div>
+          <div class="col-lg-10">
+            <table ui-jq="footable" data-page-size="10" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="row in groups">
+                  <td><input type="checkbox" ng-modal='user.groups' value="{{row.code}}"></td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-center">
+                      <ul class="pagination"></ul>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <div class="col-md-offset-10">
+            <button class="btn btn-primary panel-ok">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
