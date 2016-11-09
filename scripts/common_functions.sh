@@ -18,7 +18,7 @@
 # Set to "_all_" to automatically find all load balancers the instance is registered to.
 # Set to "_any_" will work as "_all_" but will not fail if instance is not attached to
 # any ASG or ELB, giving flexibility.
-ELB_LIST="alpha beta-api api"
+ELB_LIST="beta-dashboard dashboard int-beta-dashboard prod-dashboard np-heimdall-dashboard"
 
 # Under normal circumstances, you shouldn't need to change anything below this line.
 # -----------------------------------------------------------------------------
