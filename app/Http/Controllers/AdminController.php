@@ -39,7 +39,7 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $this->admin = Auth::guard('admin')->user();
+        $this->admin = Auth::guard('api')->user();
     }
 
     /**

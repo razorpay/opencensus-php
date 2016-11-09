@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Admin;
 use Illuminate\Support\Str;
-use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
@@ -41,7 +40,6 @@ class ApiUserProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        sd($identifier, $token);
         throw new \Exception;
     }
 
@@ -70,7 +68,7 @@ class ApiUserProvider implements UserProvider
             // This is password based login
             list($error, $user) = (new Admin\Service)->passwordLogin($credentials);
 
-            Session::put('api_admin', $user);
+            $this->app['session']->put('api_admin', $user);
 
             return $this->getGenericUser($user);
         }

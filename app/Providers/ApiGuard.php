@@ -48,17 +48,7 @@ class ApiGuard implements Guard
             return $user;
         }
 
-        $user = null;
-
-        $token = $this->getToken();
-
-        if (! empty($token)) {
-            $user = $this->provider->retrieveByToken(
-                ['token' => $token]
-            );
-        }
-
-        return $this->user = $user;
+        return $this->user = null;
     }
 
     /**
