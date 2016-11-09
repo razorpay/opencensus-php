@@ -1,13 +1,13 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Admins
+    Users
     <spinner class="inline"></spinner>
   </h1>
 </div>
 <div class="wrapper-md">
   <div class="panel panel-default" ng-controller="AdminsCtrl">
     <div class="panel-heading">
-      List of all Admins
+      List of all Users
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>

@@ -131,10 +131,6 @@ var app = angular.module('app', [
     }).state('app.orgs.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_orgs_detail.html'
-    }).state('app.users', {
-      url: '/users',
-      templateUrl: 'tpl/admin/app_orgs_users.html',
-      data: { superadmin: true }
     }).state('app.roles', {
       url: '/roles',
       template: '<div ui-view class="fade-in-down smooth"></div>'
