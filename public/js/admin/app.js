@@ -124,10 +124,13 @@ var app = angular.module('app', [
       templateUrl: 'tpl/admin/app_profile.html'
     }).state('app.orgs', {
       url: '/orgs',
-      template: '<div ui-view class="fade-in-down smooth"></div>'
+      templateUrl: 'tpl/admin/app_orgs.html'
     }).state('app.orgs.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_orgs_list.html'
+    }).state('app.orgs.detail', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_orgs_detail.html'
     }).state('app.users', {
       url: '/users',
       templateUrl: 'tpl/admin/app_orgs_users.html',
