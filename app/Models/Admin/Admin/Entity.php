@@ -61,6 +61,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
         self::EMAIL,
         self::NAME,
         self::USERNAME,
@@ -80,6 +81,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
         self::EMAIL,
         self::NAME,
         self::USERNAME,

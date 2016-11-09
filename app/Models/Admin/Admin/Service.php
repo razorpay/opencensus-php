@@ -123,4 +123,13 @@ class Service extends Base\Service
 
         $this->repo->admin->revokeRoleOrFail($admin, $role);
     }
+
+    public function fetchMultiple(string $orgId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        $admins = $this->repo->admin->fetchAdminsForOrg($orgId, $input);
+
+        return $admins->toArrayPublic();
+    }
 }

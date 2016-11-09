@@ -20,14 +20,6 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function retrieveByIdAndAdminIdOrFail($orgId, $adminId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where(Entity::ID, '=', $adminId)
-                    ->firstOrFail();
-    }
-
     public function addRoleToAdmin(Entity $admin, Role\Entity $role)
     {
         $admin->roles()->attach($role);
@@ -94,5 +86,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
+    }
+
+    public function retrieveByOrgIdAndIdOrFail(
+        string $orgId,
+        string $adminId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::ID, '=', $adminId)
+                    ->firstOrFail();
     }
 }
