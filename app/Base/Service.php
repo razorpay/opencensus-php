@@ -10,11 +10,11 @@ use Slack;
 
 class Service
 {
-    public function setAdminCredentials($mode, $token)
+    public function setAdminCredentials($mode)
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
 
-        // $token = session('admin.token');
+        $token = session('api_admin.token');
 
         $this->api = new Api("rzp_$mode_admin", $token);
     }
