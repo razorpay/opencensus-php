@@ -31,6 +31,7 @@ pre{
   font-size: 10px;
   margin: 10px 25px;
   text-align: center;
+  page-break-inside: avoid;
 }
 .axis-block pre:not(.axis-block-body){
   background: none;
@@ -134,6 +135,10 @@ pre{
 .print-page:not(:last-child){
   page-break-after : always;
 }
+textarea {
+  font-size: 10px;
+  font-family: serif;
+}
 </style>
 <div class="actform-container">
 <div class="print-page">
@@ -180,7 +185,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Telephone: <input class="input-u" value="{{=it.mercreg_tel_business}}">         <input class="input-u lg" value="{{=it.mercreg_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
   Fax: <input class="input-u" value="{{=it.mercreg_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.mercreg_email}}">
-  Postal Address: <input class="input-u" style="width: 518px" value="{{=it.mercreg_addr}}">
+  Postal Address: <textarea class="input-u" style="width: 518px" rows="1">{{=it.mercreg_addr}}</textarea>
   <input class='input-u' style="width: 600px">
   Country: <input class="input-u" style="width: 340px" value="{{=it.mercreg_country}}"> Time Zone: <input class="input-u" value="{{=it.mercreg_tz}}"></pre>
 </div>
@@ -192,7 +197,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Telephone: <input class="input-u" value="{{=it.mercop_tel_business}}">         <input class="input-u lg" value="{{=it.mercop_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
   Fax: <input class="input-u" value="{{=it.mercop_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.mercop_email}}">
-  Postal Address: <input class="input-u" style="width: 518px" value="{{=it.mercop_addr}}">
+  Postal Address: <textarea class="input-u" style="width: 518px" rows="1">{{=it.mercop_addr}}</textarea>
   <input class='input-u' style="width: 600px"></pre>
 </div>
 <div class="axis-block">
@@ -213,7 +218,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Telephone: <input class="input-u" value="{{=it.merctech_tel_business}}">         <input class="input-u lg" value="{{=it.merctech_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
   Fax: <input class="input-u" value="{{=it.merctech_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.merctech_email}}">
-  Postal Address: <input class="input-u" style="width: 500px" value="{{=it.merctech_addr}}">
+  Postal Address: <textarea class="input-u" style="width: 518px" rows="1">{{=it.merctech_addr}}</textarea>
   Payment Website Address: <input class="input-u" style="width: 470px" value="{{=it.merctech_web_addr}}">
   Return URL: <input class="input-u" style="width: 552px" value="{{=it.merctech_return_url}}"></pre>
 </div>
@@ -259,7 +264,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Telephone: <input class="input-u" value="{{=it.techpro_tel_business}}">         <input class="input-u lg" value="{{=it.techpro_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
   Fax: <input class="input-u" value="{{=it.techpro_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.techpro_email}}">
-  Postal Address: <input class="input-u" style="width: 500px;" value="{{=it.techpro_addr}}">
+  Postal Address: <textarea class="input-u" style="width: 518px" rows="1">{{=it.techpro_addr}}</textarea>
 </div>
 <div class="axis-block">
   <div class="axis-block-title">Payment Client / Website Hosting Details</div>
