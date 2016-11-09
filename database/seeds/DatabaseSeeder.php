@@ -419,6 +419,14 @@ class DatabaseSeeder extends Seeder
                     'entity_type'   => 'admin',
                 ]
             ]);
+
+            DB::table(Table::MERCHANT_MAP)->insert([
+                [
+                    'merchant_id'   => '10000000000000',
+                    'entity_id'     => '6dLbNSpv5Ybbbc',
+                    'entity_type'   => 'admin',
+                ]
+            ]);
         });
     }
 
