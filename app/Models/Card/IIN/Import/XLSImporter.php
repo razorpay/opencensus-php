@@ -205,8 +205,7 @@ class XLSImporter
 
         foreach ($columns as $column)
         {
-            if ((empty($dbEntry[$column]) === false) and
-                (empty($fileEntry[$column]) === false))
+            if (empty($dbEntry[$column]) === false)
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
                 {
