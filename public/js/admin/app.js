@@ -82,6 +82,9 @@ var app = angular.module('app', [
     }).state('app.merchants.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_merchants.html'
+    }).state('app.merchants.invite', {
+      url: '/invite',
+      templateUrl: 'tpl/admin/app_merchant_invite.html'
     }).state('app.merchants.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_merchant_detail.html'
@@ -143,6 +146,12 @@ var app = angular.module('app', [
     }).state('app.groups.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_groups_detail.html'
+    }).state('app.permissions', {
+      url: '/permissions',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.permissions.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_permissions_list.html'
     })  //Guest Routes
 .state('access', {
       url: '/access',

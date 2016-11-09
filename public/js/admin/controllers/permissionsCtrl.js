@@ -1,23 +1,23 @@
 //Merchant List controller
-app.controller('OrgsCtrl', [
+app.controller('PermissionsCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
-    $scope.organizations = [];
+    $scope.permissions = [];
     $scope.count = 0;
 
     /**
      * Modal openers
      */
-    $scope.openAddOrgModal = function () {
+    $scope.openAddPermissionModal = function () {
       var modalInstance = $modal.open({
-        templateUrl: 'addOrgModalContent.html',
-        controller: 'addOrgModalCtrl'
+        templateUrl: 'addPermissionModalContent.html',
+        controller: 'addPermissionModalCtrl'
       });
-      modalInstance.result.then($scope.addOrg, $.noop);
+      modalInstance.result.then($scope.addPermission, $.noop);
     };
 
 
@@ -25,17 +25,16 @@ app.controller('OrgsCtrl', [
      * Actions
      */
 
-    $scope.addOrg = function(organization) {
+    $scope.addPermission = function(permission) {
       var request = $http({
         method: 'post',
-        url: '/orgs',
+        url: '/permissions',
         transformRequest: transformRequestAsFormPost,
-        data: organization
+        data: permission
       });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization added successfully',
-            true);
+          $scope.alerts.addAlert('success', 'Permission added successfully. Response: ' + JSON.stringify(data.data), true);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -47,43 +46,39 @@ app.controller('OrgsCtrl', [
       });
     }
 
-    $scope.fetchOrgs = function () {
-      var request = $http.get('/orgs');
+    $scope.fetchPermissions = function () {
+      var request = $http.get('/permissions');
 
       /**
        * TODO: remove mocked data
        */
-      $scope.organizations = [{
+      $scope.permissions = [{
         id: '2sGsPw5xI4aNn',
-        business_name: 'Govinda',
-        display_name: 'Raja Babu',
-        email: 'raja@babu.com',
-        email_domains: 'babu.com, raja.com'
+        name: 'Super',
+        description: 'Can do anything',
       },{
         id: 'Uy3A6sNq0P5hA',
-        business_name: 'Batman',
-        display_name: 'Batman Kumar',
-        email: 'batman@kumar.com',
-        email_domains: 'babu.com, raja.com'
+        name: 'Normal',
+        description: 'Can do some things',
       }]
-      $scope.count= 2;
+
       request.success(function (data) {
         if (data.success) {
-          $scope.organizations = data.data.data;
+          $scope.permissions = data.data.data;
           $scope.count = data.data.count;
         }
       });
     }
 
-    $scope.fetchOrgs();
+    $scope.fetchPermissions();
   }
-]).controller('addOrgModalCtrl', [
+]).controller('addPermissionModalCtrl', [
   '$scope',
   '$modalInstance',
   '$http',
   function ($scope, $modalInstance, $http) {
-    $scope.ok = function (organization) {
-      $modalInstance.close(organization);
+    $scope.ok = function (permission) {
+      $modalInstance.close(permission);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
