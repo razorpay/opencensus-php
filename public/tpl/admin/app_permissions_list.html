@@ -1,0 +1,78 @@
+<div ng-controller="PermissionsCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Permissions - Total {{count}}
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of all Permissions
+      </div>
+      <div class="row wrapper">
+        <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div>
+        <div class="col-md-6">
+          <button id='addPermissionButton' class='btn btn-default pull-right'
+            ng-click='openAddPermissionModal()'>
+            Add a permission
+          </button>
+        </div>
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Permission Id</th>
+              <th>Permission Name</th>
+              <th>Description</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in permissions">
+              <td>{{row.id}}</td>
+              <td>{{row.name}}</td>
+              <td>{{row.description}}</td>
+            </tr>
+            <tr ng-show="permissions.length == 0">
+              <td colspan="6">No Permissions</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="addPermissionModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add a new Permission</h3>
+  </div>
+  <div class="modal-body newsletter-modal">
+    <form class="form-horizontal row">
+      <div class="form-group">
+       <label for="name" class="col-lg-3 control-label">Name</label>
+        <div class="col-lg-8" >
+          <input type="name" class="form-control m-b" name="name"
+            ng-model="permission.name" placeholder="view_merchants">
+        </div>
+      </div>
+      <div class="form-group">
+       <label for="description" class="col-lg-3 control-label">Description</label>
+        <div class="col-lg-8" >
+          <textarea class="form-control m-b" name="description"
+            ng-model="permission.description"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(permission)">
+      OK
+    </button>
+  </div>
+</script>
