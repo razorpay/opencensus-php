@@ -1,5 +1,5 @@
 //Merchant List controller
-app.controller('OrgsCtrl', [
+app.controller('OrgsListCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
