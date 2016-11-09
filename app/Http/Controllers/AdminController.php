@@ -226,7 +226,7 @@ class AdminController extends Controller
 // --------------------- CRUD for Groups  -----------------------------------------
     public function createGroup(string $id)
     {
-        $input == Request::all();
+        $input = Request::all();
 
         $data = (new Admin\Group\Service)->createGroup($id, $input);
 
