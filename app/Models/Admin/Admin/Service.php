@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -32,7 +33,7 @@ class Service extends Base\Service
             ];
 
             // Create a token for the user
-            $token = $this->core->createAuthToken($admin, $input);
+            $token = $this->core->createAuthToken($admin, $tokenAttributes);
 
             $admin = $admin->toArrayPublic();
 

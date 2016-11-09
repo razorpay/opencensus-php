@@ -41,4 +41,8 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
 }

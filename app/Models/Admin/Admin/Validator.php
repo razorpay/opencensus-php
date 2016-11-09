@@ -29,4 +29,14 @@ class Validator extends Base\Validator
         Entity::OAUTH_PROVIDER_ID   => 'string|max:250',
         Entity::ORG_ID              => 'required'
     ];
+
+    protected static $loginRules = [
+        Entity::USERNAME            => 'required|email|max:250',
+        Entity::PASSWORD            => 'required|between:6,50'
+    ];
+
+    public function validateCredentials(array $input)
+    {
+        $this->validateInput('login', $input);
+    }
 }

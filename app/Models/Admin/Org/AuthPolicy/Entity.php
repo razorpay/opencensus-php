@@ -52,7 +52,6 @@ class Entity extends Base\PublicEntity
         self::EXPIRES_IN,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT,
     ];
 
     protected $public = [
