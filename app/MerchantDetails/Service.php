@@ -4,6 +4,7 @@ namespace App\MerchantDetails;
 
 use Auth;
 use Aws\Laravel\AwsFacade as AWS;
+use Aws\Sdk;
 use Illuminate\Support\Facades\App as App;
 use Carbon\Carbon;
 use Config;
@@ -187,10 +188,10 @@ class Service extends Base\Service
         $extension = $data['file']->getClientOriginalExtension();
         $mime = $data['file']->getMimeType();
 
-        $s3 = App::make('aws')->createClient('s3');
-
         try
         {
+            $s3 = $this->getS3Client();
+
             $s3Obj = [
                 'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
                 'Key'           => $id.'/'.$data['key'].'.'.$extension,
@@ -221,6 +222,7 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $error[] = 'An error occured in file upload.';
+            $error[] = $e->getMessage();
         }
 
         return $error;

@@ -73,4 +73,15 @@ class Service
 
         return null;
     }
+
+    protected function getS3Client()
+    {
+        $config = config('aws');
+
+        $config['region'] = env('AWS_BUCKET_REGION', 'us-east-1');
+
+        $client = new \Aws\Sdk($config);
+
+        return $client->createClient('S3');
+    }
 }
