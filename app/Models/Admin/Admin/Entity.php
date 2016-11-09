@@ -3,11 +3,10 @@
 namespace RZP\Models\Admin\Admin;
 
 use App;
-use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Admin\Token;
 
 class Entity extends Base\PublicEntity
 {
@@ -96,6 +95,11 @@ class Entity extends Base\PublicEntity
         self::DISABLED,
         self::LOCKED
     ];
+
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
+    }
 
     public function org()
     {

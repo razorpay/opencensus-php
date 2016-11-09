@@ -8,7 +8,7 @@ class Core extends Base\Core
 {
     public function create(string $orgId, array $input)
     {
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $org = $this->repo->org->findOrFail($orgId);
 
         $admin = (new Entity)->build($input);
 
@@ -17,6 +17,18 @@ class Core extends Base\Core
         $this->repo->saveOrFail($admin);
 
         return $admin;
+    }
+
+    public function createAuthToken(Entity $admin, array $input)
+    {
+        $token = new Token\Entity();
+
+        $token->build($input);
+        $token->admin()->associate($admin);
+
+        $token->saveOrFail();
+
+        return $token;
     }
 
     public function delete(string $orgId, string $adminId)

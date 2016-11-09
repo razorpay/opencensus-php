@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
 
     public function groups()
     {
-        return $this->morphByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
     }
 
     /**
