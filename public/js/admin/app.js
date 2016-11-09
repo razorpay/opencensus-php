@@ -125,6 +125,24 @@ var app = angular.module('app', [
     }).state('app.orgs.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_orgs_list.html'
+    }).state('app.roles', {
+      url: '/roles',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.roles.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_roles_list.html'
+    }).state('app.roles.detail', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_roles_detail.html'
+    }).state('app.groups', {
+      url: '/groups',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.groups.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_groups_list.html'
+    }).state('app.groups.detail', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_groups_detail.html'
     })  //Guest Routes
 .state('access', {
       url: '/access',
