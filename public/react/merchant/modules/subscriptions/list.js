@@ -19,7 +19,6 @@ let initialState = {
 }
 
 export default function (state = fromJS(initialState), action) {
-  debugger
   switch(action.type) {
     case `${SUBSCRIPTIONS_FETCH}::PENDING`:
       return state.set('loading', true)

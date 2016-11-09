@@ -31,6 +31,7 @@
   "dependencies": {
     "babel-runtime": "^6.18.0",
     "classnames": "^2.2.5",
+    "dfaqapi": "0.0.1",
     "immutable": "^3.8.1",
     "ngreact": "^0.3.0",
     "react": "^15.3.2",
