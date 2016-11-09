@@ -20,6 +20,22 @@ app.controller('OrgsListCtrl', [
       modalInstance.result.then($scope.addOrg, $.noop);
     };
 
+    $scope.openEditOrgModal = function (id) {
+      $scope.selected = $scope.organizations.filter(function(x) { return x['id'] === id; });
+      var modalInstance = $modal.open({
+        templateUrl: 'editOrgModalContent.html',
+        controller: 'editOrgModalCtrl',
+        resolve: {
+          current: function() {
+            return jQuery.extend({}, $scope.selected[0]);
+          }
+      }
+      });
+      modalInstance.result.then(function (organization) {
+        $scope.editOrgById(organization.id);
+      } , $.noop);
+    };
+
 
     /**
      * Actions
@@ -140,6 +156,26 @@ app.controller('OrgsListCtrl', [
       auth_type: 'password',
       route_name: 'org_create'
     };
+
+    $scope.ok = function (organization) {
+      $modalInstance.close(organization);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editOrgModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    $scope.organization = jQuery.extend({
+      auth_type: 'password',
+      route_name: 'org_create'
+    }, current);
+
+    console.log('org', $scope.organization);
 
     $scope.ok = function (organization) {
       $modalInstance.close(organization);
