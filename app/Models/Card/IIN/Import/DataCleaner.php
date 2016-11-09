@@ -140,7 +140,9 @@ class DataCleaner
                 $input[IIN\Entity::NETWORK] = $network;
             }
 
-            if (isset($inputNetwork) && (strcmp($inputNetwork, $network) !== 0))
+            if (isset($inputNetwork) and
+                ($inputNetwork !== 'all') and
+                (strcmp($inputNetwork, $network) !== 0))
             {
                $this->networkCheckFails[$iin][] = $index;
             }
