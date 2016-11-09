@@ -1,0 +1,135 @@
+<div ng-controller="MerchantInvitationCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Invite a Merchant
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of all Organzations
+      </div>
+      <div class="row wrapper">
+        <form class="form-horizontal row">
+          <div class="form-group">
+           <label for="email" class="col-lg-3 control-label">Merchant email</label>
+            <div class="col-lg-8" >
+              <input type="email" class="form-control m-b" name="email"
+                ng-model="merchant.email" placeholder="admin@company.com" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="channel_code" class="col-lg-3 control-label">Channel Code</label>
+            <div class="col-lg-8" >
+              <select name="channel_code" ng-model="merchant.channel_code" class="form-control m-b" ng-required='true'>
+                <option value="mrm">MRM</option>
+                <option value="branch">Branch/CANI</option>
+                <option value="db">Database</option>
+                <option value="dsa">DSA</option>
+                <option value="others">Others</option>
+              </select>
+              <input class="form-control m-b"
+                name="display_name"
+                placeholder="Please mention a Channel_code"
+                ng-model="merchant.channel_code_others"
+                ng-show="merchant.channel_code!==others"
+                ng-required="merchant.channel_code!==others">
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="crm_next_no" class="col-lg-3 control-label">CRM Next No.</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="crm_next_no"
+                ng-model="merchant.crm_next_no" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="db_token_no" class="col-lg-3 control-label">Database Token No.</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="db_token_no"
+                ng-model="merchant.db_token_no" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="branch_lts_no" class="col-lg-3 control-label">Branch LTS No.</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="branch_lts_no"
+                ng-model="merchant.branch_lts_no" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="branch_code" class="col-lg-3 control-label">Branch Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="branch_code"
+                ng-model="merchant.branch_code" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="source_code" class="col-lg-3 control-label">Source Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="source_code"
+                ng-model="merchant.source_code" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="promo_code" class="col-lg-3 control-label">Promo Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="promo_code"
+                ng-model="merchant.promo_code" ng-readonly='true' ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="lg_code" class="col-lg-3 control-label">LG Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="lg_code"
+                ng-model="merchant.lg_code" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="lc_ro_code" class="col-lg-3 control-label">LC/RO Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="lc_ro_code"
+                ng-model="merchant.lc_ro_code" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="mrm_code" class="col-lg-3 control-label">MRM Code</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="mrm_code"
+                ng-model="merchant.mrm_code" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="merchant_type" class="col-lg-3 control-label">Type of Merchant</label>
+            <div class="col-lg-8" >
+              <select name="merchant_type" ng-model="merchant.merchant_type" class="form-control m-b" ng-required='true'>
+                <option value="stp">STP</option>
+                <option value="nstp">NSTP</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="subvention" class="col-lg-3 control-label">Subvention</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="subvention"
+                ng-model="merchant.subvention" ng-required='true'>
+            </div>
+          </div>
+          <div class="form-group">
+           <label for="surcharge" class="col-lg-3 control-label">Surcharge</label>
+            <div class="col-lg-8" >
+              <input class="form-control m-b" name="surcharge"
+                ng-model="merchant.surcharge" ng-required='true'>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="panel-footer">
+        <div class="col-md-offset-10">
+          <button class="btn btn-primary panel-ok" ng-click="inviteMerchant(merchant)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -82,6 +82,9 @@ var app = angular.module('app', [
     }).state('app.merchants.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_merchants.html'
+    }).state('app.merchants.invite', {
+      url: '/invite',
+      templateUrl: 'tpl/admin/app_merchant_invite.html'
     }).state('app.merchants.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_merchant_detail.html'

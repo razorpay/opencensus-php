@@ -34,7 +34,8 @@ app.controller('OrgsCtrl', [
       });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'IIN added successfully. Response: ' + JSON.stringify(data.data), true);
+          $scope.alerts.addAlert('success', 'Organization added successfully',
+            true);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -65,7 +66,7 @@ app.controller('OrgsCtrl', [
         email: 'batman@kumar.com',
         email_domains: 'babu.com, raja.com'
       }]
-
+      $scope.count= 2;
       request.success(function (data) {
         if (data.success) {
           $scope.organizations = data.data.data;
