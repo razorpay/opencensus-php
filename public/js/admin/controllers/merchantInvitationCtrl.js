@@ -16,7 +16,7 @@ app.controller('MerchantInvitationCtrl', [
     $scope.inviteMerchant = function(merchant) {
       var request = $http({
         method: 'post',
-        url: '/merchants/invite',
+        url: '/admin/merchants/invite',
         transformRequest: transformRequestAsFormPost,
         data: merchant
       });

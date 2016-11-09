@@ -31,9 +31,7 @@ app.controller('OrgsListCtrl', [
           }
       }
       });
-      modalInstance.result.then(function (organization) {
-        $scope.editOrgById(organization.id);
-      } , $.noop);
+      modalInstance.result.then($scope.editOrgById, $.noop);
     };
 
 
@@ -119,7 +117,7 @@ app.controller('OrgsListCtrl', [
 
     // Edit Organization
 
-    $scope.editOrgById = function (id, organization) {
+    $scope.editOrgById = function (organization) {
       var data = {};
       data.body = organization;
       data.route_name = organization.route_name;
@@ -131,7 +129,7 @@ app.controller('OrgsListCtrl', [
           route_name: 'org_edit',
 
           url_params: {
-            '{id}' : id
+            '{id}' : organization.id
           }
         }
       });

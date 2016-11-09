@@ -23,4 +23,18 @@ class MiscMailer extends Mailer
 
         return $this;
     }
+
+    public function sendMerchantInvitationEmail($invitation, $admin)
+    {
+        $invitation_array = $invitation->makeVisible('token')->toArray();
+
+        $this->view = 'emails.leads.admin';
+
+        $this->data = compact('invitation_array', 'admin');
+
+        $this->email = $invitation_array['merchant_email'];
+        $this->subject = 'Invitation to sign up '; //TODO add org name and better the subject line
+
+        return $this;
+    }
 }

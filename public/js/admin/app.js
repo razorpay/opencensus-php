@@ -159,7 +159,10 @@ var app = angular.module('app', [
     }).state('app.permissions.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_permissions_list.html'
-    })  //Guest Routes
+    }).state('app.invitations.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_invitations_list.html'
+    }) //Guest Routes
 .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',

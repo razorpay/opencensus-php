@@ -9,6 +9,7 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
+use App\Mailers\MiscMailer;
 use App\Session as SessionTable;
 
 use Auth;
@@ -2247,6 +2248,43 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function sendInvitation($input)
+    {
+        $errors = [];
+        $data = null;
+
+        $admin = Auth::guard('admin')->user();
+
+        if ($admin->email === $input['contact_email'])
+        {
+            $errors[] = static::SELF_INVITE_NOT_ALLOWED;
+        }
+
+        if (empty($errors))
+        {
+            $this->createInviteAndSendEmail($admin, $input);
+        }
+
+        return [$errors, $data];
+    }
+
+    protected function createInviteAndSendEmail(Admin\Entity $admin, $input)
+    {
+        // This only creates a new invitation entity
+        $invitation = $admin->inviteMerchantThroughEmail($input);
+
+        $this->sendInvitationEmail($invitation, $admin);
+    }
+
+    protected function sendInvitationEmail($invitation, $admin)
+    {
+        $mailer = new MiscMailer();
+
+        $mailer
+            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+            ->queueAndDeliver();
     }
 
 }
