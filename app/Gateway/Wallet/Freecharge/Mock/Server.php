@@ -2,19 +2,13 @@
 
 namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
-use Carbon\Carbon;
-
-use RZP\Constants\HashAlgo;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Http\Route;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base as WalletBase;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Freecharge;
-use RZP\Gateway\Wallet\Freecharge\ResponseFields;
 use RZP\Gateway\Wallet\Freecharge\RequestFields;
+use RZP\Gateway\Wallet\Freecharge\ResponseFields;
 use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
@@ -96,7 +90,7 @@ class Server extends Base\Mock\Server
         $response = array(
             ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
             ResponseFields::REFUND_TXN_ID          => random_integer(5),
-            ResponseFIelds::REFUND_MERCHANT_TXN_ID => uniqid(),
+            ResponseFields::REFUND_MERCHANT_TXN_ID => uniqid(),
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,
@@ -112,8 +106,6 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
 
         $this->validateActionInput($input, 'otpGenerate');
-
-        $mobile = $input[RequestFields::MOBILE_NUMBER];
 
         $response = array(
             ResponseFields::OTP_ID         => '1asda2345',

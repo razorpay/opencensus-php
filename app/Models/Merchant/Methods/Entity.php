@@ -28,11 +28,7 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \RZP\Constants\Table::METHODS;
-
     protected $entity = 'methods';
-
-    protected static $sign = '';
 
     protected $fillable = array(
         self::MERCHANT_ID,
@@ -359,7 +355,7 @@ class Entity extends Base\PublicEntity
 
     public function setAirtelmoney($value)
     {
-        $this->setAttribute(self::Airtelmoney, $value);
+        $this->setAttribute(self::AIRTELMONEY, $value);
     }
 
     public function setFreecharge($value)

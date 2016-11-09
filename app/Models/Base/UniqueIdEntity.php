@@ -135,16 +135,19 @@ class UniqueIdEntity extends Entity
 
         $value = $this->getAttribute($key);
 
-        if ($value === null)
+        if ($this->getIncrementing() === false)
         {
-            if ($this->generateIdOnCreate)
+            if ($value === null)
             {
-                $this->generateAndSetUniqueId();
+                if ($this->getGenerateIdOnCreate() === true)
+                {
+                    $this->generateAndSetUniqueId();
+                }
             }
-        }
-        else
-        {
-            static::verifyUniqueId($value);
+            else
+            {
+                static::verifyUniqueId($value);
+            }
         }
     }
 
@@ -156,7 +159,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = static::generateUniqueId($this->secureUid);
+            $value = static::generateUniqueId();
 
             $this->setAttribute($key, $value);
         }
@@ -176,13 +179,18 @@ class UniqueIdEntity extends Entity
 
     public static function verifyUniqueId($id, $throw = true)
     {
-        $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
+        $uniqueIdCheckRegex = '/^[0-9a-z]{'. static::ID_LENGTH .'}$/i';
 
         $res = preg_match($uniqueIdCheckRegex, $id);
 
-        if (($res === false) and ($throw))
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
+        if ((in_array($res, [0, false], true) === true) and
+            ($throw === true))
         {
-            throw new Exception\BadRequestException($id . ' is not a valid id');
+            throw new Exception\BadRequestValidationFailureException(
+                        $id . ' is not a valid id');
         }
 
         return $res;
@@ -334,4 +342,10 @@ class UniqueIdEntity extends Entity
     {
         return Luhn::isValid($num, 62);
     }
+
+    public function getGenerateIdOnCreate()
+    {
+        return $this->generateIdOnCreate;
+    }
+
 }

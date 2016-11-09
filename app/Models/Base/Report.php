@@ -4,14 +4,14 @@ namespace RZP\Models\Base;
 
 use Carbon\Carbon;
 
+use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
-
-class Report extends Service
+class Report extends Core
 {
     protected $allowed = array(
         E::ORDER,
@@ -20,6 +20,12 @@ class Report extends Service
         E::SETTLEMENT,
         E::TRANSACTION,
     );
+
+    protected static $rules = [
+        'year'  =>  'required|digits:4',
+        'month' =>  'required|digits_between:1,2',
+        'day'   =>  'sometimes|digits_between:1,2',
+    ];
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -79,13 +85,11 @@ class Report extends Service
 
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         date_default_timezone_set('Asia/Kolkata');
 
         list($from, $to) = $this->getTimestamps($input);
-
-        $repo = E::getEntityRepository($entity);
 
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -97,7 +101,8 @@ class Report extends Service
                 'time_started'  => $begin
             ]);
 
-        $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
+        $repo = $this->repo->$entity;
+        $entities = $repo->fetchEntitiesForReport($merchantId, $from, $to);
 
         $timeTaken = time() - $begin;
 
@@ -128,11 +133,50 @@ class Report extends Service
         return $data;
     }
 
+    public function getInvoiceV2($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
+
+        $fees = $feesBreakup->getStringAttributesByKey('name');
+
+        $totalFee = $fees['payment']['sum'] + $fees['service_tax']['sum'];
+        $totalTax = $fees['service_tax']['sum'];
+
+        if (empty($fees['swachh_bharat_cess']) === false)
+        {
+            $totalFee += $fees['swachh_bharat_cess']['sum'];
+            $totalTax += $fees['swachh_bharat_cess']['sum'];
+        }
+
+        if (empty($fees['krishi_kalyan_cess']) === false)
+        {
+            $totalFee += $fees['krishi_kalyan_cess']['sum'];
+            $totalTax += $fees['krishi_kalyan_cess']['sum'];
+        }
+
+        return [
+            self::TOTAL_FEE    => $totalFee,
+            self::RAZORPAY_FEE => $fees['payment']['sum'],
+            self::TAX          => $totalTax,
+            self::TAXES        => [
+                self::SERVICE_TAX        => $fees['service_tax']['sum'],
+                self::SWACH_BHARAT_CESS  => $fees['swachh_bharat_cess']['sum'],
+                self::KRISHI_KALYAN_CESS => $fees['krishi_kalyan_cess']['sum'],
+            ],
+        ];
+    }
+
     public function getInvoice($input)
     {
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         list($from, $to) = $this->getTimestamps($input);
 
@@ -303,7 +347,7 @@ class Report extends Service
 
     protected function checkAllowedEntity($entity)
     {
-        if (in_array($entity, $this->allowed) === false)
+        if (in_array($entity, $this->allowed, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');

@@ -9,6 +9,7 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -55,6 +56,8 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
+
         try
         {
             $payment = $this->capturePayment($payment, $amount);
@@ -65,6 +68,16 @@ trait Capture
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 ['auto_capture' => 1,
                 'payment_id' => $payment->getPublicId()]);
+
+            $customProperties = [
+                'error' => $e->getError(),
+                'public_error' => $e->getPublicError(),
+                'errMsg' => $e->getDataAsString()
+            ];
+
+            $this->app['segment']->trackPayment($payment,
+                                                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                                                $customProperties);
 
             return false;
         }
@@ -83,7 +96,7 @@ trait Capture
      *
      * If the merchant wants to capture the payment later, he can capture it and the process would
      * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
-     *
+     * TODO: add segment here
      * @param $payment
      * @return array
      */
@@ -282,10 +295,13 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-            $txn = $txnCore->createFromPaymentAuthorized($payment);
+
+            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
 
             $this->repo->saveOrFail($txn);
             $this->repo->saveOrFail($payment);
+
+            $this->saveFeeDetails($txn, $feesSplit);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -352,9 +368,11 @@ trait Capture
 
         $auth = ($payment->transaction === null);
 
+        $feesSplit = new PublicCollection;
+
         if ($auth === true)
         {
-            $txn = $txnCore->createFromPaymentCaptured($payment);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
         }
         else
         {
@@ -371,6 +389,8 @@ trait Capture
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($payment);
+
+        $this->saveFeeDetails($txn, $feesSplit);
     }
 
     protected function verifyOrderUnpaid($payment)

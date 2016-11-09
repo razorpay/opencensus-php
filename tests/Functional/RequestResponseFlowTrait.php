@@ -252,6 +252,8 @@ trait RequestResponseFlowTrait
 
         $this->response = $response;
 
+        $this->app['request']->generateId();
+
         return $response;
     }
 

@@ -186,16 +186,11 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments($filter)
+    public function postVerifyPayments($filter)
     {
-        $data = $this->payment->verifyMultiplePayments($filter);
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
-    {
-        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
+        $data = $this->payment->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }

@@ -3,7 +3,6 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -45,8 +44,6 @@ class Entity extends Base\PublicEntity
     ];
 
     const END_OF_TIME = 2147483647;
-
-    protected $table = Table::GATEWAY_STATUS_ABSENCE;
 
     protected $entity = 'gateway_absence';
 

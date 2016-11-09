@@ -2,19 +2,19 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
     public function addPlanRule($input, $plan)
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
+
+        $rule = $rule->generateId();
 
         $rule->getValidator()->matchPaymentRules($plan);
 
@@ -30,6 +30,8 @@ class Core extends Base\Core
             $input);
 
         $pricing = (new Pricing\Entity)->build($input);
+
+        $pricing = $pricing->generateId();
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 

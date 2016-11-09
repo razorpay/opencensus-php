@@ -183,7 +183,7 @@ class Service extends Base\Service
         {
             if (isset($input['on']))
             {
-                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
 
                 $fromTimeStamp = $from->timestamp;
 

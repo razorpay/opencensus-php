@@ -21,6 +21,20 @@ class ThreeDSecureStatus
     const U = 'U';
     const A = 'A';
 
+    const SUCCESS = 'success';
+    const FAILURE = 'failure';
+    const SKIPPED = 'skipped';
+
+	protected static $vpc3DSstatusMap = array(
+        self::SUCCESS => array('Y'),
+        self::FAILURE => array('N'),
+        self::SKIPPED => array('U', 'A'));
+
+    public static function is3DSecureSuccess($status)
+    {
+        return ($status === self::Y);
+    }
+
     public static function getThreeDSstatus($status)
     {
         switch ($status) {

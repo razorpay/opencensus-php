@@ -2,10 +2,10 @@
 
 namespace RZP\Dashboard;
 
-class Logs extends RZP\Models\Base\Entity
-{
-    protected $table = 'dashboard_logs';
+use RZP\Models\Base;
 
+class Logs extends Base\Entity
+{
     const ID = 'id';
 
     const JSON = 'json';

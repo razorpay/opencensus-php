@@ -155,16 +155,29 @@ class Reconciler3
 
     protected function processSettlementStatus($setl, $row)
     {
+        // get reconciliation data
         $utr = null;
-        $failureReason = null;
 
-        // get status
         $status = $row['Status Of transaction'];
+
+        $failureReason = $row['Reject Reason'];
+
         if ($status === 'P')
         {
-            $status = Settlement\Status::PROCESSED;
-
             $utr = $row['UTR number'];
+
+            if (empty($failureReason) === true)
+            {
+                $status = Settlement\Status::PROCESSED;
+
+                $failureReason = null;
+            }
+            else
+            {
+                $status = Settlement\Status::FAILED;
+
+                $failureReason = 'Reconciliation: ' . $failureReason;
+            }
         }
         else
         {
@@ -260,7 +273,7 @@ class Reconciler3
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

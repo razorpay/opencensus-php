@@ -5,25 +5,20 @@ namespace RZP\Gateway\Wallet\Freecharge;
 use Cache;
 use Carbon\Carbon;
 use Config;
-use Lib\PhoneBook;
-use View;
-
-use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Core;
 use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use View;
 
 class Gateway extends Base\Gateway
 {
@@ -139,6 +134,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     /*
@@ -170,6 +167,8 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, ['otpId' => $otpId]);
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -195,8 +194,6 @@ class Gateway extends Base\Gateway
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
             $data['token'] = $this->getTokenAttributes($content);
-
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
 
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 
@@ -275,16 +272,6 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity(
             $wallet,
             [RequestFields::TOPUP => 'true']);
-
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BaseException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
 
         return $this->getTopupWalletRedirectRequestArray($input);
     }
@@ -488,7 +475,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -514,7 +501,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -608,7 +595,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($this->accessToken);
+        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($input['token']['gateway_token']);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -710,7 +697,6 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
-        $response = $verify->verifyResponse;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -877,13 +863,6 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::TOPUP_SUCCESS))
         {
             $this->verifyCheckSumForResponse($content);
-
-            $token = $this->getValidWalletToken($input);
-
-            if ($token !== null)
-            {
-                $this->accessToken = $token->getGatewayToken();
-            }
         }
     }
 
@@ -912,8 +891,6 @@ class Gateway extends Base\Gateway
         if (isset($content[ResponseFields::ACCESS_TOKEN]))
         {
             $data['token'] = $this->getTokenAttributes($content);
-
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
 
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 

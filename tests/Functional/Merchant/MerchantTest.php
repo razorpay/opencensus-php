@@ -19,7 +19,7 @@ class MerchantTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/MerchantData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 
         parent::setUp();
 
@@ -491,7 +491,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $this->session(['test_app_token' => '1000001custapp']);
 
@@ -504,7 +504,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $response = $this->startTest();
     }
@@ -528,7 +528,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $response = $this->startTest();
 
@@ -734,29 +734,20 @@ class MerchantTest extends TestCase
         $mimeType = 'image/gif';
         $extension = 'gif';
 
-        try
+        $data = $this->testData['testValidateImage'];
+
+        $this->runRequestResponseFlow($data, function() use ($merchantValidator, $mimeType, $extension)
         {
             $merchantValidator->validateImage($mimeType, $extension);
-            self::fail();
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE', $ex->getCode());
-        }
-
+        });
 
         $mimeType = 'text/plain';
         $extension = 'jpeg';
 
-        try
+        $this->runRequestResponseFlow($data, function() use ($merchantValidator, $mimeType, $extension)
         {
             $merchantValidator->validateImage($mimeType, $extension);
-            self::fail();
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE', $ex->getCode());
-        }
+        });
     }
 
     public function testValidateLogo()
@@ -765,27 +756,21 @@ class MerchantTest extends TestCase
 
         $imageDetails = ['size' => 1, 'width' => '1', 'height' => '1'];
 
-        try
+        $data = $this->testData['testValidateLogoImageSmall'];
+
+        $this->runRequestResponseFlow($data, function() use ($merchantValidator, $imageDetails)
         {
             $merchantValidator->validateLogo($imageDetails);
-            self::fail();
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL', $ex->getCode());
-        }
+        });
+
+        $data = $this->testData['testValidateLogoImageNotSquare'];
 
         $imageDetails = ['size' => 1, 'width' => '300', 'height' => '310'];
 
-        try
+        $this->runRequestResponseFlow($data, function() use ($merchantValidator, $imageDetails)
         {
             $merchantValidator->validateLogo($imageDetails);
-            self::fail();
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE', $ex->getCode());
-        }
+        });
 
         $imageDetails = ['size' => 1, 'width' => '300', 'height' => '300'];
 
@@ -793,14 +778,11 @@ class MerchantTest extends TestCase
 
         $imageDetails = ['size' => 1+(1024*1024), 'width' => '300', 'height' => '300'];
 
-        try
+        $data = $this->testData['testValidateLogoImageTooBig'];
+
+        $this->runRequestResponseFlow($data, function() use ($merchantValidator, $imageDetails)
         {
             $merchantValidator->validateLogo($imageDetails);
-            self::fail();
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_TOO_BIG', $ex->getCode());
-        }
+        });
     }
 }

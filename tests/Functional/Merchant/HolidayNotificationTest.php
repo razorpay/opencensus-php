@@ -41,19 +41,17 @@ class HolidayNotificationTest extends TestCase
         $content = $this->sendHolidayNotification(Mode::TEST);
     }
 
-    public function testHolidayNotificationOnLiveHoliday()
+    public function testHolidayNotificationOnLiveHoliday1()
     {
-        $this->markTestSkipped();
-
         $date = Carbon::today('Asia/Kolkata');
 
-        $date = $this->getRandomWorkingDay($date);
+        $newDate = $this->getNextRandomDoubleWorkingDay($date);
 
-        Carbon::setTestNow($date);
+        Carbon::setTestNow($newDate);
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        assert($content['message'] === "Next working day is not a bank holiday. Nothing to send.");
+        $this->assertEquals($content['message'],"Next working day is not a bank holiday. Nothing to send.");
 
         Carbon::setTestNow();
     }
@@ -85,7 +83,7 @@ class HolidayNotificationTest extends TestCase
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        assert($content['email'] === 'live@razorpay.com');
+        $this->assertEquals($content['email'],'live@razorpay.com');
 
         Carbon::setTestNow();
     }
@@ -102,6 +100,25 @@ class HolidayNotificationTest extends TestCase
     protected function getRandomWorkingDay($date, $ignoreBankHolidays = false)
     {
         return Holidays::getNextWorkingDay($date, $ignoreBankHolidays);
+    }
+
+    protected function getNextRandomDoubleWorkingDay($date, $ignoreBankHolidays = false)
+    {
+        // get two days where on
+        $tempDate = $date;
+
+        do
+        {
+            $tempDate = $this->getRandomWorkingDay($tempDate, $ignoreBankHolidays);
+
+            $nextDate = $tempDate->copy();
+
+            $nextDate = $nextDate->addDay();
+        }
+        while((Holidays::isWorkingDay($tempDate) === false) or
+              (Holidays::isWorkingDay($nextDate) === false));
+
+        return $tempDate;
     }
 
     protected function sendHolidayNotification($mode)

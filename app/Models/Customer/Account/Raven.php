@@ -4,7 +4,6 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Merchant\Account;
 
 class Raven
 {

@@ -2,14 +2,11 @@
 
 namespace RZP\Gateway\Sharp;
 
-use RZP\Constants\Mode;
 use Crypt;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
@@ -55,7 +52,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate(array $input)
     {
-        ;
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function topup(array $input)

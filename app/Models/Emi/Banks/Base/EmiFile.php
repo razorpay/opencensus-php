@@ -2,12 +2,11 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
-use Str;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
-use RZP\Models\Payment\Action;
 use RZP\Trace\TraceCode;
+use Str;
 
 class EmiFile
 {
@@ -63,7 +62,7 @@ class EmiFile
     {
         $gateway = $payment->getGateway();
 
-        $gatewayPayment = $this->repo->$gateway->findByPaymentIdAndActionOrFail($payment->getId(), Action::CAPTURE);
+        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
 
         return $gatewayPayment->getAuthCode();
     }

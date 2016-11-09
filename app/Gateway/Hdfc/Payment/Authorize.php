@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Hdfc\Payment;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment as PaymentModel;

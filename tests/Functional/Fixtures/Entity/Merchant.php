@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
@@ -219,9 +220,21 @@ class Merchant extends Base
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
     }
 
-    public function editCreditsforNodalAccount($credits)
+    public function editFeeCredits($credits, $id = '10000000000000')
     {
-        return $this->editCredits($credits, '10NodalAccount');
+        return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)
+    {
+        if ($type === Credits\Type::AMOUNT)
+        {
+            return $this->editCredits($credits, '10NodalAccount');
+        }
+        else if ($type === Credits\Type::FEE)
+        {
+            return $this->editFeeCredits($credits, '10NodalAccount');
+        }
     }
 
     public function enableConvenienceFeeModel($id = '10000000000000')
@@ -242,6 +255,21 @@ class Merchant extends Base
     public function disableInternational($id = '10000000000000')
     {
         return $this->edit($id, ['international' => '0']);
+    }
+
+    public function addFeatures($featureNames, $id = '10000000000000')
+    {
+        $features = collect();
+
+        foreach ($featureNames as $featureName) {
+            $attributes = [
+                'name'      => $featureName,
+                'entity_id' => $id
+            ];
+            $features->push($this->fixtures->create('feature', $attributes));
+        }
+
+        return $features;
     }
 
     public function editFeatures($features, $id = '10000000000000')

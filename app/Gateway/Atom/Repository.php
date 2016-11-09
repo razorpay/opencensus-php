@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Atom';
+    protected $entity = 'atom';
 
     public function findByToken($token)
     {

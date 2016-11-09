@@ -11,13 +11,9 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Core;
 use Carbon\Carbon;
 use View;
-use Lib\PhoneBook;
 use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
@@ -51,7 +47,7 @@ class Gateway extends Base\Gateway
     protected $perform;
 
     protected $acosaActions = array(
-        ACTION::VERIFY, ACTION::REFUND
+        Action::VERIFY, Action::REFUND
     );
 
     public function authorize(array $input)
@@ -167,6 +163,12 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
+        if ($input['refund']['amount'] !== $input['payment']['amount'])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
+        }
+
         $request = $this->getRefundRequestContent($input);
 
         $response = $this->postRequest($request)['content'];
@@ -245,6 +247,7 @@ class Gateway extends Base\Gateway
             'original_merchant_reference_no'    => $input['payment']['id'],
             'login_id'                          => $this->config['pg_merchant_login_id'],
             'pgName'                            => $this->pgname,
+            'amount'                            => $input['refund']['amount']
         );
 
         $this->addMerchantDetailsInTest($content);
@@ -356,7 +359,7 @@ class Gateway extends Base\Gateway
         $refundAttributes = array(
             'payment_id'            =>    $input['payment']['id'],
             'action'                =>    $this->action,
-            'amount'                =>    $input['payment']['amount'],
+            'amount'                =>    $input['refund']['amount'],
             'wallet'                =>    $input['payment']['wallet'],
             'email'                 =>    $input['payment']['email'],
             'received'              =>    0,
@@ -427,8 +430,6 @@ class Gateway extends Base\Gateway
 
         $this->perform  = 'verify';
 
-        $latestTransactionType = 0;
-
         $responseContent = '';
 
         $response = '';
@@ -476,11 +477,9 @@ class Gateway extends Base\Gateway
             {
                 $responseContent = $content;
 
-                $verify->transactionType = $txnType ;
+                $verify->transactionType = $txnType;
 
                 $response = $requestResponse['response'];
-
-                $latestTransactionType = $txnTypeCode;
             }
         }
 

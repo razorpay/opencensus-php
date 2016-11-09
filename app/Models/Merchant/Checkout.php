@@ -6,8 +6,6 @@ use App;
 use Request;
 use Session;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -15,7 +13,6 @@ use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Checkout
@@ -35,7 +32,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
-        $data['methods'] = $this->getMethods($merchant, $input);
+        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -58,14 +55,14 @@ class Checkout
             ]);
     }
 
-    protected function fetchTPVOrderInfo($input, $merchant)
+    protected function fetchTPVOrderInfo($input)
     {
         $orderData = null;
 
         try
         {
             $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
+                $input[Payment\Entity::ORDER_ID]);
         }
         catch(\Exception $ex)
         {
@@ -92,7 +89,7 @@ class Checkout
                     ($appToken !== null) and
                     ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
-                return;
+                return null;
             }
 
             $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -139,42 +136,6 @@ class Checkout
         }
     }
 
-    protected function getMethods($merchant, $input)
-    {
-        $methodsArray = array(
-            'entity'        => 'methods',
-            'card'          => true,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
-        );
-
-        $methods = (new Methods\Core)->getMethods($merchant);
-
-        if ($methods !== null)
-        {
-            $methodsArray['card'] = $methods->isCardEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
-            }
-            $methodsArray['wallet'] = $methods->getEnabledWallets();
-            $methodsArray['upi'] = $methods->isUpiEnabled();
-            $emi = $methods->isEmiEnabled();
-
-            if ($emi === true)
-            {
-                $methodsArray['emi'] = $emi;
-
-                $methodsArray['emi_plans'] = (new Emi\Service)->all();
-            }
-        }
-
-        return $methodsArray;
-    }
-
     protected function checkAndAddOrderForTpv($merchant, $input, & $data)
     {
         // If merchant is TPV enabled pass details for
@@ -182,7 +143,7 @@ class Checkout
         if (($merchant->isTPVRequired()) and
             (isset($input[Payment\Entity::ORDER_ID])))
         {
-            $orderData = $this->fetchTPVOrderInfo($input, $merchant);
+            $orderData = $this->fetchTPVOrderInfo($input);
 
             if ($orderData !== null)
             {

@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use RZP\Models\Terminal;
 use RZP\Models\Payment\Gateway;
-use RZP\Constants\Mode;
+use RZP\Models\Terminal;
+use RZP\Exception;
 
 class TerminalLoadSorter extends Terminal\Sorter
 {
@@ -15,7 +15,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 5,
+            'load'       => 0,
         ],
 
         // Test terminals, won't be used on prod.
@@ -116,7 +116,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $terminalId = $terminal->getId();
 
-            if (in_array($terminalId, $ruledTerminals) === true)
+            if (in_array($terminalId, $ruledTerminals, true) === true)
             {
                 $applicableRules[$terminalId] = $allRules[$terminalId];
             }
@@ -125,14 +125,14 @@ class TerminalLoadSorter extends Terminal\Sorter
         return $applicableRules;
     }
 
-    protected function validateRules($cumulativeProbabity)
+    protected function validateRules($cumulativeProbability)
     {
         // Cumulative probability for all applicable rules
         // can't possibly be above 100
-        if ($cumulativeProbabity > 100)
+        if ($cumulativeProbability > 100)
         {
             throw new Exception\LogicException("Cumulative probability is " .
-                            $cumulativeProbabity . ", shouldn't be above 100");
+                $cumulativeProbability . ", shouldn't be above 100");
         }
     }
 }

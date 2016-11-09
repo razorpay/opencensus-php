@@ -3,20 +3,16 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-
-use RZP\Constants\Mode;
-use RZP\Models\Base;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
+use RZP\Dashboard\Dashboard;
+use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Dashboard\Dashboard;
-
 use RZP\Trace\TraceCode;
-
 
 class Settler
 {
@@ -24,7 +20,13 @@ class Settler
 
     protected $input;
 
-    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+    protected $mutex;
+
+    const HOLIDAY_MESSAGE       = ['message' => 'Today is a holiday! Happy holidays :)'];
+
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
 
     /**
      * Used for testing purposes. Default should
@@ -41,12 +43,11 @@ class Settler
         $this->env = $app['env'];
         $this->trace = $app['trace'];
         $this->repo = $app['repo'];
+        $this->mutex = $app['api.mutex'];
     }
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
-        $this->increaseAllowedSystemLimits();
-
         $this->preSettlementProcessing();
 
         $this->input = $input;
@@ -58,7 +59,12 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
     public function settle($input = array(), $channel = null)
@@ -74,7 +80,12 @@ class Settler
 
         $txns = $this->fetchTransactionsToSettle($input);
 
-        return $this->processSettlements($input, $channel, $txns);
+        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
+        {
+            return $this->processSettlements($input, $channel, $txns);
+        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
     protected function preSettlementProcessing()
@@ -143,8 +154,6 @@ class Settler
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
-            $urlText = '';
-
             $data['count'] = $settlements->count();
             $data['transaction_count'] = $txns->count();
 
@@ -172,7 +181,7 @@ class Settler
 
         if ($settlements->count() !== 0)
         {
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements);
 
             $data['settlement_text_file'] = $urlText;
 
@@ -315,7 +324,6 @@ class Settler
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
-                $setlAmount = 0;
                 continue;
             }
 
@@ -324,7 +332,6 @@ class Settler
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
-                                        $setlGatewayFee,
                                         $serviceTax);
 
             $settlements->push($setl);
@@ -397,6 +404,13 @@ class Settler
 
         assert ($merchant->bankAccount !== null);
 
+        // If merchant has a hourly schedule entity assigned to him, his settlements
+        // will be handled by the new Settler defined in Settlement\Processor
+        if ($merchant->hasSchedule() === true)
+        {
+            return false;
+        }
+
         if (($this->mode !== Mode::TEST) and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
@@ -406,9 +420,9 @@ class Settler
         return $shouldSettle;
     }
 
-    protected function createSettlementFile($settlements, $txns)
+    protected function createSettlementFile($settlements)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -431,7 +445,7 @@ class Settler
 
     protected function fetchTransactionsToSettle($input)
     {
-        $ts = $this->initSettlementTimestamp($input);
+        $ts = $this->initSettlementTimestamp();
 
         $ts = time();
 
@@ -448,25 +462,20 @@ class Settler
 
     protected function fetchMerchantTransactionsToSettle($input, $merchant)
     {
-        $ts = time();
-
-        if (($this->mode === Mode::TEST) and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $ts = $input['testSettleTimeStamp'];
-        }
+        $ts = $this->initSettlementTimestamp();
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         return $txns;
     }
 
-    protected function initSettlementTimestamp($input)
+    protected function initSettlementTimestamp()
     {
         if (self::$settlementTimestamp === null)
         {
             // Get the timestamp today at 12 am
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
             self::$settlementTimestamp = $timestamp;
         }
 
@@ -488,29 +497,13 @@ class Settler
 
     protected function getOrCreateDailySettlementForToday(array $input, $channel)
     {
-        $force = $this->isInputValue($input, 'force', '1');
-
         $overwrite = $this->isInputValue($input, 'overwrite', '1');
 
-        $dailySettlement = $this->repo->daily_settlement->getSettlementForToday('kotak');
-
-        if ($dailySettlement !== null)
+        if ($overwrite === true)
         {
-            if ($force === false)
-            {
-                $data['message'] = 'Settlement already done for today!';
-
-                $dailySettlement = null;
-
-                return $data;
-            }
-            else
-            {
-                $this->dailySettlement = $dailySettlement;
-            }
+            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday($channel);
         }
-
-        if ($overwrite === false)
+        else
         {
             $this->dailySettlement = Settlement\Daily\Entity::newForToday();
         }

@@ -14,8 +14,6 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
 
-    protected $table = \RZP\Constants\Table::ADJUSTMENT;
-
     protected static $sign = 'adj';
 
     protected $entity = 'adjustment';
@@ -52,6 +50,11 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function getAmount()

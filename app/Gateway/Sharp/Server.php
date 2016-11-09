@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Sharp;
 
-use RZP\Error\ErrorCode;
+use Crypt;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
-use Crypt;
 
 class Server extends Base\Mock\Server
 {
@@ -86,8 +85,6 @@ class Server extends Base\Mock\Server
         }
 
         $url = $input['callback_url'];
-
-        $authorized = false;
 
         $content['status'] = 'failed';
 

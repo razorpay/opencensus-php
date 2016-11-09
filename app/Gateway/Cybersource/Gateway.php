@@ -3,24 +3,22 @@
 namespace RZP\Gateway\Cybersource;
 
 use Cache;
-use Crypt;
 use Config;
-use Requests;
-use SoapFault;
-use RZP\Error;
-use RZP\Exception;
+use Crypt;
 use RZP\Constants;
-use RZP\Gateway\Utility;
-use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
-use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Error;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Gateway\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-
+use RZP\Gateway\Utility;
+use RZP\Models\Card;
+use RZP\Trace\TraceCode;
+use SoapClient;
+use SoapFault;
+use SoapVar;
 
 class Gateway extends Base\Gateway
 {
@@ -66,8 +64,9 @@ class Gateway extends Base\Gateway
     const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
     const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
-    //soap client timeout in seconds
-    const CONNECTION_TIMEOUT          = 60;
+
+    // Soap client timeout in seconds
+    const TIMEOUT                     = 60;
 
     protected $gateway = Constants\Table::CYBERSOURCE;
 
@@ -276,7 +275,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
@@ -331,7 +329,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentReconcileWithGatewayResponse($verify)
     {
-        $payment = $verify->payment;
         $input = $verify->input;
 
         $verify->gatewaySuccess = true;
@@ -663,7 +660,6 @@ class Gateway extends Base\Gateway
         if ($reasonCode !== Result::SUCCESS)
         {
             $status = Status::CAPTURE_FAILED;
-            $error  = ResponseCode::$reasonCodes[$response['reasonCode']];
         }
 
         $attributes = array(
@@ -899,11 +895,42 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new CybersourceSoapClient($request['url'],
-                                                $request['options']['auth'],
-                                                $request['connect_options']);
+        $soapClient = new SoapClient($request['url'], $request['options']);
+
+        $headers = $this->getSoapHeader($request);
+        $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
+    }
+
+    protected function getSoapHeader($request)
+    {
+        $username = $request['auth']['username'];
+        $password = $request['auth']['password'];
+
+        // Must understand should be omitted in case of test cases
+        $mustUnderstand = ! $this->mock;
+
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        // $passwordObj->Type = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordTex';
+
+        $wsseAuth = [
+            'Username' => (new SoapVar($username, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+            'Password' => (new SoapVar($password, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+        ];
+
+        $wsseToken = [
+            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs))
+        ];
+
+        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs);
+
+        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, NULL, $wsseNs, 'Security', $wsseNs);
+
+        $objSoapVarWSSEHeader = new \SoapHeader($wsseNs, 'Security', $wsseHeaderSoap, $mustUnderstand);
+
+        return $objSoapVarWSSEHeader;
     }
 
     protected function getWsdlFile()
@@ -1077,18 +1104,17 @@ class Gateway extends Base\Gateway
     {
         $soapClient = $this->getSoapClientObject($request);
 
-        $content = json_decode(json_encode($request['content']));
+        $response = $soapClient->runTransaction($request['content']);
 
-        $response = $soapClient->runTransaction($content);
-
-        return json_decode(json_encode($response), true);;
+        // Hack to convert object to array recursively
+        return json_decode(json_encode($response), true);
     }
 
     protected function traceGatewayRequest($traceCode, $request)
     {
         unset($request['content']['card']);
         unset($request['card']);
-        unset($request['options']['auth']);
+        unset($request['auth']);
 
         $this->trace->info($traceCode, $request);
     }
@@ -1099,12 +1125,11 @@ class Gateway extends Base\Gateway
             'url'     => $this->getWsdlFile(),
             'method'  => $method,
             'content' => $content,
+            'auth'    => $this->getCredentials(),
             'options' => [
-                'auth' => $this->getCredentials()
-            ],
-            'connect_options' => [
-                'exception' => true,
-                'connection_timeout' => self::CONNECTION_TIMEOUT
+                'encoding'           => 'UTF-8',
+                'exception'          => true,
+                'connection_timeout' => self::TIMEOUT
             ],
         ];
 
@@ -1236,12 +1261,13 @@ class Gateway extends Base\Gateway
         $paInfo = $paymentData['PayerAuthenticationInfo'];
 
         $data = [
-            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
-            'cavv' => $paInfo['AAV_CAVV'],
-            'xid' => $paInfo['XID'],
+            'eci'         => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
+            'cavv'        => $paInfo['AAV_CAVV'],
+            'xid'         => $paInfo['XID'],
             'reason_code' => 100,
-            'action' => Base\Action::AUTHORIZE,
-            'status' => Status::AUTHORIZED
+            'action'      => Base\Action::AUTHORIZE,
+            'status'      => Status::AUTHORIZED,
+            'received'    => true
         ];
 
         $verify->verifyResponseContent = $data;
@@ -1293,7 +1319,7 @@ class Gateway extends Base\Gateway
 
         $reasonCode = $response['reasonCode'];
 
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
+        $desc = ResponseCode::getDescription($reasonCode);
 
         if (ResponseCode::isValidationError($reasonCode))
         {

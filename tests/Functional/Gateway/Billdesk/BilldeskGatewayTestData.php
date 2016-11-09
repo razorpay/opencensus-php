@@ -243,4 +243,33 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
         ],
     ],
+
+    'testReconcileCancelledTransactions' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/reconciliate/billdesk/cancelled',
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failure_count' => 0,
+            ],
+        ],
+    ],
+
+    'testServerToServerCallback' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
 ];

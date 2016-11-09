@@ -2,9 +2,8 @@
 
 namespace RZP\Gateway\Ebs;
 
-use RZP\Gateway\Base;
-use RZP\Constants\Table;
 use RZP\Constants;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
@@ -53,8 +52,5 @@ class Entity extends Base\Entity
         self::IS_FLAGGED    => 'boolean',
     ];
 
-    protected $table = Table::EBS;
-
     protected $entity = Constants\Entity::EBS;
-
 }

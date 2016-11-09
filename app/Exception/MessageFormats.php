@@ -4,6 +4,7 @@ namespace RZP\Exception;
 
 use Illuminate\Support\MessageBag;
 use RZP\Error\Error;
+use RZP\Exception;
 
 trait MessageFormats
 {
@@ -50,7 +51,7 @@ trait MessageFormats
      */
     protected function constructStringMessage($message)
     {
-        if ($message instanceof messageBag)
+        if ($message instanceof MessageBag)
         {
             $this->messageFormat = 'message_bag';
 
@@ -122,7 +123,7 @@ trait MessageFormats
     {
         $messages = array();
 
-        foreach ($messageArray as $field => $values)
+        foreach ($this->messageArray as $field => $values)
         {
             if (is_array($values))
                 array_push($messages, implode('\n', $messages));
@@ -167,8 +168,6 @@ trait MessageFormats
         $pos2 = strrpos($className, 'Exception');
 
         $category = substr($className, $pos+1, $pos2 - $pos - 1);
-
-        $code = '';
 
         switch($category)
         {

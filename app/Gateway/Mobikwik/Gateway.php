@@ -2,17 +2,14 @@
 
 namespace RZP\Gateway\Mobikwik;
 
+use Lib\PhoneBook;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Mobikwik\Type;
-use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
@@ -330,6 +327,8 @@ class Gateway extends Base\Gateway
                 $content['statuscode'],
                 $content['statusdescription']);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -503,21 +502,6 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
-    }
-
-    protected function getPaymentHash($content)
-    {
-        $fieldsInOrder = array(
-            'cell',
-            'email',
-            'amount',
-            'orderid',
-            'redirecturl',
-            'mid');
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($content);
     }
 
     protected function verifySecureHash(array $content)

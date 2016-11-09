@@ -4,13 +4,11 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 
 use App;
 use Carbon\Carbon;
-use Gateway\Upi\Icici;
+use RZP\Gateway\Upi\Icici;
+use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Upi\Base\Entity as UPIEntity;
-use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -222,7 +220,7 @@ class Server extends Base\Mock\Server
     protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
-        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at'], 'Asia/Kolkata');
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at']);
         $completeDate = $initDate->copy()->addMinutes(1);
 
         $response = [

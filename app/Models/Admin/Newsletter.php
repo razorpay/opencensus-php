@@ -5,12 +5,10 @@ namespace RZP\Models\Admin;
 use Carbon\Carbon;
 use cebe\markdown\MarkdownExtra;
 use Config;
-use RZP\Models\Merchant;
 use Mail;
-use Mailgun\Mailgun;
-use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
-use RZP\Trace\Trace;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 /**
  * Class used for mass mailing
@@ -102,7 +100,7 @@ class Newsletter
         return $response;
     }
 
-    protected function encodeMerchantDetails($merchant, &$reposnse)
+    protected function encodeMerchantDetails($merchant, & $response)
     {
         $response[] = json_encode([
                 'address' => $merchant['email'],
@@ -173,15 +171,6 @@ class Newsletter
         return $listAddress;
     }
 
-    protected function createMailgunList($listName)
-    {
-        $relativeUrl = 'lists';
-
-        $this->getMailgunInstance()->post($relativeUrl,[
-            'address'     => $listAddress,
-        ]);
-    }
-
     /**
      * Set the mailing list name.
      * This is used to create the mailing list address if set.
@@ -207,7 +196,11 @@ class Newsletter
 
         $this->addListMembersToMailgun($lists, $listAddress);
 
-        $this->waitForEmailsToReflect($listAddress);
+        // Don't wait in testing
+        if ($this->app->runningUnitTests() === false)
+        {
+            $this->waitForEmailsToReflect($listAddress);
+        }
 
         return $listAddress;
     }
@@ -253,13 +246,11 @@ class Newsletter
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
-
-        $count = 0;
-
+        
         do{
             $iterations = $iterations + 1;
 
-            $relativeUrl = 'lists/'.$listAddress.'/members';
+            $relativeUrl = 'lists/' . $listAddress . '/members';
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
                 'skip' => $this->count]);

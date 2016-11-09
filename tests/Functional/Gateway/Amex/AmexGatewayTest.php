@@ -48,6 +48,7 @@ class AmexGatewayTest extends TestCase
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterCapture'], $txn);
 

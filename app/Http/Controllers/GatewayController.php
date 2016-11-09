@@ -3,14 +3,12 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception;
-use RZP\Http\Route;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-use Request;
 use Redirect;
+use Request;
+use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class GatewayController extends Controller
 {
@@ -50,8 +48,6 @@ class GatewayController extends Controller
 
     protected function callbackEbs($input)
     {
-        $msg = $input['msg'];
-
         $gateway = $this->app['gateway']->gateway('ebs');
 
         //TODO validate callback
@@ -88,6 +84,7 @@ class GatewayController extends Controller
                 break;
 
             case 'wallet_olamoney':
+            case 'upi_hdfc':
                 $trace = $this->app['trace'];
 
                 $trace->info(
@@ -134,7 +131,7 @@ class GatewayController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        $result = $this->getGatewayEntityAndModeByTraceId($input[3]);
+        $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
 
         $nb = $result['nb'];
 
@@ -172,11 +169,11 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    protected function getGatewayEntityAndModeByTraceId($traceId)
+    protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
 
-        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
+        $repo = $app['repo']->netbanking;
 
         $mode = 'test';
 

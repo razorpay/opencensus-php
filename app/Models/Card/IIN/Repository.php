@@ -7,10 +7,9 @@ use RZP\Models\Card;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'IIN';
+    protected $entity = 'iin';
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',
@@ -21,7 +20,6 @@ class Repository extends Base\Repository
         Entity::OTP_READ        => 'sometimes|in:0,1',
         Entity::ISSUER          => 'sometimes|string',
     );
-
 
     protected function addQueryOrder($query)
     {

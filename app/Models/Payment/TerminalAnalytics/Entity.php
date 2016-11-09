@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -15,9 +14,6 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_CODE          = 'terminal_status_code';
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
-
-
-    protected $table = Table::TERMINAL_ANALYTICS;
 
     protected $entity = 'terminal_analytics';
 

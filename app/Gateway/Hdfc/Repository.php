@@ -10,7 +10,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Hdfc';
+    protected $entity = 'hdfc';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
@@ -24,6 +24,14 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)
                     ->whereIn('action', [Action::AUTHORIZE, Action::PURCHASE])
                     ->first();
+    }
+
+    public function findCapturedPaymentByIdOrFail($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Action::CAPTURE)
+                    ->firstOrFail();
     }
 
     public function persistAfterEnroll($request, $response)
@@ -346,7 +354,7 @@ class Repository extends Base\Repository
     public function fetchBetweenTimestamps($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween('created_at', $from, $to);
+                    ->whereBetween('created_at', [$from, $to]);
     }
 
     public function findByGatewayTransactionIdOrFail($gatewayTxnId)

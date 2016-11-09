@@ -3,8 +3,6 @@
 namespace RZP\Gateway\Netbanking\Base;
 
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Base\Action;
-use RZP\Models\Payment;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {

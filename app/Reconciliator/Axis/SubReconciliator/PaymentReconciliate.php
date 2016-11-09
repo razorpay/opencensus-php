@@ -8,7 +8,6 @@ use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;
@@ -124,7 +123,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
         $columnCardTrivia = $this->getColumnCardTrivia($row);
-        $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
+        $columnCardLocale = $this->getColumnCardLocale($row);
 
         $cardType = $this->getCardType($columnCardType, $row);
         $cardLocale = $this->getCardLocale($columnCardLocale, $row);
@@ -154,6 +153,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getColumnCardLocale($row)
+    {
+        $columnCardLocale = null;
+
+        if (isset($row[self::COLUMN_CARD_LOCALE]) === true)
+        {
+            $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
+        }
+
+        return $columnCardLocale;
     }
 
     protected function getColumnCardTrivia($row)
@@ -268,6 +279,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardLocale($cardLocale, $row)
     {
+        if (empty($cardLocale) === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the card locale. This is unexpected.',
+                    'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'recon_card_trivia' => $cardLocale,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            return null;
+        }
+
         if (($cardLocale === 'l') or ($cardLocale === 'local'))
         {
             $cardType = BaseReconciliate::DOMESTIC;
@@ -278,14 +305,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card locale (domestic/international).',
-                    'recon_card_type' => $cardLocale,
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
+                    'message'           => 'Unable to get the card locale. This is unexpected.',
+                    'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'recon_card_trivia' => $cardLocale,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
 
             // It's as good as no card locale present in the row.
             return null;
