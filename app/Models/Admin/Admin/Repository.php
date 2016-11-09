@@ -88,4 +88,11 @@ class Repository extends Base\Repository
 
         return ($isEmpty === false);
     }
+
+    public function fetchAdminsForOrg(string $orgId, array $input)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
+    }
 }

@@ -47,6 +47,8 @@ class Service extends Base\Service
 
     public function fetchMultiple(string $orgId, array $input)
     {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
         $groups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
 
         return $groups->toArrayPublic();

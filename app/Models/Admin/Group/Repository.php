@@ -11,7 +11,7 @@ use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'admin';
+    protected $entity = 'group';
 
     // TODO Define the proxyfetch and admin fetch params
 
