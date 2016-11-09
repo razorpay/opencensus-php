@@ -51,13 +51,18 @@ class AdminAccess
     {
         $params = $request->route()->parameters();
 
-        $mid = $params['mid'];
+        if (isset($params['mid']))
+        {
+          $mid = $params['mid'];
 
-        $repo = $this->app['repo'];
+          $repo = $this->app['repo'];
 
-        $merchant = $repo->merchant->findOrFailPublic('10000000000000');
+          $merchant = $repo->merchant->findOrFailPublic('10000000000000');
 
-        return $merchant;
+          return $merchant;
+        }
+
+        return null;
     }
 
     private function policyChecker($routeName, $admin, $merchant = null)
@@ -90,9 +95,12 @@ class AdminAccess
 
         if ($allowed)
         {
-            $this->groupCheck($admin);
+            $hasMerchantAccess = $this->groupCheck($admin, $merchant);
 
-            return true;
+            if ($hasMerchantAccess)
+            {
+                return true;
+            }
         }
 
         return false;
@@ -111,7 +119,33 @@ class AdminAccess
         return true;
     }
 
-    private function groupCheck($admin)
+    private function groupCheck($admin, $merchant)
+    {
+        // TODO: Enforce there's no cycle in the graph (while creation/assigning)
+
+        // 1. Get all the required groups and admins for the $admin
+
+        // Get all groups and admins required to look into in case
+        // there's a hierarchy (or actually a graph)
+        $nodes = $this->getAllNodes($admin);
+
+        // $nodes['groups'], $nodes['admins']
+
+        // dd($nodes);
+
+        $merchantIds = $this->getMerchantIdsOfNodes($nodes);
+
+        // dd($merchantIds);
+
+        if (in_array($merchant->id, $merchantIds))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getAllNodes($admin)
     {
         // 1. Get all the groups of the admin
 
@@ -174,8 +208,43 @@ class AdminAccess
         }
 
         // We have all the subgroups (recursively) in $allSubGroupIds now
-        dd($allSubGroupIds, $allSubAdminIds);
+        return [
+            'groups' => $allSubGroupIds,
+            'admins' => $allSubAdminIds
+        ];
+    }
 
-        
+    private function getMerchantIdsOfNodes($nodes)
+    {
+        $groups = $nodes['groups'];
+
+        $admins = $nodes['admins'];
+
+        $allMerchantIds = [];
+
+        // TODO: I think we can merge these 2 queries
+        // because ENTITY_IDs are unique across
+
+        $merchants = \DB::table('merchant_map')
+            ->whereIn('entity_id', $groups)
+            ->where('entity_type', 'group')
+            ->get();
+
+        foreach ($merchants as $merchant)
+        {
+            $allMerchantIds[] = $merchant->merchant_id;
+        }
+
+        $merchants = \DB::table('merchant_map')
+            ->whereIn('entity_id', $admins)
+            ->where('entity_type', 'admin')
+            ->get();
+
+        foreach ($merchants as $merchant)
+        {
+            $allMerchantIds[] = $merchant->merchant_id;
+        }
+
+        return $allMerchantIds;
     }
 }
