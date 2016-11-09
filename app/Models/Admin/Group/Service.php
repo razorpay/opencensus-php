@@ -19,9 +19,9 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admin = $this->core->create($orgId, $input);
+        $group = $this->core->create($orgId, $input);
 
-        return $admin->toArray();
+        return $group->toArrayPublic();
     }
 
     public function getGroup(string $orgId, string $groupId)

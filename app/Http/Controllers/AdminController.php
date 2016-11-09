@@ -228,7 +228,7 @@ class AdminController extends Controller
     {
         $input == Request::all();
 
-        $data = (new Admin\Group\Service)->createRole($id, $input);
+        $data = (new Admin\Group\Service)->createGroup($id, $input);
 
         return ApiResponse::json($data);
     }
