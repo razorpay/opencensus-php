@@ -25,6 +25,8 @@ app.controller('OrgsListCtrl', [
      * Actions
      */
 
+    // Add an organization
+
     $scope.addOrg = function(organization) {
       var data = {};
       data.body = organization;
@@ -40,7 +42,7 @@ app.controller('OrgsListCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization added successfully', true);
+          $scope.alerts.addAlert('success', 'Organization added', true);
         }
         else {
           $scope.alerts.resetAlerts();
@@ -53,6 +55,8 @@ app.controller('OrgsListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+    // Fetch the entire org list to show in a table
 
     $scope.fetchOrgs = function () {
       var request = $http.get('/admin/generic', { params: { route_name: 'org_get_multiple' } });
@@ -73,11 +77,13 @@ app.controller('OrgsListCtrl', [
 
     $scope.fetchOrgs();
 
+    // Fetch Org details by ID
+
     $scope.fetchOrgById = function (id) {
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'org_get',
-          
+
           url_params: {
             '{id}': id
           }
@@ -90,6 +96,36 @@ app.controller('OrgsListCtrl', [
     };
 
     $scope.fetchOrgById('6dLbNSpv5XbCOG');
+
+    // Edit Organization
+
+    $scope.editOrgById = function (id) {
+      var request = $http.put('/admin/generic', {
+        params: {
+          route_name: 'org_edit',
+
+          url_params: {
+            '{id}' : id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Organization updated', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+
+      });
+    };
+
+    // $scoe.editOrgById(id);
   }
 ]).controller('addOrgModalCtrl', [
   '$scope',
