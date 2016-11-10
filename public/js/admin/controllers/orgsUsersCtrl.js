@@ -9,6 +9,7 @@ app.controller('OrgsUsersCtrl', [
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();
+    $scope.orgId = 'org_6dLbNSpv5XbCOG';
 
     /**
      *  Modals
@@ -25,8 +26,8 @@ app.controller('OrgsUsersCtrl', [
           }
         }
       });
-      modalInstance.result.then(function (admin) {
-        $scope.editAdmin(admin);
+      modalInstance.result.then(function (users) {
+        $scope.editUser(users);
       }, $.noop);
     };
 
@@ -52,8 +53,26 @@ app.controller('OrgsUsersCtrl', [
       });
     }
 
-    $scope.listUsers('org_6dLbNSpv5XbCOG');
+    $scope.listUsers($scope.orgId);
 
+    $scope.editUser = function(user) {
+      var request = $http.put('/admin/generic', {
+        params: {
+          route_name: 'admin_edit',
+
+          url_params: {
+            '{id}': $scope.orgId,
+            '{adminId}': user.id
+          }
+        }
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.users = data.data.items;
+          $scope.count = data.data.count;
+        }
+      });
+    }
 
 
   }
@@ -74,7 +93,11 @@ app.controller('OrgsUsersCtrl', [
   'current',
   function ($scope, $modalInstance, current) {
 
-    $scope.user = current;
+    current.locked = !!current.locked;
+    current.disabled = !!current.disabled;
+
+    $scope.user = current
+
     $scope.ok = function (user) {
       $modalInstance.close(user);
     };

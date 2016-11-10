@@ -53,9 +53,9 @@
             <td>{{row.location_code}}</td>
             <td>{{row.supervisor_code}}</td>
             <td>
-              <i class="fa" ng-class="{'fa-check text-success': row.locked === 1, 'fa-times text-danger':row.locked === 0}"></i>
+              <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
             </td>
-            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled === 1, 'fa-times text-danger':row.disabled === 0}"></i></td>
+            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
             <td>
               <a class="btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
                 <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
@@ -118,6 +118,24 @@
         <label for="location_code" class="col-lg-2 control-label">Location Code</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="location_code" ng-model="user.location_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="supervisor_code" class="col-lg-2 control-label">Superviser Code</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="supervisor_code" ng-model="user.supervisor_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="disabled" class="col-lg-2 control-label">Disabled</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" name="disabled" ng-model="user.disabled" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="locked" class="col-lg-2 control-label">Locked</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" name="locked" ng-model="user.locked" />
         </div>
       </div>
     </form>

@@ -16,5 +16,7 @@ return [
     'group_get_multiple'                => 'orgs/{id}/groups',
     'group_create'                      => 'orgs/{id}/groups',
 
-    'admin_get_multiple'                => 'orgs/{id}/admins'
+    // Admins
+    'admin_get_multiple'                => 'orgs/{id}/admins',
+    'admin_edit'                        => 'orgs/{id}/admins/{adminId}'
 ];
