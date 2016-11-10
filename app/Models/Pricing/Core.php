@@ -2,13 +2,11 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use Requests;
-
 class Queue
 {
     public function fire($job, $data)

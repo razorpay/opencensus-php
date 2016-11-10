@@ -227,13 +227,13 @@ class Logo
                 // The method which will upload to s3.
                 $result = $s3->putObject($s3Obj);
             }
-            catch (\Exception $e)
+            catch (\Aws\S3\Exception\S3Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,
                     ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
             }
-            catch (\Aws\S3\Exception\S3Exception $e)
+            catch (\Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,

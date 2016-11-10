@@ -175,6 +175,7 @@ class BasicAuth
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
+        $this->merchant = null;
     }
 
     public function setCredentials()

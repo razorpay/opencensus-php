@@ -2,29 +2,24 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
 use Carbon\Carbon;
-use Mail;
 use Config;
-
+use Mail;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\BankAccount;
+use RZP\Models\Base;
 use RZP\Models\Emi;
-use RZP\Models\Merchant;
 use RZP\Models\Key;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Terminal;
 use RZP\Models\Schedule;
-use RZP\Models\Merchant\Webhook;
-use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
-
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-
-use RZP\Trace\Trace;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -33,7 +28,7 @@ class Service extends Base\Service
      * Creates a merchant and saves in database
      *
      * @param  array            $input
-     * @return Merchant\Enitty
+     * @return Merchant\Entity
      */
     public function create(array $input)
     {
@@ -471,16 +466,8 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $methods = new Merchant\Methods\Entity;
-
         return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
-    }
-
-    public function setBanksForAllMerchants($input)
-    {
-        // @todo: finish this.
-        // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
     public function getFeeBearer()
@@ -620,22 +607,6 @@ class Service extends Base\Service
     public function sendDailyReportForAllMerchants($input)
     {
         return (new DailyReport)->sendReportForAllMerchants($input);
-    }
-
-    /**
-     * Send newsletter to a particular merchant
-     *
-     * @param  string $merchantId Merchant Id
-     * @param  [type] $input      [description]
-     * @return null
-     */
-    public function sendNewsletter($merchantId, $input)
-    {
-        (new Merchant\Validator)->validateInput('send_email', $input);
-
-        $template = $input['template'];
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id)->toArray();
     }
 
     protected function sendEmail($template, $subject, $data)

@@ -2,12 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
-use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Payzapp;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Payzapp\TransactionType;
 use RZP\Models\Card;
 

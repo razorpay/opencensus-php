@@ -4,13 +4,12 @@ namespace RZP\Models\Merchant;
 
 use Closure;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
@@ -83,6 +82,11 @@ class Repository extends Base\Repository
 
     public function fetchBySettlementScheduleId($settlementScheduleIds)
     {
+        if (is_array($settlementScheduleIds) === false)
+        {
+            $settlementScheduleIds = [$settlementScheduleIds];
+        }
+
         return $this->newQuery()
                     ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
                     ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)

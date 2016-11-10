@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement\Details;
 
+use RZP\Exception;
+
 class Component
 {
     const REFUND        = 'refund';

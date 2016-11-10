@@ -94,7 +94,7 @@ class CreateBankAccounts extends Migration
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
+                Table::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
         });
 
         Schema::drop(Table::BANK_ACCOUNT);

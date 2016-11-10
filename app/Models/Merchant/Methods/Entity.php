@@ -355,7 +355,7 @@ class Entity extends Base\PublicEntity
 
     public function setAirtelmoney($value)
     {
-        $this->setAttribute(self::Airtelmoney, $value);
+        $this->setAttribute(self::AIRTELMONEY, $value);
     }
 
     public function setFreecharge($value)

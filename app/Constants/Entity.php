@@ -5,7 +5,6 @@ namespace RZP\Constants;
 use App;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models;
@@ -39,14 +38,16 @@ class Entity
     const CUSTOMER              = 'customer';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
+    const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
+    const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
-    const DAILY_SETTLEMENT      = 'daily_settlement';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const ORG                   = 'org';
     const ROLE                  = 'role';
@@ -55,6 +56,7 @@ class Entity
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
 
+    const SETTLEMENT_DETAILS    = 'settlement_details';
 
     //
     // Gateway entities
@@ -109,9 +111,11 @@ class Entity
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,

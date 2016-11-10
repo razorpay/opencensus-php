@@ -23,8 +23,10 @@ class Table
     const FEATURE               = 'features';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
+    const FEE_BREAKUP           = 'fees_breakup';
     const EMI_PLAN              = 'emi_plans';
     const APP_TOKEN             = 'customer_apps';
+    const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';
