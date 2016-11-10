@@ -74,6 +74,21 @@ return [
         ],
     ],
 
+    'testDeleteAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test admin',
+                'email' => 'xyz@abc.com',
+                'username' => 'harshil',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testWeakPassword' => [
         'request' => [
             'url' => '/orgs/%s/admins',

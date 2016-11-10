@@ -12,7 +12,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'      => 'role',
+                // 'entity'      => 'role',
                 'name'        => 'manager',
                 'description' => 'Manager of roles',
                 'org_id'      => 'org_6dLbNSpv5XbCOF',
@@ -27,7 +27,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'      => 'role',
+                // 'entity'      => 'role',
                 'name'        => 'manager',
                 'description' => 'Manager of roles',
                 'org_id'      => 'org_6dLbNSpv5XbCOF',
