@@ -57,7 +57,7 @@
             </td>
             <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
             <td>
-              <a class="btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
+              <a class="btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="deleteOrgUser(row.id)">
                 <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
               </a>
               <a tooltip="Edit User" ng-click="openEditOrgUser(row.id)">

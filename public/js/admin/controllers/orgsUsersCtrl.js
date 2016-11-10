@@ -75,6 +75,28 @@ app.controller('OrgsUsersCtrl', [
       });
     }
 
+    $scope.deleteOrgUser = function(id) {
+      var request = $http.delete('/admin/generic', {
+        params: {
+          route_name: 'admin_delete',
+
+          url_params: {
+            '{id}': $scope.orgId,
+            '{adminId}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        /* TODO: change this */
+        if (data.success) {
+          $scope.users = $scope.users.filter(function (x) {
+            return x.id !== data.id
+          });
+          $scope.count = $scope.users.length;
+        }
+      });
+    }
+
 
   }
 ]).controller('newAdminModalCtrl', [
