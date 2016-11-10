@@ -53,13 +53,12 @@ return [
                 'methods' => [
                     'card' => true,
                     'netbanking' => true
-                ]
-            ]
+                ],
+            ],
         ],
         'response' => [
             'content' => [
-                
-            ]
-        ]
-    ]
+            ],
+        ],
+    ],
 ];

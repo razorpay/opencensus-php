@@ -531,10 +531,10 @@ class MerchantController extends Controller
     public function merchantMethodsBulkUpdate()
     {
         $input = Request::all();
+ 
         $data = (new Merchant\Service)->merchantMethodsBulkUpdate($input);
 
         return ApiResponse::json($data);
-
     }
 
     // --------------------- Credits API Handlers -----------------------------------------

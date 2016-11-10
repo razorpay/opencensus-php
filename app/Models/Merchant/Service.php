@@ -680,6 +680,7 @@ class Service extends Base\Service
 
             $response->push($paymentMethod);
         }
+
         return $response->toArray();
     }
 
