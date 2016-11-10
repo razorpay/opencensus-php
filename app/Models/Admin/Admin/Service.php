@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Org\AuthPolicy;
 
 class Service extends Base\Service
 {
@@ -24,9 +25,20 @@ class Service extends Base\Service
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByUsername($input['username']);
 
+        $validate = (new AuthPolicy\Service)
+                        ->validateLogin($admin);
+
+        if ($validate !== null)
+        {
+            return $validate;
+        }
+
         // Valid password ?
         if (Hash::check($input['password'], $admin->getPassword()))
         {
+            $admin->resetFailedAttempts();
+            $this->repo->saveOrFail($admin);
+
             $tokenAttributes = [
                 'token'      => str_random(40),
                 'expires_at' => Carbon::now()->addHours(1)->timestamp
@@ -40,6 +52,11 @@ class Service extends Base\Service
             $admin['token'] = $token->getToken();
 
             return $admin;
+        }
+        else
+        {
+            $admin->incrementFailedAttempts();
+            $this->repo->saveOrFail($admin);
         }
 
         return null;

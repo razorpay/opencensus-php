@@ -11,9 +11,8 @@ class Core extends Base\Core
     {
         $org = $this->repo->org->findOrFail($orgId);
 
-        $policy = new AuthPolicy\Entity;
-
-        (new AuthPolicy\Validator)->validate($input['password']);
+        (new AuthPolicy\Service)
+            ->validate($orgId, $input['password']);
 
         $admin = (new Entity)->build($input);
 

@@ -20,7 +20,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::EMAIL               => 'required|email|max:250|unique:admins',
         Entity::NAME                => 'required|alpha_space|between:3,100',
         Entity::USERNAME            => 'alpha_dash|between:3,50',
         Entity::PASSWORD            => 'between:6,50',

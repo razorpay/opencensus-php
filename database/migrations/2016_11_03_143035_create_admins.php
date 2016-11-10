@@ -71,6 +71,9 @@ class CreateAdmins extends Migration
             $table->integer(Admin::LAST_LOGIN_AT)
                   ->nullable();
 
+            $table->tinyInteger(Admin::FAILED_ATTEMPTS)
+                  ->nullable();
+
             $table->integer(Admin::PASSWORD_EXPIRY)
                   ->nullable();
 

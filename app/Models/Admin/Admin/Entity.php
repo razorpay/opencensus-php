@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const DISABLED                  = 'disabled';
     const LOCKED                    = 'locked';
     const LAST_LOGIN_AT             = 'last_login_at';
+    const FAILED_ATTEMPTS           = 'failed_attempts';
     const RECENT_PASSWORD           = 'recent_password';
     const PASSWORD_EXPIRY           = 'password_expiry';
     const EXPIRY_AT                 = 'expiry_at';
@@ -153,5 +154,44 @@ class Entity extends Base\PublicEntity
         $this->merchants()->save($merchant);
 
         return $merchant;
+    }
+
+    public function isInitialLogin()
+    {
+        return ($this->getLastLoginAt() === null);
+    }
+
+    public function getFailedAttempts()
+    {
+        return (int) $this->getAttribute(self::FAILED_ATTEMPTS);
+    }
+
+    public function incrementFailedAttempts()
+    {
+        $attempts = $this->getFailedAttemptsAttribute() + 1;
+
+        $this->setFailedAttempts($attempts);
+    }
+
+    public function resetFailedAttempts()
+    {
+        $this->setFailedAttempts(null);
+    }
+
+    public function setFailedAttempts($attempts)
+    {
+        $this->setAttribute(self::FAILED_ATTEMPTS, $attempts);
+    }
+
+    protected function getFailedAttemptsAttribute()
+    {
+        $attempts = $this->attributes[self::FAILED_ATTEMPTS];
+
+        if ($attempts !== null)
+        {
+            $attempts = (int) $attempts;
+        }
+
+        return $attempts;
     }
 }
