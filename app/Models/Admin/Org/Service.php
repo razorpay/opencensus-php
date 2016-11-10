@@ -29,7 +29,9 @@ class Service extends Base\Service
 
     public function getOrg(string $id)
     {
-        $org = $this->repo->org->findOrFailPublic($id);
+        $orgId = Entity::verifyIdAndStripSign($id);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
         return $org->toArrayPublic();
     }
@@ -41,7 +43,9 @@ class Service extends Base\Service
 
     public function editOrg(string $id, array $input)
     {
-        $org = $this->repo->org->findOrFailPublic($id);
+        $orgId = Entity::verifyIdAndStripSign($id);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
         $org->fill($input);
 
