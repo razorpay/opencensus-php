@@ -213,7 +213,7 @@ class Admin extends Entity
     public function oAuthLogin(array $params)
     {
         $relativeUrl = $this->getEntityUrl().'oauth_login';
-sd($params);
+
         return $this->request('POST', $relativeUrl, $params);
     }
 
@@ -224,9 +224,9 @@ sd($params);
         return $this->request('GET', $relativeUrl, $options);
     }
 
-    public function updateAdmin($orgId, $params)
+    public function updateAdmin($orgId, $adminId, $params)
     {
-        $relativeUrl = "orgs/$orgId/admins/{$params['id']}";
+        $relativeUrl = "orgs/$orgId/admins/$adminId";
 
         return $this->request('PUT', $relativeUrl, $params);
     }

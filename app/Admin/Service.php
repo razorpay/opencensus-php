@@ -99,18 +99,9 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        try
-        {
-            $data = $this->api->admin->oAuthLogin($input)->toArray();
+        $data = $this->api->admin->oAuthLogin($input)->toArray();
 
-
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-sd($error, $data);
-        return [$error, $data];
+        return $data;
     }
 
     public function loginWithGoogle($code, $googleService, $orgId)
@@ -139,12 +130,14 @@ sd($error, $data);
 
         if ($admin)
         {
-            $admin['oauth_access_token'] = $token->getAccessToken();
-            $admin['oauth_provider_id'] = $result->id;
+            $updateData = [
+                'oauth_access_token'    => $token->getAccessToken(),
+                'oauth_provider_id'     => $result->id
+            ];
 
             // 1. Save the data (oauth token and provider) to API
 
-            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin);
+            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin['id'], $updateData);
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token
@@ -155,9 +148,19 @@ sd($error, $data);
                 'oauth_provider_id'     => $updatedAdmin['oauth_provider_id']
             ];
 
-            $this->oAuthLogin($oAuthLoginInput);
+            try
+            {
+                $data = $this->oAuthLogin($oAuthLoginInput);
 
-            // Auth::guard('admin')->loginUsingId($admin->id);
+                // Auth::guard('admin')->loginUsingId($admin->id);
+                // We have the data now, just need to login the user
+                // $data['token']
+                Session::put('admin', $data);
+            }
+            catch (\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getMessage();
+            }
         }
         else
         {

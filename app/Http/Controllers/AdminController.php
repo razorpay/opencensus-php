@@ -14,6 +14,7 @@ use Input;
 use Config;
 use OAuthFacade;
 use Redirect;
+use Session;
 
 class AdminController extends Controller
 {
@@ -40,6 +41,7 @@ class AdminController extends Controller
     public function __construct()
     {
         $this->admin = Auth::guard('api')->user();
+        // sd($this->admin);
     }
 
     /**

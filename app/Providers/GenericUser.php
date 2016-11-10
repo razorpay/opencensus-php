@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\GenericUser;
+use Illuminate\Auth\GenericUser as AuthGenericUser;
 
-class GenericUser extends GenericUser
+class GenericUser extends AuthGenericUser
 {
     public function toArray()
     {
