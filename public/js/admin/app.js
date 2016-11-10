@@ -154,7 +154,7 @@ var app = angular.module('app', [
       templateUrl: 'tpl/admin/app_groups_list.html'
     }).state('app.groups.detail', {
       url: '/:id/detail',
-      templateUrl: 'tpl/admin/app_groups_detail.html'
+      templateUrl: 'tpl/admin/app_group_detail.html'
     }).state('app.permissions', {
       url: '/permissions',
       template: '<div ui-view class="fade-in-down smooth"></div>'
