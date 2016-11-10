@@ -12,7 +12,7 @@ return [
                 'username'           => 'harshil',
                 'password'           => 'test123456',
                 'remember_token'     => 'yes',
-                'access_token'       => 'oauth123',
+                'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
                 'employee_code'      => 'rzp_1',
                 'branch_code'        => 'krmgla',
@@ -28,7 +28,7 @@ return [
                 'username'           => 'harshil',
                 'password'           => 'test123456',
                 'remember_token'     => 'yes',
-                'access_token'       => 'oauth123',
+                'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
                 'employee_code'      => 'rzp_1',
                 'branch_code'        => 'krmgla',
@@ -63,7 +63,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'test',
+                'name' => 'test_admin',
                 'email' => 'xyz@abc.com',
                 'username' => 'harshil',
             ],

@@ -206,12 +206,15 @@ class Service extends Base\Service
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
-        $admin->build($input);
+        $admin->edit($input);
 
-        (new AuthPolicy\Service)
-            ->validate($admin, $input['password']);
+        if (isset($input['password']) === true)
+        {
+            (new AuthPolicy\Service)
+                ->validate($admin, $input['password']);
 
-        $admin->setOldPasswords();
+            $admin->setOldPasswords();
+        }
 
         $this->repo->saveOrFail($admin);
 

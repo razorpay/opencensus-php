@@ -45,7 +45,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->orgId, $admin->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
