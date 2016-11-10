@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
