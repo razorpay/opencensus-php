@@ -158,7 +158,9 @@ class AdminController extends Controller
 
     public function createAdmin($id)
     {
-        $data = (new Admin\Admin\Service)->createAdmin($id);
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->createAdmin($id, $input);
 
         return ApiResponse::json($data);
     }

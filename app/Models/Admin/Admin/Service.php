@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\Org\AuthPolicy;
+use RZP\Models\Admin\Org\AuthPolicy;
 
 class Service extends Base\Service
 {

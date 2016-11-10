@@ -342,8 +342,8 @@ $factory(\RZP\Models\Admin\Group\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Entity::class, [
-    'id'                 => '6dLbNSpv5bbbbb',
-    'name'               => 'test_group',
+    'id'                 => $faker->uniqueid,
+    'name'               => 'test_admin',
     'email'              => 'xyz@abc.com',
     'username'           => 'harshil',
     'password'           => 'test123456',
@@ -356,20 +356,6 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'location_code'      => '560030',
     'department_code'    => 'tech',
     'deleted_at'         => time(),
-    'org_id'             => '6dLbNSpv5XbCOD'
-]);
-
-$factory(\RZP\Models\Admin\Admin\Entity::class, [
-    'id'            =>  '6dLbNSpv5aaaaa',
-    'name'          =>  'Shashank',
-    'username'      =>  'shk',
-    'password'      =>  null,
-    'email'         =>  'shk@razorpay.com',
-    'remember_token'=>  null,
-    'org_id'        =>  '6dLbNSpv5XbCOD',
-    'access_token'  =>  null,
-    'oauth_provider_id' =>  null,
-    'deleted_at'    =>  null,
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
