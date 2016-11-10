@@ -343,7 +343,7 @@ $factory(\RZP\Models\Admin\Group\Entity::class, [
 
 $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'id'                 => $faker->uniqueid,
-    'name'               => 'test_admin',
+    'name'               => 'test admin',
     'email'              => 'xyz@abc.com',
     'username'           => 'harshil',
     'password'           => 'test123456',

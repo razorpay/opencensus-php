@@ -11,10 +11,10 @@ return [
             'url' => '/orgs/%s/admins',
             'method' => 'post',
             'content' => [
-                'name'               => 'testadmin',
+                'name'               => 'test admin',
                 'email'              => 'xyz@abc.com',
                 'username'           => 'harshil',
-                'password'           => 'alknhevowbn',
+                'password'           => 'random!12#',
                 'remember_token'     => 'yes',
                 'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
@@ -27,10 +27,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'               => 'test_admin',
+                'name'               => 'test admin',
                 'email'              => 'xyz@abc.com',
                 'username'           => 'harshil',
-                'password'           => 'test123456',
                 'remember_token'     => 'yes',
                 'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
@@ -67,7 +66,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'test_admin',
+                'name' => 'test admin',
                 'email' => 'xyz@abc.com',
                 'username' => 'harshil',
             ],
