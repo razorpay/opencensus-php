@@ -1,49 +1,52 @@
 <div ng-controller="RolesCtrl">
-<div class="bg-light lter b-b wrapper-md">
-  <h1 class="m-n font-thin h3">
-    Roles - Total {{count}}
-    <spinner class="inline"></spinner>
-  </h1>
-</div>
-<div class="wrapper-md">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      List of all Roles
-    </div>
-    <div class="row wrapper">
-      <div class="col-md-4 m-b-xs">
-        Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Roles - Total {{count}}
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of all Roles
       </div>
-       <div class="col-md-6">
-          <button id='addRoleButton' class='btn btn-default pull-right' ng-click="openCreateRoleModal()">
-            Add a Role
-          </button>
+      <div class="row wrapper">
+        <div class="col-md-6 m-b-xs">
+          Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
         </div>
-    </div>
-    <div>
-      <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
-        <thead>
-          <tr>
-            <th>Role Id</th>
-            <th>Name</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-repeat="row in roles" class="merchants-table-body">
-            <td><a ui-sref="app.roles.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
-            <td>{{row.name}}</td>
-            <td>{{row.description}}</td>
-<!--             <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td> -->
-          </tr>
-          <tr ng-show="roles.length === 0">
-            <td colspan="7">No Roles</td>
-          </tr>
-        </tbody>
-      </table>
+         <div class="col-md-6">
+            <button id='addRoleButton' class='btn btn-default pull-right' ng-click="openCreateRoleModal()">
+              Add a Role
+            </button>
+          </div>
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Role Id</th>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in roles" class="merchants-table-body">
+              <td><a ui-sref="app.roles.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
+              <td>{{row.name}}</td>
+              <td>{{row.description}}</td>
+  <!--        <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td> -->
+            </tr>
+            <tr ng-show="roles.length === 0">
+              <td colspan="7">No Roles</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-  <script type="text/ng-template" id="createRoleModal.html">
+</div>
+
+<script type="text/ng-template" id="createRoleModal.html">
     <div class="modal-header">
       <h3 class="modal-title">Add New Role</h3>
     </div>
@@ -52,13 +55,13 @@
           <div class="form-group">
             <label class="col-lg-4 control-label">Name:</label>
             <div class="col-lg-6">
-              <input type="text" name="name" placeholder="Role name" ng-model="role.name">
+              <input type="text" class="form-control" name="name" placeholder="Role name" ng-model="role.name">
             </div>
           </div>
           <div class="form-group">
             <label class="col-lg-4 control-label">Description:</label>
             <div class="col-lg-6">
-              <input type="text" name="description" placeholder="Role description" ng-model="role.description">
+              <input type="text"  class="form-control" name="description" placeholder="Role description" ng-model="role.description">
             </div>
           </div>
           </form>
@@ -70,5 +73,3 @@
       <button class="btn btn-primary modal-ok" ng-click="ok(role)">OK</button>
     </div>
   </script>
-</div>
-</div>
