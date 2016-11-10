@@ -20,24 +20,27 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($role);
 
-        $permIds = $input['permissions'];
-
-        // Perm IDs without sign
-        $newPermIds = [];
-
-        foreach ($permIds as $permId)
+        if (isset($input['permissions']) === true)
         {
-            $newPermIds[] = Permission\Entity::verifyIdAndStripSign($permId);
+            $permIds = $input['permissions'];
+
+            // Perm IDs without sign
+            $newPermIds = [];
+
+            foreach ($permIds as $permId)
+            {
+                $newPermIds[] = Permission\Entity::verifyIdAndStripSign($permId);
+            }
+
+            $perms = $this->repo->permission->retrieveByIds($newPermIds);
+
+            foreach ($perms as $perm)
+            {
+                $role->permissions()->attach($perm);
+            }
+
+            $this->repo->saveOrFail($role);
         }
-
-        $perms = $this->repo->permission->retrieveByIds($newPermIds);
-
-        foreach ($perms as $perm)
-        {
-            $role->permissions()->attach($perm);
-        }
-
-        $this->repo->saveOrFail($role);
 
         return $role;
     }

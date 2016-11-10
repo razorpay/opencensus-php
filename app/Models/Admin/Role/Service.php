@@ -16,17 +16,11 @@ class Service extends Base\Service
 
     public function getRole($orgId, $roleId)
     {
-        Org::verifyIdAndStripSign($orgId);
+        $orgId = Org::verifyIdAndStripSign($orgId);
 
-        Entity::verifyIdAndStripSign($roleId);
+        $roleId = Entity::verifyIdAndStripSign($roleId);
 
         $role = $this->repo->role->fetchRoleForOrg($roleId, $orgId);
-
-        $permissions = $role->permissions;
-
-        $role = $role->toArrayPublic();
-
-        $role['permissions'] = $permissions->toArrayPublic();
 
         return $role;
     }

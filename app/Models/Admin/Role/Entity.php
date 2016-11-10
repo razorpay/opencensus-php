@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::ORG_ID,
         self::CREATED_AT,
+        'permissions',
     ];
 
     protected $publicSetters = [

@@ -329,10 +329,16 @@ $factory(\RZP\Models\Admin\Org\Entity::class, [
     'auth_type'     => 'password',
 ]);
 
+$factory(\RZP\Models\Admin\Permission\Entity::class, [
+    'id'            => $faker->uniqueid,
+    'name'          => 'view_merchant_balance',
+    'description'   => 'permission to view balance',
+]);
+
 $factory(\RZP\Models\Admin\Role\Entity::class, [
     'id' => $faker->uniqueid,
-    'name' => 'test_role',
-    'description' => 'Role is in test',
+    'name' => 'manager',
+    'description' => 'Manager of roles',
 ]);
 
 $factory(\RZP\Models\Admin\Group\Entity::class, [

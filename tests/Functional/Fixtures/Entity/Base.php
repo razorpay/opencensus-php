@@ -53,6 +53,7 @@ class Base
         'org'           => \RZP\Models\Admin\Org\Entity::class,
         'group'         => \RZP\Models\Admin\Group\Entity::class,
         'admin'         => \RZP\Models\Admin\Admin\Entity::class,
+        'permission'    => \RZP\Models\Admin\Permission\Entity::class,
         'role'          => \RZP\Models\Admin\Role\Entity::class,
         'admin_token'   => \RZP\Models\Admin\Admin\Token\Entity::class,
         'fee_breakup'   => \RZP\Models\Transaction\FeeBreakup\Entity::class,
