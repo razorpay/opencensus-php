@@ -84,7 +84,7 @@ class ReconciliationGenerator
 
         foreach ($data as &$row)
         {
-            $newFields = $this->generateNewFields($date, $generateFailedReconciliations);
+            $newFields = $this->generateReconciliationFields($date, $generateFailedReconciliations);
 
             $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date']);
 
@@ -96,11 +96,12 @@ class ReconciliationGenerator
         return $data;
     }
 
-    protected function generateNewFields($date, $generateFailedReconciliations)
+    protected function generateReconciliationFields($date, $generateFailedReconciliations)
     {
         $utr = random_integer(10);
 
         $data = [
+            'Status Of transaction' => 'P',
             'UTR number'            => 'KKBKH1' . $utr,
             'Reject Reason'         => '',
             'DateTime'              => $date,
@@ -110,12 +111,7 @@ class ReconciliationGenerator
 
         if ($generateFailedReconciliations === true)
         {
-            $data['Status Of transaction'] = 'F';
             $data['Reject Reason']         = 'Dummy Reason';
-        }
-        else
-        {
-            $data['Status Of transaction'] = 'P';
         }
 
         return $data;
