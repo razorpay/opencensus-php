@@ -15,10 +15,10 @@ class MinLengthRule extends Base
 
     public function validate($admin, $password)
     {
-        if (strlen($password) < $minLength)
+        if (strlen($password) < $this->minLength)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Password should be atleast ' . $minLength . ' characters long');
+                'Password should be atleast ' . $this->minLength . ' characters long');
         }
     }
 }
