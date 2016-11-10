@@ -17,8 +17,6 @@ class ReconciliationTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/ReconciliationTestData.php';
-
         parent::setUp();
     }
 
