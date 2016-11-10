@@ -56,14 +56,6 @@ class Service extends Base\Service
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByEmail($input['email']);
 
-        $validate = (new AuthPolicy\Service)
-                        ->validateLogin($admin);
-
-        if ($validate !== null)
-        {
-            return $validate;
-        }
-
         // Valid token ?
         if (($admin->oauth_access_token === $input['oauth_access_token']) and
             ($admin->oauth_provider_id === $input['oauth_provider_id']))
