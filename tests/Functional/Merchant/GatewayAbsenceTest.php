@@ -260,7 +260,11 @@ class GatewayAbsenceTest extends TestCase
     {
         $content1 = $this->createGatewayAbsence();
 
-        $content2 = $this->createGatewayAbsence('netbanking_kotak');
+        $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+
+        $content2 = $this->createGatewayAbsence('netbanking_kotak', $tid);
 
         $from = $content1['from'];
 
@@ -317,13 +321,13 @@ class GatewayAbsenceTest extends TestCase
         $this->testData[$functionName]['request']['content']['to'] = $to;
     }
 
-    protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc')
+    protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc', $terminalId = null)
     {
         $from = time();
 
         $to = $from + 10;
 
-        return $this->__createGatewayAbsence($gatewayName, $from, $to);
+        return $this->__createGatewayAbsence($gatewayName, $from, $to, $terminalId);
     }
 
     protected function createGatewayAbsenceNullTo($gatewayName = 'netbanking_hdfc')
@@ -332,24 +336,31 @@ class GatewayAbsenceTest extends TestCase
 
         $to = null;
 
-        return $this->__createGatewayAbsence($gatewayName, $from, $to);
+        return $this->__createGatewayAbsence($gatewayName, $from, $to, null);
     }
 
-    protected function __createGatewayAbsence($gatewayName, $from, $to)
+    protected function __createGatewayAbsence($gatewayName, $from, $to, $terminalId)
     {
         $bank = $this->gatewayBankMap[$gatewayName];
 
         $method = $this->gatewayMethodName[$gatewayName];
 
+        $content = [
+            'gateway' => $gatewayName,
+            'reason_code'  => 'LOW_SUCCESS_RATE',
+            'issuer'  => $bank,
+            'from'  => $from,
+            'to' => $to,
+            'method' => $method
+        ];
+
+        if (empty($terminalId) === false)
+        {
+            $content['terminal_id'] = $terminalId;
+        }
+
         $request = [
-            'content' => [
-                'gateway' => $gatewayName,
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'issuer'  => $bank,
-                'from'  => $from,
-                'to' => $to,
-                'method' => $method
-            ],
+            'content' => $content,
             'method' => 'POST',
             'url' => '/gateway/absence'
         ];

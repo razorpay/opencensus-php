@@ -68,8 +68,74 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+    
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+    
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getReasonCode()
+    {
+        return $this->getAttribute(self::REASON_CODE);
+    }
+    
+    public function getCardType()
+    {
+        return $this->getAttribute(self::CARD_TYPE);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
+    }
+    
+    public function getPartial()
+    {
+        return $this->getAttribute(self::PARTIAL);
+    }
+
+    public function getScheduled()
+    {
+        return $this->getAttribute(self::SCHEDULED);
+    }
+    
+    public function getFrom()
+    {
+        return $this->getAttribute(self::FROM);
+    }
+
+    public function getTo()
+    {
+        return $this->getAttribute(self::TO);
+    }
+
     public function terminal()
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
+
+    public function getMerchant()
+    {
+        if ($this->terminal !== null)
+        {
+            return $this->terminal->merchant;
+        }
+        
+        return null;
+    }
+
 }

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\GatewayStatus\Absence;
 
 class Checkout
 {
@@ -33,6 +34,8 @@ class Checkout
         $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+
+        $data['gateway_status'] = (new Absence\Core)->getFormattedCheckoutData($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
