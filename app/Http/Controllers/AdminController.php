@@ -163,13 +163,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function editAdmin($orgId, $adminId)
-    {
-        $data = (new Admin\Admin\Service)->editAdmin($orgId, $adminId);
-
-        return ApiResponse::json($data);
-    }
-
     public function deleteAdmin($id, $adminId)
     {
         $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
