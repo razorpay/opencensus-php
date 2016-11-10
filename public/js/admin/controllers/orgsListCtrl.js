@@ -21,7 +21,10 @@ app.controller('OrgsListCtrl', [
     };
 
     $scope.openEditOrgModal = function (id) {
-      $scope.selected = $scope.organizations.filter(function(x) { return x['id'] === id; });
+      $scope.selected = $scope.organizations.filter(function(x) {
+        return x['id'] === id;
+      });
+
       var modalInstance = $modal.open({
         templateUrl: 'editOrgModalContent.html',
         controller: 'editOrgModalCtrl',
@@ -136,6 +139,20 @@ app.controller('OrgsListCtrl', [
 
       request.success(function (data) {
         if (data.success) {
+          // Update the org model (todo: make this a helper)
+          
+          var index = null;
+
+          $scope.organizations.forEach(function (v, i) {
+            if (v.id === data.data.id) {
+              index = i;
+            }
+          });
+
+          if (index) {
+            $scope.organizations[index] = data.data;
+          }
+
           $scope.alerts.addAlert('success', 'Organization updated', true);
         }
         else {
