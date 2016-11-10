@@ -65,7 +65,7 @@ class CreateAdmins extends Migration
             $table->boolean(Admin::LOCKED)
                   ->default(0);
 
-            $table->text(Admin::RECENT_PASSWORD)
+            $table->text(Admin::OLD_PASSWORDS)
                   ->nullable();
 
             $table->integer(Admin::LAST_LOGIN_AT)

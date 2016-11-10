@@ -13,7 +13,7 @@ class MinLengthRule extends Base
         $this->minLength = $minLength;
     }
 
-    public function validate(string $password)
+    public function validate($admin, $password)
     {
         if (strlen($password) < $minLength)
         {

@@ -13,7 +13,7 @@ class EnforceInitialPasswordChangeRule extends Base
         $this->enforceInitialPasswordChange = $enforceInitialPasswordChange;
     }
 
-    public function validate($admin)
+    public function validate($admin, $password)
     {
         if (($admin->isInitialLogin() === true) and
             ($this->enforceInitialPasswordChange === true))

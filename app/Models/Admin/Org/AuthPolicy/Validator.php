@@ -24,11 +24,16 @@ class Validator extends Base\Validator
         return $this;
     }
 
-    public function validate($password, $op = 'create')
+    public function validate($admin, $password, $op = 'create')
     {
         foreach ($this->policy->rules($op) as $rule)
         {
-            $rule->validate($password);
+            $response = $rule->validate($admin, $password);
+
+            if ($response !== null)
+            {
+                return $response;
+            }
         }
     }
 }

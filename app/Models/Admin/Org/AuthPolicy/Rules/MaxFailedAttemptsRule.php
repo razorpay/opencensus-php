@@ -13,10 +13,13 @@ class MaxFailedAttemptsRule extends Base
         $this->maxFailedAttempts = $maxFailedAttempts;
     }
 
-    public function validate($admin)
+    public function validate($admin, $password)
     {
         if ($admin->getFailedAttempts() > $maxFailedAttempts)
         {
+            $admin->disable();
+            $admin->saveOrFail();
+
             throw new Exception\BadRequestValidationFailureException(
                 'You have exceeded maxmium number of login attempts.');
         }

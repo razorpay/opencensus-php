@@ -20,23 +20,23 @@ class Service extends Base\Service
         return $policy->toArrayPublic();
     }
 
-    public function validate($organisationId, $password)
+    public function validate($admin, $password)
     {
         $policy = new Entity;
 
         $validator = new Validator;
 
         return $validator->setPolicy($policy)
-                         ->validate($password);
+                         ->validate($admin, $password);
     }
 
-    public function validateLogin($admin)
+    public function validateLogin($admin, $password)
     {
         $policy = new Entity;
 
         $validator = new Validator;
 
         return $validator->setPolicy($policy)
-                         ->validate($admin, 'login');
+                         ->validate($admin, $password, 'login');
     }
 }

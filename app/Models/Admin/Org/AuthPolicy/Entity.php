@@ -116,6 +116,16 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    public function org()
+    {
+        return $this->hasOne('RZP\Models\Org\Entity');
+    }
+
+    public function getMaxPasswordToRetain()
+    {
+        return $this->getAttribute(self::MAX_PASSWORD_RETAIN);
+    }
+
     public function rules($operation = 'create')
     {
         $rules = [];

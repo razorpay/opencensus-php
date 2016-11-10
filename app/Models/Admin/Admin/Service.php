@@ -20,13 +20,13 @@ class Service extends Base\Service
 
     public function login($input)
     {
-        // TODO: add validation for username and password (required fields)
+        (new Validator)->validateCredentials($input);
 
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByUsername($input['username']);
 
         $validate = (new AuthPolicy\Service)
-                        ->validateLogin($admin);
+                        ->validateLogin($admin, $input['password']);
 
         if ($validate !== null)
         {
@@ -206,7 +206,12 @@ class Service extends Base\Service
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
-        $admin->fill($input);
+        $admin->build($input);
+
+        (new AuthPolicy\Service)
+            ->validate($admin, $input['password']);
+
+        $admin->setOldPasswords();
 
         $this->repo->saveOrFail($admin);
 
