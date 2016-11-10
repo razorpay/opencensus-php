@@ -243,17 +243,8 @@ class Reconciler2
         }
         else
         {
-            if ($status === Settlement\Status::FAILED)
-            {
-                $failureHandler = new Failurehandler($setl);
-
-                $failureHandler->markFailed();
-            }
-            else
-            {
-                $setl->setStatus($status);
-                $this->setlRepo->save($setl);
-            }
+            $setl->setStatus($status);
+            $this->setlRepo->save($setl);
             $setl->transaction->setReconciledAt($this->reconciledAt);
             $this->txnRepo->save($setl->transaction);
         }

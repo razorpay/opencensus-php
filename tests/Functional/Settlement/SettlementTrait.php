@@ -89,12 +89,12 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile($setlFile)
+    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = true)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
         $request = [
-            'url' => '/settlements/reconcile/generate',
+            'url' => '/settlements/reconcile/generate'.'?failed_recons='.(string) $generateFailedReconciliations,
             'files' => [
                 'file' => $uploadedFile,
             ],

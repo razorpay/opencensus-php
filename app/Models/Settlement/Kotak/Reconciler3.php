@@ -141,7 +141,6 @@ class Reconciler3
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
-
         return $response;
     }
 
@@ -166,6 +165,7 @@ class Reconciler3
         if ($status === 'P')
         {
             $utr = $row['UTR number'];
+
 
             if (empty($failureReason) === true)
             {
@@ -202,15 +202,16 @@ class Reconciler3
         }
         else
         {
+            $setl->setUtr($utr);
+
             if ($status === Settlement\Status::FAILED)
             {
-                $failureHandler = new Failurehandler($setl);
+                $failureHandler = (new Settlement\Failurehandler($setl));
 
                 $failureHandler->markFailed($failureReason);
             }
             else
             {
-                $setl->setUtr($utr);
                 $setl->setStatus($status);
                 $setl->setFailureReason($failureReason);
 

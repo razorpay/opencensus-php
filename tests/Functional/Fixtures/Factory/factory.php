@@ -166,6 +166,7 @@ $factory(\RZP\Models\Adjustment\Entity::class, [
     'channel' => 'kotak',
     'description' => $faker->string,
     'transaction_id' => 'factory:Models\Transaction\Entity',
+    'settlement_id' => 'factory:Models\Settlement\Entity'
 ]);
 
 $factory(\RZP\Gateway\Hdfc\Entity::class, [

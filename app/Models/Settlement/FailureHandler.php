@@ -5,7 +5,7 @@ namespace RZP\Models\Settlement;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Trace;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FailureHandler
@@ -20,9 +20,11 @@ class FailureHandler
 
         $this->repo = $app['repo'];
 
+        $this->trace = $app['trace'];
+
         $this->setl = $setl;
 
-        $this->merchant = $setl->merchant();
+        $this->merchant = $setl->merchant;
     }
 
     public function markFailed($reason = null)
@@ -48,7 +50,7 @@ class FailureHandler
 
         $this->sendSettlementFailureNotification();
 
-        Trace::error(TraceCode::SETTLEMENT_MERCHANT_SETL_FAILED);
+        $this->trace->error(TraceCode::SETTLEMENT_MERCHANT_SETL_FAILED);
     }
 
     protected function newAdjustmentEntity($desc)
@@ -77,6 +79,6 @@ class FailureHandler
 
     protected function sendSettlementFailureNotification()
     {
-        // TODO: Implementation to be added
+        // TODO: Merchant mailer notification to be added
     }
 }
