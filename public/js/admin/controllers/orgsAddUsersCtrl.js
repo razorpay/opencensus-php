@@ -13,6 +13,30 @@ app.controller('OrgsAddUsersCtrl', [
 
     $scope.user = {};
 
+    $scope.addAdminUser = function(user) {
+      var request = $http.post('admin/generic/', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'admin_create',
+          url_params: {
+            '{id}': 'org_6dLbNSpv5XbCOF', //TODO Add actual ids
+          }
+        },
+        data: {
+          body: user
+        }
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Admin created successfully.', true);
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     /**
      * Actions
      */

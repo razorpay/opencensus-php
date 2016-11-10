@@ -102,9 +102,11 @@ app.controller('GroupDetailCtrl', [
             '{groupId}': 'grp_6euDnqS4zQR4ke'
           }
         },
-        body: {
-            'admin_ids': [admin.newAdminId]
+        data: {
+          body: {
+            admin_ids: [admin.newAdminId]
           }
+        }
       });
       request.success(function (data) {
         if (data.success) {

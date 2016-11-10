@@ -22,6 +22,7 @@ return [
     'admin_get_multiple'                => 'orgs/{id}/admins',
     'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
     'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
+    'admin_create'                      => 'orgs/{id}/admins',
 
 
     // Permissions
