@@ -3,7 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Models\Base;
-use RZP\Models\Org\AuthPolicy;
+use RZP\Models\Admin\Org\AuthPolicy;
 
 class Core extends Base\Core
 {
