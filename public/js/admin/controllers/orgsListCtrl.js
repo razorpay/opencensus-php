@@ -113,7 +113,7 @@ app.controller('OrgsListCtrl', [
       });
     };
 
-    $scope.fetchOrgById('6dLbNSpv5XbCOG');
+    $scope.fetchOrgById('org_6dLbNSpv5XbCOG');
 
     // Edit Organization
 
@@ -176,10 +176,8 @@ app.controller('OrgsListCtrl', [
   function ($scope, $modalInstance, $http, current) {
     $scope.organization = jQuery.extend({
       auth_type: 'password',
-      route_name: 'org_create'
+      route_name: 'org_edit'
     }, current);
-
-    console.log('org', $scope.organization);
 
     $scope.ok = function (organization) {
       $modalInstance.close(organization);
@@ -188,4 +186,4 @@ app.controller('OrgsListCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
-])
+]);
