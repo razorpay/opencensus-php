@@ -19,7 +19,6 @@ class Handler extends Base\Handler
         parent::__construct();
 
         $this->config = $this->app['config']->get('aws');
-        $this->config['mock'] = false;
     }
 
     public static function getClient()
@@ -40,7 +39,7 @@ class Handler extends Base\Handler
             return $fileDetails['path'];
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -67,7 +66,7 @@ class Handler extends Base\Handler
             return $filePath;
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -96,7 +95,7 @@ class Handler extends Base\Handler
             return '';
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -118,7 +117,7 @@ class Handler extends Base\Handler
 
     public function delete($bucket, $key)
     {
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -145,7 +144,7 @@ class Handler extends Base\Handler
             return $key;
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
