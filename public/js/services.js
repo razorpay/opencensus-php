@@ -396,4 +396,16 @@ angular.module('app.services', [])
     prev: $.noop,
     stop: $.noop
   };
+})
+.factory('permissionsFactory', function () {
+  var _permissions = {};
+  return {
+    getPermissions: function () {
+      return _permissions;
+    },
+    setPermissions: function(permissions) {
+      console.log("Setting Permissions", permissions);
+      _permissions = permissions;
+    }
+  };
 });

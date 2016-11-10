@@ -1,0 +1,147 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Users
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="OrgsUsersCtrl">
+    <div class="panel-heading">
+      List of all Users
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="panel-body b-b b-light">
+        <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div>
+        <div class="col-md-6">
+          <a ui-sref='app.adduser' id='addAdminBtn' class='btn btn-default pull-right'>
+            <i class="fa fa-user-plus"></i>
+            Add new User
+          </a>
+        </div>
+    </div>
+    <div>
+      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table-responsive table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Employee Code</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th data-hide="phone,tablet">Department Code</th>
+            <th data-hide="phone,tablet">Branch Code</th>
+            <th data-hide="phone,tablet">Location Code</th>
+            <th data-hide="phone,tablet">Superviser Code</th>
+            <th data-hide="phone,tablet">Locked</th>
+            <th data-hide="phone,tablet">Disabled</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in users">
+            <td>{{row.employee_code}}</td>
+            <td>{{row.name}}</td>
+            <td>{{row.username}}</td>
+            <td>{{row.email}}</td>
+            <td>{{row.department_code}}</td>
+            <td>{{row.branch_code}}</td>
+            <td>{{row.location_code}}</td>
+            <td>{{row.supervisor_code}}</td>
+            <td>
+              <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
+            </td>
+            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
+            <td>
+              <a class="btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
+                <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
+              </a>
+              <a tooltip="Edit User" ng-click="openEditOrgUser(row.id)">
+                <i class="fa fa-pencil-square"></i>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="text-center">
+                <ul class="pagination"></ul>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="editOrgUserModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Admin</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="name" class="col-lg-2 control-label">Name</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="name" ng-model="user.name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email" class="col-lg-2 control-label">Email</label>
+        <div class="col-lg-10" >
+          <input type="email" class="form-control m-b" name="email" ng-model="user.email" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="username" class="col-lg-2 control-label">Username</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="username" ng-model="user.username" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="department_code" class="col-lg-2 control-label">Department Code</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="department_code" ng-model="user.department_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="branch_code" class="col-lg-2 control-label">Branch Code</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="branch_code" ng-model="user.branch_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="location_code" class="col-lg-2 control-label">Location Code</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="location_code" ng-model="user.location_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="supervisor_code" class="col-lg-2 control-label">Superviser Code</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="supervisor_code" ng-model="user.supervisor_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="disabled" class="col-lg-2 control-label">Disabled</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" name="disabled" ng-model="user.disabled" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="locked" class="col-lg-2 control-label">Locked</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" name="locked" ng-model="user.locked" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(user)">OK</button>
+  </div>
+</script>

@@ -9,6 +9,7 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
+use App\Mailers\MiscMailer;
 use App\Session as SessionTable;
 
 use Auth;
@@ -477,11 +478,11 @@ sd($update);
         return [[], $data];
     }
 
-    public function fetchMerchantFeatures($id)
+    public function fetchEntityFeatures($entityId)
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->getFeatures()->toArray();
+        $response = $this->api->feature->getFeatures($entityId);
 
         return [[], $response];
     }
@@ -1928,13 +1929,9 @@ sd($update);
         $merchant->tag($tag);
     }
 
-    public function syncMerchantFeatures($merchantId, $input)
+    public function addEntityFeatures($entityType, $entityId, $input)
     {
-        //Send the input data to api for persistance
         $error = $response = array();
-
-        $error = (new Admin\Validator)->validateInput('add_features', $input)
-            ->messages();
 
         if (!empty($error))
         {
@@ -1945,11 +1942,13 @@ sd($update);
 
         try
         {
-            $params = array('features' => $input['features']);
+            $params = array('names'             => explode(",", $input['features']),
+                            'entity_type'       => $entityType,
+                            'entity_id'         => $entityId);
 
-            $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
+            $response = $this->api->feature->setFeatures($params);
 
-            $features = $this->api->merchant->fetch($merchantId)->getFeatures()->toArray();
+            $features = $this->api->feature->getFeatures($entityId);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1958,13 +1957,63 @@ sd($update);
 
         if (empty($error))
         {
-            $merchant = Merchant\Entity::findOrFail($merchantId);
-            $merchant->retag(array_merge($features,$merchant->tags));
-            $merchant['features'] = $features;
-            return [null, $merchant->toArray()];
+            $this->retagMerchant($entityId, $features);
+
+            return [null, $features];
         }
 
         return array($error, null);
+    }
+
+    public function deleteEntityFeature($entityId, $featureName)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->feature->deleteFeature($entityId, $featureName);
+
+            $features = $this->api->feature->getFeatures($entityId);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if (empty($error))
+        {
+            $this->removeMerchantTag($entityId, $featureName);
+
+            return [null, $features];
+        }
+
+        return [$error, null];
+    }
+
+    private function removeMerchantTag($entityId, $featureName)
+    {
+        $merchant = Merchant\Entity::findOrFail($entityId);
+
+        $merchant->untag($featureName);
+    }
+
+    private function retagMerchant($entityId, $features)
+    {
+        $merchant = Merchant\Entity::findOrFail($entityId);
+
+        $featureNames = $this->getFeatureNames($features['assigned_features']);
+
+        $merchant->retag(array_merge($featureNames, $merchant->tags));
+    }
+
+    private function getFeatureNames($features)
+    {
+        $featureNames = array_map(function ($feature)
+        {
+            return $feature['name'];
+        }, $features);
+
+        return $featureNames;
     }
 
     public function getMerchantTags($merchantId)
@@ -2242,6 +2291,43 @@ sd($update);
         $this->setApiCredentials();
 
         return $this->api->org->fetch($orgId)->toArray();
+    }
+
+    public function sendInvitation($input)
+    {
+        $errors = [];
+        $data = null;
+
+        $admin = Auth::guard('admin')->user();
+
+        if ($admin->email === $input['contact_email'])
+        {
+            $errors[] = static::SELF_INVITE_NOT_ALLOWED;
+        }
+
+        if (empty($errors))
+        {
+            $this->createInviteAndSendEmail($admin, $input);
+        }
+
+        return [$errors, $data];
+    }
+
+    protected function createInviteAndSendEmail(Admin\Entity $admin, $input)
+    {
+        // This only creates a new invitation entity
+        $invitation = $admin->inviteMerchantThroughEmail($input);
+
+        $this->sendInvitationEmail($invitation, $admin);
+    }
+
+    protected function sendInvitationEmail($invitation, $admin)
+    {
+        $mailer = new MiscMailer();
+
+        $mailer
+            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+            ->queueAndDeliver();
     }
 
 }

@@ -33,7 +33,7 @@ class RawApiRequest
      * @param array $auth of auth (proxy|admin)
      * @param string $path relative path of the request
      */
-    function __construct($input, $path)
+    function __construct($input, $path, $autoBuildQuery = true)
     {
         // Increase the time limit
         set_time_limit(600);
@@ -53,7 +53,7 @@ class RawApiRequest
         $this->input = $input;
         $this->path = $path;
 
-        if (!empty(Request::query()))
+        if (!empty(Request::query()) and $autoBuildQuery)
         {
             $this->path .= '?' . http_build_query(Request::query());
         }
@@ -69,6 +69,10 @@ class RawApiRequest
                 break;
 
             case 'admin':
+                $this->setApiCredentials($input['mode']);
+                break;
+
+            case 'internal':
                 $this->setApiCredentials($input['mode']);
                 break;
         }
@@ -168,6 +172,8 @@ class RawApiRequest
             $this->prepareRequest();
             $method = $this->input['method'];
             $response = $this->client->$method($this->path, $this->params)->json();
+
+            return [null, $response];
         }
         // This captures all the errors that might happen for now
         catch(\GuzzleHttp\Exception\ConnectException $e)
@@ -192,6 +198,7 @@ class RawApiRequest
         {
             $errors = [$e->getMessage()];
         }
-        return [$errors, $response];
+
+        return [$errors, null];
     }
 }

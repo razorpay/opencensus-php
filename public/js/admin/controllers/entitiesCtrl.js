@@ -181,6 +181,14 @@ app.controller('EntitiesCtrl', [
         RefundId: ['Billdesk Refund Id'],
         TxnReferenceNo: ['Txn Reference No']
       },
+      batch: {
+        merchant_id: ['Merchant Id'],
+        status: [
+          'created',
+          'processing',
+          'processed'
+        ],
+      },
       card: {
         global_card_id: ['Global Card Id'],
         iin: ['IIN'],
@@ -227,6 +235,11 @@ app.controller('EntitiesCtrl', [
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
+      },
+      feature: {
+        entity_id: ['Entity Id'],
+        entity_type: ['Entity Type'],
+        name: ['Name']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -407,14 +420,6 @@ app.controller('EntitiesCtrl', [
       },
       webhook: {
         merchant_id: ['Merchant Id'],
-      },
-      batch: {
-        merchant_id: ['Merchant Id'],
-        status: [
-          'created',
-          'processing',
-          'processed'
-        ],
       }
     };
 

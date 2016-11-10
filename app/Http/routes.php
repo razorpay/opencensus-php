@@ -140,6 +140,21 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
 });
 
+Route::group([], function()
+{
+    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
+    Route::group([], function()
+    {
+        Route::post('/user/signin', 'UserController@postSignin');
+        Route::post('/user/register', 'UserController@postRegister');
+        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
+        Route::post('/user/password/reset', 'PasswordController@postRemind');
+        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
+
+        Route::post('/user/track_lead', 'UserController@trackLead');
+    });
+});
+
 Route::group(['middleware'  =>  'slack'], function ()
 {
     Route::post('/slack', 'AdminController@postSlackQuery');
@@ -154,10 +169,13 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
     Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
-    Route::get('/admin/merchant/{id}/features', 'AdminController@getMerchantFeatures');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
     Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
+
+    Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
+    Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
+    Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature');
 
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
@@ -197,7 +215,6 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
     Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
     Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-    Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
     Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
     Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
     Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
@@ -276,6 +293,12 @@ Route::group(['middleware'  =>  'admin'], function()
             ->where('format', 'csv');
     // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
+
+    Route::get('/admin/generic', 'GenericController@getGeneric');
+    Route::post('/admin/generic', 'GenericController@postGeneric');
+    Route::put('/admin/generic', 'GenericController@putGeneric');
+    Route::delete('/admin/generic', 'GenericController@deleteGeneric');
+    Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
 });
 
 Route::group(['middleware' => ['auth.internal']], function()

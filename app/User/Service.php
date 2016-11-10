@@ -15,6 +15,7 @@ use App\Invitation;
 use App\Merchant;
 use App\MerchantDetails;
 use App\User;
+use App\Lead;
 
 use Queue;
 
@@ -100,6 +101,8 @@ class Service extends Base\Service
         if (! $user)
         {
             $user = $this->buildUserEntity($input);
+
+            $this->updateLeadIfExists($user);
         }
 
         // These two branches are exclusive
@@ -125,6 +128,38 @@ class Service extends Base\Service
 
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
+    }
+
+    public function createLead($input)
+    {
+        $error = $data = null;
+
+        $lead = new Lead\Entity;
+
+        $error = $lead->build($input);
+
+        if (! empty($error))
+        {
+            $error = array_values($error);
+        }
+
+        $lead->save();
+
+        return [$error, null];
+    }
+
+    public function updateLeadIfExists($user)
+    {
+        // Update Leads as well
+        $lead = Lead\Entity::where('email', $user->email)->first();
+
+        if (! empty($lead))
+        {
+            $lead->registered = true;
+            $lead->registered_at = $user->created_at->timestamp;
+
+            $lead->save();
+        }
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Admin;
 
 use App\Base;
+use App\AdminLead;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -80,5 +81,32 @@ class Entity extends Base\Entity implements AuthenticatableContract, Authorizabl
     {
         $this->superadmin = 1;
         $this->save();
+    }
+
+    public function inviteMerchantThroughEmail($input)
+    {
+        $formData = $this->getFormDataFromInput($input);
+
+        $lead = $this->leads()->create([
+            'admin_id'   => $this->id,
+            'merchant_email'      => $input['contact_email'],
+            'token'      => str_random(40),
+            'form_data'  => $formData,
+            'created_at' => time(),
+            'updated_at' => time(),
+        ]);
+
+        return $lead;
+    }
+
+    protected function getFormDataFromInput($input)
+    {
+        return json_encode($input);
+    }
+
+    public function leads()
+    {
+        return $this->hasMany(AdminLead\Entity::class)
+                    ->orderBy('created_at', 'desc');
     }
 }

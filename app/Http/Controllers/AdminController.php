@@ -381,9 +381,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getMerchantFeatures($id)
+    public function getEntityFeatures($entityId)
     {
-        list($error, $data) = (new Admin\Service)->fetchMerchantFeatures($id);
+        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -743,14 +743,23 @@ class AdminController extends Controller
             ->tagMerchant($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
+
     }
 
-    public function syncMerchantFeatures($merchantId)
+    public function addEntityFeatures($entityType, $entityId)
     {
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)
-            ->syncMerchantFeatures($merchantId, $input);
+            ->addEntityFeatures($entityType, $entityId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function deleteEntityFeature($entityId, $featureName)
+    {
+        list($error, $response) = (new Admin\Service)
+            ->deleteEntityFeature($entityId, $featureName);
 
         return AppResponse::jsonResponse($error, $response);
     }
@@ -925,6 +934,15 @@ class AdminController extends Controller
         list($error, $response) = (new Admin\Service)->deleteMerchantCredit($merchantId, $creditId, $input);
 
         return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function postSendMerchantInvitation()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendInvitation($input);
+
+        return AppResponse::jsonResponse($error);
     }
 
     // ----- /Credits -----
