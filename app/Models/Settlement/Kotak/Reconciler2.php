@@ -245,6 +245,7 @@ class Reconciler2
         {
             $setl->setStatus($status);
             $this->setlRepo->save($setl);
+
             $setl->transaction->setReconciledAt($this->reconciledAt);
             $this->txnRepo->save($setl->transaction);
         }
