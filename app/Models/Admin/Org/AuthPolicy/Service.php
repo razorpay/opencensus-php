@@ -6,11 +6,11 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function __construct(Core $core)
+    public function __construct()
     {
         parent::__construct();
 
-        $this->core = $core;
+        $this->core = new Core;
     }
 
     public function create(array $input)
