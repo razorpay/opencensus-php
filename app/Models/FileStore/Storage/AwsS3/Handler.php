@@ -11,7 +11,6 @@ use RZP\Models\FileStore\Storage\Base;
 
 class Handler extends Base\Handler
 {
-
     protected $config;
 
     public function __construct()
@@ -23,7 +22,7 @@ class Handler extends Base\Handler
 
     public static function getClient()
     {
-        $awsConfig = config('aws');
+        $awsConfig = Config::get('aws');
 
         $awsConfig['region'] = $awsConfig['bucket_region'];
 
