@@ -206,7 +206,21 @@ class Admin extends Entity
     public function passwordLogin(array $params)
     {
         $relativeUrl = $this->getEntityUrl().'password_login';
-        
+
         return $this->request('POST', $relativeUrl, $params);
+    }
+
+    public function getByEmail($orgId, $options)
+    {
+        $relativeUrl = "orgs/$orgId/admins/get_by_attr";
+
+        return $this->request('GET', $relativeUrl, $options);
+    }
+
+    public function updateAdmin($orgId, $params)
+    {
+        $relativeUrl = "orgs/$orgId/admins/{$params['id']}";
+
+        return $this->request('PUT', $relativeUrl, $params);
     }
 }

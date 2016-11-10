@@ -24,8 +24,8 @@ class AdminController extends Controller
     // Org domain => Org ID
     // We'll hardcode this for now
     const ORG_CHART = [
-        'dashboard.razorpay.dev' => '6dLbNSpv5XbCOF',
-        'heimdall.razorpay.dev'=> '6dLbNSpv5XbCOG',
+        'dashboard.razorpay.dev' => 'org_6dLbNSpv5XbCOG',
+        'heimdall.razorpay.dev'=> 'org_6dLbNSpv5XbCOG',
     ];
 
     /*
@@ -56,14 +56,26 @@ class AdminController extends Controller
 
         $org = $this->getOrg();
 
+        $code = Input::get('code');
+
+        if (! empty($code))
+        {
+            $oauth = $this->triggerGoogleOAuth($code);
+
+            if (! empty($oauth))
+            {
+                return $oauth;
+            }
+        }
+
         switch($org['auth_type'])
         {
             case 'google_auth':
                 return redirect($this->getGoogleOAuthUrl());
-            case 'password':
-
-                return redirect('/admin/#access/auth/password');
         }
+
+        // Password login by default
+        return redirect('/admin/#access/auth/password');
     }
 
     /**
@@ -82,15 +94,17 @@ class AdminController extends Controller
         return (string) $googleService->getAuthorizationUri();
     }
 
-    public function triggerGoogleOAuth()
+    public function triggerGoogleOAuth($code)
     {
-        $code = Input::get('code');
         $googleService = OAuthFacade::consumer('Google');
 
         // if code is provided get user data and sign in
         if ($code !== null or env('OAUTH_MOCK') === true)
         {
-            $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
+            // Get Current Org first
+            $org = $this->getOrg();
+
+            $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
             if (empty($error))
             {
@@ -143,6 +157,7 @@ class AdminController extends Controller
     protected function getOrg()
     {
         $domain = request()->server->get('SERVER_NAME');
+
         return (new Admin\Service)->getOrg(self::ORG_CHART[$domain]);
     }
 

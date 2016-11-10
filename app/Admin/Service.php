@@ -92,8 +92,10 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function loginWithGoogle($code, $googleService)
+    public function loginWithGoogle($code, $googleService, $orgId)
     {
+        $this->setApiCredentials();
+
         $error = [];
         $token = $googleService->requestAccessToken($code);
 
@@ -106,15 +108,26 @@ class Service extends Base\Service
             return App::abort(404);
         }
 
-        $admin = Admin\Entity::where('email', $result->email)->first();
+        // Fetch the admin with the email
+        // $admin = Admin\Entity::where('email', $result->email)->first();
+        // TODO: can throw exception
+        $admin = $this->api
+                      ->admin
+                      ->getByEmail($orgId, ['email' => $result->email])
+                      ->toArray();
 
         if ($admin)
         {
-            $admin->access_token = $token->getAccessToken();
-            $admin->google_id = $result->id;
-            $admin->password = '';
+            $admin['oauth_access_token'] = $token->getAccessToken();
+            $admin['oauth_provider_id'] = $result->id;
 
-            $admin->save();
+            // 1. Save the data to API
+sd($admin);
+            $update = $this->api->admin->updateAdmin($orgId, $admin);
+sd($update);
+            // 2. Login the user to dashboard
+
+            // Attempt login into API first
 
             Auth::guard('admin')->loginUsingId($admin->id);
         }
