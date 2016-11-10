@@ -2,14 +2,14 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
+use App;
+
 use RZP\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
-use App;
 
 class Validator extends Base\Validator
 {
@@ -34,7 +34,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'to', 'issuer', 'card_type', 'network', 'method',//'terminal_id'
+        'to', 'issuer', 'card_type', 'network', 'method',
     ];
 
     protected static $editValidators = [
@@ -224,22 +224,4 @@ class Validator extends Base\Validator
             );
         }
     }
-
-    /*public function validateTerminalId($input)
-    {
-        $terminalId = $input[Entity::TERMINAL_ID];
-
-        $app = App::getFacadeRoot();
-
-        $repo = $app['repo'];
-        
-        $terminal = $repo->terminal->getById($terminalId);
-
-        if ($terminal === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Terminal Id: '.$terminal. ' is not a valid terminal id'
-            );
-        }
-    }*/
 }

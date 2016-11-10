@@ -8,7 +8,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'gateway_absence';
 
-    // These are proxy allowed params to search on.
+    // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::GATEWAY        => 'sometimes|string|max:255',
         Entity::ISSUER         => 'sometimes|string|max:255',

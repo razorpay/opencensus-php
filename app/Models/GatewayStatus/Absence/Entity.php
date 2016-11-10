@@ -40,19 +40,19 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::GATEWAY,
-        self::FROM,
         self::ISSUER,
-        self::TO,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-        self::REASON_CODE,
-        self::SCHEDULED,
-        self::PARTIAL,
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
+        self::FROM,
+        self::TO,
+        self::TERMINAL_ID,
+        self::REASON_CODE,
         self::COMMENT,
-        self::TERMINAL_ID
+        self::PARTIAL,
+        self::SCHEDULED,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $casts = [
@@ -68,16 +68,11 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-    
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
     }
-    
+
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
@@ -87,7 +82,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::REASON_CODE);
     }
-    
+
     public function getCardType()
     {
         return $this->getAttribute(self::CARD_TYPE);
@@ -102,7 +97,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::METHOD);
     }
-    
+
     public function getPartial()
     {
         return $this->getAttribute(self::PARTIAL);
@@ -112,7 +107,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::SCHEDULED);
     }
-    
+
     public function getFrom()
     {
         return $this->getAttribute(self::FROM);
@@ -127,15 +122,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
-
-    public function getMerchant()
-    {
-        if ($this->terminal !== null)
-        {
-            return $this->terminal->merchant;
-        }
-        
-        return null;
-    }
-
 }

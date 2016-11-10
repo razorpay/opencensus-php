@@ -13,13 +13,13 @@ class ReasonCode
     protected static $messages = [
         self::LOW_SUCCESS_RATE      => 'Low Success Rate',
         self::HIGHER_DECLINES       => 'Noticed Higher Number of Declines',
-        self::ISSUER_DOWN           => 'Issuer bank/network/wallet is down',
+        self::ISSUER_DOWN           => 'Issuer bank/ network/ wallet is down',
         self::SCHEDULED_DOWNTIME    => 'Scheduled Downtime',
-        self::OTHER                 => 'Uncategorized/other'
+        self::OTHER                 => 'Un-categorized/other'
     ];
 
     public static function isValidReasonCode($code)
     {
-        return defined('self::'.strtoupper($code));
+        return defined(__CLASS__ . strtoupper($code));
     }
 }

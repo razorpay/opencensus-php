@@ -40,7 +40,7 @@ class Core extends Base\Core
         {
             $terminalMerchant = $terminal->merchant;
 
-            if ($terminalMerchant->getId() === $merchant->getId())
+            if ($terminalMerchant->getId() !== $merchant->getId())
             {
                 return [];
             }
@@ -58,9 +58,6 @@ class Core extends Base\Core
         return $data;
     }
 
-    // Initially thought of moving this code to a separate formatter class.
-    // But realized  Methods/Core already implements something similar
-    // for gathering checkout preferences.
     public function getFormattedCheckoutData(Merchant\Entity $merchant)
     {
         // set the from time to current time. For all practical
