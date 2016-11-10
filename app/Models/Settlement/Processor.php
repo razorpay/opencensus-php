@@ -102,7 +102,8 @@ class Processor extends Base\Core
 
         $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
 
-        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->timestamp;
+        // Cron runs at 5.01pm.
+        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
 
         if (($this->mode === Mode::LIVE) and
             (($this->setlTime <= $sevenAm) or

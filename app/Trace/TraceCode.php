@@ -86,6 +86,7 @@ class TraceCode
     const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
+    const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
     const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
@@ -230,8 +231,10 @@ class TraceCode
     const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
     const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
     const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
+    const SCHEDULE_DELETE_REQUEST                   = 'SCHEDULE_DELETE_REQUEST';
     const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
+    const SCHEDULE_DELETED                          = 'SCHEDULE_DELETED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
     const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
@@ -261,6 +264,7 @@ class TraceCode
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
+    const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
@@ -444,7 +448,7 @@ class TraceCode
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
-        
+
         self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
