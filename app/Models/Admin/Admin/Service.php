@@ -206,6 +206,8 @@ class Service extends Base\Service
                 ->validate($admin, $input['password']);
 
             $admin->setOldPasswords();
+
+            $admin->updateLastLoginAt();
         }
 
         $this->repo->saveOrFail($admin);

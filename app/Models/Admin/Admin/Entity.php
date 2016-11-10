@@ -174,6 +174,11 @@ class Entity extends Base\PublicEntity
         return ($this->getLastLoginAt() === null);
     }
 
+    public function updateLastLoginAt()
+    {
+        $this->setAttribute(self::LAST_LOGIN_AT, time());
+    }
+
     public function getLastLoginAt()
     {
         return $this->getAttribute(self::LAST_LOGIN_AT);
