@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT_CODE,
         self::SUPERVISOR_CODE,
         self::LOCATION_CODE,
+        self::OLD_PASSWORDS,
         self::DISABLED,
         self::LOCKED,
         self::LAST_LOGIN_AT
@@ -245,7 +246,14 @@ class Entity extends Base\PublicEntity
 
     protected function getOldPasswordsAttribute()
     {
-        $oldPasswords = $this->attributes[self::OLD_PASSWORDS];
+        if (isset($this->attributes[self::OLD_PASSWORDS]) === true)
+        {
+            $oldPasswords = $this->attributes[self::OLD_PASSWORDS];
+        }
+        else
+        {
+            $oldPasswords = null;
+        }
 
         if ($oldPasswords === null)
         {
