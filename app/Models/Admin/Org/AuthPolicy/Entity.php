@@ -99,7 +99,7 @@ class Entity extends Base\PublicEntity
     protected $createRules = [
         self::MIN_LENGTH,
         self::MAX_LENGTH,
-        self::TYPE,
+        // self::TYPE,
         self::STRONG_PASSWORD
     ];
 
