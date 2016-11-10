@@ -24,6 +24,7 @@ class Service extends Base\Service
     public function reconcileH2HSettlements($input)
     {
         $data = (new Kotak\Reconciler3)->process($input);
+
         return $data;
     }
 
