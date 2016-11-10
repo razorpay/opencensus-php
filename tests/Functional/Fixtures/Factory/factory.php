@@ -348,7 +348,7 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'username'           => 'harshil',
     'password'           => 'test123456',
     'remember_token'     => 'yes',
-    'access_token'       => 'oauth123',
+    'oauth_access_token' => 'oauth123',
     'oauth_provider_id'  => 'google',
     'employee_code'      => 'rzp_1',
     'branch_code'        => 'krmgla',
