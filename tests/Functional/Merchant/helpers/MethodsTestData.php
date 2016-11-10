@@ -58,6 +58,11 @@ return [
         ],
         'response' => [
             'content' => [
+                 0 => [
+                    'merchant_id' => '10000000000000', 
+                    'card' => true,
+                    'netbanking' => true,
+                ],
             ],
         ],
     ],
