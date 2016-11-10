@@ -131,6 +131,25 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    // admin_get_by_attr
+    public function getAdminByAttr($orgId)
+    {
+        $data = null;
+
+        $input = Request::all();
+
+        $attr = key($input);
+
+        if (! empty($attr))
+        {
+            $attrVal = current($input);
+
+            $data = (new Admin\Admin\Service)->getAdminByAttr($orgId, $attr, $attrVal);
+        }
+
+        return ApiResponse::json($data);
+    }
+
     public function getMultipleAdmins($id)
     {
         $data = (new Admin\Admin\Service)->getMultipleAdmins($id, $adminId);
@@ -141,6 +160,13 @@ class AdminController extends Controller
     public function createAdmin($id)
     {
         $data = (new Admin\Admin\Service)->createAdmin($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function editAdmin($orgId, $adminId)
+    {
+        $data = (new Admin\Admin\Service)->editAdmin($orgId, $adminId);
 
         return ApiResponse::json($data);
     }

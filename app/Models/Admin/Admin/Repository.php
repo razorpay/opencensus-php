@@ -20,6 +20,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findOrFailByAttr($orgId, $attr, $attrVal)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where($attr, '=', $attrVal)
+                    ->firstOrFail();
+    }
+
     public function addRoleToAdmin(Entity $admin, Role\Entity $role)
     {
         $admin->roles()->attach($role);

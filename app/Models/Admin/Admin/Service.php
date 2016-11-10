@@ -82,6 +82,15 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    public function getAdminByAttr($orgId, $attr, $attrVal)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        $admin = $this->repo->admin->findOrFailByAttr($orgId, $attr, $attrVal);
+
+        return $admin->toArrayPublic();
+    }
+
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
