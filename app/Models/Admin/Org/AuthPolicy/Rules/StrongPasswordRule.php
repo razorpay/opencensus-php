@@ -8,7 +8,7 @@ use ZxcvbnPhp\Zxcvbn;
 
 class StrongPasswordRule extends Base
 {
-    public function validate(string $password)
+    public function validate($admin, $password)
     {
         $zxcvbn = new Zxcvbn();
 

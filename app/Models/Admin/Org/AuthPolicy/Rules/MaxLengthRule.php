@@ -15,10 +15,10 @@ class MaxLengthRule extends Base
 
     public function validate($admin, $password)
     {
-        if (strlen($password) > $maxLength)
+        if (strlen($password) > $this->maxLength)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Password should be maximum ' . $minLength . ' characters');
+                'Password should be maximum ' . $this->maxLength . ' characters');
         }
     }
 }

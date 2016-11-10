@@ -15,7 +15,7 @@ class MaxFailedAttemptsRule extends Base
 
     public function validate($admin, $password)
     {
-        if ($admin->getFailedAttempts() > $maxFailedAttempts)
+        if ($admin->getFailedAttempts() > $this->maxFailedAttempts)
         {
             $admin->disable();
             $admin->saveOrFail();
