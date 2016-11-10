@@ -231,8 +231,10 @@ class TraceCode
     const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
     const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
     const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
+    const SCHEDULE_DELETE_REQUEST                   = 'SCHEDULE_DELETE_REQUEST';
     const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
+    const SCHEDULE_DELETED                          = 'SCHEDULE_DELETED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
     const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
