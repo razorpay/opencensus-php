@@ -250,6 +250,11 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
+
+    /**
+     * TODO: return promises instead of thr reference of th variable
+    **/
+
     return {
       fetchRoles: function (organization_id) {
         var roles = {};
@@ -305,6 +310,32 @@ angular.module('app.services', [])
         }).error(function () {
         });
         return groups;
+      },
+      fetchPermissions: function () {
+        if (this.permissions) {
+          return this.permissions;
+        }
+
+        var perms = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'permission_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (perm) {
+                perms.push(perm);
+              });
+            }
+          }
+          else {
+            perms = {};
+          }
+        }).error(function () {
+        });
+        return this.permissions = perms;
       }
     };
   }

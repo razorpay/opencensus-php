@@ -8,6 +8,8 @@ app.controller('RolesCtrl', [
     $scope.roles = [];
     $scope.count = 0;
 
+
+    /* TODO: use fetchRoles from factory */
     $scope.getRoles = function () {
       var request = $http.get('/admin/generic', {
         params: {
