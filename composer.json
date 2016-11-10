@@ -23,7 +23,7 @@
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
         "minfraud/http": "^1.70",
-        "northox/stupid-password": "dev-master"
+        "bjeavons/zxcvbn-php": "^0.2.0"
     },
     "repositories": [
         {
