@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Adjustment\Entity as Adjustment;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement;
 
 class CreateAdjustments extends Migration {
 
