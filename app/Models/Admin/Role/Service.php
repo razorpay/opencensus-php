@@ -22,16 +22,21 @@ class Service extends Base\Service
 
         $role = $this->repo->role->fetchRoleForOrg($roleId, $orgId);
 
-        return $role->toArrayPublic();
+        $permissions = $role->permissions;
+
+        $role = $role->toArrayPublic();
+
+        $role['permissions'] = $permissions->toArrayPublic();
+
+        return $role;
     }
 
     public function getMultipleRoles($orgId)
     {
         Org::verifyIdAndStripSign($orgId);
-        
+
         $role = $this->repo->role->fetchRolesForOrg($orgId);
 
         return $role->toArrayPublic();
     }
-
 }

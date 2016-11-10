@@ -10,6 +10,14 @@ class Repository extends Base\Repository
 
     protected $entity = 'role';
 
+    protected $proxyFetchParamRules = [
+        Entity::NAME    => 'sometimes|string',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::NAME    => 'sometimes|string',
+    ];
+
     public function fetchRoleForOrg($roleId, $orgId)
     {
         return $this->newQuery()
