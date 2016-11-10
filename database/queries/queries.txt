@@ -1214,3 +1214,6 @@ DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
 ALTER TABLE payments
     ADD COLUMN cancellation_reason VARCHAR(255) AFTER error_description;
 ---
+
+ALTER TABLE schedules
+    ADD COLUMN deleted_at INTEGER AFTER updated_at;
