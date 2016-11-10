@@ -318,6 +318,7 @@ final class Route
         'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermissions'                                    ],
         'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
         'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
+        'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
 
         // Admin Auth
         'hello_world'                             => ['get',      'world/{mid}',                                    'AdminController@helloWorld'                                        ],
@@ -567,6 +568,7 @@ final class Route
         'permission_edit',
         'permission_delete',
         'password_login',
+        'oauth_login',
     );
 
     public static $proxy = array(

@@ -20,6 +20,13 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findOrFailByEmail($email)
+    {
+        return $this->newQuery()
+                    ->where(Entity::EMAIL, '=', $email)
+                    ->firstOrFail();
+    }
+
     public function findOrFailByAttr($orgId, $attr, $attrVal)
     {
         return $this->newQuery()

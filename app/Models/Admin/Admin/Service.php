@@ -36,22 +36,9 @@ class Service extends Base\Service
         // Valid password ?
         if (Hash::check($input['password'], $admin->getPassword()))
         {
-            $admin->resetFailedAttempts();
-            $this->repo->saveOrFail($admin);
+            $data = $this->generateLoginToken($admin);
 
-            $tokenAttributes = [
-                'token'      => str_random(40),
-                'expires_at' => Carbon::now()->addHours(1)->timestamp
-            ];
-
-            // Create a token for the user
-            $token = $this->core->createAuthToken($admin, $tokenAttributes);
-
-            $admin = $admin->toArrayPublic();
-
-            $admin['token'] = $token->getToken();
-
-            return $admin;
+            return $data;
         }
         else
         {
@@ -60,6 +47,58 @@ class Service extends Base\Service
         }
 
         return null;
+    }
+
+    public function loginWithOAuth($input)
+    {
+        // TODO: error validation
+
+        // Get the admin record
+        $admin = $this->repo->admin->findOrFailByEmail($input['email']);
+
+        $validate = (new AuthPolicy\Service)
+                        ->validateLogin($admin);
+
+        if ($validate !== null)
+        {
+            return $validate;
+        }
+
+        // Valid token ?
+        if (($admin->oauth_access_token === $input['oauth_access_token']) and
+            ($admin->oauth_provider_id === $input['oauth_provider_id']))
+        {
+            $data = $this->generateLoginToken($admin);
+
+            return $data;
+        }
+        else
+        {
+            $admin->incrementFailedAttempts();
+            $this->repo->saveOrFail($admin);
+        }
+
+        return null;
+    }
+
+    private function generateLoginToken($admin)
+    {
+        $admin->resetFailedAttempts();
+        $this->repo->saveOrFail($admin);
+
+        $tokenAttributes = [
+            'token'      => str_random(40),
+            'expires_at' => Carbon::now()->addHours(1)->timestamp
+        ];
+
+        // Create a token for the user
+        $token = $this->core->createAuthToken($admin, $tokenAttributes);
+
+        $admin = $admin->toArrayPublic();
+
+        $admin['token'] = $token->getToken();
+
+        return $admin;
     }
 
     public function createAdmin(string $orgId, array $input)
