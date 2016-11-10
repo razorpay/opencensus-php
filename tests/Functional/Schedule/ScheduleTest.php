@@ -96,17 +96,32 @@ class ScheduleTest extends TestCase
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }
 
-    public function testAssignScheduleById()
+    public function testDeleteSchedule()
     {
         $schedule = $this->createSchedule();
 
-        $request = $this->testData[__FUNCTION__];
+        $this->deleteSchedule($schedule['id']);
+    }
 
-        $request['content']['settlement_schedule_id'] = $schedule['id'];
+    public function testDeleteScheduleInUse()
+    {
+        $schedule = $this->createAndAssignSchedule();
 
-        $response = $this->makeRequestAndGetContent($request);
+        $data = $this->testData[__FUNCTION__];
 
-        $this->assertEquals($schedule['id'], $response['settlement_schedule_id']);
+        $this->runRequestResponseFlow($data, function() use ($schedule) {
+            $this->deleteSchedule($schedule['id']);
+        });
+
+        // Assign a new schedule so the original one becomes unused
+        $this->createAndAssignSchedule();
+
+        $this->deleteSchedule($schedule['id']);
+    }
+
+    public function testAssignScheduleById()
+    {
+        $this->createAndAssignSchedule();
     }
 
     public function testAssignSchedule()
@@ -122,6 +137,42 @@ class ScheduleTest extends TestCase
         $response = $this->fetchSchedule($response['settlement_schedule_id']);
 
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
+    }
+
+    private function createAndAssignSchedule()
+    {
+        $schedule = $this->createSchedule();
+
+        $request = $this->testData['testAssignScheduleById'];
+
+        $request['content']['settlement_schedule_id'] = $schedule['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($schedule['id'], $response['settlement_schedule_id']);
+
+        return $schedule;
+    }
+
+    private function deleteSchedule($id)
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $request['url'] = $request['url'] . $id;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
+
+        $schedules = $this->getEntities('schedule', ['deleted' => '1'], true);
+
+        foreach ($schedules['items'] as $schedule)
+        {
+            if ($schedule['id'] === $id)
+            {
+                $this->assertNotNull($schedule['deleted_at']);
+            }
+        }
     }
 
     private function createSchedule()

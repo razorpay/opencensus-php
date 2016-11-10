@@ -182,7 +182,8 @@ class Gateway extends Base\Gateway
     protected function isRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
-            ($input['token']->isRecurring() === true))
+            ($input['token']->isRecurring() === true) and
+            ($this->app['basicauth']->isPrivateAuth() === true))
         {
             return true;
         }
