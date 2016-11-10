@@ -44,13 +44,13 @@ class Network
    public static $networks = array(
         self::AMEX,
         self::DICL,
-        self::DISC,
         self::JCB,
         self::MAES,
         self::MC,
         self::RUPAY,
         self::UNP,
         self::VISA,
+        self::DISC,
     );
 
     public static $networkRegexes = array(
