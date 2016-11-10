@@ -200,7 +200,7 @@ class ReconciliationTest extends TestCase
             'amount' => 4385000,
             'currency' => "INR",
             'channel' => "kotak",
-            'description' => "Adjustment for failed settlement: ".$setl['id'],
+            'description' => "Adjustment for failed settlement",
             'settlement_id' => $setlId
         ];
 

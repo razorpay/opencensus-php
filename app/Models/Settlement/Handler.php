@@ -47,7 +47,7 @@ class Handler extends Base\Core
     {
         $desc = 'Adjustment for failed settlement';
 
-        if ($this->setl->adjustment !== null)
+        if ($this->setl->adjustment === null)
         {
             $adj = $this->newAdjustmentEntity($desc);
 
