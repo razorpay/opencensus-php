@@ -674,9 +674,7 @@ class Service extends Base\Service
 
         foreach ($merchantIds as $merchantId)
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-            $paymentMethod = (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input['methods']);
+            $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
 
             $response->push($paymentMethod);
         }

@@ -65,7 +65,6 @@ class MethodsTest extends TestCase
 
     public function testBulkMethodUpdate()
     {
-
         $this->fixtures->merchant->disableAllMethods('10000000000000');
 
         $this->fixtures->create('pricing:standard_plan');

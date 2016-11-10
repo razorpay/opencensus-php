@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
@@ -49,7 +49,7 @@ return [
             'url' => '/methods/bulkupdate',
             'method' => 'put',
             'content' => [
-                'merchants' => ['10000000000000'],
+                'merchants' => ['10000000000000', '10000000000000'],
                 'methods' => [
                     'card' => true,
                     'netbanking' => true
@@ -58,11 +58,6 @@ return [
         ],
         'response' => [
             'content' => [
-                 0 => [
-                    'merchant_id' => '10000000000000', 
-                    'card' => true,
-                    'netbanking' => true,
-                ],
             ],
         ],
     ],
