@@ -166,8 +166,8 @@ class Reconciler3
         {
             $utr = $row['UTR number'];
 
-
-            if (empty($failureReason) === true)
+            if ((empty($failureReason) === true) or
+                ($failureReason === 'Beneficiary Account Credited'))
             {
                 $status = Settlement\Status::PROCESSED;
 

@@ -156,20 +156,6 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    public function addOrUpdateMerchantFeatures($merchant, $input)
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            array('old_features' => $merchant->getFeatures(),
-                  'new_features' => $input[Entity::FEATURES]));
-
-        $merchant->edit($input);
-
-        $this->saveAndNotify($merchant);
-
-        return $merchant;
-    }
-
     /**
      * Save merchant entity and notify on slack
      *
