@@ -146,6 +146,9 @@ var app = angular.module('app', [
     }).state('app.roles.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_roles_detail.html'
+    }).state('app.addrole', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_orgs_role_add.html'
     }).state('app.groups', {
       url: '/groups',
       template: '<div ui-view class="fade-in-down smooth"></div>'
