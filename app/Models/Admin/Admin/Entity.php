@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use App;
+use Hash;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -227,9 +228,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OLD_PASSWORDS, $oldPasswords);
     }
 
+    protected function setPasswordAttribute($password)
+    {
+        $this->attributes[self::PASSWORD] = Hash::make($password);
+    }
+
     protected function setOldPasswordsAttribute($oldPasswords = [])
     {
-        $this->attribute[self::OLD_PASSWORDS] = json_encode($oldPasswords);
+        $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
 
     public function getOldPasswords()
@@ -239,7 +245,7 @@ class Entity extends Base\PublicEntity
 
     protected function getOldPasswordsAttribute()
     {
-        $oldPasswords = $this->attribute[self::OLD_PASSWORDS];
+        $oldPasswords = $this->attributes[self::OLD_PASSWORDS];
 
         if ($oldPasswords === null)
         {

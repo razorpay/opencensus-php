@@ -15,10 +15,10 @@ class Core extends Base\Core
 
         $admin->org()->associate($org);
 
-        $admin->setOldPasswords();
-
         (new AuthPolicy\Service)
             ->validate($admin, $input['password']);
+
+        $admin->setOldPasswords();
 
         $this->repo->saveOrFail($admin);
 
