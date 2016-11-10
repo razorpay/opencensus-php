@@ -19,6 +19,18 @@ class Handler extends Base\Handler
         parent::__construct();
 
         $this->config = $this->app['config']->get('aws');
+        $this->config['mock'] = false;
+    }
+
+    public static function getClient()
+    {
+        $awsConfig = config('aws');
+
+        $awsConfig['region'] = $awsConfig['bucket_region'];
+
+        $client = new \Aws\Sdk($awsConfig);
+
+        return $client->createClient('s3');
     }
 
     public function save($bucket, $fileDetails)
@@ -168,11 +180,6 @@ class Handler extends Base\Handler
         $bucketType = Bucket::BUCKET_MAP[$type];
 
         return $this->config[$bucketType];
-    }
-
-    protected function getClient()
-    {
-        return AWS::createClient('s3');
     }
 
     protected function getS3SaveObj($bucket, $fileDetails)
