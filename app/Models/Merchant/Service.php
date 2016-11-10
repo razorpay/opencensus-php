@@ -351,7 +351,7 @@ class Service extends Base\Service
 
                 $this->repo->saveOrFail($merchant);
 
-                $migrationSummary['migratedIdsCount'] += 1;
+                $migrationSummary['migrated_ids_count'] += 1;
             }
             catch(\Exception $ex)
             {
@@ -364,13 +364,15 @@ class Service extends Base\Service
                                         'error'       => $ex->getMessage(),
                                     ]);
 
-                $migrationSummary['failedIds'][] = $merchantId;
+                $migrationSummary['failed_ids'][] = $merchantId;
             }
         }
 
-        $migrationSummary['fail_count'] = count($migrationSummary['failedIds']);
+        $migrationSummary['fail_count'] = count($migrationSummary['failed_ids']);
 
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
+
+        return $migrationSummary;
     }
 
     protected function getRequiredScheduleData($requiredDelay)
