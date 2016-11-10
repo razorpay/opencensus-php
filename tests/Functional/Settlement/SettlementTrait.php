@@ -99,7 +99,7 @@ trait SettlementTrait
                 'file' => $uploadedFile,
             ],
             'content' => [
-                'failed_recons' => (string) $generateFailedReconciliations
+                'failed_recons' => $generateFailedReconciliations
             ]
         ];
 

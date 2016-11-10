@@ -2,39 +2,74 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-class FailureHandler
+class Handler extends Base\Core
 {
     protected $setl;
 
     protected $merchant;
 
-    public function __construct($setl)
+    protected $status;
+
+    protected $failureReason;
+
+    protected $reconciledAt;
+
+    public function __construct($setl, $status, $failureReason)
     {
-        $app = \App::getFacadeRoot();
-
-        $this->repo = $app['repo'];
-
-        $this->trace = $app['trace'];
+        parent::__construct();
 
         $this->setl = $setl;
 
         $this->merchant = $setl->merchant;
+
+        $this->status = $status;
+
+        $this->failureReason = $failureReason;
     }
 
-    public function markFailed($reason = null)
+    public function process($reconciledAt)
+    {
+        $this->reconciledAt = $reconciledAt;
+
+        if ($this->status !== Settlement\Status::FAILED)
+        {
+            $this->processSettlementSuccess();
+        }
+        else
+        {
+            $this->processSettlementFailure();
+        }
+
+        $this->repo->saveOrFail($this->setl);
+
+        $this->setl->transaction->setReconciledAt($this->reconciledAt);
+
+        $this->repo->transaction->save($this->setl->transaction);
+
+        return $this->setl;
+    }
+
+    protected function processSettlementSuccess()
+    {
+        $this->setl->setStatus($this->status);
+
+        $this->setl->setFailureReason($this->failureReason);
+    }
+
+    protected function processSettlementFailure()
     {
         $this->setl->setStatus(Status::FAILED);
-        $this->setl->setFailureReason($reason);
 
-        $this->repo->save($this->setl);
+        $this->setl->setFailureReason($this->failureReason);
 
-        $desc = 'Adjustment corresponding to failure of settlement: ' . $this->setl->getPublicId();
+        $desc = 'Adjustment for failed settlement: ' . $this->setl->getPublicId();
 
         if ($this->setl->adjustment() !== null)
         {
@@ -43,7 +78,6 @@ class FailureHandler
             $adjTxn = (new Transaction\Core)->createFromAdjustment($adj);
 
             $this->repo->save($adjTxn);
-            $this->repo->save($adj);
         }
 
         $this->holdMerchantFunds();

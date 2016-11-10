@@ -131,6 +131,10 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL
     );
 
+    protected $casts = [
+        self::HOLD_FUNDS => 'bool'
+    ];
+
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
     protected function generateTransactionReportEmail($input)
@@ -175,8 +179,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return (in_array($feature, $this->features(), true)) or
-            $this->checkOldFeatures($feature);
+        return in_array($feature, $this->features(), true);
     }
 
     public function activate()
@@ -406,20 +409,6 @@ class Entity extends Base\PublicEntity
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
-    public function getFeatures()
-    {
-        return $this->getAttribute(self::FEATURES);
-    }
-
-    protected function checkOldFeatures($feature)
-    {
-        if (in_array($feature, $this->getFeatures(), true) === true)
-        {
-            return true;
-        }
-        return false;
-    }
-
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
@@ -574,7 +563,7 @@ class Entity extends Base\PublicEntity
 
     public function setHoldFunds($holdFunds)
     {
-        $this->setAttribute(self::HOLD_FUNDS, (int)$holdFunds);
+        $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
     }
 
     public function isReceiptEmailsEnabled()

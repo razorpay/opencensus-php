@@ -166,8 +166,8 @@ class Reconciler3
         {
             $utr = $row['UTR number'];
 
-
-            if (empty($failureReason) === true)
+            if ((empty($failureReason) === true) or
+                ($failureReason === 'Beneficiary Account Credited'))
             {
                 $status = Settlement\Status::PROCESSED;
 
@@ -204,22 +204,9 @@ class Reconciler3
         {
             $setl->setUtr($utr);
 
-            if ($status === Settlement\Status::FAILED)
-            {
-                $failureHandler = (new Settlement\Failurehandler($setl));
+            $setlHandler = (new Settlement\Handler($setl, $status, $failureReason));
 
-                $failureHandler->markFailed($failureReason);
-            }
-            else
-            {
-                $setl->setStatus($status);
-                $setl->setFailureReason($failureReason);
-
-                $this->repo->settlement->save($setl);
-            }
-
-            $setl->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->transaction->save($setl->transaction);
+            $setl = $setlHandler->process($this->reconciledAt);
         }
 
         return $setl;
