@@ -18,5 +18,9 @@ return [
 
     // Admins
     'admin_get_multiple'                => 'orgs/{id}/admins',
-    'admin_edit'                        => 'orgs/{id}/admins/{adminId}'
+    'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
+
+
+    // Permissions
+    'permission_get_multiple'           => 'permissions'
 ];

@@ -67,6 +67,7 @@ app.controller('OrgsUsersCtrl', [
         }
       });
       request.success(function (data) {
+        /* TODO: change this */
         if (data.success) {
           $scope.users = data.data.items;
           $scope.count = data.data.count;

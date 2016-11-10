@@ -149,6 +149,9 @@ var app = angular.module('app', [
     }).state('app.roles.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_roles_detail.html'
+    }).state('app.addrole', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_orgs_role_add.html'
     }).state('app.groups', {
       url: '/groups',
       template: '<div ui-view class="fade-in-down smooth"></div>'
@@ -157,7 +160,7 @@ var app = angular.module('app', [
       templateUrl: 'tpl/admin/app_groups_list.html'
     }).state('app.groups.detail', {
       url: '/:id/detail',
-      templateUrl: 'tpl/admin/app_groups_detail.html'
+      templateUrl: 'tpl/admin/app_group_detail.html'
     }).state('app.permissions', {
       url: '/permissions',
       template: '<div ui-view class="fade-in-down smooth"></div>'

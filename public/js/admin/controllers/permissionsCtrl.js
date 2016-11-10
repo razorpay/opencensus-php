@@ -5,7 +5,8 @@ app.controller('PermissionsCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
     $scope.permissions = [];
     $scope.count = 0;
 
@@ -19,7 +20,6 @@ app.controller('PermissionsCtrl', [
       });
       modalInstance.result.then($scope.addPermission, $.noop);
     };
-
 
     /**
      * Actions
@@ -54,24 +54,20 @@ app.controller('PermissionsCtrl', [
     }
 
     $scope.fetchPermissions = function () {
-      var request = $http.get('/admin/generic');
+      var request = $http.get('/admin/generic', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'permission_get_multiple'
+        }
+      })
 
       /**
        * TODO: remove mocked data
        */
-      $scope.permissions = [{
-        id: '2sGsPw5xI4aNn',
-        name: 'Super',
-        description: 'Can do anything',
-      },{
-        id: 'Uy3A6sNq0P5hA',
-        name: 'Normal',
-        description: 'Can do some things',
-      }]
 
       request.success(function (data) {
         if (data.success) {
-          $scope.permissions = data.data.data;
+          $scope.permissions = data.data.items;
           $scope.count = data.data.count;
         }
       });
