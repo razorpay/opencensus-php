@@ -9,6 +9,7 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -294,10 +295,13 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-            $txn = $txnCore->createFromPaymentAuthorized($payment);
+
+            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
 
             $this->repo->saveOrFail($txn);
             $this->repo->saveOrFail($payment);
+
+            $this->saveFeeDetails($txn, $feesSplit);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -364,9 +368,11 @@ trait Capture
 
         $auth = ($payment->transaction === null);
 
+        $feesSplit = new PublicCollection;
+
         if ($auth === true)
         {
-            $txn = $txnCore->createFromPaymentCaptured($payment);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
         }
         else
         {
@@ -383,6 +389,8 @@ trait Capture
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($payment);
+
+        $this->saveFeeDetails($txn, $feesSplit);
     }
 
     protected function verifyOrderUnpaid($payment)

@@ -2,15 +2,14 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
-use RZP\Models\Settlement;
-use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Settlement;
 
 class Gateway
 {
@@ -233,6 +232,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::UPI_ICICI,
     );
 
     /**

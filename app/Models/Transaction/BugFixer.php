@@ -3,14 +3,12 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Base;
-use RZP\Models\Gateway;
 use RZP\Models\Adjustment;
-use RZP\Models\Merchant;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement;
+use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
 
 /**
  * See the issue https://github.com/razorpay/api/issues/59

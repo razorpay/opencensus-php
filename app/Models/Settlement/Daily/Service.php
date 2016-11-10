@@ -3,7 +3,6 @@
 namespace RZP\Models\Settlement\Daily;
 
 use RZP\Models\Base;
-use RZP\Models\Gateway;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Daily;
 use Carbon\Carbon;

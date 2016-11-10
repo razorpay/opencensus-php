@@ -8,7 +8,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
 
 class DatabaseSeeder extends Seeder
 {

@@ -5,12 +5,10 @@ namespace RZP\Models\Admin;
 use Carbon\Carbon;
 use cebe\markdown\MarkdownExtra;
 use Config;
-use RZP\Models\Merchant;
 use Mail;
-use Mailgun\Mailgun;
-use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
-use RZP\Trace\Trace;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 /**
  * Class used for mass mailing
@@ -102,7 +100,7 @@ class Newsletter
         return $response;
     }
 
-    protected function encodeMerchantDetails($merchant, &$reposnse)
+    protected function encodeMerchantDetails($merchant, & $response)
     {
         $response[] = json_encode([
                 'address' => $merchant['email'],
@@ -171,15 +169,6 @@ class Newsletter
         $listAddress = $this->listName.'@'.$this->config['url'];
 
         return $listAddress;
-    }
-
-    protected function createMailgunList($listName)
-    {
-        $relativeUrl = 'lists';
-
-        $this->getMailgunInstance()->post($relativeUrl,[
-            'address'     => $listAddress,
-        ]);
     }
 
     /**
@@ -257,13 +246,11 @@ class Newsletter
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
-
-        $count = 0;
-
+        
         do{
             $iterations = $iterations + 1;
 
-            $relativeUrl = 'lists/'.$listAddress.'/members';
+            $relativeUrl = 'lists/' . $listAddress . '/members';
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
                 'skip' => $this->count]);

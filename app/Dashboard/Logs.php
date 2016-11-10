@@ -2,7 +2,9 @@
 
 namespace RZP\Dashboard;
 
-class Logs extends RZP\Models\Base\Entity
+use RZP\Models\Base;
+
+class Logs extends Base\Entity
 {
     const ID = 'id';
 

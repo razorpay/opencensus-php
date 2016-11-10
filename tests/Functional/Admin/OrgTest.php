@@ -30,7 +30,7 @@ class OrgTest extends TestCase
 
         $org = $this->fixtures->create('org');
 
-        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getId();
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
         $this->startTest();
     }

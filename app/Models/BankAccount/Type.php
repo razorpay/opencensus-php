@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankAccount;
 
+use RZP\Exception;
+
 class Type
 {
     const MERCHANT  = 'merchant';

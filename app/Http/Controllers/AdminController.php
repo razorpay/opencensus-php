@@ -3,11 +3,10 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Admin;
-use Request;
-use Redirect;
 use App;
+use Redirect;
+use Request;
+use RZP\Models\Admin;
 
 class AdminController extends Controller
 {

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
-use CreditCardFraudDetection;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider

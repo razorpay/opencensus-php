@@ -3,21 +3,20 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
-use RZP\Exception;
-use ErrorException;
-use Requests_Response;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Utility;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Utility;
-use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
@@ -447,7 +446,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
         if ($content['success'] !== 'true')
@@ -462,8 +460,6 @@ class Gateway extends Base\Gateway
 
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
-
-        $attr = [];
 
         if ($content['status'] === Status::SUCCESS)
         {

@@ -70,10 +70,10 @@ class CreateTerminalAnalytics extends Migration
         Schema::table(Table::TERMINAL_ANALYTICS, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMINAL_ANALYTICS. '_' .Analytics::TERMINAL_ID.'_foreign');
+                Table::TERMINAL_ANALYTICS. '_' .Analytics::TERMINAL_ID.'_foreign');
 
             $table->dropForeign(
-                TABLE::TERMINAL_ANALYTICS. '_' .Analytics::PAYMENT_ID.'_foreign');
+                Table::TERMINAL_ANALYTICS. '_' .Analytics::PAYMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::TERMINAL_ANALYTICS);

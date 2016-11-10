@@ -2,17 +2,15 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Http\Route;
-use RZP\Gateway\Base;
 use RZP\Exception;
-use RZP\Models\Payment;
+use RZP\Gateway\Base;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\Command;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 use RZP\Gateway\Wallet\Olamoney\Status;
-
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -151,8 +149,6 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
 
         $this->validateActionInput($input, Command::DEBIT);
-
-        $udf = json_encode([RequestFields::MERCHANT_DISPLAY_NAME => 'test_merchant_display_name']);
 
         $responseContent = array(
             ResponseFields::TYPE                    => 'debit',

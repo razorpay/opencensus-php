@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {

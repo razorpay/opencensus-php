@@ -137,7 +137,7 @@ class Checksum
 
     public static function redirect2PG($paramList, $key)
     {
-        $hashString = self::getchecksumFromArray($paramList);
+        $hashString = self::getChecksumFromArray($paramList);
         $checksum = self::encrypt_e($hashString, $key);
     }
 

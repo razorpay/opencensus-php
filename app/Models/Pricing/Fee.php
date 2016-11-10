@@ -44,7 +44,7 @@ class Fee extends Base\Core
         return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
     }
 
-    public function calculateMerchantFees($entity, $preCalculationOfFees = false)
+    public function calculateMerchantFees($entity)
     {
         $calculator = new FeeCalculator($entity, $this->repo);
 
@@ -52,10 +52,10 @@ class Fee extends Base\Core
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
-        return $calculator->calculate($pricing, $preCalculationOfFees);
+        return $calculator->calculate($pricing);
     }
 
-    public function calculateServiceTaxFromFees($fee)
+    public function calculateServiceTaxFromFees($entity, $fee)
     {
         // Solving these
         // rzpFee + servTax = totFee;
@@ -63,13 +63,14 @@ class Fee extends Base\Core
         //         = ST_PERC * (totFee - servTax);
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
-        $serviceTax = FeeCalculator::getServiceTaxRate();
 
-        $numerator = $serviceTax * $fee ;
+        $calculator = new FeeCalculator($entity, $this->repo);
 
-        $denominator = 100 + $serviceTax ;
+        $totalTax = $calculator->calculateServiceTaxesFromFees($fee);
 
-        return ceil($numerator / $denominator);
+        $feesSplit = $calculator->getFeesSplit();
+
+        return [$totalTax, $feesSplit];
     }
 
     protected function getPricingPlanId($merchant)

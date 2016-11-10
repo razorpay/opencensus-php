@@ -2,16 +2,9 @@
 
 namespace RZP\Models\Terminal\Filters;
 
-use RZP\Constants\Mode;
-
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-
-use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Terminal;
 
 class MerchantFilter extends Terminal\Filter
 {

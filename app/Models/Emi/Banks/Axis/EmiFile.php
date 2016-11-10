@@ -3,9 +3,7 @@
 namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
-
 use RZP\Models\Emi\Banks\Base;
-use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
