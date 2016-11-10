@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const SECOND_FACTOR                     = 'second_factor';
     const MIN_LENGTH                        = 'min_length';
     const MAX_LENGTH                        = 'max_length';
+    const STRONG_PASSWORD                   = 'strong_password';
     const MAX_FAILED_ATTEMPTS               = 'max_failed_attempts';
     const ENFORCE_INITIAL_PASSWORD_CHANGE   = 'enforce_initial_password_change';
     const MAX_PASSWORD_RETAIN               = 'max_password_retain';
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR,
         self::MIN_LENGTH,
         self::MAX_LENGTH,
+        self::STRONG_PASSWORD,
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
@@ -46,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::SECOND_FACTOR,
         self::MIN_LENGTH,
         self::MAX_LENGTH,
+        self::STRONG_PASSWORD,
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
@@ -61,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::MIN_LENGTH,
         self::MAX_LENGTH,
+        self::STRONG_PASSWORD,
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
@@ -75,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::MIN_LENGTH                      => 8,
         self::MAX_LENGTH                      => 16,
         self::MAX_FAILED_ATTEMPTS             => 10,
+        self::STRONG_PASSWORD                 => true,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE => true,
         self::MAX_PASSWORD_RETAIN             => 10,
         self::EXPIRES_IN                      => 30,
@@ -85,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::MIN_LENGTH                      => 'int',
         self::MAX_LENGTH                      => 'int',
         self::MAX_FAILED_ATTEMPTS             => 'int',
+        self::STRONG_PASSWORD                 => 'bool',
         self::ENFORCE_INITIAL_PASSWORD_CHANGE => 'bool',
         self::MAX_PASSWORD_RETAIN             => 'int',
         self::EXPIRES_IN                      => 'int',
@@ -94,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::MIN_LENGTH,
         self::MAX_LENGTH,
         self::TYPE,
+        self::STRONG_PASSWORD
     ];
 
     protected $loginRules = [
@@ -109,6 +116,7 @@ class Entity extends Base\PublicEntity
             self::TYPE                            => 'alpha_numeric_underscore',
             self::MIN_LENGTH                      => 8,
             self::MAX_LENGTH                      => 16,
+            self::STRONG_PASSWORD                 => true,
             self::MAX_FAILED_ATTEMPTS             => 10,
             self::ENFORCE_INITIAL_PASSWORD_CHANGE => true,
             self::MAX_PASSWORD_RETAIN             => 10,

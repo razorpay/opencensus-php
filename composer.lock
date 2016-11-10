@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "17e44c8378fe98354869573bba8e1a23",
-    "content-hash": "3f5e2dee7172e95a4ff401a30f2ca1a9",
+    "hash": "09ea56d2260f8870d4bb14cea5156c10",
+    "content-hash": "a25f810f48c7700ea92ef93b1e159281",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -142,6 +142,51 @@
                 "sdk"
             ],
             "time": "2016-01-18 06:57:07"
+        },
+        {
+            "name": "bjeavons/zxcvbn-php",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bjeavons/zxcvbn-php.git",
+                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bjeavons/zxcvbn-php/zipball/e9e242d76fc32de68af3b7e360b7179af05ced9e",
+                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3 || ^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*",
+                "satooshi/php-coveralls": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ZxcvbnPhp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "See contributors",
+                    "homepage": "https://github.com/bjeavons/zxcvbn-php"
+                }
+            ],
+            "description": "Realistic password strength estimation PHP library based on Zxcvbn JS",
+            "homepage": "https://github.com/bjeavons/zxcvbn-php",
+            "keywords": [
+                "password",
+                "zxcvbn"
+            ],
+            "time": "2016-09-08 17:29:46"
         },
         {
             "name": "cebe/markdown",
