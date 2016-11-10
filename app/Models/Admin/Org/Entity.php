@@ -67,6 +67,11 @@ class Entity extends Base\PublicEntity
         // Returns the list of org's owners
     }
 
+    public function policy()
+    {
+        return $this->hasOne('RZP\Models\Org\AuthPolicy\Entity');
+    }
+
     public function admins()
     {
         return $this->hasMany('Admin\Entity');

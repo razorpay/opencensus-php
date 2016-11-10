@@ -6,7 +6,7 @@ use RZP\Exception;
 
 abstract class Base
 {
-    public function validate(string $password)
+    public function validate($admin, $password)
     {
         throw new Exception\RuntimeException(
             'Validate function not implemented');

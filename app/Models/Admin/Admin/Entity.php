@@ -28,7 +28,7 @@ class Entity extends Base\PublicEntity
     const LOCKED                    = 'locked';
     const LAST_LOGIN_AT             = 'last_login_at';
     const FAILED_ATTEMPTS           = 'failed_attempts';
-    const RECENT_PASSWORD           = 'recent_password';
+    const OLD_PASSWORDS             = 'old_passwords';
     const PASSWORD_EXPIRY           = 'password_expiry';
     const EXPIRY_AT                 = 'expiry_at';
     const DELETED_AT                = 'deleted_at';
@@ -156,6 +156,17 @@ class Entity extends Base\PublicEntity
         return $merchant;
     }
 
+    public function disable()
+    {
+        $this->setAttribute(self::DISABLED, true);
+    }
+
+    public function enable()
+    {
+        $this->setAttribute(self::FAILED_ATTEMPTS, 0);
+        $this->setAttribute(self::DISABLED, false);
+    }
+
     public function isInitialLogin()
     {
         return ($this->getLastLoginAt() === null);
@@ -193,5 +204,48 @@ class Entity extends Base\PublicEntity
         }
 
         return $attempts;
+    }
+
+    public function setOldPasswords()
+    {
+        // $policy = $this->org->policy;
+        $policy = new Org\AuthPolicy\Entity;
+
+        $maxPasswordsToRetain = $policy->getMaxPasswordToRetain();
+
+        $oldPasswords = $this->getAttribute(self::OLD_PASSWORDS);
+
+        $oldPasswordsCount = count($oldPasswords);
+
+        if ($oldPasswordsCount === $maxPasswordsToRetain)
+        {
+            array_shift($oldPasswords);
+        }
+
+        $oldPasswords[] = $this->getAttribute(self::PASSWORD);
+
+        $this->setAttribute(self::OLD_PASSWORDS, $oldPasswords);
+    }
+
+    protected function setOldPasswordsAttribute($oldPasswords = [])
+    {
+        $this->attribute[self::OLD_PASSWORDS] = json_encode($oldPasswords);
+    }
+
+    public function getOldPasswords()
+    {
+        return $this->getAttribute(self::OLD_PASSWORDS);
+    }
+
+    protected function getOldPasswordsAttribute()
+    {
+        $oldPasswords = $this->attribute[self::OLD_PASSWORDS];
+
+        if ($oldPasswords === null)
+        {
+            return [];
+        }
+
+        return json_decode($oldPasswords, true);
     }
 }

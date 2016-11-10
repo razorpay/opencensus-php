@@ -11,12 +11,14 @@ class Core extends Base\Core
     {
         $org = $this->repo->org->findOrFail($orgId);
 
-        (new AuthPolicy\Service)
-            ->validate($orgId, $input['password']);
-
         $admin = (new Entity)->build($input);
 
         $admin->org()->associate($org);
+
+        $admin->setOldPasswords();
+
+        (new AuthPolicy\Service)
+            ->validate($admin, $input['password']);
 
         $this->repo->saveOrFail($admin);
 

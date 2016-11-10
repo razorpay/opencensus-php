@@ -27,7 +27,7 @@ class TypeRule extends Base
         $this->type = $type;
     }
 
-    public function validate(string $password)
+    public function validate($admin, $password)
     {
         $type = $this->type;
 
