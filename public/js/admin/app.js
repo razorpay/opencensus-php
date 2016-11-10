@@ -159,6 +159,9 @@ var app = angular.module('app', [
     }).state('app.permissions.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_permissions_list.html'
+    }).state('app.invitations', {
+      url: '/invitations',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'

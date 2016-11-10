@@ -26,13 +26,18 @@ app.controller('PermissionsCtrl', [
      */
 
     $scope.addPermission = function(permission) {
-      var params = {};
-      params.route_name = 'add_permission';
-      params.body = permission;
       var request = $http({
         method: 'post',
-        url: '/generic',
-        data: params
+        url: '/admin/generic',
+        params: {
+          route_name: 'add_permission',
+        },
+        data: {
+          body: {
+            name: permission.name,
+            description: permission.description
+          }
+        }
       });
       request.success(function (data) {
         if (data.success) {
@@ -49,7 +54,7 @@ app.controller('PermissionsCtrl', [
     }
 
     $scope.fetchPermissions = function () {
-      var request = $http.get('/permissions');
+      var request = $http.get('/admin/generic');
 
       /**
        * TODO: remove mocked data

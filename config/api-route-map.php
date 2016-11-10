@@ -2,7 +2,7 @@
 
 return [
 
-    'add_permission'            		=> ['permission_create'],
+    'add_permission'            		=> 'permissions',
 
     'org_create' 						=> 'orgs',
     'org_get_multiple' 					=> 'orgs',
