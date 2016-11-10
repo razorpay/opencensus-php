@@ -63,11 +63,8 @@ return array(
     ),
 
     'bitly' => array(
-        'mock'      => env('MAXMIND_MOCK', false),
-        'client_id' => env('BITLY_CLIENT_ID'),
-        'client_secret' => env('BITLY_CLIENT_SECRET'),
+        'mock'      => env('BITLY_MOCK', false),
         'access_token'  => env('BITLY_ACCESS_TOKEN'),
-        'login' => env('BITLY_LOGIN'),
     ),
 
     'lumberjack' => array(
