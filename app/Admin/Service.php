@@ -93,6 +93,26 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function oAuthLogin($input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->admin->oAuthLogin($input)->toArray();
+
+
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+sd($error, $data);
+        return [$error, $data];
+    }
+
     public function loginWithGoogle($code, $googleService, $orgId)
     {
         $this->setApiCredentials();
@@ -122,15 +142,22 @@ class Service extends Base\Service
             $admin['oauth_access_token'] = $token->getAccessToken();
             $admin['oauth_provider_id'] = $result->id;
 
-            // 1. Save the data to API
-sd($admin);
-            $update = $this->api->admin->updateAdmin($orgId, $admin);
-sd($update);
-            // 2. Login the user to dashboard
+            // 1. Save the data (oauth token and provider) to API
 
-            // Attempt login into API first
+            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin);
 
-            Auth::guard('admin')->loginUsingId($admin->id);
+            // 2. Login the user to dashboard. Have to make an API call
+            // to login the user and get an admin_token
+
+            $oAuthLoginInput = [
+                'email'                 => $updatedAdmin['email'],
+                'oauth_access_token'    => $updatedAdmin['oauth_access_token'],
+                'oauth_provider_id'     => $updatedAdmin['oauth_provider_id']
+            ];
+
+            $this->oAuthLogin($oAuthLoginInput);
+
+            // Auth::guard('admin')->loginUsingId($admin->id);
         }
         else
         {

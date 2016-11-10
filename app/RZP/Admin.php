@@ -210,6 +210,13 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
+    public function oAuthLogin(array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().'oauth_login';
+sd($params);
+        return $this->request('POST', $relativeUrl, $params);
+    }
+
     public function getByEmail($orgId, $options)
     {
         $relativeUrl = "orgs/$orgId/admins/get_by_attr";
