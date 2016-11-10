@@ -94,10 +94,13 @@ trait SettlementTrait
         $uploadedFile = $this->createUploadedFile($setlFile);
 
         $request = [
-            'url' => '/settlements/reconcile/generate'.'?failed_recons='.(string) $generateFailedReconciliations,
+            'url' => '/settlements/reconcile/generate',
             'files' => [
                 'file' => $uploadedFile,
             ],
+            'content' => [
+                'failed_recons' => (string) $generateFailedReconciliations
+            ]
         ];
 
         $this->ba->appAuth();
