@@ -144,7 +144,7 @@ class Entity extends Base\PublicEntity
 
         foreach ($this->{$rulesKey} as $rule)
         {
-            $class = 'Rules\\' . studly_case($rule) . 'Rule';
+            $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
 
             $rules[] = new $class($attributes[$rule]);
         }
