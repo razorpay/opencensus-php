@@ -204,9 +204,15 @@ class Reconciler3
         {
             $setl->setUtr($utr);
 
-            $setlHandler = (new Settlement\Handler($setl, $status, $failureReason));
+            $setl->setStatus($status);
 
-            $setl = $setlHandler->process($this->reconciledAt);
+            $setl->setFailureReason($failureReason);
+
+            $setlHandler = (new Settlement\Handler($setl));
+
+            $setlHandler->process();
+
+            $this->repo->saveOrFail($setl);
         }
 
         return $setl;
