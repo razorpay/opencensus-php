@@ -149,4 +149,19 @@ class Service extends Base\Service
 
         return $admins->toArrayPublic();
     }
+
+    public function  editAdmin(string $orgId, string $adminId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $adminId = Entity::verifyIdAndStripSign($adminId);
+
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $adminId);
+
+        $admin->fill($input);
+
+        $this->repo->saveOrFail($admin);
+
+        return $admin->toArrayPublic();
+    }
 }

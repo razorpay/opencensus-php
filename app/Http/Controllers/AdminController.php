@@ -194,6 +194,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editAdmin(string $id, string $adminId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->editAdmin($id, $adminId, $input);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
