@@ -21,7 +21,10 @@ app.controller('OrgsListCtrl', [
     };
 
     $scope.openEditOrgModal = function (id) {
-      $scope.selected = $scope.organizations.filter(function(x) { return x['id'] === id; });
+      $scope.selected = $scope.organizations.filter(function(x) {
+        return x['id'] === id;
+      });
+
       var modalInstance = $modal.open({
         templateUrl: 'editOrgModalContent.html',
         controller: 'editOrgModalCtrl',
@@ -113,7 +116,7 @@ app.controller('OrgsListCtrl', [
       });
     };
 
-    $scope.fetchOrgById('6dLbNSpv5XbCOG');
+    $scope.fetchOrgById('org_6dLbNSpv5XbCOG');
 
     // Edit Organization
 
@@ -136,6 +139,20 @@ app.controller('OrgsListCtrl', [
 
       request.success(function (data) {
         if (data.success) {
+          // Update the org model (todo: make this a helper)
+          
+          var index = null;
+
+          $scope.organizations.forEach(function (v, i) {
+            if (v.id === data.data.id) {
+              index = i;
+            }
+          });
+
+          if (index) {
+            $scope.organizations[index] = data.data;
+          }
+
           $scope.alerts.addAlert('success', 'Organization updated', true);
         }
         else {
@@ -176,10 +193,8 @@ app.controller('OrgsListCtrl', [
   function ($scope, $modalInstance, $http, current) {
     $scope.organization = jQuery.extend({
       auth_type: 'password',
-      route_name: 'org_create'
+      route_name: 'org_edit'
     }, current);
-
-    console.log('org', $scope.organization);
 
     $scope.ok = function (organization) {
       $modalInstance.close(organization);
@@ -188,4 +203,4 @@ app.controller('OrgsListCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
-])
+]);

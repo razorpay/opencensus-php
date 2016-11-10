@@ -45,7 +45,7 @@ app.controller('OrgsUsersCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.openEditAdmin = function (id) {
+    $scope.openEditAdmin = function( id) {
       // Leaving this commented code here since this looks better and would like to make it work.
       // $scope.selected = $scope.admins.find(admin => admin.id === id);
       $scope.selected = $scope.admins.filter(function(x) { return x['id'] === id; });

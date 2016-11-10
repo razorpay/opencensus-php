@@ -29,7 +29,9 @@ class Service extends Base\Service
 
         $input['file'] = null;
 
-        $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery = false);
+        $autoBuildQuery = false;
+        
+        $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
 
         return $request->send();
     }

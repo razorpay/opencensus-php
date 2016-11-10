@@ -42,24 +42,6 @@
   <li class="line dk"></li>
 
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span>Settings</span>
-  </li>
-  <li>
-    <a id="adminsNav" ui-sref="app.admins" ng-show="admin.superadmin == 1">
-      <i class="icon-settings icon text-success-lter"></i>
-      <span>Admins</span>
-    </a>
-  </li>
-  <li>
-    <a id="profileNav" ui-sref="app.profile">
-      <i class="icon-user icon text-warning-lter"></i>
-      <span>Profile</span>
-    </a>
-  </li>
-
-  <li class="line dk"></li>
-
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>User Access Management</span>
   </li>
 
@@ -78,7 +60,7 @@
   </li>
 
   <li>
-    <a id="rolesNav" ui-sref="app.users">
+    <a id="adminsNav" ui-sref="app.users" ng-show="admin.superadmin == 1">
       <i class="fa fa-user icon text-warning-lter"></i>
       <span>Users</span>
     </a>
