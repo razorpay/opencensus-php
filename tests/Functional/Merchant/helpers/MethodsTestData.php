@@ -46,7 +46,7 @@ return [
 
     'testBulkMethodUpdate' => [
         'request' => [
-            'url' => '/merchants/bulkupdate',
+            'url' => '/methods/bulkupdate',
             'method' => 'put',
             'content' => [
                 'merchants' => ['10000000000000'],
