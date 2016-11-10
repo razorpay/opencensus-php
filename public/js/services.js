@@ -243,6 +243,72 @@ angular.module('app.services', [])
     };
   }
 ])
+//Organization
+.factory('organization', [
+  '$q',
+  '$http',
+  '$timeout',
+  '$idle',
+  function ($q, $http, $timeout, $idle) {
+    return {
+      fetchRoles: function (organization_id) {
+        var roles = {};
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'role_get_multiple',
+            url_params: {
+              '{id}': organization_id
+            }
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (role) {
+                roles[role.id] = role.name;
+              });
+            }
+          }
+          else {
+            roles = {};
+          }
+        }).error(function () {
+          return data.errors
+        });
+        return roles;
+      },
+      fetchGroups: function (organization_id) {
+        var groups = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'group_get_multiple',
+            url_params: {
+              '{id}': organization_id
+            }
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (group) {
+                var groupObj = {};
+                groupObj['name'] = group.name;
+                groupObj['code'] = group.id;
+                groupObj['description'] = group.description;
+                groups.push(groupObj);
+              });
+            }
+          }
+          else {
+            groups = {};
+          }
+        }).error(function () {
+        });
+        return groups;
+      }
+    };
+  }
+])
 //Authorisation service
 //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('adminAuthorization', [

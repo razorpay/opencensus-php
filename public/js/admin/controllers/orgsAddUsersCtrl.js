@@ -5,19 +5,11 @@ app.controller('OrgsAddUsersCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
 
-    $scope.roles = {'finance': 'Finance', 'manager': 'Manager'}
-    $scope.groups = [
-      {
-        'name': 'Bangalore',
-        'code': 'bangalore',
-        'description': 'Hello Bangalore'
-      }, {
-        'name': 'Kolkata',
-        'code': 'kolkata',
-        'description': 'Hello Kolkata'
-      }]
+    $scope.roles = organization.fetchRoles('org_6dLbNSpv5XbCOG');
+    $scope.groups = organization.fetchGroups('org_6dLbNSpv5XbCOF');
 
     $scope.user = {};
 
