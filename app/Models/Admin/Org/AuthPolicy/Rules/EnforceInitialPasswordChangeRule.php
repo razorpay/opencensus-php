@@ -15,11 +15,12 @@ class EnforceInitialPasswordChangeRule extends Base
 
     public function validate($admin)
     {
-        if (($admin->isFirstLogin() === true) and
+        if (($admin->isInitialLogin() === true) and
             ($this->enforceInitialPasswordChange === true))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please change the password');
+            return [
+                'action' => 'reset'
+            ];
         }
     }
 }
