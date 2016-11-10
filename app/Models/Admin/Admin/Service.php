@@ -207,7 +207,10 @@ class Service extends Base\Service
 
             $admin->setOldPasswords();
 
-            $admin->updateLastLoginAt();
+            if ($admin->getLastLoginAt() === null)
+            {
+                $admin->updateLastLoginAt();
+            }
         }
 
         $this->repo->saveOrFail($admin);
