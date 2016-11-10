@@ -23,7 +23,7 @@ class Service extends Base\Service
         (new Validator)->validateCredentials($input);
 
         // Get the admin record
-        $admin = $this->repo->admin->findOrFailByUsername($input['username']);
+        $admin = $this->repo->admin->findOrFailByEmail($input['username']);
 
         $validate = (new AuthPolicy\Service)
                         ->validateLogin($admin, $input['password']);

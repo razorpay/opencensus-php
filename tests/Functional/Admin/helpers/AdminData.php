@@ -1,5 +1,9 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
 
     'testCreateAdmin' => [
@@ -7,10 +11,10 @@ return [
             'url' => '/orgs/%s/admins',
             'method' => 'post',
             'content' => [
-                'name'               => 'test_admin',
+                'name'               => 'test admin',
                 'email'              => 'xyz@abc.com',
                 'username'           => 'harshil',
-                'password'           => 'test123456',
+                'password'           => 'random!12#',
                 'remember_token'     => 'yes',
                 'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
@@ -23,10 +27,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'               => 'test_admin',
+                'name'               => 'test admin',
                 'email'              => 'xyz@abc.com',
                 'username'           => 'harshil',
-                'password'           => 'test123456',
                 'remember_token'     => 'yes',
                 'oauth_access_token' => 'oauth123',
                 'oauth_provider_id'  => 'google',
@@ -63,7 +66,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'test_admin',
+                'name' => 'test admin',
                 'email' => 'xyz@abc.com',
                 'username' => 'harshil',
             ],
@@ -71,5 +74,37 @@ return [
         ],
     ],
 
-
+    'testWeakPassword' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'testadmin',
+                'email'              => 'xyz@abc.com',
+                'username'           => 'harshil',
+                'password'           => 'helloworld',
+                'remember_token'     => 'yes',
+                'oauth_access_token' => 'oauth123',
+                'oauth_provider_id'  => 'google',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Password is too weak. Please choose a new password.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ]
 ];
