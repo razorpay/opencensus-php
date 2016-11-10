@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Mail;
+use Config;
 
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
@@ -25,6 +26,7 @@ class Generator
     protected $orderRepo;
 
     const ORDER_CURRENCY = 'INR';
+    const JUST_CREATED_TIME = 600;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -68,7 +70,32 @@ class Generator
 
         (new Notifier($this->invoice))->sendNotificationToCustomer();
 
+        // This needs to be done after saving the invoice since it requires the invoice ID
+        $this->setShortUrl();
+
+        $this->repo->saveOrFail($this->invoice);
+
         return $this->invoice;
+    }
+
+    protected function setShortUrl()
+    {
+        $longUrl = $this->getInvoiceLink($this->invoice->getId());
+
+        $shortenedUrl = $this->app['bitly']->shortenUrl($longUrl);
+
+        $this->invoice->setShortUrl($shortenedUrl);
+    }
+
+    public static function getInvoiceLink($invoiceId)
+    {
+        $context = Config::get('app.context');
+
+        $baseInvoiceUrl = Config::get('url.invoice')[$context];
+
+        $invoiceLink = $baseInvoiceUrl . '/' . $invoiceId;
+
+        return $invoiceLink;
     }
 
     protected function setCustomerDetailsAttributes()

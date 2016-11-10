@@ -113,6 +113,13 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onInvoicePaid($payment)
+    {
+        $payload = $this->getInvoicePayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getOrderPayload($payment)
     {
         $order = $payment->order;
@@ -121,6 +128,24 @@ class ApiEventSubscriber
 
         $partialPayload[Constants\Entity::ORDER] = [
             'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getInvoicePayload($payment)
+    {
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        $partialPayload = $this->getPaymentPayload($payment);
+
+        $partialPayload[Constants\Entity::ORDER] = [
+            'entity' => $order->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::INVOICE] = [
+            'entity' => $invoice->toArrayPublic()
         ];
 
         return $partialPayload;

@@ -331,6 +331,7 @@ trait Capture
         });
 
         $this->eventOrderPaid();
+        $this->eventInvoicePaid();
 
         //
         // Analytics
@@ -348,6 +349,16 @@ trait Capture
         if ($payment->getApiOrderId() !== null)
         {
             $this->app['events']->fire('api.order.paid', array($payment));
+        }
+    }
+
+    protected function eventInvoicePaid()
+    {
+        $payment = $this->payment;
+
+        if ($payment->getApiOrderId() !== null)
+        {
+            $this->app['events']->fire('api.invoice.paid', array($payment));
         }
     }
 
@@ -399,7 +410,7 @@ trait Capture
         }
     }
 
-    protected function updatePaidOrderStatus($payment)
+    protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
         $order = $payment->order;
 
@@ -417,25 +428,27 @@ trait Capture
 
             $this->repo->saveOrFail($order);
 
-            // TODO: Should we de-couple orders and invoices? With more complexity
-            // in invoices, the orders flow might get messy and complicated.
-            // If we add more features which use orders, this flow will get really bad.
             if ($order->invoice !== null)
             {
-                $this->updatePaidInvoiceStatus($order);
+                $this->updatePaidInvoiceStatus($order, $payment);
             }
         }
     }
 
-    protected function updatePaidInvoiceStatus($order)
+    protected function updatePaidInvoiceStatus(Order\Entity $order, Payment\Entity $payment)
     {
         $invoice = $order->invoice;
 
         assert($invoice !== null);
 
-        // TODO: This check should be done before authorize itself.
-        // We should not authorize the payment if the invoice is already paid.
-        // That gets handled by the order mostly. Check the flow again.
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
+            [
+                'payment_id'    => $payment->getId(),
+                'invoice_id'    => $invoice->getId(),
+                'order_id'      => $order->getId(),
+            ]);
+
         if ($invoice->getStatus() === Invoice\Status::PAID)
         {
             throw new Exception\LogicException(

@@ -29,7 +29,7 @@ class Notifier
 
         if (empty($invoice) === false)
         {
-            $this->invoiceLink = $this->getInvoiceLink();
+            $this->invoiceLink = Generator::getInvoiceLink($invoice->getId());
         }
 
         $this->app = App::getFacadeRoot();
@@ -48,7 +48,7 @@ class Notifier
     {
         $this->invoice = $invoice;
 
-        $this->invoiceLink = $this->getInvoiceLink();
+        $this->invoiceLink = Generator::getInvoiceLink($invoice->getId());
     }
 
     public function sendNotificationToCustomer()
@@ -249,16 +249,5 @@ class Notifier
         );
 
         return $request;
-    }
-
-    protected function getInvoiceLink()
-    {
-        $context = Config::get('app.context');
-
-        $baseInvoiceUrl = Config::get('url.invoice')[$context];
-
-        $invoiceLink = $baseInvoiceUrl . '/' . $this->invoice->getId();
-
-        return $invoiceLink;
     }
 }

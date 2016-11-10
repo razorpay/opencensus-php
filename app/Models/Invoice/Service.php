@@ -58,4 +58,13 @@ class Service extends Base\Service
     {
         return (new Notifier())->sendNotificationsInBulk();
     }
+    
+    public function fetchStatus($id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        
+        $data = $this->core->fetchStatus($invoice);
+
+        return $data;
+    }
 }

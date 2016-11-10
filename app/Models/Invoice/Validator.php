@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::VIEW_LESS           => 'sometimes|boolean',
     ];
 
     // protected static $createValidators = [

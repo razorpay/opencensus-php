@@ -84,6 +84,29 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testInvoicePaidWebhookEventData()
+    {
+        // TODO: Finish this
+        $this->markTestSkipped();
+
+        $webhook = $this->createWebhook(['events' => ['invoice.paid' => '1']]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        $invoice = $this->fixtures->create('invoice', ['amount' => 5000]);
+    }
+
     public function testOrderPaidWebhookEventData()
     {
         $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);

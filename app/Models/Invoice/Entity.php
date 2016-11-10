@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
     const DATE                  = 'date';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
+    const SHORT_URL             = 'short_url';
+    const VIEW_LESS             = 'view_less';
 
     const TOTAL_AMOUNT          = 'total_amount';
     const CURRENCY              = 'currency';
@@ -81,6 +83,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS      => Status::PENDING,
         self::SMS_STATUS        => Status::PENDING,
         self::NOTES             => [],
+        self::SHORT_URL         => null,
+        self::VIEW_LESS         => false,
     ];
 
     // Generates fields to be filled in the DB.
@@ -103,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::NOTES,
+        self::VIEW_LESS,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -130,6 +135,8 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::NOTES,
+        self::SHORT_URL,
+        self::VIEW_LESS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -139,7 +146,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        // self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::CUSTOMER_DETAILS,
         self::LINE_ITEMS_DETAILS,
         self::STATUS,
         self::DUE_BY,
@@ -149,6 +157,8 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::NOTES,
+        self::SHORT_URL,
+        self::VIEW_LESS,
         self::CREATED_AT,
     ];
 
@@ -166,6 +176,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::LINE_ITEMS_DETAILS,
+    ];
+
+    protected $casts = [
+        self::VIEW_LESS => 'bool',
     ];
 
     public function build(array $input = array())
@@ -220,6 +234,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    /**
+     * An invoice is considered just created for 5
+     * minutes since creation
+     * @return bool
+     */
+    public function justCreated()
+    {
+        $currentTime = time();
+
+        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
+
+        return (bool) ($secondsSinceCreated <= Generator::JUST_CREATED_TIME);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -271,6 +299,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setShortUrl($shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
     // -------------------------------------- End Setters --------------------------------------
 
     // -------------------------------------- Accessors --------------------------------------
@@ -320,8 +353,9 @@ class Entity extends Base\PublicEntity
 
     public function generateEmailStatus($input)
     {
-        if ((empty($input[self::EMAIL_NOTIFY]) === false) and
-            ($input[self::EMAIL_NOTIFY] === false))
+        // Should not use `empty` because the value can be 0
+        if ((isset($input[self::EMAIL_NOTIFY]) === true) and
+            ($input[self::EMAIL_NOTIFY] === 0))
         {
             $this->setAttribute(self::EMAIL_STATUS, null);
         }
@@ -329,8 +363,9 @@ class Entity extends Base\PublicEntity
 
     public function generateSmsStatus($input)
     {
-        if ((empty($input[self::SMS_NOTIFY]) === false) and
-            ($input[self::SMS_NOTIFY] === false))
+        // Should not use `empty` because the value can be 0
+        if ((isset($input[self::SMS_NOTIFY]) === true) and
+            ($input[self::SMS_NOTIFY] === 0))
         {
             $this->setAttribute(self::SMS_STATUS, null);
         }

@@ -16,12 +16,14 @@ class Event
     const PAYMENT_FAILED            = 'payment.failed';
     const PAYMENT_CAPTURED          = 'payment.captured';
     const ORDER_PAID                = 'order.paid';
+    const INVOICE_PAID              = 'invoice.paid';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
+        self::INVOICE_PAID,
     );
 
     protected static $bitMap = array(
@@ -29,6 +31,7 @@ class Event
         self::PAYMENT_FAILED        => 0x2,
         self::PAYMENT_CAPTURED      => 0x3,
         self::ORDER_PAID            => 0x4,
+        self::INVOICE_PAID          => 0x5,
     );
 
     /**
@@ -40,6 +43,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
+        self::INVOICE_PAID,
     );
 
     protected static $bitPosition = array(
@@ -47,6 +51,7 @@ class Event
         self::PAYMENT_FAILED        => 2,
         self::PAYMENT_CAPTURED      => 3,
         self::ORDER_PAID            => 4,
+        self::INVOICE_PAID          => 5,
     );
 
     /**
