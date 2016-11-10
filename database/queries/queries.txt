@@ -1217,3 +1217,13 @@ ALTER TABLE payments
 
 ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
+
+---
+
+ALTER TABLE adjustment
+    ADD COLUMN settlement_id CHAR(14) AFTER transaction_id;
+
+ALTER TABLE adjustment
+    ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id) ON DELETE RESTRICT;
+
+---

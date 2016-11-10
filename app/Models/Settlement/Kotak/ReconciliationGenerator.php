@@ -49,7 +49,13 @@ class ReconciliationGenerator
     public function generateReconcileFile($input)
     {
         $setlFile = $this->getFile($input);
-        $generateFailedReconciliations = ($input['failed_recons'] === '1');
+
+        $generateFailedReconciliations = false;
+
+        if(isset($input['failed_recons']) === true)
+        {
+            $generateFailedReconciliations = ($input['failed_recons'] === '1');
+        }
 
         if ($setlFile === null)
             return [];
