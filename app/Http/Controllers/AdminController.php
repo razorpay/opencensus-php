@@ -358,7 +358,14 @@ class AdminController extends Controller
 
         $data = (new Admin\Admin\Service)->login($input);
 
-        return ApiResponse::json($data);
+        $httpStatusCode = 200;
+
+        if (isset($data['action']) === true)
+        {
+            $httpStatusCode = 400;
+        }
+
+        return ApiResponse::json($data, $httpStatusCode);
     }
 
     public function oAuthLogin(Admin\Service $service)

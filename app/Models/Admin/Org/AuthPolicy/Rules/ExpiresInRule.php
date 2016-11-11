@@ -17,9 +17,10 @@ class ExpiresInRule extends Base
     {
         if ($admin->getPasswordExpiry() < time())
         {
-            return [
-                'action' => 'password_reset'
-            ];
+            $adminArray = $admin->toArray();
+            $adminArray['action'] = 'password_reset';
+
+            return $adminArray;
         }
     }
 }

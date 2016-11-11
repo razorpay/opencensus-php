@@ -103,10 +103,13 @@ class Entity extends Base\PublicEntity
         self::STRONG_PASSWORD
     ];
 
-    protected $loginRules = [
+    protected $beforeLoginRules = [
         self::MAX_FAILED_ATTEMPTS,
+    ];
+
+    protected $afterLoginRules = [
+        self::EXPIRES_IN,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
-        self::EXPIRES_IN
     ];
 
     public function toArray()

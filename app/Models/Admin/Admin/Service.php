@@ -25,18 +25,21 @@ class Service extends Base\Service
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByEmail($input['username']);
 
-        $validate = (new AuthPolicy\Service)
-                        ->validateLogin($admin, $input['password']);
-
-        if ($validate !== null)
-        {
-            return $validate;
-        }
+        (new AuthPolicy\Service)
+                ->validateLogin($admin, $input['password']);
 
         // Valid password ?
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
+
+            $validate = (new AuthPolicy\Service)
+                            ->validateLogin($admin, $input['password'], 'after');
+
+            if ($validate !== null)
+            {
+                return $validate;
+            }
 
             return $data;
         }
