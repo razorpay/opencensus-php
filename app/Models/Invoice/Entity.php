@@ -235,10 +235,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
-    
+
     public function getShortUrl()
     {
         return $this->getAttribute(self::SHORT_URL);
+    }
+
+    public function getOrderId()
+    {
+        return $this->getAttribute(self::ORDER_ID);
     }
 
     /**

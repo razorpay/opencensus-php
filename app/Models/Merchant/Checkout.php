@@ -46,12 +46,12 @@ class Checkout
 
     protected function checkAndAddDetailsForInvoice(array $input, Entity $merchant, array & $data)
     {
-        if (empty($input[Invoice\Entity::ID]) === true)
+        if (empty($input['invoice_id']) === true)
         {
             return;
         }
 
-        $invoiceId = $input[Invoice\Entity::ID];
+        $invoiceId = $input['invoice_id'];
 
         $invoiceCore = new Invoice\Core;
 

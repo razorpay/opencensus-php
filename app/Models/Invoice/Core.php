@@ -119,7 +119,7 @@ class Core extends Base\Core
 
         $orderId = $invoice->getOrderId();
 
-        $customer = $invoice->customer();
+        $customer = $invoice->customer;
 
         $data['invoice'] = [
             'order_id'  => $orderId,
