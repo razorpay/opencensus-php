@@ -53,42 +53,35 @@
   </li>
 
   <li>
-    <a id="orgsNav" ui-sref="app.orgs.list">
+    <a id="orgsNav" ui-sref="app.orgs.list" ng-show="admin.permissions.indexOf('view_all_org') !== -1">
       <i class="fa fa-sitemap icon text-warning-lter"></i>
       <span>Organisations</span>
     </a>
   </li>
 
   <li>
-    <a id="usersNav" ui-sref="app.users">
+    <a id="usersNav" ui-sref="app.users" ng-show="admin.permissions.indexOf('view_all_admin') !== -1">
       <i class="fa fa-user icon text-warning-lter"></i>
       <span>Users</span>
     </a>
   </li>
 
   <li>
-    <a id="adminsNav" ui-sref="app.users" ng-show="admin.superadmin == 1">
-      <i class="fa fa-user icon text-warning-lter"></i>
-      <span>Users</span>
-    </a>
-  </li>
-
-  <li>
-    <a id="rolesNav" ui-sref="app.roles.list">
+    <a id="rolesNav" ui-sref="app.roles.list" ng-show="admin.permissions.indexOf('view_all_role') !== -1">
       <i class="fa fa-address-book icon text-warning-lter"></i>
       <span>Roles</span>
     </a>
   </li>
 
   <li>
-    <a id="permissionsNav" ui-sref="app.permissions.list">
+    <a id="permissionsNav" ui-sref="app.permissions.list" ng-show="admin.permissions.indexOf('view_all_permission') !== -1">
       <i class="fa fa-id-card icon text-warning-lter"></i>
       <span>Permissions</span>
     </a>
   </li>
 
   <li>
-    <a id="groupsNav" ui-sref="app.groups.list">
+    <a id="groupsNav" ui-sref="app.groups.list" ng-show="admin.permissions.indexOf('view_all_group') !== -1">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Groups</span>
     </a>
