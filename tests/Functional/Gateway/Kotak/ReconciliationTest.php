@@ -64,6 +64,9 @@ class ReconciliationTest extends TestCase
             $setlFile,
             $generateFailedReconciliations);
 
+        // Mocking time to 22:30 for settlements to get processed
+        Carbon::setTestNow(Carbon::createFromTime(22, 30, 0, 'Asia/Kolkata'));
+
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
@@ -71,6 +74,9 @@ class ReconciliationTest extends TestCase
         $this->fetchAndMatchDailySettlement();
 
         $this->checkAdjustmentCreated();
+
+        // Resetting time
+        Carbon::setTestNow();
     }
 
     protected function initiateSettlementsAndAssertSuccess()

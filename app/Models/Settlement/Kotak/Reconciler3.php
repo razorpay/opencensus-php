@@ -231,6 +231,9 @@ class Reconciler3
             $setlHandler->process();
 
             $this->repo->saveOrFail($setl);
+
+            $setl->transaction->setReconciledAt($this->reconciledAt);
+            $this->repo->saveOrFail($setl->transaction);
         }
 
         return $setl;
