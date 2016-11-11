@@ -15,30 +15,18 @@ class Handler extends Base\Core
 
     protected $merchant;
 
-    protected $status;
-
-    protected $failureReason;
-
-    protected $reconciledAt;
-
-    public function __construct($setl, $status, $failureReason)
+    public function __construct($setl)
     {
         parent::__construct();
 
         $this->setl = $setl;
 
         $this->merchant = $setl->merchant;
-
-        $this->status = $status;
-
-        $this->failureReason = $failureReason;
     }
 
-    public function process($reconciledAt)
+    public function process()
     {
-        $this->reconciledAt = $reconciledAt;
-
-        if ($this->status !== Settlement\Status::FAILED)
+        if ($this->setl->getStatus() !== Status::FAILED)
         {
             $this->processSettlementSuccess();
         }
@@ -46,38 +34,26 @@ class Handler extends Base\Core
         {
             $this->processSettlementFailure();
         }
-
-        $this->repo->saveOrFail($this->setl);
-
-        $this->setl->transaction->setReconciledAt($this->reconciledAt);
-
-        $this->repo->transaction->save($this->setl->transaction);
-
-        return $this->setl;
     }
 
     protected function processSettlementSuccess()
     {
-        $this->setl->setStatus($this->status);
-
-        $this->setl->setFailureReason($this->failureReason);
     }
 
+    /**
+     *  creates adjustment and its transaction and sets merchant funds on hold
+     */
     protected function processSettlementFailure()
     {
-        $this->setl->setStatus(Status::FAILED);
+        $desc = 'Adjustment for failed settlement';
 
-        $this->setl->setFailureReason($this->failureReason);
-
-        $desc = 'Adjustment for failed settlement: ' . $this->setl->getPublicId();
-
-        if ($this->setl->adjustment() !== null)
+        if ($this->setl->adjustment === null)
         {
             $adj = $this->newAdjustmentEntity($desc);
 
             $adjTxn = (new Transaction\Core)->createFromAdjustment($adj);
 
-            $this->repo->save($adjTxn);
+            $this->repo->saveOrFail($adjTxn);
         }
 
         $this->holdMerchantFunds();
@@ -89,15 +65,19 @@ class Handler extends Base\Core
 
     protected function newAdjustmentEntity($desc)
     {
-        $adj = new Adjustment\Entity;
+        $input = [
+            Adjustment\Entity::AMOUNT      => $this->setl->getAmount(),
+            Adjustment\Entity::CURRENCY    => 'INR',
+            Adjustment\Entity::DESCRIPTION => $desc,
+        ];
 
-        $adj->setAmount($this->setl->getAmount());
-        $adj->setAttribute(Adjustment\Entity::CURRENCY, 'INR');
-        $adj->setAttribute(Adjustment\Entity::DESCRIPTION, $desc);
-        $adj->setAttribute(Adjustment\Entity::CHANNEL, $this->setl->getChannel());
-        $adj->setAttribute(Adjustment\Entity::SETTLEMENT_ID, $this->setl->getId());
+        $adj = (new Adjustment\Entity)->build($input);
 
-        $adj->merchant()->associate($this->setl->merchant);
+        $adj->setChannel($this->setl->getChannel());
+
+        $adj->settlement()->associate($this->setl);
+
+        $adj->merchant()->associate($this->merchant);
 
         $this->repo->saveOrFail($adj);
 

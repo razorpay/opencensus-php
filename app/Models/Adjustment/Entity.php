@@ -24,7 +24,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::AMOUNT,
         self::DESCRIPTION,
-        self::AMOUNT,
         self::CURRENCY);
 
     protected $visible = array(
