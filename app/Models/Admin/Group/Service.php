@@ -3,8 +3,10 @@
 namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -32,7 +34,7 @@ class Service extends Base\Service
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $groupId);
 
-        return $group->toArrayPublic();
+        return $group->toArrayPublicWithRelationships();
     }
 
     public function deleteGroup(string $orgId, string $groupId)
@@ -108,14 +110,23 @@ class Service extends Base\Service
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $groupId);
 
-        $adminIds = $input['admin_ids'];
+        $adminIds = [];
 
-        foreach ($adminIds as $adminId)
+        if (isset($input['admins']) === false)
         {
+            throw new Exception\BadRequestException('Admins not given in the url');
+        }
+
+        foreach ($input['admins'] as $adminId)
+        {
+            $adminId = Admin\Entity::verifyIdAndStripSign($adminId);
+
             $admin = $this->repo->admin->findOrFail($adminId);
 
             $this->repo->group->addAdminToGroup($group, $admin);
         }
+
+        return $group->toArrayPublicWithRelationships();
     }
 
     public function revokeRoleFromGroup(
@@ -134,5 +145,4 @@ class Service extends Base\Service
 
         $this->repo->group->revokeRoleOrFail($group, $role);
     }
-
 }

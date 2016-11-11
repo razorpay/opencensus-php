@@ -4,8 +4,9 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Base;
 
-use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
+use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -28,10 +29,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $groupId)
+                    ->with('admins')
+                    ->with('merchants')
+                    ->with('roles')
                     ->firstOrFail();
     }
 
-    public function addRoleToGroup(Group\Entity $group, Role\Entity $role)
+    public function addRoleToGroup(Entity $group, Role\Entity $role)
     {
         $group->roles()->attach($role);
     }
@@ -49,7 +53,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function hasRole(Group\Entity $group, Role\Entity $role)
+    public function hasRole(Entity $group, Role\Entity $role)
     {
         // TODO Check how to do it with the pivot table. Iterating over a collection is bad!
         $roleId = $role->getId();
@@ -60,9 +64,7 @@ class Repository extends Base\Repository
             })->isEmpty();
     }
 
-    public function addMerchantToGroup(
-        Group\Entity $admin,
-        Merchant\Entity $merchant)
+    public function addMerchantToGroup(Entity $admin, Merchant\Entity $merchant)
     {
         $group->merchants()->attach($merchant);
     }
@@ -93,7 +95,7 @@ class Repository extends Base\Repository
             })->isEmpty();
     }
 
-    public function addAdminToGroup(Group\Entity $group, Admin\Entity $admin)
+    public function addAdminToGroup(Entity $group, Admin\Entity $admin)
     {
         $group->admins()->attach($admin);
     }
@@ -119,6 +121,9 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
+                    ->with('merchants')
+                    ->with('admins')
+                    ->with('roles')
                     ->get();
     }
 }

@@ -27,12 +27,23 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
     ];
 
+    protected $visible = [
+        self::ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::ORG_ID,
+        self::CREATED_AT,
+    ];
+
     protected $public = [
         self::ID,
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
         self::CREATED_AT,
+        'admins',
+        'roles',
+        'merchants',
     ];
 
     // Immediate higher groups which have access to this group and its
@@ -67,5 +78,23 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function toArrayPublicWithRelationships()
+    {
+        // TODO Define this method in generic way for public entity
+        $data = $this->toArrayPublic();
+
+        $admins = $this->admins->toArrayPublic();
+        $data['admins'] = $admins;
+
+        $roles = $this->roles->toArrayPublic();
+        $data['roles'] = $roles;
+
+        $merchants = $this->merchants->toArrayPublic();
+        $data['merchants'] = $merchants;
+
+        return $data;
+
     }
 }

@@ -9,7 +9,6 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME        => 'required|string|max:100',
         Entity::DESCRIPTION => 'required|string|max:250',
-
     ];
 
     protected static $editRules = [
