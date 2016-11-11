@@ -17,53 +17,69 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href class="list-group-item" ng-click="openInitiateSetl()">
+        <a href class="list-group-item" ng-click="openInitiateSetl()"
+          ng-show="admin.permissions.indexOf('create_settlement_initiate') !== -1">
           Initiate Settlement
         </a>
-        <a href class="list-group-item" ng-click="openSetlUpload()">
+        <a href class="list-group-item" ng-click="openSetlUpload()"
+          ng-show="admin.permissions.indexOf('add_settlement_reconciliation') !== -1">
           Upload Settlement Reconciliation (UTR)
         </a>
-        <a href class="list-group-item" ng-click="openReconUpload()">
+        <a href class="list-group-item" ng-click="openReconUpload()"
+          ng-show="admin.permissions.indexOf('add_reconciliation_file') !== -1">
           Upload Reconciliation File (Payment/Refund)
         </a>
-        <a href class="list-group-item" ng-click="openAddIIN()">
+        <a href class="list-group-item" ng-click="openAddIIN()"
+          ng-show="admin.permissions.indexOf('edit_iin_rule') !== -1">
           Add IIN Rule
         </a>
-        <a href class="list-group-item" ng-click="openAddEMI()">
+        <a href class="list-group-item" ng-click="openAddEMI()"
+          ng-show="admin.permissions.indexOf('create_emi_plan') !== -1">
           Add EMI Plan
         </a>
-        <a href class="list-group-item" ng-click="openVerifyPayment()">
+        <a href class="list-group-item" ng-click="openVerifyPayment()"
+          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
           Verify Payment
         </a>
-        <a href class="list-group-item" ng-click="openArchiveMerchant()">
+        <a href class="list-group-item" ng-click="openArchiveMerchant()"
+          ng-show="admin.permissions.indexOf('edit_merchant_archive') !== -1">
           Archive Merchant
         </a>
-        <a href class="list-group-item" ng-click="openConfirmMerchant()">
+        <a href class="list-group-item" ng-click="openConfirmMerchant()"
+          ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1">
           Confirm Merchant
         </a>
-        <a href class="list-group-item" ng-click="verifyAllPayments()">
+        <a href class="list-group-item" ng-click="verifyAllPayments()"
+          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
           Verify All Payments
         </a>
-        <a href class="list-group-item" ng-click="openGenerateRefund()">
+        <a href class="list-group-item" ng-click="openGenerateRefund()"
+          ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
           Generate Refunds Excel (Netbanking)
         </a>
-        <a href class="list-group-item" ng-click="generateBeneficiaryFile()">
+        <a href class="list-group-item" ng-click="generateBeneficiaryFile()"
+          ng-show="admin.permissions.indexOf('create_beneficiary_file') !== -1">
           Generate Beneficiary File
         </a>
-        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
+        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()"
+          ng-show="admin.permissions.indexOf('view_beneficiary_file') !== -1">
           Download Beneficiary File
         </a>
-        <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()">
+        <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
+          ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1">
           Authorize Failed Payment
-        <a href class="list-group-item" ng-click="openEditNewsletter()">
+        <a href class="list-group-item" ng-click="openEditNewsletter()"
+          ng-show="admin.permissions.indexOf('send_newsletter') !== -1">
           Send Merchant Newsletter
         </a>
         <a href class="list-group-item" ng-click="triggerError()"
           ng-confirm-click="Are you sure you want to trigger an error?"
+          ng-show="admin.permissions.indexOf('trigger_dummy_error') !== -1"
         >
           Trigger Dummy Error
         </a>
-        <a href class="list-group-item" ng-click="openApiRequest()">
+        <a href class="list-group-item" ng-click="openApiRequest()"
+          ng-show="admin.permissions.indexOf('make_api_call') !== -1">
           Make API Call
         </a>
       </div>
