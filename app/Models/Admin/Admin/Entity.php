@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::LAST_LOGIN_AT
     ];
 
-    protected $visible = [
+    protected $public = [
         self::ID,
         self::EMAIL,
         self::NAME,
@@ -80,25 +80,10 @@ class Entity extends Base\PublicEntity
         self::OLD_PASSWORDS,
         self::DISABLED,
         self::LOCKED,
-        self::LAST_LOGIN_AT
-    ];
-
-    protected $public = [
-        self::ID,
-        self::EMAIL,
-        self::NAME,
-        self::USERNAME,
-        self::OAUTH_ACCESS_TOKEN,
-        self::OAUTH_PROVIDER_ID,
-        self::ORG_ID,
-        self::USER_TYPE,
-        self::EMPLOYEE_CODE,
-        self::BRANCH_CODE,
-        self::DEPARTMENT_CODE,
-        self::SUPERVISOR_CODE,
-        self::LOCATION_CODE,
-        self::DISABLED,
-        self::LOCKED
+        self::LAST_LOGIN_AT,
+        'roles',
+        'groups',
+        'merchants',
     ];
 
     public function getPassword()

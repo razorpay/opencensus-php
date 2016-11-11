@@ -16,12 +16,14 @@ class Validator extends Base\Validator
         Entity::REMEMBER_TOKEN      => 'sometimes|string|max:250',
         Entity::OAUTH_ACCESS_TOKEN  => 'sometimes|string|max:250',
         Entity::OAUTH_PROVIDER_ID   => 'sometimes|string|max:250',
-        Entity::ORG_ID              => 'required|string',
+ //       Entity::ORG_ID              => 'required|string',
         Entity::BRANCH_CODE         => 'sometimes|string',
         Entity::DEPARTMENT_CODE     => 'sometimes|string',
         Entity::SUPERVISOR_CODE     => 'sometimes|string',
         Entity::LOCATION_CODE       => 'sometimes|string',
-        Entity::EMPLOYEE_CODE       => 'sometimes|string',
+        Entity::EMPLOYEE_CODE       => 'required|string',
+        'roles'                     => 'sometimes|array',
+        'merchants'                 => 'sometimes|array',
     ];
 
     protected static $editRules = [

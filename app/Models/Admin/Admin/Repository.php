@@ -100,6 +100,9 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
+                    ->with('roles')
+                    ->with('merchants')
+                    ->with('groups')
                     ->get();
     }
 
@@ -110,6 +113,9 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $adminId)
+                    ->with('roles')
+                    ->with('merchants')
+                    ->with('groups')
                     ->firstOrFail();
     }
 }

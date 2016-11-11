@@ -99,7 +99,7 @@ class Service extends Base\Service
 
         $admin = $this->core->create($orgId, $input);
 
-        return $admin->toArray();
+        return $admin->toArrayPublic();
     }
 
     public function getAdmin(string $orgId, string $adminId)

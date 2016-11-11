@@ -34,4 +34,15 @@ class Repository extends Base\Repository
                     ->with('permissions')
                     ->get();
     }
+
+    public function retrieveByOrgIdAndIdOrFail(
+        string $orgId,
+        string $roleId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::ID, '=', $roleId)
+                    ->with('permissions')
+                    ->firstOrFail();
+    }
 }
