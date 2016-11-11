@@ -25,7 +25,6 @@ return [
     'admin_create'                      => 'orgs/{id}/admins',
     'admin_get_app_auth'                => 'orgs/{id}/current_admin',
 
-
     // Permissions
     'permission_get_multiple'           => 'permissions'
 ];

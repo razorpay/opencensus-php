@@ -11,140 +11,140 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
+        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account." ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
+        <a tooltip="Confirm merchant Account." ng-show="(unconfirmed===true) && (admin.permissions.indexOf('edit_merchant_confirm') !== -1)" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item see-activation-form">
+        <a ui-sref="app.merchants.activation({id:merchant.details.id})" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
-        <a href class="list-group-item lock-form" ng-show="merchant.details.locked==0" ng-click="lockForm()">
+        <a href class="list-group-item lock-form" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
-        <a href class="list-group-item unlock-form" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
+        <a href class="list-group-item unlock-form" ng-show="(merchant.details.locked==1) && (admin.permissions.indexOf('edit_merchant_unlock_activation') !== -1)" ng-click="unlockForm()">
           Unlock Activation Form <i class="pull-right fa fa-unlock"></i>
         </a>
         <a href class="list-group-item activate-merchant"
-        ng-show="merchant.details.activated==0"
+        ng-show="(merchant.details.activated==0) && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
         ng-click="activateMerchant()"
         >
           Activate Merchant <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
-          ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1"
+          ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1 && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
           ng-confirm-click="This will activate the merchant only on the dashboard side. Use with caution"
           ng-click="activateMerchant(true)"
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds==0"
+        ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
         </a>
-        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false" ng-click="setInternational(1)">
+        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
           Enable International <i class="pull-right fa fa-globe"></i>
         </a>
-        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true" ng-click="setInternational(0)">
+        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
-          ng-show="merchant.details.hold_funds==1"
+          ng-show="merchant.details.hold_funds==1 && admin.permissions.indexOf('edit_merchant_release_funds') !== -1"
           ng-confirm-click="Are you sure you want to release this merchant's funds?"
           ng-click="releaseMerchantFunds()"
         >
           Release Merchant Funds <i class="pull-right fa fa-thumbs-up"></i>
         </a>
-        <a href class="list-group-item enable-live-transactions" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
+        <a href class="list-group-item enable-live-transactions" ng-show="merchant.details.activated==1 && merchant.details.live==0 && admin.permissions.indexOf('edit_merchant_enable_live') !== -1" ng-click="enableLive()">
           Enable Live Transactions <i class="pull-right fa fa-check"></i>
         </a>
-        <a href class="list-group-item disable-live-transactions" ng-show="merchant.details.live==1 "ng-click="disableLive()"
+        <a href class="list-group-item disable-live-transactions" ng-show="merchant.details.live==1 && admin.permissions.indexOf('edit_merchant_disable_live') !== -1"ng-click="disableLive()"
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditMethods()">
+        <a href class="list-group-item" ng-click="openEditMethods()" ng-show="admin.permissions.indexOf('edit_merchant_methods') !== -1">
           Edit Methods
           <i class="pull-right fa fa-money"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
+        <a href class="list-group-item" ng-show="merchant.details.methods.card == false && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="enableMethod('card')">
           Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')">
+        <a href class="list-group-item" ng-show="merchant.details.methods.card == true && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="disableMethod('card')">
           Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0" ng-click="setReceiptEmail(1)">
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
           Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1" ng-click="setReceiptEmail(0)">
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1 && admin.permissions.indexOf('edit_merchant_disable_receipt') !== -1" ng-click="setReceiptEmail(0)">
           Disable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
 
-        <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()">
+        <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()" ng-show="admin.permissions.indexOf('edit_merchant_pricing') !== -1">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()">
+        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()" ng-show="admin.permissions.indexOf('assign_merchant_terminal') !== -1">
           Assign Terminal <i class="pull-right fa fa-terminal"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAssignBanks()">
+        <a href class="list-group-item" ng-click="openAssignBanks()" ng-show="admin.permissions.indexOf('assign_merchant_banks') !== -1">
           Assign Banks <i class="pull-right fa fa-university"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAddAdjustment()">
+        <a href class="list-group-item" ng-click="openAddAdjustment()" ng-show="admin.permissions.indexOf('add_merchant_adjustment') !== -1">
           Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
-        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()">
+        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()" ng-show="admin.permissions.indexOf('edit_merchant') !== -1">
           Edit Merchant <i class="pull-right fa fa-pencil-square"></i>
         </a>
-        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
+        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()" ng-show="admin.permissions.indexOf('edit_merchant_email') !== -1">
           Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
         </a>
          <a tooltip="Only superadmins have access to this" href class="list-group-item"
           ng-click="openChangeBankAccountDetails()"
-          ng-show="merchant.details.activated == 1"
+          ng-show="merchant.details.activated == 1 && admin.permissions.indexOf('edit_merchant_banks') !== -1"
         >
           Edit Bank Account Details <i class="pull-right fa fa-university"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAutofillForms()">
+        <a href class="list-group-item" ng-click="openAutofillForms()" ng-show="admin.permissions.indexOf('merchant_autofill_form') !== -1">
           Autofill Activation Form <i class="pull-right fa fa-magic"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditComment()">
+        <a href class="list-group-item" ng-click="openEditComment()" ng-show="admin.permissions.indexOf('edit_merchant_comments') !== -1">
           Edit Comment <i class="pull-right fa fa-commenting"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.archived_at != null" ng-click="unarchiveMerchant()"
+        <a href class="list-group-item" ng-show="merchant.details.archived_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unarchiveMerchant()"
         >
           Unarchive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.archived_at === null" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        <a href class="list-group-item" ng-show="merchant.details.archived_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()">
+        <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()" ng-show="admin.permissions.indexOf('edit_merchant_mark_referred') !== -1">
           Mark as Referred <i class="pull-right fa fa-gift"></i>
         </a>
-        <a href class="list-group-item tag-merchant" id="btn-tagMerchant" ng-click="openTagMerchant()">
+        <a href class="list-group-item tag-merchant" id="btn-tagMerchant" ng-click="openTagMerchant()" ng-show="admin.permissions.indexOf('edit_merchant_tags') !== -1">
           Tag Merchant <i class="pull-right fa fa-tag"></i>
         </a>
-        <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()">
+        <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()" ng-show="admin.permissions.indexOf('edit_merchant_features') !== -1">
           Feature Merchant <i class="pull-right fa fa-tag"></i>
         </a>
-        <a href class="list-group-item" ng-click="openUploadScreenshot()">
+        <a href class="list-group-item" ng-click="openUploadScreenshot()" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
           Upload screenshots <i class="pull-right fa fa-upload"></i>
         </a>
-        <a href class="list-group-item" ng-click="captureScreenshot()">
+        <a href class="list-group-item" ng-click="captureScreenshot()" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
           Capture Screenshots <i class="pull-right fa fa-camera"></i>
         </a>
-        <a href class="list-group-item" ng-click="openCredits()">
+        <a href class="list-group-item" ng-click="openCredits()" ng-show="admin.permissions.indexOf('add_merchant_credits') !== -1">
           Add Credits
         </a>
       </div>
     </div>
   </div>
   <div class="panel panel-default col-sm-6" >
-    <div class="panel-heading m-t m-b">
+    <div class="panel-heading m-t m-b" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">
       Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
     </div>
     <div class="text-center m-t">

@@ -9,6 +9,9 @@ app.controller('MerchantDetailCtrl', [
   '$modal',
   'riskMap',
   function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap) {
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
     $scope.riskMap = riskMap;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
