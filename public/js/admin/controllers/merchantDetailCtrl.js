@@ -1333,7 +1333,7 @@ app.controller('MerchantDetailCtrl', [
             mercreg_tel_after: merchant_details.contact_mobile || '',
             mercreg_fax: '',
             mercreg_email: merchant_details.contact_email || '',
-            mercreg_addr: reg_addr || '',
+            mercreg_addr: removeLineBreaks(reg_addr || ''),
             mercreg_country: 'India',
             mercreg_tz: 'GMT + 5:30 (IST)',
             mercop_company: merchant_details.business_name || '',
@@ -1342,7 +1342,7 @@ app.controller('MerchantDetailCtrl', [
             mercop_tel_after: merchant_details.contact_mobile || '',
             mercop_fax: '',
             mercop_email: merchant_details.contact_email || '',
-            mercop_addr: ops_addr || '',
+            mercop_addr: removeLineBreaks(ops_addr || ''),
             cpv_head: '',
             cpv_op: '',
             merctech_contact: 'Razorpay Software Private Limited',
@@ -1429,3 +1429,7 @@ app.controller('MerchantDetailCtrl', [
     };
   }
 ]);
+
+function removeLineBreaks(str) {
+  return str.replace(/[\n|\r]/g, ' ')
+}

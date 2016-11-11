@@ -45,6 +45,9 @@ build:
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
+          name: change storage permissions
+          code: sudo chmod g+wx -R storage/ || true
+      - script:
           name: copy trace logs
           code: cp storage/logs/trace.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
       - script:
@@ -68,9 +71,9 @@ deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
           region: $AWS_REGION
-          application-name: Dashboard
+          application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
-          s3-bucket: "rzp-codedeploy"
+          s3-bucket: "rzp-code-deploy"
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
