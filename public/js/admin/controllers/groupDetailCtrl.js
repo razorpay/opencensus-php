@@ -23,7 +23,6 @@ app.controller('GroupDetailCtrl', [
         params: {
           route_name: 'group_get',
           url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF',
             '{groupId}': 'grp_6euDnqS4zQR4ke'  //TODO Add actual ids
           }
         }
@@ -39,9 +38,6 @@ app.controller('GroupDetailCtrl', [
         ignoreErrors: true,
         params: {
           route_name: 'admin_get_multiple',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOG' //TODO Add actual id
-          }
         }
       });
       var orgAdmins = [];
@@ -62,9 +58,6 @@ app.controller('GroupDetailCtrl', [
         ignoreErrors: true,
         params: {
           route_name: 'group_admins_get',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOG' //TODO Add actual id
-          }
         }
       });
       var groupAdmins = [];
@@ -98,8 +91,7 @@ app.controller('GroupDetailCtrl', [
         params: {
           route_name: 'group_admins_create',
           url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF', //TODO Add actual ids
-            '{groupId}': 'grp_6euDnqS4zQR4ke'
+            '{groupId}': 'grp_6euDnqS4zQR4ke' //TODO Add actual ids
           }
         },
         data: {

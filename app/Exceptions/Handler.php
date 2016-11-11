@@ -49,6 +49,8 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
+        parent::report($e);
+
         if (!$this->isCritical($e))
         {
             return;
