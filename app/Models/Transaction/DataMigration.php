@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Method;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
@@ -78,7 +79,19 @@ class DataMigration extends Base\Service
 
             $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $totalTax = $this->calculateServiceTaxes($fees, $payment->getCaptureTimestamp());
+            $paymentMethod = $payment->getMethod();
+
+            $taxTime = $payment->getCaptureTimestamp();
+
+            if ($paymentMethod === Method::NETBANKING or
+                $paymentMethod === Method::WALLET or
+                $paymentMethod === Method::EMI or
+                $paymentMethod === Method::UPI)
+            {
+               $taxTime = $payment->getAuthorizeTimestamp();
+            }
+
+            $totalTax = $this->calculateServiceTaxes($fees, $taxTime);
 
             $feesSplit = $this->feeCalculator->getFeesSplit();
 
@@ -86,7 +99,7 @@ class DataMigration extends Base\Service
 
             if ($shouldSaveFeeDetails === true)
             {
-                $this->saveFeeDetails($txn, $feesSplit, $payment->getCaptureTimestamp());
+                $this->saveFeeDetails($txn, $feesSplit, $taxTime);
 
                 $migratedTxns[] = $txn->getPublicId();
             }
