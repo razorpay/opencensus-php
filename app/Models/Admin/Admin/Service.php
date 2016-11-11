@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org\AuthPolicy;
 
 class Service extends Base\Service
@@ -148,21 +149,30 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addRoleToAdmin(
+    public function updateRolesForAdmin(
         string $orgId,
         string $adminId,
-        string $roleId)
+        array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);
-        $roleId = Merchant\Entity::verifyIdAndStripSign($roleId);
+
+        $roleIds = [];
+
+        foreach ($input['roles']  as $roleId)
+        {
+            $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+        }
 
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
-        $role = $this->repo->role->findOrFail($roleId);
+        $admin->roles()->sync($roleIds);
 
-        $this->repo->admin->addRoleToAdmin($admin, $role);
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $adminId);
+
+        return $admin->toArrayPublic();
     }
 
     public function addMerchantToAdmin(

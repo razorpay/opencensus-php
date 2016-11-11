@@ -296,7 +296,7 @@ final class Route
         'admin_get'                               => ['get',      'orgs/{id}/admins/{adminId}',                     'AdminController@getAdmin'                                          ],
         'admin_edit'                              => ['put',      'orgs/{id}/admins/{adminId}',                     'AdminController@editAdmin'                                         ],
         'admin_delete'                            => ['delete',   'orgs/{id}/admins/{adminId}',                     'AdminController@deleteAdmin'                                       ],
-        'admin_roles_create'                      => ['post',     'orgs/{id}/admins/{adminId}/roles',               'AdminController@addRoleToAdmin'                                    ],
+        'admin_roles_create'                      => ['post',     'orgs/{id}/admins/{adminId}/roles',               'AdminController@updateRolesForAdmin'                               ],
         'admin_roles_revoke'                      => ['delete',   'orgs/{id}/admins/{adminId}/roles',               'AdminController@revokeRoleFromAdmin'                               ],
         'admin_merchants_create'                  => ['post',     'orgs/{id}/admins/{adminId}/merchants',           'AdminController@addMerchantToAdmin'                                ],
         'admin_merchants_delete'                  => ['delete',   'orgs/{id}/admins/{adminId}/merchants',           'AdminController@deleteMerchantFromAdmin'                           ],
@@ -624,7 +624,7 @@ final class Route
         'group_get',
         'group_get_multiple',
         'admin_get',
-
+        'admin_roles_create',
         'org_create',
         'org_get_multiple',
         'org_edit',

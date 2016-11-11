@@ -184,14 +184,14 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addRoleToAdmin(
+    public function updateRolesForAdmin(
         string $id,
         string $adminId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->addRoleToAdmin(
-            $id, $adminId, $roleId);
+        $data = (new Admin\Admin\Service)->updateRolesForAdmin(
+            $id, $adminId, $input);
 
         return ApiResponse::json($data);
     }
