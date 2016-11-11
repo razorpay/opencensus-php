@@ -30,13 +30,15 @@ class Service extends Base\Service
                          ->validate($admin, $password);
     }
 
-    public function validateLogin($admin, $password)
+    public function validateLogin($admin, $password, $op = 'before')
     {
         $policy = new Entity;
 
         $validator = new Validator;
 
+        $op = $op . 'Login';
+
         return $validator->setPolicy($policy)
-                         ->validate($admin, $password, 'login');
+                         ->validate($admin, $password, $op);
     }
 }
