@@ -28,6 +28,7 @@ class AdminController extends Controller
         'dashboard.razorpay.dev'         => 'org_6dLbNSpv5XbCOG',
         'heimdall.razorpay.dev'          => 'org_6dLbNSpv5XbCOG',
         'beta-wl-dashboard.razorpay.com' => 'org_6dLbNSpv5XbCOG',
+        'dashboard.codeankit.me'         => 'org_6dLbNSpv5XbCOG',
     ];
 
     /*
@@ -77,7 +78,7 @@ class AdminController extends Controller
         }
 
         // Password login by default
-        return redirect('/admin/#access/auth/password');
+        return redirect('/admin#/access/auth/password');
     }
 
     /**
