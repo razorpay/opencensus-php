@@ -298,13 +298,14 @@ class Repository extends Base\Repository
 
     public function getTransactionsToBeMigrated()
     {
-        $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
+        // $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
 
         $query = $this->newQuery()
                     ->select('transactions.*')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                     ->where(Entity::TYPE, 'payment')
                     ->where(Entity::GRATIS, false)
+                    ->where('transactions.service_tax', '>', 0)
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNotIn("transactions.id", function($query)
                         {
@@ -312,12 +313,12 @@ class Repository extends Base\Repository
                                   ->from(TABLE::FEE_BREAKUP);
                         });
 
-        if ($latestFeeBreakup !== null)
-        {
-            $txnId = $latestFeeBreakup->getTransactionId();
+        // if ($latestFeeBreakup !== null)
+        // {
+        //     $txnId = $latestFeeBreakup->getTransactionId();
 
-            $query->where('transactions.id', '>', $txnId);
-        }
+        //     $query->where('transactions.id', '>', $txnId);
+        // }
 
         return $query->limit(1000)->get();
     }

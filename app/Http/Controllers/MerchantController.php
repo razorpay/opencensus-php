@@ -485,32 +485,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    /**
-    * Gets the list of beta fetures enabled for merchant
-    * @param  string $id merchant id
-    * @return array      array of feature names
-    */
-    public function getMerchantFeatures($id)
-    {
-        $data = (new Merchant\Service)->getMerchantFeatures($id);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Adds or updated the list of beta fetures for an merchant
-     * @param  string     $id     merchant id
-     * @return merchant           updated entity
-     */
-    public function postMerchantFeatures($id)
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getDummyFeatures()
     {
         $input = Request::all();
