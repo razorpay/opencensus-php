@@ -79,8 +79,6 @@ class DataMigration extends Base\Service
 
             $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $paymentMethod = $payment->getMethod();
-
             $taxTime = $this->getTaxTime($payment);
 
             $totalTax = $this->calculateServiceTaxes($fees, $taxTime);
