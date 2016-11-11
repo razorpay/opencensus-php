@@ -2,14 +2,12 @@
 
 namespace RZP\Models\Invoice;
 
-class Status
+class NotifyStatus
 {
-    // -------- Invoice Statuses -----------
-    const DRAFT         = 'draft';
-    const ISSUED        = 'issued';
-    const PAID          = 'paid';
-    const EXPIRED       = 'expired';
-    const DELETED       = 'deleted';
+    const PENDING       = 'pending';
+    const SENT          = 'sent';
+    const DELIVERED     = 'delivered';
+    const FAILED        = 'failed';
 
     public static function isStatusValid($status)
     {
@@ -18,6 +16,7 @@ class Status
 
     public static function checkStatus($status)
     {
+        //s($status);
         if (self::isStatusValid($status) === false)
         {
             throw new \InvalidArgumentException('Not a valid status: ' . $status);

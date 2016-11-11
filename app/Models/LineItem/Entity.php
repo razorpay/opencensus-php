@@ -16,7 +16,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const MERCHANT_ID           = 'merchant_id';
     // This is something like an SKU
-    const LISTING_ID            = 'listing_id';
+    //const LISTING_ID            = 'listing_id';
     const INVOICE_ID            = 'invoice_id';
 
     const QUANTITY              = 'quantity';
@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::DESCRIPTION       => null,
-        self::LISTING_ID        => null,
+        //self::LISTING_ID        => null,
         self::QUANTITY          => 1,
     ];
 
@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::LISTING_ID,
+        //self::LISTING_ID,
         self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -56,7 +56,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::LISTING_ID,
         self::CURRENCY,
         self::QUANTITY,
         self::CREATED_AT,
@@ -66,9 +65,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::LISTING_ID,
         self::QUANTITY,
-        self::CURRENCY,
     ];
 
     protected $casts = [
@@ -76,11 +73,11 @@ class Entity extends Base\PublicEntity
         self::QUANTITY  => 'int',
     ];
 
-    protected $publicSetters = [
-        self::ID,
-        self::ENTITY,
-        self::INVOICE_ID,
-    ];
+    // protected $publicSetters = [
+    //     self::ID,
+    //     self::ENTITY,
+    //     self::INVOICE_ID,
+    // ];
 
     // -------------------------- Getters --------------------------
 

@@ -79,11 +79,11 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::STATUS            => null,
+        // self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
-        self::EMAIL_STATUS      => Status::PENDING,
-        self::SMS_STATUS        => Status::PENDING,
+        self::EMAIL_STATUS      => NotifyStatus::PENDING,
+        self::SMS_STATUS        => NotifyStatus::PENDING,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => false,
@@ -288,14 +288,14 @@ class Entity extends Base\PublicEntity
 
     public function setSmsStatus($status)
     {
-        Status::checkStatus($status);
+        NotifyStatus::checkStatus($status);
 
         $this->setAttribute(self::SMS_STATUS, $status);
     }
 
     public function setEmailStatus($status)
     {
-        Status::checkStatus($status);
+        NotifyStatus::checkStatus($status);
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
     }
@@ -337,22 +337,9 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicCustomerIdAttribute(array & $array)
     {
-        if (isset($array[self::CUSTOMER_ID]))
-        {
-            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+        $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
-        }
-        else
-        {
-            $app = App::getFacadeRoot();
-
-            $app['trace']->error(
-                TraceCode::INVOICE_ID_ABSENT,
-                [
-                    'line_item_id' => $this->getId()
-                ]);
-        }
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 
     // -------------------------------------- End Public Setters --------------------------------------
@@ -482,11 +469,6 @@ class Entity extends Base\PublicEntity
     public function scopeStatus($query, $status)
     {
         return $query->where(Entity::STATUS, '=', $status);
-    }
-
-    public function scopeCreatedAtLessThan($query, $ts)
-    {
-        return $query->where(Entity::CREATED_AT, '<', $ts);
     }
 
 // -------------------------------------- Query scopes section ends --------------------------------------

@@ -6,41 +6,33 @@ use App;
 use Mail;
 use Config;
 
+use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 
-class Generator
+class Generator extends Base\Core
 {
-    protected $app;
-    protected $trace;
-    protected $mode;
     protected $invoice;
     protected $merchant;
     protected $customer;
     protected $lineItems;
     protected $lineItemCore;
-    protected $order;
-    protected $repo;
-    protected $orderRepo;
+    protected $bitly;
 
     const ORDER_CURRENCY = 'INR';
     const JUST_CREATED_TIME = 604800;
 
     public function __construct(Merchant\Entity $merchant)
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->trace = $this->app['trace'];
-
-        $this->mode = $this->app['rzp.mode'];
+        parent::__construct();
 
         $this->merchant = $merchant;
 
-        $this->lineItemCore = new LineItem\Core();
+        $this->bitly = $this->app['bitly'];
 
-        $this->repo = $this->app['repo'];
+        $this->lineItemCore = new LineItem\Core();
     }
 
     public function generate(array $input)
@@ -99,16 +91,16 @@ class Generator
     {
         $longUrl = $this->getInvoiceLink($this->invoice->getId());
 
-        $shortenedUrl = $this->app['bitly']->shortenUrl($longUrl);
+        $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
     public static function getInvoiceLink($invoiceId)
     {
-        $context = Config::get('app.context');
+        $app = App::getFacadeRoot();
 
-        $baseInvoiceUrl = Config::get('url.invoice')[$context];
+        $baseInvoiceUrl = $app['config']->get('app.invoice');
 
         $invoiceLink = $baseInvoiceUrl . '/i/' . $invoiceId;
 
@@ -159,8 +151,7 @@ class Generator
 
                 LineItem\Entity::verifyIdAndStripSign($lineItemId);
 
-                $lineItem = $this->repo->line_item
-                             ->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
+                $lineItem = $this->repo->line_item->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
             }
             else
             {
@@ -202,8 +193,7 @@ class Generator
 
             Customer\Entity::verifyIdAndStripSign($customerId);
 
-            $customer = $this->repo->customer
-                ->findByIdAndMerchantId($customerId, $this->merchant->getId());
+            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
         }
         else
         {

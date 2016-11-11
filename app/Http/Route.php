@@ -261,7 +261,6 @@ final class Route
         'invoice_send_notifications'              => ['post',     'invoices/notify',                                'InvoiceController@sendNotifications'                               ],
         'invoice_send_notification'               => ['post',     'invoices/{id}/notify/{medium}',                  'InvoiceController@sendNotification'                                ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
-        'invoice_get_details'                     => ['get',      'invoices/{id}/details',                          'InvoiceController@getInvoiceDetails'                               ],
         'invoice_get_status'                      => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view'                            => ['get',      'i/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_expire'                          => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
@@ -378,10 +377,10 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
-        //'invoice_send_notification',
-        'line_item_create',
-        'line_item_fetch',
-        'line_item_fetch_multiple',
+        // 'invoice_send_notification',
+        // 'line_item_create',
+        // 'line_item_fetch',
+        // 'line_item_fetch_multiple',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -497,7 +496,6 @@ final class Route
         'credits_delete',
         'invoice_send_notifications',
         'invoice_expire',
-        'invoice_get_details',
         'batch_process_file',
         'gateway_create_absence',
         'gateway_update_absence',
@@ -622,7 +620,6 @@ final class Route
 
         'hosted' => array(
             'merchant_secret',
-            'invoice_get_details',
         ),
 
         'h2h' => array(

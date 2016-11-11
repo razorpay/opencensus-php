@@ -7,10 +7,11 @@ use Config;
 use Mail;
 
 use Carbon\Carbon;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
 
-class Notifier
+class Notifier extends Base\Core
 {
     // 300 seconds (5*60)
     const SCHEDULE_TIME_LEEWAY = 300;
@@ -19,12 +20,15 @@ class Notifier
      * @var Entity
      */
     protected $invoice;
-    protected $app;
-    protected $repo;
+    protected $invoiceLink;
     protected $mode;
+    protected $raven;
+    protected $slack;
 
     public function __construct($invoice = null)
     {
+        parent::__construct();
+
         $this->invoice = $invoice;
 
         if (empty($invoice) === false)
@@ -32,16 +36,16 @@ class Notifier
             $this->invoiceLink = Generator::getInvoiceLink($invoice->getId());
         }
 
-        $this->app = App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
-
         $this->mode = Mode::TEST;
 
         if (isset($this->app['rzp.mode']) === true)
         {
             $this->mode = $this->app['rzp.mode'];
         }
+
+        $this->raven = $this->app['raven'];
+
+        $this->slack = $this->app['slack'];
     }
 
     public function setInvoice($invoice)
@@ -58,12 +62,12 @@ class Notifier
             return;
         }
 
-        if ($this->invoice->getEmailStatus() === Status::PENDING)
+        if ($this->invoice->getEmailStatus() === NotifyStatus::PENDING)
         {
             $this->sendEmailNotificationToCustomer();
         }
 
-        if ($this->invoice->getSmsStatus() === Status::PENDING)
+        if ($this->invoice->getSmsStatus() === NotifyStatus::PENDING)
         {
             $this->sendSmsNotificationToCustomer();
         }
@@ -76,7 +80,7 @@ class Notifier
     {
         $sent = $this->sendInvoiceEmail();
 
-        $this->invoice->setEmailStatus(Status::SENT);
+        $this->invoice->setEmailStatus(NotifyStatus::SENT);
 
         return $sent;
     }
@@ -89,7 +93,7 @@ class Notifier
 
         if ($sent === true)
         {
-            $this->invoice->setSmsStatus(Status::SENT);
+            $this->invoice->setSmsStatus(NotifyStatus::SENT);
         }
         else
         {
@@ -105,7 +109,7 @@ class Notifier
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
-        $response = $this->app['raven']->sendInvoice($request);
+        $response = $this->raven->sendInvoice($request);
 
         if (isset($response['sms_id']))
         {
@@ -168,7 +172,7 @@ class Notifier
     {
         $message = 'Invoice Notify result';
 
-        $this->app['slack']->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }

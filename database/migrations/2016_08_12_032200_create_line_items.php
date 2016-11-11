@@ -38,9 +38,6 @@ class CreateLineItems extends Migration
 
             $table->integer(Entity::AMOUNT);
 
-            $table->string(Entity::LISTING_ID, 512)
-                  ->nullable();
-
             $table->integer(Entity::QUANTITY);
 
             $table->integer(Entity::CREATED_AT);
@@ -49,7 +46,7 @@ class CreateLineItems extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::AMOUNT);
-            $table->index(Entity::LISTING_ID);
+            //$table->index(Entity::LISTING_ID);
 
             $table->foreign(Entity::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)
@@ -76,10 +73,7 @@ class CreateLineItems extends Migration
             (
                 Table::LINE_ITEM . '_' . Entity::MERCHANT_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::LINE_ITEM, function($table)
-        {
             $table->dropForeign
             (
                 Table::LINE_ITEM . '_' . Entity::INVOICE_ID . '_foreign'

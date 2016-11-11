@@ -10,14 +10,14 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = [
-        Entity::STATUS              => 'sometimes|string',
-        Entity::SMS_STATUS          => 'sometimes|string',
-        Entity::EMAIL_STATUS        => 'sometimes|string',
-        Entity::CUSTOMER_EMAIL      => 'sometimes|email',
-        Entity::CUSTOMER_CONTACT    => 'sometimes|string',
-        Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
-    ];
+    // protected $entityFetchParamRules = [
+    //     Entity::STATUS              => 'sometimes|string',
+    //     Entity::SMS_STATUS          => 'sometimes|string',
+    //     Entity::EMAIL_STATUS        => 'sometimes|string',
+    //     Entity::CUSTOMER_EMAIL      => 'sometimes|email',
+    //     Entity::CUSTOMER_CONTACT    => 'sometimes|string',
+    //     Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
+    // ];
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
@@ -30,7 +30,7 @@ class Repository extends Base\Repository
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
-                    ->where($medium . '_status', '=', Status::PENDING)
+                    ->where($medium . '_status', '=', NotifyStatus::PENDING)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
                     ->get();

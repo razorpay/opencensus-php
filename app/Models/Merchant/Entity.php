@@ -226,11 +226,6 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Invoice\Entity');
     }
 
-    public function items()
-    {
-        return $this->hasMany('RZP\Models\Item\Entity');
-    }
-
     public function customers()
     {
         return $this->hasMany('RZP\Models\Customer\Entity');

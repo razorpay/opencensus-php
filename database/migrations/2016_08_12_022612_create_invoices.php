@@ -44,7 +44,7 @@ class CreateInvoices extends Migration
             $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
-            $table->string(Entity::CUSTOMER_ADDRESS)
+            $table->char(Entity::CUSTOMER_ADDRESS, Entity::ID_LENGTH)
                   ->nullable();
 
             $table->string(Entity::CUSTOMER_NAME)
@@ -110,18 +110,12 @@ class CreateInvoices extends Migration
             (
                 Table::INVOICE . '_' . Entity::ORDER_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::INVOICE, function($table)
-        {
             $table->dropForeign
             (
                 Table::TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::INVOICE, function($table)
-        {
             $table->dropForeign
             (
                 Table::MERCHANT . '_' . Entity::MERCHANT_ID . '_foreign'

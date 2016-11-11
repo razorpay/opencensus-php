@@ -362,7 +362,12 @@ trait Capture
 
         if ($payment->getApiOrderId() !== null)
         {
-            $this->app['events']->fire('api.invoice.paid', array($payment));
+            $order = $payment->order;
+
+            if ($order->invoice !== null)
+            {
+                $this->app['events']->fire('api.invoice.paid', array($payment));
+            }
         }
     }
 

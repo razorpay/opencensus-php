@@ -17,9 +17,6 @@ class Core extends Base\Core
 {
     protected $itemService;
 
-    protected $itemRepository;
-    protected $customerRepository;
-
     protected $itemCore;
     protected $orderCore;
     protected $customerCore;
@@ -31,9 +28,6 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->itemService = new LineItem\Service();
-
-        $this->itemRepository = $this->repo->line_item;
-        $this->customerRepository = $this->repo->customer;
 
         $this->itemCore = new LineItem\Core();
         $this->orderCore = new Order\Core();
@@ -107,9 +101,12 @@ class Core extends Base\Core
                 ]);
         }
 
+        //$paymentId = $invoice->getPaymentId();
+
         // TODO: Add more validations around this.
         return [
-            Entity::STATUS => $invoice->getStatus()
+            Entity::STATUS  => $invoice->getStatus(),
+            'payment_id'    => 'aa',
         ];
     }
 

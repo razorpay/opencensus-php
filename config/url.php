@@ -1,15 +1,6 @@
 <?php
 
 return [
-
-    // TODO: This needs to be taken from the env
-    'invoice' => [
-        'production'    => 'https://invoices.razorpay.com',
-        'beta'          => 'https://betainvoices.razorpay.com',
-        'testing'       => 'https://dummyinvoices.razorpay.com',
-        'dev'           => 'https://dummyinvoices.razorpay.com',
-    ],
-
     'api_hosts'  => [
         'production' =>  env('APP_HOST'),
         'beta'       =>  env('BETA_APP_HOST'),
