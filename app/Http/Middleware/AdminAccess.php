@@ -7,6 +7,8 @@ use ApiResponse;
 use Illuminate\Foundation\Application;
 use RZP\Http\Route;
 use RZP\Models\Admin;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class AdminAccess
 {
@@ -68,6 +70,11 @@ class AdminAccess
     private function policyChecker($routeName, $admin, $merchant = null)
     {
         $adminAuthRoutes = Route::$adminPermission;
+
+        if (! isset($adminAuthRoutes[$routeName]))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
 
         $permissions = $adminAuthRoutes[$routeName];
 

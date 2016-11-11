@@ -546,7 +546,7 @@ final class Route
         'org_create',
         'org_edit',
         'org_get',
-        'org_get_multiple',
+        // 'org_get_multiple',
         'role_create',
         'role_get_multiple',
         'role_get',
@@ -623,6 +623,7 @@ final class Route
         'group_get',
         'group_get_multiple',
         'admin_get',
+        'org_get_multiple',
     ];
 
     public static $adminPermission = [
@@ -632,6 +633,8 @@ final class Route
         'group_get'          => ['view_merchant_credits'],
         'group_get_multiple' => ['view_merchant_credits'],
         'admin_get'          => ['view_merchant_credits'],
+
+        'org_get_multiple' => ['view_all_org']
     ];
 
     public static $direct = array(
