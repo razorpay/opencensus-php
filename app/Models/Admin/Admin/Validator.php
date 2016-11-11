@@ -16,7 +16,8 @@ class Validator extends Base\Validator
         Entity::REMEMBER_TOKEN      => 'sometimes|string|max:250',
         Entity::OAUTH_ACCESS_TOKEN  => 'sometimes|string|max:250',
         Entity::OAUTH_PROVIDER_ID   => 'sometimes|string|max:250',
- //       Entity::ORG_ID              => 'required|string',
+        //TODO remove it later
+        Entity::ORG_ID              => 'sometimes|string',
         Entity::BRANCH_CODE         => 'sometimes|string',
         Entity::DEPARTMENT_CODE     => 'sometimes|string',
         Entity::SUPERVISOR_CODE     => 'sometimes|string',
