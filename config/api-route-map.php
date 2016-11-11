@@ -15,10 +15,14 @@ return [
     // Groups
     'group_get_multiple'                => 'orgs/{id}/groups',
     'group_create'                      => 'orgs/{id}/groups',
+    'group_get'                         => 'orgs/{id}/groups/{groupId}',
+    'group_admins_create'               => 'orgs/{id}/groups/{groupId}/admins',
 
     // Admins
     'admin_get_multiple'                => 'orgs/{id}/admins',
     'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
+    'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
+    'admin_create'                      => 'orgs/{id}/admins',
 
 
     // Permissions
