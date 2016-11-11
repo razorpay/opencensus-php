@@ -20,6 +20,6 @@ class ReasonCode
 
     public static function isValidReasonCode($code)
     {
-        return defined(__CLASS__ . strtoupper($code));
+        return defined('self::' . strtoupper($code));
     }
 }

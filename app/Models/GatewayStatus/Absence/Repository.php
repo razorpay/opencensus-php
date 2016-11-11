@@ -2,6 +2,7 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
+use DB;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -21,6 +22,13 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
+        $to = (isset($input[Entity::TO]) === true) ? $input[Entity::TO] : null;
+
+        if ((empty($to) === true) and (isset($input[Entity::FROM])))
+        {
+            $to = $input[Entity::FROM];
+        }
+
         if (isset($input[Entity::GATEWAY]))
         {
             $query->where(Entity::GATEWAY, '=', $input[Entity::GATEWAY]);
@@ -36,9 +44,13 @@ class Repository extends Base\Repository
             $query->where(Entity::FROM, '<=', $input[Entity::FROM]);
         }
 
-        if (isset($input[Entity::TO]))
+        if (empty($to) === false)
         {
-            $query->where(Entity::TO, '>=', $input[Entity::TO]);
+            $query->where(function ($query) use ($to)
+            {
+                $query->whereNull(Entity::TO);
+                $query->orwhere(Entity::TO, '>=', $to);
+            });
         }
 
         return $query->get();

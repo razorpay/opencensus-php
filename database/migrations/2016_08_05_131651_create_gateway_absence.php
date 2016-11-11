@@ -38,7 +38,7 @@ class CreateGatewayAbsence extends Migration
 
             $table->string(DowntimeTrace::METHOD, 30);
 
-            $table->text(DowntimeTrace::COMMENT, 500)
+            $table->text(DowntimeTrace::COMMENT)
                 ->nullable();
 
             $table->integer(DowntimeTrace::FROM);

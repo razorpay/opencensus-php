@@ -160,7 +160,6 @@ class GatewayAbsenceTest extends TestCase
 
     public function testGatewayAbsenceWithTerminal()
     {
-        //$terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
         
         $tid = $terminal['id'];
@@ -183,7 +182,32 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['terminal_id'], $tid);
     }
 
+    public function testGatewayAbsenceWithInvalidTerminal()
+    {
+        $tid = '6fNfsofiUqP1rs';
 
+        $request = [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'from'  => time(),
+                'method' => 'netbanking',
+                'terminal_id' => $tid,
+                'issuer' => 'HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, 'Illuminate\Database\QueryException');
+        }
+    }
 
     //----- Update Tests -----
 
@@ -323,16 +347,16 @@ class GatewayAbsenceTest extends TestCase
 
     protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc', $terminalId = null)
     {
-        $from = time();
+        $from = strtotime('-1 hour');
 
-        $to = $from + 10;
+        $to = strtotime('+1 hour');
 
         return $this->__createGatewayAbsence($gatewayName, $from, $to, $terminalId);
     }
 
     protected function createGatewayAbsenceNullTo($gatewayName = 'netbanking_hdfc')
     {
-        $from = time();
+        $from = strtotime('-1 hour');
 
         $to = null;
 

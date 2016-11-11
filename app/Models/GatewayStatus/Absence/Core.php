@@ -55,7 +55,7 @@ class Core extends Base\Core
             'scheduled' => $absent->getScheduled(),
         ];
 
-        return $data;
+        return array_filter($data);
     }
 
     public function getFormattedCheckoutData(Merchant\Entity $merchant)

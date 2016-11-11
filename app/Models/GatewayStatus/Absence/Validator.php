@@ -15,14 +15,14 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
-        Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
+        Entity::FROM            => 'required|integer',
+        Entity::METHOD          => 'required|string|max:30',
+        Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
-        Entity::METHOD          => 'required|string|max:30',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::FROM            => 'required|integer',
         Entity::TO              => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
