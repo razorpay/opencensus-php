@@ -24,7 +24,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function findOrFailByAttr($orgId, $attr, $attrVal)

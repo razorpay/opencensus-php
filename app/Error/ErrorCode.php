@@ -105,6 +105,7 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                              = 'BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                      = 'BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                             = 'BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED';
+    const BAD_REQUEST_UNAUTHORIZED                                                  = 'BAD_REQUEST_UNAUTHORIZED';
 
 // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';

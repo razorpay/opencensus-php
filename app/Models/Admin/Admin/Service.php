@@ -3,7 +3,9 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use RZP\Error;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -25,6 +27,12 @@ class Service extends Base\Service
 
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByEmail($input['username']);
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
 
         (new AuthPolicy\Service)
                 ->validateLogin($admin, $input['password']);
