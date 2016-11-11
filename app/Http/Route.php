@@ -561,7 +561,7 @@ final class Route
         // 'admin_get',
         'admin_edit',
         'admin_delete',
-        'admin_get_multiple',
+        // 'admin_get_multiple',
         'admin_create',
         'permission_create',
         'permission_create_json',
@@ -623,18 +623,21 @@ final class Route
         'group_get',
         'group_get_multiple',
         'admin_get',
+
         'org_get_multiple',
+        'admin_get_multiple',
     ];
 
     public static $adminPermission = [
         'hello_world'        => ['view_merchant_credits'],
-        'group_create'       => ['view_merchant_credits'],
-        'admin_create'       => ['view_merchant_credits'],
-        'group_get'          => ['view_merchant_credits'],
-        'group_get_multiple' => ['view_merchant_credits'],
-        'admin_get'          => ['view_merchant_credits'],
+        // 'group_create'       => ['view_merchant_credits'],
+        // 'admin_create'       => ['view_merchant_credits'],
+        // 'group_get'          => ['view_merchant_credits'],
+        // 'group_get_multiple' => ['view_merchant_credits'],
+        // 'admin_get'          => ['view_merchant_credits'],
 
-        'org_get_multiple' => ['view_all_org']
+        'org_get_multiple' => ['view_all_org'],
+        'admin_get_multiple' => ['view_all_admin'],
     ];
 
     public static $direct = array(

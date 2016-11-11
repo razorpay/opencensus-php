@@ -94,16 +94,17 @@ class PermissionSeeder extends Seeder
             "edit_org",
 
             // Roles
+            "view_all_admin",
+            "edit_admin",
+            "create_admin",
+            "delete_admin",
+
             "role_get_multiple",
             "role_create",
             "group_get_multiple",
             "group_create",
             "group_get",
             "group_admins_create",
-            "admin_get_multiple",
-            "admin_edit",
-            "admin_delete",
-            "admin_create",
             "add_permission",
             "permission_get_multiple"
         ];
