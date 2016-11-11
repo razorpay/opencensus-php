@@ -42,6 +42,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($role);
         }
 
+        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $role->getId());
+
         return $role;
     }
 }
