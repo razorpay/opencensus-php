@@ -246,6 +246,7 @@ class Notifier extends Base\Core
             'context' => $merchant->getId(),
             'receiver' => $contact,
             'source' => 'api',
+            'template' => 'sms.invoice',
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoiceLink,

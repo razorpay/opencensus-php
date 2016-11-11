@@ -247,6 +247,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getPaymentId()
+    {
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+
+        if ($payment !== null)
+        {
+            return $payment->getId();
+        }
+
+        return null;
+    }
+
     /**
      * An invoice is considered just created for 5
      * minutes since creation

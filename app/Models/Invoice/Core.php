@@ -101,12 +101,12 @@ class Core extends Base\Core
                 ]);
         }
 
-        //$paymentId = $invoice->getPaymentId();
+        $paymentId = $invoice->getPaymentId();
 
         // TODO: Add more validations around this.
         return [
             Entity::STATUS  => $invoice->getStatus(),
-            'payment_id'    => 'aa',
+            'payment_id'    => $paymentId,
         ];
     }
 
