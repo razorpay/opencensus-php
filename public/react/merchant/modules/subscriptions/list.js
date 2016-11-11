@@ -7,7 +7,7 @@ export const fetchSubscriptions = () => {
   return (dispatch) => {
     return dispatch({
       type: SUBSCRIPTIONS_FETCH,
-      payload: ajax(`/subscriptions`)
+      payload: ajax('/subscriptions')
     })
   }
 }

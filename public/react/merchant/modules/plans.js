@@ -1,6 +1,5 @@
 import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
-// import plans from 'merchant/mocks/plans'
 
 const PLANS_FETCH = 'PLANS_FETCH'
 
@@ -8,10 +7,7 @@ export const fetchPlans = () => {
   return (dispatch) => {
     return dispatch({
       type: PLANS_FETCH,
-      payload: ajax(`/plans`).then((response) => {
-      }).catch((err) => {
-        return plans
-      })
+      payload: ajax('/plans')
     })
   }
 }

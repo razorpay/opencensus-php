@@ -2,15 +2,16 @@ import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 import SubscriptionStatus from './SubscriptionStatus'
 import Time from 'rzp/ui/Time'
+import { findBy } from 'rzp/utils/rzp-utils'
 
-const SubscriptionListItem = ({ subscription }) => {
+const SubscriptionListItem = ({ subscription, plans }) => {
   return (
     <tr>
-      <td>{subscription.customer_name}</td>
+      <td>{subscription.customer.name}</td>
       <td>
         <SubscriptionStatus status={subscription.status} />
       </td>
-      <td>{subscription.plan_name}</td>
+      <td>{findBy(plans, 'id', subscription.plan_id).name}</td>
       <td>₹ {subscription.amount}</td>
       <td>
         <Time value={subscription.processed_at} />
@@ -22,14 +23,18 @@ const SubscriptionListItem = ({ subscription }) => {
   )
 }
 
-export default ({ subscriptions, isLoading }) => {
+export default ({ subscriptions, plans, isLoading }) => {
   let tableRowComponent
 
   if (isLoading) {
     tableRowComponent = <TableLoader colSpan='6' />
   } else if (subscriptions.length) {
-    tableRowComponent = subscriptions.map(
-      (subscription) => <SubscriptionListItem key={subscription.id} subscription={subscription} />
+    tableRowComponent = subscriptions.map((subscription) =>
+      <SubscriptionListItem
+        key={subscription.id}
+        subscription={subscription}
+        plans={plans}
+      />
     )
   } else {
     tableRowComponent = <EmptyTableRow colSpan='6' message='No Subscriptions found!' />

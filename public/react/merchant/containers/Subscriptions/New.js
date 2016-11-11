@@ -2,51 +2,52 @@ import React, { Component } from 'react'
 import { Field, reduxForm } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
+import { PowerSelect } from 'react-power-select'
 
 import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import ReduxSelect2 from 'rzp/ui/Forms/ReduxSelect2'
+import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
 import { fetchCustomers } from 'merchant/modules/customers/list'
+import { fetchPlans } from 'merchant/modules/plans'
 
 @connect(
-  null,
-  { fetchCustomers }
+  (state) => {
+    let plansState = state.plans.toJS()
+    let customersState = state.customers.toJS()
+
+    return {
+      customers: customersState.customers,
+      plans: plansState.plans
+    }
+  },
+  { fetchCustomers, fetchPlans }
 )
 @reduxForm({
   form: 'newSubscription',
   initialValues: {
+    quantity: 1
   }
 })
 export default class SubscriptionsNewContainer extends Component {
   constructor() {
     super(...arguments)
-    this.state = {
-      customers: []
-    }
     this.save = ::this.save
   }
 
   componentWillMount() {
-    this.props.fetchCustomers().then((customers) => {
-      customers = customers.map((item) => {
-        item.text = item.text || item.name
-        return item
-      })
-
-      customers.unshift({})
-
-      this.setState({
-        customers
-      })
-    })
+    this.props.fetchCustomers()
+    this.props.fetchPlans()
   }
 
   save() {
-
   }
 
   render() {
     const { handleSubmit } = this.props
+    let selectedCustomer = this.props.customer
+    let selectedPlan = this.props.plan
+
     return (
       <div>
         <Header title='New Subscription'>
@@ -60,37 +61,39 @@ export default class SubscriptionsNewContainer extends Component {
             <div className='panel-body'>
               <form className='form-horizontal' onSubmit={handleSubmit(this.save)}>
                 <div className='form-group'>
-                  <label htmlFor='customer_name' className='col-md-2 control-label'>
+                  <label htmlFor='customer' className='col-md-2 control-label'>
                     Customer Name
                   </label>
                   <div className='col-md-4'>
                     <Field
-                      name='customer_id'
-                      id='customer_id'
-                      data={this.state.customers}
-                      options={{
-                        placeholder: 'Select a Customer',
-                        allowClear: true
-                      }}
-                      component={ReduxSelect2}
+                      name='customer'
+                      id='customer'
+                      component={ReduxPowerSelect}
+                      options={this.props.customers}
+                      selected={selectedCustomer}
+                      selectedLabel={(option) => <b>{option.name}</b>}
+                      optionComponent={(option) => <span>{option.name}</span>}
+                      searchIndices={['name']}
+                      placeholder='Select a customer'
                     />
                   </div>
                 </div>
 
                 <div className='form-group'>
-                  <label htmlFor='invoice_date' className='col-md-2 control-label'>
+                  <label htmlFor='plan' className='col-md-2 control-label'>
                     Plan Name
                   </label>
                   <div className='col-md-4'>
                     <Field
-                      name='customer_id'
-                      id='customer_id'
-                      data={this.state.customers}
-                      options={{
-                        placeholder: 'Select a Customer',
-                        allowClear: true
-                      }}
-                      component={ReduxSelect2}
+                      name='plan'
+                      id='plan'
+                      component={ReduxPowerSelect}
+                      options={this.props.plans}
+                      selected={selectedPlan}
+                      selectedLabel={(option) => <b>{option.name}</b>}
+                      optionComponent={(option) => <span>{option.name}</span>}
+                      searchIndices={['name']}
+                      placeholder='Select a plan'
                     />
                   </div>
                 </div>
@@ -105,6 +108,7 @@ export default class SubscriptionsNewContainer extends Component {
                       id='quantity'
                       type='number'
                       component='input'
+                      min={1}
                       className='form-control'
                     />
                   </div>
@@ -149,6 +153,24 @@ export default class SubscriptionsNewContainer extends Component {
                       component='textarea'
                       className='form-control'
                     />
+                  </div>
+                </div>
+
+                <div className='col-md-offset-2'>
+                  <div className='btn-toolbar'>
+                    <AsyncButton
+                      type='button'
+                      className='btn btn-primary'
+                      text='Save'
+                      pendingText='Saving...'
+                      onClick={handleSubmit(this.save)}
+                    />
+                    <a
+                      href='#/app/subscriptions'
+                      className='btn btn-default'
+                    >
+                      Cancel
+                    </a>
                   </div>
                 </div>
               </form>
