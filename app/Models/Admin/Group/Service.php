@@ -114,7 +114,8 @@ class Service extends Base\Service
 
         if (isset($input['admins']) === false)
         {
-            throw new Exception\BadRequestException('Admins not given in the url');
+            throw new Exception\BadRequestValidationFailureException(
+                'Admins not given in the input');
         }
 
         foreach ($input['admins'] as $adminId)
