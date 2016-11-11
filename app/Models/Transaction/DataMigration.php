@@ -122,10 +122,10 @@ class DataMigration extends Base\Service
 
         if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
         {
-            return $payment->getCaptureTimestamp();
+            return $payment->getAuthorizeTimestamp();
         }
 
-        return $payment->getAuthorizeTimestamp();
+        return $payment->getCaptureTimestamp();
     }
 
     protected function calculateServiceTaxes($fee, $capturedTime)
