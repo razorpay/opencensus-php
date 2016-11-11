@@ -108,6 +108,8 @@ class AdminTest extends TestCase
      */
     public function testLogin()
     {
+        $this->markTestSkipped("Heimdall");
+
         $this->waitUntilContainsByCss('h1', 'Pending Activations');
     }
 
