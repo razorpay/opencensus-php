@@ -110,7 +110,7 @@ class Generator
 
         $baseInvoiceUrl = Config::get('url.invoice')[$context];
 
-        $invoiceLink = $baseInvoiceUrl . '/i' . $invoiceId;
+        $invoiceLink = $baseInvoiceUrl . '/i/' . $invoiceId;
 
         return $invoiceLink;
     }
