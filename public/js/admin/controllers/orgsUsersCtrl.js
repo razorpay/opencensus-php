@@ -39,10 +39,6 @@ app.controller('OrgsUsersCtrl', [
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'admin_get_multiple',
-
-          url_params: {
-            '{id}': id
-          }
         }
       });
       request.success(function (data) {

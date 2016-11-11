@@ -25,12 +25,12 @@ class Service extends Base\Service
     {
         $input['mode'] = 'live';
 
-        $input['auth'] = 'internal'; // app auth
+        $input['auth'] = 'admin'; // app auth
 
         $input['file'] = null;
 
         $autoBuildQuery = false;
-        
+
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
 
         return $request->send();

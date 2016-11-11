@@ -16,7 +16,7 @@ class Service
 
         $token = session('api_admin.token');
 
-        $this->api = new Api("rzp_$mode_admin", $token);
+        $this->api = new Api("rzp_{$mode}_admin", $token);
     }
 
     public function setApiCredentials($merchant_id = null, $mode = 'live')

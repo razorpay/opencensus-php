@@ -25,8 +25,9 @@ class AdminController extends Controller
     // Org domain => Org ID
     // We'll hardcode this for now
     const ORG_CHART = [
-        'dashboard.razorpay.dev' => 'org_6dLbNSpv5XbCOG',
-        'heimdall.razorpay.dev'=> 'org_6dLbNSpv5XbCOG',
+        'dashboard.razorpay.dev'         => 'org_6dLbNSpv5XbCOG',
+        'heimdall.razorpay.dev'          => 'org_6dLbNSpv5XbCOG',
+        'beta-wl-dashboard.razorpay.com' => 'org_6dLbNSpv5XbCOG',
     ];
 
     /*
@@ -40,7 +41,7 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $this->admin = Auth::guard('api')->user();
+        // sd(Auth::guard('api')->user());
     }
 
     /**
@@ -50,9 +51,9 @@ class AdminController extends Controller
     public function initiateAuth()
     {
         // If already logged in
-        if ($this->admin)
+        if (Auth::guard('api')->check())
         {
-            return redirect('/admin/');
+            return redirect('/admin');
         }
 
         $org = $this->getOrg();
@@ -172,7 +173,9 @@ class AdminController extends Controller
 
     public function getAdmin()
     {
-        return AppResponse::jsonResponse([], $this->admin->toArray());
+        $admin = Auth::guard('api')->user();
+
+        return AppResponse::jsonResponse([], $admin->toArray());
     }
 
     public function getAdminActivity()

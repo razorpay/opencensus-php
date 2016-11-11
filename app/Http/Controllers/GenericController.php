@@ -22,11 +22,6 @@ class GenericController extends Controller
     |
     */
 
-    public function __construct()
-    {
-        $this->admin = Auth::guard('admin')->user();
-    }
-
     public function postGeneric()
     {
         $input = ['method' => 'post'];
