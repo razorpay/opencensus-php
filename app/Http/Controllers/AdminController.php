@@ -130,11 +130,11 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getAdminByAppAuth()
+    public function getAdminByAppAuth(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->getAdminByAppAuth($input);
+        $data = (new Admin\Admin\Service)->getAdminByAppAuth($id, $input);
 
         return ApiResponse::json($data);
     }
