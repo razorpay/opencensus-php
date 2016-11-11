@@ -32,7 +32,7 @@ build:
 
       - script:
           name: run unit tests
-          code: phpunit --stop-on-error --stop-on-failure
+          code: phpunit --stop-on-error --stop-on-failure --debug
 
     after-steps:
       - script:
