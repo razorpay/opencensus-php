@@ -18,9 +18,9 @@ app.controller('OrgsAddRolesCtrl', [
     $scope.save = function (role, permissions) {
       var body = role;
       // Permissions have to be saved in a separate call
-      // body.permissions = $scope.permissions.map(function(perm){
-      //   return perm.id;
-      // });
+      body.permissions = $scope.permissions.map(function(perm){
+        return perm.id;
+      });
       var request = $http({
         url: '/admin/generic',
         method: 'POST',

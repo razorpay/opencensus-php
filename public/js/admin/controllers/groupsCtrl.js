@@ -12,10 +12,6 @@ app.controller('GroupsCtrl', [
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'group_get_multiple',
-
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF'
-          }
         }
       });
 
@@ -56,9 +52,6 @@ app.controller('GroupsCtrl', [
         method: 'POST',
         params: {
           route_name: 'group_create',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF'
-          }
         },
         data: {
           body: {

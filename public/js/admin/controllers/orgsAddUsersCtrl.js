@@ -18,9 +18,6 @@ app.controller('OrgsAddUsersCtrl', [
         ignoreErrors: true,
         params: {
           route_name: 'admin_create',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF', //TODO Add actual ids
-          }
         },
         data: {
           body: user
