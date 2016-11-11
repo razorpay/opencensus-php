@@ -188,9 +188,9 @@ class AdminController extends Controller
 
         $admin = Auth::guard('api')->user();
 
-        $adminData = (new Admin\Service)->getAdminData($admin);
+        list($error, $data) = (new Admin\Service)->getAdminData($admin);
 
-        return AppResponse::jsonResponse([], $adminData);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdminActivity()

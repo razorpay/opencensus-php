@@ -2376,7 +2376,7 @@ class Service extends Base\Service
                 'token' => $admin->token
             ];
 
-            $adminData = $this->api->admin->getAdminData($orgId, $params);
+            $data = $this->api->admin->getAdminData($orgId, $params)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
