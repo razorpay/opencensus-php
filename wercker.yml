@@ -30,9 +30,9 @@ build:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing
 
-      - script:
-          name: run unit tests
-          code: phpunit --stop-on-error --stop-on-failure --debug
+      # - script:
+      #     name: run unit tests
+      #     code: phpunit --stop-on-error --stop-on-failure --debug
 
     after-steps:
       - script:
