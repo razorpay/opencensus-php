@@ -528,11 +528,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function merchantMethodsBulkUpdate()
+    public function bulkUpdateMerchantMethods()
     {
         $input = Request::all();
  
-        $data = (new Merchant\Service)->merchantMethodsBulkUpdate($input);
+        $data = (new Merchant\Service)->bulkUpdateMerchantMethods($input);
 
         return ApiResponse::json($data);
     }

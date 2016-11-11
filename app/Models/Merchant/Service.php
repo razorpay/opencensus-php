@@ -666,20 +666,25 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function merchantMethodsBulkUpdate($input)
+    public function bulkUpdateMerchantMethods($input)
     {
+        $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
+
         $merchantIds = $input['merchants'];
 
-        $response = new Base\Collection;
+        $count = 0;
 
         foreach ($merchantIds as $merchantId)
         {
             $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
 
-            $response->push($paymentMethod);
+            $count++;
         }
 
-        return $response->toArray();
+        $response['count_updated_merchants'] = $count;
+        $response['methods'] = $input['methods'];
+
+        return $response;
     }
 
 }

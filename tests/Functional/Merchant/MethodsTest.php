@@ -67,13 +67,22 @@ class MethodsTest extends TestCase
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');
 
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
         $this->fixtures->create('pricing:standard_plan');
        
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         
         $this->ba->appAuth();
         
-        $content = $this->startTest();
+        $this->startTest();
+
+        $content = $this->getLastEntity('methods', true);
+
+        $this->assertEquals($content['card'], true);
+        $this->assertEquals($content['netbanking'], true);
+        $this->assertEquals($content['mobikwik'], true);
+        $this->assertNotEquals($content['banks'], null);
     }
 
 }

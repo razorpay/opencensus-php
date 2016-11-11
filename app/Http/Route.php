@@ -274,7 +274,7 @@ final class Route
         'merchant_migrate_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'                         ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'method_bulkupdate_merchants'             => ['put',      'methods/bulkupdate',                             'MerchantController@merchantMethodsBulkUpdate'                      ],
+        'method_bulkupdate_merchants'             => ['put',      'methods/bulkupdate',                             'MerchantController@bulkUpdateMerchantMethods'                      ],
       );
 
     public static $public = array(
