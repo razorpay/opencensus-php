@@ -18,7 +18,7 @@ class EnforceInitialPasswordChangeRule extends Base
         if (($admin->isInitialLogin() === true) and
             ($this->enforceInitialPasswordChange === true))
         {
-            $adminArray = $admin->toArray();
+            $adminArray = $admin->toArrayPublic();
             $adminArray['action'] = 'password_reset';
 
             return $adminArray;

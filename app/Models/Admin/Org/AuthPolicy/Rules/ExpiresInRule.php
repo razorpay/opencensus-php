@@ -15,9 +15,9 @@ class ExpiresInRule extends Base
 
     public function validate($admin, $password)
     {
-        if ($admin->getPasswordExpiry() < time())
+        if ($admin->getPasswordExpiry() > time())
         {
-            $adminArray = $admin->toArray();
+            $adminArray = $admin->toArrayPublic();
             $adminArray['action'] = 'password_reset';
 
             return $adminArray;
