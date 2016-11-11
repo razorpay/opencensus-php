@@ -80,7 +80,8 @@ class Service extends Base\Service
             'customer_contact' => $invoice->getCustomerContact(),
             'invoice_id'    => $id,
             'key_id'    => $publicKey,
-            'amount'    => $invoice->order->getAmount()
+            'amount'    => $invoice->order->getAmount(),
+            'environment'   => $this->app->environment(),
         ];
     }
 }
