@@ -87,12 +87,21 @@ class GenericController extends Controller
         // Logic to parse URL Params
         // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
 
-        $url_params = Input::get('url_params');
-        if (! empty($url_params))
+        // Will be JSON string
+        $urlParams = json_decode(Input::get('url_params'), true) ?: [];
+
+        // Check if the route is for an orgs/... related API call
+        $pos = strpos($route, 'orgs');
+
+        if ($pos === 0)
         {
-            $url_params = json_decode($url_params, true);
-            $keys = array_keys($url_params);
-            $vals = array_values($url_params);
+            $urlParams['{id}'] = 'org_'.Auth::guard('api')->user()->org_id;
+        }
+
+        if (! empty($urlParams))
+        {
+            $keys = array_keys($urlParams);
+            $vals = array_values($urlParams);
 
             $route = str_replace($keys, $vals, $route);
         }

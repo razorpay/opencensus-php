@@ -41,7 +41,6 @@ class AdminController extends Controller
     public function __construct()
     {
         $this->admin = Auth::guard('api')->user();
-        // sd($this->admin);
     }
 
     /**
@@ -148,9 +147,17 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        if (Auth::guard('api')->validate($input) === true)
+        // This is password based login
+        list($error, $user) = (new Admin\Service)->passwordLogin($input);
+
+        if (! empty($error))
         {
-            return redirect('/admin');
+            return AppResponse::jsonResponse($error, []);
+        }
+
+        if (Auth::guard('api')->check())
+        {
+            return AppResponse::jsonResponse(null);
         }
 
         return AppResponse::jsonResponse(['Invalid Credentials'], []);
@@ -195,7 +202,7 @@ class AdminController extends Controller
 
     public function getLogout()
     {
-        Auth::guard('admin')->logout();
+        Auth::guard('api')->logout();
 
         return AppResponse::jsonResponse([]);
     }
