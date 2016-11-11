@@ -190,6 +190,11 @@ class AdminController extends Controller
 
         list($error, $data) = (new Admin\Service)->getAdminData($admin);
 
+        if (! empty($error))
+        {
+            Auth::guard('api')->logout();
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
