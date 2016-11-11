@@ -53,6 +53,7 @@ class PermissionSeeder extends Seeder
             'edit_merchant_features' => '',
             'edit_merchant_comments' => '',
             'edit_merchant_banks' => '',
+            'edit_iin_rule' => '',
             'create_merchant_adjustments' => '',
             'edit_activate_merchant' => '',
             'edit_merchant_enable_live' => '',
@@ -107,6 +108,11 @@ class PermissionSeeder extends Seeder
             'create_admin' => '',
             'create_permission' => '',
             'view_all_permission' => '',
+            'add_reconciliation_file' => '',
+            'add_settlement_reconciliation' => '',
+            'send_newsletter' => '',
+            'trigger_dummy_error' => '',
+            'make_api_call' => '',
         ];
 
         DB::transaction(function() use ($permissions)
