@@ -320,8 +320,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ROLE)->insert(
                 [
                     'id'            => '6dLbNSpv5XbC5F',
-                    'name'          => 'Manager',
-                    'description'   => 'A manager',
+                    'name'          => 'Admin',
+                    'description'   => 'Administrator',
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'created_at'    => time(),
                     'updated_at'    => time(),
@@ -335,36 +335,6 @@ class DatabaseSeeder extends Seeder
                     'entity_type'   => 'admin',
                 ]
             );
-
-            DB::table(Table::PERMISSION)->insert([
-                [
-                    'id'            => '6ebwLI58cCaj92',
-                    'name'          => 'view_merchant_credits',
-                    'description'   => 'View Merchant Credits',
-                    'created_at'    => time(),
-                    'updated_at'    => time()
-                ],
-                [
-                    'id'            => '6ebyTmvzhAbQvi',
-                    'name'          => 'add_merchant_credits',
-                    'description'   => 'Add Merchant Credits',
-                    'created_at'    => time(),
-                    'updated_at'    => time()
-                ]
-            ]);
-
-            DB::table(Table::PERMISSION_MAP)->insert([
-                [
-                    'permission_id'     => '6ebwLI58cCaj92',
-                    'entity_id'         => '6dLbNSpv5XbC5F',
-                    'entity_type'       => 'role',
-                ],
-                [
-                    'permission_id'     => '6ebyTmvzhAbQvi',
-                    'entity_id'         => '6dLbNSpv5XbC5F',
-                    'entity_type'       => 'role',
-                ]
-            ]);
 
             DB::table(Table::GROUP)->insert([
                 [
