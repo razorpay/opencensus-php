@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -21,7 +22,21 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes',
         Entity::NOTES               => 'sometimes|notes',
         Entity::VIEW_LESS           => 'sometimes|boolean',
+        Entity::CUSTOMER            => 'required',
+        Entity::LINE_ITEMS          => 'required|custom',
     ];
+
+    public function validateLineItems($attribute, $value)
+    {
+        $itemsCount = count($value);
+
+        if ($itemsCount === 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Input must contain at least one input'
+            );
+        }
+    }
 
     // protected static $createValidators = [
     //     Entity::DISCOUNT_FLAT,

@@ -36,9 +36,6 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
-        // TODO: Should we move this to validator?
-        $this->validateRequest($input);
-
         $invoice = (new Generator($this->merchant))->generate($input);
 
         return $invoice;
@@ -128,13 +125,5 @@ class Core extends Base\Core
         ];
 
         return $data;
-    }
-
-    protected function validateRequest(array $input)
-    {
-        assert(isset($input[Entity::CUSTOMER]));
-
-        assert((isset($input[Entity::LINE_ITEMS])) and
-               (count($input[Entity::LINE_ITEMS]) > 0));
     }
 }

@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
     const SHORT_URL             = 'short_url';
     const VIEW_LESS             = 'view_less';
 
-    const TOTAL_AMOUNT          = 'total_amount';
+    // const TOTAL_AMOUNT          = 'total_amount';
     const CURRENCY              = 'currency';
 
     // ---------------------- Input Keys -------------------------------------
@@ -82,8 +82,6 @@ class Entity extends Base\PublicEntity
         // self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
-        self::EMAIL_STATUS      => NotifyStatus::PENDING,
-        self::SMS_STATUS        => NotifyStatus::PENDING,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => false,
@@ -161,7 +159,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::SHORT_URL,
         self::VIEW_LESS,
-        self::TOTAL_AMOUNT,
+        // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
 
@@ -184,26 +182,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::VIEW_LESS => 'bool',
     ];
-
-    public function build(array $input = array())
-    {
-        $this->input = $input;
-
-        $this->modify($input);
-
-        unset($input[Entity::CUSTOMER]);
-        unset($input[Entity::LINE_ITEMS]);
-
-        $this->validateInput('create', $input);
-
-        $this->generate($input);
-
-        // $this->unsetInput('create', $input);
-
-        $this->fill($input);
-
-        return $this;
-    }
 
     // -------------------------------------- Getters --------------------------------------
 
@@ -362,6 +340,8 @@ class Entity extends Base\PublicEntity
 
     public function generateEmailStatus($input)
     {
+        $this->setAttribute(self::EMAIL_STATUS, NotifyStatus::PENDING);
+
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::EMAIL_NOTIFY]) === true) and
             ($input[self::EMAIL_NOTIFY] === 0))
@@ -372,6 +352,8 @@ class Entity extends Base\PublicEntity
 
     public function generateSmsStatus($input)
     {
+        $this->setAttribute(self::SMS_STATUS, NotifyStatus::PENDING);
+
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::SMS_NOTIFY]) === true) and
             ($input[self::SMS_NOTIFY] === 0))
