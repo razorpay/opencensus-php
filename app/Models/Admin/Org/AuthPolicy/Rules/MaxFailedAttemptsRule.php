@@ -17,7 +17,7 @@ class MaxFailedAttemptsRule extends Base
     {
         if ($admin->getFailedAttempts() > $this->maxFailedAttempts)
         {
-            $admin->disable();
+            $admin->lock();
             $admin->saveOrFail();
 
             throw new Exception\BadRequestValidationFailureException(

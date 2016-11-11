@@ -158,6 +158,17 @@ class Entity extends Base\PublicEntity
         return $merchant;
     }
 
+    public function lock()
+    {
+        $this->setAttribute(self::LOCKED, true);
+    }
+
+    public function unlock()
+    {
+        $this->setAttribute(self::FAILED_ATTEMPTS, 0);
+        $this->setAttribute(self::LOCKED, false);
+    }
+
     public function disable()
     {
         $this->setAttribute(self::DISABLED, true);
@@ -165,7 +176,6 @@ class Entity extends Base\PublicEntity
 
     public function enable()
     {
-        $this->setAttribute(self::FAILED_ATTEMPTS, 0);
         $this->setAttribute(self::DISABLED, false);
     }
 
