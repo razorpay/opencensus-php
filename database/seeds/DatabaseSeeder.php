@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         $this->seed();
 
         $this->call('IinsTableSeeder');
+        $this->call('PermissionSeeder');
     }
 
     private function seed()
