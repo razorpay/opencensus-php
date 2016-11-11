@@ -51,13 +51,13 @@ class AdminAccess
     {
         $params = $request->route()->parameters();
 
+        $repo = $this->app['repo'];
+
         if (isset($params['mid']))
         {
           $mid = $params['mid'];
 
-          $repo = $this->app['repo'];
-
-          $merchant = $repo->merchant->findOrFailPublic('10000000000000');
+          $merchant = $repo->merchant->findOrFailPublic($mid);
 
           return $merchant;
         }
@@ -91,19 +91,26 @@ class AdminAccess
 
         $allowed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
 
-        // === Do a Group check.
+        $hasMerchantAccess = $this->groupCheck($admin, $merchant);
+
+        $policyPassed = false;
 
         if ($allowed)
         {
-            $hasMerchantAccess = $this->groupCheck($admin, $merchant);
-
-            if ($hasMerchantAccess)
+            if ($merchant)
             {
-                return true;
+                if ($hasMerchantAccess)
+                {
+                    $policyPassed = true;
+                }
+            }
+            else
+            {
+                $policyPassed = true;
             }
         }
 
-        return false;
+        return $policyPassed;
     }
 
     private function checkPermissionsAllowed($toCheck, $haystack)

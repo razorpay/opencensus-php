@@ -558,7 +558,7 @@ final class Route
         'group_get_multiple',
         'group_admins_create',
         'admin_get_by_attr',
-        'admin_get',
+        // 'admin_get',
         'admin_edit',
         'admin_delete',
         'admin_get_multiple',
@@ -617,11 +617,21 @@ final class Route
     );
 
     public static $admin = [
-        'hello_world'
+        'hello_world',
+        'group_create',
+        'admin_create',
+        'group_get',
+        'group_get_multiple',
+        'admin_get',
     ];
 
     public static $adminPermission = [
-        'hello_world' => ['view_merchant_credits']
+        'hello_world'        => ['view_merchant_credits'],
+        'group_create'       => ['view_merchant_credits'],
+        'admin_create'       => ['view_merchant_credits'],
+        'group_get'          => ['view_merchant_credits'],
+        'group_get_multiple' => ['view_merchant_credits'],
+        'admin_get'          => ['view_merchant_credits'],
     ];
 
     public static $direct = array(
