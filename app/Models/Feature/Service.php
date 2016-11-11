@@ -40,6 +40,8 @@ class Service extends Base\Service
 
         $this->repo->feature->delete($feature);
 
+        (new Core)->notifyOnSlack($feature, true);
+
         return $feature->toArrayPublic();
     }
 
