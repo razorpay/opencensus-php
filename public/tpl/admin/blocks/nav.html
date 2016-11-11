@@ -8,19 +8,19 @@
       <span>Dashboard</span>
     </a>
   </li>
-  <li>
+  <li ng-show="admin.permissions.indexOf('view_all_merchants') !== -1">
     <a id="merchantsNav" ui-sref="app.merchants.list">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Merchants</span>
     </a>
   </li>
-  <li>
+  <li ng-show="admin.permissions.indexOf('view_pricing_list') !== -1">
     <a id="pricingNav" ui-sref="app.pricing">
       <i class="fa fa-inr icon text-warning-lter"></i>
       <span>Pricing Plans</span>
     </a>
   </li>
-  <li>
+  <li ng-show="admin.permissions.indexOf('view_all_entities') !== -1">
     <a id="transactionsNav" ui-sref="app.entities">
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Entities</span>
@@ -52,36 +52,36 @@
     </a>
   </li>
 
-  <li>
-    <a id="orgsNav" ui-sref="app.orgs.list" ng-show="admin.permissions.indexOf('view_all_org') !== -1">
+  <li ng-show="admin.permissions.indexOf('view_all_org') !== -1">
+    <a id="orgsNav" ui-sref="app.orgs.list">
       <i class="fa fa-sitemap icon text-warning-lter"></i>
       <span>Organisations</span>
     </a>
   </li>
 
-  <li>
-    <a id="usersNav" ui-sref="app.users" ng-show="admin.permissions.indexOf('view_all_admin') !== -1">
+  <li ng-show="admin.permissions.indexOf('view_all_admin') !== -1">
+    <a id="usersNav" ui-sref="app.users">
       <i class="fa fa-user icon text-warning-lter"></i>
       <span>Users</span>
     </a>
   </li>
 
-  <li>
-    <a id="rolesNav" ui-sref="app.roles.list" ng-show="admin.permissions.indexOf('view_all_role') !== -1">
+  <li ng-show="admin.permissions.indexOf('view_all_role') !== -1">
+    <a id="rolesNav" ui-sref="app.roles.list">
       <i class="fa fa-address-book icon text-warning-lter"></i>
       <span>Roles</span>
     </a>
   </li>
 
-  <li>
-    <a id="permissionsNav" ui-sref="app.permissions.list" ng-show="admin.permissions.indexOf('view_all_permission') !== -1">
+  <li ng-show="admin.permissions.indexOf('view_all_permission') !== -1">
+    <a id="permissionsNav" ui-sref="app.permissions.list">
       <i class="fa fa-id-card icon text-warning-lter"></i>
       <span>Permissions</span>
     </a>
   </li>
 
-  <li>
-    <a id="groupsNav" ui-sref="app.groups.list" ng-show="admin.permissions.indexOf('view_all_group') !== -1">
+  <li ng-show="admin.permissions.indexOf('view_all_group') !== -1">
+    <a id="groupsNav" ui-sref="app.groups.list">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Groups</span>
     </a>
