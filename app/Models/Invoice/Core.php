@@ -7,7 +7,6 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Exception;
-use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Customer;
@@ -26,12 +25,6 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
-
-        $this->itemService = new LineItem\Service();
-
-        $this->itemCore = new LineItem\Core();
-        $this->orderCore = new Order\Core();
-        $this->customerCore = new Customer\Core();
     }
 
     public function create(array $input)
@@ -59,7 +52,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
-        return ['success' => $response];
+        return ['success' => ($response === true)];
     }
 
     public function expireInvoices()

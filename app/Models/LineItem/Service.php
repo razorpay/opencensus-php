@@ -21,20 +21,4 @@ class Service extends Base\Service
 
         return $item->toArrayPublic();
     }
-
-    public function fetch($id)
-    {
-        Entity::verifyIdAndStripSign($id);
-
-        $item = $this->repo->line_item->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        return $item->toArrayPublic();
-    }
-
-    public function fetchMultiple(array $input)
-    {
-        $items = $this->repo->line_item->fetch($input, $this->merchant->getId());
-
-        return $items->toArrayPublic();
-    }
 }

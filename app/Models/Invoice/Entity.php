@@ -18,6 +18,9 @@ class Entity extends Base\PublicEntity
     // ------------------ Entity Keys --------------------------------
 
     const ORDER_ID              = 'order_id';
+    // Ref id provided by merchant for his own references
+    const MERCHANT_REF_ID       = 'merchant_ref_id';
+    const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
@@ -25,11 +28,15 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_CONTACT      = 'customer_contact';
     // Invoice status
     const STATUS                = 'status';
+    const DATE                  = 'date';
     const DUE_BY                = 'due_by';
     const SCHEDULED_AT          = 'scheduled_at';
+    const ISSUED_AT             = 'issued_at';
+    const PAID_AT               = 'paid_at';
+    const EXPIRED_AT            = 'expired_at';
+    // Email & Sms communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
-    const DATE                  = 'date';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
     const SHORT_URL             = 'short_url';
@@ -45,15 +52,13 @@ class Entity extends Base\PublicEntity
 
     // Input key for sending line item details
     const LINE_ITEMS            = 'line_items';
+    // const ITEM                  = 'item';
     // Input key for sending customer details
     const CUSTOMER              = 'customer';
-    // Input key on whether to notify the customer by email
+    // Input key on whether to notify the customer by email|sms
     const EMAIL_NOTIFY          = 'email_notify';
-    // Input key on whether to notify the customer by sms
     const SMS_NOTIFY            = 'sms_notify';
-    // Input key to send the expiry date of the invoice
     const DUE_IN                = 'due_in';
-    // Input key to send the scheduling time for notifying the customer
     const SCHEDULED_IN          = 'scheduled_in';
     // Input key to send whether the invoice should be created in draft state
     const DRAFT                 = 'draft';
@@ -61,10 +66,10 @@ class Entity extends Base\PublicEntity
     // ---------------------- Input Keys End -------------------------------------
 
     // ------------------------- Output Keys --------------------------------------
-
     const CUSTOMER_DETAILS      = 'customer_details';
 
     // ------------------------ Output Keys End -----------------------------------
+
 
     const EMAIL                 = 'email';
     const SMS                   = 'sms';
@@ -72,11 +77,11 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_DUE_DAYS      = 60;
 
-    protected static $sign = 'inv';
+    protected static $sign      = 'inv';
 
-    protected $entity = 'invoice';
+    protected $entity           = 'invoice';
 
-    protected $table = Table::INVOICE;
+    protected $table            = Table::INVOICE;
 
     protected $generateIdOnCreate = true;
 
@@ -109,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         // self::TERMS,
         self::NOTES,
+        self::MERCHANT_REF_ID,
         self::VIEW_LESS,
         self::CURRENCY,
         self::SOURCE,
@@ -155,8 +161,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::ORDER_ID,
         self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
         self::LINE_ITEMS,
         self::STATUS,
         // self::DUE_BY,
@@ -189,11 +195,27 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::ORDER_ID,
+        self::ORDER_ID,
     ];
 
     protected $casts = [
         self::VIEW_LESS => 'bool',
     ];
+
+    public function build(array $input = array())
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $this->validateInput('create', $input);
+
+        $this->generate($input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 
     // -------------------------------------- Getters --------------------------------------
 
@@ -340,6 +362,13 @@ class Entity extends Base\PublicEntity
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
 
+        // Flatten response as per spec: Merge item attributes into line_item level.
+        foreach ($lineItems as & $lineItem) {
+            unset($lineItem['item']['id']);
+            $lineItem = array_merge($lineItem, $lineItem['item']);
+            unset($lineItem['item']);
+        }
+
         return $lineItems;
     }
 
@@ -467,7 +496,7 @@ class Entity extends Base\PublicEntity
 
     public function lineItems()
     {
-        return $this->hasMany('RZP\Models\LineItem\Entity');
+        return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
     }
 
     public function merchant()

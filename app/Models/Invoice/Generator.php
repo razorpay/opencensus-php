@@ -13,6 +13,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
+use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
@@ -177,7 +178,7 @@ class Generator extends Base\Core
     {
         foreach ($this->lineItems as $lineItem)
         {
-            $lineItem->invoice()->associate($this->invoice);
+            $lineItem->entity()->associate($this->invoice);
 
             $this->repo->saveOrFail($lineItem);
         }
@@ -205,24 +206,22 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            $lineItemsDetails[LineItem\Entity::CURRENCY] = $this->invoice->getCurrency();
+            $lineItemsDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
 
-            // Not supporting creating new line items from existing line items, currently.
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
-
-            // // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
-            // if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
-            // {
-            //     $lineItemId = $lineItemDetails[LineItem\Entity::ID];
-            //
-            //     LineItem\Entity::verifyIdAndStripSign($lineItemId);
-            //
-            //     $lineItem = $this->repo->line_item->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
-            // }
-            // else
-            // {
-            //     $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
-            // }
+            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true) {
+                $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
+                Item\Entity::verifyIdAndStripSign($itemId);
+                $item = $this->repo->item
+                    ->findByIdAndMerchantId($itemId, $this->merchant->getId());
+            } else {
+                list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
+                $item = (new Item\Core)->create($itemDetails, $this->merchant);
+            }
+            $lineItem = $this->lineItemCore->create(
+                $lineItemDetails,
+                $this->invoice,
+                $item
+            );
 
             $lineItems[] = $lineItem;
         }
@@ -285,5 +284,23 @@ class Generator extends Base\Core
         }
 
         return $customer;
+    }
+
+    /**
+     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
+     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
+     *     This function separates those payloads for it to be used further.
+     */
+    protected function separateInput(array $lineItemDetails)
+    {
+        $itemDetails = [];
+        foreach ($lineItemDetails as $key => $value) {
+            if (in_array($key, Item\Entity::$allFields, true)) {
+                $itemDetails[$key] = $value;
+                unset($lineItemDetails[$key]);
+            }
+        }
+
+        return [$lineItemDetails, $itemDetails];
     }
 }

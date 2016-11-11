@@ -3,7 +3,8 @@
 namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
+use RZP\Models\Invoice;
+use RZP\Models\Item;
 use RZP\Exception;
 
 class Core extends Base\Core
@@ -18,28 +19,30 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(array $input, Invoice\Entity $invoice, Item\Entity $item)
     {
-        $item = (new Entity)->build($input);
+        $lineItem = (new Entity)->build($input);
 
-        $item->merchant()->associate($merchant);
+        $lineItem->entity()->associate($invoice);
 
-        $this->repo->saveOrFail($item);
+        $lineItem->item()->associate($item);
 
-        return $item;
+        $this->repo->saveOrFail($lineItem);
+
+        return $lineItem;
     }
 
-    public function getTotalAmountFromLineItems(array $items)
+    public function getTotalAmountFromLineItems(array $lineItems)
     {
         $totalAmount = 0;
 
-        array_map(function($item) use (& $totalAmount)
+        array_map(function($lineItem) use (& $totalAmount)
         {
-            $quantity = $item->getQuantity();
-            $amount = $item->getAmount();
+            $quantity = $lineItem->getQuantity();
+            $amount   = $lineItem->item->getAmount();
 
             $totalAmount += ($amount * $quantity);
-        }, $items);
+        }, $lineItems);
 
         return $totalAmount;
     }

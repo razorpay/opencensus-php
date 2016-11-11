@@ -45,6 +45,7 @@ class Entity
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
+    const ITEM                  = 'ITEM';
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';

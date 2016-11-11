@@ -14,13 +14,14 @@ class Validator extends Base\Validator
         // Entity::SHIPPING            => 'sometimes|integer|min:1',
 
         // If due_in is 0, it will get expired immediately. Hence the minimum value of 1.
-        //Entity::DUE_IN              => 'sometimes|integer|min:1|max:365',
-        //Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
+        Entity::DUE_IN              => 'sometimes|integer|min:1|max:365',
+        Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::MERCHANT_REF_ID     => 'sometimes|string|max:14',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',

@@ -6,85 +6,65 @@ use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
+use RZP\Models\Item;
 use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME                  = 'name';
-    const DESCRIPTION           = 'description';
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-    const MERCHANT_ID           = 'merchant_id';
-    // This is something like an SKU
-    //const LISTING_ID            = 'listing_id';
-    const INVOICE_ID            = 'invoice_id';
+    const ENTITY_ID        = 'entity_id';
+    const ENTITY_TYPE      = 'entity_type';
+    const ITEM_ID          = 'item_id';
+    const QUANTITY         = 'quantity';
 
-    const QUANTITY              = 'quantity';
+    const ITEM             = 'item';
 
     protected static $sign = 'li';
 
-    protected $entity = 'line_item';
+    protected $entity      = 'line_item';
 
-    protected $table = Table::LINE_ITEM;
+    protected $table       = Table::LINE_ITEM;
 
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::DESCRIPTION       => null,
-        //self::LISTING_ID        => null,
         self::QUANTITY          => 1,
     ];
 
     protected $visible = [
         self::ID,
-        self::PUBLIC_ID,
-        self::INVOICE_ID,
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
-        //self::LISTING_ID,
-        self::CURRENCY,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::QUANTITY,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::MERCHANT_ID,
-        self::QUANTITY,
+        self::ITEM_ID,
+        self::ITEM,
     ];
 
     protected $public = [
         self::ID,
-        // self::INVOICE_ID,
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
-        self::CURRENCY,
         self::QUANTITY,
-        self::CREATED_AT,
+        self::ITEM_ID,
+        self::ITEM,
     ];
 
     protected $fillable = [
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::QUANTITY,
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
         self::QUANTITY  => 'int',
     ];
 
-    // protected $publicSetters = [
-    //     self::ID,
-    //     self::ENTITY,
-    //     self::INVOICE_ID,
-    // ];
+    protected $publicSetters = [
+        self::ID,
+        self::ITEM_ID,
+        self::ITEM,
+    ];
 
     // -------------------------- Getters --------------------------
-
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
 
     public function getQuantity()
     {
@@ -93,23 +73,26 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters Ends --------------------------
 
-    protected function setPublicInvoiceIdAttribute(array & $array)
+    protected function setPublicItemIdAttribute(array & $array)
     {
-        $invoiceId = $this->getAttribute(self::INVOICE_ID);
+        $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
+    }
 
-        $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+    protected function setPublicItemAttribute(array & $array)
+    {
+        $array[self::ITEM] = $this->item->toArrayPublic();
     }
 
     // -------------------- Relations ---------------------------
 
-    public function merchant()
+    public function entity()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->morphTo();
     }
 
-    public function invoice()
+    public function item()
     {
-        return $this->belongsTo('RZP\Models\Invoice\Entity');
+        return $this->belongsTo('RZP\Models\Item\Entity');
     }
 
     // -------------------- End Relations -----------------------
