@@ -18,6 +18,11 @@ class Repository extends Base\Repository
         Entity::NAME    => 'sometimes|string',
     ];
 
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
+    }
+
     public function retrieveByIds(array $permIds)
     {
         return $this->newQuery()
