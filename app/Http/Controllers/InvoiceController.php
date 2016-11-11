@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-
+use View;
 use ApiResponse;
 use RZP\Models\Invoice;
 
@@ -79,7 +79,7 @@ class InvoiceController extends Controller
 
     public function getInvoiceView($invoiceId)
     {
-        $data = $this->service->fetch($invoiceId);
+        $data = $this->service->getInvoiceViewDetails($invoiceId);
 
         return View::make('invoice.index')->with('data', $data);
     }

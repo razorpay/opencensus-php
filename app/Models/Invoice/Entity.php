@@ -161,6 +161,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
 
@@ -283,11 +284,6 @@ class Entity extends Base\PublicEntity
     public function setCustomerContact($customerContact)
     {
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
-    }
-
-    public function setLineItems($lineItems)
-    {
-        $this->setAttribute(self::LINE_ITEMS, $lineItems);
     }
 
     public function setSmsStatus($status)

@@ -26,7 +26,7 @@ class Generator
     protected $orderRepo;
 
     const ORDER_CURRENCY = 'INR';
-    const JUST_CREATED_TIME = 600;
+    const JUST_CREATED_TIME = 604800;
 
     public function __construct(Merchant\Entity $merchant)
     {

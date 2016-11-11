@@ -58,13 +58,29 @@ class Service extends Base\Service
     {
         return (new Notifier())->sendNotificationsInBulk();
     }
-    
+
     public function fetchStatus($id)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
-        
+
         $data = $this->core->fetchStatus($invoice);
 
         return $data;
+    }
+
+    public function getInvoiceViewDetails($id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $keys = $this->repo->key->getKeysForMerchant($this->merchant->getId());
+        $publicKey = $keys->first()->getPublicKey($this->mode);
+
+        return [
+            'customer_email' => $invoice->getCustomerEmail(),
+            'customer_contact' => $invoice->getCustomerContact(),
+            'invoice_id'    => $id,
+            'key_id'    => $publicKey,
+            'amount'    => $invoice->order->getAmount()
+        ];
     }
 }
