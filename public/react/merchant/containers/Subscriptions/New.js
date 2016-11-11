@@ -4,12 +4,15 @@ import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 import { PowerSelect } from 'react-power-select'
 
+import Modal from 'rzp/ui/modal'
 import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import ReduxSelect2 from 'rzp/ui/Forms/ReduxSelect2'
 import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
-import { fetchCustomers } from 'merchant/modules/customers/list'
+
+import { fetchCustomers } from 'merchant/modules/customers'
 import { fetchPlans } from 'merchant/modules/plans'
+import ModalContainer from 'merchant/containers/ModalContainer'
+import CustomerCreation from 'merchant/containers/Customers/New'
 
 @connect(
   (state) => {
@@ -29,15 +32,25 @@ import { fetchPlans } from 'merchant/modules/plans'
     quantity: 1
   }
 })
-export default class SubscriptionsNewContainer extends Component {
+export default class SubscriptionsNewContainer extends ModalContainer {
   constructor() {
     super(...arguments)
     this.save = ::this.save
+    this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
   }
 
   componentWillMount() {
     this.props.fetchCustomers()
     this.props.fetchPlans()
+  }
+
+  selectCustomerAndCloseModal(customer) {
+    this.props.change('customer', customer)
+    this.closeModal()
+  }
+
+  quickCreateCustomer() {
+    this.openModal()
   }
 
   save() {
@@ -51,20 +64,31 @@ export default class SubscriptionsNewContainer extends Component {
     return (
       <div>
         <Header title='New Subscription'>
-          <a href='#/app/subscriptions' className='pull-right btn btn-link btn-sm'>
-            <i className='fa fa-close'></i>
+          <a href='#/app/subscriptions' class='pull-right btn btn-link btn-sm'>
+            <i class='fa fa-close'></i>
           </a>
         </Header>
 
-        <div className='content-wrapper'>
-          <div className='panel panel-default'>
-            <div className='panel-body'>
-              <form className='form-horizontal' onSubmit={handleSubmit(this.save)}>
-                <div className='form-group'>
-                  <label htmlFor='customer' className='col-md-2 control-label'>
+        <Modal
+          isOpen={this.state.isModalOpen}
+          onRequestClose={this.closeModal}
+          closeTimeoutMS={300}
+        >
+          <CustomerCreation
+            onSave={this.selectCustomerAndCloseModal}
+            closeModal={this.closeModal}
+          />
+        </Modal>
+
+        <div class='content-wrapper'>
+          <div class='panel panel-default'>
+            <div class='panel-body'>
+              <form class='form-horizontal' onSubmit={handleSubmit(this.save)}>
+                <div class='form-group'>
+                  <label for='customer' class='col-md-2 control-label'>
                     Customer Name
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='customer'
                       id='customer'
@@ -75,15 +99,27 @@ export default class SubscriptionsNewContainer extends Component {
                       optionComponent={(option) => <span>{option.name}</span>}
                       searchIndices={['name']}
                       placeholder='Select a customer'
+                      afterOptionsComponent={({ select }) => (
+                        <div
+                          class='quick-create'
+                          onClick={() => {
+                            this.quickCreateCustomer()
+                            select.close()
+                          }}
+                        >
+                          <i class='fa fa-plus'></i>
+                          <span>Add New Customer</span>
+                        </div>
+                      )}
                     />
                   </div>
                 </div>
 
-                <div className='form-group'>
-                  <label htmlFor='plan' className='col-md-2 control-label'>
+                <div class='form-group'>
+                  <label for='plan' class='col-md-2 control-label'>
                     Plan Name
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='plan'
                       id='plan'
@@ -98,76 +134,76 @@ export default class SubscriptionsNewContainer extends Component {
                   </div>
                 </div>
 
-                <div className='form-group'>
-                  <label htmlFor='due_on' className='col-md-2 control-label'>
+                <div class='form-group'>
+                  <label for='due_on' class='col-md-2 control-label'>
                     Quantity
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='quantity'
                       id='quantity'
                       type='number'
                       component='input'
                       min={1}
-                      className='form-control'
+                      class='form-control'
                     />
                   </div>
                 </div>
 
-                <div className='form-group'>
-                  <label htmlFor='start_at' className='col-md-2 control-label'>
+                <div class='form-group'>
+                  <label for='start_at' class='col-md-2 control-label'>
                     Starts on
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='start_at'
                       id='start_at'
                       component={DatePickerField}
-                      className='form-control'
+                      class='form-control'
                     />
                   </div>
                 </div>
 
-                <div className='form-group'>
-                  <label htmlFor='end_at' className='col-md-2 control-label'>
+                <div class='form-group'>
+                  <label for='end_at' class='col-md-2 control-label'>
                     Ends on
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='end_at'
                       id='end_at'
                       component={DatePickerField}
-                      className='form-control'
+                      class='form-control'
                     />
                   </div>
                 </div>
 
-                <div className='form-group'>
-                  <label htmlFor='notes' className='col-md-2 control-label'>
+                <div class='form-group'>
+                  <label for='notes' class='col-md-2 control-label'>
                     Notes
                   </label>
-                  <div className='col-md-4'>
+                  <div class='col-md-4'>
                     <Field
                       name='notes'
                       id='notes'
                       component='textarea'
-                      className='form-control'
+                      class='form-control'
                     />
                   </div>
                 </div>
 
-                <div className='col-md-offset-2'>
-                  <div className='btn-toolbar'>
+                <div class='col-md-offset-2'>
+                  <div class='btn-toolbar'>
                     <AsyncButton
                       type='button'
-                      className='btn btn-primary'
+                      class='btn btn-primary'
                       text='Save'
                       pendingText='Saving...'
                       onClick={handleSubmit(this.save)}
                     />
                     <a
                       href='#/app/subscriptions'
-                      className='btn btn-default'
+                      class='btn btn-default'
                     >
                       Cancel
                     </a>

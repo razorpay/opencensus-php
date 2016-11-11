@@ -7,7 +7,8 @@ import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import ReduxSelect2 from 'rzp/ui/Forms/ReduxSelect2'
 import LineItemTable from 'merchant/components/Invoices/LineItemTable'
-import { fetchCustomers } from 'merchant/modules/customers/list'
+import { fetchCustomers } from 'merchant/modules/customers'
+
 
 @connect(
   (state) => state.invoice.toJS(),

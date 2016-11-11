@@ -4,7 +4,7 @@ import invoicesReducer from 'merchant/modules/invoices/list'
 import invoiceReducer from 'merchant/modules/invoices/new'
 import subscriptionsReducer from 'merchant/modules/subscriptions/list'
 import plansReducer from 'merchant/modules/plans'
-import customersReducer from 'merchant/modules/customers/list'
+import customersReducer from 'merchant/modules/customers'
 
 export default combineReducers({
   form: formReducer,

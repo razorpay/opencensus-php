@@ -1,7 +1,6 @@
 import { PowerSelect } from 'react-power-select'
 
 export default ({ input, meta, selected, ...otherProps }) => {
-  debugger
   return (
     <PowerSelect
       {...otherProps}
