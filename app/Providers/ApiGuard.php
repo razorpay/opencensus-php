@@ -45,11 +45,14 @@ class ApiGuard implements Guard
 
         if (! is_null($userData = $this->app['session']->get($this->sessionKey)))
         {
-            $user = $this->provider->getGenericUser($userData);
+            if (isset($userData['token']))
+            {
+                $user = $this->provider->getGenericUser($userData);
 
-            $this->setUser($user);
+                $this->setUser($user);
 
-            return $user;
+                return $user;
+            }
         }
 
         return $this->user = null;
