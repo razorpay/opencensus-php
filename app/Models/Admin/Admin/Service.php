@@ -135,7 +135,40 @@ class Service extends Base\Service
 
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminToken->getAdminId());
 
-        return $admin->toArrayPublic();
+        $roles = $admin->roles;
+        $permissions = [];
+        $roleNames = [];
+        $groupRules = [];
+
+        foreach ($admin->groups as $group)
+        {
+            $groupRules[] = [
+                'name' => $group['name'],
+                'description' => $group['description'],
+            ];
+        }
+
+        foreach ($roles as $role)
+        {
+            $roleNames[] = $role['name'];
+            $rolePermissions = $role->permissions;
+
+            foreach ($rolePermissions as $rolePermission)
+            {
+                $rolePermission = $rolePermission->toArrayPublic();
+                $permissions[] = $rolePermission['name'];
+            }
+        }
+
+        $admin = $admin->toArrayPublic();
+
+        $admin['permissions'] = $permissions;
+
+        $admin['roles'] = $roleNames;
+
+        $admin['groups'] = $groupRules;
+
+        return $admin;
     }
 
     public function getAdminByAttr($orgId, $attr, $attrVal)
