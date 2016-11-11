@@ -17,17 +17,15 @@ app.controller('OrgsAddRolesCtrl', [
 
     $scope.save = function (role, permissions) {
       var body = role;
-      body.permissions = $scope.permissions.map(function(perm){
-        return perm.id;
-      });
+      // Permissions have to be saved in a separate call
+      // body.permissions = $scope.permissions.map(function(perm){
+      //   return perm.id;
+      // });
       var request = $http({
         url: '/admin/generic',
         method: 'POST',
         params: {
-          route_name: 'roles_create',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOF'
-          }
+          route_name: 'role_create'
         },
         data: {
           body: body
@@ -36,7 +34,7 @@ app.controller('OrgsAddRolesCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Successfully added role', true);
+          $scope.alerts.addAlert('success', 'Role added', true);
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
