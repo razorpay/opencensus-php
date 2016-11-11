@@ -233,6 +233,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
+    
+    public function getShortUrl()
+    {
+        return $this->getAttribute(self::SHORT_URL);
+    }
 
     /**
      * An invoice is considered just created for 5

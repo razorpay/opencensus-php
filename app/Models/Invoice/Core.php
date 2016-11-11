@@ -113,6 +113,26 @@ class Core extends Base\Core
         ];
     }
 
+    public function getFormattedInvoiceData(Merchant\Entity $merchant, $invoiceId)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
+
+        $orderId = $invoice->getOrderId();
+
+        $customer = $invoice->customer();
+
+        $data['invoice'] = [
+            'order_id'  => $orderId,
+            'url'       => $invoice->getShortUrl()
+        ];
+
+        $data['customer'] = [
+            $customer->toArrayPublic()
+        ];
+
+        return $data;
+    }
+
     protected function validateRequest(array $input)
     {
         assert(isset($input[Entity::CUSTOMER]));

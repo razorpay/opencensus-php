@@ -13,6 +13,7 @@ use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 
 class Checkout
@@ -24,7 +25,7 @@ class Checkout
         $this->app = App::getFacadeRoot();
     }
 
-    public function getPreferences($merchant, $mode, $input)
+    public function getPreferences(Entity $merchant, $mode, array $input)
     {
         $this->tracePreferencesRequest($merchant, $mode, $input);
 
@@ -38,10 +39,30 @@ class Checkout
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
+        $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
         return $data;
     }
 
-    protected function tracePreferencesRequest($merchant, $mode, $input)
+    protected function checkAndAddDetailsForInvoice(array $input, Entity $merchant, array & $data)
+    {
+        if (empty($input[Invoice\Entity::ID]) === true)
+        {
+            return;
+        }
+
+        $invoiceId = $input[Invoice\Entity::ID];
+        
+        $invoiceCore = new Invoice\Core;
+        
+        $invoiceData = $invoiceCore->getFormattedInvoiceData($merchant, $invoiceId);
+        
+        $data['invoice'] = $invoiceData['invoice'];
+        
+        $data['customer'] = $invoiceData['customer'];
+    }
+
+    protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
         $sessionData = $this->app['request']->session()->all();
 
@@ -55,14 +76,14 @@ class Checkout
             ]);
     }
 
-    protected function fetchTPVOrderInfo($input, $merchant)
+    protected function fetchTPVOrderInfo(array $input)
     {
         $orderData = null;
 
         try
         {
             $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
+                                                                $input[Payment\Entity::ORDER_ID]);
         }
         catch(\Exception $ex)
         {
@@ -72,7 +93,7 @@ class Checkout
         return $orderData ;
     }
 
-    protected function fetchCustomerData($input, $merchant)
+    protected function fetchCustomerData(array $input, Entity $merchant)
     {
         $custData = null;
 
@@ -113,7 +134,7 @@ class Checkout
         return $custData;
     }
 
-    protected function checkAndFillAppTokenInputFromSession($merchant, $mode, array & $input)
+    protected function checkAndFillAppTokenInputFromSession(Entity $merchant, $mode, array & $input)
     {
         if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
@@ -136,14 +157,14 @@ class Checkout
         }
     }
 
-    protected function checkAndAddOrderForTpv($merchant, $input, & $data)
+    protected function checkAndAddOrderForTpv(Entity $merchant, array $input, array & $data)
     {
         // If merchant is TPV enabled pass details for
         // current order as part of preferences
         if (($merchant->isTPVRequired()) and
             (isset($input[Payment\Entity::ORDER_ID])))
         {
-            $orderData = $this->fetchTPVOrderInfo($input, $merchant);
+            $orderData = $this->fetchTPVOrderInfo($input);
 
             if ($orderData !== null)
             {
@@ -152,7 +173,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillSavedTokens($input, $merchant, & $data)
+    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data)
     {
         try
         {
@@ -197,13 +218,13 @@ class Checkout
         }
      }
 
-    protected function getMerchantPreferencesData($merchant, $mode, $input)
+    protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
 
         $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
 
-        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode, $input);
+        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode);
 
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
@@ -212,7 +233,7 @@ class Checkout
         return $data;
     }
 
-    protected function shouldEnableCardSaving($merchant, $mode, $input)
+    protected function shouldEnableCardSaving(Entity $merchant, $mode)
     {
         $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
 

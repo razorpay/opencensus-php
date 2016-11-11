@@ -1,7 +1,6 @@
 <?php
 
 return array(
-
     'dashboard' => array(
         'url'       =>  env('APP_DASHBOARD_URL'),
         'secret'    =>  env('APP_DASHBOARD_SECRET'),
