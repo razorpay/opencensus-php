@@ -179,6 +179,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_LOGIN_AT);
     }
 
+    public function getPasswordExpiry()
+    {
+        return $this->getAttribute(self::PASSWORD_EXPIRY);
+    }
+
     public function getFailedAttempts()
     {
         return (int) $this->getAttribute(self::FAILED_ATTEMPTS);
