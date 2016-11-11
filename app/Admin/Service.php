@@ -2382,6 +2382,10 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
         }
+        catch (\Razorpay\Api\Errors\ServerError $e)
+        {
+            $error[] = $e->getMessage();
+        }
 
         return [$error, $data];
     }
