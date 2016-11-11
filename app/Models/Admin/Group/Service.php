@@ -34,7 +34,7 @@ class Service extends Base\Service
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $groupId);
 
-        return $group->toArrayPublicWithRelationships();
+        return $group->toArrayPublic();
     }
 
     public function deleteGroup(string $orgId, string $groupId)
@@ -126,7 +126,7 @@ class Service extends Base\Service
             $this->repo->group->addAdminToGroup($group, $admin);
         }
 
-        return $group->toArrayPublicWithRelationships();
+        return $group->toArrayPublic();
     }
 
     public function revokeRoleFromGroup(
