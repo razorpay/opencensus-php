@@ -64,7 +64,8 @@ app.controller('AdminCtrl', [
       });
     };
     $scope.goToSignIn = function () {
-      location.reload();
+      // location.reload();
+      location.href = location.pathname;
     };
     $scope.$on('$keepalive', function () {
       $http({
