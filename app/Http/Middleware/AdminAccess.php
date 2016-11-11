@@ -89,24 +89,22 @@ class AdminAccess
         // 2. Check if the specified permissions exist in our
         // generated white list
 
-        $allowed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
+        $policyPassed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
 
-        $hasMerchantAccess = $this->groupCheck($admin, $merchant);
-
-        $policyPassed = false;
-
-        if ($allowed)
+        if ($policyPassed)
         {
             if ($merchant)
             {
+                $hasMerchantAccess = $this->groupCheck($admin, $merchant);
+
                 if ($hasMerchantAccess)
                 {
                     $policyPassed = true;
                 }
-            }
-            else
-            {
-                $policyPassed = true;
+                else
+                {
+                    $policyPassed = false;
+                }
             }
         }
 
