@@ -2,18 +2,17 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
 use Config;
+use Mail;
+use RZP\Base\RuntimeManager;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Base\RuntimeManager;
+use RZP\Models\Payment;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

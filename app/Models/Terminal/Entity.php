@@ -3,11 +3,10 @@
 namespace RZP\Models\Terminal;
 
 use Crypt;
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal\Recurring;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -449,6 +448,26 @@ class Entity extends Base\PublicEntity
             $tpvCategories = (new Merchant\Entity)->getTPVCategories();
 
             return in_array($this->getCategory(), $tpvCategories);
+        }
+
+        return false;
+    }
+
+    public function isRecurringAuthTerminal()
+    {
+        if ($this->getRecurring() === Recurring::NON_RECURRING)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isRecurringDirectTerminal()
+    {
+        if ($this->getRecurring() === Recurring::RECURRING_N3DS)
+        {
+            return true;
         }
 
         return false;

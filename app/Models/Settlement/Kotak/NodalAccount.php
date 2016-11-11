@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Settlement\Kotak;
 
+use Carbon\Carbon;
 use Excel;
 use Mail;
-use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -85,8 +84,6 @@ class NodalAccount
         $textData = array();
         $excelData = array();
 
-        $txt = '';
-
         $row = 2; // row number
 
         $totalAmount = $neftAmount = $iftAmount = 0;
@@ -108,8 +105,6 @@ class NodalAccount
             $amount = $settlement->getAmount() / 100;
             $totalAmount += $amount;
 
-            $type = 'NEFT';
-
             $ifsc = $ba->getIfscCode();
 
             $ifscFirstFour = substr($ifsc, 0, 4);
@@ -117,7 +112,6 @@ class NodalAccount
             if (($ifscFirstFour === 'KKBK') or
                 ($ifscFirstFour === 'VYSA'))
             {
-                $type = 'IFT';
                 $iftAmount += $amount;
                 $iftCount++;
             }

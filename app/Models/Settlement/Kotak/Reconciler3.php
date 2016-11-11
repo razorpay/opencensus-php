@@ -33,6 +33,12 @@ class Reconciler3
         'Int.ref no.',
         'Dummy');
 
+    const SUCCESS_STATUS = [
+        'Beneficiary Account Credited',
+        'Account Debited',
+        'Presented and Paid',
+    ];
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -155,22 +161,48 @@ class Reconciler3
 
     protected function processSettlementStatus($setl, $row)
     {
+        // get reconciliation data
         $utr = null;
-        $failureReason = null;
 
-        // get status
         $status = $row['Status Of transaction'];
+
+        $failureReason = $row['Reject Reason'];
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $tenPm = Carbon::today('Asia/Kolkata')->hour(22)->timestamp;
+
         if ($status === 'P')
         {
-            $status = Settlement\Status::PROCESSED;
-
             $utr = $row['UTR number'];
+
+            // If current time is before 10 pm, dont mark the settlement as
+            // processed and update only the utr
+            if ($now < $tenPm)
+            {
+                $status = Settlement\Status::CREATED;
+
+                $failureReason = null;
+            }
+            else if ((empty($failureReason) === true) or
+                (in_array($failureReason, self::SUCCESS_STATUS) === true))
+            {
+                $status = Settlement\Status::PROCESSED;
+
+                $failureReason = null;
+            }
+            else
+            {
+                $status = Settlement\Status::FAILED;
+
+                $failureReason = 'Reconciliation: ' . $failureReason;
+            }
         }
         else
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $row['Reject Reason'];
+            $failureReason = 'Reconciliation: ' . $failureReason;
         }
 
         // if already processed
@@ -260,7 +292,7 @@ class Reconciler3
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

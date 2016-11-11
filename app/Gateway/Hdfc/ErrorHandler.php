@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 

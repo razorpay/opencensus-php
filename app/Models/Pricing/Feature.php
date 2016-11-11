@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Exception;
+
 class Feature
 {
     const PAYMENT = 'payment';

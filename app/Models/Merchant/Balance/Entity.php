@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Merchant\Balance;
 
-use RZP\Constants\Table;
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {

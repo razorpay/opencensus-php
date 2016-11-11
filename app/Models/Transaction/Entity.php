@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -468,6 +467,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::SETTLEMENT);
     }
 
+    public function isTypeAdjustment()
+    {
+        return ($this->getType() === Type::ADJUSTMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -524,6 +528,12 @@ class Entity extends Base\PublicEntity
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
+        }
+        else if ($this->isTypeAdjustment())
+        {
+            $adjustment = $this->source;
+
+            $reportTxn['description'] = $adjustment->getDescription();
         }
 
         return $reportTxn;

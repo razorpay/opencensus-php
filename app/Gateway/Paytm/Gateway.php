@@ -9,7 +9,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Paytm;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -303,7 +302,6 @@ class Gateway extends Base\Gateway
         }
 
         $mobileNo = $this->getMobileNumber($input['payment']['contact']);
-        $email = $this->getFormattedEmail($input['payment']['email']);
 
         $content = array(
             'REQUEST_TYPE'              => $type,

@@ -5,7 +5,6 @@ namespace RZP\Gateway\Cybersource\Mock;
 use App;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Cybersource;
 
 class Gateway extends Cybersource\Gateway

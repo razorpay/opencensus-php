@@ -179,7 +179,7 @@ class Metadata
     {
         $library = strtolower($library);
 
-        if (self::isValidlibrary($library))
+        if (self::isValidLibrary($library))
         {
             return self::LIBRARY_VALUES[$library];
         }

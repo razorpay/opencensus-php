@@ -400,7 +400,7 @@ trait Enroll
      */
     protected function setErrorOnEnrollFailure()
     {
-        Assert($this->error === false);
+        assert($this->error === false);
 
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
 

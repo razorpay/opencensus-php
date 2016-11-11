@@ -3,7 +3,6 @@
 namespace RZP\Models\Base;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class PublicCollection extends Collection
 {

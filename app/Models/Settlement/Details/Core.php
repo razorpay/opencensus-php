@@ -4,7 +4,6 @@ namespace RZP\Models\Settlement\Details;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement;
-use Trace\TraceCode;
 
 class Core extends Base\Core
 {

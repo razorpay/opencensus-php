@@ -3,8 +3,6 @@
 namespace RZP\Trace;
 
 use RZP\Exception\CardNumberTraceException;
-use RZP\Trace\TraceCode;
-use RZP\Trace\TraceFields;
 
 class Trace extends TraceWriter
 {

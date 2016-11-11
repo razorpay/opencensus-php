@@ -106,7 +106,6 @@ class DailyReport extends Base\Core
 
                 $data = [
                     'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
-                    'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
                     'captured'   => $captureMerchants[$merchantId] ?? $zeroArray,
                     'refunds'    => $refundMerchants[$merchantId]  ?? $zeroArray,
                     'settlements'=> $setlMerchants[$merchantId]    ?? $zeroArray,

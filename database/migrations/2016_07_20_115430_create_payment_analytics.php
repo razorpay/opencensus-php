@@ -95,7 +95,7 @@ class CreatePaymentAnalytics extends Migration
         Schema::table(Table::PAYMENT_ANALYTICS, function($table)
         {
             $table->dropForeign(
-                TABLE::PAYMENT_ANALYTICS.'_'.Analytics::PAYMENT_ID.'_foreign');
+                Table::PAYMENT_ANALYTICS.'_'.Analytics::PAYMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::PAYMENT_ANALYTICS);

@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Exception;
 
 trait AtomFeeTrait
 {
@@ -23,9 +22,6 @@ trait AtomFeeTrait
         }
         else if ($method === Payment\Method::CARD)
         {
-            $card = $payment->card;
-            $type = $card->getType();
-
             $type = Card\Type::DEBIT;
 
             if ($type === Card\Type::CREDIT)
@@ -60,7 +56,7 @@ trait AtomFeeTrait
     {
         $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $serviceTax = $fee * FeeCalculator::getServiceTaxRate() / 100;
+        $serviceTax = $fee * FeeCalculator::getServiceTaxRate() / 10000;
 
         $fee += $serviceTax;
 
@@ -73,6 +69,5 @@ trait AtomFeeTrait
     {
         return (($amount * $percent) / 10000) + $fixed;
     }
-
 
 }

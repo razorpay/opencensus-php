@@ -2,12 +2,11 @@
 
 namespace RZP\Services;
 
-use RZP\Constants\Mode;
-use RZP\Exception;
 use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Raven
 {

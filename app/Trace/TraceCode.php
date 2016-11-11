@@ -87,6 +87,7 @@ class TraceCode
     const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
+    const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
     const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
@@ -234,8 +235,10 @@ class TraceCode
     const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
     const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
     const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
+    const SCHEDULE_DELETE_REQUEST                   = 'SCHEDULE_DELETE_REQUEST';
     const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
+    const SCHEDULE_DELETED                          = 'SCHEDULE_DELETED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
     const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
@@ -265,6 +268,7 @@ class TraceCode
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
+    const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
@@ -305,6 +309,10 @@ class TraceCode
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
+
+    //Trace code for Transaction Migration
+    const TRANSACTION_MIGRATION_TAX_MISTMATCH       = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
+    const TRANSACTION_MIGRATION_FEE_MISTMATCH       = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
 
     const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
     const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
@@ -347,6 +355,7 @@ class TraceCode
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
+    const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -442,6 +451,9 @@ class TraceCode
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
 
+        self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
+        self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
+
         self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
@@ -455,7 +467,8 @@ class TraceCode
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
-        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
+        self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
     );
 
     /**

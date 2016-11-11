@@ -2,18 +2,16 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Models\Payment;
 use RZP\Constants\Table;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement;
-use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Schedule\Entity as Schedule;
-use RZP\Models\Schedule\Repository as ScheduleRepo;
-use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
+use RZP\Models\Base;
+use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Models\Payment;
+use RZP\Models\Schedule\Repository as ScheduleRepo;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -296,5 +294,46 @@ class Repository extends Base\Repository
         {
             $query->whereNotNull(Entity::RECONCILED_AT);
         }
+    }
+
+    public function getTransactionsToBeMigrated()
+    {
+        $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
+
+        $query = $this->newQuery()
+                    ->select('transactions.*')
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                    ->where(Entity::TYPE, 'payment')
+                    ->where(Entity::GRATIS, false)
+                    ->where('transactions.service_tax', '>', 0)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNotIn("transactions.id", function($query)
+                        {
+                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                                  ->from(TABLE::FEE_BREAKUP);
+                        });
+
+        if ($latestFeeBreakup !== null)
+        {
+            $txnId = $latestFeeBreakup->getTransactionId();
+
+            $query->where('transactions.id', '>', $txnId);
+        }
+
+        return $query->limit(1000)->get();
+    }
+
+    public function getTransactionForReport($merchantId, $from, $to)
+    {
+        $txnIds = $this->newQuery()
+                       ->where("transactions.merchant_id", $merchantId)
+                       ->where(Entity::TYPE, 'payment')
+                       ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                       ->betweenTime($from, $to)
+                       ->select("transactions.id")
+                       ->get();
+
+        return $txnIds;
     }
 }

@@ -3,24 +3,22 @@
 namespace RZP\Gateway\Cybersource;
 
 use Cache;
-use Crypt;
 use Config;
-use SoapVar;
-use Requests;
-use SoapFault;
-use RZP\Error;
-use SoapClient;
-use RZP\Exception;
+use Crypt;
 use RZP\Constants;
-use RZP\Gateway\Utility;
-use RZP\Models\Card;
-use RZP\Trace\Trace;
-use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Error;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Gateway\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Utility;
+use RZP\Models\Card;
+use RZP\Trace\TraceCode;
+use SoapClient;
+use SoapFault;
+use SoapVar;
 
 class Gateway extends Base\Gateway
 {
@@ -184,7 +182,8 @@ class Gateway extends Base\Gateway
     protected function isRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
-            ($input['token']->isRecurring() === true))
+            ($input['token']->isRecurring() === true) and
+            ($this->app['basicauth']->isPrivateAuth() === true))
         {
             return true;
         }
@@ -275,7 +274,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
@@ -330,7 +328,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentReconcileWithGatewayResponse($verify)
     {
-        $payment = $verify->payment;
         $input = $verify->input;
 
         $verify->gatewaySuccess = true;
@@ -662,7 +659,6 @@ class Gateway extends Base\Gateway
         if ($reasonCode !== Result::SUCCESS)
         {
             $status = Status::CAPTURE_FAILED;
-            $error  = ResponseCode::$reasonCodes[$response['reasonCode']];
         }
 
         $attributes = array(

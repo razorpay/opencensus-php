@@ -3,16 +3,14 @@
 namespace RZP\Models\Card\IIN;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Models\Card;
-use RZP\Models\Card\Network;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN           => 'required|numeric|digits:6|unique:iins,iin',
+        Entity::IIN           => 'required|numeric|digits:6',
         Entity::NETWORK       => 'required',
         Entity::TYPE          => 'required',
         Entity::COUNTRY       => 'sometimes|size:2',

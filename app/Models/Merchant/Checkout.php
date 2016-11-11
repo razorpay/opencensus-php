@@ -83,7 +83,7 @@ class Checkout
         try
         {
             $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                                                                $input[Payment\Entity::ORDER_ID]);
+                $input[Payment\Entity::ORDER_ID]);
         }
         catch(\Exception $ex)
         {

@@ -188,7 +188,9 @@ class PaymentController extends Controller
 
     public function postVerifyPayments($filter)
     {
-        $data = $this->payment->verifyMultiplePayments($filter);
+        $input = Request::all();
+
+        $data = $this->payment->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }
