@@ -1,7 +1,9 @@
 <?php
 
 return [
-    'invoice'       =>  [
+
+    // TODO: This needs to be taken from the env
+    'invoice' => [
         'production'    => 'https://invoices.razorpay.com',
         'beta'          => 'https://betainvoices.razorpay.com',
         'testing'       => 'https://dummyinvoices.razorpay.com',
