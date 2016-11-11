@@ -8,7 +8,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Models\Payment\Method;
+use RZP\Models\Payment;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
@@ -81,15 +81,7 @@ class DataMigration extends Base\Service
 
             $paymentMethod = $payment->getMethod();
 
-            $taxTime = $payment->getCaptureTimestamp();
-
-            if ($paymentMethod === Method::NETBANKING or
-                $paymentMethod === Method::WALLET or
-                $paymentMethod === Method::EMI or
-                $paymentMethod === Method::UPI)
-            {
-               $taxTime = $payment->getAuthorizeTimestamp();
-            }
+            $taxTime = $this->getTaxTime($payment);
 
             $totalTax = $this->calculateServiceTaxes($fees, $taxTime);
 
@@ -115,6 +107,27 @@ class DataMigration extends Base\Service
         ];
 
         return $response;
+    }
+
+    protected function getTaxTime($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $networkCode = null;
+        $paymentCard = $payment->card;
+
+        // If payment method is wallet or net banking.
+        if ($paymentCard !== null)
+        {
+            $networkCode = $paymentCard->getNetworkCode();
+        }
+
+        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
+        {
+            return $payment->getCaptureTimestamp();
+        }
+
+        return $payment->getAuthorizeTimestamp();
     }
 
     protected function calculateServiceTaxes($fee, $capturedTime)
