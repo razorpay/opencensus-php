@@ -52,6 +52,8 @@ class Entity extends Base\PublicEntity
     const DUE_IN                = 'due_in';
     // Input key to send the scheduling time for notifying the customer
     const SCHEDULED_IN          = 'scheduled_in';
+    // Input key to send whether the invoice should be created in draft state
+    const DRAFT                 = 'draft';
 
     // ---------------------- Input Keys End -------------------------------------
 
@@ -77,7 +79,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::STATUS            => Status::DRAFT,
+        self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
         self::EMAIL_STATUS      => Status::PENDING,

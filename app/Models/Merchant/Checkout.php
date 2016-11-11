@@ -52,13 +52,13 @@ class Checkout
         }
 
         $invoiceId = $input[Invoice\Entity::ID];
-        
+
         $invoiceCore = new Invoice\Core;
-        
+
         $invoiceData = $invoiceCore->getFormattedInvoiceData($merchant, $invoiceId);
-        
+
         $data['invoice'] = $invoiceData['invoice'];
-        
+
         $data['customer'] = $invoiceData['customer'];
     }
 

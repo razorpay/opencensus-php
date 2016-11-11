@@ -72,10 +72,27 @@ class Generator
 
         // This needs to be done after saving the invoice since it requires the invoice ID
         $this->setShortUrl();
+        $this->setStatus($input);
 
         $this->repo->saveOrFail($this->invoice);
 
         return $this->invoice;
+    }
+
+    protected function setStatus(array $input)
+    {
+        $this->invoice->setStatus(Status::ISSUED);
+
+        // // TODO: Needs to be thought about well.
+        // if ((isset($input[Entity::DRAFT]) === true) and
+        //     ($input[Entity::DRAFT] === 1))
+        // {
+        //     $this->invoice->setStatus(Status::DRAFT);
+        // }
+        // else
+        // {
+        //     $this->invoice->setStatus(Status::ISSUED);
+        // }
     }
 
     protected function setShortUrl()
