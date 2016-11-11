@@ -115,7 +115,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
-        self::INVOICE_ITEM          => \RZP\Models\Invoice\InvoiceItem::class,
+        // self::INVOICE_ITEM          => \RZP\Models\Invoice\InvoiceItem::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,

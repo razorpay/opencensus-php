@@ -102,7 +102,7 @@ class Generator extends Base\Core
 
         $baseInvoiceUrl = $app['config']->get('app.invoice');
 
-        $invoiceLink = $baseInvoiceUrl . '/i/' . $invoiceId;
+        $invoiceLink = $baseInvoiceUrl . '/i/' . Entity::getSignedId($invoiceId);
 
         return $invoiceLink;
     }
