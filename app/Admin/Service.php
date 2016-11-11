@@ -83,7 +83,7 @@ class Service extends Base\Service
             // This is password based login
             $data = $this->api->admin->passwordLogin($input)->toArray();
 
-            Session::put('admin', $data);
+            Session::put(config('auth.guards.api.session_key'), $data);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -155,7 +155,7 @@ class Service extends Base\Service
                 // Auth::guard('admin')->loginUsingId($admin->id);
                 // We have the data now, just need to login the user
                 // $data['token']
-                Session::put('admin', $data);
+                Session::put(config('auth.guards.api.session_key'), $data);
             }
             catch (\Razorpay\Api\Errors\BadRequestError $e)
             {

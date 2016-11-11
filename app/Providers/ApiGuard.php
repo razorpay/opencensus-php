@@ -39,7 +39,7 @@ class ApiGuard implements Guard
             return $this->user;
         }
 
-        if (! is_null($userData = $this->app['session']->get('api_admin')))
+        if (! is_null($userData = $this->app['session']->get(config('auth.guards.api.session_key'))))
         {
             $user = $this->provider->getGenericUser($userData);
 
@@ -58,7 +58,7 @@ class ApiGuard implements Guard
      */
     protected function getToken()
     {
-        $admin = session('api_admin');
+        $admin = session(config('auth.guards.api.session_key'));
 
         $token = $admin['token'];
 
@@ -73,14 +73,14 @@ class ApiGuard implements Guard
      */
     public function validate(array $credentials = [])
     {
-        $user = $this->provider->retrieveByCredentials($credentials);
-
-        if ($user === null)
-        {
-            return false;
-        }
-
-        $this->setUser($user);
+        // $user = $this->provider->retrieveByCredentials($credentials);
+        //
+        // if ($user === null)
+        // {
+        //     return false;
+        // }
+        //
+        // $this->setUser($user);
 
         return true;
     }

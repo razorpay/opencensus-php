@@ -18,7 +18,8 @@ return [
         ],
         'api' => [
             'driver' => 'api',
-            'provider' => 'api'
+            'provider' => 'api',
+            'session_key' => 'api_admin',
         ]
     ],
 
