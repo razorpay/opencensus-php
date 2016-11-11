@@ -8,12 +8,23 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
 <body>
-  <div id='success' style='display: none'></div>
+  <div id='success' style='display: none'>
+    <h1>Your Payment has been received</h1>
+  </div>
 </body>
   <script>
     var data = {!!utf8_json_encode($data)!!};
-    data.handler = function(response) {
-      document.querySelector('success').style.display = 'block';
+    var options = {
+      key: data.key_id,
+      amount: data.amount,
+      description: 'Invoice #' + data.invoice_id,
+      handler: function(response) {
+        document.querySelector('success').style.display = 'block';
+      },
+      prefill: {
+        contact: data.customer_contact,
+        email: data.customer_email
+      }
     }
-    Razorpay.open(data);
+    Razorpay.open(options);
   </script>
