@@ -25,6 +25,11 @@ class Repository extends Base\Repository
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
     );
 
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
+    }
+
     public function retrieveByEmail(string $email)
     {
         return $this->newQuery()
