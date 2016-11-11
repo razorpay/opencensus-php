@@ -69,7 +69,7 @@ class RawApiRequest
                 break;
 
             case 'admin':
-                $this->setAdminCredentials($input['mode']);
+                $this->setAdminCredentials($input['token'], $input['mode']);
                 break;
 
             case 'internal':
@@ -78,11 +78,9 @@ class RawApiRequest
         }
     }
 
-    protected function setAdminCredentials($mode = 'live')
+    protected function setAdminCredentials($token, $mode = 'live')
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
-
-        $token = session('api_admin.token');
 
         $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }

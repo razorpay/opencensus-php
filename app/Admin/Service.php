@@ -2362,4 +2362,22 @@ class Service extends Base\Service
             ->queueAndDeliver();
     }
 
+    public function getAdminData($admin)
+    {
+        $error = $data = null;
+
+        $this->setAdminCredentials();
+
+        try
+        {
+            $adminData = $this->api->admin->getAdminData($admin->id);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
 }

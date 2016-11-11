@@ -173,9 +173,23 @@ class AdminController extends Controller
 
     public function getAdmin()
     {
+        // $admin = Auth::guard('api')->user();
+        //
+        // We are not caching admin data in session because permissions,
+        // roles, etc. might change
+        //
+        // So for now every time the user refreshes the page
+        // we will load entire payload and give it to the frontend
+        // to work with.
+        //
+        // Later at some point we'll have to shove all these data in
+        // redis and that'll work well.
+
         $admin = Auth::guard('api')->user();
 
-        return AppResponse::jsonResponse([], $admin->toArray());
+        $adminData = (new Admin\Service)->getAdminData($admin);
+
+        return AppResponse::jsonResponse([], $adminData->toArray());
     }
 
     public function getAdminActivity()

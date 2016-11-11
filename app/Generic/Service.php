@@ -25,7 +25,9 @@ class Service extends Base\Service
     {
         $input['mode'] = 'live';
 
-        $input['auth'] = 'admin'; // app auth
+        $input['auth'] = 'admin'; // admin auth
+
+        $input['token'] = session('api_admin.token'); // admin auth token
 
         $input['file'] = null;
 

@@ -230,4 +230,11 @@ class Admin extends Entity
 
         return $this->request('PUT', $relativeUrl, $params);
     }
+
+    public function getAdminData()
+    {
+        $relativeUrl = "orgs/$orgId/admins/$adminId";
+
+        return $this->request('GET', $relativeUrl, $params);
+    }
 }
