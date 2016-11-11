@@ -15,4 +15,11 @@ class Repository extends Base\Repository
                     ->where(Entity::TOKEN, '=', $token)
                     ->first();
     }
+
+    public function retrieveByToken(string $token)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN, '=', $token)
+                    ->firstOrFail();
+    }
 }
