@@ -116,6 +116,19 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    public function getAdminByAppAuth(string $orgId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        $token = $input['token'];
+
+        $adminToken = $this->repo->admin_token->retrieveByToken($token);
+
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminToken->getAdminId());
+
+        return $admin->toArrayPublic();
+    }
+
     public function getAdminByAttr($orgId, $attr, $attrVal)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
