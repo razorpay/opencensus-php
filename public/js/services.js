@@ -363,7 +363,6 @@ angular.module('app.services', [])
       authorize: function () {
 
         var promise = admin.identity().then(function () {
-
           // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
 

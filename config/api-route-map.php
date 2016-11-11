@@ -23,6 +23,7 @@ return [
     'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
     'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
     'admin_create'                      => 'orgs/{id}/admins',
+    'admin_get_app_auth'                => 'orgs/{id}/current_admin',
 
 
     // Permissions

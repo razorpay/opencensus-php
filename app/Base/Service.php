@@ -10,7 +10,7 @@ use Slack;
 
 class Service
 {
-    public function setAdminCredentials($mode)
+    public function setAdminCredentials($mode = 'live')
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
 

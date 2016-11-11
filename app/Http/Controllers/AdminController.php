@@ -190,7 +190,7 @@ class AdminController extends Controller
 
         $adminData = (new Admin\Service)->getAdminData($admin);
 
-        return AppResponse::jsonResponse([], $adminData->toArray());
+        return AppResponse::jsonResponse([], $adminData);
     }
 
     public function getAdminActivity()

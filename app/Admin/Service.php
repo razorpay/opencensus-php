@@ -2366,11 +2366,17 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setAdminCredentials();
+        $this->setApiCredentials();
 
         try
         {
-            $adminData = $this->api->admin->getAdminData($admin->id);
+            $orgId = $admin->org_id;
+
+            $params = [
+                'token' => $admin->token
+            ];
+
+            $adminData = $this->api->admin->getAdminData($orgId, $params);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

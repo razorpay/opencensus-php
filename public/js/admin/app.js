@@ -24,11 +24,13 @@ var app = angular.module('app', [
   '$stateParams',
   'admin',
   'adminAuthorization',
-  function ($rootScope, $state, $stateParams, admin, adminAuthorization) {
+  'organization',
+  function ($rootScope, $state, $stateParams, admin, adminAuthorization, organization) {
     $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
       // track the state the user wants to go to; authorization service needs this
       $rootScope.toState = toState;
       $rootScope.toStateParams = toStateParams;
+      $rootScope.currentAdmin = organization.fetchCurrentAdmin();
 
       // if the user is resolved, do an authorization check immediately. otherwise,
       // it'll be done when the state it resolved.
