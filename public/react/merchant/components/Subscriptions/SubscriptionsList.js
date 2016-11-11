@@ -5,13 +5,14 @@ import Time from 'rzp/ui/Time'
 import { findBy } from 'rzp/utils/rzp-utils'
 
 const SubscriptionListItem = ({ subscription, plans }) => {
+  let subscribedPlan = findBy(plans, 'id', subscription.plan_id) || {}
   return (
     <tr>
       <td>{subscription.customer.name}</td>
       <td>
         <SubscriptionStatus status={subscription.status} />
       </td>
-      <td>{findBy(plans, 'id', subscription.plan_id).name}</td>
+      <td>{subscribedPlan.name}</td>
       <td>₹ {subscription.amount}</td>
       <td>
         <Time value={subscription.processed_at} />

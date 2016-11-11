@@ -46,7 +46,6 @@ export default class SubscriptionsNewContainer extends ModalContainer {
 
   selectCustomerAndCloseModal(customer) {
     this.props.change('customer', customer)
-    this.closeModal()
   }
 
   quickCreateCustomer() {

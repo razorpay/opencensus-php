@@ -182,6 +182,9 @@ var app = angular.module('app', [
     }).state('app.subscriptionsnew', {
       url: '/subscriptions/new',
       template: '<subscriptions-new />'
+    }).state('app.customers', {
+      url: '/customers',
+      template: '<customers-list />'
     })
 
 

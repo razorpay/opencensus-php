@@ -46,7 +46,7 @@ export default class AddCustomer extends Component {
     return (
       <div>
         <ModalHeader
-          title='Add Customer'
+          title={this.props.id ? 'Edit Customer' : 'Add Customer'}
           onCloseClick={this.props.closeModal}
         />
 
