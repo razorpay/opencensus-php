@@ -19,7 +19,7 @@ class EnforceInitialPasswordChangeRule extends Base
             ($this->enforceInitialPasswordChange === true))
         {
             return [
-                'action' => 'reset'
+                'action' => 'password_reset'
             ];
         }
     }

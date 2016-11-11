@@ -105,7 +105,8 @@ class Entity extends Base\PublicEntity
 
     protected $loginRules = [
         self::MAX_FAILED_ATTEMPTS,
-        self::ENFORCE_INITIAL_PASSWORD_CHANGE
+        self::ENFORCE_INITIAL_PASSWORD_CHANGE,
+        self::EXPIRES_IN
     ];
 
     public function toArray()
