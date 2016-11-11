@@ -38,21 +38,19 @@ class Core extends Base\Core
 
         if ($terminal !== null)
         {
-            $terminalMerchant = $terminal->merchant;
-
-            if ($terminalMerchant->getId() !== $merchant->getId())
+            if ($terminal->getMerchantId() !== $merchant->getId())
             {
                 return [];
             }
         }
 
         $data = [
-            'issuer' => $absent->getIssuer(),
-            'card_type' => $absent->getCardType(),
-            'network' => $absent->getNetwork(),
-            'reason_code' => $absent->getReasonCode(),
-            'partial' => $absent->getPartial(),
-            'scheduled' => $absent->getScheduled(),
+            Entity::ISSUER      => $absent->getIssuer(),
+            Entity::CARD_TYPE   => $absent->getCardType(),
+            Entity::NETWORK     => $absent->getNetwork(),
+            Entity::REASON_CODE => $absent->getReasonCode(),
+            Entity::PARTIAL     => $absent->getPartial(),
+            Entity::SCHEDULED   => $absent->getScheduled(),
         ];
 
         return array_filter($data);

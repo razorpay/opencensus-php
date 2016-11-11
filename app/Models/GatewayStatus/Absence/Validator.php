@@ -34,11 +34,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'to', 'issuer', 'card_type', 'network', 'method',
+        Entity::TO, Entity::METHOD, Entity::ISSUER, Entity::CARD_TYPE, Entity::NETWORK
     ];
 
     protected static $editValidators = [
-        'to'
+        Entity::TO
     ];
 
     // Validation Notes:
@@ -104,14 +104,14 @@ class Validator extends Base\Validator
 
     public function validateIssuer($input)
     {
-        $issuer = (isset($input[Entity::ISSUER]) === true) ? $input[Entity::ISSUER] :  null;
+        $issuer = $input[Entity::ISSUER] ?? null;
 
         $method = $input[Entity::METHOD];
 
         $gateway = $input[Entity::GATEWAY];
 
         // we need the name of the bank for netbanking and it cannot be empty
-        if ($method == Method::NETBANKING)
+        if ($method === Method::NETBANKING)
         {
             if (empty($issuer) === true)
             {
@@ -152,7 +152,7 @@ class Validator extends Base\Validator
 
     public function validateCardType($input)
     {
-        $cardType = (isset($input[Entity::CARD_TYPE]) === true) ? $input[Entity::CARD_TYPE] : null;
+        $cardType = $input[Entity::CARD_TYPE] ?? null;
 
         if (empty($cardType) === true)
         {
@@ -172,7 +172,7 @@ class Validator extends Base\Validator
 
     public function validateNetwork($input)
     {
-        $network = (isset($input[Entity::NETWORK]) === true) ? $input[Entity::NETWORK] : null;
+        $network = $input[Entity::NETWORK] ?? null;
 
         if (empty($network) === true)
         {
