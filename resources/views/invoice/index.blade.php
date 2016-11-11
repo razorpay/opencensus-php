@@ -8,12 +8,12 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
 <body>
-
+  <div id='success' style='display: none'></div>
 </body>
   <script>
     var data = {!!utf8_json_encode($data)!!};
     data.handler = function(response) {
-
+      document.querySelector('success').style.display = 'block';
     }
     Razorpay.open(data);
   </script>

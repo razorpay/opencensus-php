@@ -77,7 +77,7 @@ class InvoiceController extends Controller
         // email and sms statuses to sent/viewed, after delivery confirmation.
     }
 
-    public function viewInvoice($invoiceId)
+    public function getInvoiceView($invoiceId)
     {
         $data = $this->service->fetch($invoiceId);
 
