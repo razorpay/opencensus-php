@@ -399,7 +399,7 @@ class MerchantController extends Controller
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $data = $this->getCheckoutCommon();
+        $data = $this->getCheckoutCommon($input);
 
         $data['preferences'] = $prefs;
 
@@ -408,16 +408,16 @@ class MerchantController extends Controller
 
     public function getCheckoutPublic()
     {
-        $data = $this->getCheckoutCommon();
+        $input = Request::all();
+
+        $data = $this->getCheckoutCommon($input);
 
         return \View::make('checkout.checkout')
                     ->with($data);
     }
 
-    protected function getCheckoutCommon()
+    protected function getCheckoutCommon(array $input)
     {
-        $input = Request::all();
-
         $context = $this->config->get('app.context');
 
         $url = $this->config->get('app.checkout');
@@ -436,7 +436,13 @@ class MerchantController extends Controller
 
         if (in_array($context, array_keys($urlMap)))
         {
-            $url = $urlMap[$context];
+            // $url = $urlMap[$context];
+
+            // TODO: Remove this later
+            if ($context !== 'beta')
+            {
+                $url = $urlMap[$context];
+            }
         }
         else if (isset($input['checkout']))
         {
