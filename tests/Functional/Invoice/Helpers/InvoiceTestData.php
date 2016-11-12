@@ -49,6 +49,56 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithNewCustomerAndAddress' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                    'shipping_address' => [
+                        'line1' => 'Line One Etc',
+                        'line2' => 'Line Two Etc',
+                        'city'  => 'Bangalore',
+                        'state' => 'Karnataka',
+                        'zipcode' => '560078',
+                        'country' => 'India',
+                    ],
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email' => 'test@razorpay.com',
+                    'customer_contact' => '9999999999',
+                    'customer_name' => 'test',
+                ],
+                'line_items_details' => [
+                    [
+                        'name' => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount' => 100000,
+                        'quantity' => 1,
+                    ]
+                ],
+                'status' => 'issued',
+                'sms_status' => 'sent',
+                'email_status' => 'sent',
+                'view_less' => false,
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithExistingCustomer' => [
         'request' => [
             'url' => '/invoices',
@@ -215,6 +265,19 @@ return [
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
                 'view_less' => true,
+            ],
+        ],
+    ],
+
+    'testGetInvoiceStatusAfterPayment' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/status',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'paid',
             ],
         ],
     ],

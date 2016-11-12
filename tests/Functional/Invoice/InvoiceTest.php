@@ -2,15 +2,15 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Carbon\Carbon;
 use Mockery;
 
 class InvoiceTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -44,6 +44,25 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
     }
 
+    public function testCreateInvoiceAndPay()
+    {
+        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $order = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+    }
+
     public function testCreateInvoiceWithMultipleLineItems()
     {
         $response = $this->startTest();
@@ -62,6 +81,20 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['invoice_id']);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['invoice_id']);
+    }
+
+    public function testCreateInvoiceWithNewCustomerAndAddress()
+    {
+        $response = $this->startTest();
+
+        $this->assertInvoiceCreateResponse($response);
+
+        $this->assertNotNull($response['customer_details']['customer_address']);
+
+        $address = $this->getLastEntity('address', true);
+
+        $this->assertEquals('shipping_address', $address['type']);
+        $this->assertEquals('customer', $address['entity_type']);
     }
 
     public function testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue()
@@ -106,7 +139,27 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceStatusAfterPayment()
     {
-        // TODO: Finish this
+        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $capturedPayment = $this->doAuthAndCapturePayment($payment);
+
+        $order = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($capturedPayment['id'], 'pay_' . $response['payment_id']);
     }
 
     public function testGetInvoiceStatusAfterOneWeek()
