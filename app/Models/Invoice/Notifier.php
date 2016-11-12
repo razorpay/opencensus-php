@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 
 class Notifier extends Base\Core
 {
@@ -97,7 +98,14 @@ class Notifier extends Base\Core
         }
         else
         {
-            // TODO: Trace an error here
+            $this->trace->error(
+                TraceCode::SMS_SENDING_FAILED,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                    'sent_status' => $sent,
+                    'contact' => $contact,
+                ]
+            );
         }
 
         return $sent;
@@ -254,6 +262,7 @@ class Notifier extends Base\Core
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoiceLink,
+                'amount'        => $this->invoice->order->getAmount(),
             ]
         ];
 
