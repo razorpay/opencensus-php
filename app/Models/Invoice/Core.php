@@ -116,7 +116,7 @@ class Core extends Base\Core
         $customer = $invoice->customer;
 
         $data['invoice'] = [
-            'order_id'  => $orderId,
+            'order_id'  => Order\Entity::getSignedId($orderId),
             'url'       => $invoice->getShortUrl()
         ];
 

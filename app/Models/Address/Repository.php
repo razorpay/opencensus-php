@@ -35,7 +35,7 @@ class Repository extends Base\Repository
                                      ->where(Entity::ENTITY_ID, '=', $entity->getId())
                                      ->where(Entity::TYPE, '=', $type)
                                      ->where(Entity::PRIMARY, '=', 1)
-                                     ->firstOrFail();
+                                     ->first();
 
         return $primaryAddressOfType;
     }

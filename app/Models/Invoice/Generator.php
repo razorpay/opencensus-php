@@ -45,7 +45,7 @@ class Generator extends Base\Core
         $this->invoice->build($input);
 
         $this->repo->transaction(
-            function() use($lineItemsDetails, $customerDetails)
+            function() use ($lineItemsDetails, $customerDetails)
             {
                 $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails);
 
@@ -112,7 +112,7 @@ class Generator extends Base\Core
         $this->invoice->setCustomerName($this->customer->getName());
         $this->invoice->setCustomerContact($this->customer->getContact());
         $this->invoice->setCustomerEmail($this->customer->getEmail());
-        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddress()->getId());
+        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddressId());
     }
 
     protected function associateLineItemsToInvoice()
@@ -144,19 +144,22 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
-            if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
-            {
-                $lineItemId = $lineItemDetails[LineItem\Entity::ID];
+            // Not supporting creating new line items from existing line items, currently.
+            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
 
-                LineItem\Entity::verifyIdAndStripSign($lineItemId);
-
-                $lineItem = $this->repo->line_item->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
-            }
-            else
-            {
-                $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
-            }
+            // // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
+            // if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
+            // {
+            //     $lineItemId = $lineItemDetails[LineItem\Entity::ID];
+            //
+            //     LineItem\Entity::verifyIdAndStripSign($lineItemId);
+            //
+            //     $lineItem = $this->repo->line_item->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
+            // }
+            // else
+            // {
+            //     $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
+            // }
 
             $lineItems[] = $lineItem;
         }

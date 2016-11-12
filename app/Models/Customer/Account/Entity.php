@@ -109,14 +109,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function getCurrentShippingAddress()
+    public function getCurrentShippingAddressId()
     {
         $app = App::getFacadeRoot();
 
         $shippingAddress = $app['repo']->address
             ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
 
-        return $shippingAddress;
+        if ($shippingAddress !== null)
+        {
+            return $shippingAddress->getId();
+        }
+
+        return null;
     }
 
     // ----------------------------------- END GETTERS -----------------------------------

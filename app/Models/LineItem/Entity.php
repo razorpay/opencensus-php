@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::INVOICE_ID,
+        // self::INVOICE_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,

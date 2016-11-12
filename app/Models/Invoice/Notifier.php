@@ -230,6 +230,10 @@ class Notifier extends Base\Core
         // If it's not scheduled for within 5 minutes, do not send
         // the notification. Ideally, scheduled_at would be the same
         // as the current time if scheduled_in is set to 0.
+        // Since there was some confusion,
+        // this condition basically means, that if the invoice
+        // needs to be sent within the NEXT 5 minutes, send it now itself.
+        // No need to wait for 5 minutes before sending it.
         if ($scheduledAt > ($currentTime + self::SCHEDULE_TIME_LEEWAY))
         {
             return false;

@@ -9,7 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
-use RZP\Trace\TraceCode;
+use RZP\Models\Order;
 
 class Entity extends Base\PublicEntity
 {
@@ -100,8 +100,8 @@ class Entity extends Base\PublicEntity
     // Fields that can be inserted by ->fill() directly
     // This array should also include the fields mentioned in the generator.
     protected $fillable = [
-        self::DUE_BY,
-        self::SCHEDULED_AT,
+        // self::DUE_BY,
+        // self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
@@ -176,6 +176,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::ORDER_ID,
         self::LINE_ITEMS_DETAILS,
     ];
 
@@ -334,6 +335,13 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 
+    protected function setPublicOrderIdAttribute(array & $array)
+    {
+        $orderId = $this->getAttribute(self::ORDER_ID);
+
+        $array[self::ORDER_ID] = Order\Entity::getSignedId($orderId);
+    }
+
     // -------------------------------------- End Public Setters --------------------------------------
 
     // -------------------------------------- Generators --------------------------------------
@@ -344,7 +352,7 @@ class Entity extends Base\PublicEntity
 
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::EMAIL_NOTIFY]) === true) and
-            ($input[self::EMAIL_NOTIFY] === 0))
+            ($input[self::EMAIL_NOTIFY] === '0'))
         {
             $this->setAttribute(self::EMAIL_STATUS, null);
         }
@@ -356,7 +364,7 @@ class Entity extends Base\PublicEntity
 
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::SMS_NOTIFY]) === true) and
-            ($input[self::SMS_NOTIFY] === 0))
+            ($input[self::SMS_NOTIFY] === '0'))
         {
             $this->setAttribute(self::SMS_STATUS, null);
         }
