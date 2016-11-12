@@ -66,6 +66,7 @@
     var data = {!!utf8_json_encode($data)!!};
     var options = {
       key: data.key_id,
+      invoice_id: data.invoice_id,
       amount: data.amount,
       description: 'Invoice #' + data.invoice_id,
       handler: function(response) {
