@@ -13,7 +13,7 @@ class InvoiceTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/Helpers/AddressTestData.php';
+        $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceTestData.php';
 
         parent::setUp();
 
