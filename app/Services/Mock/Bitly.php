@@ -13,7 +13,7 @@ class Bitly extends BaseBitly
 
     public function shortenUrl($longUrl)
     {
-        $randomUrl = 'http://bit.ly/' . random_alphanum_string(7);
+        $randomUrl = 'http://bitly.dev/' . random_alphanum_string(7);
 
         return $randomUrl;
     }

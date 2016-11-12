@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
+use Carbon\Carbon;
 use Mockery;
 
 class InvoiceTest extends TestCase
@@ -68,6 +69,60 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInvoice()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoices()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('order', ['id' => '10000000order2']);
+
+        $invoice1 = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+        $invoice2 = $this->fixtures->create('invoice', ['id' => '100000invoice2', 'order_id' => '10000000order2']);
+
+        $this->fixtures->create('line_item', ['invoice_id' => $invoice1->getId()]);
+        $this->fixtures->create('line_item', ['id' => '10000lineitem2', 'invoice_id' => $invoice2->getId()]);
+
+        $this->startTest();
+    }
+
+    public function testGetInvoiceStatus()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testGetInvoiceStatusAfterPayment()
+    {
+        // TODO: Finish this
+    }
+
+    public function testGetInvoiceStatusAfterOneWeek()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime->addDays(18);
+        Carbon::setTestNow($currentTime);
+
+        $this->startTest();
+    }
+
     protected function assertInvoiceCreateResponse(array $response)
     {
         $order = $this->getLastEntity('order', true);
@@ -78,7 +133,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['invoice_id']);
-        $this->assertContains('http://bit.ly/', $invoice['short_url']);
+        $this->assertContains('http://bitly.dev/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 }

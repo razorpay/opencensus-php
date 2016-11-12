@@ -247,7 +247,7 @@ class Entity extends Base\PublicEntity
      */
     public function justCreated()
     {
-        $currentTime = time();
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
 

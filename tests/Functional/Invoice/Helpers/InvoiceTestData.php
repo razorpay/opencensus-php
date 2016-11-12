@@ -185,36 +185,109 @@ return [
             ],
         ],
     ],
+
+    'testGetInvoice' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email' => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name' => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items_details' => [
+                    [
+                        'name' => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount' => 100000,
+                        'quantity' => 1,
+                    ]
+                ],
+                'customer_id' => 'cust_100000customer',
+                'short_url' => 'http://bitly.dev/2eZ11Vn',
+                'notes' => [],
+                'status' => 'issued',
+                'sms_status' => 'sent',
+                'email_status' => 'sent',
+                'view_less' => true,
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoices' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id' => 'inv_100000invoice2',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_10000000order2',
+                        'line_items_details' => [
+                            [
+                                'id' => 'li_10000lineitem2',
+                            ]
+                        ],
+                        'status' => 'issued',
+                    ],
+                    [
+                        'id' => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_100000000order',
+                        'line_items_details' => [
+                            [
+                                'id' => 'li_100000lineitem',
+                            ]
+                        ],
+                        'status' => 'issued',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetInvoiceStatus' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/status',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'issued',
+                'payment_id' => null,
+            ],
+        ],
+    ],
+
+    'testGetInvoiceStatusAfterOneWeek' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/status',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice status cannot be retrieved now',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
+        ],
+    ],
 ];
-
-
-// 'id' => string (18) "inv_6g2e9y5me09eSB"
-//     'entity' => string (7) "invoice"
-//     'customer_id' => string (19) "cust_6g2e9xRai0LaSz"
-//     'order_id' => string (14) "6g2e9uq11E2pE7"
-//     'customer_details' => array (4) [
-// 'customer_name' => string (4) "test"
-//         'customer_email' => string (17) "test@razorpay.com"
-//         'customer_contact' => string (10) "9999999999"
-//         'customer_address' => NULL
-//     ]
-//     'line_items_details' => array (1) [
-// array (7) [
-// 'id' => string (17) "li_6g2e9tTkm0e3Ee"
-//             'invoice_id' => string (14) "6g2e9y5me09eSB"
-//             'name' => string (14) "Some item name"
-//             'description' => string (21) "Some item description"
-//             'amount' => integer 100000
-//             'quantity' => integer 1
-//             'created_at' => integer 1478936528
-//         ]
-//     ]
-//     'status' => string (6) "issued"
-//     'due_by' => integer 1484120528
-//     'scheduled_at' => integer 1478936528
-//     'sms_status' => string (4) "sent"
-//     'email_status' => string (4) "sent"
-//     'notes' => array (0)
-//     'short_url' => string (21) "http://bit.ly/ohbtpl5"
-//     'view_less' => bool FALSE
-//     'created_at' => integer 1478936528
