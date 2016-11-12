@@ -15,7 +15,12 @@ class Service extends Base\Service
 
         $entityClass = Entity::getEntityClass($entity);
 
-        $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        $entityObject = new $entityClass;
+
+        if ($entityObject->getIncrementing() === false)
+        {
+            $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        }
 
         $entity = $this->repo->$entity->findOrFailPublic($id);
 
