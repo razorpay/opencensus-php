@@ -2,6 +2,8 @@ import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const PLANS_FETCH = 'PLANS_FETCH'
+const PLAN_ADDED = 'PLAN_ADDED'
+const PLAN_EDITED = 'PLAN_EDITED'
 
 export const fetchPlans = () => {
   return (dispatch) => {
@@ -11,6 +13,42 @@ export const fetchPlans = () => {
     })
   }
 }
+
+export const createPlan = (data) => {
+  return (dispatch) => {
+    return ajax({
+      url: '/plan',
+      method: 'post',
+      data
+    })
+  }
+}
+
+export const editPlan = (id, data) => {
+  return (dispatch) => {
+    return ajax({
+      url: `/plan/${id}`,
+      method: 'put',
+      data
+    })
+  }
+}
+
+
+export const planAdded = (plan) => {
+  return {
+    type: PLAN_ADDED,
+    payload: plan
+  }
+}
+
+export const planEdited = (plan) => {
+  return {
+    type: PLAN_EDITED,
+    payload: plan
+  }
+}
+
 
 let initialState = {
   loading: true,
@@ -35,6 +73,16 @@ export default function (state = fromJS(initialState), action) {
         loading: false,
         error: action.error
       })
+
+    case PLAN_ADDED:
+      return state.set('plans', state.get('plans').unshift(action.payload))
+
+    case PLAN_EDITED:
+      let plans = state.get('plans')
+      return state.set('plans', plans.update(
+        plans.findIndex((item) => item.get('id') === action.payload.id),
+        (item) => item.merge(action.payload)
+      ))
 
     default:
       return state

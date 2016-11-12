@@ -10,6 +10,7 @@ import './mocks/faker' //TODO: should trim the import on PRODUCTION
 import CustomersListContainer from './containers/Customers/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
+import PlansListContainer from './containers/Plans/List'
 import SubscriptionsListContainer from './containers/Subscriptions/List'
 import SubscriptionsNewContainer from './containers/Subscriptions/New'
 
@@ -70,3 +71,4 @@ createNgDirective('invoicesNew', InvoicesNewContainer)
 createNgDirective('subscriptionsList', SubscriptionsListContainer)
 createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
 createNgDirective('customersList', CustomersListContainer)
+createNgDirective('plansList', PlansListContainer)

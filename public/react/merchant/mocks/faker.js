@@ -51,14 +51,23 @@ fakeApi.post('/test/customer', (db, request) => {
 
 fakeApi.put('/test/customer/:id', (db, request) => {
   let customerDB = db.getCollection('customer')
-  let customer = customerDB.find({ id: request.params.id })
-  Object.assign(customer[0], request.parsedRequestBody)
+  let customer = customerDB.findOne({ id: request.params.id })
+  let parsedRequestBody = request.parsedRequestBody
+  for (let key in customer) {
+    if(customer.hasOwnProperty(key) && parsedRequestBody[key]) {
+      let value = parsedRequestBody[key]
+      if (key === '$loki') {
+        value = +value
+      }
+      customer[key] = value
+    }
+  }
   customerDB.update(customer)
 
   return {
     success: true,
     data: {
-      customer: customer[0]
+      customer: customer
     }
   }
 })
@@ -70,6 +79,43 @@ fakeApi.get('/test/plans', (db, request) => {
     data: {
       count: 10,
       items: db.getCollection('plan').data
+    }
+  }
+})
+
+fakeApi.post('/test/plan', (db, request) => {
+  let newPlan = new Plan()
+  let planDB = db.getCollection('plan')
+
+  Object.assign(newPlan, request.parsedRequestBody)
+  planDB.insert(newPlan)
+  return {
+    success: true,
+    data: {
+      plan: newPlan
+    }
+  }
+})
+
+fakeApi.put('/test/plan/:id', (db, request) => {
+  let planDB = db.getCollection('plan')
+  let plan = planDB.findOne({ id: request.params.id })
+  let parsedRequestBody = request.parsedRequestBody
+  for (let key in plan) {
+    if(plan.hasOwnProperty(key) && parsedRequestBody[key]) {
+      let value = parsedRequestBody[key]
+      if (key === '$loki') {
+        value = +value
+      }
+      plan[key] = value
+    }
+  }
+  planDB.update(plan)
+
+  return {
+    success: true,
+    data: {
+      plan: plan
     }
   }
 })
