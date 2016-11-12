@@ -29,8 +29,8 @@ class Raven
     protected $mode;
 
     const RAVEN_URLS = [
+        'send-sms'      => 'sms',
         'send-otp'      => 'sms/send-otp',
-        'send-invoice'  => 'sms/send-invoice',
         'verify-otp'    => 'sms/verify-otp',
     ];
 
@@ -72,7 +72,7 @@ class Raven
         return $response;
     }
 
-    public function sendInvoice($input)
+    public function sendSms($input)
     {
         $response = null;
 
@@ -82,7 +82,7 @@ class Raven
         }
         else
         {
-            $response = $this->sendRequest(self::RAVEN_URLS['send-invoice'], 'post', $input);
+            $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
         }
 
         return $response;

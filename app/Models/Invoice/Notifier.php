@@ -109,7 +109,7 @@ class Notifier extends Base\Core
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
-        $response = $this->raven->sendInvoice($request);
+        $response = $this->raven->sendSms($request);
 
         if (isset($response['sms_id']))
         {
@@ -246,16 +246,16 @@ class Notifier extends Base\Core
     {
         $merchant = $this->invoice->merchant;
 
-        $request = array(
+        $request = [
             'context' => $merchant->getId(),
             'receiver' => $contact,
-            'source' => 'api',
+            'source' => 'api.invoice',
             'template' => 'sms.invoice',
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoiceLink,
             ]
-        );
+        ];
 
         return $request;
     }
