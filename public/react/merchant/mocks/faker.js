@@ -49,6 +49,21 @@ fakeApi.post('/test/customer', (db, request) => {
   }
 })
 
+fakeApi.put('/test/customer/:id', (db, request) => {
+  let customerDB = db.getCollection('customer')
+  let customer = customerDB.find({ id: request.params.id })
+  Object.assign(customer[0], request.parsedRequestBody)
+  customerDB.update(customer)
+
+  return {
+    success: true,
+    data: {
+      customer: customer[0]
+    }
+  }
+})
+
+
 fakeApi.get('/test/plans', (db, request) => {
   return {
     success: true,

@@ -1,11 +1,11 @@
 import { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import { Field, reduxForm } from 'redux-form'
+import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { createCustomer, customerAdded } from 'merchant/modules/customers'
+import * as CustomerActions from 'merchant/modules/customers'
 
 const validate = values => {
   const errors = {}
@@ -19,9 +19,15 @@ const validate = values => {
   return errors
 }
 
+const selector = formValueSelector('newCustomer')
 @connect(
-  null,
-  { createCustomer, customerAdded }
+  (state) => {
+    let isNew = !selector(state, 'id')
+    return {
+      isNew
+    }
+  },
+  CustomerActions
 )
 @reduxForm({
   form: 'newCustomer',
@@ -30,10 +36,11 @@ const validate = values => {
 export default class AddCustomer extends Component {
   constructor() {
     super(...arguments)
-    this.save = ::this.save
+    this.create = ::this.create
+    this.edit = ::this.edit
   }
 
-  save(fieldProps) {
+  create(fieldProps) {
     return this.props.createCustomer(fieldProps).then((response) => {
       let customer = response.data.customer
       this.props.customerAdded(customer)
@@ -41,12 +48,23 @@ export default class AddCustomer extends Component {
     })
   }
 
+  edit(fieldProps) {
+    let { id, ...params } = fieldProps
+    return this.props.editCustomer(id, params).then((response) => {
+      let customer = response.data.customer
+      this.props.customerEdited(customer)
+      this.props.onSave(customer)
+    })
+  }
+
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, isNew } = this.props
+    let action = isNew ? this.create : this.edit
+
     return (
       <div>
         <ModalHeader
-          title={this.props.id ? 'Edit Customer' : 'Add Customer'}
+          title={isNew ? 'New Customer' : 'Edit Customer'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -102,7 +120,7 @@ export default class AddCustomer extends Component {
               type='button'
               class='btn btn-primary'
               text='Save'
-              onClick={handleSubmit(this.save)}
+              onClick={handleSubmit(action)}
             />
           </div>
         </form>

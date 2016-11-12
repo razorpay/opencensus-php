@@ -3,6 +3,7 @@ import { fromJS } from 'immutable'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_ADDED = 'CUSTOMER_ADDED'
+const CUSTOMER_EDITED = 'CUSTOMER_EDITED'
 
 export const fetchCustomers = () => {
   return (dispatch) => {
@@ -23,6 +24,17 @@ export const createCustomer = (data) => {
   }
 }
 
+export const editCustomer = (id, data) => {
+  return (dispatch) => {
+    return ajax({
+      url: `/customer/${id}`,
+      method: 'put',
+      data
+    })
+  }
+}
+
+
 export const customerAdded = (customer) => {
   return {
     type: CUSTOMER_ADDED,
@@ -30,6 +42,12 @@ export const customerAdded = (customer) => {
   }
 }
 
+export const customerEdited = (customer) => {
+  return {
+    type: CUSTOMER_EDITED,
+    payload: customer
+  }
+}
 
 let initialState = {
   loading: true,
@@ -57,6 +75,13 @@ export default function (state = fromJS(initialState), action) {
 
     case CUSTOMER_ADDED:
       return state.set('customers', state.get('customers').unshift(action.payload))
+
+    case CUSTOMER_EDITED:
+      let customers = state.get('customers')
+      return state.set('customers', customers.update(
+        customers.findIndex((item) => item.get('id') === action.payload.id),
+        (item) => item.merge(action.payload)
+      ))
 
     default:
       return state
