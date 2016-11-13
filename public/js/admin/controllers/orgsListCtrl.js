@@ -140,7 +140,7 @@ app.controller('OrgsListCtrl', [
       request.success(function (data) {
         if (data.success) {
           // Update the org model (todo: make this a helper)
-          
+
           var index = null;
 
           $scope.organizations.forEach(function (v, i) {
@@ -149,7 +149,7 @@ app.controller('OrgsListCtrl', [
             }
           });
 
-          if (index) {
+          if (index !== null) {
             $scope.organizations[index] = data.data;
           }
 

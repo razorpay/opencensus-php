@@ -88,7 +88,7 @@ class GenericController extends Controller
         // Check if the route is for an orgs/... related API call
         $pos = strpos($route, 'orgs');
 
-        if ($pos === 0)
+        if ($pos === 0 and !isset($urlParams['{id}']))
         {
             $urlParams['{id}'] = 'org_'.Auth::guard('api')->user()->org_id;
         }
