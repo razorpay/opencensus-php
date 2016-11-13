@@ -38,8 +38,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr ng-repeat="row in permissions">
-                  <td><input type="checkbox" name='permissions[]' ng-modal='permissions.selected' value="{{row.id}}"></td>
+                <tr ng-repeat="(key, row) in permissions">
+                  <td><input type="checkbox" name='permissions[]' ng-model='selected_permissions[row.id]' value="{{row.id}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
                 </tr>
