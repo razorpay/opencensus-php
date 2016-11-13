@@ -31,6 +31,8 @@ class CreateRoles extends Migration
             $table->integer(Role::CREATED_AT);
             $table->integer(Role::UPDATED_AT);
 
+            $table->unique([Role::NAME, Role::ORG_ID]);
+
             $table->foreign(Role::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);
