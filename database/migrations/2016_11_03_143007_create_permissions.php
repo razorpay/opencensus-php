@@ -22,7 +22,7 @@ class CreatePermissions extends Migration
             $table->char(Permission::ID, 14)
                   ->primary();
 
-            $table->string(Permission::NAME, 250);
+            $table->string(Permission::NAME, 250)->unique();
             $table->string(Permission::DESCRIPTION, 250);
 
             $table->integer(Permission::CREATED_AT);
