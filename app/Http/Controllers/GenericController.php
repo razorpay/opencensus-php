@@ -70,7 +70,25 @@ class GenericController extends Controller
     {
         $routeName = Input::get('route_name');
 
+        if (! isset($routeName))
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Route mapping not found',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
         $route = Config::get('api-route-map.'.$routeName);
+
+        if (! isset($route))
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Route mapping not found',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
 
         $route = $this->parseUrlParams($route);
 
@@ -79,6 +97,7 @@ class GenericController extends Controller
 
     private function parseUrlParams($route)
     {
+
         // Logic to parse URL Params
         // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
 

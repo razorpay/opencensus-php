@@ -30,7 +30,7 @@ app.controller('PermissionsCtrl', [
         method: 'post',
         url: '/admin/generic',
         params: {
-          route_name: 'add_permission',
+          route_name: 'permission_create',
         },
         data: {
           body: {
@@ -59,11 +59,7 @@ app.controller('PermissionsCtrl', [
         params: {
           route_name: 'permission_get_multiple'
         }
-      })
-
-      /**
-       * TODO: remove mocked data
-       */
+      });
 
       request.success(function (data) {
         if (data.success) {
