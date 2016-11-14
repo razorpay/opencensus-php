@@ -33,11 +33,165 @@ class DataMigration extends Base\Service
 
     protected $feeCalculator;
 
-    public function postMigrateOlderTransactions()
+    public function migrateOlderTransactions()
     {
         $this->increaseAllowedSystemLimits();
 
         $response = $this->processEntries();
+
+        return $response;
+    }
+
+    public function settleOlderTransactions($input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $case = $input['case'];
+
+        $txnIds = $input['transactionIds'];
+
+        $validator = 'settle' .ucfirst($case) .'Transactions';
+
+        return $this->$validator($txnIds);
+    }
+
+    /**
+     * Case 1   Service Tax = 12.36% We migrate the transactions as it is.
+     * @param  [type] $transactionIds [description]
+     * @return [type]                 [description]
+     */
+    protected function settleCase1Transactions($transactionIds)
+    {
+        $migratedTxns = [];
+        $notMigratedTxns = [];
+
+        foreach($transactionIds as $transactionId)
+        {
+            $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
+
+            if (empty($fees) === true)
+            {
+                $notMigratedTxns[] = $transactionId;
+
+                continue;
+            }
+
+            foreach ($feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
+                {
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] = $transaction->getServiceTax();
+                }
+            }
+
+            $this->saveFeeDetails($transaction, $feesSplit, $taxTime);
+
+            $migratedTxns[] = $transactionId;
+        }
+
+        $response = [
+                'migrated'      => $migratedTxns,
+                'not_migrated'  => $notMigratedTxns,
+        ];
+
+        return $response;
+    }
+
+    /**
+     * Case 2   ST applied = 12.36 %, actual ST = 14%
+     * @param  [type] $transactionIds [description]
+     * @return [type]                 [description]
+     */
+    protected function settleCase2Transactions($transactionIds)
+    {
+        $migratedTxns = [];
+        $notMigratedTxns = [];
+
+        foreach($transactionIds as $transactionId)
+        {
+            $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
+
+            if (empty($fees) === true)
+            {
+                $notMigratedTxns[] = $transactionId;
+
+                continue;
+            }
+
+            foreach ($feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
+                {
+                    $feeSplit[Transaction\FeeBreakup\Entity::PERCENTAGE] = 1236;
+
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] = $transaction->getServiceTax();
+                }
+            }
+
+            $this->saveFeeDetails($transaction, $feesSplit, $taxTime);
+
+            $migratedTxns[] = $transactionId;
+        }
+
+        $response = [
+                'migrated'      => $migratedTxns,
+                'not_migrated'  => $notMigratedTxns,
+        ];
+
+        return $response;
+    }
+
+    /**
+     * Case 2   ST applied = 14%, actual ST = 14.5%
+     * @param  [type] $transactionIds [description]
+     * @return [type]                 [description]
+     */
+    protected function settleCase3Transactions($transactionIds)
+    {
+        $migratedTxns = [];
+        $notMigratedTxns = [];
+
+        foreach($transactionIds as $transactionId)
+        {
+            $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
+
+            if (empty($fees) === true)
+            {
+                $notMigratedTxns[] = $transactionId;
+
+                continue;
+            }
+
+            foreach ($feesSplit as & $feeSplit)
+            {
+                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
+                {
+                    $feeSplit[Transaction\FeeBreakup\Entity::PERCENTAGE] = 1400;
+
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] = $transaction->getServiceTax();
+                }
+            }
+
+            $filtered = $feesSplit->reject(function ($item)
+            {
+                return $item[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SWACHH_BHARAT_CESS;
+            });
+
+            $this->saveFeeDetails($transaction, $filtered, $taxTime);
+
+            $migratedTxns[] = $transactionId;
+        }
+
+        $response = [
+                'migrated'      => $migratedTxns,
+                'not_migrated'  => $notMigratedTxns,
+        ];
 
         return $response;
     }
@@ -51,39 +205,12 @@ class DataMigration extends Base\Service
 
         foreach ($txns as $txn)
         {
-            $merchant = $txn->merchant;
+            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($txn, true);
 
-            $payment = $this->repo->payment->findOrFail($txn->getEntityId());
-
-            $pricingRuleId = $txn->getPricingRule();
-
-            if (isset($pricingRuleId) === false)
+            if (empty($fees) === true)
             {
                 continue;
             }
-
-            $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
-
-            $feesSplit = new Base\PublicCollection;
-
-            $this->feeCalculator = new FeeCalculator($payment);
-
-            $amount = $txn->getAmount();
-
-            // Original Amount = Payment Amount - Fee
-            // Fee = RZp Fee + ST
-            if ($merchant->isFeeBearerCustomer() === true)
-            {
-                $amount = $payment->getAmount() - $payment->getFee();
-            }
-
-            $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
-
-            $taxTime = $this->getTaxTime($payment);
-
-            $totalTax = $this->calculateServiceTaxes($fees, $taxTime);
-
-            $feesSplit = $this->feeCalculator->getFeesSplit();
 
             $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $fees, $totalTax);
 
@@ -105,6 +232,51 @@ class DataMigration extends Base\Service
         ];
 
         return $response;
+    }
+
+    /**
+     * [calculateFeesAndTaxes description]
+     * @param  [type] $txn                 [description]
+     * @param  [type] $isFeeBearerCustomer If feeBearerCustomer at time of the transaction
+     * @return [type]                      [description]
+     */
+    protected function calculateFeesAndTaxes($txn, $isFeeBearerCustomer)
+    {
+        $merchant = $txn->merchant;
+
+        $payment = $this->repo->payment->findOrFail($txn->getEntityId());
+
+        $pricingRuleId = $txn->getPricingRule();
+
+        if (isset($pricingRuleId) === false)
+        {
+            return ['','','',''];
+        }
+
+        $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
+
+        $feesSplit = new Base\PublicCollection;
+
+        $this->feeCalculator = new FeeCalculator($payment);
+
+        $amount = $txn->getAmount();
+
+        // Original Amount = Payment Amount - Fee
+        // Fee = RZp Fee + ST
+        if ($isFeeBearerCustomer === true and $merchant->isFeeBearerCustomer() === true)
+        {
+            $amount = $payment->getAmount() - $payment->getFee();
+        }
+
+        $fees = $this->feeCalculator->calculateRzpFee($pricing, $amount);
+
+        $taxTime = $this->getTaxTime($payment);
+
+        $totalTax = $this->calculateServiceTaxes($fees, $taxTime);
+
+        $feesSplit = $this->feeCalculator->getFeesSplit();
+
+        return [$fees, $totalTax, $feesSplit, $taxTime];
     }
 
     protected function getTaxTime($payment)
