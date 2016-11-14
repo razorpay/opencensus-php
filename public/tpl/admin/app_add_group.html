@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="form-group">
-          <div class="col-lg-2 text-right">Subgroups</div>
+          <div class="col-lg-2 control-label">Subgroups</div>
           <div class="col-lg-10 scrollable-table">
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
@@ -39,7 +39,7 @@
               </thead>
               <tbody>
                 <tr ng-repeat="(key, row) in groups">
-                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
+                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.code]' value="{{row.code}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
                 </tr>
@@ -48,7 +48,7 @@
           </div>
         </div>
         <div class="form-group">
-          <div class="col-lg-2 text-right">Users</div>
+          <div class="col-lg-2 control-label">Users</div>
           <div class="col-lg-10 scrollable-table">
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
@@ -70,7 +70,7 @@
         </div>
         <div class="panel-footer">
           <div class="col-md-offset-10">
-            <button class="btn btn-primary panel-ok" ng-click='save(role, permissions)'>Save</button>
+            <button class="btn btn-primary panel-ok" ng-click='save(group)'>Save</button>
           </div>
         </div>
       </form>
