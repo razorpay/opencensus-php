@@ -28,18 +28,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+    // email, disabled
         Entity::NAME                => 'sometimes|alpha_space|between:3,100',
         Entity::USERNAME            => 'sometimes|alpha_dash|between:3,50',
-        Entity::PASSWORD            => 'sometimes|string|between:6,50',
-        Entity::REMEMBER_TOKEN      => 'sometimes|string|max:250',
-        Entity::OAUTH_ACCESS_TOKEN  => 'sometimes|string|max:250',
-        Entity::OAUTH_PROVIDER_ID   => 'sometimes|string|max:250',
         Entity::ORG_ID              => 'sometimes|string',
         Entity::BRANCH_CODE         => 'sometimes|string',
         Entity::DEPARTMENT_CODE     => 'sometimes|string',
         Entity::SUPERVISOR_CODE     => 'sometimes|string',
         Entity::LOCATION_CODE       => 'sometimes|string',
         Entity::EMPLOYEE_CODE       => 'sometimes|string',
+        Entity::DISABLED            => 'sometimes|in:0,1',
+        Entity::EMAIL               => 'sometimes|email',
     ];
 
     protected static $loginRules = [
