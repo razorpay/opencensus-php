@@ -35,7 +35,11 @@ class RoleTest extends TestCase
 
     public function testCreateRoleWithPermissions()
     {
-        $perms = $this->fixtures->times(2)->create('permission');
+        $perms = [];
+
+        $perms[] = $this->fixtures->create('permission');
+
+        $perms[] = $this->fixtures->create('permission', ['name' => 'lol']);
 
         $permIds = [];
 

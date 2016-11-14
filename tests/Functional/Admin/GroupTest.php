@@ -56,18 +56,16 @@ class GroupTest extends TestCase
 
         $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
 
-        $roles = $this->fixtures->times(2)->create('role', ['org_id' => $orgId]);
+        $role = $this->fixtures->create('role', ['org_id' => $orgId]);
 
-        $group->roles()->saveMany($roles);
+        $group->roles()->save($role);
 
         $group->saveOrFail();
 
         $roleIds = $group->roles()->getRelatedIds();
 
         // Check if both the roles are saved
-        $this->assertEquals(count($roleIds), 2);
-
-        $role = $roles[0];
+        $this->assertEquals(count($roleIds), 1);
 
         $groupId = $role->groups()->getRelatedIds()[0];
 
@@ -86,7 +84,11 @@ class GroupTest extends TestCase
 
         $group = $this->fixtures->create('group', ['org_id' => $orgId]);
 
-        $roles = $this->fixtures->times(2)->create('role', ['org_id' => $orgId]);
+        $roles = [];
+
+        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId]);
+
+        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId, 'name' => 'asd']);
 
         $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
 

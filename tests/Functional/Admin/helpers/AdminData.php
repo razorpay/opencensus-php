@@ -81,9 +81,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'test admin',
-                'email' => 'xyz@abc.com',
-                'username' => 'harshil',
+                'success' => true,
             ],
             'status_code' => 200,
         ],
