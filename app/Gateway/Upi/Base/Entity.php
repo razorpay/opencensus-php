@@ -86,6 +86,18 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
+    public function getProviderFromVpa() {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+//        if (count($vpaParts) < 2) {
+//            return;
+//        }
+
+        return $vpaParts[1] ?? NULL;
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);

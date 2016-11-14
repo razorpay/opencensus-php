@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Base;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Base\Entity as UPI;
 
 class Repository extends Base\Repository
 {
@@ -27,4 +28,14 @@ class Repository extends Base\Repository
                     ->where('payment_id' , '=', $paymentId)
                     ->first();
     }
+
+    public function fetchAllForProviderUpdate()
+    {
+        return $this->newQuery()
+                    ->select(UPI::ID, UPI::VPA)
+                    ->whereNull(UPI::PROVIDER)
+                    ->limit(500)
+                    ->get();
+    }
+
 }
