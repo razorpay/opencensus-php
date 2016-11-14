@@ -322,8 +322,7 @@ final class Route
         'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
-        'otp_verify',
-        'email_status_callback'
+        'otp_verify'
     );
 
     public static $publicCallback = array(
@@ -491,7 +490,8 @@ final class Route
         'feature_add',
         'feature_delete',
         'feature_bulk_assign',
-        'feature_bulk_remove'
+        'feature_bulk_remove',
+        'email_status_callback'
     );
 
     public static $proxy = array(
