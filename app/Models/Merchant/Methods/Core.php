@@ -164,6 +164,9 @@ class Core extends Base\Core
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
         $methods->setPayumoney(true);
+        $methods->setOlamoney(true);
+        $methods->setFreecharge(true);
+        $methods->setAirtelmoney(true);
 
         $this->setAllPaymentBanks($methods);
 
