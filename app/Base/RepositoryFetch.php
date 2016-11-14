@@ -392,7 +392,12 @@ trait RepositoryFetch
 
     protected function addDefaultParamCount(array & $params)
     {
-        if ($this->auth->isPrivilegeAuth() === false)
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $max = 1000;
+            $count = 1000;
+        }
+        else if ($this->auth->isPrivilegeAuth() === false)
         {
             $max = 100;
             $count = 10;
