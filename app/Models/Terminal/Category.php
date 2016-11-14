@@ -75,6 +75,32 @@ class Category
         'travel_agency'  =>  'travel_agency',
     ];
 
+    const MIN_AMOUNT_METHOD_NETBANKING= [
+        'grocery'        => 10,
+        'ecommerce'      => 100,
+        'govt_education' => 50,
+        'pvt_education'  => 60,
+        'utilities'      => 10,
+        'corporate'      => 10,
+        'insurance'      => 10,
+        'housing'        => 10,
+        'mutual_funds'   => 10,
+        'travel_agency'  => 10,
+    ];
+
+    const MIN_AMOUNT_NETWORK_AMEX = [
+        'grocery'        => 10,
+        'ecommerce'      => 10,
+        'govt_education' => 10,
+        'pvt_education'  => 10,
+        'utilities'      => 10,
+        'corporate'      => 10,
+        'insurance'      => 10,
+        'housing'        => 10,
+        'mutual_funds'   => 10,
+        'travel_agency'  => 10,
+    ];
+
     public static function getDefaultForMethod($method)
     {
         return self::getDefaultForType('method', $method);
@@ -255,5 +281,31 @@ class Category
         }
 
         return null;
+    }
+
+    public static function getMinAmount($method, $network, $category) 
+    {
+        $min_amount = 0;
+
+        if (empty($category) === true)
+        {
+            $category = self::getDefaultForMethodAndNetwork($method, $network);
+        }
+
+        if (self::isConstantDefined('network', $network) === true)
+        {
+            $networkConstantName = self::getConstantName('network', $network);
+
+            $min_amount = constant('self::MIN_AMOUNT_'.$networkConstantName)[$category];
+        }
+
+        else if (self::isConstantDefined('method', $method) === true)
+        {
+            $methodConstantName = self::getConstantName('method', $method);
+
+            $min_amount = constant('self::MIN_AMOUNT_'.$methodConstantName)[$category];
+        }
+
+        return $min_amount;
     }
 }

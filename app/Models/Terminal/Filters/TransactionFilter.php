@@ -17,6 +17,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
+        'amount',
         'maestro',
         'recurring',
     ];
@@ -190,6 +191,20 @@ class TransactionFilter extends Terminal\Filter
         $emiDuration = $input['payment']->emiPlan->getDuration();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+    }
 
+    public function amountFilter($terminal, $input)
+    {
+        $amount = $input['payment']->getAmount();
+
+        $category = $terminal->getNetworkCategory();
+
+        $method = $input['payment']->getMethod();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $minAmount = Terminal\Category::getMinAmount($method, $network, $category);
+
+        return ($amount > $minAmount) ? true : false;
     }
 }
