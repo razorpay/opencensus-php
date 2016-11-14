@@ -672,17 +672,30 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchants'];
 
-        $count = 0;
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
 
         foreach ($merchantIds as $merchantId)
         {
-            $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+            try
+            {
+                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
 
-            $count++;
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
         }
 
-        $response['count_updated_merchants'] = $count;
-        $response['methods'] = $input['methods'];
+        $response['total'] = count($merchantIds);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
 
         return $response;
     }

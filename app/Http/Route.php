@@ -128,6 +128,7 @@ final class Route
         'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
+        'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -274,7 +275,6 @@ final class Route
         'merchant_migrate_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'                         ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'method_bulkupdate_merchants'             => ['put',      'methods/bulkupdate',                             'MerchantController@bulkUpdateMerchantMethods'                      ],
       );
 
     public static $public = array(
@@ -492,7 +492,7 @@ final class Route
         'merchant_migrate_features',
         'feature_bulk_assign',
         'feature_bulk_remove',
-        'method_bulkupdate_merchants',
+        'methods_update_merchants',
     );
 
     public static $proxy = array(
