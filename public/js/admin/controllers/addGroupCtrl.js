@@ -24,9 +24,6 @@ app.controller('AddGroupCtrl', [
       body.groups = [];
       body.users = [];
 
-      // selected_permissions will be like:
-      // { perm_id: true, perm_id2: false, perm_id3: true, ... }
-
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
 

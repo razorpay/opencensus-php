@@ -15,7 +15,7 @@ app.controller('OrgsAddRolesCtrl', [
      * Actions
      */
 
-    $scope.save = function (role, permissions) {
+    $scope.save = function (role) {
       var body = role;
 
       body.permissions = [];
