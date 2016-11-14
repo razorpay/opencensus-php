@@ -319,11 +319,18 @@ class Service extends Base\Service
             );
     }
 
-    public function migrateMerchantToSettlementSchedules()
+    public function migrateMerchantToSettlementSchedules($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
 
-        $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+        if (isset($input['merchant_ids']))
+        {
+            $merchants = $this->repo->merchant->findMany($input['merchant_ids']);
+        }
+        else
+        {
+            $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+        }
 
         $migrationSummary = [
             'migrated_ids_count' => 0,

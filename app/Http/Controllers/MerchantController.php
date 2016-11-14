@@ -154,7 +154,9 @@ class MerchantController extends Controller
 
     public function migrateToSchedules()
     {
-        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules();
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules($input);
 
         return ApiResponse::json($data);
     }
