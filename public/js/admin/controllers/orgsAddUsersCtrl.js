@@ -14,14 +14,13 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.user = {};
 
     $scope.addAdminUser = function(user) {
-      var request = $http.post('admin/generic/', {
-        ignoreErrors: true,
-        params: {
-          route_name: 'admin_create',
-        },
-        data: {
-          body: user
-        }
+      var data = {};
+      data.body = user;
+      data.route_name = 'admin_create';
+      var request = $http({
+        method: 'post',
+        url: '/admin/generic',
+        data: data
       });
       request.success(function (data) {
         if (data.success) {
