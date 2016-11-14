@@ -98,8 +98,12 @@ class PermissionSeeder extends Seeder
             // Roles
             'view_all_role' => '',
             'create_role' => '',
+            'edit_role' => '',
+            'delete_role' => '',
             'create_group' => '',
             'view_group' => '',
+            'edot_group' => '',
+            'view_all_group' => '',
             'create_group_admins' => '',
             'view_all_admin' => '',
             'edit_admin' => '',
