@@ -274,6 +274,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'email_status_callback'                   => ['post',     'email_notify/{status}',                          'EmailStatusController@postEmailStatusCallback'                     ],
     );
 
     public static $public = array(
