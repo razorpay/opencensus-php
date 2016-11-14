@@ -86,7 +86,7 @@ app.controller('OrgsUsersCtrl', [
         /* TODO: change this */
         if (data.success) {
           $scope.users = $scope.users.filter(function (x) {
-            return x.id !== data.id
+            return x.id !== id
           });
           $scope.count = $scope.users.length;
         }
