@@ -457,7 +457,7 @@ class Entity extends Base\PublicEntity
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['region'];
+        $regionName = $awsConfig['bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 
