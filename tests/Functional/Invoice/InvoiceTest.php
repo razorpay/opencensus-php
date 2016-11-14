@@ -174,6 +174,9 @@ class InvoiceTest extends TestCase
         Carbon::setTestNow($currentTime);
 
         $this->startTest();
+
+        // Clear the mock.
+        Carbon::setTestNow();
     }
 
     protected function assertInvoiceCreateResponse(array $response)
