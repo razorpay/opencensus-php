@@ -43,4 +43,10 @@ class Service extends Base\Service
     {
         return (new Transaction\DataMigration())->settleOlderTransactions($input);
     }
+
+    public function addPricingRuleForeOlderTransactions()
+    {
+        return (new Transaction\DataMigration())->addPricingRuleForeOlderTransactions();
+    }
+
 }

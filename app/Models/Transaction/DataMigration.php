@@ -31,6 +31,16 @@ class DataMigration extends Base\Service
     const KRISHI_KALYAN_CUTOFF_TIMESTAMP                    = 1464719400;
     const KRISHI_KALYAN_CESS_PERCENTAGE                     = 50;
 
+    // Merchant Id: Pricing Plan Id map as per operations_log
+    const MERCHANT_PRICING_PLAN_ID_MAP = [
+        '4nPFe8aZZJg673' =>  '5DrqKIuYD6ya5e',
+        '5ftA5JAyAiCbe7' =>  '1In3Yh5Mluj605',
+        '5ifQ003mh9Ehvm' =>  '5j3iRDM7lZZ,xgt',
+        '5jQ8zERcXo8yWL' =>  '5szgxrF9q71nBS',
+        '5jsVBeKswCFiMP' =>  '1In3Yh5Mluj605',
+        '5ScC7HFSVEut9v' =>  '1In3Yh5Mluj605',
+    ];
+
     protected $feeCalculator;
 
     public function migrateOlderTransactions()
@@ -38,6 +48,53 @@ class DataMigration extends Base\Service
         $this->increaseAllowedSystemLimits();
 
         $response = $this->processEntries();
+
+        return $response;
+    }
+
+    public function addPricingRuleForeOlderTransactions()
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $migratedTxns = [];
+        $notMigratedTxns = [];
+
+        $transactions = $this->repo->transaction->getTransactionsToSetPricingId();
+
+        foreach ($transactions as $transaction)
+        {
+            $merchant = $transaction->merchant;
+
+            $payment = $this->repo->payment->findOrFail($transaction->getEntityId());
+
+            $this->feeCalculator = new FeeCalculator($payment);
+
+            $pricingPlanId = self::MERCHANT_PRICING_PLAN_ID_MAP[$merchant->getId()];
+
+            $pricing = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+
+            list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->feeCalculator->calculate($pricing);
+
+            $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee - $serviceTax);
+
+            if ($isValidPricingPlan === true)
+            {
+                $transaction->setPricingRule($pricingRuleId);
+
+                $this->repo->saveOrFail($transaction);
+
+                $migratedTxns[] = $transaction->getPublicId();
+            }
+            else
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+            }
+        }
+
+        $response = [
+                'migrated'      => $migratedTxns,
+                'not_migrated'  => $notMigratedTxns,
+        ];
 
         return $response;
     }
@@ -55,11 +112,7 @@ class DataMigration extends Base\Service
         return $this->$function($txnIds);
     }
 
-    /**
-     * Case 1   Service Tax = 12.36% We migrate the transactions as it is.
-     * @param  [type] $transactionIds [description]
-     * @return [type]                 [description]
-     */
+    // Case 1: Service Tax = 12.36 %. Since it is older transaction we migrate without checking the fees
     protected function settleCase1Transactions($transactionIds)
     {
         $migratedTxns = [];
@@ -99,11 +152,8 @@ class DataMigration extends Base\Service
         return $response;
     }
 
-    /**
-     * Case 2   ST applied = 12.36 %, actual ST = 14%
-     * @param  [type] $transactionIds [description]
-     * @return [type]                 [description]
-     */
+    // Case 1: Applied Service Tax = 12.36 %, Actual = 14 %
+    // We set the amount and percentage as per 12.36
     protected function settleCase2Transactions($transactionIds)
     {
         $migratedTxns = [];
@@ -145,11 +195,8 @@ class DataMigration extends Base\Service
         return $response;
     }
 
-    /**
-     * Case 2   ST applied = 14%, actual ST = 14.5%
-     * @param  [type] $transactionIds [description]
-     * @return [type]                 [description]
-     */
+    // Case 1: Applied Service Tax = 14 %, Actual = 14.5 %
+    // We set the amount and percentage as per 14. And also remove SB Tax from Fee Split
     protected function settleCase3Transactions($transactionIds)
     {
         $migratedTxns = [];
@@ -198,31 +245,28 @@ class DataMigration extends Base\Service
 
     protected function processEntries()
     {
-        $txns = $this->repo->transaction->getTransactionsToBeMigrated();
+        $transactions = $this->repo->transaction->getTransactionsToBeMigrated();
 
         $migratedTxns = [];
         $notMigratedTxns = [];
 
-        foreach ($txns as $txn)
+        foreach ($transactions as $transaction)
         {
-            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($txn, true);
+            $merchant = $transaction->merchant;
 
-            if (empty($fees) === true)
-            {
-                continue;
-            }
+            list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, $merchant->isFeeBearerCustomer());
 
-            $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($txn, $fees, $totalTax);
+            $shouldSaveFeeDetails = $this->matchTaxesAndFeesWithOriginal($transaction, $fees, $totalTax);
 
             if ($shouldSaveFeeDetails === true)
             {
-                $this->saveFeeDetails($txn, $feesSplit, $taxTime);
+                $this->saveFeeDetails($transaction, $feesSplit, $taxTime);
 
-                $migratedTxns[] = $txn->getPublicId();
+                $migratedTxns[] = $transaction->getPublicId();
             }
             else
             {
-                $notMigratedTxns[] = $txn->getPublicId();
+                $notMigratedTxns[] = $transaction->getPublicId();
             }
         }
 
@@ -240,18 +284,13 @@ class DataMigration extends Base\Service
      * @param  [type] $isFeeBearerCustomer If feeBearerCustomer at time of the transaction
      * @return [type]                      [description]
      */
-    protected function calculateFeesAndTaxes($txn, $isFeeBearerCustomer)
+    protected function calculateFeesAndTaxes($transaction, $isFeeBearerCustomer)
     {
-        $merchant = $txn->merchant;
+        $merchant = $transaction->merchant;
 
-        $payment = $this->repo->payment->findOrFail($txn->getEntityId());
+        $pricingRuleId = $transaction->getPricingRule();
 
-        $pricingRuleId = $txn->getPricingRule();
-
-        if (isset($pricingRuleId) === false)
-        {
-            return ['','','',''];
-        }
+        $payment = $this->repo->payment->findOrFail($transaction->getEntityId());
 
         $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
 
@@ -259,11 +298,11 @@ class DataMigration extends Base\Service
 
         $this->feeCalculator = new FeeCalculator($payment);
 
-        $amount = $txn->getAmount();
+        $amount = $transaction->getAmount();
 
         // Original Amount = Payment Amount - Fee
         // Fee = RZp Fee + ST
-        if ($isFeeBearerCustomer === true and $merchant->isFeeBearerCustomer() === true)
+        if ($isFeeBearerCustomer === true)
         {
             $amount = $payment->getAmount() - $payment->getFee();
         }
@@ -364,6 +403,30 @@ class DataMigration extends Base\Service
         return true;
     }
 
+    protected function isValidPricingPlan($txn, $rzpFee)
+    {
+        $originalFee = $txn->getFee();
+
+        $originalTax = $txn->getServiceTax();
+
+        $originalRzpFee = $originalFee - $originalTax;
+
+        if ($rzpFee !== $originalRzpFee)
+        {
+            $this->trace->info(TraceCode::PRICING_RULE_MISTMATCH,
+                [
+                    'transaction'        => $txn->toArrayPublic(),
+                    'originalRzpFee'     => $originalRzpFee,
+                    'calculatedRzpFee'   => $rzpFee,
+                    'difference'         => $originalRzpFee - $rzpFee,
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
     protected function saveFeeDetails($txn, $feesSplit, $captureTime)
     {
         if (empty($feesSplit) === true)
@@ -388,39 +451,6 @@ class DataMigration extends Base\Service
                 $this->repo->saveOrFail($feeSplit);
             }
         });
-    }
-
-    protected function getTimestamps($input)
-    {
-        assertTrue(isset($input['month']));
-        assertTrue(isset($input['year']));
-
-        $year = (int) $input['year'];
-        $month = (int) $input['month'];
-
-        assertTrue($month > 0);
-        assertTrue($month <= 12);
-
-        $from = Carbon::today('Asia/Kolkata')
-                        ->month($month)
-                        ->year($year)
-                        ->startOfMonth()
-                        ->timestamp;
-
-        $mid = Carbon::today('Asia/Kolkata')
-                        ->month($month)
-                        ->day(15)
-                        ->year($year)
-                        ->startOfDay()
-                        ->timestamp;
-
-        $end = Carbon::today('Asia/Kolkata')
-                        ->month($month)
-                        ->year($year)
-                        ->endOfMonth()
-                        ->timestamp;
-
-        return [ $from, $mid, $mid + 1, $end];
     }
 
     protected function increaseAllowedSystemLimits()

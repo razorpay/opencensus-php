@@ -158,6 +158,7 @@ final class Route
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'migrate_transactions'                    => ['post',     'transactions/migrate',                           'TransactionController@postMigrateOlderTransactions'                ],
         'setl_transactions'                       => ['post',     'transactions/settle',                            'TransactionController@postSettleOlderTransactions'                 ],
+        'pricing_update_transactions'             => ['post',     'transactions/pricing_rule',                      'TransactionController@postAddPricingRuleForOlderTransactions'      ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -362,6 +363,7 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'pricing_update_transactions'
     );
 
     public static $internal = array(
@@ -481,6 +483,7 @@ final class Route
         'billdesk_reconcile_cancelled',
         'migrate_transactions',
         'setl_transactions',
+        'pricing_update_transactions',
         'schedule_create',
         'schedule_fetch',
         'schedule_fetch_multiple',

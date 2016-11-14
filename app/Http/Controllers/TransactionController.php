@@ -48,4 +48,11 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postAddPricingRuleForOlderTransactions()
+    {
+        $data = (new Transaction\Service)->addPricingRuleForeOlderTransactions();
+
+        return ApiResponse::json($data);
+    }
 }
