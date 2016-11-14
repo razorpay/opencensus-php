@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
-    const DUMMY_EXPIRY_YEAR = '2021';
+    const DUMMY_EXPIRY_YEAR  = '2021';
     const DUMMY_EXPIRY_MONTH = '12';
 
     const NETWORK_CODE      = 'network_code';
@@ -181,8 +181,8 @@ class Entity extends Base\PublicEntity
         $iin = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
-        if ((empty($input['expiry_year']) === true) and
-            ($cardNetwork === Network::MAES))
+        if (($cardNetwork === Network::MAES) and
+            (empty($input['expiry_year']) === true))
         {
             $input['expiry_year'] = self::DUMMY_EXPIRY_YEAR;
         }
@@ -199,8 +199,8 @@ class Entity extends Base\PublicEntity
         $iin = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
-        if ((empty($input['expiry_month']) === true) and
-            ($cardNetwork === Network::MAES))
+        if (($cardNetwork === Network::MAES) and
+            (empty($input['expiry_month']) === true))
         {
             $input['expiry_month'] = self::DUMMY_EXPIRY_MONTH;
         }
@@ -421,6 +421,13 @@ class Entity extends Base\PublicEntity
         $network = $this->getNetwork();
 
         return ($network === Card\Network::$fullName[Card\Network::AMEX]);
+    }
+
+    public function isMaestro()
+    {
+        $network = $this->getNetwork();
+
+        return (Card\NetworkName::$codes[$network] === Card\Network::MAES);
     }
 
     public function isRuPay()

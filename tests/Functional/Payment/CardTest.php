@@ -97,13 +97,6 @@ class CardTest extends TestCase
             $payment = $this->getDefaultPaymentArray();
             $payment['card']['number'] = $cardData[0];
 
-            // Maestro may send empty strings for expiry info
-            if ($cardData[1] === 'Maestro')
-            {
-                $payment['card']['expiry_month'] = "";
-                $payment['card']['expiry_year'] = "";
-            }
-
             $this->ba->publicAuth();
             $payment = $this->doAuthAndGetPayment($payment);
 
@@ -112,6 +105,31 @@ class CardTest extends TestCase
             $this->assertArraySelectiveEquals($cardInfo, $card);
             $this->assertArrayNotHasKey('number', $card);
         }
+    }
+
+    public function testBlankExpiryForMaestro()
+    {
+        $maestroNumber = '5021653933333338';
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = $maestroNumber;
+        $payment['card']['expiry_month'] = "";
+        $payment['card']['expiry_year'] = "";
+        $payment['card']['cvv'] = "";
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $cardInfo = [
+            'iin' => substr($maestroNumber, 0, 6),
+            'last4' => substr($maestroNumber, -4),
+            'network' => 'Maestro',
+        ];
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertArraySelectiveEquals($cardInfo, $card);
+        $this->assertArrayNotHasKey('number', $card);
     }
 
     public function testCardWhenNotEnabledOnLive()
