@@ -1217,3 +1217,8 @@ ALTER TABLE payments
 
 ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
+
+---
+
+ALTER TABLE upi
+    ADD COLUMN provider VARCHAR(255) AFTER bank;
