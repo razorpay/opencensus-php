@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::VIEW_LESS           => 'sometimes|boolean',
+        Entity::VIEW_LESS           => 'sometimes|in:0',
         Entity::CUSTOMER            => 'required',
         Entity::LINE_ITEMS          => 'required|custom',
     ];

@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
     const SHORT_URL             = 'short_url';
     const VIEW_LESS             = 'view_less';
 
-    // const TOTAL_AMOUNT          = 'total_amount';
+    const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
 
     // ---------------------- Input Keys -------------------------------------
@@ -84,7 +84,10 @@ class Entity extends Base\PublicEntity
         // self::SHIPPING          => 0,
         self::NOTES             => [],
         self::SHORT_URL         => null,
-        self::VIEW_LESS         => false,
+        self::VIEW_LESS         => true,
+        // This is null by default because amount is not present
+        // and cannot be generated during build.
+        self::AMOUNT            => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -105,7 +108,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
-        self::TERMS,
+        // self::TERMS,
         self::NOTES,
         self::VIEW_LESS,
         // self::ADJUSTMENT,
@@ -137,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::AMOUNT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -150,12 +154,13 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS_DETAILS,
         self::STATUS,
-        self::DUE_BY,
-        self::SCHEDULED_AT,
+        // self::DUE_BY,
+        // self::SCHEDULED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
-        self::TERMS,
+        // self::TERMS,
+        self::AMOUNT,
         self::NOTES,
         self::SHORT_URL,
         self::VIEW_LESS,
@@ -224,6 +229,11 @@ class Entity extends Base\PublicEntity
     public function getOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getPaymentId()
@@ -303,6 +313,11 @@ class Entity extends Base\PublicEntity
     public function setShortUrl($shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     // -------------------------------------- End Setters --------------------------------------

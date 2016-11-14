@@ -45,11 +45,13 @@ class Generator extends Base\Core
         $this->invoice->build($input);
 
         $this->repo->transaction(
-            function() use ($lineItemsDetails, $customerDetails)
+            function() use ($lineItemsDetails, $customerDetails, $input)
             {
                 $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails);
 
                 $this->setCustomerDetailsAttributes();
+
+                $this->setStatus($input);
 
                 // Saving here for the associations
                 $this->repo->saveOrFail($this->invoice);
@@ -60,11 +62,10 @@ class Generator extends Base\Core
             }
         );
 
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
-
         // This needs to be done after saving the invoice since it requires the invoice ID
         $this->setShortUrl();
-        $this->setStatus($input);
+
+        (new Notifier($this->invoice))->sendNotificationToCustomer();
 
         $this->repo->saveOrFail($this->invoice);
 
@@ -129,7 +130,10 @@ class Generator extends Base\Core
     {
         $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
-        $order = $this->createOrderForInvoice($this->lineItems);
+        $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
+        $this->invoice->setAmount($invoiceAmount);
+
+        $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);
 
         $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
@@ -167,9 +171,9 @@ class Generator extends Base\Core
         return $lineItems;
     }
 
-    protected function createOrderForInvoice(array $lineItems)
+    protected function createOrderForInvoice()
     {
-        $orderAmount = $this->lineItemCore->getTotalAmountFromLineItems($lineItems);
+        $orderAmount = $this->invoice->getAmount();
 
         $orderCurrency = self::ORDER_CURRENCY;
 
