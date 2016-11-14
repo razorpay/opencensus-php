@@ -259,6 +259,15 @@ $factory(\RZP\Models\Order\Entity::class, [
     'updated_at' => $faker->timestamp,
 ]);
 
+$factory(\RZP\Models\Item\Entity::class, [
+    'id' => '1000000000item',
+    'merchant_id' => '10000000000000',
+    'name' => 'Some item name',
+    'description' => 'Some item description',
+    'amount' => 100000,
+    'currency' => 'INR',
+]);
+
 $factory(\RZP\Models\Invoice\Entity::class, [
     'id' => '1000000invoice',
     'merchant_id' => '10000000000000',
@@ -282,11 +291,9 @@ $factory(\RZP\Models\Invoice\Entity::class, [
 
 $factory(\RZP\Models\LineItem\Entity::class, [
     'id' => '100000lineitem',
-    'merchant_id' => '10000000000000',
-    'invoice_id' => '1000000invoice',
-    'name' => 'Some item name',
-    'description' => 'Some item description',
-    'amount' => 100000,
+    'entity_id' => '1000000invoice',
+    'entity_type' => 'RZP\Models\Invoice\Entity',
+    'item_id' => '1000000000item',
     'quantity' => 1,
 ]);
 
