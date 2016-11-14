@@ -100,22 +100,10 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicInvoiceIdAttribute(array & $array)
     {
-        if (isset($array[self::INVOICE_ID]))
-        {
-            $invoiceId = $this->getAttribute(self::INVOICE_ID);
+        $invoiceId = $this->getAttribute(self::INVOICE_ID);
 
-            $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
-        }
-        else
-        {
-            $app = App::getFacadeRoot();
+        $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
 
-            $app['trace']->error(
-                TraceCode::INVOICE_ID_ABSENT,
-                [
-                    'line_item_id' => $this->getId()
-                ]);
-        }
     }
 
     // -------------------- Relations ---------------------------

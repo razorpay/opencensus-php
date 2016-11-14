@@ -32,11 +32,6 @@ class Notifier extends Base\Core
 
         $this->invoice = $invoice;
 
-        if (empty($invoice) === false)
-        {
-            $this->invoiceLink = Generator::getInvoiceLink($invoice->getId());
-        }
-
         $this->mode = Mode::TEST;
 
         if (isset($this->app['rzp.mode']) === true)
@@ -52,8 +47,6 @@ class Notifier extends Base\Core
     public function setInvoice($invoice)
     {
         $this->invoice = $invoice;
-
-        $this->invoiceLink = Generator::getInvoiceLink($invoice->getId());
     }
 
     public function sendNotificationToCustomer()
@@ -113,7 +106,24 @@ class Notifier extends Base\Core
 
     protected function sendInvoiceSms($contact)
     {
-        $contact = Customer\Validator::validateAndParseContact($contact);
+        try
+        {
+            $contact = Customer\Validator::validateAndParseContact($contact);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+            
+            $this->trace->error(
+                TraceCode::INVOICE_INVALID_CONTACT_NUMBER,
+                [
+                    'contact' => $contact,
+                    'invoice_id' => $this->invoice->getId(),
+                ]
+            );
+            
+            return false;
+        }
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
@@ -136,8 +146,7 @@ class Notifier extends Base\Core
             'to_email'      => $this->invoice->getCustomerEmail(),
             'date'          => date('d-M-Y H:m:s T'),
             'subject'       => $subject,
-            'mode'          => $this->mode,
-            'invoice_link'  => $this->invoiceLink,
+            'invoice_link'  => $this->invoice->getShortUrl(),
         ];
 
         Mail::queue('emails.invoice.generated', $data, function($message) use ($data)

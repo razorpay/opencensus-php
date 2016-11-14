@@ -24,9 +24,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $this->merchant->getId());
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
@@ -40,9 +38,7 @@ class Service extends Base\Service
 
     public function sendNotification($id, $medium)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $invoice = $this->repo->invoice->findByIdAndMerchantId($id, $this->merchant->getId());
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
         $data = $this->core->sendNotification($invoice, $medium);
 

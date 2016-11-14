@@ -49,14 +49,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
-        if ($response === true)
-        {
-            return ['success' => true];
-        }
-        else
-        {
-            return ['success' => false];
-        }
+        return ['success' => $response];
     }
 
     public function expireInvoices()

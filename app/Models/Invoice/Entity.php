@@ -85,9 +85,6 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => true,
-        // This is null by default because amount is not present
-        // and cannot be generated during build.
-        self::AMOUNT            => null,
     ];
 
     // Generates fields to be filled in the DB.

@@ -276,6 +276,7 @@ $factory(\RZP\Models\Invoice\Entity::class, [
     'status' => 'issued',
     'due_by' => $faker->timestamp,
     'scheduled_at' => $faker->timestamp,
+    'amount' => 100000,
 ]);
 
 $factory(\RZP\Models\LineItem\Entity::class, [

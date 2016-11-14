@@ -35,8 +35,7 @@ class CreateInvoices extends Migration
 
             $table->integer(Entity::SCHEDULED_AT);
 
-            $table->string(Entity::STATUS, 32)
-                  ->nullable();
+            $table->string(Entity::STATUS, 32);
 
             $table->string(Entity::EMAIL_STATUS, 32)
                   ->nullable();
@@ -44,9 +43,7 @@ class CreateInvoices extends Migration
             $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
-            // This is nullable because amount is generated after the entity is built
-            $table->bigInteger(Entity::AMOUNT)
-                  ->nullable();
+            $table->bigInteger(Entity::AMOUNT);
 
             $table->char(Entity::CUSTOMER_ADDRESS, Entity::ID_LENGTH)
                   ->nullable();

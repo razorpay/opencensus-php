@@ -108,6 +108,7 @@ class TraceCode
     const CUSTOMER_ID_ABSENT                        = 'CUSTOMER_ID_ABSENT';
     const INVOICE_ID_ABSENT                         = 'INVOICE_ID_ABSENT';
     const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
+    const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 

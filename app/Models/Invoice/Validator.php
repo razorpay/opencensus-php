@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
-        Entity::TERMS               => 'sometimes',
+        Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::VIEW_LESS           => 'sometimes|in:0',
         Entity::CUSTOMER            => 'required',
