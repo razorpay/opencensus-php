@@ -35,7 +35,7 @@ class DataMigration extends Base\Service
     const MERCHANT_PRICING_PLAN_ID_MAP = [
         '4nPFe8aZZJg673' =>  '5DrqKIuYD6ya5e',
         '5ftA5JAyAiCbe7' =>  '1In3Yh5Mluj605',
-        '5ifQ003mh9Ehvm' =>  '5j3iRDM7lZZ,xgt',
+        '5ifQ003mh9Ehvm' =>  '5j3iRDM7lZZxgt',
         '5jQ8zERcXo8yWL' =>  '5szgxrF9q71nBS',
         '5jsVBeKswCFiMP' =>  '1In3Yh5Mluj605',
         '5ScC7HFSVEut9v' =>  '1In3Yh5Mluj605',
