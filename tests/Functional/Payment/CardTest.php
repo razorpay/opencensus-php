@@ -97,6 +97,13 @@ class CardTest extends TestCase
             $payment = $this->getDefaultPaymentArray();
             $payment['card']['number'] = $cardData[0];
 
+            // Maestro may send empty strings for expiry info
+            if ($cardData[1] === 'Maestro')
+            {
+                $payment['card']['expiry_month'] = "";
+                $payment['card']['expiry_year'] = "";
+            }
+
             $this->ba->publicAuth();
             $payment = $this->doAuthAndGetPayment($payment);
 

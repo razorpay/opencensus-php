@@ -37,6 +37,9 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
+    const DUMMY_EXPIRY_YEAR = '2021';
+    const DUMMY_EXPIRY_MONTH = '12';
+
     const NETWORK_CODE      = 'network_code';
 
     protected static $sign = 'card';
@@ -175,6 +178,15 @@ class Entity extends Base\PublicEntity
 
     public function modifyExpiryYear(& $input)
     {
+        $iin = substr($input['number'] ?? null, 0, 6);
+        $cardNetwork = Network::detectNetwork($iin);
+
+        if ((empty($input['expiry_year']) === true) and
+            ($cardNetwork === Network::MAES))
+        {
+            $input['expiry_year'] = self::DUMMY_EXPIRY_YEAR;
+        }
+
         if ((isset($input['expiry_year'])) and
             (strlen($input['expiry_year']) == 2))
         {
@@ -184,6 +196,15 @@ class Entity extends Base\PublicEntity
 
     public function modifyExpiryMonth(& $input)
     {
+        $iin = substr($input['number'] ?? null, 0, 6);
+        $cardNetwork = Network::detectNetwork($iin);
+
+        if ((empty($input['expiry_month']) === true) and
+            ($cardNetwork === Network::MAES))
+        {
+            $input['expiry_month'] = self::DUMMY_EXPIRY_MONTH;
+        }
+
         if (isset($input['expiry_month']))
         {
             $input['expiry_month'] = ltrim($input['expiry_month'], '0');
