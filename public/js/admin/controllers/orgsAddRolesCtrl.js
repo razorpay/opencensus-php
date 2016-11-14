@@ -47,6 +47,12 @@ app.controller('OrgsAddRolesCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Role added', true);
+        } else {
+          $scope.alerts.resetAlerts();
+
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
