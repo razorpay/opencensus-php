@@ -14,6 +14,13 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
 
+    public static $allFields    = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
+    ];
+
     protected static $sign      = 'item';
 
     protected $entity           = 'item';
