@@ -118,8 +118,6 @@ final class Route
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
-        'merchant_add_features'                   => ['post',     'merchants/{id}/features',                        'MerchantController@postMerchantFeatures'                           ],
-        'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -275,7 +273,6 @@ final class Route
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
-        'merchant_migrate_features'               => ['put',      'features/migrate',                               'FeatureController@migrateMerchantFeatures'                         ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
     );
@@ -462,8 +459,6 @@ final class Route
         'iin_generate_post',
         'send_test_newsletter',
         'send_newsletter',
-        'merchant_add_features',
-        'merchant_get_features',
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
@@ -495,7 +490,6 @@ final class Route
         'feature_get_multiple',
         'feature_add',
         'feature_delete',
-        'merchant_migrate_features',
         'feature_bulk_assign',
         'feature_bulk_remove'
     );

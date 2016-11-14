@@ -149,8 +149,11 @@ class TransactionFilter extends Terminal\Filter
                 return false;
             }
 
+            $ba = app('basicauth');
+
             if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true))
+                ($payment->localToken->isRecurring() === true) and
+                ($ba->isPrivateAuth() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }
