@@ -25,7 +25,7 @@ class UpiController extends Controller
             
             foreach($recordsToUpdate as $upiRecord) 
             {
-                $providerCode = $upiRecord->getProviderFromVpa();
+                $providerCode = $upiRecord->extractProviderFromVpa();
 
                 $upiRecord->setProvider($providerCode);
 

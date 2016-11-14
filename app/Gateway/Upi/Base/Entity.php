@@ -86,14 +86,10 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
-    public function getProviderFromVpa() {
+    public function extractProviderFromVpa() {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
-
-//        if (count($vpaParts) < 2) {
-//            return;
-//        }
 
         return $vpaParts[1] ?? NULL;
     }

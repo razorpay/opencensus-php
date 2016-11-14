@@ -111,8 +111,7 @@ class Gateway extends Base\Gateway
     {
         $vpa = $input['payment']['vpa'];
 
-        // Vpa isnt being validated? Models\Payment\Validator::validateVpa()
-        $pspCode = explode('@', $vpa)[1];
+        $pspCode = explode('@', $vpa)[1] ?? NULL;
 
         return [
             Entity::VPA         => $vpa,
