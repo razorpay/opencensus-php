@@ -1,6 +1,5 @@
 import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
-import invoices from 'merchant/mocks/invoices'
 
 const INVOICES_FETCH = 'INVOICES_FETCH'
 

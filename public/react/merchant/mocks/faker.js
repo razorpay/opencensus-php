@@ -1,19 +1,22 @@
 import DFaqApi from 'dfaqapi'
-import Customer from './customers'
-import Plan from './plans'
-import Subscription from './subscriptions'
-import Invoice from './invoices'
+import Customer from './customer'
+import Plan from './plan'
+import Item from './item'
+import Subscription from './subscription'
+import Invoice from './invoice'
 
 let fakeApi = new DFaqApi({
   factories: {
     plan: Plan,
     customer: Customer,
     subscription: Subscription,
-    invoice: Invoice
+    invoice: Invoice,
+    item: Item
   }
 })
 
 fakeApi.createList('customer', 10)
+fakeApi.createList('item', 20)
 fakeApi.createList('plan', 5)
 fakeApi.createList('subscription', 3)
 fakeApi.createList('invoice', 5)
@@ -122,6 +125,54 @@ fakeApi.put('/test/plan/:id', (db, request) => {
     }
   }
 })
+
+fakeApi.get('/test/items', (db, request) => {
+  return {
+    success: true,
+    data: {
+      count: 10,
+      items: db.getCollection('item').data
+    }
+  }
+})
+
+fakeApi.post('/test/item', (db, request) => {
+  let newItem = new Item()
+  let itemDB = db.getCollection('item')
+
+  Object.assign(newItem, request.parsedRequestBody)
+  itemDB.insert(newItem)
+  return {
+    success: true,
+    data: {
+      item: newItem
+    }
+  }
+})
+
+fakeApi.put('/test/item/:id', (db, request) => {
+  let itemDB = db.getCollection('item')
+  let item = itemDB.findOne({ id: request.params.id })
+  let parsedRequestBody = request.parsedRequestBody
+  for (let key in item) {
+    if(item.hasOwnProperty(key) && parsedRequestBody[key]) {
+      let value = parsedRequestBody[key]
+      if (key === '$loki') {
+        value = +value
+      }
+      item[key] = value
+    }
+  }
+  itemDB.update(item)
+
+  return {
+    success: true,
+    data: {
+      item
+    }
+  }
+})
+
 
 fakeApi.get('/test/invoices', (db, request) => {
   return {

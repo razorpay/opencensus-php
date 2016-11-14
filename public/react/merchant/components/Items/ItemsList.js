@@ -1,13 +1,13 @@
 import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 
-const PlansListItem = (props) => {
-  let { plan } = props
+const ItemsListItem = (props) => {
+  let { item } = props
   return (
     <tr>
-      <td>{plan.name}</td>
-      <td>{plan.amount}</td>
-      <td>{plan.interval_count} {plan.interval}</td>
+      <td>{item.name}</td>
+      <td>{item.description}</td>
+      <td>{item.rate}</td>
       <td>
         <div class='btn-group'>
           <button
@@ -28,22 +28,22 @@ const PlansListItem = (props) => {
   )
 }
 
-export default ({ plans, isLoading, onEdit, onDelete }) => {
+export default ({ items, isLoading, onEdit, onDelete }) => {
   let tableRowComponent
 
   if (isLoading) {
     tableRowComponent = <TableLoader colSpan='4' />
-  } else if (plans.length) {
-    tableRowComponent = plans.map((plan) =>
-      <PlansListItem
-        key={plan.id}
-        plan={plan}
-        onEdit={() => onEdit(plan)}
-        onDelete={() => onDelete(plan)}
+  } else if (items.length) {
+    tableRowComponent = items.map((item) =>
+      <ItemsListItem
+        key={item.id}
+        item={item}
+        onEdit={() => onEdit(item)}
+        onDelete={() => onDelete(item)}
       />
     )
   } else {
-    tableRowComponent = <EmptyTableRow colSpan='4' message='No Plans found!' />
+    tableRowComponent = <EmptyTableRow colSpan='4' message='No Items found!' />
   }
 
   return (
@@ -51,9 +51,9 @@ export default ({ plans, isLoading, onEdit, onDelete }) => {
       <table className='table'>
         <thead>
           <tr>
-            <th>Plan Name</th>
-            <th>Plan Amount</th>
-            <th>Bill Every</th>
+            <th>Item Name</th>
+            <th>Description</th>
+            <th>Rate</th>
             <th></th>
           </tr>
         </thead>
