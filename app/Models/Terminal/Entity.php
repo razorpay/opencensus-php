@@ -453,6 +453,26 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isRecurringAuthTerminal()
+    {
+        if ($this->getRecurring() === Recurring::NON_RECURRING)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isRecurringDirectTerminal()
+    {
+        if ($this->getRecurring() === Recurring::RECURRING_N3DS)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
         if (($this->isEmiEnabled()) and
