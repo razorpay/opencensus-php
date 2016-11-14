@@ -1,56 +1,61 @@
 import React, { Component } from 'react'
-import { Field, reduxForm } from 'redux-form'
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 
 import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import ReduxSelect2 from 'rzp/ui/Forms/ReduxSelect2'
+import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
 import LineItemTable from 'merchant/components/Invoices/LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
+import { fetchPlans } from 'merchant/modules/plans'
 
-
+const selector = formValueSelector('newInvoice')
 @connect(
-  (state) => state.invoice.toJS(),
-  { fetchCustomers }
+  (state) => {
+    let plansState = state.plans.toJS()
+    let customersState = state.customers.toJS()
+
+    return {
+      customers: customersState.customers,
+      plans: plansState.plans,
+      selectedCustomer: selector(state, 'customer')
+    }
+  },
+  { fetchCustomers, fetchPlans }
 )
 @reduxForm({
-  form: 'invoiceCreation',
+  form: 'newInvoice',
   initialValues: {
     due_on: 30,
-    notes: 'Thanks for your business'
+    notes: 'Thanks for your business',
+    items: [
+      {
+        quantity: 1,
+        rate: 0.00
+      }
+    ]
   }
 })
 export default class InvoicesNewContainer extends Component {
   constructor() {
     super(...arguments)
-    this.state = {
-      customers: []
-    }
     this.save = ::this.save
   }
 
   componentWillMount() {
-    this.props.fetchCustomers().then((response) => {
-      let customers = response.data.items.map((item) => {
-        item.text = item.text || item.name
-        return item
-      })
-
-      customers.unshift({})
-
-      this.setState({
-        customers
-      })
-    })
+    this.props.fetchCustomers()
+    this.props.fetchPlans()
   }
 
   save() {
-
+    debugger
   }
 
   render() {
     const { handleSubmit } = this.props
+    let selectedCustomer = this.props.selectedCustomer
+
     return (
       <div>
         <Header title='New Invoice'>
@@ -58,6 +63,7 @@ export default class InvoicesNewContainer extends Component {
             <i className='fa fa-close'></i>
           </a>
         </Header>
+
 
         <div className='content-wrapper'>
           <div className='panel panel-default'>
@@ -69,17 +75,30 @@ export default class InvoicesNewContainer extends Component {
                   </label>
                   <div className='col-md-4'>
                     <Field
-                      name='customer_id'
-                      id='customer_id'
-                      data={this.state.customers}
-                      options={{
-                        placeholder: 'Select a Customer',
-                        allowClear: true
-                      }}
-                      component={ReduxSelect2}
+                      name='customer'
+                      component={ReduxPowerSelect}
+                      options={this.props.customers}
+                      selected={selectedCustomer}
+                      selectedLabel='name'
+                      optionComponent={(option) => <span>{option.name}</span>}
+                      searchIndices={['name']}
+                      placeholder='Select a customer'
+                      afterOptionsComponent={({ select }) => (
+                        <div
+                          class='quick-create'
+                          onClick={() => {
+                            this.quickCreateCustomer()
+                            select.close()
+                          }}
+                        >
+                          <i class='fa fa-plus'></i>
+                          <span>Add New Customer</span>
+                        </div>
+                      )}
                     />
                   </div>
                 </div>
+
 
                 <div className='form-group'>
                   <label htmlFor='invoice_date' className='col-md-2 control-label'>
@@ -109,9 +128,11 @@ export default class InvoicesNewContainer extends Component {
                   </div>
                 </div>
 
-{/*
-                <LineItemTable items={initialValues.items} />
-*/}
+                <FieldArray
+                  name='items'
+                  component={LineItemTable}
+                  plans={this.props.plans}
+                />
 
                 <div className='form-group'>
                   <label htmlFor='notes' className='col-md-2 control-label'>
@@ -138,6 +159,24 @@ export default class InvoicesNewContainer extends Component {
                       component='textarea'
                       className='form-control'
                     />
+                  </div>
+                </div>
+
+                <div class='col-md-offset-2'>
+                  <div class='btn-toolbar'>
+                    <AsyncButton
+                      type='button'
+                      class='btn btn-primary'
+                      text='Save'
+                      pendingText='Saving...'
+                      onClick={handleSubmit(this.save)}
+                    />
+                    <a
+                      href='#/app/invoices'
+                      class='btn btn-default'
+                    >
+                      Cancel
+                    </a>
                   </div>
                 </div>
               </form>

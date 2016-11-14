@@ -8,10 +8,7 @@ export const fetchInvoices = () => {
   return (dispatch) => {
     return dispatch({
       type: INVOICES_FETCH,
-      payload: ajax(`/invoices`).then((response) => {
-      }).catch((err) => {
-        return invoices
-      })
+      payload: ajax('/invoices')
     })
   }
 }

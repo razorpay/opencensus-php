@@ -2,18 +2,21 @@ import DFaqApi from 'dfaqapi'
 import Customer from './customers'
 import Plan from './plans'
 import Subscription from './subscriptions'
+import Invoice from './invoices'
 
 let fakeApi = new DFaqApi({
   factories: {
     plan: Plan,
     customer: Customer,
-    subscription: Subscription
+    subscription: Subscription,
+    invoice: Invoice
   }
 })
 
 fakeApi.createList('customer', 10)
 fakeApi.createList('plan', 5)
 fakeApi.createList('subscription', 3)
+fakeApi.createList('invoice', 5)
 
 fakeApi.get('/test/subscriptions', (db, request) => {
   return {
@@ -116,6 +119,16 @@ fakeApi.put('/test/plan/:id', (db, request) => {
     success: true,
     data: {
       plan: plan
+    }
+  }
+})
+
+fakeApi.get('/test/invoices', (db, request) => {
+  return {
+    success: true,
+    data: {
+      count: 10,
+      items: db.getCollection('invoice').data
     }
   }
 })
