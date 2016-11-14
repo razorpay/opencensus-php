@@ -50,9 +50,9 @@ class DataMigration extends Base\Service
 
         $txnIds = $input['transactionIds'];
 
-        $validator = 'settle' .ucfirst($case) .'Transactions';
+        $function = 'settle' .ucfirst($case) .'Transactions';
 
-        return $this->$validator($txnIds);
+        return $this->$function($txnIds);
     }
 
     /**
