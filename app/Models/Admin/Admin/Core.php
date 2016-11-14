@@ -70,12 +70,27 @@ class Core extends Base\Core
 
     public function delete(string $orgId, string $adminId)
     {
+        // Delete the admin tokens first
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
-        $this->repo->deleteOrFail($admin);
+        $adminTokens = $this->repo->admin_token->fetchTokensByAdminId($admin->getId());
 
-        return $admin;
+        if (empty($adminTokens) === true)
+        {
+            $this->repo->deleteOrFail($admin);
+        }
+        else
+        {
+            foreach ($adminTokens as $adminToken)
+            {
+                $this->repo->deleteOrFail($adminToken);
+            }
+
+            $this->repo->deleteOrFail($admin);
+        }
+
+        return ['success' => true];
     }
 }
 

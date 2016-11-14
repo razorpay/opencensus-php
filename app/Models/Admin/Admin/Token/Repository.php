@@ -22,4 +22,22 @@ class Repository extends Base\Repository
                     ->where(Entity::TOKEN, '=', $token)
                     ->firstOrFail();
     }
+
+    public function fetchTokensByAdminId(string $adminId)
+    {
+        $tokenExists = $this->newQuery()
+                            ->where(Entity::ADMIN_ID, '=', $adminId)
+                            ->exists();
+
+        if ($tokenExists === true)
+        {
+            return $this->newQuery()
+                        ->where(Entity::ADMIN_ID, '=', $adminId)
+                        ->get();
+        }
+        else
+        {
+            return array();
+        }
+    }
 }
