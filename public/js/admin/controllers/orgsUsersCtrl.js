@@ -62,7 +62,7 @@ app.controller('OrgsUsersCtrl', [
         branch_code: user.branch_code,
         location_code: user.location_code,
         supervisor_code: user.supervisor_code,
-        disabled: user.disabled
+        disabled: user.disabled + 0
       };
       data.route_name = route_name;
 
@@ -78,9 +78,27 @@ app.controller('OrgsUsersCtrl', [
       });
       request.success(function (data) {
         /* TODO: change this */
+
         if (data.success) {
-          $scope.users = data.data.items;
-          $scope.count = data.data.count;
+          var index = null;
+
+          $scope.users.forEach(function (v, i) {
+            if (v.id === data.data.id) {
+              index = i;
+            }
+          });
+
+          if (index !== null) {
+            $scope.users[index] = data.data;
+          }
+
+          $scope.alerts.addAlert('success', 'User updated', true);
+        } else {
+          $scope.alerts.resetAlerts();
+
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       });
     }

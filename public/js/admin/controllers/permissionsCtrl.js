@@ -57,7 +57,8 @@ app.controller('PermissionsCtrl', [
       var request = $http.get('/admin/generic', {
         ignoreErrors: true,
         params: {
-          route_name: 'permission_get_multiple'
+          route_name: 'permission_get_multiple',
+          count: 10000,  /* A very high number */
         }
       });
 
