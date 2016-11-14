@@ -666,7 +666,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function bulkUpdateMerchantMethods($input)
+    public function updateMethodsForMultipleMerchants($input)
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
 
