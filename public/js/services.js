@@ -295,12 +295,8 @@ angular.module('app.services', [])
       fetchGroups: function (organization_id) {
         var groups = [];
         $http.get('/admin/generic', {
-          ignoreErrors: true,
           params: {
             route_name: 'group_get_multiple',
-            url_params: {
-              '{id}': organization_id
-            }
           }
         }).success(function (data) {
           if (data.success === true) {

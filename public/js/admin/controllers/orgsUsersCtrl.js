@@ -52,9 +52,23 @@ app.controller('OrgsUsersCtrl', [
     $scope.listUsers($scope.orgId);
 
     $scope.editUser = function(user) {
-      var request = $http.put('/admin/generic', {
+      var route_name = 'admin_edit';
+      var data = {};
+      data.body = {
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        department_code: user.department_code,
+        branch_code: user.branch_code,
+        location_code: user.location_code,
+        supervisor_code: user.supervisor_code,
+        disabled: user.disabled
+      };
+      data.route_name = route_name;
+
+      var request = $http.put('/admin/generic', data, {
         params: {
-          route_name: 'admin_edit',
+          route_name: route_name,
 
           url_params: {
             '{id}': $scope.orgId,
@@ -115,7 +129,7 @@ app.controller('OrgsUsersCtrl', [
     current.locked = !!current.locked;
     current.disabled = !!current.disabled;
 
-    $scope.user = current
+    $scope.user = current;
 
     $scope.ok = function (user) {
       $modalInstance.close(user);
