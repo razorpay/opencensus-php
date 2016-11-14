@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Gateway\Upi;
 use Illuminate\Support\Facades\DB;
+use ApiResponse;
 
 class UpiController extends Controller
 {   
@@ -12,7 +13,7 @@ class UpiController extends Controller
         parent::__construct();
     }
 
-    public function addVpaProvider()
+    public function addProviderCode()
     {
         $batchSize = 500;
         
@@ -38,7 +39,9 @@ class UpiController extends Controller
             {
                 break;
             }
-        } 
+        }
+
+        return ApiResponse::json(['complete' => true]);
     }
 
 }

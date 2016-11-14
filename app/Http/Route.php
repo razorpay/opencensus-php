@@ -274,7 +274,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'upi_add_provider'                        => ['post',     'upi/add',                                        'UpiController@addVpaProvider'                                      ],
+        'upi_add_provider'                        => ['put',      'upi/add_provider_code',                          'UpiController@addProviderCode'                                      ],
     );
 
     public static $public = array(
@@ -323,7 +323,6 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
-        'upi_add_provider'
     );
 
     public static $publicCallback = array(
@@ -492,6 +491,7 @@ final class Route
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
+        'upi_add_provider'
     );
 
     public static $proxy = array(
