@@ -342,6 +342,32 @@ angular.module('app.services', [])
         }).error(function () {
         });
         return this.permissions = perms;
+      },
+      fetchUsers: function () {
+        if (this.users) {
+          return this.users;
+        }
+
+        var users = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'admin_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (user) {
+                users.push(user);
+              });
+            }
+          }
+          else {
+            users = {};
+          }
+        }).error(function () {
+        });
+        return this.users = users;
       }
     };
   }

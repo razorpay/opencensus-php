@@ -1,13 +1,13 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Roles
+    Groups
     <spinner class="inline"></spinner>
   </h1>
 </div>
 <div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="OrgsAddRolesCtrl">
+  <div class="panel panel-default" ng-controller="AddGroupCtrl">
     <div class="panel-heading">
-      Add a new Role
+      Add a new Group
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -17,31 +17,52 @@
         <div class="form-group">
           <label for='name' class="col-lg-2 control-label">Name</label>
           <div class="col-lg-10" >
-            <input type="text" class="form-control m-b" name="name" ng-model="role.name" />
+            <input type="text" class="form-control m-b" name="name" ng-model="group.name" />
           </div>
         </div>
         <div class="form-group">
           <label for='description' class="col-lg-2 control-label">Description</label>
           <div class="col-lg-10" >
-            <input type="text" class="form-control m-b" name="description" ng-model="role.description" />
+            <input type="text" class="form-control m-b" name="description" ng-model="group.description" />
           </div>
         </div>
         <div class="form-group">
-          <div class="col-lg-2 text-right">Permissions</div>
+          <div class="col-lg-2 text-right">Subgroups</div>
           <div class="col-lg-10 scrollable-table">
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
                 <tr>
                   <th></th>
-                  <th>Permission</th>
-                  <th>Permission description</th>
+                  <th>Group</th>
+                  <th>Group description</th>
                 </tr>
               </thead>
               <tbody>
-                <tr ng-repeat="(key, row) in permissions">
-                  <td><input type="checkbox" name='permissions[]' ng-model='selected_permissions[row.id]' value="{{row.id}}"></td>
+                <tr ng-repeat="(key, row) in groups">
+                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-2 text-right">Users</div>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Name</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in users">
+                  <td><input type="checkbox" name='users[]' ng-model='selected_users[row.id]' value="{{row.id}}"></td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.email}}</td>
                 </tr>
               </tbody>
             </table>
