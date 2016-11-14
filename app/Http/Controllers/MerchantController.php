@@ -436,13 +436,7 @@ class MerchantController extends Controller
 
         if (in_array($context, array_keys($urlMap)))
         {
-            // $url = $urlMap[$context];
-
-            // TODO: Remove this later
-            if ($context !== 'beta')
-            {
-                $url = $urlMap[$context];
-            }
+            $url = $urlMap[$context];
         }
         else if (isset($input['checkout']))
         {

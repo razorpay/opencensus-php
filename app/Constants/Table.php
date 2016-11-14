@@ -33,7 +33,6 @@ class Table
     const SETTLEMENT            = 'settlements';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const INVOICE_ITEM          = 'invoice_items';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
 

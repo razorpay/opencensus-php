@@ -22,7 +22,6 @@ class Generator extends Base\Core
     protected $bitly;
 
     const ORDER_CURRENCY = 'INR';
-    const JUST_CREATED_TIME = 604800;
 
     public function __construct(Merchant\Entity $merchant)
     {

@@ -43,7 +43,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         //self::LISTING_ID,
-        self::CURRENCY,
+        // self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::MERCHANT_ID,
@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::CURRENCY,
+        // self::CURRENCY,
         self::QUANTITY,
         self::CREATED_AT,
     ];
@@ -86,11 +86,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getCurrency()
-    {
-        return $this->getAttribute(self::CURRENCY);
-    }
-
     public function getQuantity()
     {
         return $this->getAttribute(self::QUANTITY);
@@ -103,7 +98,6 @@ class Entity extends Base\PublicEntity
         $invoiceId = $this->getAttribute(self::INVOICE_ID);
 
         $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
-
     }
 
     // -------------------- Relations ---------------------------

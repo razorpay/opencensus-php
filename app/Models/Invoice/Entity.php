@@ -247,20 +247,6 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
-    /**
-     * An invoice is considered just created for 5
-     * minutes since creation
-     * @return bool
-     */
-    public function justCreated()
-    {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
-
-        return (bool) ($secondsSinceCreated <= Generator::JUST_CREATED_TIME);
-    }
-
     // -------------------------------------- End Getters --------------------------------------
 
 

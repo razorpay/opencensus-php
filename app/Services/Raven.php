@@ -78,7 +78,7 @@ class Raven
 
         if ($this->mode === Mode::TEST)
         {
-            $response['sms_id'] = '1000000invoice';
+            $response['sms_id'] = '10000000000sms';
         }
         else
         {

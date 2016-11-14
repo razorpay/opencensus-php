@@ -78,22 +78,8 @@ class Core extends Base\Core
 
     public function fetchStatus(Entity $invoice)
     {
-        // TODO: Some validation here?
-
-        if ($invoice->justCreated() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
-                null,
-                [
-                    'invoice_id'    => $invoice->getId(),
-                    'created_at'    => $invoice->getCreatedAt()
-                ]);
-        }
-
         $paymentId = $invoice->getPaymentId();
 
-        // TODO: Add more validations around this.
         return [
             Entity::STATUS  => $invoice->getStatus(),
             'payment_id'    => $paymentId,

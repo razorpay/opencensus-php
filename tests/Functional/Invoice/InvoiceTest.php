@@ -164,6 +164,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceStatusAfterOneWeek()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $this->fixtures->create('order', ['id' => '100000000order']);

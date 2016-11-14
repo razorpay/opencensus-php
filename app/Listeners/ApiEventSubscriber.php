@@ -123,7 +123,9 @@ class ApiEventSubscriber
     {
         $order = $payment->order;
 
-        $partialPayload = $this->getPaymentPayload($payment);
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
 
         $partialPayload[Constants\Entity::ORDER] = [
             'entity' => $order->toArrayPublic()

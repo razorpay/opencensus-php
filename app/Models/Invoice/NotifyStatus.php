@@ -16,7 +16,6 @@ class NotifyStatus
 
     public static function checkStatus($status)
     {
-        //s($status);
         if (self::isStatusValid($status) === false)
         {
             throw new \InvalidArgumentException('Not a valid status: ' . $status);
