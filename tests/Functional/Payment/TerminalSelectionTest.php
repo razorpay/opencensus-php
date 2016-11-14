@@ -377,6 +377,6 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('ShAmexEduTrmnl', $payment['terminal_id']);
+        $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 }
