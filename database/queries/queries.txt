@@ -1229,10 +1229,7 @@ ALTER TABLE gateway_status_absence ADD comment text DEFAULT NULL AFTER reason_co
 ALTER TABLE gateway_status_absence ADD partial tinyint(4) NOT NULL DEFAULT '0' AFTER scheduled;
 ALTER TABLE gateway_status_absence ADD source varchar(30) AFTER partial;
 ALTER TABLE gateway_status_absence ADD CONSTRAINT `gateway_status_absence_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `terminals` (`id`);
-ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_terminal_id_foreign` (`terminal_id`);
 ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_issuer_index` (`issuer`);
-ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_gateway_index` (`gateway`);
-ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_from_index` (`from`);
 ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_method_index` (`method`);
 
 
