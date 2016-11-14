@@ -226,9 +226,11 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
+            $holdMerchantFunds = ($status === 'P');
+
             $setlHandler = (new Settlement\Handler($setl));
 
-            $setlHandler->process();
+            $setlHandler->process($holdMerchantFunds);
 
             $this->repo->saveOrFail($setl);
 

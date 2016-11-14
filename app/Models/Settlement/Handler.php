@@ -24,7 +24,7 @@ class Handler extends Base\Core
         $this->merchant = $setl->merchant;
     }
 
-    public function process()
+    public function process($holdMerchantFunds)
     {
         if ($this->setl->getStatus() !== Status::FAILED)
         {
@@ -32,7 +32,7 @@ class Handler extends Base\Core
         }
         else
         {
-            $this->processSettlementFailure();
+            $this->processSettlementFailure($holdMerchantFunds);
         }
     }
 
@@ -43,7 +43,7 @@ class Handler extends Base\Core
     /**
      *  creates adjustment and its transaction and sets merchant funds on hold
      */
-    protected function processSettlementFailure()
+    protected function processSettlementFailure($holdMerchantFunds)
     {
         $desc = 'Adjustment for failed settlement';
 
@@ -56,7 +56,8 @@ class Handler extends Base\Core
             $this->repo->saveOrFail($adjTxn);
         }
 
-        $this->holdMerchantFunds();
+        if ($holdMerchantFunds === true)
+            $this->holdMerchantFunds();
 
         $this->sendSettlementFailureNotification();
 
