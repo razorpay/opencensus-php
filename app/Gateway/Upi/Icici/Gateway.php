@@ -28,6 +28,7 @@ class Gateway extends Base\Gateway
 
     protected $map = array(
         Entity::VPA                       => Entity::VPA,
+        Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::RECEIVED                  => Entity::RECEIVED,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
@@ -108,8 +109,14 @@ class Gateway extends Base\Gateway
      */
     protected function getGatewayEntityAttributes(array $input)
     {
+        $vpa = $input['payment']['vpa'];
+
+        // Vpa isnt being validated? Models\Payment\Validator::validateVpa()
+        $pspCode = explode('@', $vpa)[1];
+
         return [
-            Entity::VPA     => $input['payment']['vpa'],
+            Entity::VPA         => $vpa,
+            Entity::PROVIDER    => $pspCode
         ];
     }
 

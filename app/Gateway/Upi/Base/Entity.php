@@ -11,6 +11,7 @@ class Entity extends Base\Entity
     const NAME                  = 'name';
     const AMOUNT                = 'amount';
     const BANK                  = 'bank';
+    const PROVIDER              = 'provider';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
@@ -29,6 +30,7 @@ class Entity extends Base\Entity
         self::ACTION,
         self::AMOUNT,
         self::BANK,
+        self::PROVIDER,
         self::CONTACT,
         self::EMAIL,
         self::NAME,
@@ -44,6 +46,7 @@ class Entity extends Base\Entity
         self::ACTION,
         self::AMOUNT,
         self::BANK,
+        self::PROVIDER,
         self::CONTACT,
         self::EMAIL,
         self::NAME,
@@ -62,6 +65,10 @@ class Entity extends Base\Entity
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setProvider($provider) {
+        $this->setAttribute(self::PROVIDER, $provider);
     }
 
     public function setAmount($amount)
