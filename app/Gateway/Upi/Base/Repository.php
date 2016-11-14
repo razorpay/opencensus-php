@@ -29,12 +29,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchAllForProviderUpdate()
+    public function fetchAllForProviderUpdate($limit = 100)
     {
         return $this->newQuery()
                     ->select(UPI::ID, UPI::VPA)
                     ->whereNull(UPI::PROVIDER)
-                    ->limit(500)
+                    ->limit($limit)
                     ->get();
     }
 

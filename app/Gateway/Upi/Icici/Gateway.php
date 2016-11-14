@@ -102,7 +102,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We only store the VPA because the rest of the fields
+     * We only store the VPA and provider because the rest of the fields
      * are filled by the callback
      * @param  array  $input
      * @return Array

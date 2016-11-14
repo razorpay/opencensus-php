@@ -167,6 +167,7 @@ return [
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
         'vpa'                   => 'shk@hdfc',
+        'provider'              => 'hdfc',
         'entity'                => 'upi',
     ],
 

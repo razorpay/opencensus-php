@@ -14,9 +14,11 @@ class UpiController extends Controller
 
     public function addVpaProvider()
     {
+        $batchSize = 500;
+        
         while (true) 
         {
-            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate();
+            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize);
             
             if (count($recordsToUpdate) === 0)
             {
@@ -32,7 +34,7 @@ class UpiController extends Controller
                 $upiRecord->saveOrFail();
             }
             
-            if (count($recordsToUpdate) < 500)
+            if (count($recordsToUpdate) < $batchSize)
             {
                 break;
             }
