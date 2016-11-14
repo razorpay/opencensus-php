@@ -60,6 +60,8 @@ app.controller('OrgsListCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization added', true);
+          $scope.organizations.push(data.data);
+          $scope.count = $scope.organizations.length;
         }
         else {
           $scope.alerts.resetAlerts();
