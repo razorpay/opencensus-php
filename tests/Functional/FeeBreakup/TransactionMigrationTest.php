@@ -47,6 +47,8 @@ class TransactionMigrationTest extends TestCase
 
         $this->fixtures->base->editEntity('payment', $payment['id'], ['captured_at' => 1433096000]);
 
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['authorized_at' => 1433096000]);
+
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22472]);
 
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['service_tax' => 2472]);
@@ -71,6 +73,8 @@ class TransactionMigrationTest extends TestCase
 
         $this->fixtures->base->editEntity('payment', $payment['id'], ['captured_at' => 1433099000]);
 
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['authorized_at' => 1433099000]);
+
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22800]);
 
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['service_tax' => 2800]);
@@ -94,6 +98,8 @@ class TransactionMigrationTest extends TestCase
         $transaction = $payment->transaction;
 
         $this->fixtures->base->editEntity('payment', $payment['id'], ['captured_at' => 1447525900]);
+
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['authorized_at' => 1447525900]);
 
         $this->fixtures->base->editEntity('transaction', $transaction['id'], ['fee' => 22900]);
 

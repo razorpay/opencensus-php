@@ -62,10 +62,9 @@ class Validator extends Base\Validator
 
     protected function validateWeeklyAnchor($input)
     {
-        $weekend = [Carbon::SATURDAY, Carbon::SUNDAY];
-
         if ((isset($input[Entity::ANCHOR]) === true) and
-            (in_array(intval($input[Entity::ANCHOR]), $weekend, true) === true))
+            ((intval($input[Entity::ANCHOR]) < Carbon::MONDAY) or
+             (intval($input[Entity::ANCHOR]) > Carbon::FRIDAY)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);
