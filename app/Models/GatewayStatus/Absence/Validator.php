@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::TO              => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
+        Entity::SOURCE          => 'required|string|max:30|custom',
     ];
 
     protected static $editRules = [
@@ -65,6 +66,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Reason Code: '. $reasonCode . ' is not valid'
+            );
+        }
+    }
+
+    public function validateSource($attribute, $source)
+    {
+        if (ReasonCode::isValidSource($source) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Source : '. $source . ' is not valid'
             );
         }
     }

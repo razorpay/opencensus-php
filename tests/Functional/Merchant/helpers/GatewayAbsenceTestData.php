@@ -13,6 +13,7 @@ return [
                 'method' => 'netbanking',
                 'issuer' => 'HDFC',
                 'comment' => 'Test Reason',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -33,7 +34,8 @@ return [
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'partial' => true,
                 'method' => 'netbanking',
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -50,7 +52,8 @@ return [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'netbanking'
+                'method' => 'netbanking',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -74,7 +77,8 @@ return [
                 'gateway' => 'UNKNOWN_GATEWAY',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'netbanking',
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -100,6 +104,7 @@ return [
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'issuer' => 'SOME BANK',
                 'method' => 'netbanking',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -125,6 +130,7 @@ return [
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'issuer' => 'ICIC',
                 'method' => 'netbanking',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -149,7 +155,8 @@ return [
                 'gateway' => 'netbanking_hdfc',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'netbanking',
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -173,7 +180,8 @@ return [
                 'gateway' => 'netbanking_hdfc',
                 'reason_code'  => 'SOME CODE',
                 'method' => 'netbanking',
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -210,7 +218,8 @@ return [
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'netbanking',
                 'issuer' => 'HDFC',
-                'comment' => 'Test Reason'
+                'comment' => 'Test Reason',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -227,7 +236,8 @@ return [
                 'gateway' => 'axis_migs',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'card',
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -245,6 +255,7 @@ return [
                 'gateway' => 'axis_migs',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'card',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -261,7 +272,8 @@ return [
                 'gateway' => 'axis_migs',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'card',
-                'network' => 'DICL'
+                'network' => 'DICL',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -285,7 +297,8 @@ return [
                 'gateway' => 'axis_migs',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'card',
-                'network' => 'XYZ'
+                'network' => 'XYZ',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -310,7 +323,8 @@ return [
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'card',
                 'network' => 'MC',
-                'card_type' => 'xyz'
+                'card_type' => 'xyz',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -337,7 +351,8 @@ return [
                 'method' => 'card',
                 'issuer' => 'HDFC',
                 'card_type' => 'credit',
-                'network' => 'VISA'
+                'network' => 'VISA',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -357,6 +372,7 @@ return [
                 'gateway' => 'wallet_olamoney',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'wallet',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -374,6 +390,7 @@ return [
                 'gateway' => 'wallet_dummywallet',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'method' => 'wallet',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'

@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const TO                            = 'to';
     const TERMINAL_ID                   = 'terminal_id';
     const REASON_CODE                   = 'reason_code';
+    const SOURCE                        = 'source';
     const COMMENT                       = 'comment';
     const PARTIAL                       = 'partial';
     const SCHEDULED                     = 'scheduled';
@@ -34,7 +35,8 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
-        self::TERMINAL_ID
+        self::TERMINAL_ID,
+        self::SOURCE
     ];
 
     protected $public = [

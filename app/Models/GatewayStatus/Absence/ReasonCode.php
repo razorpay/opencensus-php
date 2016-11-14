@@ -22,4 +22,14 @@ class ReasonCode
     {
         return defined('self::' . strtoupper($code));
     }
+
+    const SOURCE_STATUSCAKE  = 'STATUSCAKE';
+    const SOURCE_BILLDESK    = 'BILLDESK';
+    const SOURCE_OTHER       = 'OTHER';
+
+    public static function isValidSource($source)
+    {
+        return defined('self::' . strtoupper($source));
+    }
+
 }

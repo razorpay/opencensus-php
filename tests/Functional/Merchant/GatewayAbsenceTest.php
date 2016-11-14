@@ -171,7 +171,8 @@ class GatewayAbsenceTest extends TestCase
                 'from'  => time(),
                 'method' => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -193,7 +194,8 @@ class GatewayAbsenceTest extends TestCase
                 'from'  => time(),
                 'method' => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC'
+                'issuer' => 'HDFC',
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -375,7 +377,8 @@ class GatewayAbsenceTest extends TestCase
             'issuer'  => $bank,
             'from'  => $from,
             'to' => $to,
-            'method' => $method
+            'method' => $method,
+            'source' => 'other'
         ];
 
         if (empty($terminalId) === false)
@@ -414,6 +417,7 @@ class GatewayAbsenceTest extends TestCase
                 'issuer'  => $bank,
                 'from'  => $from,
                 'method' => $method,
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -437,7 +441,8 @@ class GatewayAbsenceTest extends TestCase
                 'from'  => $from,
                 'method' => $method,
                 'card_type' => $cardType,
-                'network' => $network
+                'network' => $network,
+                'source' => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
