@@ -135,6 +135,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXTENSION, $extension);
     }
 
+    public function setMime($mime)
+    {
+        return $this->setAttribute(self::MIME, $mime);
+    }
+
     public function setMerchantId($merchantId)
     {
         return $this->setAttribute(self::MERCHANT_ID, $merchantId);

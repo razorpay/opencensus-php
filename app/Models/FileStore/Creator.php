@@ -192,7 +192,7 @@ class Creator extends Base\Core
         $fileDetails = [
             'name'      => $this->file->getName(),
             'path'      => $this->filePath,
-            'extension' => $this->file->getExtension(),
+            'extension'      => $this->file->getMime(),
             'metadata'  => [],
         ];
 
