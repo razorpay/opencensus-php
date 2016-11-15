@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 return [
     'testPayment' => [
@@ -166,8 +167,36 @@ return [
         'contact'               => null,
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
-        'vpa'                   => 'shk@hdfc',
-        'provider'              => 'hdfc',
+        'vpa'                   => 'shk@hdfcbank',
+        'provider'              => ProviderCode::getBankCode('hdfcbank'),
+        'entity'                => 'upi',
+    ],
+    
+    'testUpiEntityMigrationUnknownProviderCode' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'bank'                  => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '92',
+        'vpa'                   => 'handle@unknownprovider',
+        'provider'              => ProviderCode::getBankCode('unknownprovider'),
+        'entity'                => 'upi',
+    ],
+    
+    'testUpiEntityMigrationKnownProviderCode' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'bank'                  => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '92',
+        'vpa'                   => 'handle@hdfcbank',
+        'provider'              => ProviderCode::getBankCode('hdfcbank'),
         'entity'                => 'upi',
     ],
 

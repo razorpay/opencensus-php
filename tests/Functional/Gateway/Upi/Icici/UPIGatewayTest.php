@@ -282,6 +282,54 @@ EOT;
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');
         $this->assertArrayHasKey('gateway_payment_id', $upi);
     }
+    
+    public function testUpiEntityMigrationForUnknownProviderCode()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        
+        $payment['vpa'] = 'handle@unknownprovider';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+        
+        $request = [
+            'url'       => '/gateway/upi_fill_provider',
+            'method'    => 'put',
+        ];
+        
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $upi = $this->getLastEntity('upi', true);
+        
+        $this->assertTestResponse($upi, 'testUpiEntityMigrationUnknownProviderCode');
+    }
+    
+    public function testUpiEntityMigrationForKnownProviderCode()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        
+        $payment['vpa'] = 'handle@hdfcbank';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+        
+        $request = [
+            'url'       => '/gateway/upi_fill_provider',
+            'method'    => 'put',
+        ];
+        
+        $this->ba->appAuth();
+        
+        $this->makeRequestAndGetContent($request);
+
+        $upi = $this->getLastEntity('upi', true);
+        
+        $this->assertTestResponse($upi, 'testUpiEntityMigrationKnownProviderCode');
+    }
 
     public function testRefundExcelFile()
     {
