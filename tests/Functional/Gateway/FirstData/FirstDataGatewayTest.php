@@ -134,6 +134,17 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
+    public function testNoApprovalCodeInAuthResponse()
+    {
+        $this->removeApprovalCodeInAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testFailedAuthUnknownError()
     {
         $this->getUnknownErrorInAuth();

@@ -310,6 +310,7 @@ class TraceCode
     const TRANSACTION_MIGRATION_TAX_MISTMATCH       = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
     const TRANSACTION_MIGRATION_FEE_MISTMATCH       = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
     const PRICING_RULE_MISTMATCH                    = 'PRICING_RULE_MISTMATCH';
+    const PRICING_RULE_DOES_NOT_EXISTS              = 'PRICING_RULE_DOES_NOT_EXISTS';
 
     const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
     const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
@@ -453,6 +454,7 @@ class TraceCode
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
         self::PRICING_RULE_MISTMATCH                    => 'Mismatch in the pricing rule during migration',
+        self::PRICING_RULE_DOES_NOT_EXISTS              => 'Pricing Plan does not exist for this merchant',
 
         self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
