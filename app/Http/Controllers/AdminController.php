@@ -259,6 +259,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putRole(string $id, array $input)
+    {
+        $data = (new Admin\Role\Service)->putRole($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------

@@ -3,13 +3,35 @@
 namespace RZP\Models\Admin\Role;
 
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Core;
+    }
+
     public function createRole($orgId, $input)
     {
-        $role = (new Core)->create($orgId, $input);
+        $orgId = Org::verifyIdAndStripSign($orgId);
+
+        if (isset($input['permissions']) === true)
+        {
+            $permIds = [];
+
+            foreach ($input['permissions'] as $permId)
+            {
+                $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
+            }
+
+            $input['permissions'] = $permIds;
+        }
+
+        $role = $this->core->create($orgId, $input);
 
         return $role->toArrayPublic();
     }
@@ -44,5 +66,24 @@ class Service extends Base\Service
         $this->repo->deleteOrFail($role);
 
         return ['success' => true];
+    }
+
+    public function putRole(string $orgId, string $id, array $input)
+    {
+        $orgId = Org::verifyIdAndStripSign($orgId);
+        $id = Entity::verifyIdAndStripSign($id);
+
+        $permIds = [];
+
+        foreach ($input['permissions'] as $permId)
+        {
+            $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
+        }
+
+        $input['permissions'] = $permIds;
+
+        $role = $this->core->edit($orgId, $id, $input);
+
+        return $role;
     }
 }

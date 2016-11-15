@@ -38,6 +38,8 @@ class Service extends Base\Service
 
     public function deleteOrg(string $id)
     {
+        $id = Entity::verifyIdAndStripSign($id);
+
         return $this->core->delete($id);
     }
 

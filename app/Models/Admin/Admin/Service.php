@@ -262,25 +262,7 @@ class Service extends Base\Service
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
-        $admin->edit($input);
-
-        if (isset($input['password']) === true)
-        {
-            (new AuthPolicy\Service)
-                ->validate($admin, $input['password']);
-
-            $admin->setOldPasswords();
-
-            if ($admin->getLastLoginAt() === null)
-            {
-                $admin->updateLastLoginAt();
-            }
-        }
-
-        $this->repo->saveOrFail($admin);
+        $admin = $this->core->edit($orgId, $adminId);
 
         return $admin->toArrayPublic();
     }

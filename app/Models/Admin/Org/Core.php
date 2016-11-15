@@ -14,4 +14,13 @@ class Core extends Base\Core
 
         return $org;
     }
+
+    public function delete($id)
+    {
+        $org = $this->repo->org->findOrFail($id);
+
+        $this->repo->deleteOrFail($org);
+
+        return ['success' => true];
+    }
 }

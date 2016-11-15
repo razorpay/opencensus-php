@@ -10,8 +10,6 @@ class Core extends Base\Core
 {
     public function create($orgId, array $input)
     {
-        Org::verifyIdAndStripSign($orgId);
-
         $role = (new Entity)->build($input);
 
         $role->getValidator()->validateCreateInput($orgId, $input);
@@ -24,17 +22,7 @@ class Core extends Base\Core
 
         if (isset($input['permissions']) === true)
         {
-            $permIds = $input['permissions'];
-
-            // Perm IDs without sign
-            $newPermIds = [];
-
-            foreach ($permIds as $permId)
-            {
-                $newPermIds[] = Permission\Entity::verifyIdAndStripSign($permId);
-            }
-
-            $perms = $this->repo->permission->retrieveByIds($newPermIds);
+            $perms = $this->repo->permission->retrieveByIds($input['permissions']);
 
             foreach ($perms as $perm)
             {
@@ -45,6 +33,24 @@ class Core extends Base\Core
         }
 
         $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $role->getId());
+
+        return $role;
+    }
+
+    public function edit(string $orgId, string $roleId, array $input)
+    {
+        $role = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
+
+        if (isset($input['permissions']) === true)
+        {
+            $role->permissions()->sync($input['permissions']);
+
+            unset($input['permissions']);
+        }
+
+        $role->edit($input);
+
+        $this->repo->saveOrFail($role);
 
         return $role;
     }
