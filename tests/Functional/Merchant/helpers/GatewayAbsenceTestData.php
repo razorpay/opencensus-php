@@ -13,7 +13,7 @@ return [
                 'method' => 'netbanking',
                 'issuer' => 'HDFC',
                 'comment' => 'Test Reason',
-                'source' => 'other'
+                'source' => 'statuscake'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'

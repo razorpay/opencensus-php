@@ -27,9 +27,15 @@ class ReasonCode
     const SOURCE_BILLDESK    = 'BILLDESK';
     const SOURCE_OTHER       = 'OTHER';
 
+    protected static $sources = [
+        self::SOURCE_STATUSCAKE,
+        self::SOURCE_BILLDESK,
+        self::SOURCE_OTHER
+    ];
+
     public static function isValidSource($source)
     {
-        return defined('self::' . strtoupper($source));
+        return in_array(strtoupper($source), self::$sources);
     }
 
 }
