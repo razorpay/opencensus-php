@@ -162,14 +162,18 @@ class Notifier extends Base\Core
             return false;
         }
 
+        $merchantName = $this->invoice->merchant->getBillingLabelElseName();
+
         // TODO: Figure out a proper subject name
-        $subject = 'Razorpay | Invoice from ' . $this->invoice->merchant->getBillingLabelElseName();
+        $subject = 'Razorpay | Invoice from ' . $merchantName;
 
         $data = [
-            'to_email'      => $this->invoice->getCustomerEmail(),
+            'email'         => $this->invoice->getCustomerEmail(),
             'date'          => date('d-M-Y H:m:s T'),
             'subject'       => $subject,
-            'invoice_link'  => $this->invoice->getShortUrl(),
+            'link'          => $this->invoice->getShortUrl(),
+            'name'          => $merchantName,
+            'amount'        => $this->invoice->getAmount() / 100,
         ];
 
         $this->trace->info(
@@ -187,7 +191,7 @@ class Notifier extends Base\Core
 
             $message->subject($data['subject']);
 
-            $message->to($data['to_email']);
+            $message->to($data['email']);
         });
 
         return true;
