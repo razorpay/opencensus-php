@@ -2359,8 +2359,11 @@ class Service extends Base\Service
     {
         $formData = json_encode($input);
 
+        $id = str_random(14);
+
         $leadId = \DB::table('admin_leads')->insertGetId(
             [
+                'id'         => $id,
                 'admin_id'   => $admin->id,
                 'email'      => $input['contact_email'],
                 'token'      => str_random(40),
@@ -2372,7 +2375,7 @@ class Service extends Base\Service
 
         $lead = \DB::table('admin_leads')
                     ->select('*')
-                    ->where('id', $leadId)
+                    ->where('id', $id)
                     ->first();
 
         return $lead;
@@ -2385,6 +2388,17 @@ class Service extends Base\Service
         $mailer
             ->sendMerchantInvitationEmail($invitation, $admin->toArray())
             ->queueAndDeliver();
+    }
+
+    public function getAdminLeads()
+    {
+        $admin = Auth::guard('api')->user();
+
+        $leads = \DB::table('admin_leads')
+                    ->where('admin_id', $admin->id)
+                    ->get();
+
+        return [ null, $leads ];
     }
 
     public function getAdminData($admin)
