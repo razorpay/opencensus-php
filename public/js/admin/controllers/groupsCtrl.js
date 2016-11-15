@@ -71,6 +71,26 @@ app.controller('GroupsCtrl', [
       });
     };
 
+    $scope.deleteGroup = function(id) {
+      var request = $http.delete('/admin/generic', {
+        params: {
+          route_name: 'group_delete',
+
+          url_params: {
+            '{groupId}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        /* TODO: change this */
+        if (data.success) {
+          $scope.groups = $scope.groups.filter(function (x) {
+            return x.id !== id
+          });
+          $scope.count = $scope.groups.length;
+        }
+      });
+    };
   }
 ]).controller('createGroupCtrl', [
   '$scope',

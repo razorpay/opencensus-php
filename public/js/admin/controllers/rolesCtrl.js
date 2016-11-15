@@ -76,6 +76,27 @@ app.controller('RolesCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.deleteRole = function(id) {
+      var request = $http.delete('/admin/generic', {
+        params: {
+          route_name: 'role_delete',
+
+          url_params: {
+            '{roleId}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        /* TODO: change this */
+        if (data.success) {
+          $scope.roles = $scope.roles.filter(function (x) {
+            return x.id !== id
+          });
+          $scope.count = $scope.roles.length;
+        }
+      });
+    };
   }
 ]).controller('createRoleCtrl', [
   '$scope',

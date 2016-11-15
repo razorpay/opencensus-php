@@ -29,6 +29,7 @@
               <th>Role Id</th>
               <th>Name</th>
               <th>Description</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -36,7 +37,14 @@
               <td>{{row.id}}</td>
               <td>{{row.name}}</td>
               <td>{{row.description}}</td>
-  <!--        <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td> -->
+              <td>
+                <a class="btn-role-delete" ng-confirm-click="Are you sure you want to delete this role?" ng-click="deleteRole(row.id)">
+                  <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
+                </a>
+                <a tooltip="Edit Role">
+                  <i class="fa fa-pencil-square"></i>
+                </a>
+              </td>
             </tr>
             <tr ng-show="roles.length === 0">
               <td colspan="7">No Roles</td>

@@ -148,7 +148,26 @@ app.controller('OrgsListCtrl', [
       });
     };
 
-    // $scoe.editOrgById(id);
+    $scope.deleteOrg = function(id) {
+      var request = $http.delete('/admin/generic', {
+        params: {
+          route_name: 'org_delete',
+
+          url_params: {
+            '{id}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        /* TODO: change this */
+        if (data.success) {
+          $scope.organizations = $scope.organizations.filter(function (x) {
+            return x.id !== id
+          });
+          $scope.count = $scope.organizations.length;
+        }
+      });
+    };
   }
 ]).controller('addOrgModalCtrl', [
   '$scope',

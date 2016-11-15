@@ -27,6 +27,7 @@
               <th>Group Id</th>
               <th>Name</th>
               <th>Description</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -34,7 +35,14 @@
               <td><a ui-sref="app.groups.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
               <td>{{row.name}}</td>
               <td>{{row.description}}</td>
-  <!--        <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td> -->
+              <td>
+                <a class="btn-group-delete" ng-confirm-click="Are you sure you want to delete this group?" ng-click="deleteGroup(row.id)">
+                  <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
+                </a>
+                <a tooltip="Edit Group">
+                  <i class="fa fa-pencil-square"></i>
+                </a>
+              </td>
             </tr>
             <tr ng-show="groups.length == 0">
               <td colspan="7">No Groups</td>
