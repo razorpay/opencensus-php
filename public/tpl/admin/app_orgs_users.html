@@ -29,29 +29,29 @@
       <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
-            <th>Employee Code</th>
+            <th>ID</th>
             <th>Name</th>
             <th>Username</th>
             <th>Email</th>
-            <th data-hide="phone,tablet">Department Code</th>
-            <th data-hide="phone,tablet">Branch Code</th>
-            <th data-hide="phone,tablet">Location Code</th>
-            <th data-hide="phone,tablet">Superviser Code</th>
-            <th data-hide="phone,tablet">Locked</th>
-            <th data-hide="phone,tablet">Disabled</th>
+            <th>Employee / Department / Branch / Location / Supervisor Code</th>
+            <th>Locked</th>
+            <th>Disabled</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in users">
-            <td>{{row.employee_code}}</td>
+            <td>{{row.id}}</td>
             <td>{{row.name}}</td>
             <td>{{row.username}}</td>
             <td>{{row.email}}</td>
-            <td>{{row.department_code}}</td>
-            <td>{{row.branch_code}}</td>
-            <td>{{row.location_code}}</td>
-            <td>{{row.supervisor_code}}</td>
+            <td>
+              {{row.employee_code}} /
+              {{row.department_code}} /
+              {{row.branch_code}} /
+              {{row.location_code}} /
+              {{row.supervisor_code}}
+            </td>
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
             </td>
