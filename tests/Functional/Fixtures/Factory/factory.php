@@ -361,7 +361,6 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'supervisor_code'    => 'shk',
     'location_code'      => '560030',
     'department_code'    => 'tech',
-    'deleted_at'         => time(),
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [

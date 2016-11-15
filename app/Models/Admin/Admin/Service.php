@@ -262,7 +262,7 @@ class Service extends Base\Service
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);
 
-        $admin = $this->core->edit($orgId, $adminId);
+        $admin = $this->core->edit($orgId, $adminId, $input);
 
         return $admin->toArrayPublic();
     }

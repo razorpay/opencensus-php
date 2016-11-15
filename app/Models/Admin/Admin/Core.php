@@ -94,7 +94,7 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function edit(string $orgId, string $adminId)
+    public function edit(string $orgId, string $adminId, array $input)
     {
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
