@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Admin\Group;
 
+use illuminate\database\eloquent\softdeletes;
+
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const ORG_ID           = 'org_id';
