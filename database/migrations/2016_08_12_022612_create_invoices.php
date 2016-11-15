@@ -74,6 +74,12 @@ class CreateInvoices extends Migration
             $table->tinyInteger(Entity::VIEW_LESS)
                   ->default(1);
 
+            $table->string(Entity::TYPE, 16)
+                  ->nullable();
+
+            $table->string(Entity::SOURCE, 32)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 

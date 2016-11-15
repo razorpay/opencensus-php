@@ -22,11 +22,23 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'required|custom',
         Entity::CURRENCY            => 'required|in:INR',
     ];
+
+    public function validateSource($attribute, $value)
+    {
+        Source::checkSource($value);
+    }
+
+    public function validateType($attribute, $value)
+    {
+        Type::checkType($value);
+    }
 
     public function validateLineItems($attribute, $value)
     {

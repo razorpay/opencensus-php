@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
 
+    const SOURCE                = 'source';
+    const TYPE                  = 'type';
+
     // ---------------------- Input Keys -------------------------------------
 
     // Input key for sending line item details
@@ -108,6 +111,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::VIEW_LESS,
         self::CURRENCY,
+        self::SOURCE,
+        self::TYPE,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -138,6 +143,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::SOURCE,
+        self::TYPE,
         self::AMOUNT,
         self::CREATED_AT,
         self::UPDATED_AT
