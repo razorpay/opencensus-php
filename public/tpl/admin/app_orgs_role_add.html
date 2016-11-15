@@ -7,7 +7,7 @@
 <div class="wrapper-md">
   <div class="panel panel-default" ng-controller="OrgsAddRolesCtrl">
     <div class="panel-heading">
-      Add a new Role
+      {{ role_id ? 'Edit ' + role_id : 'Add a new Role' }}
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -42,7 +42,9 @@
               </thead>
               <tbody>
                 <tr ng-repeat="(key, row) in permissions">
-                  <td><input type="checkbox" name='permissions[]' ng-model='selected_permissions[row.id]' value="{{row.id}}"></td>
+                  <td>
+                    <input type="checkbox" name='permissions[]' ng-model="selected_permissions[row.id]" ng-checked="selected_permissions[row.id]">
+                  </td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
                 </tr>
