@@ -30,21 +30,21 @@ app.controller('GroupsCtrl', [
 
     $scope.getGroups();
 
-    $scope.openCreateGroupModal = function () {
-      var group = {};
-      var modalInstance = $modal.open({
-        templateUrl: 'createGroupModal.html',
-        controller: 'createGroupCtrl',
-        resolve: {
-          current: function () {
-            return group;
-          }
-        }
-      });
-      modalInstance.result.then(function (group) {
-        $scope.addGroup(group);
-      }, $.noop);
-    };
+    // $scope.openCreateGroupModal = function () {
+    //   var group = {};
+    //   var modalInstance = $modal.open({
+    //     templateUrl: 'createGroupModal.html',
+    //     controller: 'createGroupCtrl',
+    //     resolve: {
+    //       current: function () {
+    //         return group;
+    //       }
+    //     }
+    //   });
+    //   modalInstance.result.then(function (group) {
+    //     $scope.addGroup(group);
+    //   }, $.noop);
+    // };
 
     $scope.addGroup = function (group) {
       var request = $http({

@@ -39,7 +39,7 @@
                 <a class="btn-group-delete" ng-confirm-click="Are you sure you want to delete this group?" ng-click="deleteGroup(row.id)">
                   <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
                 </a>
-                <a tooltip="Edit Group">
+                <a tooltip="Edit Group" ui-sref="app.groups.edit({ id: row.id })">
                   <i class="fa fa-pencil-square"></i>
                 </a>
               </td>

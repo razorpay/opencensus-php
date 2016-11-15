@@ -5,15 +5,50 @@ app.controller('AddGroupCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'organization',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
+  '$stateParams',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
 
     $scope.groups = organization.fetchGroups();
-    $scope.users = organization.fetchUsers();
+    // $scope.users = organization.fetchUsers();
     $scope.group = {};
-    $scope.selected_groups = [];
     $scope.selected_users = [];
     $scope.select_all_groups = false;
     $scope.select_all_users = false;
+    $scope.selected_groups = {};
+
+    var group_id = $stateParams.id;
+
+    if (group_id) {
+      // Get group details
+      $scope.group_id = group_id;
+
+      var request = $http({
+        url: '/admin/generic',
+
+        method: 'GET',
+
+        params: {
+          route_name: 'group_get',
+
+          url_params: {
+            '{groupId}' : group_id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.group = {
+            name: data.data.name,
+            description: data.data.description,
+          };
+
+          data.data.groups.forEach(function (group) {
+            $scope.selected_groups[group.id] = true;
+          });
+        }
+      });
+    }
 
 
     /**
@@ -47,43 +82,76 @@ app.controller('AddGroupCtrl', [
     $scope.save = function (group) {
       var body = group;
 
-      body.sub_groups = [];
+      body.groups = [];
       body.admins = [];
 
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
 
           if ($scope.selected_groups[key]) {
-            body.sub_groups.push(key);
+            body.groups.push(key);
           }
 
         }
       }
 
-      for (var key in $scope.selected_users) {
-        if ($scope.selected_users.hasOwnProperty(key)) {
+      // for (var key in $scope.selected_users) {
+      //   if ($scope.selected_users.hasOwnProperty(key)) {
 
-          if ($scope.selected_users[key]) {
-            body.admins.push(key);
+      //     if ($scope.selected_users[key]) {
+      //       body.admins.push(key);
+      //     }
+
+      //   }
+      // }
+
+      // var request = $http({
+      //   url: '/admin/generic',
+      //   method: 'POST',
+      //   params: {
+      //     route_name: 'group_create'
+      //   },
+      //   data: {
+      //     body: body
+      //   }
+      // });
+
+      if ($scope.group_id) {
+        // Edit
+
+        var request = $http({
+          url: '/admin/generic',
+          method: 'PUT',
+          params: {
+            route_name: 'group_edit',
+
+            url_params: {
+              '{groupId}' : $scope.group_id
+            }
+          },
+          data: {
+            body: body
           }
-
-        }
+        });
       }
+      else {
+        // Create
 
-      var request = $http({
-        url: '/admin/generic',
-        method: 'POST',
-        params: {
-          route_name: 'group_create'
-        },
-        data: {
-          body: body
-        }
-      });
+        var request = $http({
+          url: '/admin/generic',
+          method: 'POST',
+          params: {
+            route_name: 'group_create'
+          },
+          data: {
+            body: body
+          }
+        });
+      }
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Group added', true);
+          $scope.alerts.addAlert('success', 'Group saved', true);
         } else {
           $scope.alerts.resetAlerts();
 
