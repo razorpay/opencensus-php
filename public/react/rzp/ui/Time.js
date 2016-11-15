@@ -1,7 +1,8 @@
 import Time from 'react-time'
+import moment from 'moment'
 
-export default ({ value, format='MMM DD, YYYY hh:mm:ss A'}) => {
+export default ({ value, format='DD MMM YYYY'}) => {
   return (
-    <Time value={value} format={format} />
+    <Time value={moment.unix(value)} format={format} />
   )
 }

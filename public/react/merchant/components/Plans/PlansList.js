@@ -6,7 +6,7 @@ const PlansListItem = (props) => {
   return (
     <tr>
       <td>{plan.name}</td>
-      <td>{plan.amount}</td>
+      <td class='text-right'>{plan.amount}</td>
       <td>{plan.interval_count} {plan.interval}</td>
       <td class='row-action'>
         <div class='btn-group'>
@@ -52,7 +52,7 @@ export default ({ plans, isLoading, onEdit, onDelete }) => {
         <thead>
           <tr>
             <th>Plan Name</th>
-            <th>Plan Amount</th>
+            <th class='text-right'>Plan Amount (INR)</th>
             <th>Bill Every</th>
             <th></th>
           </tr>

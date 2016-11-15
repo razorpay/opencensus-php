@@ -47,8 +47,8 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
   }
 
   return (
-    <div className='table-responsive'>
-      <table className='table table-hover'>
+    <div class='table-responsive'>
+      <table class='table table-hover'>
         <thead>
           <tr>
             <th>Customer Name</th>

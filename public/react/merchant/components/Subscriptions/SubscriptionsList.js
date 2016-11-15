@@ -13,13 +13,13 @@ const SubscriptionListItem = ({ subscription, plans }) => {
         <SubscriptionStatus status={subscription.status} />
       </td>
       <td>{subscribedPlan.name}</td>
-      <td>₹ {subscription.amount}</td>
       <td>
         <Time value={subscription.processed_at} />
       </td>
       <td>
         <Time value={subscription.charge_at} />
       </td>
+      <td class='text-right'>{subscription.amount}</td>
     </tr>
   )
 }
@@ -42,16 +42,16 @@ export default ({ subscriptions, plans, isLoading }) => {
   }
 
   return (
-    <div className='table-responsive'>
-      <table className='table'>
+    <div class='table-responsive'>
+      <table class='table'>
         <thead>
           <tr>
             <th>Customer Name</th>
             <th>Status</th>
             <th>Plan Name</th>
-            <th>Amount</th>
             <th>Last billing date</th>
             <th>Next billing date</th>
+            <th class='text-right'>Amount (INR)</th>
           </tr>
         </thead>
         <tbody>

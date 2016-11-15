@@ -1,9 +1,9 @@
 import { titleCase } from 'rzp/utils/rzp-utils'
 
 const subscriptionsStatusMap = {
+  created: 'text-muted',
   active: 'text-success',
-  failed: 'text-danger',
-  created: 'text-info'
+  failed: 'text-danger'
 }
 
 export default ({ status }) => (

@@ -7,7 +7,7 @@ const ItemsListItem = (props) => {
     <tr>
       <td>{item.name}</td>
       <td>{item.description}</td>
-      <td>{item.rate}</td>
+      <td class='text-right'>{item.rate}</td>
       <td class='row-action'>
         <div class='btn-group'>
           <button
@@ -53,7 +53,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
           <tr>
             <th>Item Name</th>
             <th>Description</th>
-            <th>Rate</th>
+            <th class='text-right'>Amount (INR)</th>
             <th></th>
           </tr>
         </thead>
