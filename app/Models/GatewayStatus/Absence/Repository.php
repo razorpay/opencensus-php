@@ -18,10 +18,20 @@ class Repository extends Base\Repository
         Entity::PARTIAL        => 'sometimes|bool',
     );
 
-    public function fetchAbsent($input)
+
+    /**
+     * We are using a custom fetch function here since we do not want to override fetch function.
+     * @param array $input
+     * @return mixed
+     */
+    public function fetchAbsent(array $input)
     {
         $query = $this->newQuery();
 
+        // The default value for Entity::TO is null. This is because we do not necessarily know
+        // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
+        // setting the $to value to $input['to'] if available or $input['from']. The essential
+        // idea is to fetch the list of gateways/issuers at the current point in time.
         $to = (isset($input[Entity::TO]) === true) ? $input[Entity::TO] : null;
 
         if ((empty($to) === true) and (isset($input[Entity::FROM])))
