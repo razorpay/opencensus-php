@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 
 class Service extends Base\Service
