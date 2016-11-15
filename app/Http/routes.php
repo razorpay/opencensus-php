@@ -71,6 +71,8 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
     Route::get('/bank_account', 'MerchantController@getBankAccount');
 
+    Route::get('/{mode}/credits', 'MerchantController@getCreditsLog');
+
     // Invitation and Team Support
     Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
     // Shown in profile page

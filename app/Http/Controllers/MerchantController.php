@@ -381,4 +381,19 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    /**
+     * Fetches Merchant Credits Log
+     * @return array array containing all credits
+     */
+    public function getCreditsLog($mode)
+    {
+        $this->checkMode($mode);
+
+        $id = Auth::user()->getCurrentMerchantId();
+
+        $data = (new Merchant\Service)->getCreditsLog($id, $mode);
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }

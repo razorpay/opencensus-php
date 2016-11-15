@@ -763,4 +763,29 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    /**
+     * Fetches merchant credits
+     * Uses Proxy Auth on the API
+     *
+     * @param  string $merchantId Merchant Id
+     * @param  string $mode live|test
+     * @return array contains all credits of merchant
+     */
+    public function getCreditsLog($merchantId, $mode)
+    {
+        try
+        {
+            $this->setApiCredentials($merchantId, $mode);
+            return $this->api->merchant->getMerchantCreditLogs()->toArray();
+        }
+
+        catch (BadRequestError $e)
+        {
+            return [
+                'id'        =>  $merchantId,
+                'credits'   =>  []
+            ];
+        }
+    }
 }
