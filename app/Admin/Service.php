@@ -11,6 +11,7 @@ use App\Transaction;
 use App\User;
 use App\Mailers\MiscMailer;
 use App\Session as SessionTable;
+use App\Providers\ApiGuard;
 
 use Auth;
 use Config;
@@ -2330,9 +2331,9 @@ class Service extends Base\Service
         $errors = [];
         $data = null;
 
-        $admin = Auth::guard('admin')->user();
+        $admin = Auth::guard('api');
 
-        if ($admin->email === $input['contact_email'])
+        if ($admin->user()->email === $input['contact_email'])
         {
             $errors[] = static::SELF_INVITE_NOT_ALLOWED;
         }
@@ -2345,7 +2346,7 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    protected function createInviteAndSendEmail(Admin\Entity $admin, $input)
+    protected function createInviteAndSendEmail(ApiGuard $admin, $input)
     {
         // This only creates a new invitation entity
         $invitation = $admin->inviteMerchantThroughEmail($input);
@@ -2358,7 +2359,7 @@ class Service extends Base\Service
         $mailer = new MiscMailer();
 
         $mailer
-            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+            ->sendMerchantInvitationEmail($invitation, $admin->user()->toArray())
             ->queueAndDeliver();
     }
 

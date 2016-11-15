@@ -4,6 +4,7 @@ namespace App\Generic;
 
 use App\Base;
 use App\Admin;
+use App\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -32,6 +33,22 @@ class Service extends Base\Service
         $input['file'] = null;
 
         $autoBuildQuery = false;
+
+        $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
+
+        return $request->send();
+    }
+
+    public function makeRawApiCallInternal($input, $path)
+    {
+        $input['mode'] = 'live';
+
+        $input['auth'] = 'internal'; // app auth
+
+        $input['file'] = null;
+
+        $autoBuildQuery = false;
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, $input);
 
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
 

@@ -8,6 +8,7 @@ use App\Base;
 use App\Merchant;
 use App\User;
 use App\Invitation;
+use App\AdminLead;
 use App\Mailers\MiscMailer;
 
 class Service extends Base\Service
@@ -217,6 +218,10 @@ class Service extends Base\Service
         $error = array();
 
         $invitation = (new Invitation\Entity)->where('token', $invitationToken)->first();
+        if ($invitation === null)
+        {
+            $invitation = (new AdminLead\Entity)->where('token', $invitationToken)->first();
+        }
 
         if ($invitation)
         {
