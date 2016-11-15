@@ -38,7 +38,7 @@ app.controller('AddGroupCtrl', [
         if ($scope.selected_users.hasOwnProperty(key)) {
 
           if ($scope.selected_users[key]) {
-            body.users.push(key);
+            body.admins.push(key);
           }
 
         }
