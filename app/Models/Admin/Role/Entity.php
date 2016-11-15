@@ -38,8 +38,14 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
-        self::CREATED_AT,
-        self::DELETED_AT,
+        'permissions',
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::ORG_ID,
         'permissions',
     ];
 
