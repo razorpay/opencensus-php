@@ -168,9 +168,11 @@ class Reconciler3
 
         $failureReason = $row['Reject Reason'];
 
+        $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
+
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $tenPm = Carbon::today('Asia/Kolkata')->hour(22)->timestamp;
+        $tenPm = $recordDate->hour(22)->timestamp;
 
         if ($status === 'P')
         {

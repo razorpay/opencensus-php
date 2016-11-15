@@ -819,9 +819,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'                           => get_called_class()
             ]);
 
-        $feesSplit = new PublicCollection;
-
-        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment, $feesSplit);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
         $this->repo->saveOrFail($txn);
         // This is required to save the association of the transaction with the payment.
