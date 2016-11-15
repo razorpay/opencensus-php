@@ -125,6 +125,7 @@ final class Route
         'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
+        'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -157,6 +158,8 @@ final class Route
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'migrate_transactions'                    => ['post',     'transactions/migrate',                           'TransactionController@postMigrateOlderTransactions'                ],
+        'setl_transactions'                       => ['post',     'transactions/settle',                            'TransactionController@postSettleOlderTransactions'                 ],
+        'pricing_update_transactions'             => ['post',     'transactions/pricing_rule',                      'TransactionController@postAddPricingRuleForOlderTransactions'      ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -287,7 +290,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-    );
+      );
 
     public static $public = array(
         'checkout',
@@ -505,6 +508,8 @@ final class Route
         'scorecard',
         'billdesk_reconcile_cancelled',
         'migrate_transactions',
+        'setl_transactions',
+        'pricing_update_transactions',
         'schedule_create',
         'schedule_fetch',
         'schedule_fetch_multiple',
@@ -515,7 +520,8 @@ final class Route
         'feature_add',
         'feature_delete',
         'feature_bulk_assign',
-        'feature_bulk_remove'
+        'feature_bulk_remove',
+        'methods_update_merchants',
     );
 
     public static $proxy = array(
