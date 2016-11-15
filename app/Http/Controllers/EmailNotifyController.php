@@ -48,7 +48,7 @@ class EmailNotifyController extends Controller
     {
         $sentDate = Carbon::createFromTimestamp($input['timestamp'], 'Asia/Kolkata')->format('d-M-Y H:i:s');
         
-        $message = '*ALERT*: Email status: ' . $input['event'] . ', for tag: ' . $input['X-Mailgun-Tag'];
+        $message = '*ALERT*: Email delivery failed/bounced, for tag: ' . $input['X-Mailgun-Tag'];
         
         $params = [
             'recipient' => $input['recipient'],
