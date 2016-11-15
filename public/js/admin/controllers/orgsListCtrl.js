@@ -100,26 +100,6 @@ app.controller('OrgsListCtrl', [
 
     $scope.fetchOrgs();
 
-    // Fetch Org details by ID
-
-    $scope.fetchOrgById = function (id) {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'org_get',
-
-          url_params: {
-            '{id}': id
-          }
-        }
-      });
-
-      request.success(function (data) {
-
-      });
-    };
-
-    $scope.fetchOrgById('org_6dLbNSpv5XbCOG');
-
     // Edit Organization
 
     $scope.editOrgById = function (organization) {

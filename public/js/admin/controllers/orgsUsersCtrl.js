@@ -9,7 +9,6 @@ app.controller('OrgsUsersCtrl', [
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();
-    $scope.orgId = 'org_6dLbNSpv5XbCOG';
 
     /**
      *  Modals
@@ -35,7 +34,7 @@ app.controller('OrgsUsersCtrl', [
      *  Actions
     **/
 
-    $scope.listUsers = function(id) {
+    $scope.listUsers = function() {
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'admin_get_multiple',
@@ -49,7 +48,7 @@ app.controller('OrgsUsersCtrl', [
       });
     }
 
-    $scope.listUsers($scope.orgId);
+    $scope.listUsers();
 
     $scope.editUser = function(user) {
       var route_name = 'admin_edit';
@@ -71,7 +70,6 @@ app.controller('OrgsUsersCtrl', [
           route_name: route_name,
 
           url_params: {
-            '{id}': $scope.orgId,
             '{adminId}': user.id
           }
         }
@@ -109,7 +107,6 @@ app.controller('OrgsUsersCtrl', [
           route_name: 'admin_delete',
 
           url_params: {
-            '{id}': $scope.orgId,
             '{adminId}': id
           }
         }

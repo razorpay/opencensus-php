@@ -21,14 +21,14 @@ app.controller('AddGroupCtrl', [
     $scope.save = function (group) {
       var body = group;
 
-      body.groups = [];
-      body.users = [];
+      body.sub_groups = [];
+      body.admins = [];
 
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
 
           if ($scope.selected_groups[key]) {
-            body.groups.push(key);
+            body.sub_groups.push(key);
           }
 
         }

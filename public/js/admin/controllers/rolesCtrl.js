@@ -14,10 +14,6 @@ app.controller('RolesCtrl', [
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'role_get_multiple',
-
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOG'
-          }
         }
       });
 
@@ -59,9 +55,6 @@ app.controller('RolesCtrl', [
         method: 'POST',
         params: {
           route_name: 'role_create',
-          url_params: {
-            '{id}': 'org_6dLbNSpv5XbCOG'
-          }
         },
         data: {
           body: {

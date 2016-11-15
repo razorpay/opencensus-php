@@ -266,15 +266,12 @@ angular.module('app.services', [])
     **/
 
     return {
-      fetchRoles: function (organization_id) {
+      fetchRoles: function () {
         var roles = {};
         $http.get('/admin/generic', {
           ignoreErrors: true,
           params: {
-            route_name: 'role_get_multiple',
-            url_params: {
-              '{id}': organization_id
-            }
+            route_name: 'role_get_multiple'
           }
         }).success(function (data) {
           if (data.success === true) {
@@ -292,7 +289,7 @@ angular.module('app.services', [])
         });
         return roles;
       },
-      fetchGroups: function (organization_id) {
+      fetchGroups: function () {
         var groups = [];
         $http.get('/admin/generic', {
           params: {

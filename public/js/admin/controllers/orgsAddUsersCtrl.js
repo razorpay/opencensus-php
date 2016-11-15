@@ -10,8 +10,8 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.user = {};
     $scope.selected_groups = [];
 
-    $scope.roles = organization.fetchRoles('org_6dLbNSpv5XbCOG');
-    $scope.groups = organization.fetchGroups('org_6dLbNSpv5XbCOF');
+    $scope.roles = organization.fetchRoles();
+    $scope.groups = organization.fetchGroups();
 
     $scope.addAdminUser = function(user) {
       var body = user;
