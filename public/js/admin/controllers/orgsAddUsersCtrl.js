@@ -9,10 +9,24 @@ app.controller('OrgsAddUsersCtrl', [
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
     $scope.user = {};
     $scope.selected_groups = [];
+    $scope.select_all = false;
     $scope.role = '';
 
     $scope.roles = organization.fetchRoles();
     $scope.groups = organization.fetchGroups();
+
+    $scope.selectAll = function() {
+      $scope.selected_groups = {};
+
+      if (!$scope.select_all) {
+        return;
+      }
+
+      $scope.groups.map(function(group){
+        $scope.selected_groups[group.code] = true;
+      });
+    }
+
 
     $scope.addAdminUser = function(user) {
       var body = user;

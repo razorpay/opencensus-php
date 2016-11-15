@@ -29,11 +29,11 @@
         <div class="form-group">
           <div class="col-lg-2 control-label">Permissions</div>
           <div class="col-lg-10 scrollable-table">
-            <table data-page-size="10000" class="table table-striped b-t b-light">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
                 <tr>
-                  <th>
-                    <input type="checkbox" id="select_all" ng-model='select_all' ng-click='selectAll()'>
+                  <th data-sort-ignore="true">
+                    <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
                     <label for="select_all" class="select-all-label">Select all</label>
                   </th>
                   <th>Permission</th>

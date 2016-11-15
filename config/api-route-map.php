@@ -20,6 +20,7 @@ return [
     'group_get'                         => 'orgs/{id}/groups/{groupId}',
     'group_admins_create'               => 'orgs/{id}/groups/{groupId}/admins',
     'group_delete'                      => 'orgs/{id}/groups/{groupId}',
+    'group_edit'                        => 'orgs/{id}/groups/{groupId}',
 
     // Admins
     'admin_get_multiple'                => 'orgs/{id}/admins',

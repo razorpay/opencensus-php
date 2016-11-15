@@ -54,7 +54,7 @@ app.controller('OrgsAddRolesCtrl', [
     $scope.selectAll = function() {
       $scope.selected_permissions = {};
 
-      if ($scope.select_all) {
+      if (!$scope.select_all) {
         return;
       }
 
