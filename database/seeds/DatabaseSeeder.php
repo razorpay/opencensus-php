@@ -275,12 +275,13 @@ class DatabaseSeeder extends Seeder
                     'username'      => 'nemo',
                     'password'      => \Hash::make('123456'),
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
                     'employee_code' => '010',
                     'department_code'=> 'ADMIN',
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
+                    'last_login_at' => time(),
+                    'created_at'    => time(),
                     'updated_at'    => time(),
                 ],
                 [
@@ -290,12 +291,13 @@ class DatabaseSeeder extends Seeder
                     'username'      => 'nemo2',
                     'password'      => \Hash::make('123456'),
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
                     'employee_code' => '011',
                     'department_code'=> 'ADMIN',
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
+                    'last_login_at' => null,
+                    'created_at'    => time(),
                     'updated_at'    => time(),
                 ]
             ]);
@@ -312,6 +314,7 @@ class DatabaseSeeder extends Seeder
                     'department_code'=> 'ADMIN',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
+                    'last_login_at' => null,
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 ]

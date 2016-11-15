@@ -94,6 +94,7 @@ class PermissionSeeder extends Seeder
             'view_all_org' => '',
             'view_org' => '',
             'edit_org' => '',
+            'delete_org' => '',
 
             // Roles
             'view_all_role' => '',
