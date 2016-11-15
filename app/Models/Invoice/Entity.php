@@ -241,6 +241,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getViewLess()
+    {
+        return $this->getAttribute(self::VIEW_LESS);
+    }
+
     public function getPaymentId()
     {
         $repo = App::getFacadeRoot()['repo'];

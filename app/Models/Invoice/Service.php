@@ -72,12 +72,13 @@ class Service extends Base\Service
         $publicKey = $keys->first()->getPublicKey($this->mode);
 
         return [
-            'customer_email' => $invoice->getCustomerEmail(),
-            'customer_contact' => $invoice->getCustomerContact(),
-            'invoice_id'    => $id,
-            'key_id'    => $publicKey,
-            'amount'    => $invoice->order->getAmount(),
-            'environment'   => $this->app->environment(),
+            'customer_email'    => $invoice->getCustomerEmail(),
+            'customer_contact'  => $invoice->getCustomerContact(),
+            'invoice_id'        => $id,
+            'key_id'            => $publicKey,
+            'amount'            => $invoice->order->getAmount(),
+            'environment'       => $this->app->environment(),
+            'view_less'         => $invoice->getViewLess(),
         ];
     }
 }
