@@ -159,6 +159,7 @@ app.controller('OrgsUsersCtrl', [
     $scope.roles = roles;
     $scope.groups = groups;
     $scope.selected_groups = {};
+    $scope.select_all = false;
 
     current.roles = current.roles.map(function(role){
       role.id = 'role_' + role.id;
@@ -176,6 +177,22 @@ app.controller('OrgsUsersCtrl', [
     })
 
     $scope.user = current;
+
+    $scope.selectAll = function() {
+      $scope.selected_groups = {};
+      $scope.select_all = !$scope.select_all;
+
+      if (!$scope.select_all) {
+        return;
+      }
+
+      for (var key in $scope.groups) {
+        if ($scope.groups.hasOwnProperty(key)) {
+          var group = $scope.groups[key];
+          $scope.selected_groups[group.code] = true;
+        }
+      }
+    }
 
     $scope.ok = function (user) {
       user.groups = [];

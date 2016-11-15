@@ -18,7 +18,7 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.selectAll = function() {
       $scope.selected_groups = {};
 
-      if ($scope.select_all) {
+      if (!$scope.select_all) {
         return;
       }
 
