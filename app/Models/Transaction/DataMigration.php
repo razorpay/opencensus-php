@@ -39,6 +39,7 @@ class DataMigration extends Base\Service
         '5jQ8zERcXo8yWL' =>  '5szgxrF9q71nBS',
         '5jsVBeKswCFiMP' =>  '1In3Yh5Mluj605',
         '5ScC7HFSVEut9v' =>  '1In3Yh5Mluj605',
+        '5SqDRAKE2a3p6d' =>  '5U0f4CoOEDtAqV',
     ];
 
     protected $feeCalculator;
@@ -68,6 +69,19 @@ class DataMigration extends Base\Service
             $payment = $this->repo->payment->findOrFail($transaction->getEntityId());
 
             $this->feeCalculator = new FeeCalculator($payment);
+
+            if (array_key_exists($merchant->getId(), self::MERCHANT_PRICING_PLAN_ID_MAP) === false)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                $this->trace->info(TraceCode::PRICING_RULE_DOES_NOT_EXISTS,
+                [
+                    'transaction'        => $transaction->toArrayPublic(),
+                    'merchant_id'        => $merchant->getId(),
+                ]);
+
+                continue;
+            }
 
             $pricingPlanId = self::MERCHANT_PRICING_PLAN_ID_MAP[$merchant->getId()];
 
