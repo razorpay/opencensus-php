@@ -303,7 +303,6 @@ class Notifier extends Base\Core
         $merchant = $this->invoice->merchant;
 
         $request = [
-            'context' => $merchant->getId(),
             'receiver' => $contact,
             'source' => 'api.invoice',
             'template' => 'sms.invoice',
