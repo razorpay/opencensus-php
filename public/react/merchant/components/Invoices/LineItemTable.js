@@ -2,14 +2,17 @@ import { SortableContainer, SortableElement, SortableHandle } from 'react-sortab
 import ReduxTypeAhead from 'rzp/ui/Forms/ReduxTypeAhead'
 import { Field } from 'redux-form'
 
-const LineItem = ({ item, index, plans }) => {
+
+const LineItem = (props) => {
+  debugger
+  let { field, item, index, items } = props
   return (
     <tr>
       <td>
         <Field
-          name={`line_item[${index}][name]`}
+          name={`${field}.name`}
           component={ReduxTypeAhead}
-          options={plans}
+          options={items}
           selected={item}
           selectedLabel='name'
           optionComponent={(option) => <span>{option.name}</span>}
@@ -17,30 +20,36 @@ const LineItem = ({ item, index, plans }) => {
           placeholder='Select a plan'
         />
       </td>
-      <td class='text-right'>
+      <td>
         <Field
-          name={`line_item[${index}][quantity]`}
+          name={`${field}.quantity`}
           component='input'
-          class='form-control'
+          class='form-control text-right'
+          type='number'
         />
       </td>
-      <td class='text-right'>
+      <td>
         <Field
-          name={`line_item[${index}][rate]`}
+          name={`${field}.rate`}
           component='input'
-          class='form-control'
+          class='form-control text-right'
         />
       </td>
       <td class='text-right'>
         {item.quantity * item.rate}
+
+        <span class='remove-row-action' onClick={() => props.onRemove(index)}>
+          <i class='fa fa-times-circle text-danger'></i>
+        </span>
       </td>
     </tr>
   )
 }
 
-export default ({ fields, plans }) => {
+export default ({ fields, items }) => {
+  debugger
   return (
-    <div class='table-responsive invoice-lineitem'>
+    <div class='invoice-lineitem'>
       <table class='table'>
         <thead>
           <tr>
@@ -54,15 +63,40 @@ export default ({ fields, plans }) => {
           {
             fields.map((fieldName, idx, item) =>
               <LineItem
-                key={fieldName}
+                key={`line_item_${idx}`}
                 index={idx}
+                field={fieldName}
                 item={item}
-                plans={plans}
+                items={items}
+                onRemove={(index) => {
+                  fields.remove(index)
+                  if (fields.length === 1) {
+                    fields.push({
+                      name: '',
+                      quantity: 1,
+                      rate: 0.00
+                    })
+                  }
+                }}
               />
             )
           }
         </tbody>
       </table>
+
+      <button
+        class='btn btn-default'
+        style={{
+          marginLeft: '20px'
+        }}
+        type='button'
+        onClick={() => fields.push({
+          quantity: 1,
+          rate: 0.00
+        })}
+      >
+        Add Another Item
+      </button>
     </div>
   )
 }

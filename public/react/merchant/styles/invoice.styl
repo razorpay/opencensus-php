@@ -19,6 +19,24 @@
 
     .table > tbody > tr > td {
       padding: 15px 20px;
+
+      &:last-child {
+        position: relative
+      }
+    }
+
+    .remove-row-action {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -32px;
+      padding: 16px 10px;
+      cursor: pointer;
+      visibility: hidden;
+    }
+
+    .table > tbody > tr:hover .remove-row-action {
+      visibility: visible;
     }
   }
 }

@@ -11,23 +11,23 @@ import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
 
 import LineItemTable from 'merchant/components/Invoices/LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
-import { fetchPlans } from 'merchant/modules/plans'
+import { fetchItems } from 'merchant/modules/items'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
 
 const selector = formValueSelector('newInvoice')
 @connect(
   (state) => {
-    let plansState = state.plans.toJS()
+    let itemsState = state.items.toJS()
     let customersState = state.customers.toJS()
 
     return {
       customers: customersState.customers,
-      plans: plansState.plans,
+      items: itemsState.items,
       customer: selector(state, 'customer')
     }
   },
-  { fetchCustomers, fetchPlans }
+  { fetchCustomers, fetchItems }
 )
 @reduxForm({
   form: 'newInvoice',
@@ -35,7 +35,7 @@ const selector = formValueSelector('newInvoice')
     invoice_date: Math.ceil(new Date().getTime()/1000),
     due_on: 30,
     notes: 'Thanks for your business',
-    items: [
+    line_items: [
       {
         quantity: 1,
         rate: 0.00
@@ -52,7 +52,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   componentWillMount() {
     this.props.fetchCustomers()
-    this.props.fetchPlans()
+    this.props.fetchItems()
   }
 
   selectCustomerAndCloseModal(customer) {
@@ -73,7 +73,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
     return (
       <div>
-        <Header title='New Invoie'>
+        <Header title='New Invoice'>
           <a href='#/app/invoices' class='pull-right btn btn-link btn-sm'>
             <i class='fa fa-close'></i>
           </a>
@@ -166,9 +166,9 @@ export default class InvoicesNewContainer extends ModalContainer {
 
 
                 <FieldArray
-                  name='items'
+                  name='line_items'
                   component={LineItemTable}
-                  plans={this.props.plans}
+                  items={this.props.items}
                 />
 
                 <div class='form-group'>
