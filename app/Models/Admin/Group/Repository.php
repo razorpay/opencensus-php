@@ -118,7 +118,7 @@ class Repository extends Base\Repository
         $group->subGroups()->detach($subGroup);
     }
 
-    public function fetchGroupsForOrg(string $orgId, array $input)
+    public function fetchGroupsForOrg(string $orgId, array $input = array())
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
