@@ -93,5 +93,30 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
+
+    public function edit(string $orgId, string $adminId)
+    {
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $adminId);
+
+        $admin->edit($input);
+
+        if (isset($input['password']) === true)
+        {
+            (new AuthPolicy\Service)
+                ->validate($admin, $input['password']);
+
+            $admin->setOldPasswords();
+
+            if ($admin->getLastLoginAt() === null)
+            {
+                $admin->updateLastLoginAt();
+            }
+        }
+
+        $this->repo->saveOrFail($admin);
+
+        return $admin;
+    }
 }
 

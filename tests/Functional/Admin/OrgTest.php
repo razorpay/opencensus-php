@@ -35,6 +35,17 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeleteOrg()
+    {
+        $this->ba->appAuth();
+
+        $org = $this->fixtures->create('org');
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testOrgMultiple()
     {
         $this->ba->appAuth();

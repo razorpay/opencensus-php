@@ -60,4 +60,17 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testDeleteOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
