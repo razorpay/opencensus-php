@@ -9,6 +9,7 @@ app.controller('OrgsAddUsersCtrl', [
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
     $scope.user = {};
     $scope.selected_groups = [];
+    $scope.role = '';
 
     $scope.roles = organization.fetchRoles();
     $scope.groups = organization.fetchGroups();
@@ -16,6 +17,7 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.addAdminUser = function(user) {
       var body = user;
       body.groups = [];
+      body.roles = [];
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
 
@@ -23,6 +25,10 @@ app.controller('OrgsAddUsersCtrl', [
             body.groups.push(key);
           }
         }
+      }
+
+      if ($scope.role) {
+        body.roles.push($scope.role);
       }
 
       var request = $http.post('admin/generic/', {

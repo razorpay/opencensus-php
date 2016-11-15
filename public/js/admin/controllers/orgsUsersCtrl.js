@@ -5,10 +5,14 @@ app.controller('OrgsUsersCtrl', [
   '$modal',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $modal, alertsFactory, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $modal, alertsFactory, transformRequestAsFormPost,
+    organization) {
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();
+    $scope.roles = organization.fetchRoles();
+    $scope.groups = organization.fetchGroups();
 
     /**
      *  Modals
@@ -22,7 +26,14 @@ app.controller('OrgsUsersCtrl', [
         resolve: {
           current: function () {
             return jQuery.extend({}, $scope.selected[0]);
-          }
+          },
+          roles: function () {
+            return jQuery.extend(true, {}, $scope.roles);
+          },
+          groups: function () {
+            return jQuery.extend(true, {}, $scope.groups);
+          },
+
         }
       });
       modalInstance.result.then(function (users) {
@@ -61,7 +72,9 @@ app.controller('OrgsUsersCtrl', [
         branch_code: user.branch_code,
         location_code: user.location_code,
         supervisor_code: user.supervisor_code,
-        disabled: user.disabled + 0
+        disabled: user.disabled + 0,
+        roles: user.roles,
+        groups: user.groups
       };
       data.route_name = route_name;
 
@@ -139,14 +152,48 @@ app.controller('OrgsUsersCtrl', [
   '$scope',
   '$modalInstance',
   'current',
-  function ($scope, $modalInstance, current) {
+  'roles',
+  'groups',
+  function ($scope, $modalInstance, current, roles, groups) {
 
     current.locked = !!current.locked;
     current.disabled = !!current.disabled;
+    $scope.roles = roles;
+    $scope.groups = groups;
+    $scope.selected_groups = {};
+
+    current.roles = current.roles.map(function(role){
+      role.id = 'role_' + role.id;
+      return role;
+    })
+
+    if (current.roles.length) {
+      current.role = current.roles[0].id;
+    }
+
+    current.groups = current.groups.map(function(group){
+      group.id = 'grp_' + group.id;
+      $scope.selected_groups[group.id] = true;
+      return group;
+    })
 
     $scope.user = current;
 
     $scope.ok = function (user) {
+      user.groups = [];
+      user.roles = [];
+
+      for (var key in $scope.selected_groups) {
+        if ($scope.selected_groups.hasOwnProperty(key)) {
+
+          if ($scope.selected_groups[key]) {
+            user.groups.push(key);
+          }
+        }
+      }
+
+      user.roles.push(user.role);
+
       $modalInstance.close(user);
     };
     $scope.cancel = function () {
