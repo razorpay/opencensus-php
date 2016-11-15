@@ -15,12 +15,12 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-    	$dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today('Asia/Kolkata');
 
-    	$input = array(
-    		'year' => $dt->year,
-    		'month' => $dt->month,
-    		'day' => $dt->day);
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
 
         $paymentReport = $this->fetchReport('payment', $input);
         $refundReport =  $this->fetchReport('refund', $input);

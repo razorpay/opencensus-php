@@ -38,7 +38,7 @@ class Service extends Base\Service
 
     /**
      * Creates Global customer entity for shared merchant
-     * @param  array customer data
+     * @param  array $input customer data
      * @return array customer data
      */
     public function createGlobalCustomer($input)
@@ -79,6 +79,13 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $customer->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $customers = $this->repo->customer->fetch($input, $this->merchant->getId());
+
+        return $customers->toArrayPublic();
     }
 
     /**

@@ -1332,11 +1332,6 @@ class Entity extends Base\PublicEntity
         return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
-    public function scopeCreatedAtLessThan($query, $ts)
-    {
-        return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
-    }
-
 // --------------------- Query scopes section ends -----------------------------
 
     public function resetOtpAttempts()
