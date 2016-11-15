@@ -60,22 +60,6 @@ app.controller('RolesCtrl', [
 
     $scope.getRoles();
 
-    $scope.openCreateRoleModal = function () {
-      var role = {};
-      var modalInstance = $modal.open({
-        templateUrl: 'createRoleModal.html',
-        controller: 'createRoleCtrl',
-        resolve: {
-          current: function () {
-            return role;
-          }
-        }
-      });
-      modalInstance.result.then(function (role) {
-        $scope.addRole(role);
-      }, $.noop);
-    };
-
     $scope.addRole = function (role) {
       var request = $http({
         url: '/admin/generic',
@@ -177,38 +161,4 @@ app.controller('RolesCtrl', [
       });
     };
   }
-]).controller('editRoleCtrl', [
-  '$scope',
-  '$modalInstance',
-  'current',
-  'permissions',
-  function ($scope, $modalInstance, current, permissions) {
-    $scope.role = current;
-
-    $scope.permissions = permissions;
-    $scope.selected_permissions = {};
-
-    $scope.role.permissions = $scope.role.permissions.map(function(perm){
-      perm.id = 'perm_' + perm.id;
-      $scope.selected_permissions[perm.id] = true;
-      return perm;
-    })
-
-    $scope.ok = function (role) {
-      role.permissions = []
-
-      for (var key in $scope.selected_permissions) {
-        if ($scope.selected_permissions.hasOwnProperty(key)) {
-
-          if ($scope.selected_permissions[key]) {
-            role.permissions.push(key);
-          }
-        }
-      }
-      $modalInstance.close(role);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel')
-    };
-  }
-])
+]);

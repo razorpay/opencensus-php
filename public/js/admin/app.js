@@ -148,11 +148,11 @@ var app = angular.module('app', [
     }).state('app.roles.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_roles_list.html'
-    }).state('app.roles.detail', {
-      url: '/:id/detail',
-      templateUrl: 'tpl/admin/app_roles_detail.html'
     }).state('app.roles.add', {
       url: '/add',
+      templateUrl: 'tpl/admin/app_orgs_role_add.html'
+    }).state('app.roles.edit', {
+      url: '/:id/edit',
       templateUrl: 'tpl/admin/app_orgs_role_add.html'
     }).state('app.groups', {
       url: '/groups',

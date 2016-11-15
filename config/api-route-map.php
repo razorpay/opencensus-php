@@ -9,6 +9,7 @@ return [
 
     // Roles
     'role_get_multiple'                 => 'orgs/{id}/roles',
+    'role_get'                          => 'orgs/{id}/roles/{roleId}',
     'role_create'                       => 'orgs/{id}/roles',
     'role_delete'                       => 'orgs/{id}/roles/{roleId}',
     'role_edit'                         => 'orgs/{id}/roles/{roleId}',
