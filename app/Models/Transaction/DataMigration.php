@@ -87,22 +87,63 @@ class DataMigration extends Base\Service
 
             $pricing = $this->repo->pricing->getPricingPlanById($pricingPlanId);
 
+            // Case 1: Merchant is fee bearer now and was fee bearer at the time of transaction
+            // Case 2: Merchant is non fee bearer now and was non fee bearer at the time of transaction
+            // Case 3: Merchant is fee bearer now but non fee bearer at time of transaction
+            // Case 4: Merchant is non fee bearer now but fee bearer at time of transaction
+            // Case 5: If non of the above case is there, then pricing rule id is not correct.
+
+
+            // Case 1 & 2
             list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->feeCalculator->calculate($pricing);
 
             $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee - $serviceTax);
 
             if ($isValidPricingPlan === true)
             {
-                $transaction->setPricingRule($pricingRuleId);
-
-                $this->repo->saveOrFail($transaction);
+                $this->savePricingRule($transaction, $pricingRuleId);
 
                 $migratedTxns[] = $transaction->getPublicId();
+
+                continue;
             }
-            else
+
+            $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
+
+            // Case 3
+            $amount = $transaction->getAmount();
+
+            $fee = $this->feeCalculator->calculateRzpFee($pricing, $amount);
+
+            $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee);
+
+            if ($isValidPricingPlan === true)
             {
-                $notMigratedTxns[] = $transaction->getPublicId();
+                $this->savePricingRule($transaction, $pricingRuleId);
+
+                $migratedTxns[] = $transaction->getPublicId();
+
+                continue;
             }
+
+            // Case 4
+            $amount = $transaction->getAmount() - $transaction->getServiceTax();
+
+            $fee = $this->feeCalculator->calculateRzpFee($pricing, $amount);
+
+            $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee);
+
+            if ($isValidPricingPlan === true)
+            {
+                $this->savePricingRule($transaction, $pricingRuleId);
+
+                $migratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
+
+            $notMigratedTxns[] = $transaction->getPublicId();
+
         }
 
         $response = [
@@ -111,6 +152,13 @@ class DataMigration extends Base\Service
         ];
 
         return $response;
+    }
+
+    protected function savePricingRule($transaction, $pricingRuleId)
+    {
+        $transaction->setPricingRule($pricingRuleId);
+
+        $this->repo->saveOrFail($transaction);
     }
 
     public function settleOlderTransactions($input)
