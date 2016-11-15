@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         'template'=> 'required|max:255'
     ];
     
-    protected static $processEmailFailureRules = [
+    protected static $mailgunWebhookRules = [
         'token'             => 'required',
         'signature'         => 'required',
         'timestamp'         => 'required',

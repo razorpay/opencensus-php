@@ -26,7 +26,17 @@ class Mailgun
      * @param type $input Request input
      * @return int statusCode
      */
-    public function processEmailFailureCheck($input)
+    public function processCallback($type, $input)
+    {
+        $functionName = $type . 'Callback';
+        
+        if (method_exists($this, $functionName))
+        {
+            return $this->$functionName($input);
+        }
+    }
+    
+    public function failureCallback($input)
     {
         if (isset($input['X-Mailgun-Tag']) === false)
         {

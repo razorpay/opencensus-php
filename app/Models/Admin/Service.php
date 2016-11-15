@@ -66,10 +66,10 @@ class Service extends Base\Service
         return $mailer->send();
     }
     
-    public function processEmailFailure($input)
+    public function processMailgunCallback($type, $input)
     {
-        (new Validator)->validateInput('process_email_failure', $input);
+        (new Validator)->validateInput('mailgun_webhook', $input);
         
-        return (new Mailgun)->processEmailFailureCheck($input);
+        return (new Mailgun)->processCallback($type, $input);
     }
 }
