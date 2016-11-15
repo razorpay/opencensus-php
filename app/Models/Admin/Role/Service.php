@@ -75,18 +75,18 @@ class Service extends Base\Service
 
         if (isset($input['permissions']) === true)
         {
+            $permIds = [];
+
             foreach ($input['permissions'] as $permId)
             {
                 $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
             }
-
-            $permIds = [];
 
             $input['permissions'] = $permIds;
         }
 
         $role = $this->core->edit($orgId, $id, $input);
 
-        return $role;
+        return $role->toArrayPublic();
     }
 }

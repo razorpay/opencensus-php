@@ -41,16 +41,17 @@ class Core extends Base\Core
     {
         $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
 
+        $role->edit($input);
+
         if (isset($input['permissions']) === true)
         {
             $role->permissions()->sync($input['permissions']);
 
-            unset($input['permissions']);
         }
 
-        $role->edit($input);
-
         $this->repo->saveOrFail($role);
+
+        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
 
         return $role;
     }
