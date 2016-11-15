@@ -981,7 +981,7 @@ class AdminController extends Controller
     {
         list($error, $data) = (new Admin\Service)->getAdminLeads();
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     // ----- /Credits -----

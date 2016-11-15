@@ -10,11 +10,11 @@ app.controller('InvitationsCtrl', [
     $scope.count = 0;
 
     $scope.fetchInvitations = function () {
-      var request = $http.get('/invitations');
+      var request = $http.get('/admin/invitations');
 
       request.success(function (data) {
         if (data.success) {
-          $scope.invitations = data.data.data;
+          $scope.invitations = data.data;
           $scope.count = data.data.count;
         }
       });

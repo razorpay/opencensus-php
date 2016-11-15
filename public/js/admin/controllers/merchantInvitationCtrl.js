@@ -5,7 +5,8 @@ app.controller('MerchantInvitationCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  '$state',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, $state) {
     $scope.merchant = {
       promo_code: 'RP_StartUP'
     };
@@ -23,7 +24,10 @@ app.controller('MerchantInvitationCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Invitation has been sent to ' +
-            merchant.email , true);
+            merchant.contact_email , true);
+
+            // Redirect to invitations page
+            $state.go('app.invitations.list');
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
