@@ -33,4 +33,16 @@ class Service extends Base\Service
 
         return $role->toArrayPublic();
     }
+
+    public function deleteRole($orgId, $id)
+    {
+        $orgId = Org::verifyIdAndStripSign($orgId);
+        $id = Entity::verifyIdAndStripSign($id);
+
+        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $id);
+
+        $this->repo->deleteOrFail($role);
+
+        return ['success' => true];
+    }
 }

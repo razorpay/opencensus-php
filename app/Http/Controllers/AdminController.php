@@ -252,6 +252,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteRole(string $id, string $roleId)
+    {
+        $data = (new Admin\Role\Service)->deleteRole($id, $roleId);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------

@@ -29,7 +29,7 @@ class GroupTest extends TestCase
 
         $group = $this->fixtures->create('group', ['org_id' => $orgId]);
 
-        $subGroup = $this->fixtures->create('group', ['org_id' => $orgId]);
+        $subGroup = $this->fixtures->create('group', ['org_id' => $orgId, 'name' => 'asd']);
 
         $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
 

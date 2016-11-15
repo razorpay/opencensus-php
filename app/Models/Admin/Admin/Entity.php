@@ -78,7 +78,6 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT_CODE,
         self::SUPERVISOR_CODE,
         self::LOCATION_CODE,
-        self::OLD_PASSWORDS,
         self::DISABLED,
         self::LOCKED,
         self::LAST_LOGIN_AT,

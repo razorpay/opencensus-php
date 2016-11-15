@@ -71,7 +71,7 @@ class Service extends Base\Service
 
         $data = $this->core->delete($orgId, $groupId);
 
-        return $data;
+        return ['success' => true];
     }
 
     public function fetchMultiple(string $orgId, array $input)

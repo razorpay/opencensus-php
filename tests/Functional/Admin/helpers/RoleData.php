@@ -52,4 +52,19 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testDeleteRole' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
