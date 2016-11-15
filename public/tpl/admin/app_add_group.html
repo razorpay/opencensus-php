@@ -32,7 +32,10 @@
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
                 <tr>
-                  <th></th>
+                  <th data-sort-ignore="true">
+                    <input type="checkbox" id="select_all_groups" ng-model='select_all_groups' ng-change='selectAllGroups()'>
+                    <label for="select_all_groups" class="select-all-label">Select all</label>
+                  </th>
                   <th>Group</th>
                   <th>Group description</th>
                 </tr>
@@ -53,7 +56,10 @@
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
                 <tr>
-                  <th></th>
+                  <th data-sort-ignore="true">
+                    <input type="checkbox" id="select_all_users" ng-model='select_all_users' ng-change='selectAllUsers()'>
+                    <label for="select_all_users" class="select-all-label">Select all</label>
+                  </th>
                   <th>Name</th>
                   <th>Email</th>
                 </tr>

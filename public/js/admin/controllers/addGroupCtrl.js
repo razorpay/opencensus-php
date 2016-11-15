@@ -12,11 +12,37 @@ app.controller('AddGroupCtrl', [
     $scope.group = {};
     $scope.selected_groups = [];
     $scope.selected_users = [];
+    $scope.select_all_groups = false;
+    $scope.select_all_users = false;
 
 
     /**
      * Actions
      */
+
+    $scope.selectAllGroups = function() {
+      $scope.selected_groups = {};
+
+      if (!$scope.select_all_groups) {
+        return;
+      }
+
+      $scope.groups.map(function(group){
+        $scope.selected_groups[group.code] = true;
+      });
+    }
+
+    $scope.selectAllUsers = function() {
+      $scope.selected_users = {};
+
+      if (!$scope.select_all_users) {
+        return;
+      }
+
+      $scope.users.map(function(user){
+        $scope.selected_users[user.id] = true;
+      });
+    }
 
     $scope.save = function (group) {
       var body = group;
