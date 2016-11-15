@@ -63,7 +63,14 @@ class Checkout
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        $data['customer'] = $invoiceData['customer'];
+        if (isset($data['customer']) === true)
+        {
+            $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
+        }
+        else
+        {
+            $data['customer'] = $invoiceData['customer'];
+        }
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
