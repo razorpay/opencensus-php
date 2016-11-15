@@ -127,7 +127,7 @@ class DataMigration extends Base\Service
             }
 
             // Case 4
-            $amount = $transaction->getAmount() - $transaction->getServiceTax();
+            $amount = $transaction->getAmount() - $transaction->getFee();
 
             $fee = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
@@ -142,6 +142,7 @@ class DataMigration extends Base\Service
                 continue;
             }
 
+            // Case 5
             $notMigratedTxns[] = $transaction->getPublicId();
 
         }
