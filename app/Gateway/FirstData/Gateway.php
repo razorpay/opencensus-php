@@ -24,6 +24,9 @@ class Gateway extends Base\Gateway
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
+    const PROCESSING                 = 'PROCESSING';
+    const SERVICES                   = 'SERVICES';
+
     const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
 
     protected $gateway = Constants\Entity::FIRST_DATA;
@@ -56,6 +59,8 @@ class Gateway extends Base\Gateway
             Base\Action::AUTHORIZE);
 
         $this->verifySecureHash($input['gateway']);
+
+        $this->mockApprovalCodeIfNeeded($input['gateway']);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -134,6 +139,34 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    // First Data is not returning approval code in some cases.
+    // In these cases, we mock the code and handle it appropriately.
+    protected function mockApprovalCodeIfNeeded(& $gatewayCallback)
+    {
+        if (isset($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === true)
+        {
+            return;
+        }
+
+        //Approval code wasn't returned, but we can generate one from fail fields
+        if (isset($gatewayCallback[ConnectResponseFields::FAIL_RC]) === true)
+        {
+            $failCode = $gatewayCallback[ConnectResponseFields::FAIL_RC];
+
+            $failReason = $gatewayCallback[ConnectResponseFields::FAIL_REASON];
+
+            $mockedApprovalCode = implode(':', ['N', $failCode, $failReason]);
+        }
+        // Approval code wasn't returned in a successful transaction
+        // Really shouldn't be happening, but just in case
+        else
+        {
+            $mockedApprovalCode = implode(':', ['Y', Codes::MOCK_SUCCESS_APPROVAL_CODE]);
+        }
+
+        $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
+    }
+
     protected function getSoapResponse($requestContent)
     {
         try
@@ -205,7 +238,6 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackFields($callbackBody)
     {
-
         $attributes = [
             Entity::RECEIVED                => true,
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
@@ -601,7 +633,7 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '')
     {
-        $approvalCode   = $content[ConnectResponseFields::APPROVAL_CODE];
+        $approvalCode   = $content[ConnectResponseFields::APPROVAL_CODE] ?? null;
 
         $txnDateTime    = $content[ConnectResponseFields::TXN_DATE_TIME];
 
