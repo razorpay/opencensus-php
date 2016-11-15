@@ -6,6 +6,8 @@ use App;
 use Mail;
 use Config;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
@@ -49,6 +51,9 @@ class Generator extends Base\Core
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
         $this->invoice->build($input);
+        // This is being done so that we can do associations without saving the invoice.
+        // Also, to generate a shortUrl, we need the invoice ID.
+        $this->invoice->generateId();
 
         $this->repo->transaction(
             function() use ($lineItemsDetails, $customerDetails, $input)
@@ -59,21 +64,18 @@ class Generator extends Base\Core
 
                 $this->setStatus($input);
 
+                $this->setShortUrl();
+
                 // Saving here for the associations
                 $this->repo->saveOrFail($this->invoice);
 
                 // This function should be called only after saving the invoice entity and the items entities
-                // because the invoiceItems entity requires the invoice and items to be created first.
+                // because the invoice should be created and saved before it can be associated with the items.
                 $this->associateLineItemsToInvoice();
             }
         );
 
-        // This needs to be done after saving the invoice since it requires the invoice ID
-        $this->setShortUrl();
-
         (new Notifier($this->invoice))->sendNotificationToCustomer();
-
-        $this->repo->saveOrFail($this->invoice);
 
         return $this->invoice;
     }
@@ -114,6 +116,18 @@ class Generator extends Base\Core
 
     public static function getInvoiceLink($invoiceId)
     {
+        // This is required here because this piece of code is a little prone to bugs.
+        // Invoice ID may not be generated at this point due to which we will
+        // get a wrong url. Bitly won't throw an exception because it still gets
+        // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
+        if (empty($invoiceId) === true)
+        {
+            throw new LogicException(
+                'Invoice ID is empty. Should not have reached here',
+                ErrorCode::SERVER_ERROR_INVOICE_ID_EMPTY
+            );
+        }
+
         $app = App::getFacadeRoot();
 
         $baseInvoiceUrl = $app['config']->get('app.invoice');
