@@ -336,4 +336,17 @@ class Repository extends Base\Repository
 
         return $txnIds;
     }
+
+    public function getTransactionsToSetPricingId()
+    {
+        $transactions = $this->newQuery()
+                            ->select('transactions.*')
+                            ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                            ->where(Entity::TYPE, 'payment')
+                            ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                            ->whereNull(Entity::PRICING_RULE_ID)
+                            ->get();
+
+        return $transactions;
+    }
 }
