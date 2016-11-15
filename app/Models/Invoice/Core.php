@@ -109,9 +109,7 @@ class Core extends Base\Core
             'url'       => $invoice->getShortUrl()
         ];
 
-        $data['customer'] = [
-            $customer->toArrayPublic()
-        ];
+        $data['customer'] = $customer->toArrayPublic();
 
         return $data;
     }
