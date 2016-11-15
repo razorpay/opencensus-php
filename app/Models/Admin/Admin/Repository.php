@@ -118,4 +118,12 @@ class Repository extends Base\Repository
                     ->with('groups')
                     ->firstOrFail();
     }
+
+    public function retrieveByIds(string $orgId, array $adminIds)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->whereIn(Entity::ID, $adminIds)
+                    ->get();
+    }
 }

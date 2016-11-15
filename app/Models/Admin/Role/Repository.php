@@ -45,4 +45,12 @@ class Repository extends Base\Repository
                     ->with('permissions')
                     ->firstOrFail();
     }
+
+    public function hasRoleByName(string $orgId, string $name)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::NAME, '=', $name)
+                    ->exists();
+    }
 }

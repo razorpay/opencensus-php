@@ -31,6 +31,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, '=', $groupId)
                     ->with('admins')
                     ->with('merchants')
+                    ->with('subGroups')
                     ->with('roles')
                     ->firstOrFail();
     }
@@ -125,5 +126,21 @@ class Repository extends Base\Repository
                     ->with('admins')
                     ->with('roles')
                     ->get();
+    }
+
+    public function retrieveByIds(string $orgId, array $groupIds)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->whereIn(Entity::ID, $groupIds)
+                    ->get();
+    }
+
+    public function hasGroupByName(string $orgId, string $name)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::NAME, '=', $name)
+                    ->exists();
     }
 }

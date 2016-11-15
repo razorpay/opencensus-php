@@ -31,6 +31,8 @@ class CreateGroups extends Migration
             $table->integer(Group::CREATED_AT);
             $table->integer(Group::UPDATED_AT);
 
+            $table->unique([Group::NAME, Group::ORG_ID]);
+
             $table->foreign(Group::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);

@@ -21,7 +21,34 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
+        if (isset($input['admins']) === true)
+        {
+            $adminIds = [];
+
+            foreach ($input['admins'] as $adminId)
+            {
+                $adminIds[] = Admin\Entity::verifyIdAndStripSign($adminId);
+            }
+
+            $input['admins'] = $adminIds;
+        }
+
+        if (isset($input['sub_groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['sub_groups'] as $groupId)
+            {
+                $groupIds[] = Entity::verifyIdAndStripSign($groupId);
+            }
+
+            $input['sub_groups'] = $groupIds;
+        }
+
         $group = $this->core->create($orgId, $input);
+
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $group->getId());
 
         return $group->toArrayPublic();
     }

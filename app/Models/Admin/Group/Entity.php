@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
         'admins',
         'roles',
         'merchants',
+        'sub_groups',
     ];
 
     // Immediate higher groups which have access to this group and its

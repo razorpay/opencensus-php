@@ -51,7 +51,8 @@ class Core extends Base\Core
             }
         }
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $admin->getId());
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $admin->getId());
 
         return $admin;
     }

@@ -14,6 +14,8 @@ class Core extends Base\Core
 
         $role = (new Entity)->build($input);
 
+        $role->getValidator()->validateCreateInput($orgId, $input);
+
         $org = $this->repo->org->findOrFailPublic($orgId);
 
         $role->org()->associate($org);
