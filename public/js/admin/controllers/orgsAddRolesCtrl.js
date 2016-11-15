@@ -11,6 +11,7 @@ app.controller('OrgsAddRolesCtrl', [
     $scope.permissions = organization.fetchPermissions();
     $scope.role = {};
     $scope.selected_permissions = {};
+    $scope.select_all = false;
 
     var role_id = $stateParams.id;
 
@@ -49,6 +50,18 @@ app.controller('OrgsAddRolesCtrl', [
     /**
      * Actions
      */
+
+    $scope.selectAll = function() {
+      $scope.selected_permissions = {};
+
+      if ($scope.select_all) {
+        return;
+      }
+
+      $scope.permissions.map(function(perm){
+        $scope.selected_permissions[perm.id] = true;
+      });
+    }
 
     $scope.save = function (role) {
       var body = role;
