@@ -322,6 +322,8 @@ trait PaymentCreationTrait
 
         if ($content['type'] === 'return')
         {
+            $this->assertS2SCallback($response);
+
             $this->merchantCallbackFlow = true;
 
             $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -333,6 +335,14 @@ trait PaymentCreationTrait
             $this->assertResponse('json', $response);
 
             return $response;
+        }
+    }
+
+    protected function assertS2SCallback($response)
+    {
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $this->assertResponse('json', $response);
         }
     }
 

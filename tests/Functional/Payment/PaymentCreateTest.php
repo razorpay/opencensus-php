@@ -187,6 +187,26 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($error['description'], 'The cvv must be between 3 and 4 digits.');
     }
 
+    public function testIntPaymentS2SOnPrivateAuth()
+    {
+        $params = ['key_id' => $this->ba->getKey()];
+        $url = \URL::route('dummy_return_callback', $params, false);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['callback_url'] = 'http://localhost'.$url;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'US',
+            'network' => 'MasterCard',
+        ]);
+
+        $content = $this->doS2SPrivateAuthPayment($payment);
+    }
+
     protected function mockEsClient()
     {
         $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
