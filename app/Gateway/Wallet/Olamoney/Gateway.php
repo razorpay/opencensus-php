@@ -301,7 +301,7 @@ class Gateway extends Base\Gateway
             RequestFields::NOTIFICATION_URL     => $notificationUrl,
             RequestFields::AMOUNT               => $amount,
             RequestFields::CURRENCY             => $input['payment']['currency'],
-            RequestFields::COUPON_CODE          => 'NA',
+            RequestFields::COUPON_CODE          => 'RPAY15',
             RequestFields::USER_ACCESS_TOKEN    => $input['token']['gateway_token'],
         );
 
@@ -823,43 +823,6 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY,
             RequestFields::AMOUNT,
             RequestFields::USER_ACCESS_TOKEN,
-        );
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($orderedData);
-    }
-
-    protected function getHashForOtpGenerate($content)
-    {
-        $fieldsInOrder = array(
-            RequestFields::ACCESS_TOKEN,
-            RequestFields::UNIQUE_ID,
-            RequestFields::COMMENTS,
-            RequestFields::UDF,
-            RequestFields::RETURN_URL,
-            RequestFields::NOTIFICATION_URL,
-            RequestFields::CURRENCY,
-            RequestFields::AMOUNT,
-            RequestFields::COUPON_CODE,
-        );
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($orderedData);
-    }
-
-    protected function getHashForOtpSubmit($content)
-    {
-        $fieldsInOrder = array(
-            RequestFields::ACCESS_TOKEN,
-            RequestFields::COMMAND,
-            RequestFields::COMMENTS,
-            RequestFields::NOTIFICATION_URL,
-            RequestFields::OTP,
-            RequestFields::RETURN_URL,
-            RequestFields::UDF,
-            RequestFields::UNIQUE_ID,
         );
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
