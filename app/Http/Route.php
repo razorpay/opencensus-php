@@ -318,6 +318,7 @@ final class Route
         // 'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
         'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
+        'merchant_attach_admin'                   => ['post',     'merchants/{id}/admins',                          'MerchantController@attachAdmin'                                    ],
 
         // Admin Auth
         'hello_world'                             => ['get',      'world/{mid}',                                    'AdminController@helloWorld'                                        ],
@@ -419,6 +420,7 @@ final class Route
         'merchant_edit_email',
         'merchant_fetch',
         'merchant_fetch_multiple',
+        'merchant_attach_admin',
         'merchant_create_key',
         'merchant_fetch_keys',
         'merchant_replace_key',
@@ -588,7 +590,6 @@ final class Route
 
     public static $admin = [
         'hello_world',
-        'group_create',
         'admin_create',
         'group_get',
         'group_get_multiple',

@@ -73,14 +73,17 @@ class Service extends Base\Service
         $orgId = Org::verifyIdAndStripSign($orgId);
         $id = Entity::verifyIdAndStripSign($id);
 
-        $permIds = [];
-
-        foreach ($input['permissions'] as $permId)
+        if (isset($input['permissions']) === true)
         {
-            $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
-        }
+            foreach ($input['permissions'] as $permId)
+            {
+                $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
+            }
 
-        $input['permissions'] = $permIds;
+            $permIds = [];
+
+            $input['permissions'] = $permIds;
+        }
 
         $role = $this->core->edit($orgId, $id, $input);
 

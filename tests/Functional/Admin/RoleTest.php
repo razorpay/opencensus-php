@@ -90,4 +90,19 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
     }
+
+    public function testEditRole()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+    }
 }

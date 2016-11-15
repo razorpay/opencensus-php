@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Carbon\Carbon;
 use Config;
 use Mail;
+use DB;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -612,5 +613,18 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY, $response);
 
         return $response;
+    }
+
+    public function attachAdmin($id, $input)
+    {
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, $input);
+        $leadId = DB::table('merchant_map')->insert(
+            array(
+                'entity_id'   => $input['admin_id'],
+                'entity_type' => 'admin',
+                'merchant_id' => $id
+            )
+        );
+        return null;
     }
 }

@@ -39,7 +39,7 @@ class Core extends Base\Core
 
     public function edit(string $orgId, string $roleId, array $input)
     {
-        $role = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
+        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
 
         if (isset($input['permissions']) === true)
         {
