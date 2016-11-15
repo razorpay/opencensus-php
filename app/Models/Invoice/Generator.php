@@ -6,6 +6,7 @@ use App;
 use Mail;
 use Config;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
@@ -25,6 +26,8 @@ class Generator extends Base\Core
     protected $bitly;
 
     const ORDER_CURRENCY = 'INR';
+    const SHORT_MODE_LIVE = 'l';
+    const SHORT_MODE_TEST = 't';
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -98,7 +101,7 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = $this->getInvoiceLink($this->invoice->getId());
+        $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
@@ -114,7 +117,7 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    public static function getInvoiceLink($invoiceId)
+    public static function getInvoiceLink($invoiceId, $mode)
     {
         // This is required here because this piece of code is a little prone to bugs.
         // Invoice ID may not be generated at this point due to which we will
@@ -132,7 +135,14 @@ class Generator extends Base\Core
 
         $baseInvoiceUrl = $app['config']->get('app.invoice');
 
-        $invoiceLink = $baseInvoiceUrl . '/i/' . Entity::getSignedId($invoiceId);
+        $shortMode = self::SHORT_MODE_TEST;
+
+        if ($mode === Mode::LIVE)
+        {
+            $shortMode = self::SHORT_MODE_LIVE;
+        }
+
+        $invoiceLink = $baseInvoiceUrl . '/' . $shortMode . '/' . Entity::getSignedId($invoiceId);
 
         return $invoiceLink;
     }

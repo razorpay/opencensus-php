@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -64,17 +65,37 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getInvoiceViewDetails($id)
+    public function getInvoiceViewDetails($invoiceId)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        $keys = $this->repo->key->getKeysForMerchant($this->merchant->getId());
-        $publicKey = $keys->first()->getPublicKey($this->mode);
+        if ($routeName === 'invoice_view_test')
+        {
+            $mode = Mode::TEST;
+        }
+        else
+        {
+            $mode = Mode::LIVE;
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        Entity::verifyIdAndStripSign($invoiceId);
+        $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
+
+        $merchant = $invoice->merchant;
+
+        $keys = $this->repo->key->getKeysForMerchant($merchant->getId());
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        // This is required so that the mode and the db connection are set.
+        // Since this is via direct auth, this will not set on its own.
+        // $this->app['basicauth']->checkAndSetKeyId($publicKey);
 
         return [
             'customer_email'    => $invoice->getCustomerEmail(),
             'customer_contact'  => $invoice->getCustomerContact(),
-            'invoice_id'        => $id,
+            'invoice_id'        => Entity::getSignedId($invoiceId),
             'key_id'            => $publicKey,
             'amount'            => $invoice->order->getAmount(),
             'environment'       => $this->app->environment(),
