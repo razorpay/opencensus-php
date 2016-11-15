@@ -179,22 +179,19 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $content = $this->doS2SPrivateAuthPayment($payment);
+        $response = $this->doS2SPrivateAuthPayment($payment);
 
-        $error = $content['error'];
+        $error = $response['error'];
         $this->assertEquals($error['field'], 'cvv');
         $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
         $this->assertEquals($error['description'], 'The cvv must be between 3 and 4 digits.');
     }
 
-    public function testIntPaymentS2SOnPrivateAuth()
+    public function testNotEnrolledCardPaymentS2SOnPrivateAuth()
     {
-        $params = ['key_id' => $this->ba->getKey()];
-        $url = \URL::route('dummy_return_callback', $params, false);
-
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '555555555555558';
-        $payment['callback_url'] = 'http://localhost'.$url;
+        $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
 
         $this->fixtures->merchant->addFeatures(['s2s']);
         $this->fixtures->merchant->enableInternational();
@@ -204,7 +201,9 @@ class PaymentCreateTest extends TestCase
             'network' => 'MasterCard',
         ]);
 
-        $content = $this->doS2SPrivateAuthPayment($payment);
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
     protected function mockEsClient()
