@@ -34,7 +34,7 @@ export default ({ invoices, isLoading }) => {
 
   return (
     <div className='table-responsive'>
-      <table className='table'>
+      <table className='table table-hover'>
         <thead>
           <tr>
             <th>Invoice Date</th>

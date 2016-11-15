@@ -8,7 +8,7 @@ const PlansListItem = (props) => {
       <td>{plan.name}</td>
       <td>{plan.amount}</td>
       <td>{plan.interval_count} {plan.interval}</td>
-      <td>
+      <td class='row-action'>
         <div class='btn-group'>
           <button
             class='btn btn-xs btn-default'
@@ -47,8 +47,8 @@ export default ({ plans, isLoading, onEdit, onDelete }) => {
   }
 
   return (
-    <div className='table-responsive'>
-      <table className='table'>
+    <div class='table-responsive'>
+      <table class='table table-hover'>
         <thead>
           <tr>
             <th>Plan Name</th>

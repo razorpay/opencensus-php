@@ -8,7 +8,7 @@ const ItemsListItem = (props) => {
       <td>{item.name}</td>
       <td>{item.description}</td>
       <td>{item.rate}</td>
-      <td>
+      <td class='row-action'>
         <div class='btn-group'>
           <button
             class='btn btn-xs btn-default'
@@ -47,8 +47,8 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
   }
 
   return (
-    <div className='table-responsive'>
-      <table className='table'>
+    <div class='table-responsive'>
+      <table class='table table-hover'>
         <thead>
           <tr>
             <th>Item Name</th>

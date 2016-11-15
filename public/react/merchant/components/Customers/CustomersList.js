@@ -8,7 +8,7 @@ const CustomersListItem = (props) => {
       <td>{customer.name}</td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
-      <td>
+      <td class='row-action'>
         <div class='btn-group'>
           <button
             class='btn btn-xs btn-default'
@@ -48,7 +48,7 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
 
   return (
     <div className='table-responsive'>
-      <table className='table'>
+      <table className='table table-hover'>
         <thead>
           <tr>
             <th>Customer Name</th>
