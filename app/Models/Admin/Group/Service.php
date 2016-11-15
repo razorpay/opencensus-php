@@ -64,7 +64,7 @@ class Service extends Base\Service
         return $group->toArrayPublic();
     }
 
-    public function putGroup(string $orgId, string $groupId, array $input)
+    public function editGroup(string $orgId, string $groupId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $groupId = Entity::verifyIdAndStripSign($groupId);

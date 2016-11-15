@@ -20,24 +20,12 @@ class Core extends Base\Core
 
         if (isset($input['admins']) === true)
         {
-            $admins = $this->repo->admin->retrieveByIds(
-                $orgId, $input['admins']);
-
-            foreach ($admins as $admin)
-            {
-                $group->admins()->attach($admin);
-            }
+            $group->admins()->sync($input['admins']);
         }
 
         if (isset($input['sub_groups']) === true)
         {
-            $subGroups = $this->repo->group->retrieveByIds(
-                $orgId, $input['sub_groups']);
-
-            foreach ($subGroups as $subGroup)
-            {
-                $group->subGroups()->attach($subGroup);
-            }
+            $group->subGroups()->sync($input['sub_groups']);
         }
 
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
@@ -61,21 +49,19 @@ class Core extends Base\Core
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $groupId);
 
+        $group->edit($input);
+
         if (isset($input['admins']) === true)
         {
             $group->admins()->sync($input['admins']);
-
-            unset($input['admins']);
         }
 
         if (isset($input['sub_groups']) === true)
         {
             $group->subGroups()->sync($input['sub_groups']);
-
-            unset($input['sub_groups']);
         }
 
-        $group->edit($input);
+        $this->repo->saveOrFail($group);
 
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $groupId);

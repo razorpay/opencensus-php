@@ -300,7 +300,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->putGroup($id, $groupId, $input);
+        $data = (new Admin\Group\Service)->editGroup($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
