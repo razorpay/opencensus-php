@@ -1170,7 +1170,8 @@ trait Authorize
             $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
-        if ($payment->getCallbackUrl())
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($payment->getCallbackUrl()))
         {
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
