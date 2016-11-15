@@ -19,6 +19,27 @@ class Core extends Base\Core
     {
         $org = $this->repo->org->findOrFail($id);
 
+        $groups = $this->repo->group->fetchGroupsForOrg($id);
+
+        $admins = $this->repo->admin->fetchAdminsForOrg($id);
+
+        $roles = $this->repo->role->fetchRolesForOrg($id);
+
+        foreach ($groups as $entity)
+        {
+            $this->repo->deleteOrFail($entity);
+        }
+
+        foreach ($admins as $entity)
+        {
+            $this->repo->deleteOrFail($entity);
+        }
+
+        foreach ($roles as $entity)
+        {
+            $this->repo->deleteOrFail($entity);
+        }
+
         $this->repo->deleteOrFail($org);
 
         return ['success' => true];
