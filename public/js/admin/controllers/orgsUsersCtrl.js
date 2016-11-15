@@ -134,8 +134,6 @@ app.controller('OrgsUsersCtrl', [
         }
       });
     }
-
-
   }
 ]).controller('newAdminModalCtrl', [
   '$scope',
