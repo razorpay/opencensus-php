@@ -161,7 +161,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals($capturedPayment['id'], 'pay_' . $response['payment_id']);
+        $this->assertEquals($capturedPayment['id'], $response['razorpay_payment_id']);
     }
 
     public function testGetInvoiceStatusAfterOneWeek()

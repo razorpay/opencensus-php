@@ -280,9 +280,7 @@ return [
             'content' => [],
         ],
         'response' => [
-            'content' => [
-                'status' => 'paid',
-            ],
+            'content' => [],
         ],
     ],
 
@@ -332,7 +330,6 @@ return [
         'response' => [
             'content' => [
                 'status' => 'issued',
-                'payment_id' => null,
             ],
         ],
     ],
