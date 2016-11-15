@@ -10,6 +10,9 @@
       <div class="panel-heading">
         List of all Organzations
       </div>
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="row wrapper">
         <div class="col-md-6 m-b-xs">
           <label for='filter' class='m-r'>Search</label>

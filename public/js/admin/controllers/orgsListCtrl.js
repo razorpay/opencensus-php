@@ -9,6 +9,19 @@ app.controller('OrgsListCtrl', [
     $scope.organizations = [];
     $scope.count = 0;
 
+    function findOrgIndexById(id) {
+      var index = null;
+
+      $scope.organizations.forEach(function (v, i) {
+        if (v.id === id) {
+          index = i;
+        }
+      });
+
+      // returned index can be 0 so don't just do a if (index)
+      return index;
+    }
+
     /**
      * Modal openers
      */
@@ -60,7 +73,7 @@ app.controller('OrgsListCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization added', true);
-          $scope.organizations.push(data.data);
+          $scope.organizations.unshift(data.data);
           $scope.count = $scope.organizations.length;
         }
         else {
@@ -123,13 +136,7 @@ app.controller('OrgsListCtrl', [
         if (data.success) {
           // Update the org model (todo: make this a helper)
 
-          var index = null;
-
-          $scope.organizations.forEach(function (v, i) {
-            if (v.id === data.data.id) {
-              index = i;
-            }
-          });
+          var index = findOrgIndexById(data.data.id);
 
           if (index !== null) {
             $scope.organizations[index] = data.data;
@@ -161,10 +168,15 @@ app.controller('OrgsListCtrl', [
       request.success(function (data) {
         /* TODO: change this */
         if (data.success) {
-          $scope.organizations = $scope.organizations.filter(function (x) {
-            return x.id !== id
-          });
+          var index = findOrgIndexById(id);
+
+          if (index !== null) {
+            $scope.organizations.splice(index, 1);
+          }
+
           $scope.count = $scope.organizations.length;
+
+          $scope.alerts.addAlert('success', 'Organization deleted', true);
         }
       });
     };
