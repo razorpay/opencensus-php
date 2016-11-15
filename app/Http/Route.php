@@ -277,7 +277,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'upi_add_provider'                        => ['put',      'upi/add_provider_code',                          'UpiController@addProviderCode'                                     ],
+        'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
     );
 
     public static $public = array(
@@ -496,7 +496,7 @@ final class Route
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
-        'upi_add_provider',
+        'upi_fill_provider',
         'methods_update_merchants',
     );
 

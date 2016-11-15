@@ -17,7 +17,7 @@ class UpiController extends Controller
     {
         $batchSize = 500;
         
-        while (true) 
+        while (true)
         {
             $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize);
             

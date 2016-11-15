@@ -14,6 +14,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Utility;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -111,7 +112,9 @@ class Gateway extends Base\Gateway
     {
         $vpa = $input['payment']['vpa'];
 
-        $pspCode = explode('@', $vpa)[1] ?? NULL;
+        $vpaParts = explode('@', $vpa);
+
+        $pspCode = ProviderCode::getBankCode($vpaParts[1]);
 
         return [
             Entity::VPA         => $vpa,

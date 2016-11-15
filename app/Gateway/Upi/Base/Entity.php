@@ -67,7 +67,8 @@ class Entity extends Base\Entity
         $this->setAttribute(self::BANK, $bank);
     }
 
-    public function setProvider($provider) {
+    public function setProvider($provider)
+    {
         $this->setAttribute(self::PROVIDER, $provider);
     }
 
@@ -86,7 +87,8 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
-    public function extractProviderFromVpa() {
+    public function extractProviderFromVpa()
+    {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
