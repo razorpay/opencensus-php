@@ -364,7 +364,6 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
-        'pricing_update_transactions'
     );
 
     public static $internal = array(
