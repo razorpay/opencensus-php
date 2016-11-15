@@ -67,4 +67,20 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testEditRole' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test Admin LOL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'        => 'test Admin LOL',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
