@@ -623,8 +623,6 @@ final class Route
         'group_roles_create',
         'group_admins_delete',
         'permission_get_multiple',
-        'password_login',
-        'oauth_login',
     ];
 
     public static $adminPermission = [
