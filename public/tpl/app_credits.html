@@ -30,8 +30,48 @@
           <span class="pull-right">{{fee_credits/100|rupee}}</span>
           Fee Credits
         </a>
+
+        <!-- Credits -->
+
+        <a href class="list-group-item" ng-init="isCreditsLogCollapsed = true">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right" ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
+                    ng-show="creditsLog.items.length != 0">
+              Show/Hide
+            </button>
+            <span ng-hide="creditsLog.items.length != 0">
+              No credits Assigned
+            </span>
+            </span>
+          Credits
+        </a>
+
+        <div collapse="isCreditsLogCollapsed" class="panel-body">
+
+          <div class="list-group-item">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <th>Id</th>
+                  <th>Campaign</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Created At</th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="credit in creditsLog.items">
+                  <td>{{credit.id}}</td>
+                  <td>{{credit.campaign}}</td>
+                  <td>{{credit.type}}</td>
+                  <td>{{credit.value/100 | rupee:"INR "}}</td>
+                  <td>{{credit.created_at*1000 | date:'short'}}</td>
+                </tr>
+              </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
