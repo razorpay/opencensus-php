@@ -94,6 +94,8 @@ class InvoiceTest extends TestCase
         $address = $this->getLastEntity('address', true);
 
         $this->assertEquals('shipping_address', $address['type']);
+        $this->assertEquals('1', $address['primary']);
+        $this->assertEquals($response['customer_id'], $address['entity_id']);
         $this->assertEquals('customer', $address['entity_type']);
     }
 

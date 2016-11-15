@@ -43,7 +43,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         //self::LISTING_ID,
-        // self::CURRENCY,
+        self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::MERCHANT_ID,
@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        // self::CURRENCY,
+        self::CURRENCY,
         self::QUANTITY,
         self::CREATED_AT,
     ];

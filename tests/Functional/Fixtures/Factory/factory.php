@@ -277,6 +277,7 @@ $factory(\RZP\Models\Invoice\Entity::class, [
     'due_by' => $faker->timestamp,
     'scheduled_at' => $faker->timestamp,
     'amount' => 100000,
+    'currency' => 'INR',
 ]);
 
 $factory(\RZP\Models\LineItem\Entity::class, [

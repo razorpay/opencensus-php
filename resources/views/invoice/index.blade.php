@@ -14,6 +14,7 @@
       }
     </script>
     @endif
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
     body {
@@ -46,6 +47,15 @@
       text-align: left;
       line-height: 24px;
     }
+    #failure {
+      background: #EF6050;
+      border-radius: 2px;
+      box-shadow: 0 2px 9px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 30px auto;
+      width: 80%;
+      max-width: 300px;
+    }
     span {
       float: right;
     }
@@ -62,27 +72,35 @@
     </div>
   </div>
 </body>
-  <script>
-    var data = {!!utf8_json_encode($data)!!};
-    var options = {
-      key: data.key_id,
-      invoice_id: data.invoice_id,
-      amount: data.amount,
-      description: 'Invoice #' + data.invoice_id,
-      handler: function(response) {
-        document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
-        document.querySelector('#success').style.display = 'block';
-      },
-      prefill: {
-        contact: data.customer_contact,
-        email: data.customer_email
-      },
-      theme: {
-        close_button: false
-      },
-      modal: {
-        confirm_close: true
+
+  @if ($data['view_less'] === true)
+    <script>
+      var data = {!!utf8_json_encode($data)!!};
+      var options = {
+        key: data.key_id,
+        invoice_id: data.invoice_id,
+        amount: data.amount,
+        description: 'Invoice #' + data.invoice_id,
+        handler: function(response) {
+          document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
+          document.querySelector('#success').style.display = 'block';
+        },
+        prefill: {
+          contact: data.customer_contact,
+          email: data.customer_email
+        },
+        theme: {
+          close_button: false
+        },
+        modal: {
+          confirm_close: true
+        }
       }
-    }
-    Razorpay.open(options);
-  </script>
+      Razorpay.open(options);
+    </script>
+  @else
+    <div id='failure' style='display: none'>
+      <h3>This invoice cannot be displayed. Please contact the merchant for assistance.</h3>
+    </div>
+  @endif
+

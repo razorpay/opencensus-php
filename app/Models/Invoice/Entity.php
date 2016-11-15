@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
         // self::TERMS,
         self::NOTES,
         self::VIEW_LESS,
+        self::CURRENCY,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -135,6 +136,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::NOTES,
+        self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
         self::AMOUNT,
@@ -159,6 +161,7 @@ class Entity extends Base\PublicEntity
         // self::TERMS,
         self::AMOUNT,
         self::NOTES,
+        self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
         // self::TOTAL_AMOUNT,
@@ -231,6 +234,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getPaymentId()
@@ -449,19 +457,14 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\LineItem\Entity');
     }
 
-    // TODO: We don't need to really store merchant in this entity. Invoice is
-    // already associated with an order, which in turn is associated with
-    // a  merchant. But, I don't want to tightly couple orders with invoices,
-    // wherever possible. Orders was not initially meant for this kind of use-case.
-    // The more we couple orders to other entities, its purpose gets lost and the
-    // complexity increases exponentially with every new feature using orders.
-    //
-    // Also, querying becomes easier by storing the merchant in the invoices table itself.
-    // Lesser complexity.
-    // Thoughts please.
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function address()
+    {
+        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_address');
     }
 
     // -------------------------------------- End Relations --------------------------------------

@@ -23,6 +23,7 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -75,6 +76,7 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -106,16 +108,15 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'customer'  => [
-                    'id' => 'cust_100000customer',
-                ],
+                'customer_id' => 'cust_100000customer',
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
                     ]
-                ]
+                ],
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -148,9 +149,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'customer'  => [
-                    'id' => 'cust_100000customer',
-                ],
+                'customer_id' => 'cust_100000customer',
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
@@ -163,7 +162,8 @@ return [
                         'amount'        => 200000,
                         'quantity'      => 2,
                     ]
-                ]
+                ],
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -188,6 +188,7 @@ return [
                         'quantity'      => 2,
                     ]
                 ],
+                'currency' => 'INR',
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
@@ -202,9 +203,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'customer'  => [
-                    'id' => 'cust_100000customer',
-                ],
+                'customer_id' => 'cust_100000customer',
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
@@ -214,6 +213,7 @@ return [
                 ],
                 'sms_notify' => 0,
                 'email_notify' => 1,
+                'currency' => 'INR',
             ],
         ],
         'response' => [

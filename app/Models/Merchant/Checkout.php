@@ -23,6 +23,8 @@ class Checkout
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
     }
 
     public function getPreferences(Entity $merchant, $mode, array $input)
@@ -40,6 +42,8 @@ class Checkout
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
+        $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
     }
@@ -66,7 +70,7 @@ class Checkout
     {
         $sessionData = $this->app['request']->session()->all();
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
@@ -74,6 +78,16 @@ class Checkout
                 'session'     => $sessionData,
                 'input'       => $input
             ]);
+    }
+
+    protected function tracePreferencesResponse(Entity $merchant, array $response)
+    {
+        $this->trace->info(
+            TraceCode::CHECKOUT_PREFERENCES_RESPONSE,
+            [
+                'merchant_id' => $merchant->getId(),
+                'response' => $response,
+            ])
     }
 
     protected function fetchTPVOrderInfo(array $input)
@@ -87,7 +101,7 @@ class Checkout
         }
         catch(\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
 
         return $orderData ;
@@ -128,7 +142,7 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
 
         return $custData;
@@ -214,7 +228,7 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
      }
 

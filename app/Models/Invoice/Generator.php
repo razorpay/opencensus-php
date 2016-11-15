@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Trace\TraceCode;
 
 class Generator extends Base\Core
 {
@@ -38,7 +39,13 @@ class Generator extends Base\Core
     {
         $this->invoice = new Entity();
 
-        $customerDetails = $input[Entity::CUSTOMER];
+        $customerDetails = [];
+
+        if (isset($input[Entity::CUSTOMER]))
+        {
+            $customerDetails = $input[Entity::CUSTOMER];
+        }
+
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
         $this->invoice->build($input);
@@ -46,7 +53,7 @@ class Generator extends Base\Core
         $this->repo->transaction(
             function() use ($lineItemsDetails, $customerDetails, $input)
             {
-                $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails);
+                $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
 
                 $this->setCustomerDetailsAttributes();
 
@@ -93,6 +100,15 @@ class Generator extends Base\Core
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
+        $this->trace->info(
+            TraceCode::INVOICE_LINKS,
+            [
+                'invoice_id' => $this->invoice->getId(),
+                'short_url' => $shortenedUrl,
+                'long_url' => $longUrl,
+            ]
+        );
+
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
@@ -125,7 +141,7 @@ class Generator extends Base\Core
         }
     }
 
-    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails)
+    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails, array $input)
     {
         $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
@@ -135,7 +151,7 @@ class Generator extends Base\Core
         $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);
 
-        $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails);
+        $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
         $this->invoice->customer()->associate($this->customer);
 
         $this->invoice->merchant()->associate($this->merchant);
@@ -147,6 +163,8 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
+            $lineItemsDetails[LineItem\Entity::CURRENCY] = $this->invoice->getCurrency();
+
             // Not supporting creating new line items from existing line items, currently.
             $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
 
@@ -186,24 +204,32 @@ class Generator extends Base\Core
             Order\Entity::PAYMENT_CAPTURE   => true,
         ];
 
-        $order = (new Order\Core())->create($orderInput, $this->merchant);
+        $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         return $order;
     }
 
-    protected function getExistingOrCreateCustomerFromInput($customerDetails)
+    protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
     {
-        if (isset($customerDetails[Customer\Entity::ID]) === true)
+        if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
-            $customerId = $customerDetails[Customer\Entity::ID];
+            $customerId = $input[Entity::CUSTOMER_ID];
 
             Customer\Entity::verifyIdAndStripSign($customerId);
 
             $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+
+            $this->trace->info(
+                TraceCode::INVOICE_EXISTING_CUSTOMER,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                    'customer_id' => $customer->getId(),
+                    'customer_input_details' => $customerDetails,
+                ]);
         }
         else
         {
-            $customer = (new Customer\Core())->createLocalCustomer($customerDetails, $this->merchant, false);
+            $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
         }
 
         return $customer;

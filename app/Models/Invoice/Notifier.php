@@ -113,7 +113,7 @@ class Notifier extends Base\Core
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
-            
+
             $this->trace->error(
                 TraceCode::INVOICE_INVALID_CONTACT_NUMBER,
                 [
@@ -121,7 +121,7 @@ class Notifier extends Base\Core
                     'invoice_id' => $this->invoice->getId(),
                 ]
             );
-            
+
             return false;
         }
 
@@ -148,6 +148,13 @@ class Notifier extends Base\Core
             'subject'       => $subject,
             'invoice_link'  => $this->invoice->getShortUrl(),
         ];
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_REQUEST,
+            [
+                'invoice_id' => $this->invoice->getId(),
+                'request' => $data,
+            ]);
 
         Mail::queue('emails.invoice.generated', $data, function($message) use ($data)
         {
@@ -179,6 +186,11 @@ class Notifier extends Base\Core
             'sms_sent'      => $sentSmsCount,
             'email_sent'    => $sentEmailCount,
         ];
+
+        $this->trace->info(
+            TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY,
+            $results
+        );
 
         $this->postSummaryToSlack($results);
 
@@ -274,6 +286,13 @@ class Notifier extends Base\Core
                 'amount'        => $this->invoice->getAmount() / 100,
             ]
         ];
+
+        $this->trace->info(
+            TraceCode::INVOICE_RAVEN_REQUEST,
+            [
+                'invoice_id' => $this->invoice->getId(),
+                'request' => $request,
+            ]);
 
         return $request;
     }

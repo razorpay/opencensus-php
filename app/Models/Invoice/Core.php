@@ -36,7 +36,17 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
+        $this->trace->info(
+            TraceCode::INVOICE_CREATE_REQUEST,
+            $input
+        );
+
         $invoice = (new Generator($this->merchant))->generate($input);
+
+        $this->trace->info(
+            TraceCode::INVOICE_CREATED,
+            $invoice->toArrayPublic()
+        );
 
         return $invoice;
     }
