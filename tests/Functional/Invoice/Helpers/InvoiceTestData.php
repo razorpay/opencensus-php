@@ -198,6 +198,58 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'item_id'       => 'item_1000000000item',
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ],
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email' => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name' => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name' => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount' => 100000,
+                        'quantity' => 1,
+                    ],
+                ],
+                'currency' => 'INR',
+                'status' => 'issued',
+                'sms_status' => 'sent',
+                'email_status' => 'sent',
+                'view_less' => true,
+                'amount' => 600000
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue' => [
         'request' => [
             'url' => '/invoices',
