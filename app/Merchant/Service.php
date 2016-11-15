@@ -540,6 +540,49 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function getInvoices($mode)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->invoice->all()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function createInvoice($mode, $input)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = [];
+        $data = null;
+
+        try
+        {
+            // This is just semantics
+            // completely equivalent to all() for now
+            $data = $this->api->invoice->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
     /**
      * Remove the team member on the given merchant.
      *
