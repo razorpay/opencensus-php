@@ -65,4 +65,11 @@ class Service extends Base\Service
 
         return $mailer->send();
     }
+    
+    public function processEmailFailure($input)
+    {
+        (new Validator)->validateInput('process_email_failure', $input);
+        
+        return (new Mailgun)->processEmailFailureCheck($input);
+    }
 }

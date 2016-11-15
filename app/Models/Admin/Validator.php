@@ -19,4 +19,18 @@ class Validator extends Base\Validator
         'lists'   => 'required|max:100',
         'template'=> 'required|max:255'
     ];
+    
+    protected static $processEmailFailureRules = [
+        'token'             => 'required',
+        'signature'         => 'required',
+        'timestamp'         => 'required',
+        'recipient'         => 'required',
+        'event'             => 'sometimes',
+        'X-Mailgun-Sid'     => 'sometimes',
+        'domain'            => 'sometimes',
+        'X-Mailgun-Tag'     => 'sometimes',
+        'message-headers'   => 'sometimes',
+        'Message-Id'        => 'sometimes',
+        'body-plain'        => 'sometimes'
+    ];
 }

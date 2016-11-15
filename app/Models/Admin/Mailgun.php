@@ -26,7 +26,7 @@ class Mailgun
      * @param type $input Request input
      * @return int statusCode
      */
-    public function processEmailNotifyCheck($input)
+    public function processEmailFailureCheck($input)
     {
         if (isset($input['X-Mailgun-Tag']) === false)
         {

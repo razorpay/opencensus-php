@@ -78,7 +78,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $responseStatus = (new Admin\Mailgun)->processEmailNotifyCheck($input);
+        $responseStatus = (new Admin\Service)->processEmailFailure($input);
 
         return ApiResponse::json([], $responseStatus);
     }
