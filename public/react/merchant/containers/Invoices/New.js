@@ -32,6 +32,7 @@ const selector = formValueSelector('newInvoice')
 @reduxForm({
   form: 'newInvoice',
   initialValues: {
+    invoice_date: Math.ceil(new Date().getTime()/1000),
     due_on: 30,
     notes: 'Thanks for your business',
     items: [

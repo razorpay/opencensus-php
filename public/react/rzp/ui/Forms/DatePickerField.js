@@ -27,7 +27,7 @@ export default class DatePickerField extends Component {
       ...otherProps
     } = this.props
 
-    let date = (input.value && moment(input.value, 'D/M/Y')) || ''
+    let date = (input.value && moment.unix(input.value, this.props.displayFormat)) || ''
 
     return (
       <SingleDatePicker
@@ -35,7 +35,9 @@ export default class DatePickerField extends Component {
         date={date}
         focused={focused}
         isOutsideRange={isOutsideRange}
-        onDateChange={input.onChange}
+        onDateChange={(date) => {
+          input.onChange(date.unix())
+        }}
         onFocusChange={this.handleFocusChange}
         {...otherProps}
       />
