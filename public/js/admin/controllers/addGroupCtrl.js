@@ -48,7 +48,7 @@ app.controller('AddGroupCtrl', [
         url: '/admin/generic',
         method: 'POST',
         params: {
-          route_name: 'role_create'
+          route_name: 'group_create'
         },
         data: {
           body: body
@@ -57,7 +57,7 @@ app.controller('AddGroupCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Role added', true);
+          $scope.alerts.addAlert('success', 'Group added', true);
         } else {
           $scope.alerts.resetAlerts();
 
