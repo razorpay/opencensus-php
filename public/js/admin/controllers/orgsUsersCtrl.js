@@ -179,6 +179,12 @@ app.controller('OrgsUsersCtrl', [
     $scope.user = current;
 
     $scope.selectAll = function() {
+      /**
+       * I'm using a hack here, for some reason the ng-model for select_all
+       * was not working in the modal. The state is being maintained in the
+       * controller
+       */
+
       $scope.selected_groups = {};
       $scope.select_all = !$scope.select_all;
 
