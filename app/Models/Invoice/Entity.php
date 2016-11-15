@@ -60,7 +60,6 @@ class Entity extends Base\PublicEntity
     // ------------------------- Output Keys --------------------------------------
 
     const CUSTOMER_DETAILS      = 'customer_details';
-    const LINE_ITEMS_DETAILS    = 'line_items_details';
 
     // ------------------------ Output Keys End -----------------------------------
 
@@ -129,7 +128,7 @@ class Entity extends Base\PublicEntity
         self::DUE_BY,
         self::SCHEDULED_AT,
         self::CUSTOMER_DETAILS,
-        self::LINE_ITEMS_DETAILS,
+        self::LINE_ITEMS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
@@ -151,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ORDER_ID,
         self::CUSTOMER_DETAILS,
-        self::LINE_ITEMS_DETAILS,
+        self::LINE_ITEMS,
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
@@ -173,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::ENTITY,
         self::CUSTOMER_DETAILS,
+        self::LINE_ITEMS,
     ];
 
     // The functions for these fields will be called only
@@ -182,7 +182,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::ORDER_ID,
-        self::LINE_ITEMS_DETAILS,
     ];
 
     protected $casts = [
@@ -330,14 +329,16 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    protected function getLineItemsAttribute()
+    {
+        $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
+
+        return $lineItems;
+    }
+
     // -------------------------------------- End Accessors --------------------------------------
 
     // -------------------------------------- Public Setters --------------------------------------
-
-    protected function setPublicLineItemsDetailsAttribute(array & $array)
-    {
-        $array[self::LINE_ITEMS_DETAILS] = $this->lineItems()->getResults()->toArrayPublicEmbedded();
-    }
 
     protected function setPublicCustomerIdAttribute(array & $array)
     {

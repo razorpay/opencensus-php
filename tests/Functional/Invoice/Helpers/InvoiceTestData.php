@@ -34,7 +34,7 @@ return [
                     'customer_name' => 'test',
                     'customer_address' => null,
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -86,7 +86,7 @@ return [
                     'customer_contact' => '9999999999',
                     'customer_name' => 'test',
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -127,7 +127,7 @@ return [
                     'customer_name' => 'test',
                     'customer_address' => null,
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -174,7 +174,7 @@ return [
                     'customer_name' => 'test',
                     'customer_address' => null,
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -224,7 +224,7 @@ return [
                     'customer_name' => 'test',
                     'customer_address' => null,
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -254,7 +254,7 @@ return [
                     'customer_name' => 'test',
                     'customer_address' => null,
                 ],
-                'line_items_details' => [
+                'line_items' => [
                     [
                         'name' => 'Some item name',
                         'description' => 'Some item description',
@@ -300,7 +300,7 @@ return [
                         'id' => 'inv_100000invoice2',
                         'customer_id' => 'cust_100000customer',
                         'order_id' => 'order_10000000order2',
-                        'line_items_details' => [
+                        'line_items' => [
                             [
                                 'id' => 'li_10000lineitem2',
                             ]
@@ -311,7 +311,7 @@ return [
                         'id' => 'inv_1000000invoice',
                         'customer_id' => 'cust_100000customer',
                         'order_id' => 'order_100000000order',
-                        'line_items_details' => [
+                        'line_items' => [
                             [
                                 'id' => 'li_100000lineitem',
                             ]
