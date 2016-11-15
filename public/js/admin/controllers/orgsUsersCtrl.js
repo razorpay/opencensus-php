@@ -25,7 +25,7 @@ app.controller('OrgsUsersCtrl', [
         controller: 'editOrgUserModalCtrl',
         resolve: {
           current: function () {
-            return jQuery.extend({}, $scope.selected[0]);
+            return jQuery.extend(true, {}, $scope.selected[0]);
           },
           roles: function () {
             return jQuery.extend(true, {}, $scope.roles);
