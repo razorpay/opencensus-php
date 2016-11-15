@@ -19,11 +19,28 @@ use RZP\Trace\TraceCode;
 
 class Generator extends Base\Core
 {
+    /**
+     * @var Entity
+     */
     protected $invoice;
+
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
+
+    /**
+     * @var Customer\Entity
+     */
     protected $customer;
+
     protected $lineItems;
+
+    /**
+     * @var LineItem\Core
+     */
     protected $lineItemCore;
+
     protected $bitly;
 
     const ORDER_CURRENCY = 'INR';
@@ -38,12 +55,12 @@ class Generator extends Base\Core
 
         $this->bitly = $this->app['bitly'];
 
-        $this->lineItemCore = new LineItem\Core();
+        $this->lineItemCore = new LineItem\Core;
     }
 
     public function generate(array $input)
     {
-        $this->invoice = new Entity();
+        $this->invoice = new Entity;
 
         $customerDetails = [];
 
