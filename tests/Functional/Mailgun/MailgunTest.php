@@ -1,18 +1,18 @@
 <?php
 
-namespace RZP\Tests\Functional\EmailNotify;
+namespace RZP\Tests\Functional\Mailgun;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Constants\MailTags;
 
-class EmailNotifyTest extends TestCase
+class MailgunTest extends TestCase
 {
     use RequestResponseFlowTrait;
     
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/EmailNotifyTestData.php';
+        $this->testDataFilePath = __DIR__.'/MailgunTestData.php';
         
         parent::setUp();
         

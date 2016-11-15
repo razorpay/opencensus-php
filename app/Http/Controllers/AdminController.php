@@ -73,4 +73,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    public function postEmailFailureCallback()
+    {
+        $input = Request::all();
+
+        $responseStatus = (new Admin\Mailgun)->processEmailNotifyCheck($input);
+
+        return ApiResponse::json([], $responseStatus);
+    }
 }

@@ -10,7 +10,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/email_notify/failure',
+            'url' => '/admin/email_hook/failure',
         ],
         'response' => [
             'status_code' => 200,
@@ -25,7 +25,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/email_notify/failure',
+            'url' => '/admin/email_hook/failure',
         ],
         'response' => [
             'status_code' => 406,
@@ -41,7 +41,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/email_notify/failure',
+            'url' => '/admin/email_hook/failure',
         ],
         'response' => [
             'status_code' => 406,
