@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         // self::SHIPPING          => 0,
         self::NOTES             => [],
         self::SHORT_URL         => null,
-        self::VIEW_LESS         => true,
+        self::VIEW_LESS         => 1,
     ];
 
     // Generates fields to be filled in the DB.
