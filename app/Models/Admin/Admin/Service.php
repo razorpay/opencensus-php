@@ -109,6 +109,42 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
+        }
+
+        if (isset($input['groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['groups'] as $id)
+            {
+                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['groups'] = $groupIds;
+        }
+
+        if (isset($input['merchants']) === true)
+        {
+            $merchantIds = [];
+
+            foreach ($input['merchants'] as $id)
+            {
+                $merchantIds[] = Merchant\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['merchants'] = $merchantIds;
+        }
+
         $admin = $this->core->create($orgId, $input);
 
         return $admin->toArrayPublic();
@@ -261,6 +297,30 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);
+
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
+        }
+
+        if (isset($input['groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['groups'] as $id)
+            {
+                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['groups'] = $groupIds;
+        }
 
         $admin = $this->core->edit($orgId, $adminId, $input);
 

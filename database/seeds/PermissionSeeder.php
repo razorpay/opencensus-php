@@ -112,6 +112,7 @@ class PermissionSeeder extends Seeder
             'delete_group' => '',
 
             'view_all_admin' => '',
+            'view_admin' => '',
             'edit_admin' => '',
             'delete_admin' => '',
             'create_admin' => '',

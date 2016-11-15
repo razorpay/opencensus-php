@@ -29,26 +29,17 @@ class Core extends Base\Core
 
         if (isset($input['roles']) === true)
         {
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleId = Role\Entity::verifyIdAndStripSign($roleId);
-
-                $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
-
-                $admin->roles()->attach($role);
-            }
+            $admin->roles()->sync($input['roles']);
         }
 
         if (isset($input['merchants']) === true)
         {
-            foreach ($input['merchants'] as $id)
-            {
-                $id = Merchant\Entity::verifyIdAndStripSign($id);
+            $admin->merchants()->sync($input['merchants']);
+        }
 
-                $merchant = $this->repo->merchant->findOrFail($id);
-
-                $admin->merchants()->attach($merchant);
-            }
+        if (isset($input['groups']) === true)
+        {
+            $admin->groups()->sync($input['groups']);
         }
 
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
@@ -115,6 +106,24 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($admin);
+
+        if (isset($input['roles']) === true)
+        {
+            $admin->roles()->sync($input['roles']);
+        }
+
+        if (isset($input['merchants']) === true)
+        {
+            $admin->merchants()->sync($input['merchants']);
+        }
+
+        if (isset($input['groups']) === true)
+        {
+            $admin->groups()->sync($input['groups']);
+        }
+
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $orgId, $admin->getId());
 
         return $admin;
     }

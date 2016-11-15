@@ -282,4 +282,23 @@ class Entity extends Base\PublicEntity
 
         return json_decode($oldPasswords, true);
     }
+
+    public function toArrayPublic()
+    {
+         $admin = parent::toArrayPublic();
+
+         $roles = $this->roles;
+
+         $admin['roles'] = $roles->toArrayPublic()['items'];
+
+         $merchants = $this->merchants;
+
+         $admin['merchants'] = $merchants->toArrayPublic()['items'];
+
+         $groups = $this->groups;
+
+         $admin['groups'] = $groups->toArrayPublic()['items'];
+
+         return $admin;
+    }
 }

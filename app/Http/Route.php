@@ -633,7 +633,6 @@ final class Route
         'admin_create'               => ['create_admin'],
         'group_get'                  => ['view_group'],
         'group_get_multiple'         => ['view_all_group'],
-        'admin_get'                  => ['view_admin'],
         'org_create'                 => ['create_org'],
         'org_get_multiple'           => ['view_all_org'],
         'org_edit'                   => ['edit_org'],

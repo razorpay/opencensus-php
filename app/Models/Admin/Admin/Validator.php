@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::EMPLOYEE_CODE       => 'required|string',
         'roles'                     => 'sometimes|array',
         'merchants'                 => 'sometimes|array',
+        'groups'                    => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -41,6 +42,7 @@ class Validator extends Base\Validator
         Entity::EMAIL               => 'sometimes|email',
         'roles'                     => 'sometimes|array',
         'merchants'                 => 'sometimes|array',
+        'groups'                    => 'sometimes|array',
     ];
 
     protected static $loginRules = [
