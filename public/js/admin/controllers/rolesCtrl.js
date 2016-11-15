@@ -23,7 +23,7 @@ app.controller('RolesCtrl', [
         controller: 'editRoleCtrl',
         resolve: {
           current: function () {
-            return jQuery.extend({}, $scope.selected[0]);
+            return jQuery.extend(true, {}, $scope.selected[0]);
           },
           permissions: function () {
             return jQuery.extend({}, $scope.permissions);
