@@ -42,7 +42,7 @@
               </thead>
               <tbody>
                 <tr ng-repeat="(key, row) in groups">
-                  <td><input type="checkbox" name='groups[]' ng-model='selected_all_groups[row.id]' value="{{row.id}}"></td>
+                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.code]' value="{{row.id}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
                 </tr>

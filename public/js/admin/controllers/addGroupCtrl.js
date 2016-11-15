@@ -43,7 +43,7 @@ app.controller('AddGroupCtrl', [
             description: data.data.description,
           };
 
-          data.data.groups.forEach(function (group) {
+          data.data.sub_groups.forEach(function (group) {
             $scope.selected_groups[group.id] = true;
           });
         }
@@ -82,14 +82,13 @@ app.controller('AddGroupCtrl', [
     $scope.save = function (group) {
       var body = group;
 
-      body.groups = [];
+      body.sub_groups = [];
       body.admins = [];
 
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
-
           if ($scope.selected_groups[key]) {
-            body.groups.push(key);
+            body.sub_groups.push(key);
           }
 
         }
@@ -123,7 +122,7 @@ app.controller('AddGroupCtrl', [
           url: '/admin/generic',
           method: 'PUT',
           params: {
-            route_name: 'group_edit',
+            route_name: 'edit_group',
 
             url_params: {
               '{groupId}' : $scope.group_id
