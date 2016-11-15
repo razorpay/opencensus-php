@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -196,7 +197,7 @@ class Logo
             return $mockFileName;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         $logoDimensions = $this->getLogoDimensionsArray();
 

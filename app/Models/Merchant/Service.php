@@ -613,4 +613,39 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function updateMethodsForMultipleMerchants($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
+
+        $merchantIds = $input['merchants'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantIds);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        return $response;
+    }
+
 }
