@@ -7,20 +7,35 @@ app.controller('OrgsAddUsersCtrl', [
   '$modal',
   'organization',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
-
-    $scope.roles = organization.fetchRoles('org_6dLbNSpv5XbCOG');
-    $scope.groups = organization.fetchGroups('org_6dLbNSpv5XbCOF');
-
     $scope.user = {};
+    $scope.selected_groups = [];
+    $scope.role = '';
+
+    $scope.roles = organization.fetchRoles();
+    $scope.groups = organization.fetchGroups();
 
     $scope.addAdminUser = function(user) {
-      var data = {};
-      data.body = user;
-      data.route_name = 'admin_create';
-      var request = $http({
-        method: 'post',
-        url: '/admin/generic',
-        data: data
+      var body = user;
+      body.groups = [];
+      body.roles = [];
+      for (var key in $scope.selected_groups) {
+        if ($scope.selected_groups.hasOwnProperty(key)) {
+
+          if ($scope.selected_groups[key]) {
+            body.groups.push(key);
+          }
+        }
+      }
+
+      if ($scope.role) {
+        body.roles.push($scope.role);
+      }
+
+      var request = $http.post('admin/generic/', {
+        route_name: 'admin_create',
+        data: {
+          body: body
+        }
       });
       request.success(function (data) {
         if (data.success) {

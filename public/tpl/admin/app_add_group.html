@@ -1,0 +1,79 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Groups
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="AddGroupCtrl">
+    <div class="panel-heading">
+      Add a new Group
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="panel-body b-b b-light">
+      <form class="form-horizontal form-validation">
+        <div class="form-group">
+          <label for='name' class="col-lg-2 control-label">Name</label>
+          <div class="col-lg-10" >
+            <input type="text" class="form-control m-b" name="name" ng-model="group.name" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for='description' class="col-lg-2 control-label">Description</label>
+          <div class="col-lg-10" >
+            <input type="text" class="form-control m-b" name="description" ng-model="group.description" />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-2 control-label">Subgroups</div>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in groups">
+                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.code]' value="{{row.code}}"></td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-2 control-label">Users</div>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Name</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in users">
+                  <td><input type="checkbox" name='users[]' ng-model='selected_users[row.id]' value="{{row.id}}"></td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.email}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <div class="col-md-offset-10">
+            <button class="btn btn-primary panel-ok" ng-click='save(group)'>Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

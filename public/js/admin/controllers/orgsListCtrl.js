@@ -9,6 +9,19 @@ app.controller('OrgsListCtrl', [
     $scope.organizations = [];
     $scope.count = 0;
 
+    function findOrgIndexById(id) {
+      var index = null;
+
+      $scope.organizations.forEach(function (v, i) {
+        if (v.id === id) {
+          index = i;
+        }
+      });
+
+      // returned index can be 0 so don't just do a if (index)
+      return index;
+    }
+
     /**
      * Modal openers
      */
@@ -60,6 +73,8 @@ app.controller('OrgsListCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization added', true);
+          $scope.organizations.unshift(data.data);
+          $scope.count = $scope.organizations.length;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -98,26 +113,6 @@ app.controller('OrgsListCtrl', [
 
     $scope.fetchOrgs();
 
-    // Fetch Org details by ID
-
-    $scope.fetchOrgById = function (id) {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'org_get',
-
-          url_params: {
-            '{id}': id
-          }
-        }
-      });
-
-      request.success(function (data) {
-
-      });
-    };
-
-    $scope.fetchOrgById('org_6dLbNSpv5XbCOG');
-
     // Edit Organization
 
     $scope.editOrgById = function (organization) {
@@ -141,13 +136,7 @@ app.controller('OrgsListCtrl', [
         if (data.success) {
           // Update the org model (todo: make this a helper)
 
-          var index = null;
-
-          $scope.organizations.forEach(function (v, i) {
-            if (v.id === data.data.id) {
-              index = i;
-            }
-          });
+          var index = findOrgIndexById(data.data.id);
 
           if (index !== null) {
             $scope.organizations[index] = data.data;
@@ -166,7 +155,31 @@ app.controller('OrgsListCtrl', [
       });
     };
 
-    // $scoe.editOrgById(id);
+    $scope.deleteOrg = function(id) {
+      var request = $http.delete('/admin/generic', {
+        params: {
+          route_name: 'org_delete',
+
+          url_params: {
+            '{id}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        /* TODO: change this */
+        if (data.success) {
+          var index = findOrgIndexById(id);
+
+          if (index !== null) {
+            $scope.organizations.splice(index, 1);
+          }
+
+          $scope.count = $scope.organizations.length;
+
+          $scope.alerts.addAlert('success', 'Organization deleted', true);
+        }
+      });
+    };
   }
 ]).controller('addOrgModalCtrl', [
   '$scope',

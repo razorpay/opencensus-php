@@ -1,4 +1,4 @@
-app.controller('OrgsAddRolesCtrl', [
+app.controller('AddGroupCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
@@ -7,27 +7,38 @@ app.controller('OrgsAddRolesCtrl', [
   'organization',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
 
-    $scope.permissions = organization.fetchPermissions();
-    $scope.role = {};
-    $scope.selected_permissions = [];
+    $scope.groups = organization.fetchGroups();
+    $scope.users = organization.fetchUsers();
+    $scope.group = {};
+    $scope.selected_groups = [];
+    $scope.selected_users = [];
+
 
     /**
      * Actions
      */
 
-    $scope.save = function (role) {
-      var body = role;
+    $scope.save = function (group) {
+      var body = group;
 
-      body.permissions = [];
+      body.sub_groups = [];
+      body.admins = [];
 
-      // selected_permissions will be like:
-      // { perm_id: true, perm_id2: false, perm_id3: true, ... }
+      for (var key in $scope.selected_groups) {
+        if ($scope.selected_groups.hasOwnProperty(key)) {
 
-      for (var key in $scope.selected_permissions) {
-        if ($scope.selected_permissions.hasOwnProperty(key)) {
+          if ($scope.selected_groups[key]) {
+            body.sub_groups.push(key);
+          }
 
-          if ($scope.selected_permissions[key]) {
-            body.permissions.push(key);
+        }
+      }
+
+      for (var key in $scope.selected_users) {
+        if ($scope.selected_users.hasOwnProperty(key)) {
+
+          if ($scope.selected_users[key]) {
+            body.users.push(key);
           }
 
         }

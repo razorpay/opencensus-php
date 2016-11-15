@@ -16,12 +16,6 @@
           <input id="filter" type="text"
             class="form-control input-sm w-sm inline m-r">
         </div>
-        <div class="col-md-6">
-          <button id='addPermissionButton' class='btn btn-default pull-right'
-            ng-click='openAddPermissionModal()'>
-            Add a permission
-          </button>
-        </div>
       </div>
       <div>
         <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
@@ -46,33 +40,3 @@
     </div>
   </div>
 </div>
-
-<script type="text/ng-template" id="addPermissionModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Add a new Permission</h3>
-  </div>
-  <div class="modal-body newsletter-modal">
-    <form class="form-horizontal row">
-      <div class="form-group">
-       <label for="name" class="col-lg-3 control-label">Name</label>
-        <div class="col-lg-8" >
-          <input type="name" class="form-control m-b" name="name"
-            ng-model="permission.name" placeholder="view_merchants">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="description" class="col-lg-3 control-label">Description</label>
-        <div class="col-lg-8" >
-          <textarea class="form-control m-b" name="description"
-            ng-model="permission.description"></textarea>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(permission)">
-      OK
-    </button>
-  </div>
-</script>

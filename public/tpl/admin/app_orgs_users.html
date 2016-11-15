@@ -29,29 +29,29 @@
       <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
-            <th>Employee Code</th>
+            <th>ID</th>
             <th>Name</th>
             <th>Username</th>
             <th>Email</th>
-            <th data-hide="phone,tablet">Department Code</th>
-            <th data-hide="phone,tablet">Branch Code</th>
-            <th data-hide="phone,tablet">Location Code</th>
-            <th data-hide="phone,tablet">Superviser Code</th>
-            <th data-hide="phone,tablet">Locked</th>
-            <th data-hide="phone,tablet">Disabled</th>
+            <th>Employee / Department / Branch / Location / Supervisor Code</th>
+            <th>Locked</th>
+            <th>Disabled</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in users">
-            <td>{{row.employee_code}}</td>
+            <td>{{row.id}}</td>
             <td>{{row.name}}</td>
             <td>{{row.username}}</td>
             <td>{{row.email}}</td>
-            <td>{{row.department_code}}</td>
-            <td>{{row.branch_code}}</td>
-            <td>{{row.location_code}}</td>
-            <td>{{row.supervisor_code}}</td>
+            <td>
+              {{row.employee_code}} /
+              {{row.department_code}} /
+              {{row.branch_code}} /
+              {{row.location_code}} /
+              {{row.supervisor_code}}
+            </td>
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
             </td>
@@ -121,7 +121,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="supervisor_code" class="col-lg-2 control-label">Superviser Code</label>
+        <label for="supervisor_code" class="col-lg-2 control-label">Supervisor Code</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="supervisor_code" ng-model="user.supervisor_code" />
         </div>
@@ -133,9 +133,32 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="locked" class="col-lg-2 control-label">Locked</label>
+        <label class="col-lg-2 control-label">Role</label>
         <div class="col-lg-10" >
-          <input type="checkbox" name="locked" ng-model="user.locked" />
+          <select class="form-control m-b" ng-model="user.role">
+             <option ng-repeat="(key, value) in roles" value='{{key}}'>{{value}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-lg-2 text-right">Groups</div>
+        <div class="col-lg-10 scrollable-table">
+          <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Group</th>
+                <th>Group description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, row) in groups">
+                <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.code]' value="{{row.code}}"></td>
+                <td>{{row.name}}</td>
+                <td>{{row.description}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </form>

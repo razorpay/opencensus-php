@@ -10,6 +10,9 @@
       <div class="panel-heading">
         List of all Organzations
       </div>
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="row wrapper">
         <div class="col-md-6 m-b-xs">
           <label for='filter' class='m-r'>Search</label>
@@ -42,6 +45,9 @@
               <td>{{row.email}}</td>
               <td>{{row.email_domains}}</td>
               <td>
+                <a class="btn-org-delete" ng-confirm-click="Are you sure you want to delete this Organization?" ng-click="deleteOrg(row.id)">
+                  <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
+                </a>
                 <a tooltip="Edit" ng-click="openEditOrgModal(row.id)">
                 <i class="fa fa-pencil-square"></i>
               </a></td>

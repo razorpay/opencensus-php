@@ -5,11 +5,14 @@ app.controller('OrgsUsersCtrl', [
   '$modal',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $modal, alertsFactory, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $modal, alertsFactory, transformRequestAsFormPost,
+    organization) {
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();
-    $scope.orgId = 'org_6dLbNSpv5XbCOG';
+    $scope.roles = organization.fetchRoles();
+    $scope.groups = organization.fetchGroups();
 
     /**
      *  Modals
@@ -23,7 +26,14 @@ app.controller('OrgsUsersCtrl', [
         resolve: {
           current: function () {
             return jQuery.extend({}, $scope.selected[0]);
-          }
+          },
+          roles: function () {
+            return jQuery.extend(true, {}, $scope.roles);
+          },
+          groups: function () {
+            return jQuery.extend(true, {}, $scope.groups);
+          },
+
         }
       });
       modalInstance.result.then(function (users) {
@@ -35,7 +45,7 @@ app.controller('OrgsUsersCtrl', [
      *  Actions
     **/
 
-    $scope.listUsers = function(id) {
+    $scope.listUsers = function() {
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'admin_get_multiple',
@@ -49,24 +59,57 @@ app.controller('OrgsUsersCtrl', [
       });
     }
 
-    $scope.listUsers($scope.orgId);
+    $scope.listUsers();
 
     $scope.editUser = function(user) {
-      var request = $http.put('/admin/generic', {
+      var route_name = 'admin_edit';
+      var data = {};
+      data.body = {
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        department_code: user.department_code,
+        branch_code: user.branch_code,
+        location_code: user.location_code,
+        supervisor_code: user.supervisor_code,
+        disabled: user.disabled + 0,
+        roles: user.roles,
+        groups: user.groups
+      };
+      data.route_name = route_name;
+
+      var request = $http.put('/admin/generic', data, {
         params: {
-          route_name: 'admin_edit',
+          route_name: route_name,
 
           url_params: {
-            '{id}': $scope.orgId,
             '{adminId}': user.id
           }
         }
       });
       request.success(function (data) {
         /* TODO: change this */
+
         if (data.success) {
-          $scope.users = data.data.items;
-          $scope.count = data.data.count;
+          var index = null;
+
+          $scope.users.forEach(function (v, i) {
+            if (v.id === data.data.id) {
+              index = i;
+            }
+          });
+
+          if (index !== null) {
+            $scope.users[index] = data.data;
+          }
+
+          $scope.alerts.addAlert('success', 'User updated', true);
+        } else {
+          $scope.alerts.resetAlerts();
+
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       });
     }
@@ -77,7 +120,6 @@ app.controller('OrgsUsersCtrl', [
           route_name: 'admin_delete',
 
           url_params: {
-            '{id}': $scope.orgId,
             '{adminId}': id
           }
         }
@@ -92,8 +134,6 @@ app.controller('OrgsUsersCtrl', [
         }
       });
     }
-
-
   }
 ]).controller('newAdminModalCtrl', [
   '$scope',
@@ -110,14 +150,48 @@ app.controller('OrgsUsersCtrl', [
   '$scope',
   '$modalInstance',
   'current',
-  function ($scope, $modalInstance, current) {
+  'roles',
+  'groups',
+  function ($scope, $modalInstance, current, roles, groups) {
 
     current.locked = !!current.locked;
     current.disabled = !!current.disabled;
+    $scope.roles = roles;
+    $scope.groups = groups;
+    $scope.selected_groups = {};
 
-    $scope.user = current
+    current.roles = current.roles.map(function(role){
+      role.id = 'role_' + role.id;
+      return role;
+    })
+
+    if (current.roles.length) {
+      current.role = current.roles[0].id;
+    }
+
+    current.groups = current.groups.map(function(group){
+      group.id = 'grp_' + group.id;
+      $scope.selected_groups[group.id] = true;
+      return group;
+    })
+
+    $scope.user = current;
 
     $scope.ok = function (user) {
+      user.groups = [];
+      user.roles = [];
+
+      for (var key in $scope.selected_groups) {
+        if ($scope.selected_groups.hasOwnProperty(key)) {
+
+          if ($scope.selected_groups[key]) {
+            user.groups.push(key);
+          }
+        }
+      }
+
+      user.roles.push(user.role);
+
       $modalInstance.close(user);
     };
     $scope.cancel = function () {

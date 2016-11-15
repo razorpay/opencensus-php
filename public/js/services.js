@@ -266,15 +266,12 @@ angular.module('app.services', [])
     **/
 
     return {
-      fetchRoles: function (organization_id) {
+      fetchRoles: function () {
         var roles = {};
         $http.get('/admin/generic', {
           ignoreErrors: true,
           params: {
-            route_name: 'role_get_multiple',
-            url_params: {
-              '{id}': organization_id
-            }
+            route_name: 'role_get_multiple'
           }
         }).success(function (data) {
           if (data.success === true) {
@@ -292,15 +289,11 @@ angular.module('app.services', [])
         });
         return roles;
       },
-      fetchGroups: function (organization_id) {
+      fetchGroups: function () {
         var groups = [];
         $http.get('/admin/generic', {
-          ignoreErrors: true,
           params: {
             route_name: 'group_get_multiple',
-            url_params: {
-              '{id}': organization_id
-            }
           }
         }).success(function (data) {
           if (data.success === true) {
@@ -346,6 +339,32 @@ angular.module('app.services', [])
         }).error(function () {
         });
         return this.permissions = perms;
+      },
+      fetchUsers: function () {
+        if (this.users) {
+          return this.users;
+        }
+
+        var users = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'admin_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (user) {
+                users.push(user);
+              });
+            }
+          }
+          else {
+            users = {};
+          }
+        }).error(function () {
+        });
+        return this.users = users;
       }
     };
   }
