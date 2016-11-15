@@ -87,7 +87,7 @@ class Checkout
             [
                 'merchant_id' => $merchant->getId(),
                 'response' => $response,
-            ])
+            ]);
     }
 
     protected function fetchTPVOrderInfo(array $input)
