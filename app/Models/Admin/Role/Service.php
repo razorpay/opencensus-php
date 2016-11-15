@@ -44,7 +44,7 @@ class Service extends Base\Service
 
         $role = $this->repo->role->fetchRoleForOrg($roleId, $orgId);
 
-        return $role;
+        return $role->toArrayPublic();
     }
 
     public function getMultipleRoles($orgId)

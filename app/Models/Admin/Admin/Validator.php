@@ -39,6 +39,8 @@ class Validator extends Base\Validator
         Entity::EMPLOYEE_CODE       => 'sometimes|string',
         Entity::DISABLED            => 'sometimes|in:0,1',
         Entity::EMAIL               => 'sometimes|email',
+        'roles'                     => 'sometimes|array',
+        'merchants'                 => 'sometimes|array',
     ];
 
     protected static $loginRules = [

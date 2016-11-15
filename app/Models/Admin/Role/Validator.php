@@ -16,6 +16,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME            => 'required|string|max:250',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
+        'permissions'           => 'sometimes|array',
     ];
 
     public function validateCreateInput(string $orgId, array $input)
