@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Admin;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use App;
 use Hash;
 use RZP\Models\Base;
@@ -11,6 +13,8 @@ use RZP\Models\Admin\Org;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const NAME                      = 'name';
     const USERNAME                  = 'username';
     const PASSWORD                  = 'password';
@@ -80,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::LOCATION_CODE,
         self::DISABLED,
         self::LOCKED,
+        self::DELETED_AT,
         self::LAST_LOGIN_AT,
         'roles',
         'groups',
@@ -133,6 +138,11 @@ class Entity extends Base\PublicEntity
         $permissions = array_unique($permissions);
 
         return $permissions;
+    }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     public function saveOrFailMerchant(Merchant\Entity $merchant)

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Org;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
@@ -9,6 +11,8 @@ use RZP\Models\Admin\Admin;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const AUTH_TYPE     = 'auth_type';
     const BUSINESS_NAME = 'business_name';
     const DISPLAY_NAME  = 'display_name';
@@ -44,7 +48,6 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT,
     ];
 
     protected $public = [
@@ -54,7 +57,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::EMAIL_DOMAINS,
         self::LOGO_URL,
-        self::AUTH_TYPE
+        self::AUTH_TYPE,
+        self::DELETED_AT,
     ];
 
     protected $defaults = [
@@ -75,6 +79,11 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->hasMany('Admin\Entity');
+    }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     public function roles()

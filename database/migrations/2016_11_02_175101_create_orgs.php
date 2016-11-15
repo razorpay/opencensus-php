@@ -42,6 +42,7 @@ class CreateOrgs extends Migration
             $table->integer(Org::CREATED_AT);
             $table->integer(Org::UPDATED_AT);
             $table->integer(Org::DELETED_AT)
+                  ->unsigned()
                   ->nullable();
 
             $table->index(Org::CREATED_AT);

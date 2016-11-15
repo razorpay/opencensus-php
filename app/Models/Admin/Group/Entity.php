@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION      = 'description';
     const ORG_ID           = 'org_id';
 
+    const DELETED_AT       = 'deleted_at';
+
     protected $table = Table::GROUP;
 
     protected $entity = 'group';
@@ -44,6 +46,11 @@ class Entity extends Base\PublicEntity
     public function parents()
     {
         return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+    }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     // Admins part of this group who have defined permissions

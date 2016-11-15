@@ -84,6 +84,7 @@ class CreateAdmins extends Migration
             $table->integer(Admin::CREATED_AT);
             $table->integer(Admin::UPDATED_AT);
             $table->integer(Admin::DELETED_AT)
+                  ->unsigned()
                   ->nullable();
 
             $table->foreign(Admin::ORG_ID)
