@@ -8,6 +8,7 @@ use Config;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -235,6 +236,16 @@ class Generator extends Base\Core
 
     protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
     {
+        // This is just for robustness. It would any way fail later in the flow.
+        if ((empty($customerDetails) === true) and
+            (empty($input[Entity::CUSTOMER_ID]) === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
+                $input
+            );
+        }
+
         if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
             $customerId = $input[Entity::CUSTOMER_ID];
