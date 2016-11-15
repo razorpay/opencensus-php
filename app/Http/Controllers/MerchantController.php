@@ -501,7 +501,16 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- Credits API Handlers -----------------------------------------
+    public function updateMethodsForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
     {

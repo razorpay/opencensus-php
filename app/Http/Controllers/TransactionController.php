@@ -35,7 +35,23 @@ class TransactionController extends Controller
 
     public function postMigrateOlderTransactions()
     {
-        $data = (new Transaction\Service)->postMigrateOlderTransactions();
+        $data = (new Transaction\Service)->migrateOlderTransactions();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettleOlderTransactions()
+    {
+        $input = Request::all();
+
+        $data = (new Transaction\Service)->settleOlderTransactions($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAddPricingRuleForOlderTransactions()
+    {
+        $data = (new Transaction\Service)->addPricingRuleForeOlderTransactions();
 
         return ApiResponse::json($data);
     }
