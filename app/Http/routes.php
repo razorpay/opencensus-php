@@ -300,6 +300,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::put('/admin/generic', 'GenericController@putGeneric');
     Route::delete('/admin/generic', 'GenericController@deleteGeneric');
     Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
+    Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
     Route::get('admin/get_current');
 });
 

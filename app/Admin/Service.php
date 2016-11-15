@@ -43,6 +43,8 @@ class Service extends Base\Service
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
     const PAGE_SIZE = 1000;
 
+    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
+
     // This is the Admin\Logger trait
     use Logger;
 
@@ -2331,9 +2333,9 @@ class Service extends Base\Service
         $errors = [];
         $data = null;
 
-        $admin = Auth::guard('api');
+        $admin = Auth::guard('api')->user();
 
-        if ($admin->user()->email === $input['contact_email'])
+        if ($admin->email === $input['contact_email'])
         {
             $errors[] = static::SELF_INVITE_NOT_ALLOWED;
         }
@@ -2346,12 +2348,34 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    protected function createInviteAndSendEmail(ApiGuard $admin, $input)
+    protected function createInviteAndSendEmail($admin, $input)
     {
-        // This only creates a new invitation entity
-        $invitation = $admin->inviteMerchantThroughEmail($input);
+        $invitation = $this->saveLead($input, $admin);
 
         $this->sendInvitationEmail($invitation, $admin);
+    }
+
+    protected function saveLead($input, $admin)
+    {
+        $formData = json_encode($input);
+
+        $leadId = \DB::table('admin_leads')->insertGetId(
+            [
+                'admin_id'   => $admin->id,
+                'email'      => $input['contact_email'],
+                'token'      => str_random(40),
+                'form_data'  => $formData,
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]
+        );
+
+        $lead = \DB::table('admin_leads')
+                    ->select('*')
+                    ->where('id', $leadId)
+                    ->first();
+
+        return $lead;
     }
 
     protected function sendInvitationEmail($invitation, $admin)
@@ -2359,7 +2383,7 @@ class Service extends Base\Service
         $mailer = new MiscMailer();
 
         $mailer
-            ->sendMerchantInvitationEmail($invitation, $admin->user()->toArray())
+            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
             ->queueAndDeliver();
     }
 

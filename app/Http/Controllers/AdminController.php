@@ -977,5 +977,12 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
+    public function getMerchantInvitations()
+    {
+        list($error, $data) = (new Admin\Service)->getAdminLeads();
+
+        return AppResponse::jsonResponse($error);
+    }
+
     // ----- /Credits -----
 }

@@ -14,12 +14,17 @@ class CreateAdminLeadsTable extends Migration
     {
         Schema::create('admin_leads', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('admin_id');
-            $table->string('token');
-            $table->string('email');
+
+            $table->char('admin_id', 14);
+
+            $table->string('token', 250);
+
+            $table->string('email', 250);
+
             $table->text('form_data');
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at');
+
+            $table->integer('created_at');
+            $table->integer('updated_at');
         });
     }
 

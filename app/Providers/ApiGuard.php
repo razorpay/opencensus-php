@@ -101,31 +101,4 @@ class ApiGuard implements Guard
 
         $this->user = null;
     }
-
-    public function inviteMerchantThroughEmail($input)
-    {
-        $formData = $this->getFormDataFromInput($input);
-
-        $leadId = DB::table('admin_leads')->insertGetId(
-            array(
-                'admin_id'   => $this->user()->id,
-                'email'      => $input['contact_email'],
-                'token'      => str_random(40),
-                'form_data'  => $formData,
-                'created_at' => time(),
-                'updated_at' => time(),
-            )
-        );
-
-        $lead = DB::table('admin_leads')
-                ->select('*')
-                ->where('id', $leadId)
-                ->first();
-        return $lead;
-    }
-
-    protected function getFormDataFromInput($input)
-    {
-        return json_encode($input);
-    }
 }
