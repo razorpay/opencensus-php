@@ -16,6 +16,8 @@ use App\Merchant;
 use App\MerchantDetails;
 use App\User;
 use App\Lead;
+use App\AdminLead;
+use App\Generic;
 
 use Queue;
 
@@ -130,6 +132,57 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function registerAdminLead(array $input)
+    {
+        $data = [];
+        $error = null;
+
+        $invitationToken = Input::get('invitation', null);
+        $invitation = $user = null;
+
+        // If we have an invitation token, the user may have created an account
+        // in the meantime. $user will be equal to the user with the same email
+        // as the invited user
+        if ($invitationToken)
+
+        {
+            list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
+            // Since input would be lacking an email in case registration is via
+            // the invitation
+            $input['email'] = $invitation->email;
+        }
+
+        // $user would not be null in a very rare edge case here
+        // Which is two subsequent invitations without either being
+        // accepted. Once the second one is accepted, this block
+        // is ignored and the $user found above will be used
+        if (! $user)
+        {
+            $user = $this->buildUserEntity($input);
+
+            $this->updateLeadIfExists($user);
+        }
+
+        // We have to create the associated merchant in this case
+        // since it's an admin lead. Both the blocks will run, above and this
+        $result = [];
+        if (isset($input['business_name']))
+        {
+            $data = [
+                'business_name' =>  $input['business_name'],
+                'contact_mobile' =>  Input::get('contact_mobile', null)
+            ];
+            list($error, $merchant) = $this->createMerchantFromUserLead($user, $data);
+        }
+
+        $this->attachMerchantToAdmin($merchant, $user, $invitation);
+
+        $result['login'] = true;
+
+        // We would never really reach this with an error because we are using exceptions here
+        return [$error, $result];
+    }
+
     public function createLead($input)
     {
         $error = $data = null;
@@ -170,6 +223,21 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        Auth::guard('user')->login($user);
+    }
+
+    protected function attachMerchantToAdmin(Merchant\Entity $merchant, User\Entity $user, AdminLead\Entity $invitation)
+    {
+        $input = ['body' => ['admin_id' => $invitation->admin_id], 'method' => 'post'];
+
+        $route = 'merchants/'.$merchant->id.'/admins';
+
+        (new Merchant\Service)->confirm($merchant->confirm_token);
+
+        $response = (new Generic\Service)->makeRawApiCallInternal($input, $route);
 
         $this->subscribeToMailingList($user);
 
@@ -277,6 +345,28 @@ class Service extends Base\Service
         }
 
         return [null, $this->signupPost($merchant, $user, $referer)];
+    }
+
+    protected function createMerchantFromUserLead(User\Entity $user, array $data)
+    {
+        list($error, $merchant) = Merchant\Service::register($user, $data);
+
+        if (! empty($error))
+        {
+            return [$error, null];
+        }
+
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
+
+        // Only send the confirmation email if the user isn't already confirmed
+        if ($user->confirm_token != NULL)
+        {
+            (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        }
+
+        $this->signupPost($merchant, $user);
+
+        return [null, $merchant];
     }
 
     /**

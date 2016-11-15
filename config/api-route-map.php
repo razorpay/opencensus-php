@@ -30,5 +30,7 @@ return [
 
     // Permissions
     'permission_get_multiple'           => 'permissions',
-    'permission_create'                 => 'permissions'
+    'permission_create'                 => 'permissions',
+
+    'merchant_attach_admin'             => 'merchants/{id}/admins',
 ];

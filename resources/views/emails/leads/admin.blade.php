@@ -6,7 +6,7 @@ Hi!
 
 <br><br>
 
-<a href="{{ url('/#/access/signup?invitation='.$invitation_array['token']) }}">{{ URL::to('/#/access/signup?invitation='.$invitation_array['token']) }}</a>
+<a href="{{ url('/#/access/lead?invitation='.$invitation_array['token']) }}">{{ URL::to('/#/access/lead?invitation='.$invitation_array['token']) }}</a>
 
 <br><br>
 

@@ -38,7 +38,7 @@ app.controller('AddGroupCtrl', [
         if ($scope.selected_users.hasOwnProperty(key)) {
 
           if ($scope.selected_users[key]) {
-            body.users.push(key);
+            body.admins.push(key);
           }
 
         }
@@ -48,7 +48,7 @@ app.controller('AddGroupCtrl', [
         url: '/admin/generic',
         method: 'POST',
         params: {
-          route_name: 'role_create'
+          route_name: 'group_create'
         },
         data: {
           body: body
@@ -57,7 +57,7 @@ app.controller('AddGroupCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Role added', true);
+          $scope.alerts.addAlert('success', 'Group added', true);
         } else {
           $scope.alerts.resetAlerts();
 

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Admin;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
@@ -99,5 +100,32 @@ class ApiGuard implements Guard
         $this->app['session']->forget($this->sessionKey);
 
         $this->user = null;
+    }
+
+    public function inviteMerchantThroughEmail($input)
+    {
+        $formData = $this->getFormDataFromInput($input);
+
+        $leadId = DB::table('admin_leads')->insertGetId(
+            array(
+                'admin_id'   => $this->user()->id,
+                'email'      => $input['contact_email'],
+                'token'      => str_random(40),
+                'form_data'  => $formData,
+                'created_at' => time(),
+                'updated_at' => time(),
+            )
+        );
+
+        $lead = DB::table('admin_leads')
+                ->select('*')
+                ->where('id', $leadId)
+                ->first();
+        return $lead;
+    }
+
+    protected function getFormDataFromInput($input)
+    {
+        return json_encode($input);
     }
 }
