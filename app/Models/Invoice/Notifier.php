@@ -74,7 +74,18 @@ class Notifier extends Base\Core
     {
         $sent = $this->sendInvoiceEmail();
 
-        $this->invoice->setEmailStatus(NotifyStatus::SENT);
+        if ($sent === true)
+        {
+            $this->invoice->setEmailStatus(NotifyStatus::SENT);
+        }
+        else
+        {
+            $this->trace->warning(
+                TraceCode::EMAIL_SENDING_FAILED,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                ]);
+        }
 
         return $sent;
     }
@@ -82,6 +93,11 @@ class Notifier extends Base\Core
     public function sendSmsNotificationToCustomer()
     {
         $contact = $this->invoice->getCustomerContact();
+
+        if (empty($contact) === true)
+        {
+            return false;
+        }
 
         $sent = $this->sendInvoiceSms($contact);
 
@@ -139,6 +155,13 @@ class Notifier extends Base\Core
 
     protected function sendInvoiceEmail()
     {
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
+
         // TODO: Figure out a proper subject name
         $subject = 'Razorpay | Invoice from ' . $this->invoice->merchant->getBillingLabelElseName();
 
