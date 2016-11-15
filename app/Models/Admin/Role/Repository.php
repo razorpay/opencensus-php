@@ -23,7 +23,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ID,'=',$roleId)
                     ->where(Entity::ORG_ID,'=',$orgId)
-                    ->with('permissions')
                     ->first();
     }
 
@@ -31,7 +30,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID,'=',$orgId)
-                    ->with('permissions')
                     ->get();
     }
 
@@ -42,7 +40,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $roleId)
-                    ->with('permissions')
                     ->firstOrFail();
     }
 
