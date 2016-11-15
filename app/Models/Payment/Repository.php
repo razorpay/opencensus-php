@@ -169,9 +169,14 @@ class Repository extends Base\Repository
 
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
+        $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+
         return $this->newQuery()
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->status(Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where($createdAt, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
     }
@@ -179,7 +184,7 @@ class Repository extends Base\Repository
     public function getAuthorizedPaymentsForAutoRefund()
     {
         $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId       = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
@@ -191,6 +196,7 @@ class Repository extends Base\Repository
                     ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
                     ->status(Payment\Status::AUTHORIZED)
                     ->whereRaw($rawCondition)
+                    ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
                     ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();

@@ -178,6 +178,7 @@ class RefundTest extends TestCase
 
     public function testRefundPaymentsWithRefundDelay()
     {
+        // Change auto refund delay to 2 days
         $this->fixtures->merchant->editAutoRefundDelay(172800);
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
@@ -185,6 +186,13 @@ class RefundTest extends TestCase
         $payments = $this->fixtures->times(3)->create(
             'payment:authorized',
             ['created_at' => $createdAt]);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000']);
+
+        $payment = $this->fixtures->create(
+            'payment:authorized',
+            ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
 
@@ -195,9 +203,9 @@ class RefundTest extends TestCase
         $content = $this->refundOldAuthorizedPayments();
 
         $this->assertArrayHasKey('refunded', $content);
-        $this->assertEquals(3, $content['refunded']);
+        $this->assertEquals(4, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
-        $this->assertEquals(3, $content['authorized']);
+        $this->assertEquals(4, $content['authorized']);
     }
 
     public function testRefundCalledOnPurchaseWithoutCapture()

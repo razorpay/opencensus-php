@@ -591,10 +591,21 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
+        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        // to arrive at 5 days before.
+        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
+
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
+
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay
         // Maximum delay can be 5 days
-        $payments = $this->repo->payment->getAuthorizedPaymentsForAutoRefund();
+        $partialPayments = $this->repo->payment->getAuthorizedPaymentsForAutoRefund();
+
+        $payments = $payments->merge($partialPayments);
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -620,7 +631,7 @@ class Service extends Base\Service
                 $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment($payment);
 
-                $this->trace->info(TraceCode::PAYMENT_AUTO_REFUNDED, [
+                $this->trace->info(TraceCode::PAYMENT_AUTO_REFUND, [
                         'payment_id' => $payment->getId(),
                         'auto_refund_delay' => $merchant->getAutoRefundDelay()
                     ]);

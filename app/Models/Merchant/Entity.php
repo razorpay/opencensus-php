@@ -132,11 +132,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
-        self::AUTO_REFUND_DELAY      => self::MAX_AUTO_REFUND_DELAY,
-    );
-
-    protected $casts = array(
-        self::AUTO_REFUND_DELAY => 'int',
+        self::AUTO_REFUND_DELAY      => null,
     );
 
     protected $publicSetters = array(
