@@ -103,6 +103,5 @@ class GroupTest extends TestCase
         $admin->saveOrFailMerchant($merchant);
 
         $this->assertEquals($merchant->getId(), $admin->merchants()->getRelatedIds()[0]);
-
     }
 }

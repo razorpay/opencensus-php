@@ -55,5 +55,32 @@ class Core extends Base\Core
 
         return $group;
     }
+
+    public function edit(string $orgId, string $groupId, array $input)
+    {
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $groupId);
+
+        if (isset($input['admins']) === true)
+        {
+            $group->admins()->sync($input['admins']);
+
+            unset($input['admins']);
+        }
+
+        if (isset($input['sub_groups']) === true)
+        {
+            $group->subGroups()->sync($input['sub_groups']);
+
+            unset($input['sub_groups']);
+        }
+
+        $group->edit($input);
+
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $groupId);
+
+        return $group;
+    }
 }
 

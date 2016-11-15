@@ -64,6 +64,40 @@ class Service extends Base\Service
         return $group->toArrayPublic();
     }
 
+    public function putGroup(string $orgId, string $groupId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        if (isset($input['admins']) === true)
+        {
+            $adminIds = [];
+
+            foreach ($input['admins'] as $adminId)
+            {
+                $adminIds[] = Admin\Entity::verifyIdAndStripSign($adminId);
+            }
+
+            $input['admins'] = $adminIds;
+        }
+
+        if (isset($input['sub_groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['sub_groups'] as $groupId)
+            {
+                $groupIds[] = Entity::verifyIdAndStripSign($groupId);
+            }
+
+            $input['sub_groups'] = $groupIds;
+        }
+
+        $group = $this->core->edit($orgId, $groupId, $input);
+
+        return $group->toArrayPublic();
+    }
+
     public function deleteGroup(string $orgId, string $groupId)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);

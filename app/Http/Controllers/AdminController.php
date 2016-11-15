@@ -296,6 +296,14 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putGroup(string $id, string $groupId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->putGroup($id, $groupId, $input);
+
+        return ApiResponse::json($data);
+    }
 
     public function deleteGroup(string $id, string $groupId)
     {
