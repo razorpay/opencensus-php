@@ -590,7 +590,6 @@ final class Route
 
     public static $admin = [
         'hello_world',
-        'group_create',
         'admin_create',
         'group_get',
         'group_get_multiple',
