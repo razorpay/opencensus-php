@@ -12,6 +12,7 @@ class Table
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
     const REFUND                = 'refunds';
+    const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
@@ -25,6 +26,7 @@ class Table
     const CUSTOMER              = 'customers';
     const FEE_BREAKUP           = 'fees_breakup';
     const EMI_PLAN              = 'emi_plans';
+    const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
@@ -55,6 +57,7 @@ class Table
     const CREDITS               = 'credits';
 
     // Terminal Performance
+
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_ABSENCE       = 'gateway_status_absence';
 
