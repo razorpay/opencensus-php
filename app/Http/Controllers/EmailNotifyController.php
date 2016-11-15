@@ -16,12 +16,17 @@ class EmailNotifyController extends Controller
 
         $responseStatus = $this->processEmailNotifyCheck($input);
 
-        // Status 200 = Accept, no retry made
-        // Status 406 = Reject, no retry made
-        // Any other status will result in the webhook being retried
         return ApiResponse::json([], $responseStatus);
     }
     
+    /**
+     * Process request and notify on slack channel
+     * Response - Status 200 = Accept / Status 406 = Reject. No retry made
+     * Any other status will result in the webhook being retried
+     * 
+     * @param type $input Request input
+     * @return int statusCode
+     */
     protected  function processEmailNotifyCheck($input)
     {
         if (isset($input['X-Mailgun-Tag']) === false)
@@ -31,19 +36,12 @@ class EmailNotifyController extends Controller
         
         if (in_array($input['X-Mailgun-Tag'], MailTags::$notifyTags, true)) 
         {
-            $this->authenticateWebhookRequest($input);
-            
             $this->notifyEventOnSlack($input);
 
             return 200;
         }
 
         return 406;
-    }
-    
-    protected function authenticateWebhookRequest()
-    {
-        //TODO ?
     }
     
     protected function notifyEventOnSlack($input)
@@ -54,7 +52,7 @@ class EmailNotifyController extends Controller
         
         $params = [
             'recipient' => $input['recipient'],
-            'sent_at' => $sentDate
+            'sent_at'   => $sentDate
         ];
         
         $notifyChannel = Config::get('slack.channels.settlements');

@@ -592,6 +592,7 @@ final class Route
 
         'mailgun' => array(
             'reconciliate',
+            'email_status_callback'
         ),
 
         'hosted' => array(
