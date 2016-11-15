@@ -4,9 +4,36 @@ app.controller('RolesCtrl', [
   '$http',
   '$modal',
   'transformRequestAsFormPost',
-  function ($scope, $http, $modal, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $modal, transformRequestAsFormPost, organization) {
     $scope.roles = [];
     $scope.count = 0;
+    $scope.permissions = organization.fetchPermissions();
+
+    /**
+     *  Modals
+    **/
+
+    $scope.openEditRole= function (id) {
+      $scope.selected = $scope.roles.filter(function(x) {
+        return x['id'] === id;
+      });
+      var modalInstance = $modal.open({
+        templateUrl: 'editRoleModalContent.html',
+        controller: 'editRoleCtrl',
+        resolve: {
+          current: function () {
+            return jQuery.extend({}, $scope.selected[0]);
+          },
+          permissions: function () {
+            return jQuery.extend({}, $scope.permissions);
+          },
+        }
+      });
+      modalInstance.result.then(function (role) {
+        $scope.editRole(role);
+      }, $.noop);
+    };
 
 
     /* TODO: use fetchRoles from factory */
@@ -97,19 +124,91 @@ app.controller('RolesCtrl', [
         }
       });
     };
+
+    $scope.editRole = function (role) {
+      var data = {};
+      var route_name = 'role_edit';
+
+      data.body = {
+        name: role.name,
+        description: role.description,
+        permissions: role.permissions,
+      }
+      data.route_name = route_name;
+
+      delete data.body.route_name;
+
+      var request = $http.put('/admin/generic', data, {
+        params: {
+          route_name: route_name,
+
+          url_params: {
+            '{roleId}' : role.id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          // Update the org model (todo: make this a helper)
+
+          var index = null;
+
+          $scope.roles.forEach(function (v, i) {
+            if (v.id === data.data.id) {
+              index = i;
+            }
+          });
+
+          if (index !== null) {
+            $scope.roles[index] = data.data;
+          }
+
+          $scope.alerts.addAlert('success', 'Role updated', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+
+      });
+    };
   }
-]).controller('createRoleCtrl', [
+]).controller('editRoleCtrl', [
   '$scope',
   '$modalInstance',
   'current',
-  function ($scope, $modalInstance, current) {
+  'permissions',
+  function ($scope, $modalInstance, current, permissions) {
     $scope.role = current;
 
+    $scope.permissions = permissions;
+    $scope.selected_permissions = {};
+
+    $scope.role.permissions = $scope.role.permissions.map(function(perm){
+      perm.id = 'perm_' + perm.id;
+      $scope.selected_permissions[perm.id] = true;
+      return perm;
+    })
+
     $scope.ok = function (role) {
+      role.permissions = []
+
+      for (var key in $scope.selected_permissions) {
+        if ($scope.selected_permissions.hasOwnProperty(key)) {
+
+          if ($scope.selected_permissions[key]) {
+            role.permissions.push(key);
+          }
+        }
+      }
       $modalInstance.close(role);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel')
     };
   }
-]);
+])
