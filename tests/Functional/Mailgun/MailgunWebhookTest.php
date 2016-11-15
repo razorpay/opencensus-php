@@ -6,13 +6,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Constants\MailTags;
 
-class MailgunTest extends TestCase
+class MailgunWebhookTest extends TestCase
 {
     use RequestResponseFlowTrait;
     
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/MailgunTestData.php';
+        $this->testDataFilePath = __DIR__.'/MailgunWebhookTestData.php';
         
         parent::setUp();
         

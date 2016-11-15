@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin;
 
 use RZP\Constants\MailTags;
+use RZP\Exception;
+use RZP\Error;
 use Carbon\Carbon;
 use Config;
 
@@ -34,6 +36,10 @@ class Mailgun
         {
             return $this->$functionName($input);
         }
+        
+        throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE);
+        
     }
     
     public function failureCallback($input)
