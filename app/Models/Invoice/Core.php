@@ -4,8 +4,8 @@ namespace RZP\Models\Invoice;
 
 use Mail;
 
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
@@ -90,9 +90,17 @@ class Core extends Base\Core
     {
         $paymentId = $invoice->getPaymentId();
 
+        $invoiceStatus = $invoice->getStatus();
+
+        if ($invoiceStatus !== Status::PAID)
+        {
+            return [
+                Entity::STATUS => $invoice->getStatus()
+            ];
+        }
+
         return [
-            Entity::STATUS  => $invoice->getStatus(),
-            'payment_id'    => $paymentId,
+            'razorpay_payment_id' => Payment\Entity::getSignedId($paymentId)
         ];
     }
 
