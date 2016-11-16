@@ -10,68 +10,122 @@ use RZP\Models\FileStore\Formatter;
 class Accessor extends Base\Service
 {
     /**
-     * @var Entity
+     * Id of object to fetched
+     *
+     * @var id
      */
     protected $id;
+
+    /**
+     * Merchant id of the file object to be fetched
+     *
+     * @var merchantId
+     */
     protected $merchantId;
+
+    /**
+     * Entity id of the file object to be fetched
+     *
+     * @var entityId
+     */
     protected $entityId;
+
+    /**
+     * Entity Type of the file object to be fetched
+     *
+     * @var entityType
+     */
     protected $entityType;
+
+    /**
+     * File Type of the file object to be fetched
+     *
+     * @var type
+     */
     protected $type;
 
-     protected $entity = 'file_store';
+    const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
 
-    public function __construct()
-    {
-
-        parent::__construct();
-    }
-
-    public function id($id)
+    /**
+     * Set the Id in Query Param
+     *
+     * @param string $id ID of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function id(string $id)
     {
         $this->id = $id;
 
         return $this;
     }
 
-    public function entityId($entityId)
+    /**
+     * Set the Entity Id in Query Param
+     *
+     * @param string $entityId Entity ID of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function entityId(string $entityId)
     {
         $this->entityId = $entityId;
 
         return $this;
     }
 
-    public function entityType($entityType)
+    /**
+     * Set the Entity Type  in Query Param
+     *
+     * @param string $entityType Entity Type of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function entityType(string $entityType)
     {
         $this->entityType = $entityType;
 
         return $this;
     }
 
-    public function merchantId($merchantId)
+    /**
+     * Set the Merchant Id in Query Param
+     *
+     * @param string $merchantId Merchant ID of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function merchantId(string $merchantId)
     {
         $this->merchantId = $merchantId;
 
         return $this;
     }
 
-    public function type($type)
+    /**
+     * Set the File Type in Query Param
+     *
+     * @param string $type File type of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function type(string $type)
     {
         $this->type = $type;
 
         return $this;
     }
+
     /**
      * Returns Array of File Store Values
+     *
      * @return array
      */
     public function get()
     {
-        if($this->merchantId === null)
-        {
-            $this->merchantId = Account::SHARED_ACCOUNT;
-        }
+        $this->updateMerchantId();
 
-        $data = $this->repo->file_store->getByParams(
+        $data = $this->repo->file_store->fetchByParams(
             $this->id,
             $this->merchantId,
             $this->entityId,
@@ -83,8 +137,25 @@ class Accessor extends Base\Service
     }
 
     /**
+     * Updates Merchant Id for non-admin calls
+     *
+     * @return void
+     */
+    protected function updateMerchantId()
+    {
+        $merchant = $this->app['basicauth']->merchant;
+
+        // Update Merchant ID, if request is done by non-admin
+        if ($merchant !== null)
+        {
+            $this->merchantId($merchant->getId());
+        }
+    }
+
+    /**
      * Returns File Contents
-     * @return array
+     *
+     * @return string File Conntents
      */
     public function getFile()
     {
@@ -92,7 +163,8 @@ class Accessor extends Base\Service
 
         if ($data['count'] !== 1)
         {
-            throw new Exception\LogicException('getFile Can only fetch one file COntents');
+            throw new Exception\LogicException(
+                'Multi file fetch not supported');
         }
 
         // TODO : fetch the contents instead of location

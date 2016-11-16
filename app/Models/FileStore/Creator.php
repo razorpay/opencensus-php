@@ -234,9 +234,11 @@ class Creator extends Base\Core
 
     protected function associateMerchantWithFile()
     {
-        if ($this->merchant !== null)
+        $merchant = $this->app['basicauth']->merchant;
+
+        if ($merchant !== null)
         {
-            $this->file->merchant()->associate($this->merchant);
+            $this->file->merchant()->associate($merchant);
         }
         else
         {
