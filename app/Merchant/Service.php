@@ -768,13 +768,12 @@ class Service extends Base\Service
      * Fetches merchant credits
      * Uses Proxy Auth on the API
      *
-     * @param  string $merchantId Merchant Id
      * @param  string $mode live|test
      * @return array contains all credits of merchant
      */
-    public function getCreditsLog($merchantId, $mode)
+    public function getCreditsLog($mode)
     {
-        $this->setApiCredentials($merchantId, $mode);
+        $this->setApiCredentials($this->currentMerchant->id, $mode);
         $error = $data = null;
 
         try

@@ -390,9 +390,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $id = Auth::user()->getCurrentMerchantId();
-
-        list($error, $data) = (new Merchant\Service)->getCreditsLog($id, $mode);
+        list($error, $data) = (new Merchant\Service)->getCreditsLog($mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
