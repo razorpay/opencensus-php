@@ -64,17 +64,17 @@ class Generator extends Base\Core
 
         $customerDetails = [];
 
+        $this->invoice->build($input);
+        // This is being done so that we can do associations without saving the invoice.
+        // Also, to generate a shortUrl, we need the invoice ID.
+        $this->invoice->generateId();
+
         if (isset($input[Entity::CUSTOMER]))
         {
             $customerDetails = $input[Entity::CUSTOMER];
         }
 
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
-
-        $this->invoice->build($input);
-        // This is being done so that we can do associations without saving the invoice.
-        // Also, to generate a shortUrl, we need the invoice ID.
-        $this->invoice->generateId();
 
         $this->repo->transaction(
             function() use ($lineItemsDetails, $customerDetails, $input)
