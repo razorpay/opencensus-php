@@ -16,6 +16,8 @@ Route::get('/admin', 'AdminController@getIndex');
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
 
+Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
+
 // Org
 Route::group(['prefix' => 'admin'], function () {
     Route::get('/auth', 'AdminController@initiateAuth');
@@ -147,7 +149,6 @@ Route::group([], function()
     {
         Route::post('/user/signin', 'UserController@postSignin');
         Route::post('/user/register', 'UserController@postRegister');
-        Route::post('/user/register_lead', 'UserController@postRegisterLead');
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
         Route::post('/user/password/reset', 'PasswordController@postRemind');
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');

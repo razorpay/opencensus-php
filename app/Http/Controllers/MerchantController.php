@@ -381,4 +381,11 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    public function getInvitationDetails($token)
+    {
+        list($error, $response) = (new Merchant\Service)->getInvitationDetails($token);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

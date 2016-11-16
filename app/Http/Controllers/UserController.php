@@ -50,22 +50,6 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postRegisterLead()
-    {
-        $input = Input::all();
-        $data = null;
-        $error = [];
-        try
-        {
-            list($error, $data) = (new User\Service)->registerAdminLead($input);
-        }
-        catch (User\RecoverableException $e)
-        {
-            $error = [$e->getMessage()];
-        }
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     /**
      * Handle the authentication request from the user.
      *

@@ -288,6 +288,15 @@ class Service extends Base\Service
 
         $merchantApiData = $merchant->generateApiData();
 
+        // Once the merchant is created we also have to tag him
+        // with the admin if he was invited by one.
+        $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
+
+        if ($lead)
+        {
+            $merchantApiData['admin_id'] = $lead->admin_id;
+        }
+
         // This is internal auth as of now
         // We need to shift this to some other auth
         $this->setApiCredentials();
@@ -305,6 +314,12 @@ class Service extends Base\Service
         $merchant->confirm();
 
         return array();
+    }
+
+    public function tagAdmin($merchantOnApi)
+    {
+        sd($merchantOnApi);
+        // $this->api->merchant->tagAdmin();
     }
 
     public function resendConfirmation(array $input)
@@ -762,5 +777,19 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function getInvitationDetails($token)
+    {
+        $error = $data = null;
+
+        $lead = \DB::table('admin_leads')->where('token', '=', $token)->first();
+
+        if (empty($lead))
+        {
+            $error = true;
+        }
+
+        return [$error, $lead];
     }
 }

@@ -16,7 +16,7 @@
               <input placeholder="Phone Number (optional)" name="contact_mobile"  ng-model="data.contact_mobile" class="form-control no-border">
             </div>
             <div class="list-group-item" ng-if="!data.invitation">
-              <input type="email" placeholder="Email" name="email" ng-model="data.email" class="form-control no-border" required>
+              <input type="email" placeholder="Email" name="email" ng-model="data.email" class="form-control no-border" ng-readonly="data.email" required>
             </div>
             <div class="list-group-item">
                <input type="password" placeholder="Password" name="password" ng-model="data.password" class="form-control no-border" required>

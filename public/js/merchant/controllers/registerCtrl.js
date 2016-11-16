@@ -13,9 +13,10 @@ app.controller('RegisterCtrl', [
   '$cookies',
   function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window, $cookies) {
     $scope.data = {};
+    $scope.yo = true;
 
     if ($location.search().email) {
-      
+
       $scope.data.email = $location.search().email;
 
       // XHR to save this email in a generic table
@@ -36,8 +37,25 @@ app.controller('RegisterCtrl', [
       });
     }
 
-    if($location.search().invitation) {
+    if ($location.search().invitation) {
       $scope.data.invitation = $location.search().invitation;
+    }
+    // heimdall specific
+    else if ($location.search().merchant_invitation) {
+      $scope.data.merchant_invitation = $location.search().merchant_invitation;
+
+      // Get invitation details
+      $http.get('/invitation/' + $scope.data.merchant_invitation).success(function (data) {
+        if (data.success) {
+          var form_data = JSON.parse(data.data.form_data);
+
+          $scope.data.email = data.data.email;
+          $scope.data.business_name = form_data.merchant_name;
+          $scope.data.name = form_data.contact_name;
+        }
+      }).error(function () {
+
+      });
     }
     // We only track referers if they are registering a business
     else {
@@ -82,51 +100,6 @@ app.controller('RegisterCtrl', [
       var request = $http({
         method: 'post',
         url: '/user/register',
-        transformRequest: transformRequestAsFormPost,
-        data: $scope.data
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $cookies.show_rzp_welcome_guide = true;
-          $analytics.eventTrack('signUp', {
-            id: data.data.id,
-            name: data.data.name,
-            email: data.data.email
-          });
-          if(data.data.login) {
-            user.identity(true);
-            $state.go('app.dashboard');
-          }
-          else {
-            $scope.alerts.addAlert('success', 'Registration Successful. Please check your inbox for confirmation email from Razorpay.', true);
-          }
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (error) {
-            $scope.alerts.addAlert('danger', error);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
-
-    $scope.submitLead = function ($valid) {
-      if (!$valid) {
-        $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
-        return true;
-      }
-      if (!$scope.agree) {
-        $scope.alerts.addAlert('danger', 'You must agree to the terms & conditions for using our service', true);
-        return true;
-      }
-      if (window.location.hostname !== 'dashboard.razorpay.com' && window.location.hostname !== 'betadashboard.razorpay.com' && !$scope.data.captcha) {
-        $scope.data.captcha = 'Faked';
-      }
-      $scope.alerts.resetAlerts();
-      var request = $http({
-        method: 'post',
-        url: '/user/register_lead',
         transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });
