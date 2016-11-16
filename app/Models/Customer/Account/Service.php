@@ -19,19 +19,17 @@ class Service extends Base\Service
      */
     public function createLocalCustomer($input)
     {
-        // Not being used currently. Will uncomment when required.
+        $failOnDuplicate = true;
 
-        // $failOnDuplicate = true;
-        //
-        // if ((isset($input['flag'])) and
-        //     ($input['flag'] === '1'))
-        // {
-        //     $failOnDuplicate = false;
-        // }
+        if ((isset($input[Entity::FAIL_EXISTING])) and
+            ($input[Entity::FAIL_EXISTING] === '0'))
+        {
+            $failOnDuplicate = false;
+        }
 
-        unset($input['flag']);
+        unset($input[Entity::FAIL_EXISTING]);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
 
         return $customer->toArrayPublic();
     }

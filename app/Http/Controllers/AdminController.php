@@ -73,4 +73,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    public function postMailgunCallback($type)
+    {
+        $input = Request::all();
+
+        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+
+        return ApiResponse::json([], $responseStatus);
+    }
 }
