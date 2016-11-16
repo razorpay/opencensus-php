@@ -4,20 +4,8 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import { isBlank } from 'rzp/utils/rzp-utils'
+import validator from 'rzp/utils/validator'
 import * as ItemActions from 'merchant/modules/items'
-
-const validate = values => {
-  const errors = {}
-  if (isBlank(values.name)) {
-    errors.name = 'Required'
-  }
-
-  if (isBlank(values.rate)) {
-    errors.rate = 'Required'
-  }
-  return errors
-}
 
 const selector = formValueSelector('newItem')
 @connect(
@@ -31,7 +19,14 @@ const selector = formValueSelector('newItem')
 )
 @reduxForm({
   form: 'newItem',
-  validate
+  validate: validator({
+    name: {
+      presence: true
+    },
+    rate: {
+      presence: true
+    }
+  })
 })
 export default class AddItem extends Component {
   constructor() {

@@ -4,20 +4,8 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import { isBlank } from 'rzp/utils/rzp-utils'
+import validator from 'rzp/utils/validator'
 import * as PlanActions from 'merchant/modules/plans'
-
-const validate = values => {
-  const errors = {}
-  if (isBlank(values.name)) {
-    errors.name = 'Required'
-  }
-
-  if (isBlank(values.amount)) {
-    errors.amount = 'Required'
-  }
-  return errors
-}
 
 const selector = formValueSelector('newPlan')
 @connect(
@@ -31,11 +19,18 @@ const selector = formValueSelector('newPlan')
 )
 @reduxForm({
   form: 'newPlan',
-  validate,
   initialValues: {
     interval_count: 1,
     interval: 'monthly'
-  }
+  },
+  validate: validator({
+    name: {
+      presence: true
+    },
+    amount: {
+      presence: true
+    }
+  })
 })
 export default class AddPlan extends Component {
   constructor() {
