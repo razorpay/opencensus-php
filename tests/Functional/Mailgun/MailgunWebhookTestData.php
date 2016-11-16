@@ -12,7 +12,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/admin/email_hook/failure',
+            'url' => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 200,
@@ -29,7 +29,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/admin/email_hook/failure',
+            'url' => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 406,
@@ -47,7 +47,7 @@ return [
                 'event' => 'dropped'
             ],
             'method' => 'POST',
-            'url' => '/admin/email_hook/failure',
+            'url' => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 406,
