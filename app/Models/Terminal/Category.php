@@ -288,43 +288,39 @@ class Category
         return null;
     }
 
-    public static function getMinAmount($method, $network, $category) 
+    public static function getMinAmount($method, $network, $category)
     {
-        $min_amount = 0;
+        $minAmount = 0;
+
+        $constantName = null;
 
         if (empty($category) === true)
         {
             $category = self::getDefaultForMethodAndNetwork($method, $network);
         }
 
+        // set constant name
         if (self::isConstantDefined('network', $network) === true)
         {
-            $networkConstantName = self::getConstantName('network', $network);
-
-            if (in_array($category, constant('self::MIN_AMOUNT_'.$networkConstantName)) === false)
-            {
-                $min_amount = constant('self::DEFAULT_MIN_AMOUNT')[$networkConstantName];
-            }
-
-            else {
-                $min_amount = constant('self::MIN_AMOUNT_'.$networkConstantName)[$category]; 
-            }
+            $constantName = self::getConstantName('network', $network);
         }
 
         else if (self::isConstantDefined('method', $method) === true)
         {
-            $methodConstantName = self::getConstantName('method', $method);
-
-            if (in_array($category, constant('self::MIN_AMOUNT_'.$methodConstantName)) === false)
-            {
-                $min_amount = constant('self::DEFAULT_MIN_AMOUNT')[$methodConstantName];
-            }
-
-            else {
-                $min_amount = constant('self::MIN_AMOUNT_'.$methodConstantName)[$category]; 
-            }
+            $constantName = self::getConstantName('method', $method);
         }
 
-        return $min_amount;
+        // min_amount from respective array
+        if (in_array($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+        {
+            $minAmount = constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
+        }
+
+        else
+        {
+            $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
+        }
+
+        return $minAmount;
     }
 }
