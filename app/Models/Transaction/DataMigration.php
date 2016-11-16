@@ -197,6 +197,15 @@ class DataMigration extends Base\Service
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
+            $pricing = $this->getPricingRule($transaction);
+
+            if ($pricing === null)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
+
             list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
 
             $isValidFees = $this->isValidFees($transaction, $fees);
@@ -246,6 +255,15 @@ class DataMigration extends Base\Service
         foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            $pricing = $this->getPricingRule($transaction);
+
+            if ($pricing === null)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
 
             list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
 
@@ -299,6 +317,15 @@ class DataMigration extends Base\Service
         foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            $pricing = $this->getPricingRule($transaction);
+
+            if ($pricing === null)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
 
             list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
 
@@ -357,6 +384,15 @@ class DataMigration extends Base\Service
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
+            $pricing = $this->getPricingRule($transaction);
+
+            if ($pricing === null)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
+
             list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, false);
 
             $isValidFees = $this->isValidFees($transaction, $fees);
@@ -397,6 +433,15 @@ class DataMigration extends Base\Service
 
         foreach ($transactions as $transaction)
         {
+            $pricing = $this->getPricingRule($transaction);
+
+            if ($pricing === null)
+            {
+                $notMigratedTxns[] = $transaction->getPublicId();
+
+                continue;
+            }
+
             $merchant = $transaction->merchant;
 
             list($fees, $totalTax, $feesSplit, $taxTime) = $this->calculateFeesAndTaxes($transaction, $merchant->isFeeBearerCustomer());
@@ -596,6 +641,39 @@ class DataMigration extends Base\Service
                 $this->repo->saveOrFail($feeSplit);
             }
         });
+    }
+
+    protected function getPricingRule($transaction)
+    {
+        $pricingRuleId = $transaction->getPricingRule();
+
+        if (empty($pricingRuleId) === true)
+        {
+            $this->trace->info(TraceCode::PRICING_RULE_DOES_NOT_EXISTS,
+                [
+                    'transaction'       => $transaction->toArrayPublic(),
+                    'pricing_rule_id'   => $pricingRuleId,
+                ]);
+
+            return null;
+        }
+
+        $pricing = null;
+
+        try
+        {
+            $pricing = $this->repo->pricing->findOrFail($pricingRuleId);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::PRICING_RULE_DOES_NOT_EXISTS,
+                [
+                    'transaction'       => $transaction->toArrayPublic(),
+                    'pricing_rule_id'   => $pricingRuleId,
+                ]);
+        }
+
+        return $pricing;
     }
 
     protected function increaseAllowedSystemLimits()
