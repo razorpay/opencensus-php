@@ -8,7 +8,8 @@ app.controller('MerchantDetailCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'riskMap',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap) {
+  'admin',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin) {
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
