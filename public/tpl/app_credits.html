@@ -21,12 +21,12 @@
     </alert>
     <div class="row wrapper" ng-show="user.current">
       <div class="list-group">
-        <a class="list-group-item">
+        <a class="list-group-item" ng-hide="fee_credits != 0">
           <span class="pull-right">{{credits/100|rupee}}</span>
           Amount Credits
         </a>
 
-        <a class="list-group-item">
+        <a class="list-group-item" ng-hide="credits != 0">
           <span class="pull-right">{{fee_credits/100|rupee}}</span>
           Fee Credits
         </a>
@@ -48,26 +48,26 @@
 
         <div collapse="isCreditsLogCollapsed" class="panel-body">
 
-            <div class="m-t">
-              <table class="table table-striped b-light">
-                <thead>
-                  <th>Id</th>
-                  <th>Campaign</th>
-                  <th>Type</th>
-                  <th>Value</th>
-                  <th>Created At</th>
-                </thead>
-                <tbody>
-                <tr ng-repeat="credit in creditsData.data.items">
-                  <td>{{credit.id}}</td>
-                  <td>{{credit.campaign}}</td>
-                  <td>{{credit.type}}</td>
-                  <td>{{credit.value/100 | rupee:"INR "}}</td>
-                  <td>{{credit.created_at*1000 | date:'short'}}</td>
-                </tr>
-              </tbody>
-              </table>
-            </div>
+          <div class="m-t">
+            <table class="table table-striped b-light">
+              <thead>
+                <th>Id</th>
+                <th>Campaign</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Created At</th>
+              </thead>
+              <tbody>
+              <tr ng-repeat="credit in creditsData.data.items">
+                <td>{{credit.id}}</td>
+                <td>{{credit.campaign}}</td>
+                <td>{{credit.type}}</td>
+                <td>{{credit.value/100 | rupee:"INR "}}</td>
+                <td>{{credit.created_at*1000 | date:'short'}}</td>
+              </tr>
+            </tbody>
+            </table>
+          </div>
 
         </div>
         
