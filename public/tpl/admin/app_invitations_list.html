@@ -31,13 +31,11 @@
             <tr>
               <th>Invitation Id</th>
               <th>Merchant Email</th>
-              <th>Details</th>
           </thead>
           <tbody>
             <tr ng-repeat="row in invitations">
               <td>{{row.id}}</td>
               <td>{{row.email}}</td>
-              <td style="word-break: break-word;">{{row.form_data}}</td>
             </tr>
             <tr ng-show="invitations.length == 0">
               <td colspan="6">No Invitations</td>
