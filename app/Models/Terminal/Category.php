@@ -322,7 +322,6 @@ class Category
             {
                 $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
             }
-    
         }
         
         return $minAmount;
