@@ -62,6 +62,7 @@ class Event
     protected static $launchedEvents = array(
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::INVOICE_PAID,
     );
 
     /**

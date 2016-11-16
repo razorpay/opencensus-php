@@ -687,7 +687,7 @@ class Gateway extends Base\Gateway
             // Card Entity type field is not reliable, and not mandatory
             // ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
             ConnectRequestFields::COMMENTS                  => '',
-            ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
+            // ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
             ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],

@@ -198,6 +198,12 @@ class Checkout
     {
         try
         {
+            /// we don't return the customer data if request is jsonp
+            if (isset($input['callback']) === true)
+            {
+                return;
+            }
+
             // fetch customer data and saved cards data
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
