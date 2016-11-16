@@ -228,7 +228,7 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $holdMerchantFunds = ($status === 'P');
+            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
 
             $setlHandler = (new Settlement\Handler($setl));
 

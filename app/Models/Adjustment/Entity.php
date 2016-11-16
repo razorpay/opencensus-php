@@ -101,13 +101,13 @@ class Entity extends Base\PublicEntity
 
     protected function modifySettlementId(&$input)
     {
-        if (isset(self::SETTLEMENT_ID) === false)
+        if (isset($input[self::SETTLEMENT_ID]) === false)
         {
             return;
         }
 
         $settlementId = $input[self::SETTLEMENT_ID];
 
-        $input[self::SETTLEMENT_ID] = Settlement::verifyIdAndSilentlyStripSign($settlementId);
+        $input[self::SETTLEMENT_ID] = Settlement\Entity::verifyIdAndSilentlyStripSign($settlementId);
     }
 }

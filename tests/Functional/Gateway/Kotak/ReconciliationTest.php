@@ -79,6 +79,46 @@ class ReconciliationTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testAsjustmentCreationAgainstSettlement()
+    {
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
+
+        // delete Existing files
+        $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $setlId = $setl['id'];
+
+        $adjustmentData =[
+            'amount'        => 100,
+            'currency'      => 'INR',
+            'description'   => 'random desc',
+            'settlement_id' => $setlId
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $data = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($content, $data);
+    }
+
     protected function initiateSettlementsAndAssertSuccess()
     {
         $content = $this->initiateSettlements();
