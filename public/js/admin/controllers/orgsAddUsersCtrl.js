@@ -45,7 +45,7 @@ app.controller('OrgsAddUsersCtrl', [
         body.roles.push($scope.role);
       }
 
-      var request = $http.post('admin/generic/', {
+      var request = $http.post('admin/generic', {
         route_name: 'admin_create',
         data: {
           body: body
