@@ -270,9 +270,9 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ADMIN)->insert([
                 [
                     'id'            => '6dLbNSpv5Ybbbb',
-                    'email'         => 'test@hdfcbank.in',
+                    'email'         => 'rzp@hdfcbank.in',
                     'name'          => 'Test HDFC Account',
-                    'username'      => 'nemo',
+                    'username'      => 'rzp',
                     'password'      => \Hash::make('123456'),
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'employee_code' => '010',
@@ -286,9 +286,9 @@ class DatabaseSeeder extends Seeder
                 ],
                 [
                     'id'            => '6dLbNSpv5Ybbbc',
-                    'email'         => 'test2@hdfcbank.in',
+                    'email'         => 'test@hdfcbank.in',
                     'name'          => 'Test HDFC Account',
-                    'username'      => 'nemo2',
+                    'username'      => 'test',
                     'password'      => \Hash::make('123456'),
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'employee_code' => '011',
@@ -296,7 +296,7 @@ class DatabaseSeeder extends Seeder
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
-                    'last_login_at' => null,
+                    'last_login_at' => time(),
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 ]
@@ -320,24 +320,37 @@ class DatabaseSeeder extends Seeder
                 ]
             ]);
 
-            DB::table(Table::ROLE)->insert(
+            DB::table(Table::ROLE)->insert([
                 [
                     'id'            => '6dLbNSpv5XbC5F',
+                    'name'          => 'SuperAdmin',
+                    'description'   => 'Super Administrator',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => time(),
+                    'updated_at'    => time(),
+                ],
+                [
+                    'id'            => '6dLbNSpv5XbC5G',
                     'name'          => 'Admin',
                     'description'   => 'Administrator',
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 ]
-            );
+            ]);
 
-            DB::table(Table::ROLE_MAP)->insert(
+            DB::table(Table::ROLE_MAP)->insert([
                 [
                     'role_id'       => '6dLbNSpv5XbC5F',
                     'entity_id'     => '6dLbNSpv5Ybbbb',
                     'entity_type'   => 'admin',
+                ],
+                [
+                    'role_id'       => '6dLbNSpv5XbC5G',
+                    'entity_id'     => '6dLbNSpv5Ybbbc',
+                    'entity_type'   => 'admin',
                 ]
-            );
+            ]);
 
             DB::table(Table::GROUP)->insert([
                 [

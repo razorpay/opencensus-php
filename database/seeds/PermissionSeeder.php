@@ -87,6 +87,29 @@ class PermissionSeeder extends Seeder
             'view_entities' => '',
             'view_entity' => '',
 
+            'view_activation_form' => '',
+            'edit_merchant_confirm' => '',
+            'edit_merchant_lock_activation' => '',
+            'edit_merchant_unlock_activation' => '',
+            'edit_merchant_release_funds' => '',
+            'edit_merchant_enable_receipt' => '',
+            'edit_merchant_disable_receipt' => '',
+            'assign_merchant_terminal' => '',
+            'assign_merchant_banks' => '',
+            'add_merchant_adjustment' => '',
+            'edit_merchant_email' => '',
+            'merchant_autofill_form' => '',
+            'edit_merchant_mark_referred' => '',
+            'view_as_entity' => '',
+            'view_merchant_referrer' => '',
+            'view_merchant_balance_test' => '',
+            'view_merchant_balance_live' => '',
+            'add_reconciliation_file' => '',
+            'add_settlement_reconciliation' => '',
+            'send_newsletter' => '',
+            'trigger_dummy_error' => '',
+            'make_api_call' => '',
+
             // UAM
 
             // ORG
@@ -111,40 +134,70 @@ class PermissionSeeder extends Seeder
             'create_group_admins' => '',
             'delete_group' => '',
 
+            // Admin
             'view_all_admin' => '',
             'view_admin' => '',
             'edit_admin' => '',
             'delete_admin' => '',
             'create_admin' => '',
-            'create_permission' => '',
+
+            // Permissions
             'view_all_permission' => '',
+        ];
+
+        // trimmed down which an HDFC manager would have
+        // This array must be a **strict** subset of the one above
+        $trimmedDownPermissions = [
+            'view_all_merchants' => '',
+            'view_merchant' => '',
+            'view_merchant_details' => '',
+            'create_merchant_lock' => '',
+            'create_merchant_unlock' => '',
+            'edit_merchant' => '',
+            'edit_activate_merchant' => '',
+            'edit_merchant_enable_live' => '',
+            'edit_merchant_disable_live' => '',
+            'edit_merchant_archive' => '',
+            'edit_merchant_unarchive' => '',
+
             'view_activation_form' => '',
             'edit_merchant_confirm' => '',
             'edit_merchant_lock_activation' => '',
             'edit_merchant_unlock_activation' => '',
             'edit_merchant_release_funds' => '',
-            'edit_merchant_enable_live' => '',
-            'edit_merchant_disable_live' => '',
-            'edit_merchant_enable_receipt' => '',
-            'edit_merchant_disable_receipt' => '',
-            'assign_merchant_terminal' => '',
-            'assign_merchant_banks' => '',
-            'add_merchant_adjustment' => '',
-            'edit_merchant_email' => '',
-            'merchant_autofill_form' => '',
-            'edit_merchant_mark_referred' => '',
-            'view_as_entity' => '',
-            'view_merchant_referrer' => '',
+
             'view_merchant_balance_test' => '',
             'view_merchant_balance_live' => '',
-            'add_reconciliation_file' => '',
-            'add_settlement_reconciliation' => '',
-            'send_newsletter' => '',
-            'trigger_dummy_error' => '',
-            'make_api_call' => '',
+
+            // UAM
+
+            // Roles
+            'view_all_role' => '',
+            'view_role'     => '',
+            'create_role'   => '',
+            'edit_role'     => '',
+            'delete_role'   => '',
+
+            // Groups
+            'create_group' => '',
+            'view_group' => '',
+            'edit_group' => '',
+            'view_all_group' => '',
+            'create_group_admins' => '',
+            'delete_group' => '',
+
+            // Admin
+            'view_all_admin' => '',
+            'view_admin' => '',
+            'edit_admin' => '',
+            'delete_admin' => '',
+            'create_admin' => '',
+
+            // Permissions
+            'view_all_permission' => '',
         ];
 
-        DB::transaction(function() use ($permissions)
+        DB::transaction(function() use ($permissions, $trimmedDownPermissions)
         {
             foreach ($permissions as $key => $value) {
                 $id = str_random(14);
@@ -164,6 +217,18 @@ class PermissionSeeder extends Seeder
                         'entity_type'       => 'role',
                     ]
                 ]);
+
+                // For trimmed down ones
+                if (isset($trimmedDownPermissions[$key]))
+                {
+                    DB::table(Table::PERMISSION_MAP)->insert([
+                        [
+                            'permission_id'     => $id,
+                            'entity_id'         => '6dLbNSpv5XbC5G',
+                            'entity_type'       => 'role',
+                        ]
+                    ]);
+                }
             }
 
         });
