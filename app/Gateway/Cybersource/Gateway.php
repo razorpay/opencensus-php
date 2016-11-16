@@ -148,6 +148,41 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
+    public function void(array $input)
+    {
+        parent::action($input, Action::VOID);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $request = $this->getVoidRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_VOID_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_VOID_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromVoidResponse($input, $response);
+
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Void failed');
+        }
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -363,7 +398,7 @@ class Gateway extends Base\Gateway
 
                 $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
 
-                $this->validateAndSetEciValue($input, $payerAuthEnrollReply);
+                $this->validateAndSetEciValue($input, $this->gatewayPayment, $payerAuthEnrollReply);
 
                 return $this->authorizeNotEnrolled($input, $response);
         }
@@ -555,7 +590,7 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment->fill($gatewayAttributes);
 
-            $this->validateAndSetEciValue($input, $payerAuthValidateReply);
+            $this->validateAndSetEciValue($input, $gatewayPayment, $payerAuthValidateReply);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -572,7 +607,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function validateAndSetEciValue(array $input, array $response)
+    protected function validateAndSetEciValue(array $input, Entity $gatewayPayment, array $response)
     {
         $networkCode = $input['card']['network_code'];
 
@@ -591,8 +626,7 @@ class Gateway extends Base\Gateway
 
                     if ($eci === 7)
                     {
-                        throw new Exception\LogicException(
-                            'ECI value shouldn\'t be 7.');
+                        $desc = 'ECI value shouldn\'t be 7.';
                     }
 
                     break;
@@ -604,11 +638,19 @@ class Gateway extends Base\Gateway
 
                     if (($eci === 7) or ($eci === 0))
                     {
-                        throw new Exception\LogicException(
-                            'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci);
+                        $desc = 'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci;
                     }
 
                     break;
+            }
+
+            if (isset($desc) === true)
+            {
+                $gatewayPayment->setStatus(Status::AUTHORIZE_FAILED);
+                $this->repo->saveOrFail($gatewayPayment);
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR, $eciRaw, $desc);
             }
 
             $this->eci = $eciRaw;
@@ -801,6 +843,24 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getAttributeFromVoidResponse(array $input, array $response)
+    {
+        $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
+
+        $attributes = [
+            E::REF                => $response[F::REQUEST_ID],
+            E::REASON_CODE        => $response[F::REASON_CODE],
+            E::PROCESSOR_RESPONSE => $ccAuthReversalReply[F::PROCESSOR_RESPONSE] ?? null,
+            E::STATUS             => Status::VOIDED,
+            E::RECEIVED           => true
+        ];
+
+        return $attributes;
+    }
+
     protected function getEnrollRequestArray(array $input)
     {
         $content = [];
@@ -916,7 +976,32 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
-            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRef()
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getVoidRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CC_AUTH_REVERSAL_SERVICE] = [
+            F::RUN              => 'true',
+            F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
         ];
 
         $content[F::PURCHASE_TOTALS] = [
@@ -938,7 +1023,7 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',
-            F::AUTH_REQUEST_ID => $gatewayPayment->getRef()
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
         ];
 
         $content[F::PURCHASE_TOTALS] = [

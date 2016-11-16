@@ -130,12 +130,12 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CAVV);
     }
 
-    public function getRef()
+    public function getRequestId()
     {
         return $this->getAttribute(self::REF);
     }
 
-    public function getCaptureRef()
+    public function getCaptureRequestId()
     {
         $captureRef = $this->getAttribute(self::CAPTURE_REF);
 

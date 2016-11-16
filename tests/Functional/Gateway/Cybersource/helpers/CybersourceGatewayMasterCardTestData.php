@@ -25,15 +25,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         ],
     ],
 
@@ -41,15 +41,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         ],
     ],
 

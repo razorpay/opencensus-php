@@ -7,4 +7,5 @@ use RZP\Gateway\Base;
 class Action extends Base\Action
 {
     const VOID = 'void';
+    const SALE = 'sale';
 }

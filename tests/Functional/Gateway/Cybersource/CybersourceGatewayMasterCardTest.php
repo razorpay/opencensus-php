@@ -92,9 +92,9 @@ class CybersourceGatewayMasterCardTest extends TestCase
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('created', $cybersource['status']);
-        $this->assertEquals(475, $cybersource['reason_code']);
-        $this->assertEquals(null, $cybersource['eci']);
+        $this->assertEquals('authorize_failed', $cybersource['status']);
+        $this->assertEquals(100, $cybersource['reason_code']);
+        $this->assertEquals('0', $cybersource['eci']);
     }
 
     public function testUnsuccessfulAuthenticationUserFailed()
@@ -132,7 +132,7 @@ class CybersourceGatewayMasterCardTest extends TestCase
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('created', $cybersource['status']);
+        $this->assertEquals('authorize_failed', $cybersource['status']);
         $this->assertEquals('U', $cybersource['veresEnrolled']);
         $this->assertEquals('spa', $cybersource['commerce_indicator']);
         $this->assertEquals('0', $cybersource['eci']);

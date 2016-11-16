@@ -106,6 +106,10 @@ class Fields
 
     const CC_CAPTURE_REPLY              = 'ccCaptureReply';
 
+    const CC_AUTH_REVERSAL_SERVICE      = 'ccAuthReversalService';
+
+    const CC_AUTH_REVERSAL_REPLY        = 'ccAuthReversalReply';
+
     const PA_ENROLL_REPLY               = 'payerAuthEnrollReply';
 
     const PA_VALIDATE_SERVICE           = 'payerAuthValidateService';
