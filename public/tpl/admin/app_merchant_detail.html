@@ -186,6 +186,8 @@
           <span class="pull-right">{{referer}}</span>
           Referer
         </a>
+
+        <!-- Balance -->
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
@@ -194,6 +196,27 @@
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </a>
+
+        <!-- Account -->
+        <a href class="list-group-item" ng-show="merchant.credits.test != 0">
+          <span class="pull-right">{{merchant.credits.test/100 | rupee }}</span>
+          Account Credits (Test)
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.credits.live != 0">
+          <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
+          Account Credits (Live)
+        </a>
+
+        <!-- Fee -->
+        <a href class="list-group-item" ng-show="merchant.fee_credits.test != 0">
+          <span class="pull-right">{{merchant.fee_credits.test/100 | rupee }}</span>
+          Fee Credits (Test)
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.fee_credits.test != 0">
+          <span class="pull-right">{{merchant.fee_credits.live/100 | rupee }}</span>
+          Fee Credits (Live)
+        </a>
+
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
