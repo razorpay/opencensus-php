@@ -25,6 +25,10 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
+    protected $proxyFetchParamRules = [
+        Entity::USER_ID => 'sometimes|alpha_num',
+    ];
+
     public function getInvoicesForNotification($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
