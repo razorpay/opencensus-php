@@ -5,7 +5,6 @@ namespace RZP\Models\Invoice;
 use App;
 use Carbon\Carbon;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
@@ -80,8 +79,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'inv';
 
     protected $entity           = 'invoice';
-
-    protected $table            = Table::INVOICE;
 
     protected $generateIdOnCreate = true;
 
@@ -201,21 +198,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::VIEW_LESS => 'bool',
     ];
-
-    public function build(array $input = array())
-    {
-        $this->input = $input;
-
-        $this->modify($input);
-
-        $this->validateInput('create', $input);
-
-        $this->generate($input);
-
-        $this->fill($input);
-
-        return $this;
-    }
 
     // -------------------------------------- Getters --------------------------------------
 
@@ -363,7 +345,8 @@ class Entity extends Base\PublicEntity
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
 
         // Flatten response as per spec: Merge item attributes into line_item level.
-        foreach ($lineItems as & $lineItem) {
+        foreach ($lineItems as & $lineItem)
+        {
             unset($lineItem['item']['id']);
             $lineItem = array_merge($lineItem, $lineItem['item']);
             unset($lineItem['item']);

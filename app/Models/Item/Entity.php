@@ -3,7 +3,6 @@
 namespace RZP\Models\Item;
 
 use App;
-use RZP\Constants\Table;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -25,13 +24,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'item';
 
-    protected $table            = Table::ITEM;
-
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
         self::DESCRIPTION       => null,
-        self::CURRENCY          => "inr",
+        self::CURRENCY          => "INR",
     ];
 
     protected $visible = [

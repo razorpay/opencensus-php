@@ -22,11 +22,6 @@ class Core extends Base\Core
 
     protected $invoiceGenerator;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function create(array $input)
     {
         $this->trace->info(
@@ -52,7 +47,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
-        return ['success' => ($response === true)];
+        return ['success' => $response];
     }
 
     public function expireInvoices()

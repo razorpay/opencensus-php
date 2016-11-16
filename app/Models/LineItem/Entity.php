@@ -3,11 +3,8 @@
 namespace RZP\Models\LineItem;
 
 use App;
-use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Invoice;
 use RZP\Models\Item;
-use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -21,8 +18,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'li';
 
     protected $entity      = 'line_item';
-
-    protected $table       = Table::LINE_ITEM;
 
     protected $generateIdOnCreate = true;
 

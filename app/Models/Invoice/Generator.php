@@ -208,12 +208,15 @@ class Generator extends Base\Core
         {
             $lineItemsDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
 
-            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true) {
+            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
+            {
                 $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
                 Item\Entity::verifyIdAndStripSign($itemId);
                 $item = $this->repo->item
                     ->findByIdAndMerchantId($itemId, $this->merchant->getId());
-            } else {
+            }
+            else
+            {
                 list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
                 $item = (new Item\Core)->create($itemDetails, $this->merchant);
             }
@@ -294,8 +297,10 @@ class Generator extends Base\Core
     protected function separateInput(array $lineItemDetails)
     {
         $itemDetails = [];
-        foreach ($lineItemDetails as $key => $value) {
-            if (in_array($key, Item\Entity::$allFields, true)) {
+        foreach ($lineItemDetails as $key => $value)
+        {
+            if (in_array($key, Item\Entity::$allFields, true))
+            {
                 $itemDetails[$key] = $value;
                 unset($lineItemDetails[$key]);
             }

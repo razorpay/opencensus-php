@@ -8,11 +8,6 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * @param array $input
      * @param Merchant\Entity $merchant

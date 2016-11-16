@@ -43,9 +43,9 @@ class CreateItems extends Migration
             // $table->index(Entity::AMOUNT);
 
             $table->foreign(Entity::MERCHANT_ID)
-                ->references(Merchant\Entity::ID)
-                ->on(Table::MERCHANT)
-                ->on_delete('restrict');
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
         });
     }
