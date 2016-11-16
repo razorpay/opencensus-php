@@ -45,8 +45,10 @@ class Service extends Base\Service
 
         // Once the merchant is created we must tag him to
         // the admin referral
-
-        $this->attachAdmin($merchant->id, $adminId);
+        if (isset($adminId) === true)
+        {
+            $this->attachAdmin($merchant->id, $adminId);
+        }
 
         return $merchant->toArrayPublic();
     }
