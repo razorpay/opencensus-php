@@ -2387,7 +2387,7 @@ class Service extends Base\Service
 
         $mailer
             ->sendMerchantInvitationEmail($invitation, $admin->toArray())
-            ->deliver();
+            ->queueAndDeliver();
     }
 
     public function getAdminLeads()
