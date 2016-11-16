@@ -7,9 +7,14 @@ app.controller('WebhooksCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  'user',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
+
+    user.identity().then(function (data) {
+      $scope.user = data;
+    });
 
     $scope.webhooks = {
       items: [],
@@ -142,7 +147,8 @@ app.controller('WebhooksCtrl', [
       url: "",
       events: {
         'payment.authorized': false,
-        'payment.failed': false
+        'payment.failed': false,
+        'invoice.paid': false
       }
     };
     $scope.ok = function (webhook) {
