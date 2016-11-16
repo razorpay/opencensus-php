@@ -54,4 +54,9 @@ export const isEmail = (email) => {
   return emailRegExp.test(email)
 }
 
+export const isValidPhone = (phone) => {
+  let phoneRegExp = new RegExp(/^\+?[0-9]{8,15}$/)
+  return phoneRegExp.test(phone)
+}
+
 export const normalizeDate = date => (moment(date).format('D/M/Y'))

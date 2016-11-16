@@ -1,6 +1,7 @@
 import {
   isBlank,
-  isEmail
+  isEmail,
+  isValidPhone
 } from './rzp-utils'
 
 // let validate = validator({
@@ -45,6 +46,11 @@ const typeValidator = (value, message, type) => {
   switch (type) {
     case 'email':
       errored = !isEmail(value)
+      break
+    case 'contact':
+    case 'phone':
+      errored = !isValidPhone(value)
+      break
   }
   return errored ? message : null
 }

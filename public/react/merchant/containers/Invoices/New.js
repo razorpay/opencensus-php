@@ -92,7 +92,7 @@ export default class InvoicesNewContainer extends ModalContainer {
           />
         </Modal>
 
-        <div class='content-wrapper creation-container'>
+        <div class='content-wrapper invoice-creation-container'>
           <div class='panel panel-default'>
             <div class='panel-body'>
               <form onSubmit={handleSubmit(this.save)}>
@@ -181,7 +181,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                 />
 
                 <div class='form-group'>
-                  <label>Customer Notes</label>
+                  <label>Invoice Notes</label>
                   <Field
                     name='notes'
                     component='textarea'

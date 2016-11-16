@@ -66,7 +66,7 @@ export default class InvoiceLineItemTable extends Component {
           </tbody>
         </table>
 
-        <div class='form-group'>
+        <div class='form-group clearfix'>
           <div class='invoice-total pull-right'>
             <dl class='dl-horizontal'>
               <dt>SUB TOTAL:</dt>
@@ -78,9 +78,9 @@ export default class InvoiceLineItemTable extends Component {
           </div>
 
           <button
-            class='btn btn-default'
+            class='btn btn-default add-line-item'
             style={{
-              marginLeft: '20px'
+              marginLeft: '40px'
             }}
             type='button'
             onClick={() => fields.push({
@@ -89,7 +89,7 @@ export default class InvoiceLineItemTable extends Component {
               rate: '0.00'
             })}
           >
-            Add Another Item
+            ADD ITEM
           </button>
         </div>
       </div>
