@@ -104,6 +104,8 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
 
+            $table->unique([Entity::MERCHANT_ID, Entity::MERCHANT_REF_ID]);
+
             $table->foreign(Entity::ORDER_ID)
                   ->references(Order\Entity::ID)
                   ->on(Table::ORDER)

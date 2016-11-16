@@ -267,4 +267,6 @@ class PublicErrorDescription
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';
+
+    const BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID                                 = 'Duplicate key \'merchant_ref_id\' for invoice';
 }

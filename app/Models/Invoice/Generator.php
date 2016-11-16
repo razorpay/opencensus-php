@@ -77,25 +77,41 @@ class Generator extends Base\Core
 
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
-        $this->repo->transaction(
-            function() use ($lineItemsDetails, $customerDetails, $input)
+        try
+        {
+            $this->repo->transaction(
+                function() use ($lineItemsDetails, $customerDetails, $input)
+                {
+                    $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
+
+                    $this->setCustomerDetailsAttributes();
+
+                    $this->setStatus($input);
+
+                    $this->setShortUrl();
+
+                    // Saving here for the associations
+                    $this->repo->saveOrFail($this->invoice);
+
+                    // This function should be called only after saving the invoice entity and the items entities
+                    // because the invoice should be created and saved before it can be associated with the items.
+                    $this->associateLineItemsToInvoice();
+                }
+            );
+        }
+        catch (\Exception $e)
+        {
+            // TODO: Have better alternatives, need to discuss and implement that.
+            //       For now, this is the quickest
+
+            // Check if is Mysql duplicate on unique index error
+            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
-                $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
-
-                $this->setCustomerDetailsAttributes();
-
-                $this->setStatus($input);
-
-                $this->setShortUrl();
-
-                // Saving here for the associations
-                $this->repo->saveOrFail($this->invoice);
-
-                // This function should be called only after saving the invoice entity and the items entities
-                // because the invoice should be created and saved before it can be associated with the items.
-                $this->associateLineItemsToInvoice();
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID);
             }
-        );
+
+            throw $e;
+        }
 
         (new Notifier($this->invoice))->sendNotificationToCustomer();
 
