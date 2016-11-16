@@ -21,16 +21,13 @@ class Validator extends Base\Validator
     ];
     
     protected static $mailgunWebhookRules = [
-        'token'             => 'required',
-        'signature'         => 'required',
-        'timestamp'         => 'required',
-        'recipient'         => 'required',
-        'event'             => 'sometimes',
-        'X-Mailgun-Sid'     => 'sometimes',
-        'domain'            => 'sometimes',
-        'X-Mailgun-Tag'     => 'sometimes',
-        'message-headers'   => 'sometimes',
-        'Message-Id'        => 'sometimes',
-        'body-plain'        => 'sometimes'
+        'token'             => 'required|string|size:50',
+        'signature'         => 'required|string',
+        'timestamp'         => 'required|integer',
+        'recipient'         => 'required|email',
+        'event'             => 'sometimes|string',
+        'domain'            => 'sometimes|string',
+        'message-headers'   => 'sometimes|string',
+        'reason'            => 'someitmes|string',
     ];
 }

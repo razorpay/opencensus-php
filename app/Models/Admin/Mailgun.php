@@ -70,6 +70,11 @@ class Mailgun
             'sent_at'   => $sentDate
         ];
         
+        if (isset($input['reason']))
+        {
+            $params['reason'] = $input['reason'];
+        }
+        
         $notifyChannel = Config::get('slack.channels.settlements');
         
         $this->app->slack->queue($message, $params, ['channel' => $notifyChannel]);

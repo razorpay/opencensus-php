@@ -68,7 +68,11 @@ class Service extends Base\Service
     
     public function processMailgunCallback($type, $input)
     {
-        (new Validator)->validateInput('mailgun_webhook', $input);
+        $validator = new Validator;
+        
+        $validator->setStrictFalse();
+        
+        $validator->validateInput('mailgun_webhook', $input);
         
         return (new Mailgun)->processCallback($type, $input);
     }
