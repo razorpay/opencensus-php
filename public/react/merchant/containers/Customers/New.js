@@ -4,20 +4,8 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import { isBlank } from 'rzp/utils/rzp-utils'
+import validator from 'rzp/utils/validator'
 import * as CustomerActions from 'merchant/modules/customers'
-
-const validate = values => {
-  const errors = {}
-  if (isBlank(values.email)) {
-    errors.email = 'Required'
-  }
-
-  if (isBlank(values.contact)) {
-    errors.contact = 'Required'
-  }
-  return errors
-}
 
 const selector = formValueSelector('newCustomer')
 @connect(
@@ -31,7 +19,18 @@ const selector = formValueSelector('newCustomer')
 )
 @reduxForm({
   form: 'newCustomer',
-  validate
+  validate: validator({
+    email: {
+      presence: true,
+      type: 'email',
+      messages: {
+        type: 'Email is invalid'
+      }
+    },
+    contact: {
+      presence: true
+    }
+  })
 })
 export default class AddCustomer extends Component {
   constructor() {

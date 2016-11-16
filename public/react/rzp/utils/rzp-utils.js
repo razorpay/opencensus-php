@@ -49,4 +49,9 @@ export const pipe = (...funcs) => {
   }
 }
 
+export const isEmail = (email) => {
+  let emailRegExp = new RegExp(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/)
+  return emailRegExp.test(email)
+}
+
 export const normalizeDate = date => (moment(date).format('D/M/Y'))
