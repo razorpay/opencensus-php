@@ -19,7 +19,6 @@ class Repository extends Base\Repository
     //     Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
     // ];
 
-    // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::STATUS              => 'sometimes|string',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
@@ -27,6 +26,7 @@ class Repository extends Base\Repository
 
     protected $proxyFetchParamRules = [
         Entity::USER_ID => 'sometimes|alpha_num',
+        Entity::STATUS  => 'sometimes|string',
     ];
 
     public function getInvoicesForNotification($medium)
