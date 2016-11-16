@@ -406,7 +406,7 @@ class DataMigration extends Base\Service
 
             if ($isValidFees === true)
             {
-                $this->saveFeeDetails($transaction, $filtered, $taxTime);
+                $this->saveFeeDetails($transaction, $feesSplit, $taxTime);
 
                 $migratedTxns[] = $transactionId;
             }
