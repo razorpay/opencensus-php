@@ -115,7 +115,7 @@ class DataMigration extends Base\Service
 
             $fee = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee);
+            $isValidPricingPlan = $this->isValidFees($transaction, $fee);
 
             if ($isValidPricingPlan === true)
             {
@@ -131,7 +131,7 @@ class DataMigration extends Base\Service
 
             $fee = $this->feeCalculator->calculateRzpFee($pricing, $amount);
 
-            $isValidPricingPlan = $this->isValidPricingPlan($transaction, $fee);
+            $isValidPricingPlan = $this->isValidFees($transaction, $fee);
 
             if ($isValidPricingPlan === true)
             {
