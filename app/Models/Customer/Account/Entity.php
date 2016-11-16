@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
 
     const SHIPPING_ADDRESS      = 'shipping_address';
 
+    const FAIL_EXISTING         = 'fail_existing';
+
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
