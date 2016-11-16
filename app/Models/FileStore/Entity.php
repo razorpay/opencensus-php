@@ -200,6 +200,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXTENSION);
     }
 
+    public function getMime()
+    {
+        return $this->getAttribute(self::MIME);
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()

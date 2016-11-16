@@ -5,42 +5,31 @@ namespace RZP\Models\FileStore;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
-use RZP\Models\FileStore\Formatter;
 
 class Accessor extends Base\Service
 {
     /**
      * Id of object to fetched
-     *
-     * @var id
      */
     protected $id;
 
     /**
      * Merchant id of the file object to be fetched
-     *
-     * @var merchantId
      */
     protected $merchantId;
 
     /**
      * Entity id of the file object to be fetched
-     *
-     * @var entityId
      */
     protected $entityId;
 
     /**
      * Entity Type of the file object to be fetched
-     *
-     * @var entityType
      */
     protected $entityType;
 
     /**
      * File Type of the file object to be fetched
-     *
-     * @var type
      */
     protected $type;
 
@@ -155,7 +144,8 @@ class Accessor extends Base\Service
     /**
      * Returns File Contents
      *
-     * @return string File Conntents
+     * @return string File Contents
+     * @throws Exception\LogicException
      */
     public function getFile()
     {

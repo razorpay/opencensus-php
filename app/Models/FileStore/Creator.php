@@ -61,9 +61,12 @@ class Creator extends Base\Core
 
     /**
      * Set the File name in File Store
+     *
+     * @param string $name File Name
+     *
      * @return Creator object
      */
-    public function name($name)
+    public function name(string $name)
     {
         $this->file->setName($name);
 
@@ -72,9 +75,12 @@ class Creator extends Base\Core
 
     /**
      * Set the Content of File
+     *
+     * @param string $content Content of file
+     *
      * @return Creator object
      */
-    public function content($content)
+    public function content(string $content)
     {
         $this->content = $content;
 
@@ -93,10 +99,13 @@ class Creator extends Base\Core
     }
 
     /**
-     * Set the Extention of File Store
+     * Set the Extension of File Store
+     *
+     * @param string $extension Extension of file
+     *
      * @return Creator object
      */
-    public function extension($extension)
+    public function extension(string $extension)
     {
         $this->file->setExtension($extension);
 
@@ -105,9 +114,12 @@ class Creator extends Base\Core
 
     /**
      * Set the Store  of File Store
+     *
+     * @param string $store Service to be used for storing file
+     *
      * @return Creator object
      */
-    public function store($store)
+    public function store(string $store)
     {
         $this->file->setStore($store);
 
@@ -118,9 +130,12 @@ class Creator extends Base\Core
 
     /**
      * Set the type of File Store
+     *
+     * @param string $type File type
+     *
      * @return Creator object
      */
-    public function type($type)
+    public function type(string $type)
     {
         $this->file->setType($type);
 
@@ -129,9 +144,12 @@ class Creator extends Base\Core
 
     /**
      * Set the delimiter used for creation of file
+     *
+     * @param string $delimiter Delimiter value
+     *
      * @return Creator object
      */
-    public function delimiter($delimiter = ',')
+    public function delimiter(string $delimiter = ',')
     {
         $this->delimiter = $delimiter;
 
@@ -141,6 +159,7 @@ class Creator extends Base\Core
     /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
+     *
      * @return Creator object
      */
     public function save()
@@ -166,6 +185,7 @@ class Creator extends Base\Core
 
     /**
      * Returns Array of File Store Values
+     *
      * @return array
      */
     public function get()
@@ -182,6 +202,7 @@ class Creator extends Base\Core
 
     /**
      * Uploads the file to the service specified by file store
+     *
      * @return void
      * @throws \Exception
      */
@@ -192,7 +213,7 @@ class Creator extends Base\Core
         $fileDetails = [
             'name'      => $this->file->getName(),
             'path'      => $this->filePath,
-            'extension'      => $this->file->getMime(),
+            'extension' => $this->file->getMime(),
             'metadata'  => [],
         ];
 
@@ -234,7 +255,7 @@ class Creator extends Base\Core
 
     protected function associateMerchantWithFile()
     {
-        $merchant = $this->app['basicauth']->merchant;
+        $merchant = $this->app['basicauth']->getMerchant();
 
         if ($merchant !== null)
         {
