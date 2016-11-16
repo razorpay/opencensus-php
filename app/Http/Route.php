@@ -524,7 +524,6 @@ final class Route
         'feature_bulk_assign',
         'feature_bulk_remove',
         'methods_update_merchants',
-        'mailgun_webhook'
     );
 
     public static $proxy = array(
@@ -586,6 +585,7 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'mailgun_webhook'
     );
 
     public static $internalApps = array(
@@ -626,8 +626,7 @@ final class Route
         ),
 
         'mailgun' => array(
-            'reconciliate',
-            'mailgun_webhook'
+            'reconciliate'
         ),
 
         'hosted' => array(

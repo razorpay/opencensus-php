@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Constants\MailTags;
+use RZP\Constants\HashAlgo;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Models\Base;
@@ -20,11 +21,17 @@ class Mailgun extends Base\Core
      * Response - Status 200 = Accept / Status 406 = Reject. No retry made
      * Any other status will result in the webhook being retried
      *
-     * @param type $input Request input
+     * @param string $type Callback type
+     * @param array $input Request input
      * @return int statusCode
+     * @throws Exception\BadRequestException
      */
     public function processCallback($type, $input)
     {
+        $mailgunKey = Config::get('applications.mailgun.key');
+
+        $this->authenticateSignature($mailgunKey, $input);
+
         $functionName = $type . 'Callback';
 
         if (method_exists($this, $functionName))
@@ -37,7 +44,19 @@ class Mailgun extends Base\Core
 
     }
 
-    public function failureCallback($input)
+    protected function authenticateSignature($apiKey, $input)
+    {
+        $hashData = $input['timestamp'] . $input['token'];
+
+        if (time() - $input['timestamp'] > 30 or
+            hash_hmac(HashAlgo::SHA256, $hashData, $apiKey) !== $input['signature'])
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_MAILGUN_SIGNATURE);
+        }
+    }
+
+    protected function failureCallback($input)
     {
         if (isset($input['X-Mailgun-Tag']) === false)
         {
