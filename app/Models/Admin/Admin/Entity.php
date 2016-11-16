@@ -18,7 +18,6 @@ class Entity extends Base\PublicEntity
     const NAME                      = 'name';
     const USERNAME                  = 'username';
     const PASSWORD                  = 'password';
-    const PASSWORD_CONFIRMATION     = 'password_confirmation';
     const EMAIL                     = 'email';
     const REMEMBER_TOKEN            = 'remember_token';
     const OAUTH_ACCESS_TOKEN        = 'oauth_access_token';

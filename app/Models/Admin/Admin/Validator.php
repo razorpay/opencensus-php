@@ -13,7 +13,6 @@ class Validator extends Base\Validator
         Entity::NAME                => 'required|alpha_space|between:3,100',
         Entity::USERNAME            => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD            => 'sometimes|string|between:6,50',
-        Entity::PASSWORD_CONFIRMATION => 'sometimes|string|between:6,50',
         Entity::REMEMBER_TOKEN      => 'sometimes|string|max:250',
         Entity::OAUTH_ACCESS_TOKEN  => 'sometimes|string|max:250',
         Entity::OAUTH_PROVIDER_ID   => 'sometimes|string|max:250',

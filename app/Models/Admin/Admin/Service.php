@@ -20,11 +20,15 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->validator = new Validator;
+
+        $this->authPolicy = new AuthPolicy\Service;
     }
 
     public function login($input)
     {
-        (new Validator)->validateCredentials($input);
+        $this->validator->validateCredentials($input);
 
         // Get the admin record
         $admin = $this->repo->admin->findOrFailByEmail($input['username']);
@@ -35,16 +39,14 @@ class Service extends Base\Service
                 Error\ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
-        (new AuthPolicy\Service)
-                ->validateLogin($admin, $input['password']);
+        $this->authPolicy->validateLogin($admin, $input['password']);
 
         // Valid password ?
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
 
-            $validate = (new AuthPolicy\Service)
-                            ->validateLogin($admin, $input['password'], 'after');
+            $validate = $this->authPolicy->validateLogin($admin, $input['password'], 'after');
 
             if ($validate !== null)
             {
