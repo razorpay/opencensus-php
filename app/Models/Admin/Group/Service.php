@@ -85,9 +85,9 @@ class Service extends Base\Service
         {
             $groupIds = [];
 
-            foreach ($input['sub_groups'] as $groupId)
+            foreach ($input['sub_groups'] as $subGroupId)
             {
-                $groupIds[] = Entity::verifyIdAndStripSign($groupId);
+                $groupIds[] = Entity::verifyIdAndStripSign($subGroupId);
             }
 
             $input['sub_groups'] = $groupIds;
