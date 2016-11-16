@@ -293,7 +293,8 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-      );
+        'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+    );
 
     public static $public = array(
         'checkout',
@@ -527,6 +528,7 @@ final class Route
         'feature_bulk_assign',
         'feature_bulk_remove',
         'methods_update_merchants',
+        'mailgun_webhook'
     );
 
     public static $proxy = array(
@@ -629,6 +631,7 @@ final class Route
 
         'mailgun' => array(
             'reconciliate',
+            'mailgun_webhook'
         ),
 
         'hosted' => array(
