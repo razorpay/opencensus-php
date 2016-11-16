@@ -17,10 +17,6 @@ app.controller('WebhooksCtrl', [
       $scope.user = data;
     });
 
-    $scope.showInvoice = function () {
-      return ($scope.user.tags.indexOf('Invoice') > -1);
-    }
-
     $scope.webhooks = {
       items: [],
       count: 0
@@ -100,7 +96,12 @@ app.controller('WebhooksCtrl', [
       var modalInstance = $modal.open({
         templateUrl: 'newWebhookModalContent.html',
         controller: 'newWebhookCtrl',
-        backdrop: 'static'
+        backdrop: 'static',
+        resolve: {
+          showInvoice: function () {
+            return ($scope.user.tags.indexOf('Invoice') > -1);
+          }
+        }
       });
 
       modalInstance.result.then($scope.createWebhook, $.noop);
@@ -114,6 +115,9 @@ app.controller('WebhooksCtrl', [
         resolve: {
           webhook: function () {
             return data;
+          },
+          showInvoice: function () {
+            return ($scope.user.tags.indexOf('Invoice') > -1);
           }
         }
       });
@@ -147,7 +151,9 @@ app.controller('WebhooksCtrl', [
 }]).controller('newWebhookCtrl', [
   '$scope',
   '$modalInstance',
-  function ($scope, $modalInstance) {
+  'showInvoice',
+  function ($scope, $modalInstance, showInvoice) {
+    $scope.showInvoice = showInvoice;
     $scope.webhook = {
       url: "",
       events: {
@@ -167,7 +173,9 @@ app.controller('WebhooksCtrl', [
   '$scope',
   '$modalInstance',
   'webhook',
-  function ($scope, $modalInstance, webhook) {
+  'showInvoice',
+  function ($scope, $modalInstance, webhook, showInvoice) {
+    $scope.showInvoice = showInvoice;
     $scope.webhook = webhook;
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);
