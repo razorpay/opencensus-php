@@ -291,7 +291,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'mailgun_webhook'                         => ['post',     'admin/email_hook/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'mailgun_webhook'                         => ['post',     'mailgun_callback/{type}',                        'AdminController@postMailgunCallback'                               ],
     );
 
     public static $public = array(
