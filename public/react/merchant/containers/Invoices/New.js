@@ -9,7 +9,7 @@ import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
 
-import LineItemTable from 'merchant/components/Invoices/LineItemTable'
+import LineItemTable from './LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
 import { fetchItems } from 'merchant/modules/items'
 import CustomerCreation from 'merchant/containers/Customers/New'
@@ -38,7 +38,7 @@ const selector = formValueSelector('newInvoice')
     line_items: [
       {
         quantity: 1,
-        rate: 0.00
+        rate: '0.00'
       }
     ]
   }
@@ -57,6 +57,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   selectCustomerAndCloseModal(customer) {
     this.props.change('customer', customer)
+    this.closeModal()
   }
 
   quickCreateCustomer() {
@@ -65,11 +66,12 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   save(props) {
     alert(JSON.stringify(props))
+    debugger
   }
 
   render() {
     const { handleSubmit } = this.props
-    let selectedCustomer = this.props.customer
+    let selectedCustomer = this.props.customer || {}
 
     return (
       <div>
@@ -134,6 +136,13 @@ export default class InvoicesNewContainer extends ModalContainer {
                           </div>
                         )}
                       />
+                      {
+                        selectedCustomer.address &&
+                        <small class='text-muted'>
+                          <b>Billing Address: </b>
+                          {selectedCustomer.address}
+                        </small>
+                      }
                     </div>
                   </div>
 
@@ -172,7 +181,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                 />
 
                 <div class='form-group'>
-                  <label>Notes</label>
+                  <label>Customer Notes</label>
                   <Field
                     name='notes'
                     component='textarea'

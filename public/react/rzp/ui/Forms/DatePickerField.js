@@ -27,7 +27,7 @@ export default class DatePickerField extends Component {
       ...otherProps
     } = this.props
 
-    let date = (input.value && moment.unix(input.value, this.props.displayFormat)) || ''
+    let date = (input.value && moment.unix(input.value, this.props.displayFormat)) || null
 
     return (
       <SingleDatePicker
