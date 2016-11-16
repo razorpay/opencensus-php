@@ -298,7 +298,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === 'authorize')
+            if ($action === 'auth_validate')
             {
                 $content['payerAuthValidateReply']['xid'] = 'random_xid';
             }

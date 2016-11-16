@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         'ccAuthService'                        => 'required|array',
         'ccAuthService.run'                    => 'required|in:true',
         'ccAuthService.eci'                    => 'sometimes|numeric|digits_between:1,2',
-        'ccAuthService.commerceIndicator'      => 'sometimes|in:internet,recurring,vbv_attempted,spa',
+        'ccAuthService.commerceIndicator'      => 'sometimes|in:internet,recurring,vbv_attempted,vbv,spa',
         'ccAuthService.veresEnrolled'          => 'sometimes|in:Y,N,U',
         'ucaf'                                 => 'sometimes|array',
         'ucaf.commerceIndicator'               => 'sometimes_if:card.cardType,002|string',
@@ -60,6 +60,21 @@ class Validator extends Base\Validator
         'billTo.postalCode'                    => 'sometimes|numeric',
         'billTo.country'                       => 'required_with:billTo.postalCode|string|size:2',
         'billTo.email'                         => 'required|email',
+    ];
+
+    protected static $authValidateRules = [
+        'merchantID'                           => 'required|string|max:30',
+        'merchantReferenceCode'                => 'required|string|size:14',
+        'payerAuthValidateService'             => 'sometimes|array',
+        'payerAuthValidateService.run'         => 'required_with:payerAuthValidateService|string|in:true',
+        'payerAuthValidateService.signedPARes' => 'required_with:payerAuthValidateService|string',
+        'card'                                 => 'required|array',
+        'card.accountNumber'                   => 'required|numeric|digits_between:13,19|luhn',
+        'card.expirationMonth'                 => 'required_with:card.expirationYear|numeric|digits:2|min:1|max:12',
+        'card.expirationYear'                  => 'required_with:card.expirationMonth|numeric|digits:4',
+        'card.cardType'                        => 'sometimes|in:001,002',
+        'purchaseTotals'                       => 'required|array',
+        'purchaseTotals.currency'              => 'required|string|size:3|in:INR'
     ];
 
     protected static $captureRules = [

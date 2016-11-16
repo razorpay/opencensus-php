@@ -125,19 +125,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ECI);
     }
 
-    public function getEciRaw()
-    {
-        return $this->getAttribute(self::ECI_RAW);
-    }
-
     public function getCavv()
     {
         return $this->getAttribute(self::CAVV);
-    }
-
-    public function getAuthorizationCode()
-    {
-        return $this->getAttribute(self::AUTHORIZATION_CODE);
     }
 
     public function getRef()

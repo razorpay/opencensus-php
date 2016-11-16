@@ -83,17 +83,19 @@ class CybersourceGatewayVisaTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4000000000000036';
 
-        $response = $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
 
-        $paymentId = Payment::verifyIdAndSilentlyStripSign($response['razorpay_payment_id']);
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals($paymentId, $cybersource['payment_id']);
-        $this->assertEquals('authorized', $cybersource['status']);
-        $this->assertEquals(100, $cybersource['reason_code']);
-        $this->assertEquals('internet', $cybersource['commerce_indicator']);
-        $this->assertEquals('07', $cybersource['eci']);
+        $this->assertEquals('created', $cybersource['status']);
+        $this->assertEquals(475, $cybersource['reason_code']);
+        $this->assertEquals(null, $cybersource['commerce_indicator']);
+        $this->assertEquals(null, $cybersource['eci']);
     }
 
     public function testUnsuccessfulAuthenticationUserFailed()
@@ -147,9 +149,9 @@ class CybersourceGatewayVisaTest extends TestCase
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('authorize_failed', $cybersource['status']);
-        $this->assertEquals(476, $cybersource['reason_code']);
-        $this->assertEquals('07', $cybersource['eci']);
+        $this->assertEquals('created', $cybersource['status']);
+        $this->assertEquals(475, $cybersource['reason_code']);
+        $this->assertEquals(null, $cybersource['eci']);
     }
 
     public function testCardNotEnrolled()

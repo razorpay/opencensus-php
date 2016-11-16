@@ -83,17 +83,18 @@ class CybersourceGatewayMasterCardTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5200000000000031';
 
-        $response = $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
 
-        $paymentId = Payment::verifyIdAndSilentlyStripSign(
-                                    $response['razorpay_payment_id']);
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals($paymentId, $cybersource['payment_id']);
-        $this->assertEquals('authorized', $cybersource['status']);
-        $this->assertEquals(100, $cybersource['reason_code']);
-        $this->assertEquals('0', $cybersource['eci']);
+        $this->assertEquals('created', $cybersource['status']);
+        $this->assertEquals(475, $cybersource['reason_code']);
+        $this->assertEquals(null, $cybersource['eci']);
     }
 
     public function testUnsuccessfulAuthenticationUserFailed()

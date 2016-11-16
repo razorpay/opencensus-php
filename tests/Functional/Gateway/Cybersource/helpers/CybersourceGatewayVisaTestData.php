@@ -21,19 +21,51 @@ return [
         ],
     ],
 
+    // 'testAuthenticationError' => [
+    //     'response' => [
+    //         'content' => [
+    //             'error' => [
+    //                 'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+    //                 'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+    //             ],
+    //         ],
+    //         'status_code' => 400,
+    //     ],
+    //     'exception' => [
+    //         'class' => RZP\Exception\GatewayErrorException::class,
+    //         'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+    //     ],
+    // ],
+
     'testAuthenticationError' => [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 500,
         ],
         'exception' => [
-            'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
+
+    'testEnrolledIncompleteAuthentication' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],
 
