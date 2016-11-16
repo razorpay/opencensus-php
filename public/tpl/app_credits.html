@@ -36,10 +36,10 @@
         <a href class="list-group-item" ng-init="isCreditsLogCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right" ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
-                    ng-show="creditsLog.items.length != 0">
+                    ng-show="creditsData.items.length != 0">
               Show/Hide
             </button>
-            <span ng-hide="creditsLog.items.length != 0">
+            <span ng-hide="creditsData.data.items.length != 0">
               No credits Assigned
             </span>
             </span>
@@ -59,7 +59,7 @@
                   <th>Created At</th>
                 </thead>
                 <tbody>
-                <tr ng-repeat="credit in creditsLog.items">
+                <tr ng-repeat="credit in creditsData.data.items">
                   <td>{{credit.id}}</td>
                   <td>{{credit.campaign}}</td>
                   <td>{{credit.type}}</td>
@@ -70,7 +70,9 @@
               </table>
             </div>
           </div>
+
         </div>
+        
       </div>
     </div>
   </div>

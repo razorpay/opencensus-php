@@ -392,8 +392,8 @@ class MerchantController extends Controller
 
         $id = Auth::user()->getCurrentMerchantId();
 
-        $data = (new Merchant\Service)->getCreditsLog($id, $mode);
+        list($error, $data) = (new Merchant\Service)->getCreditsLog($id, $mode);
 
-        return AppResponse::jsonResponse([], $data);
+        return AppResponse::jsonResponse($error, $data);
     }
 }

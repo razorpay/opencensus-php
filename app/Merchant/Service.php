@@ -774,18 +774,19 @@ class Service extends Base\Service
      */
     public function getCreditsLog($merchantId, $mode)
     {
+        $this->setApiCredentials($merchantId, $mode);
+        $error = $data = null;
+
         try
         {
-            $this->setApiCredentials($merchantId, $mode);
-            return $this->api->merchant->getMerchantCreditLogs()->toArray();
+            $data = $this->api->merchant->getMerchantCreditLogs();
         }
 
         catch (BadRequestError $e)
         {
-            return [
-                'id'        =>  $merchantId,
-                'credits'   =>  []
-            ];
+            $error = [$e->getMessage()];
         }
+
+        return [$error, $data];
     }
 }
