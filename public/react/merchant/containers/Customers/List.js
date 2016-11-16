@@ -19,7 +19,6 @@ export default class CustomersListContainer extends ModalContainer {
   constructor() {
     super(...arguments)
     this.editCustomer = ::this.editCustomer
-    this.deleteCustomer = ::this.deleteCustomer
   }
 
   componentWillMount() {
@@ -29,10 +28,6 @@ export default class CustomersListContainer extends ModalContainer {
   editCustomer(customer) {
     this.props.initialize(customer)
     this.openModal()
-  }
-
-  deleteCustomer() {
-
   }
 
   render() {
@@ -56,7 +51,6 @@ export default class CustomersListContainer extends ModalContainer {
               customers={customers}
               isLoading={loading}
               onEdit={this.editCustomer}
-              onDelete={this.deleteCustomer}
             />
           </div>
         </div>

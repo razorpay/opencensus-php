@@ -1,7 +1,7 @@
 <div ng-init="merchant = !!user.current">
   <ul class="nav" id="sidebar-features">
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-      <span>Features</span>
+      <span>Home</span>
     </li>
     <li class="active" ng-show="merchant" not-my-role="sellerapp support">
       <a id="dashboardNav" ui-sref="app.dashboard">
@@ -10,6 +10,17 @@
       </a>
     </li>
     <li ng-show="merchant" not-my-role="sellerapp">
+
+    <li ng-show="merchant">
+      <a id="customersNav" ui-sref="app.customers">
+        <i class="fa fa-user text-primary-lter"></i>
+        <span>Customers</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+      <span>Payments</span>
+    </li>
       <a id="paymentsNav" ui-sref="app.payments.list">
         <i class="fa fa-inr text-primary-lter"></i>
         <span>Payments</span>
@@ -77,18 +88,8 @@
       </a>
     </li>
 
-    <li ng-show="merchant">
-      <a id="invoicesNav" ui-sref="app.invoices">
-        <i class="fa fa-inr text-primary-lter"></i>
-        <span>Invoices</span>
-      </a>
-    </li>
-
-    <li ng-show="merchant">
-      <a id="customersNav" ui-sref="app.customers">
-        <i class="fa fa-user text-primary-lter"></i>
-        <span>Customers</span>
-      </a>
+    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+      <span>Invoices</span>
     </li>
 
     <li ng-show="merchant">
@@ -99,16 +100,27 @@
     </li>
 
     <li ng-show="merchant">
-      <a id="subscriptionsNav" ui-sref="app.subscriptions">
+      <a id="invoicesNav" ui-sref="app.invoices">
         <i class="fa fa-inr text-primary-lter"></i>
-        <span>Subscriptions</span>
+        <span>Invoices</span>
       </a>
+    </li>
+
+    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+      <span>Recurring Payments</span>
     </li>
 
     <li ng-show="merchant">
       <a id="plansNav" ui-sref="app.plans">
         <i class="fa fa-inr text-primary-lter"></i>
         <span>Plans</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant">
+      <a id="subscriptionsNav" ui-sref="app.subscriptions">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Subscriptions</span>
       </a>
     </li>
 

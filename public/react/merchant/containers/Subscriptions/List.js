@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions/list'
+import { fetchSubscriptions } from 'merchant/modules/subscriptions'
 import { fetchPlans } from 'merchant/modules/plans'
 import SubscriptionsList from 'merchant/components/Subscriptions/SubscriptionsList'
 

@@ -121,7 +121,7 @@ export default class AddCustomer extends Component {
           <div class='modal-footer'>
             <button
               type='button'
-              class='btn btn-default'
+              class='btn btn-default btn-rounded'
               onClick={this.props.closeModal}
             >
               Cancel
@@ -129,8 +129,9 @@ export default class AddCustomer extends Component {
 
             <AsyncButton
               type='button'
-              class='btn btn-primary'
+              class='btn btn-primary btn-rounded'
               text='Save'
+              pendingText='Saving...'
               onClick={handleSubmit(action)}
             />
           </div>

@@ -15,12 +15,7 @@ const CustomersListItem = (props) => {
             onClick={props.onEdit}
           >
             <i class='fa fa-edit'></i>
-          </button>
-          <button
-            class='btn btn-xs btn-danger'
-            onClick={props.onDelete}
-          >
-            <i class='fa fa-trash'></i>
+            <span>edit</span>
           </button>
         </div>
       </td>
@@ -28,7 +23,7 @@ const CustomersListItem = (props) => {
   )
 }
 
-export default ({ customers, isLoading, onEdit, onDelete }) => {
+export default ({ customers, isLoading, onEdit }) => {
   let tableRowComponent
 
   if (isLoading) {
@@ -39,7 +34,6 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
         key={customer.id}
         customer={customer}
         onEdit={() => onEdit(customer)}
-        onDelete={() => onDelete(customer)}
       />
     )
   } else {
