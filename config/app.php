@@ -250,6 +250,8 @@ return array(
     'context' => env('CONTEXT'),
 
     'checkout' => env('CHECKOUT_URL'),
+    
+    'invoice' => env('INVOICE_URL'),
 
     'proxy_enabled' => env('PROXY_ENABLED'),
 

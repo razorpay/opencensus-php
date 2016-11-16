@@ -113,11 +113,12 @@ class Verify extends Base\Core
     }
 
     /**
-     * Verify Payments Based on filter
+     * Verify Payments Based on filter and Bucket filter, if provided
      * For detailed Documentation refer to
      * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
      *
      * @param  string $filter
+     * @param  array  $bucketFilter
      * @return array aggregated result of verify results
      *               Sample Result
      *              [
@@ -132,7 +133,7 @@ class Verify extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function verifyPaymentsWithFilter($filter, $bucket = null)
+    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
     {
         Filter::isValidFilter($filter);
 
@@ -156,11 +157,18 @@ class Verify extends Base\Core
             $boundary[-1] = $minimumTime;
 
             // If bucket filter is passed, get rid of other bucket values
-            if ($bucket !== null)
+            if (empty($bucketFilter) === false)
             {
-                $bucketEndTime = $boundary[$bucket - 1];
+                $newBoundary = [];
 
-                $boundary = [$bucket - 1 => $bucketEndTime];
+                foreach ($bucketFilter as $bucket)
+                {
+                    $bucketEndTime = $boundary[$bucket - 1];
+
+                    $newBoundary = [$bucket - 1 => $bucketEndTime];
+                }
+
+                $boundary = $newBoundary;
             }
         }
 
@@ -180,16 +188,17 @@ class Verify extends Base\Core
 
         $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
 
-        return $this->verifyMultiplePayments($payments, $filter, $verifiableCount);
+        return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount);
     }
 
     /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
-     * @param integer               $count
+     * @param arary                 $bucketFilter
+     * @param integer               $verifiableCount
      * @return array with aggregated results
      */
-    protected function verifyMultiplePayments(Base\PublicCollection $payments, $filter, $verifiableCount)
+    protected function verifyMultiplePayments(Base\PublicCollection $payments, string $filter, array $bucketFilter, int $verifiableCount)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -235,7 +244,7 @@ class Verify extends Base\Core
             'authorize_time'    => $totalAuthTimeDiff
         ];
 
-        $summary = $this->processResult($resultSet, $times, $filter, $verifiableCount);
+        $summary = $this->processResult($resultSet, $times, $filter, $bucketFilter, $verifiableCount);
 
         $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
 
@@ -249,7 +258,7 @@ class Verify extends Base\Core
         return $summary;
     }
 
-    protected function addDataToVerifySummary(array & $summary, $payments, $notApplicable)
+    protected function addDataToVerifySummary(array & $summary, Base\PublicCollection $payments, int $notApplicable)
     {
         if ($notApplicable !== 0)
         {
@@ -265,7 +274,7 @@ class Verify extends Base\Core
      * @return array with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
      */
-    protected function lockPaymentsForVerify(Base\PublicCollection $payments, $filter)
+    protected function lockPaymentsForVerify(Base\PublicCollection $payments, string $filter)
     {
         $paymentIds = $payments->pluck(Payment\Entity::ID);
 
@@ -306,12 +315,14 @@ class Verify extends Base\Core
 
     /** Process the result for displaying in slack and returning to caller
      *
-     * @param array $result raw result array
-     * @param $times
-     * @param string $filter filter used to fetch payments
+     * @param array $result             Raw result array
+     * @param array $times              Array containing time metrics
+     * @param string $filter            Filter used to fetch payments
+     * @param arary  $bucketFilter      Bucket filter used to fetch payments
+     * @param integer $verifiableCount  Max payments waiting to be verified
      * @return array with processed result
      */
-    protected function processResult(array $result, $times, $filter, $verifiableCount)
+    protected function processResult(array $result, array $times, string $filter, array $bucketFilter, int $verifiableCount)
     {
         $avgTimeDiff = 0;
 
@@ -324,6 +335,7 @@ class Verify extends Base\Core
 
         $processedResults = [
             'filter'           => $filter,
+            'bucket_filter'    => $bucketFilter,
             'verifiable_count' => $verifiableCount,
             'authorize_time'   => $avgTimeDiff,
             'total_time'       => $totalVerifyTime . ' secs'
@@ -348,7 +360,7 @@ class Verify extends Base\Core
             (($resultSet[Result::SUCCESS] > 4) or
              ($total !== $resultSet[Result::SUCCESS])))
         {
-            // Drop all false values (NULL, 0, "")
+            // Drop all false values (NULL, 0, "", [])
             $slackArray = array_filter($summary);
 
             $message = 'Payment verify result';
@@ -363,14 +375,13 @@ class Verify extends Base\Core
         }
     }
 
-    public function verifyPayment(Payment\Entity $payment, $filter = null)
+    public function verifyPayment(Payment\Entity $payment, string $filter = null)
     {
         $result = Result::SUCCESS;
 
         $merchant = $payment->merchant;
 
         $cron = $this->app['basicauth']->isCron();
-
 
         // If filter is null, then verify is initiated manually, not via cron
         // Don't update VERIFY_BUCKET, in that case
@@ -469,7 +480,7 @@ class Verify extends Base\Core
         return $result;
     }
 
-    protected function getPaymentStatusForFilter($filter)
+    protected function getPaymentStatusForFilter(string $filter)
     {
         $paymentStatus = null;
 
@@ -487,7 +498,7 @@ class Verify extends Base\Core
         return $paymentStatus;
     }
 
-    protected function getVerifyStatusForFilter($filter)
+    protected function getVerifyStatusForFilter(string $filter)
     {
         $verifyStatus = null;
 
@@ -516,7 +527,7 @@ class Verify extends Base\Core
      * @param $boundaries
      * @return int
      */
-    protected function getCurrentVerifyBucket($diff, $boundaries)
+    protected function getCurrentVerifyBucket($diff, array $boundaries)
     {
         $currentVerifyBucket = $verifyBucket = 0;
 
@@ -537,7 +548,7 @@ class Verify extends Base\Core
         return $currentVerifyBucket;
     }
 
-    protected function getPaymentNextVerifyBucket($payment, $filter)
+    protected function getPaymentNextVerifyBucket(Payment\Entity $payment, string  $filter)
     {
         // For Payment in created state and payment having verified as error,
         // verify bucket should be 0
@@ -561,10 +572,10 @@ class Verify extends Base\Core
 
     /**
      * @param string $filter filter for which boundary has to be returned
-     * @return array verify boundary array
+     * @return array  Arary containg boundary with expiry time
      * @throws Exception\LogicException
      */
-    public function getBoundaryInSeconds($filter, $bucket = null)
+    public function getBoundaryInSeconds(string $filter)
     {
         switch ($filter)
         {

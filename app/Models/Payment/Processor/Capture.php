@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -190,8 +191,9 @@ trait Capture
         $payment->getValidator()->captureValidate($payment, $amount);
 
         $data = array(
-            'payment' => $payment->toArray(),
-            'amount' => $amount);
+            'payment'   => $payment->toArray(),
+            'amount'    => $amount
+        );
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -333,6 +335,7 @@ trait Capture
         });
 
         $this->eventOrderPaid();
+        $this->eventInvoicePaid();
 
         //
         // Analytics
@@ -350,6 +353,21 @@ trait Capture
         if ($payment->getApiOrderId() !== null)
         {
             $this->app['events']->fire('api.order.paid', array($payment));
+        }
+    }
+
+    protected function eventInvoicePaid()
+    {
+        $payment = $this->payment;
+
+        if ($payment->getApiOrderId() !== null)
+        {
+            $order = $payment->order;
+
+            if ($order->invoice !== null)
+            {
+                $this->app['events']->fire('api.invoice.paid', array($payment));
+            }
         }
     }
 
@@ -405,7 +423,7 @@ trait Capture
         }
     }
 
-    protected function updatePaidOrderStatus($payment)
+    protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
         $order = $payment->order;
 
@@ -422,6 +440,42 @@ trait Capture
             $order->setStatus(Order\Status::PAID);
 
             $this->repo->saveOrFail($order);
+
+            if ($order->invoice !== null)
+            {
+                $this->updatePaidInvoiceStatus($order, $payment);
+            }
         }
+    }
+
+    protected function updatePaidInvoiceStatus(Order\Entity $order, Payment\Entity $payment)
+    {
+        $invoice = $order->invoice;
+
+        assert($invoice !== null);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
+            [
+                'payment_id'    => $payment->getId(),
+                'invoice_id'    => $invoice->getId(),
+                'order_id'      => $order->getId(),
+            ]);
+
+        if ($invoice->getStatus() === Invoice\Status::PAID)
+        {
+            throw new Exception\LogicException(
+                'The invoice is already paid for.',
+                null,
+                [
+                    'payment_id'    => $order->payment->getId(),
+                    'invoice_id'    => $invoice->getId(),
+                    'order_id'      => $order->getId(),
+                ]);
+        }
+
+        $invoice->setStatus(Invoice\Status::PAID);
+
+        $this->repo->saveOrFail($invoice);
     }
 }

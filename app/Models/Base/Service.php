@@ -51,7 +51,10 @@ class Service
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->merchant = $this->app['basicauth']->getMerchant();
 

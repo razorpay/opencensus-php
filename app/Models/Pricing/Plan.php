@@ -45,6 +45,7 @@ class Plan extends PublicCollection
                 switch ($method)
                 {
                     case Method::CARD:
+                    case Method::EMI:
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Network::getFullName($network);
                         break;
 

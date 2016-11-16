@@ -206,14 +206,12 @@ class Entity extends Base\PublicEntity
 
     public function keys()
     {
-        return $this->hasMany(
-            'RZP\Models\Key\Entity');
+        return $this->hasMany('RZP\Models\Key\Entity');
     }
 
     public function pricing()
     {
-        return $this->belongsTo(
-            'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+        return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
     public function schedule()
@@ -224,8 +222,17 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany(
-            'RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
+    public function customers()
+    {
+        return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
     public function balance()
@@ -461,7 +468,7 @@ class Entity extends Base\PublicEntity
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['region'];
+        $regionName = $awsConfig['bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 
