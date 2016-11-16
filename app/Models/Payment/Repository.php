@@ -468,6 +468,14 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::CREATED_AT, '>', $ts)
                     ->get();
     }
+    
+    public function getCapturedPaymentForOrder($orderId)
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Entity::CAPTURED_AT)
+                    ->where(Entity::ORDER_ID, '=', $orderId)
+                    ->first();
+    }
 
     public function getYesterdayTopMerchantVolumeWise()
     {
