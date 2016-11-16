@@ -41,11 +41,15 @@ class FeeCalculator
 
     protected $feesSplit = null;
 
+    protected $pricingRules = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
 
         $this->feesSplit = new Base\PublicCollection;
+
+        $this->pricingRules = new Base\PublicCollection;
 
         $this->trace = \Trace::getFacadeRoot();
     }
@@ -66,18 +70,25 @@ class FeeCalculator
             $amount = $amount - $entity->getFee();
         }
 
-        list($fee, $serviceTax) = $this->getFees($rule, $amount);
+        list($fee, $serviceTax) = $this->getFees($amount);
 
         return array($fee, $serviceTax, $rule->getKey(), $this->feesSplit);
     }
 
-    protected function getFees($rule, $amount)
+    protected function getFees($amount)
     {
-        $fee = $this->calculateRzpFee($rule, $amount);
+        $fees = 0;
 
-        $totaltaxes = $this->calculateServiceTaxes($fee, self::TAX_COMPONENTS);
+        foreach ($this->pricingRules as $rule)
+        {
+            $fee = $this->calculateRzpFee($rule, $amount);
 
-        $totalFees = $fee + $totaltaxes;
+            $fees += $fee;
+        }
+
+        $totaltaxes = $this->calculateServiceTaxes($fees, self::TAX_COMPONENTS);
+
+        $totalFees = $fees + $totaltaxes;
 
         if ($totalFees > $amount)
         {
@@ -105,10 +116,41 @@ class FeeCalculator
     {
         $entity = $this->entity;
 
-        $feature = $entity->getEntity();
+        $entityName = $entity->getEntity();
 
         $method = $entity->getMethod();
 
+        $features = $entity->getFeatures();
+
+        $rule = $this->getBasicPricingRule($entityName, $method, $pricing);
+
+        $this->getAdOnPricingRule($features, $method, $pricing);
+
+        return $rule;
+    }
+
+    protected function getAdOnPricingRule($features, $method, $pricing)
+    {
+        foreach ($features as $feature)
+        {
+            $filters = array(
+                [Pricing\Entity::FEATURE, $feature, false, null  ],
+                [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
+            );
+
+            $rules = $this->applyFiltersOnRules($pricing, $filters);
+
+            if (count($rules) > 0)
+            {
+                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
+
+                $this->pricingRules->push($rule);
+            }
+        }
+    }
+
+    protected function getBasicPricingRule($feature, $method, $pricing)
+    {
         $filters = array(
             [Pricing\Entity::FEATURE, $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
@@ -132,6 +174,8 @@ class FeeCalculator
             throw new Exception\LogicException(
                 'No appropriate pricing rule found', null, ['entity' => $entity->toArray()]);
         }
+
+        $this->pricingRules->push($rule);
 
         return $rule;
     }
