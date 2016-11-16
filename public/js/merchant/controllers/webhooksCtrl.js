@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Webhooks Ctrl
  */
@@ -15,6 +16,10 @@ app.controller('WebhooksCtrl', [
     user.identity().then(function (data) {
       $scope.user = data;
     });
+
+    $scope.showInvoice = function () {
+      return ($scope.user.tags.indexOf('Invoice') > -1);
+    }
 
     $scope.webhooks = {
       items: [],
