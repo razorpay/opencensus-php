@@ -57,7 +57,9 @@ class Handler extends Base\Core
         }
 
         if ($holdMerchantFunds === true)
+        {
             $this->holdMerchantFunds();
+        }
 
         $this->sendSettlementFailureNotification();
 
