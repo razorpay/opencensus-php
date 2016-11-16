@@ -102,7 +102,7 @@ return [
                 'email_status' => 'sent',
                 'view_less' => true,
                 'amount' => 100000,
-                'user_id'  => 'abcdefghij1234',
+                //'user_id'  => 'abcdefghij1234',
             ],
         ],
     ],

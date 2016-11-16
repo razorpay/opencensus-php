@@ -174,7 +174,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
-        self::USER_ID,
+        // self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
@@ -194,7 +194,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::ORDER_ID,
-        self::USER_ID,
+        // self::USER_ID,
     ];
 
     protected $casts = [
