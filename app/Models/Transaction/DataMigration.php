@@ -193,7 +193,7 @@ class DataMigration extends Base\Service
         $migratedTxns = [];
         $notMigratedTxns = [];
 
-        foreach($transactionIds as $transactionId)
+        foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
@@ -243,7 +243,7 @@ class DataMigration extends Base\Service
         $migratedTxns = [];
         $notMigratedTxns = [];
 
-        foreach($transactionIds as $transactionId)
+        foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
@@ -296,7 +296,7 @@ class DataMigration extends Base\Service
         $migratedTxns = [];
         $notMigratedTxns = [];
 
-        foreach($transactionIds as $transactionId)
+        foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
@@ -353,7 +353,7 @@ class DataMigration extends Base\Service
         $migratedTxns = [];
         $notMigratedTxns = [];
 
-        foreach($transactionIds as $transactionId)
+        foreach ($transactionIds as $transactionId)
         {
             $transaction = $this->repo->transaction->findByPublicId($transactionId);
 
