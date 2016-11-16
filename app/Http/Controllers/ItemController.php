@@ -42,4 +42,20 @@ class ItemController extends Controller
 
         return ApiResponse::json($items);
     }
+
+    public function putItem($id)
+    {
+        $input = Request::all();
+
+        $item = $this->service->put($id, $input);
+
+        return ApiResponse::json($item);
+    }
+
+    public function deleteItem($id)
+    {
+        $this->service->delete($id);
+
+        return ApiResponse::json([]);
+    }
 }

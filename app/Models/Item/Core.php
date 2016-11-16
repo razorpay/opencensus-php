@@ -23,4 +23,13 @@ class Core extends Base\Core
 
         return $item;
     }
+
+    public function put(Entity $item, array $input)
+    {
+        $item->edit($input);
+
+        $this->repo->saveOrFail($item);
+
+        return $item;
+    }
 }
