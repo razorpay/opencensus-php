@@ -113,6 +113,13 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function retrieveByIdOrFail(string $adminId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $adminId)
+                    ->firstOrFail();
+    }
+
     public function retrieveByIds(string $orgId, array $adminIds)
     {
         return $this->newQuery()

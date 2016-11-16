@@ -544,14 +544,5 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function attachAdmin($id)
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->attachAdmin($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- End Credits API Handlers -----------------------------------------
 }

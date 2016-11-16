@@ -217,6 +217,15 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    public function getAdminById(string $adminId)
+    {
+        $adminId = Entity::verifyIdAndStripSign($adminId);
+
+        $admin = $this->repo->admin->retrieveByIdOrFail($adminId);
+
+        return $admin->toArrayPublic();
+    }
+
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
@@ -294,7 +303,7 @@ class Service extends Base\Service
         return $admins->toArrayPublic();
     }
 
-    public function  editAdmin(string $orgId, string $adminId, array $input)
+    public function editAdmin(string $orgId, string $adminId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);

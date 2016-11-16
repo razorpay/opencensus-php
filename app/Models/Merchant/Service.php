@@ -22,6 +22,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin;
 
 class Service extends Base\Service
 {
@@ -33,9 +34,40 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
+        if (isset($input['admin_id']))
+        {
+            $adminId = $input['admin_id'];
+
+            unset($input['admin_id']);
+        }
+
         $merchant = (new Merchant\Core)->create($input);
 
+        // Once the merchant is created we must tag him to
+        // the admin referral
+
+        $this->attachAdmin($merchant->id, $adminId);
+
         return $merchant->toArrayPublic();
+    }
+
+    protected function attachAdmin($merchantId, $adminId)
+    {
+        // Check if $adminId is valid
+        $data = (new Admin\Admin\Service)->getAdminById($adminId);
+
+        if ($data)
+        {
+            DB::table('merchant_map')->insert(
+                [
+                    'merchant_id' => $merchantId,
+                    'entity_id'   => $adminId,
+                    'entity_type' => 'admin'
+                ]
+            );
+        }
+
+        return null;
     }
 
     public function createSubMerchant(array $input)
@@ -613,18 +645,5 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY, $response);
 
         return $response;
-    }
-
-    public function attachAdmin($id, $input)
-    {
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, $input);
-        $leadId = DB::table('merchant_map')->insert(
-            array(
-                'entity_id'   => $input['admin_id'],
-                'entity_type' => 'admin',
-                'merchant_id' => $id
-            )
-        );
-        return null;
     }
 }
