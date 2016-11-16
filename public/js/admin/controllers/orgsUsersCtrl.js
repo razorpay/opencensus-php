@@ -161,17 +161,11 @@ app.controller('OrgsUsersCtrl', [
     $scope.selected_groups = {};
     $scope.select_all = false;
 
-    current.roles = current.roles.map(function(role){
-      role.id = 'role_' + role.id;
-      return role;
-    })
-
     if (current.roles.length) {
       current.role = current.roles[0].id;
     }
 
-    current.groups = current.groups.map(function(group){
-      group.id = 'grp_' + group.id;
+    current.groups.map(function(group){
       $scope.selected_groups[group.id] = true;
       return group;
     })

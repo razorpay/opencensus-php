@@ -136,7 +136,8 @@
         <label class="col-lg-2 control-label">Role</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" ng-model="user.role">
-             <option ng-repeat="(key, value) in roles" value='{{key}}'>{{value}}</option>
+             <option ng-repeat="(key, value) in roles" value='{{key}}'
+              ng-selected='key==user.role'>{{value}}</option>
           </select>
         </div>
       </div>
