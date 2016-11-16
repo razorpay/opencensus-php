@@ -311,16 +311,20 @@ class Category
         }
 
         // min_amount from respective array
-        if (in_array($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+        if (empty($constantName) === false)
         {
-            $minAmount = constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
-        }
+            if (in_array($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+            {
+                $minAmount = constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
+            }
 
-        else
-        {
-            $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
+            else
+            {
+                $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
+            }
+    
         }
-
+        
         return $minAmount;
     }
 }
