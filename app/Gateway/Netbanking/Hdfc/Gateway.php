@@ -47,8 +47,9 @@ class Gateway extends Base\Gateway
     );
 
     /**
-     * @param  array  $input
-     * @return void
+     * @param  array $input
+     *
+     * @return array
      */
     public function authorize(array $input)
     {
@@ -77,7 +78,11 @@ class Gateway extends Base\Gateway
      * We recieve callback from atom after bank net-banking
      * transaction is complete
      *
-     * @param  array    $input
+     * @param  array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {

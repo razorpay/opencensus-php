@@ -219,6 +219,10 @@ trait Authorize
     {
         $payment = $this->payment;
 
+        // In one step payment, we always set the 2FA as unavailable. Basically, no 2FA done.
+        // Except in the cases of recurring, because, here we know that
+        // we have manually skipped/by-passed the 2FA.
+
         if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);

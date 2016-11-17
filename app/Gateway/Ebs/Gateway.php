@@ -118,8 +118,6 @@ class Gateway extends Base\Gateway
                 $desc);
         }
 
-        $responseCode = $input['gateway'][Resp::RESPONSE_CODE];
-
         return $this->getCallbackResponseData($input);
     }
 

@@ -5,7 +5,6 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Models\Payment as PaymentModel;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
