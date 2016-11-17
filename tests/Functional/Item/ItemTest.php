@@ -43,6 +43,7 @@ class ItemTest extends TestCase
     {
         $this->fixtures->create('item');
         $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
+
         $this->startTest();
     }
 

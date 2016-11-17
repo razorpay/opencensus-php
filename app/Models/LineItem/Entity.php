@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
+        self::ENTITY,
         self::ITEM_ID,
         self::ITEM,
     ];

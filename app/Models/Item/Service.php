@@ -3,7 +3,6 @@
 namespace RZP\Models\Item;
 
 use RZP\Models\Base;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -25,9 +24,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $item->toArrayPublic();
     }
@@ -39,35 +36,17 @@ class Service extends Base\Service
         return $items->toArrayPublic();
     }
 
-    public function put(string $id, array $input)
+    public function update(string $id, array $input)
     {
-        Entity::verifyIdAndStripSign($id);
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
-        $this->checkIfLineItemAssociated($item);
-
-        return $this->core->put($item, $input)->toArrayPublic();
+        return $this->core->update($item, $input)->toArrayPublic();
     }
 
     public function delete(string $id)
     {
-        Entity::verifyIdAndStripSign($id);
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
-        $this->checkIfLineItemAssociated($item);
-
-        $this->repo->item->deleteOrFail($item);
-    }
-
-
-    // -------------------- Protected methods --------------------
-
-    protected function checkIfLineItemAssociated(Entity $item)
-    {
-        if ($this->repo->line_item->hasByItem($item)) {
-            throw new Exception\BadRequestValidationFailureException(
-                "You can not edit/delete an item with which invoices has been created already."
-            );
-        }
+        return $this->core->delete($item);
     }
 }

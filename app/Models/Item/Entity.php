@@ -28,11 +28,12 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::DESCRIPTION       => null,
-        self::CURRENCY          => "INR",
+        self::CURRENCY          => 'INR',
     ];
 
     protected $visible = [
         self::ID,
+        self::PUBLIC_ID,
         self::MERCHANT_ID,
         self::NAME,
         self::DESCRIPTION,
@@ -61,11 +62,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT    => 'int',
     ];
 
-    protected $publicSetters = [
-        self::ID,
-        self::ENTITY,
-    ];
-
     // -------------------------- Getters --------------------------
 
     public function getAmount()
@@ -85,6 +81,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Entity');
     }
 
     // -------------------- End Relations -----------------------

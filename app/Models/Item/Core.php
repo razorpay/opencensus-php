@@ -5,6 +5,7 @@ namespace RZP\Models\Item;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -24,12 +25,33 @@ class Core extends Base\Core
         return $item;
     }
 
-    public function put(Entity $item, array $input)
+    public function update(Entity $item, array $input)
     {
+        $this->checkIfLineItemAssociated($item);
+
         $item->edit($input);
 
         $this->repo->saveOrFail($item);
 
         return $item;
+    }
+
+    public function delete(Entity $item)
+    {
+        $this->checkIfLineItemAssociated($item);
+
+        $this->repo->item->deleteOrFail($item);
+
+        return true;
+    }
+
+    // -------------------- Protected methods --------------------
+
+    protected function checkIfLineItemAssociated(Entity $item)
+    {
+        if ($item->lineItems()->count() > 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED);
+        }
     }
 }

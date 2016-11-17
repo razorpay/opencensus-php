@@ -9,6 +9,7 @@ use Config;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -222,17 +223,25 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            // This will override the currency even if they send it in input.
-            $lineItemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
-
             if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
             {
                 $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
 
                 $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
+
+                $this->validateInvoiceAndItemCurrency($item->getCurrency());
             }
             else
             {
+                if (isset($lineItemDetails[Item\Entity::CURRENCY]))
+                {
+                    $this->validateInvoiceAndItemCurrency($lineItemDetails[Item\Entity::CURRENCY]);
+                }
+                else
+                {
+                    $lineItemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+                }
+
                 list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
 
                 $item = (new Item\Core)->create($itemDetails, $this->merchant);
@@ -327,5 +336,22 @@ class Generator extends Base\Core
         }
 
         return [$lineItemDetails, $itemDetails];
+    }
+
+    /**
+     * @param string $itemCurrency
+     *
+     * @return
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateInvoiceAndItemCurrency(string $itemCurrency)
+    {
+        if ($itemCurrency !== $this->invoice->getCurrency())
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency of all items should be same as of the invoice itself'
+            );
+        }
     }
 }

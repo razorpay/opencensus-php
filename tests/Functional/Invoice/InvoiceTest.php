@@ -141,11 +141,28 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('item');
+        $this->fixtures->create('invoice', ['merchant_ref_id' => '00000000000001']);
 
-        $this->fixtures->create('line_item');
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
 
         $this->fixtures->create('invoice', ['merchant_ref_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency2()
+    {
+        // Usage one existing item with different currency
+        $this->fixtures->create('item', ['currency' => 'USD']);
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
 
         $this->startTest();
     }
@@ -234,7 +251,7 @@ class InvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testsendNotificationWithSmsMode()
+    public function testSendNotificationWithSmsMode()
     {
         $this->ba->publicAuth();
 
@@ -244,7 +261,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testsendNotificationWithInvalidMode()
+    public function testSendNotificationWithInvalidMode()
     {
         $this->ba->publicAuth();
 

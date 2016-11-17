@@ -271,7 +271,7 @@ final class Route
         'item_create'                             => ['post',     'items',                                          'ItemController@createItem'                                         ],
         'item_fetch'                              => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                     => ['get',      'items',                                          'ItemController@getItems'                                           ],
-        'item_put'                                => ['put',      'items/{id}',                                     'ItemController@putItem'                                            ],
+        'item_update'                             => ['put',      'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                             => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -387,7 +387,7 @@ final class Route
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
-        'item_put',
+        'item_update',
         'item_delete',
         'customer_create_address',
         'customer_delete_address',
@@ -678,7 +678,7 @@ final class Route
         'item_create'                   => 'invoice',
         'item_fetch'                    => 'invoice',
         'item_fetch_multiple'           => 'invoice',
-        'item_put'                      => 'invoice',
+        'item_update'                   => 'invoice',
         'item_delete'                   => 'invoice',
     );
 

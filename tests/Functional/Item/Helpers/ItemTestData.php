@@ -105,15 +105,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You can not edit/delete an item with which invoices has been created already.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You can not edit/delete an item with which invoices has been created already',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
         ],
     ],
 
@@ -135,15 +135,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You can not edit/delete an item with which invoices has been created already.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You can not edit/delete an item with which invoices has been created already',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
         ],
     ],
 ];
