@@ -136,6 +136,19 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('item');
+
+        $this->fixtures->create('line_item');
+
+        $this->fixtures->create('invoice', ['merchant_ref_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);

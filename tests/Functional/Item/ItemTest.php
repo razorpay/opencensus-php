@@ -43,4 +43,38 @@ class ItemTest extends TestCase
         $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
         $this->startTest();
     }
+
+    public function testPutItem()
+    {
+        $this->fixtures->create('item');
+
+        $this->startTest();
+    }
+
+    public function testPutItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testDeleteItem()
+    {
+        $this->fixtures->create('item');
+
+        $this->startTest();
+
+        $item = $this->getLastEntity('item', true);
+
+        $this->assertEmpty($item);
+    }
+
+    public function testDeleteItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
 }
