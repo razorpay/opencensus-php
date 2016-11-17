@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use Event;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -48,6 +49,8 @@ class Service extends Base\Service
 
             $validate = $this->authPolicy->validateLogin($admin, $input['password'], 'after');
 
+            $this->fireAdminLogin($admin);
+
             if ($validate !== null)
             {
                 return $validate;
@@ -62,6 +65,13 @@ class Service extends Base\Service
         }
 
         return null;
+    }
+
+    protected function fireAdminLogin($admin)
+    {
+        // Event::fire();
+        \App::getFacadeRoot()['trace']->info("MISC_TRACE_CODE", [$admin]);
+        $this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, 'create'));
     }
 
     public function loginWithOAuth($input)
@@ -150,7 +160,16 @@ class Service extends Base\Service
 
         $admin = $this->core->create($orgId, $input);
 
+        $this->fireAdminCreated($admin);
+
         return $admin->toArrayPublic();
+    }
+
+    protected function fireAdminCreated($admin)
+    {
+        Event::fire(new RZP\Events\AuditLogEntry(['admin' => $admin, 'event' => 'create']));
+        \App::getFacadeRoot()['trace']->info("HELLO_WORLD", $data);
+        // $this->app['events']->fire('events.auditlogentry', );
     }
 
     public function getAdmin(string $orgId, string $adminId)
