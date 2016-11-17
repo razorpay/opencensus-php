@@ -771,7 +771,9 @@ class Gateway extends Base\Gateway
             }
             else if ($payment['received'] === false)
             {
-                $payment->fill($walletAttributes);
+                $attr = $this->getMappedAttributes($walletAttributes);
+
+                $payment->fill($attr);
 
                 $payment->saveOrFail();
             }
