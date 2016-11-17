@@ -170,6 +170,10 @@ class Gateway extends Base\Gateway
 
         parse_str($response, $content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [$request, $content]);
+
         $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse(
                                     $input, $content);
 
@@ -178,7 +182,7 @@ class Gateway extends Base\Gateway
         if ($input['refund']['id'] !== $content['new_merchant_reference_no'])
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
 
         if (ResponseCode::$statusCodes[$content['status']] !== 'Success')
