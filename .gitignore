@@ -22,3 +22,4 @@ storage/
 Thumbs.db
 tmp*.blade.php
 tmp/
+public/js/themes/*.js
