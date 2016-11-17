@@ -234,6 +234,26 @@ class InvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testsendNotificationWithSmsMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testsendNotificationWithInvalidMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
     protected function assertInvoiceCreateResponse(array $response)
     {
         $order = $this->getLastEntity('order', true);

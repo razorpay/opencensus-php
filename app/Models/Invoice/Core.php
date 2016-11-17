@@ -33,9 +33,15 @@ class Core extends Base\Core
 
     public function sendNotification(Entity $invoice, $medium)
     {
+        $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
 
-        $response = (new Notifier($invoice))->$commFunc();
+        if (method_exists($notifier, $commFunc) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Not a valid medium");
+        }
+
+        $response = $notifier->$commFunc();
 
         $this->repo->saveOrFail($invoice);
 

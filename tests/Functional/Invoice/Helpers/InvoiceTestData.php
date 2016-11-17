@@ -449,4 +449,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
         ],
     ],
+
+    'testsendNotificationWithSmsMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/sms',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
+    'testsendNotificationWithInvalidMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/invalid',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid medium',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
