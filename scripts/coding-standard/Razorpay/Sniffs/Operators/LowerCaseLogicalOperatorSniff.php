@@ -9,10 +9,10 @@ class Razorpay_Sniffs_Operators_LowerCaseLogicalOperatorSniff implements PHP_Cod
      */
     public function register()
     {
-        return array(
-                T_LOGICAL_AND,
-                T_LOGICAL_OR,
-               );
+        return [
+            T_LOGICAL_AND,
+            T_LOGICAL_OR,
+        ];
     }//end register()
 
     /**
@@ -28,13 +28,13 @@ class Razorpay_Sniffs_Operators_LowerCaseLogicalOperatorSniff implements PHP_Cod
     {
         $tokens = $phpcsFile->getTokens();
 
-        $replacements = array(
+        $replacements = [
             'and', 'or'
-        );
+        ];
 
         $operator = strtolower($tokens[$stackPtr]['content']);
 
-        if (in_array($operator, $replacements) === false)
+        if (in_array($operator, $replacements, true) === false)
         {
             return;
         }
@@ -53,18 +53,23 @@ class Razorpay_Sniffs_Operators_LowerCaseLogicalOperatorSniff implements PHP_Cod
             }
 
             $error = 'Logical Operators must be lowercase; expected "%s" but found "%s"';
-            $data  = array(
+            $data  = [
                 strtolower($operatorName),
                 $operatorName,
-            );
+            ];
 
-            $phpcsFile->addError($error, $stackPtr, 'LogicalOperatorNotLowerCase', $data);
+            $fix = $phpcsFile->addFixableError($error, $stackPtr, 'Found', $data);
+
+            if ($fix === true)
+            {
+                $phpcsFile->fixer->replaceToken($stackPtr, $operator);
+            }
         }
         else
         {
-            $phpcsFile->recordMetric($stackPtr, 'Operator name case', 'upper');
+            $phpcsFile->recordMetric($stackPtr, 'Operator name case', 'lower');
         }
 
         return;
-    }//end process()
-}//end class
+    }
+}

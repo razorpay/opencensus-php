@@ -1,32 +1,5 @@
 <?php
-/**
- * Razorpay_Sniffs_ControlStructires_OpeningBraceBsdAllmanSniff.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- * @author    Greg Sherwood <gsherwood@squiz.net>
- * @author    Marc McIntyre <mmcintyre@squiz.net>
- * @copyright 2006-2014 Squiz Pty Ltd (ABN 77 084 670 600)
- * @license   https://github.com/squizlabs/PHP_CodeSniffer/blob/master/licence.txt BSD Licence
- * @link      http://pear.php.net/package/PHP_CodeSniffer
- */
-/**
- * Razorpay_Sniffs_ControlStructires_OpeningBraceBsdAllmanSniff.
- *
- * Checks that the opening brace of a function is on the line after the
- * function declaration.
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- * @author    Greg Sherwood <gsherwood@squiz.net>
- * @author    Marc McIntyre <mmcintyre@squiz.net>
- * @copyright 2006-2014 Squiz Pty Ltd (ABN 77 084 670 600)
- * @license   https://github.com/squizlabs/PHP_CodeSniffer/blob/master/licence.txt BSD Licence
- * @version   Release: @package_version@
- * @link      http://pear.php.net/package/PHP_CodeSniffer
- */
+
 class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PHP_CodeSniffer_Sniff
 {
     /**
@@ -43,12 +16,12 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
      */
     public function register()
     {
-        return array(
+        return [
             T_IF,
             T_ELSE,
             T_ELSEIF,
-        );
-    }//end register()
+        ];
+    }
 
     /**
      * Processes this test, when one of its tokens is encountered.
@@ -86,7 +59,7 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
             if ($fix === true)
             {
                 $phpcsFile->fixer->beginChangeset();
-                $indent = $phpcsFile->findFirstOnLine(array(), $openingBrace);
+                $indent = $phpcsFile->findFirstOnLine([], $openingBrace);
 
                 if ($tokens[$indent]['code'] === T_WHITESPACE)
                 {
@@ -103,7 +76,7 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
         {
             $error = 'Opening brace should be on the line after the declaration; found %s blank line(s)';
 
-            $data  = array(($lineDifference - 1));
+            $data  = [($lineDifference - 1)];
 
             $fix   = $phpcsFile->addFixableError($error, $openingBrace, 'BraceSpacing', $data);
 
@@ -120,7 +93,7 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
                     $phpcsFile->fixer->replaceToken($i, '');
                 }
             }
-        }//end if
+        }
 
         $next = $phpcsFile->findNext(T_WHITESPACE, ($openingBrace + 1), null, true);
 
@@ -148,5 +121,5 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
         }
 
         $phpcsFile->recordMetric($stackPtr, 'If opening brace placement', 'new line');
-    }//end process()
-}//end class
+    }
+}

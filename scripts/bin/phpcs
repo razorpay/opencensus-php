@@ -24,11 +24,10 @@ if [ ! -x $PHPCS_BIN ]; then
 fi
 
 # stolen from template file
-if git rev-parse --verify HEAD
-then
+if git rev-parse --verify HEAD 1> /dev/null; then
     against=HEAD
 else
-    # Initial commit: diff against an empty tree object
+    # Initial commit
     against=f5fb7fd65bdaa3eac1d4777a0478b2792436251a
 fi
 
@@ -88,7 +87,7 @@ fi
 STAGED_FILES=""
 for FILE in $FILES_TO_CHECK
 do
-  echo $FILE
+  printf "\t$FILE\n";
   ID=$(git diff-index --cached HEAD $FILE | cut -d " " -f4)
 
   # create staged version of file in temporary staging area with the same

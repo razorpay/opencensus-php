@@ -8,7 +8,7 @@ PHPCS_BIN=$(which phpcs)
 PHPCS_CODING_STANDARD=$(git rev-parse --show-toplevel)/scripts/coding-standard/Razorpay/
 
 # comma-separated list of file patterns being ignored
-PHPCS_IGNORE=scripts/,vendor/
+PHPCS_IGNORE=scripts/*,vendor/*
 
 # egrep compatible pattern of  files to be checked
 PHPCS_FILE_PATTERN="\.(php)$"

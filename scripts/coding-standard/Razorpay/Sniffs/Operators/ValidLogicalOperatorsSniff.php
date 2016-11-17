@@ -9,11 +9,12 @@ class Razorpay_Sniffs_Operators_ValidLogicalOperatorsSniff implements PHP_CodeSn
      */
     public function register()
     {
-        return array(
-                T_BOOLEAN_AND,
-                T_BOOLEAN_OR,
-               );
-    }//end register()
+        return [
+            T_BOOLEAN_OR,
+            T_BOOLEAN_AND,
+        ];
+    }
+
     /**
      * Processes this test, when one of its tokens is encountered.
      *
@@ -27,10 +28,10 @@ class Razorpay_Sniffs_Operators_ValidLogicalOperatorsSniff implements PHP_CodeSn
     {
         $tokens = $phpcsFile->getTokens();
 
-        $replacements = array(
+        $replacements = [
             '&&' => 'and',
             '||' => 'or',
-        );
+        ];
 
         $operator = $tokens[$stackPtr]['content'];
 
@@ -39,13 +40,20 @@ class Razorpay_Sniffs_Operators_ValidLogicalOperatorsSniff implements PHP_CodeSn
             return;
         }
 
+        $expected = $replacements[$operator];
+
         $error = 'Logical operator "%s" is prohibited; use "%s" instead';
 
-        $data  = array(
+        $data  = [
             $operator,
-            $replacements[$operator],
-        );
+            $expected,
+        ];
 
-        $phpcsFile->addError($error, $stackPtr, 'NotAllowed', $data);
-    }//end process()
-}//end class
+        $fix = $phpcsFile->addFixableError($error, $stackPtr, 'Found', $data);
+
+        if ($fix === true)
+        {
+            $phpcsFile->fixer->replaceToken($stackPtr, $expected);
+        }
+    }
+}

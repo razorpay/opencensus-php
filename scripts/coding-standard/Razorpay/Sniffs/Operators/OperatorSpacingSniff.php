@@ -28,16 +28,17 @@ class Razorpay_Sniffs_Operators_OperatorSpacingSniff implements PHP_CodeSniffer_
         $comparison = PHP_CodeSniffer_Tokens::$comparisonTokens;
         $operators  = PHP_CodeSniffer_Tokens::$operators;
         $assignment = PHP_CodeSniffer_Tokens::$assignmentTokens;
-        $inlineIf   = array(
+
+        $inlineIf   = [
             T_INLINE_THEN,
             T_INLINE_ELSE,
-        );
+        ];
 
         return array_unique(
             array_merge($comparison, $operators, $assignment, $inlineIf)
         );
 
-    }//end register()
+    }
 
     /**
      * Processes this sniff, when one of its tokens is encountered.
@@ -358,9 +359,6 @@ class Razorpay_Sniffs_Operators_OperatorSpacingSniff implements PHP_CodeSniffer_
                     $phpcsFile->fixer->replaceToken(($stackPtr + 1), ' ');
                 }
             }
-        }//end if
-
-    }//end process()
-
-
-}//end class
+        }
+    }
+}
