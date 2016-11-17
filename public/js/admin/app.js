@@ -31,13 +31,12 @@ var app = angular.module('app', [
       $rootScope.toState = toState;
       $rootScope.toStateParams = toStateParams;
       // $rootScope.currentAdmin = organization.fetchCurrentAdmin();
-
-      // if the user is resolved, do an authorization check immediately. otherwise,
-      // it'll be done when the state it resolved.
-      if (admin.isIdentityResolved()) {
-        adminAuthorization.authorize();
-      }
     });
+
+    // Auth
+    if (!admin.isIdentityResolved()) {
+      adminAuthorization.authorize();
+    }
 
     $rootScope.$on('$stateChangeError', function (event) {
       $state.go('500');
@@ -60,7 +59,10 @@ var app = angular.module('app', [
     app.service = $provide.service;
     app.constant = $provide.constant;
     app.value = $provide.value;
-    $urlRouterProvider.otherwise('/app/dashboard');
+
+    // Default route
+    // $urlRouterProvider.otherwise('/app/dashboard');
+
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,

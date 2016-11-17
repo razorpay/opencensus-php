@@ -35,7 +35,7 @@
            <label for="crm_next_no" class="col-lg-3 control-label">CRM Next No.</label>
             <div class="col-lg-8" >
               <input class="form-control m-b" name="crm_next_no"
-                ng-model="merchant.crm_next_no" ng-required='true'>
+                ng-model="merchant.crm_next_no" ng-required="true">
             </div>
           </div>
           <div class="form-group">
@@ -159,7 +159,7 @@
       </div>
       <div class="panel-footer">
         <div class="col-md-offset-10  col-lg-2">
-          <button class="btn btn-primary panel-ok col-lg-12" ng-click="inviteMerchant(merchant)">Send</button>
+          <button class="btn btn-primary panel-ok col-lg-12" ng-disabled="formname.$invalid" ng-click="inviteMerchant(merchant)">Send</button>
         </div>
       </div>
     </div>

@@ -382,6 +382,20 @@ angular.module('app.services', [])
       authorize: function () {
 
         var promise = admin.identity().then(function () {
+
+          // Direct access to /admin (w/o hash) should always trigger auth
+          // if the admin is not logged in
+          if (!$rootScope.toState) {
+            if (admin.isAuthenticated()) {
+              $state.go('app.dashboard');
+            }
+            else {
+              window.location.href = '/admin/auth';
+            }
+
+            return;
+          }
+
           // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
 
