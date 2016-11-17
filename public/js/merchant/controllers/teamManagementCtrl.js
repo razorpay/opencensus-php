@@ -10,14 +10,14 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner', 'manager', 'operations', 'finance', 'admin'];
+    $scope.roles = ['owner', 'manager', 'operations', 'finance', 'admin', 'sellerapp'];
 
     $scope.team = {
       role: 'manager'
     };
 
     $scope.roleOptions = [
-      { name: 'Manager', id: 'manager' },
+      'manager'
     ];
 
     var errorHandler = function(data, msg) {
@@ -50,10 +50,17 @@ app.controller('TeamManagementCtrl', [
       // Merchant has roles enabled, give them extra roles!
       if ($scope.rolesSupport) {
         $scope.roleOptions = $scope.roleOptions.concat([
-          { name: 'Operations', id: 'operations' },
-          { name: 'Finance', id: 'finance' },
-          { name: 'Support', id: 'support'},
-          { name: 'Admin', id: 'admin'}
+          'operations',
+          'finance',
+          'support',
+          'admin'
+        ]);
+      }
+
+      // If merchant has invoice support, grant another role
+      if (data.tags.indexOf('Invoice') > -1) {
+        $scope.roleOptions = $scope.roleOptions.concat([
+          'sellerapp'
         ]);
       }
     });

@@ -38,4 +38,17 @@ angular.module('app.filters', []).filter('fromNow', function () {
     return function(input) {
       return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
     }
+}).filter('roletoname', function() {
+    return function(role) {
+      var roles = {
+        operations: 'Operations',
+        support:    'Support',
+        finance:    'Finance',
+        admin:      'Admin',
+        sellerapp:  'Delivery Executive',
+        manager:    'Manager',
+      }
+
+      return roles[role];
+    }
 });
