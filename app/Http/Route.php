@@ -271,8 +271,8 @@ final class Route
         'item_create'                             => ['post',     'items',                                          'ItemController@createItem'                                         ],
         'item_fetch'                              => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                     => ['get',      'items',                                          'ItemController@getItems'                                           ],
-        'item_update'                             => ['put',      'items/{id}',                                     'ItemController@updateItem'                                         ],
-        'item_delete'                             => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
+        // 'item_update'                             => ['put',      'items/{id}',                                     'ItemController@updateItem'                                         ],
+        // 'item_delete'                             => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                      => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -387,8 +387,8 @@ final class Route
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
-        'item_update',
-        'item_delete',
+        // 'item_update',
+        // 'item_delete',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -678,8 +678,8 @@ final class Route
         'item_create'                   => 'invoice',
         'item_fetch'                    => 'invoice',
         'item_fetch_multiple'           => 'invoice',
-        'item_update'                   => 'invoice',
-        'item_delete'                   => 'invoice',
+        // 'item_update'                   => 'invoice',
+        // 'item_delete'                   => 'invoice',
     );
 
     const RAZORPAYJS_ROUTES = array(
