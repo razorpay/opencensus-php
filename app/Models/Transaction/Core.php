@@ -180,13 +180,13 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
             $credit = $amount - $fee;
         }
         else
         {
-            list($fee, $serviceTax, $pricingRuleId, $feesSplit) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
             if ($feeCredits >= $fee)
             {

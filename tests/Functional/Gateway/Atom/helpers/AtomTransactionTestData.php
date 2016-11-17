@@ -18,7 +18,7 @@ return [
         'balance' => 1048562,
         'escrow_balance' => 1048562,
         'merchant_id' => '10000000000000',
-        'pricing_rule_id' => '1zD0BXpeOyaqpB',
+        'pricing_rule_id' => null,
         'channel' => 'atom',
     ],
 
@@ -46,7 +46,7 @@ return [
         'gateway_fee' => 1006,
         'api_fee' => 432,
         'service_tax' => 188,
-        'pricing_rule_id' => '1zD0BXpeOyaqpB',
+        'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48562,
         'currency' => 'INR',

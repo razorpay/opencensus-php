@@ -175,7 +175,7 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) =
+        list($fee, $serviceTax, $feesSplit) =
                             (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(

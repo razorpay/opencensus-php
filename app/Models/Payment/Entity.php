@@ -1343,9 +1343,18 @@ class Entity extends Base\PublicEntity
     // List of all features based on various conditions
     public function getFeatures()
     {
-        return [
-                    Pricing\Feature::RECURRING,
-                    Pricing\Feature::CARD_SAVING
-                ];
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        if ($this->getSave() === true)
+        {
+            $features[] = Pricing\Feature::CARD_SAVING;
+        }
+
+        return $features;
     }
 }

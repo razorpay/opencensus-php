@@ -23,6 +23,8 @@ class TransactionMigrationTest extends TestCase
 
     public function testMigration()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -41,6 +43,8 @@ class TransactionMigrationTest extends TestCase
     // Captured At: 31st May 2015 ST = 12.36
     public function testMigrationWithST1()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -67,6 +71,8 @@ class TransactionMigrationTest extends TestCase
     // Captured At: 1st June 2015 ST = 14
     public function testMigrationWithST2()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -93,6 +99,8 @@ class TransactionMigrationTest extends TestCase
     // Captured At: 15th Nov 2015 ST = 14, SB = 0.5
     public function testMigrationWithSTSB()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -119,6 +127,8 @@ class TransactionMigrationTest extends TestCase
     // Captured At: 1st June 2016 ST = 14, SB = 0.5, KK = 0.5
     public function testMigrationWithSTSBKK()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -142,6 +152,8 @@ class TransactionMigrationTest extends TestCase
 
     public function testMigrationWithTaxMistmatch()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;
@@ -161,6 +173,8 @@ class TransactionMigrationTest extends TestCase
 
     public function testMigrationWithFeeMistmatch()
     {
+        $this->markTestSkipped();
+
         $payment = $this->fixtures->create('payment:captured');
 
         $transaction = $payment->transaction;

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -317,7 +318,17 @@ class PricingTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $ruleId = $txn['pricing_rule_id'];
+        $transactionId = (new Transaction\Entity)->verifyIdAndSilentlyStripSign($txn['id']);
+
+        $input = [
+                    'transaction_id' => $transactionId,
+                ];
+
+        $feesSplit = $this->getEntities('fee_breakup', $input, true);
+
+        $index = array_search('payment', array_column($feesSplit['items'], 'name'));
+
+        $ruleId = $feesSplit['items'][$index]['pricing_rule_id'];
 
         $pricing = $this->getEntityById('pricing', $ruleId, true);
 

@@ -35,7 +35,7 @@ return [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
         'fee' => 1438,
-        'pricing_rule_id' => '1zE3CYqf1zbyrD',
+        'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48562,
         'currency' => 'INR',

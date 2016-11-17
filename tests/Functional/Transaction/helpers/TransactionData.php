@@ -111,7 +111,7 @@ return [
         'balance' => 1048850,
         'escrow_balance' => 1048850,
         'merchant_id' => '10000000000000',
-        'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        'pricing_rule_id' => null,
         'channel' => 'kotak',
     ],
 

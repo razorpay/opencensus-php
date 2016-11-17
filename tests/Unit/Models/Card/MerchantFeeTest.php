@@ -547,9 +547,11 @@ class MerchantFeeTest extends TestCase
 
         $feesSplit = new PublicCollection;
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
-        $this->assertEquals($expectedRule, $ruleKey);
+        $pricingRules = $this->fee->getPricingRules();
+
+        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
     }
 
     protected function runMerchantFeeTestNetB($amount, $bank, $expectedRule)
@@ -566,9 +568,11 @@ class MerchantFeeTest extends TestCase
 
         $feesSplit = new PublicCollection;
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
-        $this->assertEquals($expectedRule, $ruleKey);
+        $pricingRules = $this->fee->getPricingRules();
+
+        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
     }
 
     protected function runMerchantFeeTestWallet($wallet, $expectedRule)
@@ -583,9 +587,11 @@ class MerchantFeeTest extends TestCase
 
         $feesSplit = new PublicCollection;
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
-        $this->assertEquals($expectedRule, $ruleKey);
+        $pricingRules = $this->fee->getPricingRules();
+
+        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
     }
 
     protected function runMerchantFeeTestEmi($network, $expectedRule)
@@ -604,8 +610,10 @@ class MerchantFeeTest extends TestCase
 
         $feesSplit = new PublicCollection;
 
-        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
 
-        $this->assertEquals($expectedRule, $ruleKey);
+        $pricingRules = $this->fee->getPricingRules();
+
+        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
     }
 }

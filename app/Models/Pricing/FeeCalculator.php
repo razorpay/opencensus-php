@@ -58,7 +58,7 @@ class FeeCalculator
     {
         $entity = $this->entity;
 
-        $rule = $this->getRelevantPricingRule($pricing);
+        $this->getRelevantPricingRule($pricing);
 
         $amount = $entity->getAmount();
 
@@ -72,7 +72,7 @@ class FeeCalculator
 
         list($fee, $serviceTax) = $this->getFees($amount);
 
-        return array($fee, $serviceTax, $rule->getKey(), $this->feesSplit);
+        return array($fee, $serviceTax, $this->feesSplit);
     }
 
     protected function getFees($amount)
@@ -112,25 +112,28 @@ class FeeCalculator
         return $this->feesSplit;
     }
 
+    public function getPricingRules()
+    {
+        return $this->pricingRules;
+    }
+
     protected function getRelevantPricingRule($pricing)
     {
         $entity = $this->entity;
 
         $entityName = $entity->getEntity();
 
-        $method = $entity->getMethod();
-
         $features = $entity->getFeatures();
 
-        $rule = $this->getBasicPricingRule($entityName, $method, $pricing);
+        $this->getBasicPricingRule($entityName, $pricing);
 
-        $this->getAdOnPricingRule($features, $method, $pricing);
-
-        return $rule;
+        $this->getAdOnPricingRule($features, $pricing);
     }
 
-    protected function getAdOnPricingRule($features, $method, $pricing)
+    protected function getAdOnPricingRule($features, $pricing)
     {
+        $method = $this->entity->getMethod();
+
         foreach ($features as $feature)
         {
             $filters = array(
@@ -149,8 +152,10 @@ class FeeCalculator
         }
     }
 
-    protected function getBasicPricingRule($feature, $method, $pricing)
+    protected function getBasicPricingRule($feature, $pricing)
     {
+        $method = $this->entity->getMethod();
+
         $filters = array(
             [Pricing\Entity::FEATURE, $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
@@ -176,8 +181,6 @@ class FeeCalculator
         }
 
         $this->pricingRules->push($rule);
-
-        return $rule;
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)

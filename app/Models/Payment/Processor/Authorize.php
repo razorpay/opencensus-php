@@ -190,7 +190,7 @@ trait Authorize
     {
         // try calculating the fees, throws exception if fees is more than amount
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     protected function processAuthResponse($request, $payment)
