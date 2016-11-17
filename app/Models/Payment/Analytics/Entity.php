@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payment_analytics';
 
+    public $incrementing = true;
+
     protected $fillable = array(
         self::PAYMENT_ID,
         self::CHECKOUT_ID,

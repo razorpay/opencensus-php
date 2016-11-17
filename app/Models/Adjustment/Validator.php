@@ -10,5 +10,6 @@ class Validator extends Base\Validator
         Entity::AMOUNT        =>  'required|integer',
         Entity::CURRENCY      =>  'required|in:INR',
         Entity::DESCRIPTION   =>  'required|min:10',
+        Entity::SETTLEMENT_ID =>  'sometimes|size:14',
     );
 }

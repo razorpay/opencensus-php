@@ -90,7 +90,7 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile($setlFile)
+    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = true)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
@@ -99,6 +99,9 @@ trait SettlementTrait
             'files' => [
                 'file' => $uploadedFile,
             ],
+            'content' => [
+                'failed_recons' => $generateFailedReconciliations
+            ]
         ];
 
         $this->ba->appAuth();

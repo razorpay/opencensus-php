@@ -24,6 +24,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -77,6 +78,8 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'type' => 'ecod',
+                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -99,6 +102,7 @@ return [
                 'email_status' => 'sent',
                 'view_less' => true,
                 'amount' => 100000,
+                //'user_id'  => 'abcdefghij1234',
             ],
         ],
     ],

@@ -94,6 +94,9 @@ class CreateInvoices extends Migration
             $table->string(Entity::SOURCE, 32)
                   ->nullable();
 
+            $table->char(Entity::USER_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
@@ -103,6 +106,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::SCHEDULED_AT);
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
+            $table->index(Entity::USER_ID);
 
             $table->unique([Entity::MERCHANT_ID, Entity::MERCHANT_REF_ID]);
 
