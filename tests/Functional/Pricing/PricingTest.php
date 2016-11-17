@@ -508,4 +508,14 @@ class PricingTest extends TestCase
 
         return $content;
     }
+
+    public function testAddPricingPlanRuleWithFeature()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
 }

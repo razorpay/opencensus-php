@@ -257,6 +257,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::FIXED_RATE];
     }
 
+    public function getFeature()
+    {
+        return $this->attributes[self::FEATURE];
+    }
+
     /*
      * For adding plan id easily in queries
      */
