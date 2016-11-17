@@ -142,6 +142,76 @@ class Service extends Base\Service
         return $groups->toArrayPublic();
     }
 
+    public function fetchAllowedGroups(string $orgId, string $groupId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        $allOrgGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
+        $allowedGroups = $this->filterAllowedGroups($orgId, $groupId, $allOrgGroups->all());
+
+        return $allowedGroups;
+    }
+
+    protected function filterAllowedGroups(string $orgId, string $groupId, $allOrgGroups)
+    {
+        $parentGroups = $this->getParentGroups($orgId, $groupId);
+
+        $rejectGroups = $this->getAllRejectGroups($parentGroups, $orgId, $groupId);
+
+        $siblings = $this->getSiblings($parentGroups);
+
+        $rejectGroups = array_unique(array_merge($rejectGroups, $siblings));
+
+        return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {
+              return $a->id - $b->id;
+            });
+    }
+
+    protected function getSiblings(array $parentGroups)
+    {
+        $siblings = [];
+
+        foreach ($parentGroups as $parent) {
+            $siblings = $parent->parents->all();
+        }
+        return $siblings;
+    }
+
+    protected function getAllRejectGroups(array $parentGroups, string $orgId)
+    {
+        $workingGroups1 = $parentGroups;
+        $workingGroups2 = [];
+        $rejectGroups = [];
+
+        $rejectGroups = $this->getParentRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
+
+        return $rejectGroups;
+    }
+
+    protected function getParentRejectGroups(array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
+    {
+        foreach ($workingGroups1 as $key => $workingGroup) {
+            $rejectGroups[] = $workingGroup;
+
+            $workingGroupParents = $this->getParentGroups($orgId, $workingGroup->id);
+            $workingGroups2 = $workingGroupParents;
+        }
+
+        if (empty($workingGroups2) === false)
+        {
+            $this->getParentRejectGroups($workingGroups2, [], $rejectGroups, $orgId);
+        }
+
+        return $rejectGroups;
+    }
+
+    protected function getParentGroups(string $orgId, string $groupId)
+    {
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        return $group->subGroups->all();
+    }
+
     public function addRoleToGroup(
         string $orgId,
         string $groupId,
