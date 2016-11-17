@@ -257,6 +257,8 @@ class Checkout
 
         $data['version'] = 1;
 
+        $data['merchant_name'] = $merchant->getBillingLabelElseName();
+
         return $data;
     }
 
