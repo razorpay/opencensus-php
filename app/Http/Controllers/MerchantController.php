@@ -207,6 +207,15 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getInvoice($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'invoice');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getInvoices($mode)
     {
         $this->checkMode($mode);

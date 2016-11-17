@@ -107,6 +107,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment')->name('post_refund');
     Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
     Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('get_invoices');
+    Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('get_invoice');
     Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('post_invoices');
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
     Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
