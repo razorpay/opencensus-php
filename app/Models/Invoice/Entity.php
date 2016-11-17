@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
 
     const ORDER_ID              = 'order_id';
     // Ref id provided by merchant for his own references
-    const MERCHANT_REF_ID       = 'merchant_ref_id';
+    const REF_NUM               = 'ref_num';
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
@@ -114,7 +114,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         // self::TERMS,
         self::NOTES,
-        self::MERCHANT_REF_ID,
+        self::REF_NUM,
         self::VIEW_LESS,
         self::CURRENCY,
         self::SOURCE,

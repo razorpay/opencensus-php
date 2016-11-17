@@ -141,7 +141,7 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice', ['merchant_ref_id' => '00000000000001']);
+        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
 
         $this->startTest();
     }
@@ -150,7 +150,7 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice', ['merchant_ref_id' => '00000000000001']);
+        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
 
         $this->startTest();
     }

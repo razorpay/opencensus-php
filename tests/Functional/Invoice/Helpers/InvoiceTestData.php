@@ -375,7 +375,7 @@ return [
             'method' => 'post',
             'content' => [
                 'customer_id'     => 'cust_100000customer',
-                'merchant_ref_id' => '00000000000001',
+                'ref_num'         => '00000000000001',
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
@@ -396,14 +396,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Duplicate key merchant_ref_id for invoice',
+                    'description' => 'Duplicate value for ref_num in invoice',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
         ],
     ],
 

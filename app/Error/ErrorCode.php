@@ -377,6 +377,6 @@ class ErrorCode
     
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
 
-    const BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID                                     = 'BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID';
+    const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
 }

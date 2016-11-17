@@ -108,7 +108,7 @@ class Generator extends Base\Core
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_MERCHANT_REF_ID);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM);
             }
 
             throw $e;
