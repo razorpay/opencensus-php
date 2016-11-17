@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const ISSUED_AT             = 'issued_at';
     const PAID_AT               = 'paid_at';
     const EXPIRED_AT            = 'expired_at';
-    // Email & Sms communication status
+    // Email & SMS communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
     const TERMS                 = 'terms';
@@ -51,12 +51,13 @@ class Entity extends Base\PublicEntity
 
     // Input key for sending line item details
     const LINE_ITEMS            = 'line_items';
-    // const ITEM                  = 'item';
     // Input key for sending customer details
     const CUSTOMER              = 'customer';
+
     // Input key on whether to notify the customer by email|sms
     const EMAIL_NOTIFY          = 'email_notify';
     const SMS_NOTIFY            = 'sms_notify';
+
     const DUE_IN                = 'due_in';
     const SCHEDULED_IN          = 'scheduled_in';
     // Input key to send whether the invoice should be created in draft state

@@ -14,14 +14,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    protected $itemService;
-
-    protected $itemCore;
-    protected $orderCore;
-    protected $customerCore;
-
-    protected $invoiceGenerator;
-
     public function create(array $input)
     {
         $this->trace->info(

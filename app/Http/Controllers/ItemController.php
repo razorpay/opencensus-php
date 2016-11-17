@@ -15,7 +15,7 @@ class ItemController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Item\Service();
+        $this->service = new Item\Service;
     }
 
     public function createItem()

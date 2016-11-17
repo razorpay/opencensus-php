@@ -8,6 +8,7 @@ class Table
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
+    const ITEM                  = 'items';
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
@@ -16,40 +17,39 @@ class Table
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
-    const SCHEDULE              = 'schedules';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
-    const MERCHANT              = 'merchants';
     const FEATURE               = 'features';
     const TERMINAL              = 'terminals';
+    const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
-    const FEE_BREAKUP           = 'fees_breakup';
+    const SCHEDULE              = 'schedules';
     const EMI_PLAN              = 'emi_plans';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
+    const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const ITEM                  = 'items';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
 
     // Gateway related
     const EBS                   = 'ebs';
+    const UPI                   = 'upi';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
-    const CYBERSOURCE           = 'cybersource';
-    const FIRST_DATA            = 'first_data';
     const PAYTM                 = 'paytm';
+    const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
-    const UPI                   = 'upi';
-    const WALLET                = 'wallet';
+    const FIRST_DATA            = 'first_data';
+    const CYBERSOURCE           = 'cybersource';
 
     // Sessions table
     const SESSION               = 'sessions';
