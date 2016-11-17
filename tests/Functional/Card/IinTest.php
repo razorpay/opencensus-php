@@ -52,6 +52,17 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testImportIinWithIssuer()
+    {
+        $file = $this->getUploadedIinFile(true);
+
+        $testData = &$this->testData['testImportIinWithIssuer'];
+
+        $testData['request']['files']['file'] = $file;
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

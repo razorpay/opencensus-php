@@ -103,6 +103,29 @@ class OlamoneyGatewayTest extends TestCase
         $this->step = null;
     }
 
+    public function testCallbackEmptyResponseBody()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '';
+
+            return $content;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+    }
+
     public function testOtpRetrySuccessPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);

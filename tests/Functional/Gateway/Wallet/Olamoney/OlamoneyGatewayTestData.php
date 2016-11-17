@@ -77,7 +77,7 @@ return [
         'entity'                => 'wallet',
     ],
 
-    'testOtpRetryPayment'       => [
+    'testOtpRetryPayment' => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -91,6 +91,22 @@ return [
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ],
+    ],
+
+    'testCallbackEmptyResponseBody' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         ],
     ],
 

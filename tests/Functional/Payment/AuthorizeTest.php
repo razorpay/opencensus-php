@@ -335,6 +335,19 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidWalletS2SPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testWalletWithInternationalContact()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');

@@ -40,39 +40,9 @@ class Service extends Base\Service
 
         $this->repo->feature->delete($feature);
 
+        (new Core)->notifyOnSlack($feature, true);
+
         return $feature->toArrayPublic();
-    }
-
-    public function migrateMerchantFeatures()
-    {
-        $response = new Base\Collection;
-
-        $merchants = $this->repo->merchant->fetchMerchantsWithoutFeatureEntries();
-
-        foreach ($merchants as $merchant) {
-            $featureParam = [
-                Entity::ENTITY_ID      => $merchant->getId(),
-                Constants::NAMES       => $merchant->getFeatures(),
-                Entity::ENTITY_TYPE    => \RZP\Constants\Entity::MERCHANT
-            ];
-
-            try
-            {
-                $features = $this->addFeatures($featureParam);
-
-                $response->push($features);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->warn(
-                    TraceCode::FEATURE_MIGRATION_EXCEPTION,
-                    [
-                        Entity::ENTITY_ID   => $merchant->getId(),
-                        'msg'               => $e->getMessage()
-                    ]);
-            }
-        }
-        return $response->collapse();
     }
 
     public function multiAssignFeature($input)

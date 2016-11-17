@@ -74,10 +74,12 @@ class TraceCode
     const VERIFY_REFUND_TRANSACTION_CREATED         = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE            = 'MANUAL_GATEWAY_REFUND_RESPONSE';
     const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
+    const PAYMENT_CAPTURE_INVOICE_UPDATE            = 'PAYMENT_CAPTURE_INVOICE_UPDATE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
+    const CHECKOUT_PREFERENCES_RESPONSE             = 'CHECKOUT_PREFERENCES_RESPONSE';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST              = 'REFUND_FILE_GENERATE_REQUEST';
@@ -86,6 +88,7 @@ class TraceCode
     const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
+    const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
     const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
@@ -103,6 +106,18 @@ class TraceCode
     const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
+    const CUSTOMER_ID_ABSENT                        = 'CUSTOMER_ID_ABSENT';
+    const INVOICE_ID_ABSENT                         = 'INVOICE_ID_ABSENT';
+    const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
+    const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
+    const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
+    const INVOICE_CREATED                           = 'INVOICE_CREATED';
+    const INVOICE_EXISTING_CUSTOMER                 = 'INVOICE_EXISTING_CUSTOMER';
+    const INVOICE_LINKS                             = 'INVOICE_LINKS';
+    const INVOICE_EMAIL_REQUEST                     = 'INVOICE_EMAIL_REQUEST';
+    const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
+    const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
+    const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
@@ -113,6 +128,7 @@ class TraceCode
     const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
+    const SMS_SENDING_FAILED                        = 'SMS_SENDING_FAILED';
 
     const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
     const CHECKOUT_PREFERENCES_COOKIE_CHECK         = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
@@ -230,8 +246,10 @@ class TraceCode
     const SCHEDULE_ASSIGN_REQUEST                   = 'SCHEDULE_ASSIGN_REQUEST';
     const SCHEDULE_CREATE_REQUEST                   = 'SCHEDULE_CREATE_REQUEST';
     const SCHEDULE_EDIT_REQUEST                     = 'SCHEDULE_EDIT_REQUEST';
+    const SCHEDULE_DELETE_REQUEST                   = 'SCHEDULE_DELETE_REQUEST';
     const SCHEDULE_CREATED                          = 'SCHEDULE_CREATED';
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
+    const SCHEDULE_DELETED                          = 'SCHEDULE_DELETED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
     const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
@@ -261,6 +279,7 @@ class TraceCode
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
+    const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
@@ -305,6 +324,8 @@ class TraceCode
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH       = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
     const TRANSACTION_MIGRATION_FEE_MISTMATCH       = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
+    const PRICING_RULE_MISTMATCH                    = 'PRICING_RULE_MISTMATCH';
+    const PRICING_RULE_DOES_NOT_EXISTS              = 'PRICING_RULE_DOES_NOT_EXISTS';
 
     const BATCH_UPLOAD_FILE_ENTRIES                 = 'BATCH_UPLOAD_FILE_ENTRIES';
     const BATCH_UPLOAD_FILE                         = 'BATCH_UPLOAD_FILE';
@@ -347,6 +368,9 @@ class TraceCode
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
+    const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
+
+    const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -444,7 +468,9 @@ class TraceCode
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
-        
+        self::PRICING_RULE_MISTMATCH                    => 'Mismatch in the pricing rule during migration',
+        self::PRICING_RULE_DOES_NOT_EXISTS              => 'Pricing Plan does not exist for this merchant',
+
         self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
@@ -458,7 +484,8 @@ class TraceCode
         self::BATCH_FILE_DELETE                         => 'Batch file delete',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
-        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant'
+        self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
+        self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
     );
 
     /**

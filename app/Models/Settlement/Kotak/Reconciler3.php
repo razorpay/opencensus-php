@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
@@ -32,6 +33,12 @@ class Reconciler3
         'DateTime',
         'Int.ref no.',
         'Dummy');
+
+    const SUCCESS_STATUS = [
+        'Beneficiary Account Credited',
+        'Account Debited',
+        'Presented and Paid',
+    ];
 
     /**
      * All payments in the current mpr
@@ -140,7 +147,6 @@ class Reconciler3
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
-
         return $response;
     }
 
@@ -162,11 +168,26 @@ class Reconciler3
 
         $failureReason = $row['Reject Reason'];
 
+        $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $tenPm = $recordDate->hour(22)->timestamp;
+
         if ($status === 'P')
         {
             $utr = $row['UTR number'];
 
-            if (empty($failureReason) === true)
+            // If current time is before 10 pm, dont mark the settlement as
+            // processed and update only the utr
+            if ($now < $tenPm)
+            {
+                $status = Settlement\Status::CREATED;
+
+                $failureReason = null;
+            }
+            else if ((empty($failureReason) === true) or
+                (in_array($failureReason, self::SUCCESS_STATUS) === true))
             {
                 $status = Settlement\Status::PROCESSED;
 
@@ -202,13 +223,21 @@ class Reconciler3
         else
         {
             $setl->setUtr($utr);
+
             $setl->setStatus($status);
+
             $setl->setFailureReason($failureReason);
 
-            $this->repo->settlement->save($setl);
+            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
+
+            $setlHandler = (new Settlement\Handler($setl));
+
+            $setlHandler->process($holdMerchantFunds);
+
+            $this->repo->saveOrFail($setl);
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->transaction->save($setl->transaction);
+            $this->repo->saveOrFail($setl->transaction);
         }
 
         return $setl;

@@ -121,29 +121,6 @@ class Service extends Base\Service
         }
     }
 
-    public function addOrUpdateMerchantFeatures($id, array $input)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        foreach ($input as $key => $value)
-        {
-            $input[$key] = strtolower($input[$key]);
-        }
-
-        $merchant = (new Merchant\Core)->addOrUpdateMerchantFeatures($merchant, $input);
-
-        return $merchant->toArrayPublic();
-    }
-
-    public function getMerchantFeatures($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $features = $merchant->getFeatures();
-
-        return $features;
-    }
-
     // This is on internal auth
     public function fetch($id)
     {
@@ -636,4 +613,39 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function updateMethodsForMultipleMerchants($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
+
+        $merchantIds = $input['merchants'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantIds);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        return $response;
+    }
+
 }

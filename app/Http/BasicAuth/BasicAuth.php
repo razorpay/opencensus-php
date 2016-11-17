@@ -164,6 +164,7 @@ class BasicAuth
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
+        $this->merchant = null;
     }
 
     public function setCredentials()
@@ -719,6 +720,11 @@ class BasicAuth
     public function getAuthType()
     {
         return $this->type;
+    }
+
+    public function getInternalApp()
+    {
+        return $this->internalApp;
     }
 
     public function isCron()

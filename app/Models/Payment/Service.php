@@ -54,6 +54,12 @@ class Service extends Base\Service
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
 
+        if (Payment\Gateway::isPowerWallet($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+
         return $this->getNewProcessor()->process($input);
     }
 
@@ -756,9 +762,9 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyMultiplePayments($filter, $input)
+    public function verifyMultiplePayments(string $filter, array $input)
     {
-        $bucket = null;
+        $bucket = [];
 
         if (isset($input['bucket']) === true)
         {

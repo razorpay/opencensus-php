@@ -243,4 +243,13 @@ class CybersourceGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testAuthorizeFailedPayment'], $cybersource);
     }
+
+    public function testFetchCybersourceEntityById()
+    {
+        $payment = $this->doAuthPayment();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->getEntityById('cybersource', $cybersource['id'], true);
+    }
 }

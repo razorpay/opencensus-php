@@ -31,6 +31,12 @@ return [
         'content' => [],
     ],
 
+    'deleteSchedule' => [
+        'method'  => 'DELETE',
+        'url'     => '/schedules/',
+        'content' => [],
+    ],
+
     'testEditSchedule' => [
         'method'  => 'PUT',
         'url'     => '/schedules/',
@@ -47,6 +53,22 @@ return [
         'anchor'     => 3,
         'delay'      => 1,
         'next_run'   => 1452105000,
+    ],
+
+    'testDeleteScheduleInUse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_SCHEDULE_IN_USE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_SCHEDULE_IN_USE,
+        ],
     ],
 
     'testScheduleInvalidPeriod' => [

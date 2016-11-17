@@ -4,9 +4,12 @@ namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID          = 'id';
     const NAME        = 'name';
     const MERCHANT_ID = 'merchant_id';
@@ -16,6 +19,8 @@ class Entity extends Base\PublicEntity
     const ANCHOR      = 'anchor';
     const DELAY       = 'delay';
     const NEXT_RUN    = 'next_run';
+
+    const DELETED_AT  = 'deleted_at';
 
     protected $fillable = array(
         self::ID,
