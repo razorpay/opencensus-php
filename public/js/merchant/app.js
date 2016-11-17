@@ -172,25 +172,25 @@ var app = angular.module('app', [
 
     .state('app.invoices', {
       url: '/invoices',
-      template: '<invoices-list />'
+      templateProvider: reactTemplateProvider('<invoices-list />')
     }).state('app.invoicesnew', {
       url: '/invoices/new',
-      template: '<invoices-new />'
+      templateProvider: reactTemplateProvider('<invoices-new />')
     }).state('app.subscriptions', {
       url: '/subscriptions',
-      template: '<subscriptions-list />'
+      templateProvider: reactTemplateProvider('<subscriptions-list />')
     }).state('app.subscriptionsnew', {
       url: '/subscriptions/new',
-      template: '<subscriptions-new />'
+      templateProvider: reactTemplateProvider('<subscriptions-new />')
     }).state('app.customers', {
       url: '/customers',
-      template: '<customers-list />'
+      templateProvider: reactTemplateProvider('<customers-list />')
     }).state('app.plans', {
       url: '/plans',
-      template: '<plans-list />'
+      templateProvider: reactTemplateProvider('<plans-list />')
     }).state('app.items', {
       url: '/items',
-      template: '<items-list />'
+      templateProvider: reactTemplateProvider('<items-list />')
     })
 
 
@@ -251,3 +251,32 @@ var app = angular.module('app', [
     $keepaliveProvider.interval(60);
   }
 ]);
+
+var injectScript = (function () {
+  var relative = document.getElementsByTagName('script')[0];
+  return function (src, callback) {
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = src;
+    if (callback) {
+      script.onload = function() {
+        callback.call()
+      }
+    }
+    document.getElementsByTagName('head')[0].appendChild(script)
+  }
+})();
+
+var reactTemplateProvider = function(template) {
+  return function ($q, $stateParams) {
+    var deferred = $q.defer();
+    if (!window.React) {
+      injectScript('js/generated/merchant_react.js', function() {
+        deferred.resolve(template)
+      })
+    } else {
+      deferred.resolve(template)
+    }
+    return deferred.promise;
+  }
+}

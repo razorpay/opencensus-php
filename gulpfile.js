@@ -83,6 +83,7 @@ const concatJs = lazypipe()
       'public/js/angular/ui-validate.js',
       'public/js/angular/ui-bootstrap-tpls.min.js',
       'public/js/angular/angular-busy.js',
+      'public/js/angular/ng-react.js',
       'public/js/libs/angular-file-upload.min.js',
       'public/js/libs/angulartics.min.js',
       'public/js/libs/angulartics-segmentio.min.js',
@@ -95,8 +96,10 @@ const concatJs = lazypipe()
       'public/js/merchant/**/*.js',
       'public/js/*.js',
       'public/js/libs/moment.min.js',
-      'public/react/dist/merchant_react.js',
-      'node_modules/ngreact/ngReact.js'
+    ],
+
+    'js/generated/merchant_react.js': [
+      'public/react/dist/merchant_react.js'
     ],
 
     'js/generated/admin.js': [
