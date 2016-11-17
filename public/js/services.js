@@ -369,6 +369,31 @@ angular.module('app.services', [])
     };
   }
 ])
+.factory('theme', [
+  '$rootScope',
+  '$state',
+  'admin',
+  '$location',
+  '$http',
+  function ($rootScope, $state, admin, $location) {
+    return {
+      apply: function (themeVars) {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+
+        var rules = themes.theme(themeVars);
+
+        if (style.styleSheet) {
+          style.styleSheet.cssText = rules;
+        } else {
+          style.appendChild(document.createTextNode(rules));
+        }
+        document.getElementsByTagName('head')[0].appendChild(style);
+      }
+    }
+  }
+])
+
 //Authorisation service
 //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('adminAuthorization', [

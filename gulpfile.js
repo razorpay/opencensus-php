@@ -5,6 +5,7 @@ const through = require('through')
 const plumber = require('gulp-plumber')
 const run = require('run-sequence')
 const lazypipe = require('lazypipe')
+const dot = require('dot')
 
 const stylus = require('gulp-stylus')
 const cssnano = require('gulp-cssnano')
@@ -67,6 +68,14 @@ gulp.task('css:prod', ()=> {
     .pipe(through(revReference))
 })
 
+gulp.task('compileThemes', () => {
+  dot.process({
+    path: 'public/js/themes/',
+    destination: 'public/js/themes/',
+    global: 'themes'
+  });
+})
+
 const concatJs = lazypipe()
   .pipe(concatMulti, {
     'js/generated/pre.js': [
@@ -87,7 +96,9 @@ const concatJs = lazypipe()
       'public/js/libs/angulartics.min.js',
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
-      'public/js/libs/jquery-tourbus.js'
+      'public/js/libs/jquery-tourbus.js',
+      'public/js/themes/init.js',
+      'public/js/themes/*.js'
     ],
 
     'js/generated/merchant.js': [
@@ -130,15 +141,16 @@ gulp.task('tmpl', ()=> {
 })
 
 gulp.task('default', ()=> {
-  run(['css:prod', 'js:prod'], 'tmpl')
+  run(['compileThemes', 'css:prod', 'js:prod'], 'tmpl')
 })
 
 gulp.task('dev', ()=> {
-  run(['css', 'js'], 'tmpl')
+  run(['compileThemes', 'css', 'js'], 'tmpl')
 })
 
 gulp.task('watch', ['dev'], ()=> {
   gulp.watch('public/css/*.styl', ['css'])
+  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js'])
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',
