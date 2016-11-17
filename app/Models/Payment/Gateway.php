@@ -232,6 +232,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::UPI_ICICI,
     );
 
     /**

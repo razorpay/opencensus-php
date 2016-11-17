@@ -82,9 +82,21 @@ class Repository extends Base\Repository
 
     public function fetchBySettlementScheduleId($settlementScheduleIds)
     {
+        if (is_array($settlementScheduleIds) === false)
+        {
+            $settlementScheduleIds = [$settlementScheduleIds];
+        }
+
         return $this->newQuery()
                     ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
                     ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
+                    ->get();
+    }
+
+    public function fetchMerchantsWithSettlementScheduleIdNull()
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
                     ->get();
     }
 

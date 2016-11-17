@@ -31,36 +31,39 @@ class Entity
     const PAYMENT               = 'payment';
     const FEATURE               = 'feature';
     const WEBHOOK               = 'webhook';
+    const INVOICE               = 'invoice';
     const SCHEDULE              = 'schedule';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
+    const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
+    const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
-
-    const DAILY_SETTLEMENT      = 'daily_settlement';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
 
     //
     // Gateway entities
     //
 
+    const EBS                   = 'ebs';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
-    const EBS                   = 'ebs';
+    const UPI                   = 'upi';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
-    const UPI                   = 'upi';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -69,12 +72,12 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
     const UPI_ICICI             = 'upi_icici';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
-    const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
@@ -102,26 +105,27 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
-        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
+        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
+        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
-        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
     );

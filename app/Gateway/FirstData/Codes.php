@@ -10,4 +10,6 @@ class Codes
     const ENGLISH_UK_LANG_CODE_API      = 'en';
 
     const DATE_TIME_FORMAT = 'Y:m:d-H:i:s';
+
+    const MOCK_SUCCESS_APPROVAL_CODE = "mocked successful approval code";
 }

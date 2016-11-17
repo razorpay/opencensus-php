@@ -92,6 +92,13 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCustomerDuplicateDontFail()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateCustomer()
     {
         $this->ba->privateAuth();

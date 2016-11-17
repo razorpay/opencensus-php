@@ -121,29 +121,6 @@ class Service extends Base\Service
         }
     }
 
-    public function addOrUpdateMerchantFeatures($id, array $input)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        foreach ($input as $key => $value)
-        {
-            $input[$key] = strtolower($input[$key]);
-        }
-
-        $merchant = (new Merchant\Core)->addOrUpdateMerchantFeatures($merchant, $input);
-
-        return $merchant->toArrayPublic();
-    }
-
-    public function getMerchantFeatures($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $features = $merchant->getFeatures();
-
-        return $features;
-    }
-
     // This is on internal auth
     public function fetch($id)
     {
@@ -317,6 +294,80 @@ class Service extends Base\Service
                     'icon'     => ':boom:',
                 ]
             );
+    }
+
+    public function migrateMerchantToSettlementSchedules($input)
+    {
+        $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
+
+        if (isset($input['merchant_ids']))
+        {
+            $merchants = $this->repo->merchant->findMany($input['merchant_ids']);
+        }
+        else
+        {
+            $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+        }
+
+        $migrationSummary = [
+            'migrated_ids_count' => 0,
+            'failed_ids'         => [],
+        ];
+
+        foreach ($merchants as $merchant)
+        {
+            $requiredDelay = $merchant->getSettlementSchedule();
+
+            try
+            {
+                $schedule = $this->repo->schedule->fetchDailySettlementSchedulesByDelay($requiredDelay);
+
+                if (is_null($schedule) === true)
+                {
+                    $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
+
+                    $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
+
+                    $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+                }
+
+                $merchant->schedule()->associate($schedule);
+
+                $this->repo->saveOrFail($merchant);
+
+                $migrationSummary['migrated_ids_count'] += 1;
+            }
+            catch(\Exception $ex)
+            {
+                $merchantId = $merchant->getId();
+
+                $this->trace->info(TraceCode::SCHEDULE_MIGRATION_FAILED,
+                                    [
+                                        'merchant_id' => $merchantId,
+                                        'delay'       => $requiredDelay,
+                                        'error'       => $ex->getMessage(),
+                                    ]);
+
+                $migrationSummary['failed_ids'][] = $merchantId;
+            }
+        }
+
+        $migrationSummary['fail_count'] = count($migrationSummary['failed_ids']);
+
+        $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
+
+        return $migrationSummary;
+    }
+
+    protected function getRequiredScheduleData($requiredDelay)
+    {
+        return [
+            Schedule\Entity::NAME     => "Basic T$requiredDelay",
+            Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
+            Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
+            Schedule\Entity::INTERVAL => 1,
+            Schedule\Entity::DELAY    => $requiredDelay,
+        ];
     }
 
     public function getPricingPlan($id)
@@ -636,4 +687,39 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function updateMethodsForMultipleMerchants($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
+
+        $merchantIds = $input['merchants'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantIds);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        return $response;
+    }
+
 }

@@ -152,6 +152,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function migrateToSchedules()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);
@@ -399,7 +408,7 @@ class MerchantController extends Controller
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $data = $this->getCheckoutCommon();
+        $data = $this->getCheckoutCommon($input);
 
         $data['preferences'] = $prefs;
 
@@ -408,16 +417,16 @@ class MerchantController extends Controller
 
     public function getCheckoutPublic()
     {
-        $data = $this->getCheckoutCommon();
+        $input = Request::all();
+
+        $data = $this->getCheckoutCommon($input);
 
         return \View::make('checkout.checkout')
                     ->with($data);
     }
 
-    protected function getCheckoutCommon()
+    protected function getCheckoutCommon(array $input)
     {
-        $input = Request::all();
-
         $context = $this->config->get('app.context');
 
         $url = $this->config->get('app.checkout');
@@ -485,32 +494,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    /**
-    * Gets the list of beta fetures enabled for merchant
-    * @param  string $id merchant id
-    * @return array      array of feature names
-    */
-    public function getMerchantFeatures($id)
-    {
-        $data = (new Merchant\Service)->getMerchantFeatures($id);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Adds or updated the list of beta fetures for an merchant
-     * @param  string     $id     merchant id
-     * @return merchant           updated entity
-     */
-    public function postMerchantFeatures($id)
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getDummyFeatures()
     {
         $input = Request::all();
@@ -527,7 +510,16 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- Credits API Handlers -----------------------------------------
+    public function updateMethodsForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
     {

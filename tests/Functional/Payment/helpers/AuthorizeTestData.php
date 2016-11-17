@@ -661,6 +661,33 @@ return [
         ]
     ],
 
+    'testInvalidWalletS2SPayment' =>[
+        'request' => [
+            'url' => '/payments/create/wallet',
+            'method' => 'POST',
+            'content' => [
+                'wallet'    => 'invalid_wallet',
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+        ],
+    ],
+
     'testWalletWithInternationalContact' =>[
         'request' => [
             'content' => [

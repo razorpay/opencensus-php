@@ -1208,9 +1208,14 @@ SET transaction_id = null
 WHERE id = "4lrNkMC1VI5F6v";
 
 DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
----
 
----
 ALTER TABLE payments
     ADD COLUMN cancellation_reason VARCHAR(255) AFTER error_description;
----
+
+ALTER TABLE schedules
+    ADD COLUMN deleted_at INTEGER AFTER updated_at;
+
+----
+ALTER TABLE adjustment
+    ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);

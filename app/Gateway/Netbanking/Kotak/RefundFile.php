@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
@@ -24,6 +25,17 @@ class RefundFile extends Base\RefundFile
         $name = $this->getFileToWriteName();
 
         $filePath = $this->writeToTextFile($txt);
+
+        $creator = new FileStore\Creator;
+
+        $creator->extension(FileStore\Format::TXT)
+                ->content($txt)
+                ->name($name)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::KOTAK_NETBANKING_REFUND)
+                ->save();
+
+        $file = $creator->get();
 
         $fileFullPath = $this->getFullFilePath($name);
 

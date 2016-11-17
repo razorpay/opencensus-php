@@ -3,6 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
+use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
@@ -125,6 +126,10 @@ class BeneficiaryFile3
             $message->cc($cc);
 
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 }

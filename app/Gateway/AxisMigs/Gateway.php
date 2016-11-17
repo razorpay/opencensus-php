@@ -581,11 +581,7 @@ class Gateway extends Base\Gateway
 
         foreach ($content as $k => $v)
         {
-            if ((strlen($k) !== 0) and
-                (strlen($v) !== 0))
-            {
-                $input[] = $k . '=' . $v;
-            }
+            $input[] = $k . '=' . $v;
         }
 
         return parent::getStringToHash($input, '&');

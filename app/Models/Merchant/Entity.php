@@ -131,6 +131,10 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL
     );
 
+    protected $casts = [
+        self::HOLD_FUNDS => 'bool'
+    ];
+
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
     protected function generateTransactionReportEmail($input)
@@ -175,8 +179,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return (in_array($feature, $this->features(), true)) or
-            $this->checkOldFeatures($feature);
+        return in_array($feature, $this->features(), true);
     }
 
     public function activate()
@@ -203,14 +206,12 @@ class Entity extends Base\PublicEntity
 
     public function keys()
     {
-        return $this->hasMany(
-            'RZP\Models\Key\Entity');
+        return $this->hasMany('RZP\Models\Key\Entity');
     }
 
     public function pricing()
     {
-        return $this->belongsTo(
-            'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+        return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
     public function schedule()
@@ -221,8 +222,17 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany(
-            'RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
+    public function customers()
+    {
+        return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
     public function balance()
@@ -406,20 +416,6 @@ class Entity extends Base\PublicEntity
                     ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
-    public function getFeatures()
-    {
-        return $this->getAttribute(self::FEATURES);
-    }
-
-    protected function checkOldFeatures($feature)
-    {
-        if (in_array($feature, $this->getFeatures(), true) === true)
-        {
-            return true;
-        }
-        return false;
-    }
-
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
@@ -472,7 +468,7 @@ class Entity extends Base\PublicEntity
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['region'];
+        $regionName = $awsConfig['bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 
@@ -570,6 +566,11 @@ class Entity extends Base\PublicEntity
     public function holdFunds()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    public function setHoldFunds($holdFunds)
+    {
+        $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
     }
 
     public function isReceiptEmailsEnabled()

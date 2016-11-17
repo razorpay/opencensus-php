@@ -101,6 +101,11 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $query->orderBy(Common::CREATED_AT, $desc);
     }
 
+    public function scopeCreatedAtLessThan($query, $createdAt)
+    {
+        return $query->where(Common::CREATED_AT, '<', $createdAt);
+    }
+
     public static function createOrFail(array $attributes)
     {
         throw new Exception\RuntimeException('Use createOrFail via Repository');
