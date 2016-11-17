@@ -271,7 +271,10 @@ var reactTemplateProvider = function(template) {
   return function ($q, $stateParams) {
     var deferred = $q.defer();
     if (!window.React) {
-      injectScript('js/generated/merchant_react.js', function() {
+      // Really dirty hack which will vanish soon
+      var url = "<% asset('js/generated/merchant_react.js') %>"
+      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js'
+      injectScript(url, function() {
         deferred.resolve(template)
       })
     } else {

@@ -28,8 +28,9 @@ const tmplData = {
 }
 
 // minimal string interpolation for processing tmpl
-function interpolate(template) {
-  return template.replace(/\{\{([^\}]+)\}\}/g, (match, keypath)=> {
+function interpolate(template, pattern) {
+  pattern = pattern || /\{\{([^\}]+)\}\}/g
+  return template.replace(pattern, (match, keypath)=> {
     return new Function('_', 'return _.' + keypath.trim())(tmplData);
   })
 }
@@ -129,10 +130,19 @@ gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
     .pipe(through(function(file) {
       file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
-      file.contents = new Buffer(interpolate(String(file.contents), tmplData));
+      file.contents = new Buffer(interpolate(String(file.contents)));
       this.emit('data', file)
     }))
     .pipe(gulp.dest('resources/views'))
+})
+
+gulp.task('reactRevReplace', () => {
+  return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
+    .pipe(through(function(file) {
+      file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g));
+      this.emit('data', file)
+    }))
+    .pipe(gulp.dest('public/js/generated'))
 })
 
 const runWebpack = (webpackConfig, cb) => {
@@ -172,7 +182,7 @@ gulp.task('webpack:prod', (cb) => {
 })
 
 gulp.task('default', (cb) => {
-  run('webpack:prod', ['css:prod', 'js:prod'], 'tmpl', cb)
+  run('webpack:prod', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
 })
 
 gulp.task('dev', (cb) => {
