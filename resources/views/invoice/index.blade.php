@@ -96,6 +96,9 @@
           confirm_close: true
         }
       }
+      if (data.merchant_name) {
+        options.name = data.merchant_name;
+      }
       Razorpay.open(options);
     </script>
   @else
