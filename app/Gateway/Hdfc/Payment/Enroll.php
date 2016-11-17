@@ -50,8 +50,11 @@ trait Enroll
         $network = $input['card']['network_code'];
 
         // Only required in case of Rupay
-        if (($network === Card\Network::RUPAY) and
-            ($this->proxyEnabled === true))
+        // TODO: This currently does not honour our PROXY_ENABLED
+        // setting, which is set to false in production.
+        //
+        // We will shift it back once we have whitelisted FSS
+        if ($network === Card\Network::RUPAY)
         {
             $this->enrollRequest['options']['proxy'] = $this->proxy;
         }
