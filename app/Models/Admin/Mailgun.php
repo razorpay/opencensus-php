@@ -48,7 +48,7 @@ class Mailgun extends Base\Core
     {
         $hashData = $input['timestamp'] . $input['token'];
 
-        if (time() - $input['timestamp'] > 30 or
+        if (((time() - $input['timestamp']) > 30) or
             hash_hmac(HashAlgo::SHA256, $hashData, $apiKey) !== $input['signature'])
         {
             throw new Exception\BadRequestException(
