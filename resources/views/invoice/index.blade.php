@@ -82,6 +82,9 @@
         amount: data.amount,
         description: 'Invoice #' + data.invoice_id,
         handler: function(response) {
+          if (data.merchant_details && data.merchant_details.name) {
+            document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant_details.name;
+          }
           document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
           document.querySelector('#success').style.display = 'block';
         },
@@ -93,11 +96,21 @@
           close_button: false
         },
         modal: {
-          confirm_close: true
+          confirm_close: true,
+          escape: false
         }
       }
-      if (data.merchant_name) {
-        options.name = data.merchant_name;
+      var merchant_details = data.merchant_details;
+      if (merchant_details) {
+        if (merchant_details.name) {
+          options.name = merchant_details.name;
+        }
+        if (merchant_details.color) {
+          options.theme.color = merchant_details.color;
+        }
+        if (merchant_details.image) {
+          options.image = merchant_details.image;
+        }
       }
       Razorpay.open(options);
     </script>
