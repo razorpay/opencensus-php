@@ -2,11 +2,6 @@
 
 namespace RZP\Gateway\Cybersource;
 
-/**
- * CommerceIndicator class stores all the possible values
- * of commerce indicator. Commerce indicator tells us the
- * status of transaction
- **/
 class CommerceIndicator
 {
     // American Express SafeKey authentication verified successfully.

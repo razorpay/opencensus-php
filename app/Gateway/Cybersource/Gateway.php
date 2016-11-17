@@ -47,11 +47,13 @@ class Gateway extends Base\Gateway
 
     protected $secureCacheDriver;
 
+    protected $eci;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->secureCache = Config::get('cache.secure_default');
+        $this->secureCacheDriver = Config::get('cache.secure_default');
     }
 
     public function authorize(array $input)
@@ -195,7 +197,6 @@ class Gateway extends Base\Gateway
     public function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
-        $payment = $verify->payment;
 
         $request = $this->getPaymentVerifyRequestContent($input);
 
@@ -964,7 +965,7 @@ class Gateway extends Base\Gateway
     {
         $authValidateService = $this->getAuthValidateContentArray($input);
 
-        $authServiceRequest  = $this->getAuthorizeRequestArray($input, null);
+        $authServiceRequest  = $this->getAuthorizeRequestArray($input);
 
         $authServiceRequest['content'] = array_merge($authValidateService, $authServiceRequest['content']);
 
@@ -1075,6 +1076,10 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    /**
+     * Sets dummy billing info as AVS is not
+     * supported in India
+     */
     protected function getBillingInfo(array $input)
     {
         $billingInfo = [

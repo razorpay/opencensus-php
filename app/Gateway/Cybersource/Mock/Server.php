@@ -50,27 +50,27 @@ class Server extends Base\Mock\Server
 
         switch(true)
         {
-            case isset($request['payerAuthEnrollService']):
+            case isset($request[F::PA_ENROLL_SERVICE]):
                 $action = 'auth_enroll';
                 break;
 
-            case isset($request['payerAuthValidateService']):
+            case isset($request[F::PA_VALIDATE_SERVICE]):
                 $action = 'auth_validate';
                 break;
 
-            case isset($request['ccAuthService']):
+            case isset($request[F::CC_AUTH_SERVICE]):
                 $action = 'authorize';
                 break;
 
-            case isset($request['ccCaptureService']):
+            case isset($request[F::CC_CAPTURE_SERVICE]):
                 $action = 'capture';
                 break;
 
-            case isset($request['ccCreditService']):
+            case isset($request[F::CC_CREDIT_SERVICE]):
                 $action = 'refund';
                 break;
 
-            case isset($request['ccAuthReversalService']):
+            case isset($request[F::CC_AUTH_REVERSAL_SERVICE]):
                 $action = 'void';
                 break;
 
