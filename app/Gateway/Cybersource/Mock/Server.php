@@ -70,6 +70,10 @@ class Server extends Base\Mock\Server
                 $action = 'refund';
                 break;
 
+            case isset($request['ccAuthReversalService']):
+                $action = 'void';
+                break;
+
             default:
                 assertTrue(false, 'Unrecognized request type');
         }
@@ -79,7 +83,7 @@ class Server extends Base\Mock\Server
         return $this->{$action}($request);
     }
 
-    public function authorize($input)
+    protected function authorize($input)
     {
         $this->validateAuthorizeInput($input);
 
@@ -101,7 +105,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function authEnroll($input)
+    protected function authEnroll($input)
     {
         $this->validateEnrollInput($input);
 
@@ -124,7 +128,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function authValidate($input)
+    protected function authValidate($input)
     {
         $this->validateActionInput($input, 'auth_validate');
 
@@ -147,7 +151,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function capture($input)
+    protected function capture($input)
     {
         parent::capture($input);
 
@@ -176,7 +180,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function refund($input)
+    protected function refund($input)
     {
         parent::refund($input);
 
@@ -197,6 +201,36 @@ class Server extends Base\Mock\Server
             F::AMOUNT            => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
             F::RECONCILIATION_ID => $response[F::REQUEST_ID],
             F::REFUND_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
+        ];
+
+        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
+
+        $this->content($response);
+
+        return $response;
+    }
+
+    protected function void($input)
+    {
+        parent::action($input, 'void');
+
+        $this->validateActionInput($input);
+
+        $this->content($input, 'validate_void');
+
+        $response = [];
+
+        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
+        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
+        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::DECISION] = 'ACCEPT';
+        $response[F::REASON_CODE] = 100;
+
+        $response[F::CC_AUTH_REVERSAL_REPLY] = [
+            F::REASON_CODE        => 100,
+            F::AMOUNT             => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
+            F::PROCESSOR_RESPONSE => $response[F::REQUEST_ID],
+            F::REQUEST_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
         ];
 
         $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';

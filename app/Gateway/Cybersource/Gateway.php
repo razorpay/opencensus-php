@@ -899,6 +899,10 @@ class Gateway extends Base\Gateway
             F::RUN => 'true'
         ];
 
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
+        ];
+
         if (isset($this->eci) === true)
         {
             $cardNetwork = $input['card']['network_code'];
@@ -979,6 +983,10 @@ class Gateway extends Base\Gateway
             F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
         ];
 
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
+        ];
+
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
@@ -1006,7 +1014,7 @@ class Gateway extends Base\Gateway
 
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
-            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
         ];
 
         $request = $this->getStandardSoapRequest($content);
@@ -1024,6 +1032,10 @@ class Gateway extends Base\Gateway
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',
             F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
+        ];
+
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
         ];
 
         $content[F::PURCHASE_TOTALS] = [
@@ -1390,6 +1402,20 @@ class Gateway extends Base\Gateway
             throw new Exception\LogicException(
                 'Invalid XID given');
         }
+    }
+
+    protected function getDynamicMerchantDescription($merchant)
+    {
+        $billingLabel = $merchant->getBillingLabel();
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]/', '', $billingLabel);
+
+        if (empty($label) === true)
+        {
+            $label = 'Razorpay Payments';
+        }
+
+        return str_limit($label, 19);
     }
 
     /**

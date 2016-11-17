@@ -152,6 +152,10 @@ class Fields
 
     const BILL_TO                       = 'billTo';
 
+    const INVOICE_HEADER                = 'invoiceHeader';
+
+    const MERCHANT_DESCRIPTOR           = 'merchantDescriptor';
+
     const ACCOUNT_NUMBER                = 'accountNumber';
 
     const EXPIRATION_MONTH              = 'expirationMonth';
@@ -175,6 +179,8 @@ class Fields
     const REFUND_DATETIME               = 'refundDateTime';
 
     const AUTHORIZED_DATETIME           = 'authorizedDateTime';
+
+    const REQUEST_DATETIME              = 'requestDateTime';
 
     const AUTHENTICATION_PATH           = 'authenticationPath';
 
