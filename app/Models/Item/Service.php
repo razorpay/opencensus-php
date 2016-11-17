@@ -13,7 +13,7 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new Core();
+        $this->core = new Core;
     }
 
     public function create($input)
@@ -25,9 +25,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $item->toArrayPublic();
     }
@@ -41,9 +39,8 @@ class Service extends Base\Service
 
     public function put(string $id, array $input)
     {
-        Entity::verifyIdAndStripSign($id);
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
         $this->checkIfLineItemAssociated($item);
 
         return $this->core->put($item, $input)->toArrayPublic();
@@ -51,22 +48,21 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        Entity::verifyIdAndStripSign($id);
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
         $this->checkIfLineItemAssociated($item);
 
         $this->repo->item->deleteOrFail($item);
     }
 
-
     // -------------------- Protected methods --------------------
 
     protected function checkIfLineItemAssociated(Entity $item)
     {
-        if ($this->repo->line_item->hasByItem($item)) {
+        if ($this->repo->line_item->hasByItem($item))
+        {
             throw new Exception\BadRequestValidationFailureException(
-                "You can not edit/delete an item with which invoices has been created already."
+                "You can not edit/delete an item with which invoices have been created already."
             );
         }
     }
