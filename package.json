@@ -27,13 +27,14 @@
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.3.1",
     "through": "^2.3.8",
-    "webpack": "^1.13.3"
+    "webpack": "^2.1.0-beta.27"
   },
   "dependencies": {
     "babel-runtime": "^6.18.0",
     "classnames": "^2.2.5",
     "dfaqapi": "0.0.1",
     "immutable": "^3.8.1",
+    "moment": "^2.16.0",
     "ngreact": "^0.3.0",
     "react": "^15.3.2",
     "react-addons-shallow-compare": "^15.3.2",

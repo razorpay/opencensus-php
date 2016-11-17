@@ -1,7 +1,7 @@
 <div ng-init="merchant = !!user.current">
   <ul class="nav" id="sidebar-features">
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-      <span>Home</span>
+      <span>Features</span>
     </li>
     <li class="active" ng-show="merchant" not-my-role="sellerapp support">
       <a id="dashboardNav" ui-sref="app.dashboard">
@@ -10,17 +10,6 @@
       </a>
     </li>
     <li ng-show="merchant" not-my-role="sellerapp">
-
-    <li ng-show="merchant">
-      <a id="customersNav" ui-sref="app.customers">
-        <i class="fa fa-user text-primary-lter"></i>
-        <span>Customers</span>
-      </a>
-    </li>
-
-    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-      <span>Payments</span>
-    </li>
       <a id="paymentsNav" ui-sref="app.payments.list">
         <i class="fa fa-inr text-primary-lter"></i>
         <span>Payments</span>
@@ -88,8 +77,12 @@
       </a>
     </li>
 
-    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-      <span>Invoices</span>
+<!--
+    <li ng-show="merchant">
+      <a id="customersNav" ui-sref="app.customers">
+        <i class="fa fa-user text-primary-lter"></i>
+        <span>Customers</span>
+      </a>
     </li>
 
     <li ng-show="merchant">
@@ -106,10 +99,6 @@
       </a>
     </li>
 
-    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-      <span>Recurring Payments</span>
-    </li>
-
     <li ng-show="merchant">
       <a id="plansNav" ui-sref="app.plans">
         <i class="fa fa-inr text-primary-lter"></i>
@@ -123,7 +112,7 @@
         <span>Subscriptions</span>
       </a>
     </li>
-
+ -->
     <li class="line dk"></li>
   </ul>
 

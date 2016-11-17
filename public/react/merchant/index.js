@@ -5,7 +5,8 @@ import { Provider } from 'react-redux'
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
 import SessionProvider from './SessionProvider'
 import store from './store'
-import './mocks/faker' //TODO: should trim the import on PRODUCTION
+
+// import './mocks/faker'
 
 import CustomersListContainer from './containers/Customers/List'
 import ItemsListContainer from './containers/Items/List'

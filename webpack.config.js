@@ -6,11 +6,14 @@ const webpack = require('webpack')
 const webpackConfig = {
   context: process.cwd() + '/public/react',
   resolve: {
-    root: [
+    alias: {
+      moment: 'moment/min/moment.min.js'
+    },
+    modules: [
       path.resolve('node_modules'),
       path.resolve('public/react'),
     ],
-    extensions: ['', '.js', '.jsx', '.styl']
+    extensions: ['.js', '.jsx', '.styl']
   },
   module: {},
   externals: {
@@ -40,7 +43,7 @@ webpackConfig.module.loaders = [
   {
     test: /\.(js|jsx)$/,
     include: path.resolve(__dirname, 'public/react'),
-    loader: 'babel',
+    loader: 'babel-loader',
     query: {
       cacheDirectory: true,
       plugins: [
@@ -53,7 +56,7 @@ webpackConfig.module.loaders = [
   },
   {
     test: /\.styl$/,
-    loader: 'style!css?modules&localIdentName=[local]!stylus?paths=/public/react'
+    loader: 'style-loader!css-loader?modules&localIdentName=[local]!stylus-loader?paths=/public/react'
   }
 ]
 

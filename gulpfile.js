@@ -95,7 +95,8 @@ const concatJs = lazypipe()
       'public/js/libs/angular-recaptcha.js',
       'public/js/merchant/**/*.js',
       'public/js/*.js',
-      'public/js/libs/moment.min.js',
+      'node_modules/moment/min/moment.min.js'
+      // 'public/js/libs/moment.min.js',
     ],
 
     'js/generated/merchant_react.js': [
