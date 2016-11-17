@@ -785,4 +785,5 @@ class MerchantTest extends TestCase
             $merchantValidator->validateLogo($imageDetails);
         });
     }
+
 }

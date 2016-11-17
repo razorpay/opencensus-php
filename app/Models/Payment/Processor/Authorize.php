@@ -221,6 +221,32 @@ trait Authorize
         }
     }
 
+    protected function getVerifyCaller()
+    {
+        $route = $this->route->getCurrentRouteName();
+
+        switch($route)
+        {
+            case 'payment_verify_multiple':
+                $caller = 'cron';
+                break;
+
+            case 'payment_authorize_failed':
+                $caller = 'dashboard';
+                break;
+
+            case 'reconciliate':
+                $caller = 'reconciliate';
+                break;
+
+            default:
+                $caller = 'unknown';
+                break;
+        }
+
+        return $caller;
+    }
+
     public function authorizeFailedPayment($payment)
     {
         $this->setPayment($payment);
@@ -231,9 +257,20 @@ trait Authorize
                 'Non failed payment given for authorization where failed payment is needed');
         }
 
+        $paymentCreatedTime = $payment->getCreatedAt();
+
+        $currentTime = time();
+
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-            ['payment_id' => $payment->getId()]);
+            [
+                'payment_id'      => $payment->getId(),
+                'payment_created' => $paymentCreatedTime,
+                'verify_bucket'   => $payment->getVerifyBucket(),
+                'authorized_at'   => $currentTime,
+                'time_difference' => $currentTime - $paymentCreatedTime,
+                'caller'          => $this->getVerifyCaller(),
+            ]);
 
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
 
@@ -1133,7 +1170,8 @@ trait Authorize
             $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
-        if ($payment->getCallbackUrl())
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($payment->getCallbackUrl()))
         {
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
