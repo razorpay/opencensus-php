@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
 
+    const USER_ID               = 'user_id';
     const SOURCE                = 'source';
     const TYPE                  = 'type';
 
@@ -87,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
+        self::USER_ID           => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -113,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SOURCE,
         self::TYPE,
+        self::USER_ID,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -146,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::TYPE,
         self::AMOUNT,
+        self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -170,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        // self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
@@ -189,6 +194,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::ORDER_ID,
+        // self::USER_ID,
     ];
 
     protected $casts = [
@@ -359,6 +365,20 @@ class Entity extends Base\PublicEntity
         $orderId = $this->getAttribute(self::ORDER_ID);
 
         $array[self::ORDER_ID] = Order\Entity::getSignedId($orderId);
+    }
+
+    protected function setPublicUserIdAttribute(array & $array)
+    {
+        $type = $this->getAttribute(self::TYPE);
+
+        if ($type === Type::ECOD)
+        {
+            $array[self::USER_ID] = $this->getAttribute(self::USER_ID);
+        }
+        else
+        {
+            unset($array[self::USER_ID]);
+        }
     }
 
     // -------------------------------------- End Public Setters --------------------------------------
