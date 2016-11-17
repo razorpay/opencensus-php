@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
                 'capture_response' => $response
             ]);
 
-        $captureFields = $this->getCaptureOrRefundFields($response, $input['payment']);
+        $captureFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
 
@@ -123,11 +123,34 @@ class Gateway extends Base\Gateway
                 'refund_response' => $response
             ]);
 
-        $refundFields = $this->getCaptureOrRefundFields($response, $input['refund']);
+        $refundFields = $this->getCaptureRefundOrVoidFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
         $this->checkApprovalCode($refundEntity);
+    }
+
+    public function void(array $input)
+    {
+        parent::action($input, Base\Action::VOID);
+
+        $requestContent = $this->getRequestArray($input, TxnType::VOID);
+
+        $this->trace->info(TraceCode::GATEWAY_VOID_REQUEST, $requestContent);
+
+        $response = $this->getSoapResponse($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_VOID_RESPONSE,
+            [
+                'void_response' => $response
+            ]);
+
+        $voidFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
+
+        $voidEntity = $this->createGatewayPaymentEntity($voidFields, $input);
+
+        $this->checkApprovalCode($voidEntity);
     }
 
     public function verify(array $input)
@@ -243,7 +266,7 @@ class Gateway extends Base\Gateway
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
             Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
             Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
-            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID],
+            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID] ?? null,
         ];
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
@@ -259,7 +282,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCaptureOrRefundFields($response, $input)
+    protected function getCaptureRefundOrVoidFields($response, $input)
     {
         $attributes = [
             Entity::RECEIVED               => true,
@@ -271,7 +294,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
             Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
             Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
-            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
+            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE] ?? null,
         ];
 
         $this->setRefundIdIfNeeded($attributes, $input);
@@ -750,14 +773,22 @@ class Gateway extends Base\Gateway
                                             $input['payment'][Payment\Entity::ID],
                                             Base\Action::AUTHORIZE);
 
-        $currency     = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
-        $amountEntity = TxnType::$amountEntity[$txnType];
-
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL]         = $input[$amountEntity]['amount'] / 100;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]             = $currencyCode;
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+
+        if ($txnType !== TxnType::VOID)
+        {
+            $currency     = $input['payment'][Payment\Entity::CURRENCY];
+            $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+            $amountEntity = TxnType::$amountEntity[$txnType];
+
+            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]     = $currencyCode;
+        }
+        else
+        {
+            $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_TDATE] = $gatewayPayment[Entity::TDATE];
+        }
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 

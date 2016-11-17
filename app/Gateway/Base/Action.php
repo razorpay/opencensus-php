@@ -11,4 +11,5 @@ class Action
     const VOID      = 'void';
     const VERIFY    = 'verify';
     const CALLBACK  = 'callback';
+    const VOID      = 'void';
 }

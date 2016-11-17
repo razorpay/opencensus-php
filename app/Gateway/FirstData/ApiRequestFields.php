@@ -26,6 +26,7 @@ class ApiRequestFields
     const V1_TRANSACTION_DETAILS            = 'v1:TransactionDetails';
     const V1_ORDER_ID                       = 'v1:OrderId';
     const V1_TRANSACTION                    = 'v1:Transaction';
+    const V1_TDATE                          = 'v1:TDate';
 
     const A1_ACTION                         = 'a1:Action';
     const A1_INQUIRY_ORDER                  = 'a1:InquiryOrder';
