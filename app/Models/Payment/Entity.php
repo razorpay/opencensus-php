@@ -498,6 +498,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SAVE, $save);
     }
 
+    protected function getSaveAttribute($save)
+    {
+        return $save;
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;

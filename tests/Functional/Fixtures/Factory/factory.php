@@ -102,8 +102,6 @@ $factory(\RZP\Models\Payment\Entity::class, [
     'auto_captured' => 0,
     'captured_at' => null,
     'transaction_id' => null,
-    'recurring' => false,
-    'save' => false,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,
 ]);

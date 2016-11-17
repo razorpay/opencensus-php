@@ -545,13 +545,13 @@ class MerchantFeeTest extends TestCase
 
         $payment->setInternational();
 
-        $feesSplit = new PublicCollection;
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        $paymentSplit = $feesSplit->filter(function ($feeSplit) {
+            return $feeSplit->getName() === 'payment';
+        });
 
-        $pricingRules = $this->fee->getPricingRules();
-
-        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
+        $this->assertEquals($expectedRule, $paymentSplit[0]['pricing_rule_id']);
     }
 
     protected function runMerchantFeeTestNetB($amount, $bank, $expectedRule)
@@ -566,13 +566,13 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        $feesSplit = new PublicCollection;
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        $paymentSplit = $feesSplit->filter(function ($feeSplit) {
+            return $feeSplit->getName() === 'payment';
+        });
 
-        $pricingRules = $this->fee->getPricingRules();
-
-        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
+        $this->assertEquals($expectedRule, $paymentSplit[0]['pricing_rule_id']);
     }
 
     protected function runMerchantFeeTestWallet($wallet, $expectedRule)
@@ -585,13 +585,13 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        $feesSplit = new PublicCollection;
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        $paymentSplit = $feesSplit->filter(function ($feeSplit) {
+            return $feeSplit->getName() === 'payment';
+        });
 
-        $pricingRules = $this->fee->getPricingRules();
-
-        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
+        $this->assertEquals($expectedRule, $paymentSplit[0]['pricing_rule_id']);
     }
 
     protected function runMerchantFeeTestEmi($network, $expectedRule)
@@ -608,12 +608,12 @@ class MerchantFeeTest extends TestCase
 
         $payment->card->setNetwork($network);
 
-        $feesSplit = new PublicCollection;
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-        list($fee, $serviceTax) = $this->fee->calculateMerchantFees($payment, $feesSplit);
+        $paymentSplit = $feesSplit->filter(function ($feeSplit) {
+            return $feeSplit->getName() === 'payment';
+        });
 
-        $pricingRules = $this->fee->getPricingRules();
-
-        $this->assertEquals($expectedRule, $pricingRules[0]->getKey());
+        $this->assertEquals($expectedRule, $paymentSplit[0]['pricing_rule_id']);
     }
 }
