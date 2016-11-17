@@ -20,7 +20,7 @@ class ReasonCode
 
     public static function isValidReasonCode($code)
     {
-        return defined('self::' . strtoupper($code));
+        return array_key_exists(strtoupper($code), self::$messages);
     }
 
     const SOURCE_STATUSCAKE  = 'STATUSCAKE';

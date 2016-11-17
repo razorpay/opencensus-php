@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::REASON_CODE     => 'required|string|max:30|custom',
         Entity::FROM            => 'required|integer',
         Entity::METHOD          => 'required|string|max:30',
+        Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
@@ -26,7 +27,6 @@ class Validator extends Base\Validator
         Entity::TO              => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::SOURCE          => 'required|string|max:30|custom',
     ];
 
     protected static $editRules = [
