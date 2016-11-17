@@ -75,7 +75,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->assertEquals(TwoFactorAuth::UNAVAILABLE, $payment['two_factor_auth']);
+        $this->assertEquals(TwoFactorAuth::NOT_APPLICABLE, $payment['two_factor_auth']);
     }
 
     public function testRupayCard()

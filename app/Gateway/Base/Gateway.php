@@ -249,7 +249,7 @@ class Gateway
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
         {
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::NOT_APPLICABLE];
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
         }
 
         return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];

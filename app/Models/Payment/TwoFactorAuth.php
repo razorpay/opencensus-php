@@ -7,11 +7,11 @@ class TwoFactorAuth
     // use PASSED when a payment, that went through 2FA, succeeds
     const PASSED            = 'passed';
 
-    // use NOT_APPLICABLE for Netbanking payments
+    // use NOT_APPLICABLE when 2FA can't be done
+    // e.g. in case of international cards that aren't enrolled in 2FA
     const NOT_APPLICABLE    = 'not_applicable';
 
-    // use UNAVAILABLE when 2FA can't be done
-    // e.g. in case of international cards that aren't enrolled in 2FA
+    // use UNAVAILABLE for Netbanking payments
     const UNAVAILABLE       = 'unavailable';
 
     // use SKIPPED when Razorpay chooses to skip 2FA

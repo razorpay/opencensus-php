@@ -1219,3 +1219,7 @@ ALTER TABLE schedules
 ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
+
+ALTER TABLE payments
+    ADD COLUMN two_factor_auth VARCHAR(20) AFTER status;
+

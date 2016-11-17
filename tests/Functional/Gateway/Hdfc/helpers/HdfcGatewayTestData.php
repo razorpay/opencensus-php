@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testPayment' => [
@@ -10,7 +11,7 @@ return [
         'amount' => 50000,
         'method' => 'card',
         'status' => 'captured',
-        'two_factor_auth' => 'unavailable',
+        'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
         'captured' => true,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,

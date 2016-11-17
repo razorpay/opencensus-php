@@ -225,7 +225,7 @@ trait Authorize
         }
         else
         {
-            $payment->setTwoFactorAuth(TwoFactorAuth::UNAVAILABLE);
+            $payment->setTwoFactorAuth(TwoFactorAuth::NOT_APPLICABLE);
         }
 
         $this->repo->saveOrFail($payment);

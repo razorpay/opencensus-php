@@ -480,13 +480,11 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICALBE on authorize itself
         if ($payment->isNetbanking() === true)
         {
-            return;
+            $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
-
-        if (($exception instanceof Exception\GatewayErrorException) and
+        else if (($exception instanceof Exception\GatewayErrorException) and
             ($exception->hasTwoFaError()))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
