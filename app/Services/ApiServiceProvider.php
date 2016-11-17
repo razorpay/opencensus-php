@@ -93,6 +93,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerApiMutex();
 
         $this->registerMaxMind();
+        
+        $this->registerBitly();
 
         $this->registerValidatorResolver();
 
@@ -131,7 +133,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'es',
             'maxmind',
-            'segment'
+            'bitly',
+            'segment',
         );
     }
 
@@ -180,6 +183,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new MaxMind($app);
+        });
+    }
+    
+    protected function registerBitly()
+    {
+        $this->app->singleton('bitly', function($app)
+        {
+            $bitlyMock = $app['config']->get('applications.bitly.mock');
+            
+            if ($bitlyMock === true)
+            {
+                return new Mock\Bitly($app);
+            }
+            
+            return new Bitly($app);
         });
     }
 

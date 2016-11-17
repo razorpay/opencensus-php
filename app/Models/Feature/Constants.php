@@ -16,6 +16,7 @@ class Constants
     const CARD_SAVING   = 'cardsaving';
     const RECURRING     = 'recurring';
     const S2S           = 's2s';
+    const INVOICE       = 'invoice';
 
     public static $allFeatures = [
         self::DUMMY,
@@ -26,6 +27,7 @@ class Constants
         self::SETL_REPORT,
         self::CARD_SAVING,
         self::RECURRING,
-        self::S2S
+        self::S2S,
+        self::INVOICE,
     ];
 }

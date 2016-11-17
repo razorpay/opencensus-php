@@ -769,6 +769,11 @@ class BasicAuth
         return $this->type;
     }
 
+    public function getInternalApp()
+    {
+        return $this->internalApp;
+    }
+
     public function isCron()
     {
         $cron = ($this->internalApp === 'cron');

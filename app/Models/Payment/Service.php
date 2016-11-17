@@ -762,9 +762,9 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyMultiplePayments($filter, $input)
+    public function verifyMultiplePayments(string $filter, array $input)
     {
-        $bucket = null;
+        $bucket = [];
 
         if (isset($input['bucket']) === true)
         {

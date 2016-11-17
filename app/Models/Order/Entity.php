@@ -9,26 +9,25 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID              = 'id';
-    const MERCHANT_ID     = 'merchant_id';
-    const AMOUNT          = 'amount';
-    const CURRENCY        = 'currency';
-    const ATTEMPTS        = 'attempts';
-    const STATUS          = 'status';
-    const NOTES           = 'notes';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const AMOUNT        = 'amount';
+    const CURRENCY      = 'currency';
+    const ATTEMPTS      = 'attempts';
+    const STATUS        = 'status';
+    const NOTES         = 'notes';
 
     // Ideally should be a unique from the merchant side as well
-    const RECEIPT         = 'receipt';
+    const RECEIPT       = 'receipt';
 
     // To Mark If a payment corresponding to
     // this order is in authorized state
-    const AUTHORIZED      = 'authorized';
-    const METHOD          = 'method';
-    const BANK            = 'bank';
-    const ACCOUNT_NUMBER  = 'account_number';
+    const AUTHORIZED    = 'authorized';
+    const METHOD        = 'method';
+    const BANK          = 'bank';
+    const ACCOUNT_NUMBER = 'account_number';
 
-    const CUSTOMER_ID     = 'customer_id';
-
+    const CUSTOMER_ID = 'customer_id';
 
     // const VALIDITY     = 'validity';
     // const VALID_TILL   = 'valid_till';
@@ -36,7 +35,7 @@ class Entity extends Base\PublicEntity
     // Auto capture if set
     const PAYMENT_CAPTURE = 'payment_capture';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -45,22 +44,22 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::ACCOUNT_NUMBER,
         self::BANK,
-    );
+    ];
 
     protected $generateIdOnCreate = true;
 
-    protected $defaults = array(
-        self::ATTEMPTS          => 0,
-        self::STATUS            => Status::CREATED,
-        self::PAYMENT_CAPTURE   => 0,
-        self::AUTHORIZED        => 0,
-        self::NOTES             => [],
-        self::METHOD            => null,
-        self::ACCOUNT_NUMBER    => null,
-        self::BANK              => null,
-    );
+    protected $defaults = [
+        self::ATTEMPTS        => 0,
+        self::STATUS          => Status::CREATED,
+        self::PAYMENT_CAPTURE => 0,
+        self::AUTHORIZED      => 0,
+        self::NOTES           => [],
+        self::METHOD          => null,
+        self::ACCOUNT_NUMBER  => null,
+        self::BANK            => null,
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -70,22 +69,22 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::NOTES,
         self::CREATED_AT
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::AMOUNT          => 'int',
         self::PAYMENT_CAPTURE => 'bool',
         self::AUTHORIZED      => 'bool',
         self::ATTEMPTS        => 'int'
-    );
+    ];
 
-    protected $amounts = array(
+    protected $amounts = [
         self::AMOUNT
-    );
+    ];
 
     protected static $sign = 'order';
 
-    protected $entity           = 'order';
+    protected $entity = 'order';
 
     /** Related Models */
     public function merchant()
@@ -96,6 +95,11 @@ class Entity extends Base\PublicEntity
     public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne('RZP\Models\Invoice\Entity');
     }
 
     /** End Related Models */
@@ -131,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_CAPTURE);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);
@@ -159,7 +168,7 @@ class Entity extends Base\PublicEntity
 
         $last2Digits = substr($accountNumber, -2);
 
-        $formattedNumber = str_repeat('X',$accountNumberLength - 2).$last2Digits;
+        $formattedNumber = str_repeat('X', $accountNumberLength - 2) . $last2Digits;
 
         return $formattedNumber;
     }
