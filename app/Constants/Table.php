@@ -17,6 +17,8 @@ class Table
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
     const SCHEDULE              = 'schedules';
+    const UPI_DEVICE            = 'upi_devices';
+    const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
