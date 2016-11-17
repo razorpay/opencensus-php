@@ -480,7 +480,7 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICALBE on authorize itself
+        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
         if ($payment->isNetbanking() === true)
         {
             return;
