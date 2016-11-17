@@ -13,17 +13,24 @@ angular.module('app.controllers', [
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    theme.apply({
-      primary : '#084c8d',
-      transparent : 'rgba(0,0,0,0.2)',
-      transparentDark : 'rgba(0,0,0,0.4)',
-      textLight : 'rgba(255,255,255,0.9)',
-      primaryLight : '#e1f3ff',
-      primaryTransparent : 'rgba(225,243,252,0.3)',
-      errorBackground : 'rgba(234,33,45,0.1)',
-      secondary : '#ea212d',
-      tertiary : '#ffffff'
-    })
+    var orgTheme = location.hostname.indexOf('wl') !== -1 ? 'hdfc' : localStorage.getItem('theme');
+
+    if (orgTheme === 'hdfc') {
+      theme.apply({
+        primary : '#084c8d',
+        transparent : 'rgba(0,0,0,0.2)',
+        transparentDark : 'rgba(0,0,0,0.4)',
+        textLight : 'rgba(255,255,255,0.9)',
+        primaryLight : '#e1f3ff',
+        primaryTransparent : 'rgba(225,243,252,0.3)',
+        errorBackground : 'rgba(234,33,45,0.1)',
+        secondary : '#ea212d',
+        tertiary : '#ffffff'
+      });
+    }
+    else {
+
+    }
 
     // config
     $scope.app = {
