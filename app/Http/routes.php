@@ -23,33 +23,34 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/user', 'UserController@getUserDetails');
     Route::get('/user/details', 'UserController@getUserDetails');
     Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
-    Route::get('/{mode}/payments', 'TransactionController@getPayments');
+    Route::get('/{mode}/payments', 'TransactionController@getPayments')->name('get_payments');
 
     // Order Routes
-    Route::get('/{mode}/orders', 'TransactionController@getOrders');
-    Route::get('/{mode}/orders/{id}', 'TransactionController@getOrder');
-    Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments');
+    Route::get('/{mode}/orders', 'TransactionController@getOrders')->name('get_orders');
+    Route::get('/{mode}/orders/{id}', 'TransactionController@getOrder')->name('get_order');
+    Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments')->name('get_order_payments');
 
     // Batch Refund Routes
     Route::group(['prefix' => '{mode}/batches'], function () {
-        Route::get('/', 'MerchantController@fetchMultipleBatches');
-        Route::get('{id}', 'MerchantController@fetchBatchById');
-        Route::get('{id}/download', 'MerchantController@downloadBatchFile');
+        Route::get('/', 'MerchantController@fetchMultipleBatches')->name('batch_fetch_multiple');
+        Route::get('{id}', 'MerchantController@fetchBatchById')->name('batch_fetch_single');
+        Route::get('{id}/download', 'MerchantController@downloadBatchFile')->name('batch_download');
 
-        Route::post('/', 'MerchantController@uploadBatchFile');
-        Route::post('{id}/retry', 'MerchantController@retryBatchFile');
+        Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');
+        Route::post('{id}/retry', 'MerchantController@retryBatchFile')->name('batch_retry');
     });
 
-    Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
-    Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData');
-    Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds');
+    Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment')->name('payment_get_single');
+    Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData')->name('card_get_single');
+    Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds')->name('payment_get_refunds');
 
-    Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
-    Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund');
+    Route::get('/{mode}/refunds', 'TransactionController@getRefunds')->name('refunds_fetch_multiple');
+    Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund')->name('refunds_fetch_single');
 
-    Route::get('/{mode}/settlements', 'TransactionController@getSettlements')->name('settlements');
-    Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement')->name('settlement');
-    Route::get('/{mode}/settlements/{id}/details', 'TransactionController@getSettlementDetails')->name('settlement_detail');
+    // Support role does not have access to this
+    Route::get('/{mode}/settlements', 'TransactionController@getSettlements')->name('settlements_fetch_all');
+    Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement')->name('settlements_fetch_one');
+    Route::get('/{mode}/settlements/{id}/details', 'TransactionController@getSettlementDetails')->name('settlements_get_detail');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
     Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
@@ -66,13 +67,16 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::put('/config', 'MerchantController@putMerchantConfig')->name('put_config');
     Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo')->name('post_config_logo');
 
-    Route::get('/referrals', 'MerchantController@getReferredMerchants');
+    Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks')->name('get_webhooks');
-    Route::get('/{mode}/balance', 'MerchantController@getBalance');
-    Route::get('/bank_account', 'MerchantController@getBankAccount');
+
+    // This also returns credits
+    Route::get('/{mode}/balance', 'MerchantController@getBalance')->name('balance_get');
+    Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
 
     // Invitation and Team Support
     Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
+
     // Shown in profile page
     Route::get('settings/invitations', 'InvitationsController@getPendingInvitationsForUser');
 
@@ -102,13 +106,13 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
     Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
     Route::post('/{mode}/keys', 'MerchantController@postKeys')->name('post_keys');
-    Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
+    Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
     Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment')->name('post_capture');
     Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment')->name('post_refund');
     Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-    Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('get_invoices');
-    Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('get_invoice');
-    Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('post_invoices');
+    Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoices_fetch_all');
+    Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoices_fetch_single');
+    Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoices_create');
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
     Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 
@@ -116,7 +120,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
 
     // Registers a sub-merchant account
-    Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
+    Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
 });
 Route::group([], function()
 {
@@ -202,7 +206,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
     Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
     Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
-    Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits'); // ????????????????????
+    Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
     Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
     Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
     Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
