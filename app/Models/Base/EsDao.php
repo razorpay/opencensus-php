@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Base;
 
-
 use App;
 use RZP\Constants\Mode;
 
