@@ -1208,12 +1208,9 @@ SET transaction_id = null
 WHERE id = "4lrNkMC1VI5F6v";
 
 DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
----
 
----
 ALTER TABLE payments
     ADD COLUMN cancellation_reason VARCHAR(255) AFTER error_description;
----
 
 ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
@@ -1231,5 +1228,7 @@ ALTER TABLE gateway_status_absence ADD source varchar(30) AFTER partial;
 ALTER TABLE gateway_status_absence ADD CONSTRAINT `gateway_status_absence_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `terminals` (`id`);
 ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_issuer_index` (`issuer`);
 ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_method_index` (`method`);
-
-
+----
+ALTER TABLE adjustment
+    ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);

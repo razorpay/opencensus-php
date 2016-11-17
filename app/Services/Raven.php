@@ -29,6 +29,7 @@ class Raven
     protected $mode;
 
     const RAVEN_URLS = [
+        'send-sms'      => 'sms',
         'send-otp'      => 'sms/send-otp',
         'verify-otp'    => 'sms/verify-otp',
     ];
@@ -66,6 +67,22 @@ class Raven
         else
         {
             $response = $this->sendRequest(self::RAVEN_URLS['send-otp'], 'post', $input);
+        }
+
+        return $response;
+    }
+
+    public function sendSms($input)
+    {
+        $response = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $response['sms_id'] = '10000000000sms';
+        }
+        else
+        {
+            $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
         }
 
         return $response;
@@ -128,6 +145,8 @@ class Raven
                 ]);
 
         $decodedResponse = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
 
         $this->checkErrors($decodedResponse);
 
