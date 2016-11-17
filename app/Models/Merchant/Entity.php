@@ -131,6 +131,10 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL
     );
 
+    protected $casts = [
+        self::HOLD_FUNDS => 'bool'
+    ];
+
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
     protected function generateTransactionReportEmail($input)
@@ -562,6 +566,11 @@ class Entity extends Base\PublicEntity
     public function holdFunds()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    public function setHoldFunds($holdFunds)
+    {
+        $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
     }
 
     public function isReceiptEmailsEnabled()

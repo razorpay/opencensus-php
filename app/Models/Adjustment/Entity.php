@@ -3,6 +3,7 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Models\Base;
+use RZP\Models\Settlement;
 
 class Entity extends Base\PublicEntity
 {
@@ -13,6 +14,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL           = 'channel';
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
+    const SETTLEMENT_ID     = 'settlement_id';
 
     protected static $sign = 'adj';
 
@@ -23,8 +25,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::AMOUNT,
         self::DESCRIPTION,
-        self::AMOUNT,
-        self::CURRENCY);
+        self::CURRENCY,
+        self::SETTLEMENT_ID);
 
     protected $visible = array(
         self::ID,
@@ -34,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::DESCRIPTION,
         self::TRANSACTION_ID,
+        self::SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -45,7 +48,11 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::DESCRIPTION,
         self::TRANSACTION_ID,
+        self::SETTLEMENT_ID,
         self::CREATED_AT);
+
+    protected static $modifiers = array(
+        self::SETTLEMENT_ID);
 
     public function getChannel()
     {
@@ -82,8 +89,25 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
+    public function settlement()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Entity');
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    protected function modifySettlementId(&$input)
+    {
+        if (isset($input[self::SETTLEMENT_ID]) === false)
+        {
+            return;
+        }
+
+        $settlementId = $input[self::SETTLEMENT_ID];
+
+        $input[self::SETTLEMENT_ID] = Settlement\Entity::verifyIdAndSilentlyStripSign($settlementId);
     }
 }
