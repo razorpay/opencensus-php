@@ -164,6 +164,7 @@ return [
                     "s2swallet",
                     "setl_report",
                     "cardsaving",
+                    "nocardsaving",
                     "recurring",
                     "s2s"
                 ]
