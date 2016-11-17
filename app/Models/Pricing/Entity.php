@@ -130,7 +130,7 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany('RZP\Models\Transaction\Entity', 'pricing_rule_id');
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'pricing_rule_id');
     }
 
     protected function generatePlanId()

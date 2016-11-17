@@ -9,7 +9,6 @@ class Feature
     const PAYMENT           = 'payment';
     const PAYOUT            = 'payout';
     const RECURRING         = 'recurring';
-    const CARD_SAVING       = 'cardsaving';
 
     public static function validateFeature($feature)
     {

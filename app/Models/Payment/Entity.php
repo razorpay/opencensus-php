@@ -498,11 +498,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SAVE, $save);
     }
 
-    protected function getSaveAttribute($save)
-    {
-        return $save;
-    }
-
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
@@ -1353,11 +1348,6 @@ class Entity extends Base\PublicEntity
         if ($this->isRecurring() === true)
         {
             $features[] = Pricing\Feature::RECURRING;
-        }
-
-        if ($this->getSave() === true)
-        {
-            $features[] = Pricing\Feature::CARD_SAVING;
         }
 
         return $features;
