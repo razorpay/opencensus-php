@@ -179,7 +179,8 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayRefundEntity($refundAttributes);
 
-        if ($input['refund']['id'] !== $content['new_merchant_reference_no'])
+        if ((isset($content['new_merchant_reference_no'])) and
+            ($input['refund']['id'] !== $content['new_merchant_reference_no']))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
