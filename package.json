@@ -44,8 +44,6 @@
     "react-modal": "^1.5.2",
     "react-power-select": "github:selvagsz/react-power-select#0e9d151",
     "react-redux": "^4.4.5",
-    "react-select2-wrapper": "^1.0.3",
-    "react-sortable-hoc": "^0.1.1",
     "react-tether": "^0.5.2",
     "react-time": "^4.2.0",
     "react-tooltip": "^3.2.1",

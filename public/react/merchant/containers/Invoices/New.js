@@ -66,7 +66,6 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   save(props) {
     alert(JSON.stringify(props))
-    debugger
   }
 
   render() {
