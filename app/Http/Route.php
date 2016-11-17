@@ -384,7 +384,6 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
-        'invoice_send_notification',
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
@@ -676,6 +675,11 @@ final class Route
         'invoice_send_notification'     => 'invoice',
         'invoice_notification_update'   => 'invoice',
         'invoice_get_status'            => 'invoice',
+        'item_create'                   => 'invoice',
+        'item_fetch'                    => 'invoice',
+        'item_fetch_multiple'           => 'invoice',
+        'item_put'                      => 'invoice',
+        'item_delete'                   => 'invoice',
     );
 
     const RAZORPAYJS_ROUTES = array(

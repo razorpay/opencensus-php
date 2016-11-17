@@ -46,7 +46,7 @@ class Service extends Base\Service
         $item = $this->repo->item->findByIdAndMerchantId($id, $this->merchant->getId());
         $this->checkIfLineItemAssociated($item);
 
-        return $this->core->put($item, $input);
+        return $this->core->put($item, $input)->toArrayPublic();
     }
 
     public function delete(string $id)
