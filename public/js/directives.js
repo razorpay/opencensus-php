@@ -343,14 +343,24 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     }
   };
 }]).directive("myRole", function() {
-    return {
-      link: function(scope, element, attributes) {
-        var roles = attributes.myRole.split(' ');
-        if(roles.indexOf(scope.role) === -1)
-        {
-          element.hide();
-        }
+  return {
+    link: function(scope, element, attributes) {
+      var roles = attributes.myRole.split(' ');
+      if(roles.indexOf(scope.role) === -1) {
+        element.hide();
       }
-    };
+    }
+  };
+  }
+).directive("notMyRole", function() {
+  // Hide the element if the role matches one of these
+  return {
+    link: function(scope, element, attributes) {
+      var roles = attributes.notMyRole.split(' ');
+      if(roles.indexOf(scope.role) > -1) {
+        element.hide();
+      }
+    }
+  };
   }
 );

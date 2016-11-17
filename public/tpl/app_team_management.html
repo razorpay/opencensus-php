@@ -25,8 +25,9 @@
         <div class="m-b col-sm-4">
           <select class="form-control" name="role" required
             tooltip-placement="right" tooltip="User Role"
-            ng-model="team.role" ng-options="role.id as role.name for role in roleOptions"
+            ng-model="team.role" ng-options="role as (role | roletoname) for role in roleOptions track by role"
           >
+          {{role|roletoname}}
           </select>
         </div>
       </div>
