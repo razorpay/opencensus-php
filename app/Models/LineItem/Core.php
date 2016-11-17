@@ -15,8 +15,10 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
+     * @param array          $input
+     * @param Invoice\Entity $invoice
+     * @param Item\Entity    $item
+     *
      * @return Entity
      */
     public function create(array $input, Invoice\Entity $invoice, Item\Entity $item)

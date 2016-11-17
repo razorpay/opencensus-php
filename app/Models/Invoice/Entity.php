@@ -350,7 +350,7 @@ class Entity extends Base\PublicEntity
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
 
-        // Flatten response as per spec: Merge item attributes into line_item level.
+        // Flatten response: Merge item attributes into line_item level.
         foreach ($lineItems as & $lineItem)
         {
             unset($lineItem['item']['id']);
