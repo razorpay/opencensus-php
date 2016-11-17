@@ -662,13 +662,13 @@ class Gateway extends Base\Gateway
                 }
                 else
                 {
-                    return $this->getCallbackResponseData(array('threeDSstatus' => $threeDSstatus));; // payment succeeds
+                    return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus]); // payment succeeds
                 }
             }
             else
             {
                 // payment succeeds
-                return $this->getCallbackResponseData(array('threeDSstatus' => $threeDSstatus));
+                return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus]);
             }
         }
         else
@@ -684,7 +684,7 @@ class Gateway extends Base\Gateway
     {
         $twoFactorAuth = $this->getTwoFactorAuth($input['threeDSstatus']);
 
-        $data = array(Payment\Entity::TWO_FACTOR_AUTH => $twoFactorAuth);
+        $data = [Payment\Entity::TWO_FACTOR_AUTH => $twoFactorAuth];
 
         return $data;
     }
