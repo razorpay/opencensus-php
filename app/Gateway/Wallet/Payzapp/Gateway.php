@@ -162,12 +162,6 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        if ($input['refund']['amount'] !== $input['payment']['amount'])
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
-        }
-
         $request = $this->getRefundRequestContent($input);
 
         $response = $this->postRequest($request)['content'];
@@ -180,6 +174,12 @@ class Gateway extends Base\Gateway
                                     $input, $content);
 
         $refund = $this->createGatewayRefundEntity($refundAttributes);
+
+        if ($input['refund']['id'] !== $content['new_merchant_reference_no'])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
+        }
 
         if (ResponseCode::$statusCodes[$content['status']] !== 'Success')
         {
@@ -244,6 +244,7 @@ class Gateway extends Base\Gateway
             'perform'                           => $perform,
             'orginal_transaction_id'            => $originalTransactionId,
             'original_merchant_reference_no'    => $input['payment']['id'],
+            'new_merchant_reference_no'         => $input['refund']['id'],
             'login_id'                          => $this->config['pg_merchant_login_id'],
             'pgName'                            => $this->pgname,
             'amount'                            => $input['refund']['amount']
@@ -376,6 +377,11 @@ class Gateway extends Base\Gateway
         {
             $refundAttributes['gateway_payment_id_2'] =  $content['new_transaction_id'];
             $refundAttributes['gateway_refund_id']    =  $content['new_transaction_id'];
+        }
+
+        if (isset($content['rrn']))
+        {
+            $refundAttributes['reference1'] =  $content['rrn'];
         }
 
         return $refundAttributes;
