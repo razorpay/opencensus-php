@@ -189,7 +189,9 @@ class Repository extends Base\Repository
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
 
-        $rawCondition = '(' . Entity::AUTHORIZED_AT . ' - ' . $paymentCreatedAt . ') >= ' .Merchant\Entity::AUTO_REFUND_DELAY;
+
+
+        $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') >= ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))

@@ -85,8 +85,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
-        self::LOGO_URL,
-        self::AUTO_REFUND_DELAY,
+        self::LOGO_URL
     );
 
     protected $public = array(
