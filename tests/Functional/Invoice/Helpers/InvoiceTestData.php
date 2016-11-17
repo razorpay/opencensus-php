@@ -323,7 +323,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Duplicate key \'merchant_ref_id\' for invoice',
+                    'description' => 'Duplicate key merchant_ref_id for invoice',
                 ],
             ],
             'status_code' => 400,

@@ -18,6 +18,8 @@ class ItemTest extends TestCase
 
         parent::setUp();
 
+        $this->fixtures->merchant->addFeatures(['invoice']);
+
         $this->ba->privateAuth();
     }
 
