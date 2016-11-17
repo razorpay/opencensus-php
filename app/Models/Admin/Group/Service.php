@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Role;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Exception;
@@ -43,6 +44,18 @@ class Service extends Base\Service
             }
 
             $input['sub_groups'] = $groupIds;
+        }
+
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
         }
 
         $group = $this->core->create($orgId, $input);
@@ -91,6 +104,18 @@ class Service extends Base\Service
             }
 
             $input['sub_groups'] = $groupIds;
+        }
+
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
         }
 
         $group = $this->core->edit($orgId, $groupId, $input);
