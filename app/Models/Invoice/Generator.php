@@ -222,25 +222,23 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            $lineItemsDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+            // This will override the currency even if they send it in input.
+            $lineItemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
 
             if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
             {
                 $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
-                Item\Entity::verifyIdAndStripSign($itemId);
-                $item = $this->repo->item
-                    ->findByIdAndMerchantId($itemId, $this->merchant->getId());
+
+                $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
             }
             else
             {
                 list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
+
                 $item = (new Item\Core)->create($itemDetails, $this->merchant);
             }
-            $lineItem = $this->lineItemCore->create(
-                $lineItemDetails,
-                $this->invoice,
-                $item
-            );
+
+            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice, $item);
 
             $lineItems[] = $lineItem;
         }
@@ -309,15 +307,21 @@ class Generator extends Base\Core
      * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
      *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
      *     This function separates those payloads for it to be used further.
+     *
+     * @param array $lineItemDetails
+     *
+     * @return array
      */
     protected function separateInput(array $lineItemDetails)
     {
         $itemDetails = [];
+
         foreach ($lineItemDetails as $key => $value)
         {
             if (in_array($key, Item\Entity::$allFields, true))
             {
                 $itemDetails[$key] = $value;
+
                 unset($lineItemDetails[$key]);
             }
         }
