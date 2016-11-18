@@ -2429,4 +2429,47 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function uploadOrgLogo($orgId, $input)
+    {
+        // This is pretty useless in our case
+        // since we won't make any request to API in RZP\Admin.
+        // We just need access to ->api->admin and hence we're doing it.
+        $this->setApiCredentials();
+
+        $error = $data = null;
+
+        $type = $input['type'];
+
+        $file = $input["{$type}_logo"];
+
+        $s3Client = $this->getS3Client();
+
+        $filePath = $file->getPathname();
+        $fileName = $file->getFilename();
+
+        // org_id/login_logo/file_name
+        $keyName = "$orgId/{$type}_logo/$fileName";
+
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $keyName,
+            'SourceFile'    => $filePath,
+            'ContentType'   => 'image/jpeg',
+            'ACL'           => 'public-read',
+        ];
+
+        try
+        {
+            $result = $s3Client->putObject($s3Obj);
+
+            $data = $result['ObjectURL'];
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
 }

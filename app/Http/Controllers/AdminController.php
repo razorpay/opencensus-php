@@ -985,4 +985,15 @@ class AdminController extends Controller
     }
 
     // ----- /Credits -----
+
+    // ----- Heimdall (Whitelabel) -----
+
+    public function postUploadOrgLogo($orgId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->uploadOrgLogo($orgId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

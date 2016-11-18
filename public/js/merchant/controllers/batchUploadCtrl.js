@@ -19,6 +19,7 @@ app.controller('BatchUploadCtrl', [
     };
 
     $scope.onFileSelect = function ($files, fieldname) {
+      console.log($files, fieldname);
       $scope.alerts.resetAlerts();
 
       var file = $files[0];

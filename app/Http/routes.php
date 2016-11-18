@@ -303,6 +303,9 @@ Route::group(['middleware'  =>  'admin'], function()
     // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 
+    // Upload logos for orgs
+    Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
+
     Route::get('/admin/generic', 'GenericController@getGeneric');
     Route::post('/admin/generic', 'GenericController@postGeneric');
     Route::put('/admin/generic', 'GenericController@putGeneric');
