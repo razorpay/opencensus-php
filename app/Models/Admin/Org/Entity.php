@@ -13,13 +13,14 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const AUTH_TYPE     = 'auth_type';
-    const BUSINESS_NAME = 'business_name';
-    const DISPLAY_NAME  = 'display_name';
-    const EMAIL         = 'email';
-    const EMAIL_DOMAINS = 'email_domains';
-    const DELETED_AT    = 'deleted_at';
-    const LOGO_URL      = 'logo_url';
+    const AUTH_TYPE         = 'auth_type';
+    const BUSINESS_NAME     = 'business_name';
+    const DISPLAY_NAME      = 'display_name';
+    const EMAIL             = 'email';
+    const EMAIL_DOMAINS     = 'email_domains';
+    const DELETED_AT        = 'deleted_at';
+    const LOGIN_LOGO_URL    = 'login_logo_url';
+    const LOGIN_LOGO_URL    = 'main_logo_url';
 
     protected static $sign = 'org';
 
@@ -35,7 +36,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGIN_LOGO_URL,
+        self::MAIN_LOGO_URL,
     ];
 
     protected $visible = [
@@ -45,7 +47,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGIN_LOGO_URL,
+        self::MAIN_LOGO_URL,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -56,7 +59,8 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
-        self::LOGO_URL,
+        self::LOGIN_LOGO_URL,
+        self::MAIN_LOGO_URL,
         self::AUTH_TYPE,
         self::DELETED_AT,
     ];

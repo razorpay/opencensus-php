@@ -35,7 +35,9 @@ class CreateOrgs extends Migration
 
             $table->text(Org::EMAIL_DOMAINS);
 
-            $table->text(Org::LOGO_URL)
+            $table->text(Org::LOGIN_LOGO_URL)
+                  ->nullable();
+            $table->text(Org::MAIN_LOGO_URL)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
