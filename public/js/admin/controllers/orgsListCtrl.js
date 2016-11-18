@@ -230,7 +230,7 @@ app.controller('OrgsListCtrl', [
       });
 
       request.success(function (data, status, headers, config) {
-        if (!data.success) {
+        if (data.success) {
           var url = data.data;
 
           var data = {
@@ -273,7 +273,7 @@ app.controller('OrgsListCtrl', [
       });
 
       request.success(function (data, status, headers, config) {
-        if (!data.success) {
+        if (data.success) {
           var url = data.data;
 
           var data = {
