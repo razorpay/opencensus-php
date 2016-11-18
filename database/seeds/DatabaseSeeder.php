@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call('IinsTableSeeder');
         $this->call('PermissionSeeder');
+        $this->call('GroupMapSeeder');
     }
 
     private function seed()

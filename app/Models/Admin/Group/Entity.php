@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     // merchants
     public function parents()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function isDeleted()
@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
 
     public function subGroups()
     {
-        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()
@@ -93,19 +93,28 @@ class Entity extends Base\PublicEntity
     {
         $group = parent::toArrayPublic();
 
-        foreach ($group['admins'] as $key => $entity)
+        if (isset($group['admins']) === true)
         {
-            $group['admins'][$key]['id'] = Admin\Entity::getSignedId($entity['id']);
+            foreach ($group['admins'] as $key => $entity)
+            {
+                $group['admins'][$key]['id'] = Admin\Entity::getSignedId($entity['id']);
+            }
         }
 
-        foreach ($group['merchants'] as $key => $entity)
+        if (isset($group['merchants']) === true)
         {
-            $group['merchants'][$key]['id'] = Merchant\Entity::getSignedId($entity['id']);
+            foreach ($group['merchants'] as $key => $entity)
+            {
+                $group['merchants'][$key]['id'] = Merchant\Entity::getSignedId($entity['id']);
+            }
         }
 
-        foreach ($group['roles'] as $key => $entity)
+        if (isset($group['roles']) === true)
         {
-            $group['roles'][$key]['id'] = Role\Entity::getSignedId($entity['id']);
+            foreach ($group['roles'] as $key => $entity)
+            {
+                $group['roles'][$key]['id'] = Role\Entity::getSignedId($entity['id']);
+            }
         }
 
         if (isset($group['sub_groups']) === true)

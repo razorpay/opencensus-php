@@ -182,7 +182,7 @@ class Service extends Base\Service
         $siblings = [];
 
         foreach ($parentGroups as $parent) {
-            $siblings = $parent->parents->all();
+            $siblings = $parent->subGroups->all();
         }
         return $siblings;
     }
@@ -218,7 +218,7 @@ class Service extends Base\Service
     protected function getParentGroups(string $orgId, string $groupId)
     {
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
-        return $group->subGroups->all();
+        return $group->parents->all();
     }
 
     public function addRoleToGroup(
