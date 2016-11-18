@@ -48,6 +48,7 @@
       line-height: 24px;
     }
     #failure {
+      color: #fff;
       background: #EF6050;
       border-radius: 2px;
       box-shadow: 0 2px 9px rgba(0, 0, 0, 0.1);
@@ -59,32 +60,27 @@
     span {
       float: right;
     }
+    #success {
+      display: none;
+    }
+    .paid #success {
+      display: block;
+    }
     </style>
   </head>
-<body>
-  <div id='success' style='display: none'>
+<body class="{{$data['status']}}">
+  <div id='success'>
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
     <h3>Your Payment has been received</h3>
     <div id='break'>
       <div>Amount Paid<span>₹ {{ $data['amount']/100 }}</span></div>
       <div>Invoice ID<span>{{ $data['invoice_id'] }}</span></div>
-      <div>Payment ID<span id='pay_id'></span></div>
+      <div>Payment ID<span id='pay_id'>{{ $data['payment_id'] or '' }}</span></div>
     </div>
   </div>
 </body>
-
   @if ($data['view_less'] === true)
-    @if ($data['status'] === 'paid')
-      <div id='success' style='display: none'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
-        <h3>This invoice has already been paid for.</h3>
-        <div id ='break'>
-          <div>Amount Paid<span>₹ {{ $data['amount']/100 }}</span></div>
-          <div>Invoice ID<span>{{ $data['invoice_id'] }}</span></div>
-          <div>Payment ID<span>{{ $data['payment_id'] }}</span></div>
-        </div>
-      </div>
-    @else
+    @if ($data['status'] !== 'paid')
       <script>
         var data = {!!utf8_json_encode($data)!!};
         var options = {
@@ -97,7 +93,7 @@
               document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant_details.name;
             }
             document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
-            document.querySelector('#success').style.display = 'block';
+            document.body.className = 'paid';
           },
           prefill: {
             contact: data.customer_contact,
@@ -127,7 +123,8 @@
       </script>
     @endif
   @else
-    <div id='failure' style='display: none'>
+    <div id='failure'>
+      <h2>Error</h2>
       <h3>This invoice cannot be displayed. Please contact the merchant for assistance.</h3>
     </div>
   @endif
