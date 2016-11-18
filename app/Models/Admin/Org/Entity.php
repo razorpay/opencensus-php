@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_DOMAINS     = 'email_domains';
     const DELETED_AT        = 'deleted_at';
     const LOGIN_LOGO_URL    = 'login_logo_url';
-    const LOGIN_LOGO_URL    = 'main_logo_url';
+    const MAIN_LOGO_URL     = 'main_logo_url';
 
     protected static $sign = 'org';
 
