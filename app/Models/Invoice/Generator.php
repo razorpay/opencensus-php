@@ -32,13 +32,6 @@ class Generator extends Base\Core
     protected $merchant;
 
     /**
-     * @var Customer\Entity
-     */
-    protected $customer;
-
-    protected $lineItems;
-
-    /**
      * @var LineItem\Core
      */
     protected $lineItemCore;
@@ -49,11 +42,14 @@ class Generator extends Base\Core
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
-    public function __construct(Merchant\Entity $merchant)
+    public function __construct(
+        Merchant\Entity $merchant,
+        Entity          $invoice = null)
     {
         parent::__construct();
 
         $this->merchant = $merchant;
+        $this->invoice  = $invoice;
 
         $this->bitly = $this->app['bitly'];
 
@@ -64,39 +60,22 @@ class Generator extends Base\Core
     {
         $this->invoice = new Entity;
 
-        $customerDetails = [];
-
         $this->invoice->build($input);
         // This is being done so that we can do associations without saving the invoice.
         // Also, to generate a shortUrl, we need the invoice ID.
         $this->invoice->generateId();
 
-        if (isset($input[Entity::CUSTOMER]))
-        {
-            $customerDetails = $input[Entity::CUSTOMER];
-        }
-
-        $lineItemsDetails = $input[Entity::LINE_ITEMS];
-
         try
         {
             $this->repo->transaction(
-                function() use ($lineItemsDetails, $customerDetails, $input)
+                function() use ($input)
                 {
-                    $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
+                    $this->ensureDependentEntitiesCreated($input);
 
-                    $this->setCustomerDetailsAttributes();
-
-                    $this->setStatus($input);
-
+                    // Set any other attributes, if required
                     $this->setShortUrl();
 
-                    // Saving here for the associations
                     $this->repo->saveOrFail($this->invoice);
-
-                    // This function should be called only after saving the invoice entity and the items entities
-                    // because the invoice should be created and saved before it can be associated with the items.
-                    $this->associateLineItemsToInvoice();
                 }
             );
         }
@@ -119,22 +98,6 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function setStatus(array $input)
-    {
-        $this->invoice->setStatus(Status::ISSUED);
-
-        // // TODO: Needs to be thought about well.
-        // if ((isset($input[Entity::DRAFT]) === true) and
-        //     ($input[Entity::DRAFT] === 1))
-        // {
-        //     $this->invoice->setStatus(Status::DRAFT);
-        // }
-        // else
-        // {
-        //     $this->invoice->setStatus(Status::ISSUED);
-        // }
-    }
-
     protected function setShortUrl()
     {
         $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
@@ -151,6 +114,18 @@ class Generator extends Base\Core
         );
 
         $this->invoice->setShortUrl($shortenedUrl);
+    }
+
+    protected function setAmount()
+    {
+        $totalAmount = 0;
+
+        foreach ($this->invoice->lineItems()->get() as $lineItem) {
+
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+        }
+
+        $this->invoice->setAmount($totalAmount);
     }
 
     public static function getInvoiceLink($invoiceId, $mode)
@@ -183,76 +158,29 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function setCustomerDetailsAttributes()
+    protected function ensureDependentEntitiesCreated(array $input)
     {
-        $this->invoice->setCustomerName($this->customer->getName());
-        $this->invoice->setCustomerContact($this->customer->getContact());
-        $this->invoice->setCustomerEmail($this->customer->getEmail());
-        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddressId());
-    }
-
-    protected function associateLineItemsToInvoice()
-    {
-        foreach ($this->lineItems as $lineItem)
-        {
-            $lineItem->entity()->associate($this->invoice);
-
-            $this->repo->saveOrFail($lineItem);
-        }
-    }
-
-    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails, array $input)
-    {
-        $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
-
-        $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
-        $this->invoice->setAmount($invoiceAmount);
+        $this->ensureLineItemsCreated($input[Entity::LINE_ITEMS]);
+        $this->setAmount();
+        // $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
+        // $this->invoice->setAmount(1000);
 
         $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);
 
-        $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
-        $this->invoice->customer()->associate($this->customer);
+        $this->ensureCustomerAssociation($input);
 
         $this->invoice->merchant()->associate($this->merchant);
     }
 
-    protected function createLineItemsFromInput(array $lineItemsDetails)
+    protected function ensureLineItemsCreated(array $lineItemsDetails)
     {
-        $lineItems = [];
-
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
-            {
-                $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
+            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice);
 
-                $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
-
-                $this->validateInvoiceAndItemCurrency($item->getCurrency());
-            }
-            else
-            {
-                if (isset($lineItemDetails[Item\Entity::CURRENCY]))
-                {
-                    $this->validateInvoiceAndItemCurrency($lineItemDetails[Item\Entity::CURRENCY]);
-                }
-                else
-                {
-                    $lineItemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
-                }
-
-                list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
-
-                $item = (new Item\Core)->create($itemDetails, $this->merchant);
-            }
-
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice, $item);
-
-            $lineItems[] = $lineItem;
+            $this->invoice->lineItems()->save($lineItem);
         }
-
-        return $lineItems;
     }
 
     protected function createOrderForInvoice()
@@ -276,25 +204,24 @@ class Generator extends Base\Core
         return $order;
     }
 
-    protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
+    public function ensureCustomerAssociation(array $input)
     {
-        // This is just for robustness. It would any way fail later in the flow.
-        if ((empty($customerDetails) === true) and
-            (empty($input[Entity::CUSTOMER_ID]) === true))
+        // Attach existing customer with given CUSTOMER_ID if exists
+        // Create customer from input details
+        // If not customer already associated throw error (Case: CREATE)
+
+        $customer        = null;
+        $customerDetails = [];
+        if (isset($input[Entity::CUSTOMER]))
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
-                $input
-            );
+            $customerDetails = $input[Entity::CUSTOMER];
         }
 
         if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
             $customerId = $input[Entity::CUSTOMER_ID];
 
-            Customer\Entity::verifyIdAndStripSign($customerId);
-
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
             $this->trace->info(
                 TraceCode::INVOICE_EXISTING_CUSTOMER,
@@ -304,53 +231,27 @@ class Generator extends Base\Core
                     'customer_input_details' => $customerDetails,
                 ]);
         }
-        else
+        elseif ($customerDetails)
         {
             $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
         }
 
-        return $customer;
-    }
-
-    /**
-     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
-     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
-     *     This function separates those payloads for it to be used further.
-     *
-     * @param array $lineItemDetails
-     *
-     * @return array
-     */
-    protected function separateInput(array $lineItemDetails)
-    {
-        $itemDetails = [];
-
-        foreach ($lineItemDetails as $key => $value)
+        if ($customer)
         {
-            if (in_array($key, Item\Entity::$allFields, true))
-            {
-                $itemDetails[$key] = $value;
+            $this->invoice->customer()->associate($customer);
 
-                unset($lineItemDetails[$key]);
-            }
+            // Set other customer's attributes in invoices
+            $this->invoice->setCustomerName($customer->getName());
+            $this->invoice->setCustomerContact($customer->getContact());
+            $this->invoice->setCustomerEmail($customer->getEmail());
+            $this->invoice->setCustomerAddress($customer->getCurrentShippingAddressId());
         }
-
-        return [$lineItemDetails, $itemDetails];
-    }
-
-    /**
-     * @param string $itemCurrency
-     *
-     * @return
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    protected function validateInvoiceAndItemCurrency(string $itemCurrency)
-    {
-        if ($itemCurrency !== $this->invoice->getCurrency())
+        elseif (empty($this->invoice->customer))
         {
-            throw new BadRequestValidationFailureException(
-                'Currency of all items should be same as of the invoice itself'
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
+                $input
             );
         }
     }

@@ -47,37 +47,37 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
-    // public function testPutItem()
-    // {
-    //     $this->fixtures->create('item');
+    public function testPutItem()
+    {
+        $this->fixtures->create('item');
 
-    //     $this->startTest();
-    // }
+        $this->startTest();
+    }
 
-    // public function testPutItemHavingLineItemsAssociated()
-    // {
-    //     $this->fixtures->create('item');
-    //     $this->fixtures->create('line_item');
+    public function testPutItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
 
-    //     $this->startTest();
-    // }
+        $this->startTest();
+    }
 
-    // public function testDeleteItem()
-    // {
-    //     $this->fixtures->create('item');
+    public function testDeleteItem()
+    {
+        $this->fixtures->create('item');
 
-    //     $this->startTest();
+        $this->startTest();
 
-    //     $item = $this->getLastEntity('item', true);
+        $item = $this->getLastEntity('item', true);
 
-    //     $this->assertEmpty($item);
-    // }
+        $this->assertEmpty($item);
+    }
 
-    // public function testDeleteItemHavingLineItemsAssociated()
-    // {
-    //     $this->fixtures->create('item');
-    //     $this->fixtures->create('line_item');
+    public function testDeleteItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
 
-    //     $this->startTest();
-    // }
+        $this->startTest();
+    }
 }

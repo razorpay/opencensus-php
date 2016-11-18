@@ -38,6 +38,20 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
+    public function update(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $this->core->update($invoice, $input)->toArrayPublic();
+    }
+
+    public function delete(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $this->core->delete($item);
+    }
+
     public function sendNotification($id, $medium)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);

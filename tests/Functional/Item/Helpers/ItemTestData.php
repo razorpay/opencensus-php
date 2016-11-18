@@ -78,77 +78,77 @@ return [
         ],
     ],
 
-    // 'testPutItem' => [
-    //     'request' => [
-    //         'url'     => '/items/item_1000000000item',
-    //         'method'  => 'put',
-    //         'content' => [
-    //             'name'        => 'Item 2 Updated',
-    //             'amount'      => 1000,
-    //         ],
-    //     ],
-    //     'response' => [
-    //         'content' => [
-    //             'id'          => 'item_1000000000item',
-    //             'name'        => 'Item 2 Updated',
-    //             'description' => 'Some item description',
-    //             'amount'      => 1000,
-    //             'currency'    => 'INR',
-    //         ],
-    //     ],
-    // ],
+    'testPutItem' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'put',
+            'content' => [
+                'name'        => 'Item 2 Updated',
+                'amount'      => 1000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'item_1000000000item',
+                'name'        => 'Item 2 Updated',
+                'description' => 'Some item description',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+            ],
+        ],
+    ],
 
-    // 'testPutItemHavingLineItemsAssociated' => [
-    //     'request' => [
-    //         'url'     => '/items/item_1000000000item',
-    //         'method'  => 'put',
-    //         'content' => [
-    //             'name'        => 'Item 2 Updated',
-    //             'amount'      => 1000,
-    //         ],
-    //     ],
-    //     'response' => [
-    //         'content' => [
-    //             'error' => [
-    //                 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-    //                 'description' => 'You can not edit/delete an item with which invoices have been created already',
-    //             ],
-    //         ],
-    //         'status_code' => 400,
-    //     ],
-    //     'exception' => [
-    //         'class'               => 'RZP\Exception\BadRequestException',
-    //         'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
-    //     ],
-    // ],
+    'testPutItemHavingLineItemsAssociated' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'put',
+            'content' => [
+                'name'        => 'Item 2 Updated',
+                'amount'      => 1000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You can not edit/delete an item with which invoices have been created already',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
+        ],
+    ],
 
-    // 'testDeleteItem' => [
-    //     'request' => [
-    //         'url'     => '/items/item_1000000000item',
-    //         'method'  => 'delete',
-    //     ],
-    //     'response' => [
-    //         'content' => [],
-    //     ],
-    // ],
+    'testDeleteItem' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'delete',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 
-    // 'testDeleteItemHavingLineItemsAssociated' => [
-    //     'request' => [
-    //         'url'     => '/items/item_1000000000item',
-    //         'method'  => 'delete',
-    //     ],
-    //     'response' => [
-    //         'content' => [
-    //             'error' => [
-    //                 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-    //                 'description' => 'You can not edit/delete an item with which invoices have been created already',
-    //             ],
-    //         ],
-    //         'status_code' => 400,
-    //     ],
-    //     'exception' => [
-    //         'class'               => 'RZP\Exception\BadRequestException',
-    //         'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
-    //     ],
-    // ],
+    'testDeleteItemHavingLineItemsAssociated' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You can not edit/delete an item with which invoices have been created already',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
+        ],
+    ],
 ];

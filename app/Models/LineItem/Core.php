@@ -17,16 +17,41 @@ class Core extends Base\Core
     /**
      * @param array          $input
      * @param Invoice\Entity $invoice
-     * @param Item\Entity    $item
      *
      * @return Entity
      */
-    public function create(array $input, Invoice\Entity $invoice, Item\Entity $item)
+    public function create(array $input, Invoice\Entity $invoice)
     {
+        // If ITEM_ID set use that otherwise create new item using details provided
+        if (isset($input[Entity::ITEM_ID]) === true)
+        {
+            $item = $this->repo->item->findByPublicIdAndMerchant(
+                $input[Entity::ITEM_ID],
+                $this->merchant
+            );
+
+            $this->throwIfCurrencyNotSame($item->getCurrency(), $invoice);
+        }
+        else
+        {
+            if (isset($input[Item\Entity::CURRENCY]))
+            {
+                $this->throwIfCurrencyNotSame($input[Item\Entity::CURRENCY], $invoice);
+            }
+            else
+            {
+                $input[Item\Entity::CURRENCY] = $invoice->getCurrency();
+            }
+
+            list($input, $itemDetails) = $this->separateInput($input);
+
+            $item = (new Item\Core)->create($itemDetails, $this->merchant);
+        }
+
         $lineItem = (new Entity)->build($input);
 
+        // Associates invoice & item to this line item
         $lineItem->entity()->associate($invoice);
-
         $lineItem->item()->associate($item);
 
         $this->repo->saveOrFail($lineItem);
@@ -34,18 +59,48 @@ class Core extends Base\Core
         return $lineItem;
     }
 
-    public function getTotalAmountFromLineItems(array $lineItems)
+
+
+    /**
+     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
+     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
+     *     This function separates those payloads for it to be used further.
+     *
+     * @param array $lineItemDetails
+     *
+     * @return array
+     */
+    protected function separateInput(array $lineItemDetails)
     {
-        $totalAmount = 0;
+        $itemDetails = [];
 
-        array_map(function($lineItem) use (& $totalAmount)
+        foreach ($lineItemDetails as $key => $value)
         {
-            $quantity = $lineItem->getQuantity();
-            $amount   = $lineItem->item->getAmount();
+            if (in_array($key, Item\Entity::$allFields, true))
+            {
+                $itemDetails[$key] = $value;
 
-            $totalAmount += ($amount * $quantity);
-        }, $lineItems);
+                unset($lineItemDetails[$key]);
+            }
+        }
 
-        return $totalAmount;
+        return [$lineItemDetails, $itemDetails];
+    }
+
+    /**
+     * @param string $itemCurrency
+     *
+     * @return
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function throwIfCurrencyNotSame(string $itemCurrency, $invoice)
+    {
+        if ($itemCurrency !== $invoice->getCurrency())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Currency of all items should be same as of the invoice itself'
+            );
+        }
     }
 }

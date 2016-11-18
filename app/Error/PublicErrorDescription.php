@@ -271,4 +271,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                 = 'Duplicate value for ref_num in invoice';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
+    const BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED                                  = 'Invoice edit was not allowed as it is no longer in draft status';
 }

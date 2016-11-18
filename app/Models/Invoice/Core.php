@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -29,6 +30,28 @@ class Core extends Base\Core
         );
 
         return $invoice;
+    }
+
+    public function update(Entity $invoice, array $input)
+    {
+        $this->checkIfInDrafStatus($invoice);
+
+        $invoice->edit($input);
+
+        (new Generator($this->merchant, $invoice))->ensureCustomerAssociation($input);
+
+        $this->repo->saveOrFail($invoice);
+
+        return $invoice;
+    }
+
+    public function delete(Entity $invoice)
+    {
+        $this->checkIfInDrafStatus($invoice);
+
+        $this->repo->invoice->deleteOrFail($invoice);
+
+        return true;
     }
 
     public function sendNotification(Entity $invoice, $medium)
@@ -106,5 +129,18 @@ class Core extends Base\Core
         $data['customer'] = $customer->toArrayPublic();
 
         return $data;
+    }
+
+
+
+    // -------------------- Protected methods --------------------
+
+    protected function checkIfInDrafStatus(Entity $invoice)
+    {
+        if ($invoice->getStatus() !== Status::DRAFT)
+        {
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED);
+        }
     }
 }

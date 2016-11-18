@@ -43,6 +43,22 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function updateInvoice($id)
+    {
+        $input = Request::all();
+
+        $item = $this->service->update($id, $input);
+
+        return ApiResponse::json($item);
+    }
+
+    public function deleteInvoice($id)
+    {
+        $this->service->delete($id);
+
+        return ApiResponse::json([]);
+    }
+
     public function sendNotifications()
     {
         $summary = $this->service->sendNotificationsInBulk();
