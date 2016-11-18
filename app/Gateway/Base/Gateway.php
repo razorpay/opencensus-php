@@ -114,6 +114,8 @@ class Gateway
      */
     protected $config;
 
+    protected $proxyEnabled;
+
     /**
      * Api Route instance
      *
@@ -570,7 +572,7 @@ class Gateway
 
     protected function loadGatewayConfig()
     {
-        $configGatewayStr = 'gateway.'.$this->gateway;
+        $configGatewayStr = 'gateway.' . $this->gateway;
 
         $this->config = $this->app['config']->get($configGatewayStr);
 

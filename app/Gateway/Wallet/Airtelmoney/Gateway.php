@@ -329,9 +329,9 @@ class Gateway extends Base\Gateway
             }
             else if ($gatewayPayment['received'] === false)
             {
-                $attr = $this->getMappedAttributes($walletAttributes);
+                $attrs = $this->getMappedAttributes($walletAttributes);
 
-                $gatewayPayment->fill($attr);
+                $gatewayPayment->fill($attrs);
 
                 $gatewayPayment->saveOrFail();
             }
@@ -354,8 +354,8 @@ class Gateway extends Base\Gateway
         ];
 
         // Payment was late authorized
-        if ((empty($gatewayPayment['gateway_payment_id']) === true)
-            and (isset($content[ResponseFields::FDC_TXN_ID]) === true))
+        if ((empty($gatewayPayment['gateway_payment_id']) === true) and
+            (empty($content[ResponseFields::FDC_TXN_ID]) === false))
         {
             $contentToSave[ResponseFields::TRAN_ID] = $content[ResponseFields::FDC_TXN_ID];
         }
@@ -594,7 +594,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function setProxy(&$request)
+    protected function setProxy(& $request)
     {
         if (($this->mode === Mode::LIVE) and
             ($this->proxyEnabled === true))
