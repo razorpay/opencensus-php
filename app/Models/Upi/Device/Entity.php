@@ -7,14 +7,11 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const ID           = 'id';
-    const DEVICE_ID    = 'device_id';
+    const TAG          = 'tag';
     const CUSTOMER_ID  = 'customer_id';
-    const DEVICE_TOKEN = 'device_token';
+    const TOKEN        = 'token';
     const VERIFIED     = 'verified';
     const MOBILE       = 'mobile';
-    const GEOCODE      = 'geocode';
-    const LOCATION     = 'location';
-    const IP           = 'ip';
     const TYPE         = 'type';
     const OS           = 'os';
     const APP          = 'app';
@@ -22,14 +19,11 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
-        self::DEVICE_ID,
+        self::TAG,
         self::CUSTOMER_ID,
         self::DEVICE_TOKEN,
         self::VERIFIED,
         self::MOBILE,
-        self::GEOCODE,
-        self::LOCATION,
-        self::IP,
         self::TYPE,
         self::OS,
         self::APP,
@@ -39,11 +33,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'upi_device';
 
     // ----------------------- Getters ---------------------------------------------
-
-    public function getDeviceId()
-    {
-        return $this->getAttribute(self::DEVICE_ID);
-    }
 
     public function getCustomerId()
     {
@@ -55,8 +44,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERIFIED);
     }
 
-    public function getDeviceToken()
+    public function getToken()
     {
-        return $this->getAttribute(self::DEVICE_TOKEN);
+        return $this->getAttribute(self::TOKEN);
     }
 }
