@@ -9,32 +9,39 @@ use RZP\Constants\MailTags;
 class MailgunWebhookTest extends TestCase
 {
     use RequestResponseFlowTrait;
-    
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/MailgunWebhookTestData.php';
-        
+
         parent::setUp();
-        
-        $this->ba->appAuth();
+
+        $this->ba->directAuth();
     }
-    
+
     public function testValidEmailTag()
     {
         $this->startTest();
     }
-    
+
     public function testNoEmailTag()
     {
         $this->startTest();
     }
-    
+
     public function testEmailTagOutOfWebhookScope()
     {
         $testData = $this->testData[__FUNCTION__];
-        
+
         $this->assertNotContains($testData['request']['content']['X-Mailgun-Tag'], MailTags::$notifyTags);
-        
+
         $this->startTest();
+    }
+
+    public function testInvalidSignature()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
     }
 }
