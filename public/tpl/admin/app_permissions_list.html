@@ -22,11 +22,13 @@
           <thead>
             <tr>
               <th>Permission Name</th>
+              <th>Category</th>
               <th>Description</th>
           </thead>
           <tbody>
             <tr ng-repeat="row in permissions">
               <td>{{row.name}}</td>
+              <td>{{row.category}}</td>
               <td>{{row.description}}</td>
             </tr>
             <tr ng-show="permissions.length == 0">

@@ -37,7 +37,8 @@
                     <label for="select_all" class="select-all-label">Select all</label>
                   </th>
                   <th>Permission</th>
-                  <th>Permission description</th>
+                  <th>Category</th>
+                  <th>Description</th>
                 </tr>
               </thead>
               <tbody>
@@ -46,6 +47,7 @@
                     <input type="checkbox" name='permissions[]' ng-model="selected_permissions[row.id]" ng-checked="selected_permissions[row.id]">
                   </td>
                   <td>{{row.name}}</td>
+                  <td>{{row.category}}</td>
                   <td>{{row.description}}</td>
                 </tr>
               </tbody>
