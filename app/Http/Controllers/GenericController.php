@@ -109,7 +109,7 @@ class GenericController extends Controller
 
         if ($pos === 0 and !isset($urlParams['{id}']))
         {
-            $urlParams['{id}'] = 'org_'.Auth::guard('api')->user()->org_id;
+            $urlParams['{id}'] = Auth::guard('api')->user()->org_id;
         }
 
         if (! empty($urlParams))
