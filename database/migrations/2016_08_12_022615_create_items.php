@@ -23,6 +23,9 @@ class CreateItems extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            $table->boolean(Entity::ACTIVE)
+                  ->default(true);
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::NAME, 512);

@@ -7,6 +7,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::ACTIVE              => 'sometimes|boolean',
         Entity::NAME                => 'required|string',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'required|integer',

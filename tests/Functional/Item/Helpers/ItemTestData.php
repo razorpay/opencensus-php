@@ -11,6 +11,7 @@ return [
             'url'     => '/items',
             'method'  => 'post',
             'content' => [
+                'active'      => true,
                 'name'        => 'Item 1',
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
@@ -19,6 +20,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'active'      => true,
                 'name'        => 'Item 1',
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
@@ -36,6 +38,7 @@ return [
         'response' => [
             'content' => [
                 'id'          => 'item_1000000000item',
+                'active'      => true,
                 'name'        => 'Some item name',
                 'description' => 'Some item description',
                 'amount'      => 100000,
@@ -56,6 +59,7 @@ return [
                 'items' => [
                     [
                         'id'          => 'item_1000000001item',
+                        'active'      => true,
                         'name'        => 'A different product',
                         'description' => 'Some item description',
                         'amount'      => 100000,
@@ -63,6 +67,7 @@ return [
                     ],
                     [
                         'id'          => 'item_1000000000item',
+                        'active'      => true,
                         'name'        => 'Some item name',
                         'description' => 'Some item description',
                         'amount'      => 100000,
