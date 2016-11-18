@@ -166,18 +166,20 @@ class Service extends Base\Service
     {
         $parentGroups = $this->getParentGroups($orgId, $groupId); //first level parents
 
-        $rejectGroups = $this->getAllRejectGroups($parentGroups, $orgId, $groupId); //recursive function to get all parent hierarchy
+        $childGroups = $this->getChildGroups($orgId, $groupId);
 
-        $siblings = $this->getSiblings($parentGroups);
+        $siblingGroups = $this->getSiblingGroups($parentGroups);
 
-        $rejectGroups = array_unique(array_merge($rejectGroups, $siblings));
+        $rejectGroups = $this->getAllRejectGroups($parentGroups, $childGroups, $siblingGroups, $orgId); //recursive function to get all parent hierarchy
+
+        $rejectGroups = array_unique($rejectGroups);
 
         return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {  //Defining diff in case of array of objects
               return $a->id - $b->id;
             });
     }
 
-    protected function getSiblings(array $parentGroups)
+    protected function getSiblingGroups(array $parentGroups)
     {
         $siblings = [];
 
@@ -187,7 +189,8 @@ class Service extends Base\Service
         return $siblings;
     }
 
-    protected function getAllRejectGroups(array $parentGroups, string $orgId)
+    protected function getAllRejectGroups(
+        array $parentGroups, array $childGroups, array $siblingGroups, string $orgId)
     {
         $workingGroups1 = $parentGroups;
         $workingGroups2 = [];
@@ -195,10 +198,18 @@ class Service extends Base\Service
 
         $rejectGroups = $this->getParentRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
 
+        $workingGroups1 = $childGroups;
+        $workingGroups2 = [];
+
+        $rejectGroups = $this->getChildRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
+
+        $rejectGroups = $this->getSiblingRejectGroups($siblingGroups, $rejectGroups, $orgId);
+
         return $rejectGroups;
     }
 
-    protected function getParentRejectGroups(array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
+    protected function getParentRejectGroups(
+        array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
     {
         foreach ($workingGroups1 as $key => $workingGroup) {
             $rejectGroups[] = $workingGroup;
@@ -215,10 +226,48 @@ class Service extends Base\Service
         return $rejectGroups;
     }
 
+    protected function getChildRejectGroups(
+        array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
+    {
+        foreach ($workingGroups1 as $key => $workingGroup) {
+            $rejectGroups[] = $workingGroup;
+
+            $workingGroupChildren = $this->getChildGroups($orgId, $workingGroup->id);
+            $workingGroups2 = $workingGroupChildren;
+        }
+
+        if (empty($workingGroups2) === false)
+        {
+            $this->getChildRejectGroups($workingGroups2, [], $rejectGroups, $orgId);
+        }
+
+        return $rejectGroups;
+    }
+
+    protected function getSiblingRejectGroups(
+        array $siblingGroups, array &$rejectGroups, string $orgId)
+    {
+        foreach ($siblingGroups as $group) {
+            $childGroups = $this->getChildGroups($orgId, $group->id);
+            $workingGroups1 = $childGroups;
+            $workingGroups2 = [];
+
+            $rejectGroups = $this->getChildRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
+        }
+
+        return $rejectGroups;
+    }
+
     protected function getParentGroups(string $orgId, string $groupId)
     {
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
         return $group->parents->all();
+    }
+
+    protected function getChildGroups(string $orgId, string $groupId)
+    {
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        return $group->subGroups->all();
     }
 
     public function addRoleToGroup(

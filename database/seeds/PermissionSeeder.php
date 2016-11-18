@@ -142,6 +142,7 @@ class PermissionSeeder extends Seeder
                 'create_group'      => 'Create group',
                 'edit_group'        => 'Edit group',
                 'delete_group'      => 'Delete group',
+                'group_get_allowed_groups' => 'Get allowed groups',
             ],
 
             // Admin
@@ -205,6 +206,7 @@ class PermissionSeeder extends Seeder
                 'create_group'      => 'Create group',
                 'edit_group'        => 'Edit group',
                 'delete_group'      => 'Delete group',
+                'group_get_allowed_groups' => 'Get allowed groups',
             ],
 
             // Admin
