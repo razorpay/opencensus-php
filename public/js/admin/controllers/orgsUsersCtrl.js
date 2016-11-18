@@ -61,59 +61,6 @@ app.controller('OrgsUsersCtrl', [
 
     $scope.listUsers();
 
-    $scope.editUser = function(user) {
-      var route_name = 'admin_edit';
-      var data = {};
-      data.body = {
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        department_code: user.department_code,
-        branch_code: user.branch_code,
-        location_code: user.location_code,
-        supervisor_code: user.supervisor_code,
-        disabled: user.disabled + 0,
-        roles: user.roles,
-        groups: user.groups
-      };
-      data.route_name = route_name;
-
-      var request = $http.put('/admin/generic', data, {
-        params: {
-          route_name: route_name,
-
-          url_params: {
-            '{adminId}': user.id
-          }
-        }
-      });
-      request.success(function (data) {
-        /* TODO: change this */
-
-        if (data.success) {
-          var index = null;
-
-          $scope.users.forEach(function (v, i) {
-            if (v.id === data.data.id) {
-              index = i;
-            }
-          });
-
-          if (index !== null) {
-            $scope.users[index] = data.data;
-          }
-
-          $scope.alerts.addAlert('success', 'User updated', true);
-        } else {
-          $scope.alerts.resetAlerts();
-
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      });
-    }
-
     $scope.deleteOrgUser = function(id) {
       var request = $http.delete('/admin/generic', {
         params: {
@@ -189,7 +136,7 @@ app.controller('OrgsUsersCtrl', [
       for (var key in $scope.groups) {
         if ($scope.groups.hasOwnProperty(key)) {
           var group = $scope.groups[key];
-          $scope.selected_groups[group.code] = true;
+          $scope.selected_groups[group.id] = true;
         }
       }
     }

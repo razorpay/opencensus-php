@@ -23,6 +23,7 @@ return [
     'edit_group'                        => 'orgs/{id}/groups/{groupId}',
 
     // Admins
+    'admin_get'                         => 'orgs/{id}/admins/{adminId}',
     'admin_get_multiple'                => 'orgs/{id}/admins',
     'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
     'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
