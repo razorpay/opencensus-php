@@ -91,6 +91,14 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Public getters
+     * */
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
+
+    /**
      * Public setters
      * */
     public function setPublicOrgIdAttribute(array &$array)

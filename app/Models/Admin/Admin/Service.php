@@ -286,12 +286,18 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $adminId = Entity::verifyIdAndStripSign($adminId);
-        $roleId = Merchant\Entity::verifyIdAndStripSign($roleId);
+        $roleId = Role\Entity::verifyIdAndStripSign($roleId);
 
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
         $role = $this->repo->role->findOrFail($roleId);
+
+        if ($role->getOrgId() != $orgId)
+        {
+            throw new Exception\LogicException(
+                'The role does not belong to the organization');
+        }
 
         $this->repo->admin->revokeRoleOrFail($admin, $role);
     }
