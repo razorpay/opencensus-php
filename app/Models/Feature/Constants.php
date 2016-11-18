@@ -14,6 +14,7 @@ class Constants
     const S2SWALLET     = 's2swallet';
     const SETL_REPORT   = 'setl_report';
     const CARD_SAVING   = 'cardsaving';
+    const NOCARDSAVING  = 'nocardsaving';
     const RECURRING     = 'recurring';
     const S2S           = 's2s';
     const INVOICE       = 'invoice';
@@ -26,6 +27,7 @@ class Constants
         self::S2SWALLET,
         self::SETL_REPORT,
         self::CARD_SAVING,
+        self::NOCARDSAVING,
         self::RECURRING,
         self::S2S,
         self::INVOICE,

@@ -93,6 +93,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantsWithSettlementScheduleIdNull()
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->get();
+    }
+
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()
