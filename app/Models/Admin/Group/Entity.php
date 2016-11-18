@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
+        self::ID,
         self::ORG_ID,
     ];
 
