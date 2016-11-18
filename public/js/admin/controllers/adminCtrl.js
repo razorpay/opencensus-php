@@ -183,7 +183,6 @@ app.controller('AdminCtrl', [
     }
 
     organization.fetchCurrentOrg().then(function (data) {
-      console.log(data)
       if (data.main_logo_url) {
         $('.navbar-brand .full_logo').attr('src', data.main_logo_url);
       }

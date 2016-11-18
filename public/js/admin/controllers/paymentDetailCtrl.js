@@ -230,7 +230,7 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
         return;
       }
-      console.log(data);
+
       var request = $http({
         method: 'post',
         url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/refund',

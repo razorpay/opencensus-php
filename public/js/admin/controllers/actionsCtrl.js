@@ -110,7 +110,6 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.sendTestEmail = function (data) {
-        console.log(data);
         var request = $http({
           method: 'post',
           url: '/admin/newsletter/test',
