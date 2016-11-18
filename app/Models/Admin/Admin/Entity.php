@@ -72,8 +72,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
-        self::OAUTH_PROVIDER_ID,
         self::ORG_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -89,6 +87,14 @@ class Entity extends Base\PublicEntity
         'groups',
         'merchants',
     ];
+
+    protected $casts = [
+        self::FAILED_ATTEMPTS => 'int',
+    ];
+
+    protected $publicSetters = array(
+        self::ORG_ID,
+    );
 
     public function getPassword()
     {
@@ -120,6 +126,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('Token\Entity');
     }
+
+    public function setPublicOrgIdAttribute(array & $array)
+    {
+        $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+    }
+
 
     public function getPermissionsList()
     {
@@ -200,31 +212,19 @@ class Entity extends Base\PublicEntity
 
     public function incrementFailedAttempts()
     {
-        $attempts = $this->getFailedAttemptsAttribute() + 1;
+        $attempts = $this->getAttribute(self::FAILED_ATTEMPTS) + 1;
 
         $this->setFailedAttempts($attempts);
     }
 
     public function resetFailedAttempts()
     {
-        $this->setFailedAttempts(null);
+        $this->setFailedAttempts(0);
     }
 
     public function setFailedAttempts($attempts)
     {
         $this->setAttribute(self::FAILED_ATTEMPTS, $attempts);
-    }
-
-    protected function getFailedAttemptsAttribute()
-    {
-        $attempts = $this->attributes[self::FAILED_ATTEMPTS];
-
-        if ($attempts !== null)
-        {
-            $attempts = (int) $attempts;
-        }
-
-        return $attempts;
     }
 
     public function setOldPasswords()

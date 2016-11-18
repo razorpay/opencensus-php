@@ -276,7 +276,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
 
-        $this->repo->admin->addMerchantToAdmin($admin, $merchant);
+        $this->repo->admin->addMerchantOrFail($admin, $merchant);
     }
 
     public function revokeRoleFromAdmin(
