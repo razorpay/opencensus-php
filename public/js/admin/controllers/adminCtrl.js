@@ -8,7 +8,8 @@ app.controller('AdminCtrl', [
   'alertsFactory',
   '$idle',
   '$keepalive',
-  function ($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive) {
+  'organization',
+  function ($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive, organization) {
     admin.identity().then(function (data) {
       $scope.admin = data;
 
@@ -180,6 +181,16 @@ app.controller('AdminCtrl', [
         $scope.timedout = null;
       }
     }
+
+    organization.fetchCurrentOrg().then(function (data) {
+      console.log(data)
+      if (data.main_logo_url) {
+        $('.navbar-brand .full_logo').attr('src', data.main_logo_url);
+      }
+      else {
+        $('.navbar-brand .full_logo').attr('src', 'img/logo_full.png');
+      }
+    })
   }
 ]).controller('passwordModalCtrl', [
   '$scope',
