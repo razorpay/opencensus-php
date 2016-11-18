@@ -3,32 +3,32 @@
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Features</span>
     </li>
-    <li class="active" ng-show="merchant" my-role="owner manager operations finance admin">
+    <li class="active" ng-show="merchant" not-my-role="sellerapp support">
       <a id="dashboardNav" ui-sref="app.dashboard">
         <i class="fa fa-area-chart text-info"></i>
         <span>Dashboard</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" not-my-role="sellerapp">
       <a id="paymentsNav" ui-sref="app.payments.list">
         <i class="fa fa-inr text-primary-lter"></i>
         <span>Payments</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" not-my-role="sellerapp">
       <a id="paymentsNav" ui-sref="app.orders.list">
         <i class="fa fa-archive text-success-lter"></i>
         <span>Orders</span>
         <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant" not-my-role="sellerapp">
       <a id="refundsNav" ui-sref="app.refunds.list">
         <i class="fa fa-mail-reply icon text-warning-lter"></i>
         <span>Refunds</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager operations finance admin">
+    <li ng-show="merchant" not-my-role="sellerapp support">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
@@ -41,13 +41,13 @@
         <span>Transaction</span>
       </a>
     </li> -->
-    <li ng-show="merchant">
+    <li ng-show="merchant" not-my-role="sellerapp">
       <a id="addFundsNav" ui-sref="app.addfunds">
         <i class="icon icon-wallet text-info-lter"></i>
         <span>Add Funds</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager operations finance admin">
+    <li ng-show="merchant" not-my-role="sellerapp support">
       <a id="generateReportNav" ui-sref="app.generatereport">
         <i class="fa fa-file-excel-o icon text-danger-lter"></i>
         <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
@@ -62,14 +62,14 @@
         </a>
     </li>
 
-    <li ng-show="merchant">
+    <li ng-show="merchant" not-my-role="sellerapp support">
       <a id="manageCredits" ui-sref="app.credits">
         <i class="fa fa-credit-card icon text-warning-lter"></i>
         <span>Credits</span>
         </a>
     </li>
 
-    <li ng-show="merchant && user.tags.indexOf('Referral') != -1">
+    <li ng-show="merchant && user.tags.indexOf('Referral') != -1" not-my-role="sellerapp support">
       <a id="referredNav" ui-sref="app.referrals">
         <i class="fa fa-gift icon text-danger-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>

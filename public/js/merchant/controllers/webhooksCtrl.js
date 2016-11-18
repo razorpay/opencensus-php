@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Webhooks Ctrl
  */
@@ -7,9 +8,14 @@ app.controller('WebhooksCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  'user',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
+
+    user.identity().then(function (data) {
+      $scope.user = data;
+    });
 
     $scope.webhooks = {
       items: [],
@@ -90,7 +96,12 @@ app.controller('WebhooksCtrl', [
       var modalInstance = $modal.open({
         templateUrl: 'newWebhookModalContent.html',
         controller: 'newWebhookCtrl',
-        backdrop: 'static'
+        backdrop: 'static',
+        resolve: {
+          showInvoice: function () {
+            return ($scope.user.tags.indexOf('Invoice') > -1);
+          }
+        }
       });
 
       modalInstance.result.then($scope.createWebhook, $.noop);
@@ -104,6 +115,9 @@ app.controller('WebhooksCtrl', [
         resolve: {
           webhook: function () {
             return data;
+          },
+          showInvoice: function () {
+            return ($scope.user.tags.indexOf('Invoice') > -1);
           }
         }
       });
@@ -137,12 +151,15 @@ app.controller('WebhooksCtrl', [
 }]).controller('newWebhookCtrl', [
   '$scope',
   '$modalInstance',
-  function ($scope, $modalInstance) {
+  'showInvoice',
+  function ($scope, $modalInstance, showInvoice) {
+    $scope.showInvoice = showInvoice;
     $scope.webhook = {
       url: "",
       events: {
         'payment.authorized': false,
-        'payment.failed': false
+        'payment.failed': false,
+        'invoice.paid': false
       }
     };
     $scope.ok = function (webhook) {
@@ -156,7 +173,9 @@ app.controller('WebhooksCtrl', [
   '$scope',
   '$modalInstance',
   'webhook',
-  function ($scope, $modalInstance, webhook) {
+  'showInvoice',
+  function ($scope, $modalInstance, webhook, showInvoice) {
+    $scope.showInvoice = showInvoice;
     $scope.webhook = webhook;
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);

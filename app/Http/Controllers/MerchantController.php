@@ -207,6 +207,35 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getInvoice($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'invoice');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getInvoices($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'invoice');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postCreateInvoice($mode)
+    {
+        $input = Input::all();
+
+        list($error, $data)  = (new Merchant\Service)->createInvoice($mode, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function putEditWebhook($mode, $id)
     {
         $input = Input::all();
