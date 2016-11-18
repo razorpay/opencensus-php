@@ -40,7 +40,7 @@ class Repository extends Base\Repository
         $admin->roles()->attach($role);
     }
 
-    public function addMerchantToAdmin(
+    public function addMerchantOrFail(
         Entity $admin,
         Merchant\Entity $merchant)
     {

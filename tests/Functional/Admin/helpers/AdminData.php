@@ -31,8 +31,6 @@ return [
                 'email'              => 'xyz@abc.com',
                 'username'           => 'harshil',
                 'remember_token'     => 'yes',
-                'oauth_access_token' => 'oauth123',
-                'oauth_provider_id'  => 'google',
                 'employee_code'      => 'rzp_1',
                 'branch_code'        => 'krmgla',
                 'supervisor_code'    => 'shk',
