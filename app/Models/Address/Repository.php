@@ -29,6 +29,17 @@ class Repository extends Base\Repository
         return $currentPrimaryAddresses;
     }
 
+    public function fetchPrimaryAddressOfEntityOfType(Base\Entity $entity, $type)
+    {
+        $primaryAddressOfType = $this->newQuery()
+                                     ->where(Entity::ENTITY_ID, '=', $entity->getId())
+                                     ->where(Entity::TYPE, '=', $type)
+                                     ->where(Entity::PRIMARY, '=', 1)
+                                     ->first();
+
+        return $primaryAddressOfType;
+    }
+
     public function findByEntityAndId($addressId, Base\Entity $entity)
     {
         return $this->newQuery()

@@ -50,7 +50,9 @@ class Base
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
         'fee_breakup'   => \RZP\Models\Transaction\FeeBreakup\Entity::class,
-        'feature'       => \RZP\Models\Feature\Entity::class
+        'feature'       => \RZP\Models\Feature\Entity::class,
+        'invoice'       => \RZP\Models\Invoice\Entity::class,
+        'line_item'     => \RZP\Models\LineItem\Entity::class,
     );
 
     protected static $liveAndTest = array(

@@ -248,10 +248,10 @@ class GatewayController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     /**
      * Single use function - Fills provider field in the UPI table with bank code
-     * 
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function fillUpiProviderCode()
@@ -262,14 +262,14 @@ class GatewayController extends Controller
 
         $batchSize = 500;
         $lastId = 0;
-        
+
         $totalRecords = $failedCount = $successCount = 0;
         $failedIds = [];
 
         while (true)
         {
             $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize, $lastId);
-            
+
             $currentBatchCount = count($recordsToUpdate);
 
             $totalRecords += $currentBatchCount;
@@ -279,7 +279,7 @@ class GatewayController extends Controller
                 break;
             }
 
-            foreach ($recordsToUpdate as $upiRecord) 
+            foreach ($recordsToUpdate as $upiRecord)
             {
                 $provider = $upiRecord->extractProviderFromVpa();
 
@@ -287,18 +287,18 @@ class GatewayController extends Controller
 
                 try
                 {
-                    $upiRecord->saveOrFail();
+                    $this->repo->saveOrFail($upiRecord);
 
                     $successCount++;
-                } 
+                }
                 catch (\Exception $ex)
                 {
                     $failedCount++;
 
-                    $failedIds[] = $upiRecord->id;
+                    $failedIds[] = $upiRecord->getId();
                 }
-                
-                $lastId = $upiRecord->id;
+
+                $lastId = $upiRecord->getId();
             }
 
             if ($currentBatchCount < $batchSize)
