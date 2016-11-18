@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Requests;
+use RZP\Trace\TraceCode;
 
 class Bitly
 {
@@ -17,9 +18,9 @@ class Bitly
     public function __construct($app)
     {
         // $this->mode = $app['rzp.mode'];
-        //
-        // $this->trace = $app['trace'];
-        //
+
+        $this->trace = $app['trace'];
+
         // $this->request = $app['request'];
 
         $this->config = $app['config']->get('applications.bitly');
@@ -37,9 +38,33 @@ class Bitly
 
         $response = Requests::post($endpoint, [], $requestParams);
 
-        $response = json_decode($response->body, true);
+        $responseBody = $response->body;
 
-        return $response['data']['url'];
+        $formattedResponse = json_decode($responseBody, true);
+
+        $traceData = [
+            'response_body'         => $responseBody,
+            'formatted_response'    => $formattedResponse,
+            'long_url'              => $longUrl,
+            'endpoint'              => $endpoint,
+        ];
+
+        if (isset($formattedResponse['data']['url']) === false)
+        {
+            $this->trace->warning(
+                TraceCode::INVOICE_BITLY_FAIL,
+                $traceData
+            );
+
+            // return $longUrl;
+        }
+
+        $this->trace->info(
+            TraceCode::INVOICE_BITLY_RESPONSE,
+            $traceData
+        );
+
+        return $formattedResponse['data']['url'];
     }
 
     protected function getRequestParams($longUrl)
