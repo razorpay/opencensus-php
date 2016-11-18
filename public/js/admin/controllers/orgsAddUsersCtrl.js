@@ -72,8 +72,8 @@ app.controller('OrgsAddUsersCtrl', [
         location_code: user.location_code,
         supervisor_code: user.supervisor_code,
         disabled: user.disabled + 0,
-        roles: user.roles,
-        groups: user.groups
+        roles: getSelectedRoles(),
+        groups: getSelectedGroups()
       };
 
       var request = $http.put('/admin/generic', data, {
@@ -98,6 +98,26 @@ app.controller('OrgsAddUsersCtrl', [
       });
     }
 
+    function getSelectedGroups() {
+      var groups = []
+      for (var key in $scope.selected_groups) {
+        if ($scope.selected_groups.hasOwnProperty(key)) {
+          if ($scope.selected_groups[key]) {
+            groups.push(key);
+          }
+        }
+      }
+      return groups
+    }
+
+    function getSelectedRoles() {
+      var roles = []
+      if ($scope.role) {
+        roles.push($scope.role)
+      }
+      return roles
+    }
+
     $scope.save = function(user) {
       if (user.id) {
         $scope.editUser(user)
@@ -105,20 +125,8 @@ app.controller('OrgsAddUsersCtrl', [
       }
 
       var body = user;
-      body.groups = [];
-      body.roles = [];
-      for (var key in $scope.selected_groups) {
-        if ($scope.selected_groups.hasOwnProperty(key)) {
-
-          if ($scope.selected_groups[key]) {
-            body.groups.push(key);
-          }
-        }
-      }
-
-      if ($scope.role) {
-        body.roles.push($scope.role);
-      }
+      body.groups = getSelectedGroups();
+      body.roles = getSelectedRoles();
 
       var request = $http({
         url: '/admin/generic',
