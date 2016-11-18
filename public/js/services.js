@@ -337,6 +337,34 @@ angular.module('app.services', [])
         });
         return groups;
       },
+      fetchAllowedGroups: function (groupId) {
+        var groups = [];
+        $http.get('/admin/generic', {
+          params: {
+            route_name: 'group_get_allowed_groups',
+            url_params: {
+              '{groupId}': groupId  //TODO Add actual ids
+            }
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data) {
+              angular.forEach(data.data, function (group) {
+                var groupObj = {};
+                groupObj['name'] = group.name;
+                groupObj['code'] = group.id;
+                groupObj['description'] = group.description;
+                groups.push(groupObj);
+              });
+            }
+          }
+          else {
+            groups = {};
+          }
+        }).error(function () {
+        });
+        return groups;
+      },
       fetchPermissions: function () {
         if (this.permissions) {
           return this.permissions;

@@ -8,7 +8,6 @@ app.controller('AddGroupCtrl', [
   '$stateParams',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
 
-    $scope.groups = organization.fetchGroups();
     // $scope.users = organization.fetchUsers();
     $scope.group = {};
     $scope.selected_users = [];
@@ -17,6 +16,11 @@ app.controller('AddGroupCtrl', [
     $scope.selected_groups = {};
 
     var group_id = $stateParams.id;
+    if (group_id) {
+      $scope.groups = organization.fetchAllowedGroups(group_id);
+    } else {
+      $scope.groups = organization.fetchGroups();
+    }
 
     if (group_id) {
       // Get group details

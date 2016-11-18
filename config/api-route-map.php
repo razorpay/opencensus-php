@@ -21,6 +21,7 @@ return [
     'group_admins_create'               => 'orgs/{id}/groups/{groupId}/admins',
     'group_delete'                      => 'orgs/{id}/groups/{groupId}',
     'edit_group'                        => 'orgs/{id}/groups/{groupId}',
+    'group_get_allowed_groups'          => 'orgs/{id}/groups/{groupId}/allowed_groups',
 
     // Admins
     'admin_get'                         => 'orgs/{id}/admins/{adminId}',
