@@ -2,17 +2,25 @@
 
 EXIT_CODE=0
 
+TMP_STAGING=".staging"
+
+rm -rf $TMP_STAGING
+
 while read FILE; do
 if [[ -f $FILE ]]; then
-    php -l "$FILE" 1> /dev/null
+    mkdir -p "$TMP_STAGING/$(dirname $FILE)"
+    git show :$FILE > "$TMP_STAGING/$FILE"
+    php -l "$TMP_STAGING/$FILE" 1> /dev/null
     if [ $? -ne 0 ]; then
         EXIT_CODE=1
     fi
 fi
 done < <(git diff --cached --name-only | grep -i ".php$")
 
+rm -rf $TMP_STAGING
+
 if [[ $EXIT_CODE -eq 1 ]];then
-  printf "\e[1;31m\tAborting commit due to files with syntax errors.\e[0m\n" >&2;
+  printf "\e[1;31m\tAborting commit due to syntax errors in staged files.\e[0m\n" >&2;
 fi
 
 exit $EXIT_CODE

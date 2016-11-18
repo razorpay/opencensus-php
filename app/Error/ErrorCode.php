@@ -374,8 +374,9 @@ class ErrorCode
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS';
-    
+
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
+    const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
     const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';

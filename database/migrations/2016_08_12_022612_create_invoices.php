@@ -148,17 +148,17 @@ class CreateInvoices extends Migration
 
             $table->dropForeign
             (
-                Table::TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::MERCHANT . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADDRESS . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
             );
         });
 
