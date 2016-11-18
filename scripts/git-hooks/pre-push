@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo 'Executing test cases'
+bash phpunit --stop-on-error --stop-on-failure --colors=always
