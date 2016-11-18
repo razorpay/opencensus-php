@@ -20,10 +20,10 @@
             class="form-control input-sm w-sm inline m-r">
         </div>
         <div class="col-md-6">
-          <button id='addOrgButton' class='btn btn-default pull-right'
-            ng-click='openAddOrgModal()'>
-            Add an organization
-          </button>
+          <a class='btn btn-default pull-right'
+            ui-sref='app.orgs.new'>
+            Add an Organization
+          </a>
         </div>
       </div>
       <div>
@@ -45,12 +45,17 @@
               <td>{{row.email}}</td>
               <td>{{row.email_domains}}</td>
               <td>
-                <a class="btn-org-delete" ng-confirm-click="Are you sure you want to delete this Organization?" ng-click="deleteOrg(row.id)">
-                  <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
-                </a>
-                <a tooltip="Edit" ng-click="openEditOrgModal(row.id)">
-                <i class="fa fa-pencil-square"></i>
-              </a></td>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-xs" tooltip="Edit User" ui-sref="app.orgs.edit({ id: row.id })">
+                    <i class="fa fa-pencil-square"></i>
+                    edit
+                  </a>
+                  <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this Organization?" ng-click="deleteOrg(row.id)">
+                    <i class="fa fa-trash text-danger" tooltip="Delete"></i>
+                    delete
+                  </button>
+                </div>
+              </td>
             </tr>
             <tr ng-show="merchants.length == 0">
               <td colspan="6">No Organizations</td>
@@ -61,135 +66,3 @@
     </div>
   </div>
 </div>
-
-<script type="text/ng-template" id="addOrgModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Add a new Organization</h3>
-  </div>
-  <div class="modal-body newsletter-modal">
-    <form class="form-horizontal row">
-      <div class="form-group">
-       <label for="email" class="col-lg-3 control-label">Email</label>
-        <div class="col-lg-8" >
-          <input type="email" class="form-control m-b" name="email"
-            ng-model="organization.email" placeholder="admin@company.com">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="business_name" class="col-lg-3 control-label">Business name</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="business_name"
-            ng-model="organization.business_name">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="display_name" class="col-lg-3 control-label">Display name</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="display_name"
-            ng-model="organization.display_name">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="email_domains" class="col-lg-3 control-label">Email domains</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="email_domains"
-            ng-model="organization.email_domains">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="logo" class="col-lg-3 control-label">Logo URL</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="logo_url"
-            ng-model="organization.logo_url">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
-        <div class="col-lg-8" >
-          <select class="form-control m-b" ng-model="organization.auth_type">
-            <option value="">Please select an auth type</option>
-            <option value="password">Password</option>
-            <option value="google_auth">Google Auth</option>
-          </select>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(organization)">
-      Save
-    </button>
-  </div>
-</script>
-
-<script type="text/ng-template" id="editOrgModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Edit Organization</h3>
-  </div>
-  <div class="modal-body newsletter-modal">
-    <form enctype="multipart/form-data" class="form-horizontal row">
-      <div class="form-group">
-       <label for="email" class="col-lg-3 control-label">Email</label>
-        <div class="col-lg-8" >
-          <input type="email" class="form-control m-b" name="email"
-            ng-model="organization.email" placeholder="admin@company.com">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="business_name" class="col-lg-3 control-label">Business name</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="business_name"
-            ng-model="organization.business_name">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="display_name" class="col-lg-3 control-label">Display name</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="display_name"
-            ng-model="organization.display_name">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="email_domains" class="col-lg-3 control-label">Email domains</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="email_domains"
-            ng-model="organization.email_domains">
-        </div>
-      </div>
-      <div class="form-group">
-       <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
-        <div class="col-lg-8" >
-          <select class="form-control m-b" ng-model="organization.auth_type">
-            <option value="">Please select an auth type</option>
-            <option value="password">Password</option>
-            <option value="google_auth">Google Auth</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Logo for login and nav headers -->
-
-      <div class="form-group">
-        <label for="business_proof" class="col-sm-3 control-label">Login Logo</label>
-        <div class="col-sm-8">
-          <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="business_proof" class="col-sm-3 control-label">Dashboard Logo</label>
-        <div class="col-sm-8">
-          <input ui-jq="filestyle" type="file" name="dashboard_logo" ng-file-select="onDashboardLogoSelect($files, 'dashboard_logo')">
-        </div>
-      </div>
-
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(organization)">
-      Save
-    </button>
-  </div>
-</script>

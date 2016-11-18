@@ -1,0 +1,88 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Organizations
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="AddOrgCtrl">
+    <div class="panel-heading">
+      {{ organization.id ? 'Edit ' + organization.id : 'Add a new Organization' }}
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="panel-body b-b b-light">
+      <form class="form-horizontal form-validation">
+        <div class="form-group">
+         <label for="email" class="col-lg-3 control-label">Email</label>
+          <div class="col-lg-8" >
+            <input type="email" class="form-control m-b" name="email"
+              ng-model="organization.email" placeholder="admin@company.com">
+          </div>
+        </div>
+        <div class="form-group">
+         <label for="business_name" class="col-lg-3 control-label">Business name</label>
+          <div class="col-lg-8" >
+            <input class="form-control m-b" name="business_name"
+              ng-model="organization.business_name">
+          </div>
+        </div>
+        <div class="form-group">
+         <label for="display_name" class="col-lg-3 control-label">Display name</label>
+          <div class="col-lg-8" >
+            <input class="form-control m-b" name="display_name"
+              ng-model="organization.display_name">
+          </div>
+        </div>
+        <div class="form-group">
+         <label for="email_domains" class="col-lg-3 control-label">Email domains</label>
+          <div class="col-lg-8" >
+            <input class="form-control m-b" name="email_domains"
+              ng-model="organization.email_domains">
+          </div>
+        </div>
+        <div class="form-group">
+         <label for="logo" class="col-lg-3 control-label">Logo URL</label>
+          <div class="col-lg-8" >
+            <input class="form-control m-b" name="logo_url"
+              ng-model="organization.logo_url">
+          </div>
+        </div>
+        <div class="form-group">
+         <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
+          <div class="col-lg-8" >
+            <select class="form-control m-b" ng-model="organization.auth_type">
+              <option value="">Please select an auth type</option>
+              <option value="password">Password</option>
+              <option value="google_auth">Google Auth</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Logo for login and nav headers -->
+
+        <div class="form-group" ng-show="organization.id">
+          <label class="col-sm-3 control-label">Login Logo</label>
+          <div class="col-sm-8">
+            <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')">
+          </div>
+        </div>
+
+        <div class="form-group" ng-show="organization.id">
+          <label class="col-sm-3 control-label">Dashboard Logo</label>
+          <div class="col-sm-8">
+            <input ui-jq="filestyle" type="file" name="dashboard_logo" ng-file-select="onDashboardLogoSelect($files, 'dashboard_logo')">
+          </div>
+        </div>
+
+
+        <div class="panel-footer">
+          <div class="center col-lg-2">
+            <button class="btn btn-primary panel-ok col-lg-12" ng-click="save(organization)">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

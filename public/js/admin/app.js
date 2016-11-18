@@ -138,6 +138,12 @@ var app = angular.module('app', [
     }).state('app.orgs.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_orgs_detail.html'
+    }).state('app.orgs.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_add_org.html'
+    }).state('app.orgs.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_add_org.html'
     }).state('app.users', {
       url: '/users',
       templateUrl: 'tpl/admin/app_orgs_users.html',
