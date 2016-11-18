@@ -233,7 +233,7 @@ class Admin extends Entity
 
     public function getAdminData($orgId, $body)
     {
-        $relativeUrl = "orgs/org_$orgId/current_admin";
+        $relativeUrl = "orgs/$orgId/current_admin";
 
         return $this->request('POST', $relativeUrl, $body);
     }

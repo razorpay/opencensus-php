@@ -158,13 +158,6 @@
         </div>
       </div>
       <div class="form-group">
-       <label for="logo" class="col-lg-3 control-label">Logo URL</label>
-        <div class="col-lg-8" >
-          <input class="form-control m-b" name="logo_url"
-            ng-model="organization.logo_url">
-        </div>
-      </div>
-      <div class="form-group">
        <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
         <div class="col-lg-8" >
           <select class="form-control m-b" ng-model="organization.auth_type">
@@ -174,6 +167,23 @@
           </select>
         </div>
       </div>
+
+      <!-- Logo for login and nav headers -->
+
+      <div class="form-group">
+        <label for="business_proof" class="col-sm-3 control-label">Login Logo</label>
+        <div class="col-sm-8">
+          <input ui-jq="filestyle" type="file" name="file" ng-file-select="onLoginLogoSelect($files, 'file')">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="business_proof" class="col-sm-3 control-label">Dashboard Logo</label>
+        <div class="col-sm-8">
+          <input ui-jq="filestyle" type="file" name="file" ng-file-select="onDashbordLogoSelect($files, 'file')">
+        </div>
+      </div>
+
     </form>
   </div>
   <div class="modal-footer">
