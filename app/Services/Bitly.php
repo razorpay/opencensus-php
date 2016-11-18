@@ -51,12 +51,12 @@ class Bitly
 
         if (isset($formattedResponse['data']['url']) === false)
         {
-            $this->trace->error(
+            $this->trace->warning(
                 TraceCode::INVOICE_BITLY_FAIL,
                 $traceData
             );
 
-            return $longUrl;
+            // return $longUrl;
         }
 
         $this->trace->info(
