@@ -144,6 +144,9 @@ var app = angular.module('app', [
     }).state('app.adduser', {
       url: '/adduser',
       templateUrl: 'tpl/admin/app_orgs_user_add.html',
+    }).state('app.edituser', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_orgs_user_add.html'
     }).state('app.roles', {
       url: '/roles',
       template: '<div ui-view class="fade-in-down smooth"></div>'

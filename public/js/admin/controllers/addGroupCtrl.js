@@ -63,7 +63,7 @@ app.controller('AddGroupCtrl', [
       }
 
       $scope.groups.map(function(group){
-        $scope.selected_groups[group.code] = true;
+        $scope.selected_groups[group.id] = true;
       });
     }
 

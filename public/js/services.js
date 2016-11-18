@@ -301,7 +301,7 @@ angular.module('app.services', [])
               angular.forEach(data.data.items, function (group) {
                 var groupObj = {};
                 groupObj['name'] = group.name;
-                groupObj['code'] = group.id;
+                groupObj['id'] = group.id;
                 groupObj['description'] = group.description;
                 groups.push(groupObj);
               });

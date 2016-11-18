@@ -189,7 +189,7 @@ app.controller('OrgsUsersCtrl', [
       for (var key in $scope.groups) {
         if ($scope.groups.hasOwnProperty(key)) {
           var group = $scope.groups[key];
-          $scope.selected_groups[group.code] = true;
+          $scope.selected_groups[group.id] = true;
         }
       }
     }
