@@ -57,7 +57,16 @@ class AdminController extends Controller
             return redirect('/admin');
         }
 
-        $org = $this->getOrg();
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
 
         $code = Input::get('code');
 
@@ -105,7 +114,16 @@ class AdminController extends Controller
         if ($code !== null or env('OAUTH_MOCK') === true)
         {
             // Get Current Org first
-            $org = $this->getOrg();
+            $org = $this->getOrg()->getData(true);
+
+            if ($org['success'])
+            {
+                $org = $org['data'];
+            }
+            else
+            {
+                return AppResponse::jsonResponse(['Organization not found'], null);
+            }
 
             $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
@@ -141,7 +159,7 @@ class AdminController extends Controller
         return AppResponse::jsonResponse(['Invalid Credentials'], []);
     }
 
-    protected function getOrg()
+    public function getOrg()
     {
         $domain = request()->server->get('SERVER_NAME');
 
