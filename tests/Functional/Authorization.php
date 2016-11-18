@@ -205,6 +205,11 @@ class Authorization
         return ($this->type === 'public');
     }
 
+    public function isPrivateAuth()
+    {
+        return ($this->type === 'private');
+    }
+
     public function getKey()
     {
         return $this->auth['PHP_AUTH_USER'];

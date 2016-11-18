@@ -7,6 +7,11 @@ use illuminate\database\eloquent\softdeletes;
 use App;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Role;
+use RZP\Models\Merchant;
+
+
 
 class Entity extends Base\PublicEntity
 {
@@ -82,5 +87,35 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function toArrayPublic()
+    {
+        $group = parent::toArrayPublic();
+
+        foreach ($group['admins'] as $key => $entity)
+        {
+            $group['admins'][$key]['id'] = Admin\Entity::getSignedId($entity['id']);
+        }
+
+        foreach ($group['merchants'] as $key => $entity)
+        {
+            $group['merchants'][$key]['id'] = Merchant\Entity::getSignedId($entity['id']);
+        }
+
+        foreach ($group['roles'] as $key => $entity)
+        {
+            $group['roles'][$key]['id'] = Role\Entity::getSignedId($entity['id']);
+        }
+
+        if (isset($group['sub_groups']) === true)
+        {
+            foreach ($group['sub_groups'] as $key => $entity)
+            {
+                $group['sub_groups'][$key]['id'] = Entity::getSignedId($entity['id']);
+            }
+        }
+
+        return $group;
     }
 }

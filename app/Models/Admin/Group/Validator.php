@@ -12,6 +12,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION => 'required|string|max:250',
         'sub_groups'        => 'sometimes|array',
         'admins'            => 'sometimes|array',
+        'merchants'         => 'sometimes|array',
+        'roles'             => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -19,6 +21,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION => 'sometimes|string|max:250',
         'sub_groups'        => 'sometimes|array',
         'admins'            => 'sometimes|array',
+        'merchants'         => 'sometimes|array',
+        'roles'             => 'sometimes|array',
     ];
 
     public function validateCreateInput(string $orgId, array $input)

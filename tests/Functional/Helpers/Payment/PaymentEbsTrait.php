@@ -3,9 +3,6 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Config;
-use Requests;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Gateway\Ebs\ResponseConstants as Response;
 
@@ -50,7 +47,7 @@ trait PaymentEbsTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-           throw new FatalThrowableError();
+            throw new FatalThrowableError();
         });
     }
 

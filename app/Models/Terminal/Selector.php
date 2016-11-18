@@ -29,9 +29,9 @@ class Selector
      * @var array
      */
     protected static $sorters = [
-        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
+        Sorters\ExclusivitySorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
         Sorters\TerminalLoadSorter::class,

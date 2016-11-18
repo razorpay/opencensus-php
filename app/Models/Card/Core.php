@@ -173,6 +173,15 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
             }
         }
+        // If card is Maestro, cvv may be absent
+        else if ($card->isMaestro())
+        {
+            if ((empty($input['cvv']) === false) and ($cvvLength !== 3))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV);
+            }
+        }
         else if ($cvvLength !== 3)
         {
             throw new Exception\BadRequestException(

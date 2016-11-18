@@ -296,6 +296,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAllowedGroups(string $id, string $groupId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Group\Service)->fetchAllowedGroups($id, $groupId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putGroup(string $id, string $groupId)
     {
         $input = Request::all();
@@ -413,5 +422,14 @@ class AdminController extends Controller
     public function helloWorld()
     {
         return ApiResponse::json(['hello_world']);
+    }
+
+    public function postMailgunCallback($type)
+    {
+        $input = Request::all();
+
+        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+
+        return ApiResponse::json([], $responseStatus);
     }
 }

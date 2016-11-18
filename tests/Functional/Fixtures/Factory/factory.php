@@ -166,6 +166,7 @@ $factory(\RZP\Models\Adjustment\Entity::class, [
     'channel' => 'kotak',
     'description' => $faker->string,
     'transaction_id' => 'factory:Models\Transaction\Entity',
+    'settlement_id' => 'factory:Models\Settlement\Entity'
 ]);
 
 $factory(\RZP\Gateway\Hdfc\Entity::class, [
@@ -257,6 +258,37 @@ $factory(\RZP\Models\Order\Entity::class, [
     'attempts' => 0,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,
+]);
+
+$factory(\RZP\Models\Invoice\Entity::class, [
+    'id' => '1000000invoice',
+    'merchant_id' => '10000000000000',
+    'customer_id' => '100000customer',
+    'order_id' => '100000000order',
+    'customer_email' => 'test@razorpay.com',
+    'customer_contact' => '1234567890',
+    'customer_name' => 'test',
+    'customer_address' => null,
+    'short_url' => 'http://bitly.dev/2eZ11Vn',
+    'view_less' => 1,
+    'sms_status' => 'sent',
+    'email_status' => 'sent',
+    'notes' => null,
+    'status' => 'issued',
+    'due_by' => $faker->timestamp,
+    'scheduled_at' => $faker->timestamp,
+    'amount' => 100000,
+    'currency' => 'INR',
+]);
+
+$factory(\RZP\Models\LineItem\Entity::class, [
+    'id' => '100000lineitem',
+    'merchant_id' => '10000000000000',
+    'invoice_id' => '1000000invoice',
+    'name' => 'Some item name',
+    'description' => 'Some item description',
+    'amount' => 100000,
+    'quantity' => 1,
 ]);
 
 $factory(\RZP\Models\Customer\Entity::class, [

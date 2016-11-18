@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
 
     const SHIPPING_ADDRESS      = 'shipping_address';
 
+    const FAIL_EXISTING         = 'fail_existing';
+
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
@@ -48,7 +50,6 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CONTACT,
         self::SHIPPING_ADDRESS,
-        self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -85,6 +86,11 @@ class Entity extends Base\PublicEntity
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -103,6 +109,21 @@ class Entity extends Base\PublicEntity
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function getCurrentShippingAddressId()
+    {
+        $app = App::getFacadeRoot();
+
+        $shippingAddress = $app['repo']->address
+            ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
+
+        if ($shippingAddress !== null)
+        {
+            return $shippingAddress->getId();
+        }
+
+        return null;
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
@@ -127,7 +148,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $shippingAddresses->toArrayPublic();
+        return $shippingAddresses->toArrayPublicEmbedded();
     }
 
     // ----------------------------------- END ACCESSORS -----------------------------------

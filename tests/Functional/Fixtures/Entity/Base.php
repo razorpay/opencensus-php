@@ -57,6 +57,9 @@ class Base
         'role'          => \RZP\Models\Admin\Role\Entity::class,
         'admin_token'   => \RZP\Models\Admin\Admin\Token\Entity::class,
         'fee_breakup'   => \RZP\Models\Transaction\FeeBreakup\Entity::class,
+        'feature'       => \RZP\Models\Feature\Entity::class,
+        'invoice'       => \RZP\Models\Invoice\Entity::class,
+        'line_item'     => \RZP\Models\LineItem\Entity::class,
     );
 
     protected static $liveAndTest = array(

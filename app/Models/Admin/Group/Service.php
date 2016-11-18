@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Role;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Exception;
@@ -43,6 +44,18 @@ class Service extends Base\Service
             }
 
             $input['sub_groups'] = $groupIds;
+        }
+
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
         }
 
         $group = $this->core->create($orgId, $input);
@@ -93,6 +106,18 @@ class Service extends Base\Service
             $input['sub_groups'] = $groupIds;
         }
 
+        if (isset($input['roles']) === true)
+        {
+            $roleIds = [];
+
+            foreach ($input['roles'] as $roleId)
+            {
+                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
+            }
+
+            $input['roles'] = $roleIds;
+        }
+
         $group = $this->core->edit($orgId, $groupId, $input);
 
         return $group->toArrayPublic();
@@ -115,6 +140,85 @@ class Service extends Base\Service
         $groups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
 
         return $groups->toArrayPublic();
+    }
+
+    /**
+    * This function gets all org groups and then calls filter on it to 
+    * filter out the ones not allowed
+    */
+    public function fetchAllowedGroups(string $orgId, string $groupId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        $allOrgGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
+        $allowedGroups = $this->filterAllowedGroups($orgId, $groupId, $allOrgGroups->all());
+
+        return $allowedGroups;
+    }
+
+    /**
+    * This functions does all the filtering. It gets all the groups in parent hierarchy
+    * and all the siblings and removes these from the array of all org groups and returns
+    * the difference.
+    */
+    protected function filterAllowedGroups(string $orgId, string $groupId, $allOrgGroups)
+    {
+        $parentGroups = $this->getParentGroups($orgId, $groupId); //first level parents
+
+        $rejectGroups = $this->getAllRejectGroups($parentGroups, $orgId, $groupId); //recursive function to get all parent hierarchy
+
+        $siblings = $this->getSiblings($parentGroups);
+
+        $rejectGroups = array_unique(array_merge($rejectGroups, $siblings));
+
+        return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {  //Defining diff in case of array of objects
+              return $a->id - $b->id;
+            });
+    }
+
+    protected function getSiblings(array $parentGroups)
+    {
+        $siblings = [];
+
+        foreach ($parentGroups as $parent) {
+            $siblings = $parent->parents->all();
+        }
+        return $siblings;
+    }
+
+    protected function getAllRejectGroups(array $parentGroups, string $orgId)
+    {
+        $workingGroups1 = $parentGroups;
+        $workingGroups2 = [];
+        $rejectGroups = [];
+
+        $rejectGroups = $this->getParentRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
+
+        return $rejectGroups;
+    }
+
+    protected function getParentRejectGroups(array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
+    {
+        foreach ($workingGroups1 as $key => $workingGroup) {
+            $rejectGroups[] = $workingGroup;
+
+            $workingGroupParents = $this->getParentGroups($orgId, $workingGroup->id);
+            $workingGroups2 = $workingGroupParents;
+        }
+
+        if (empty($workingGroups2) === false)
+        {
+            $this->getParentRejectGroups($workingGroups2, [], $rejectGroups, $orgId);
+        }
+
+        return $rejectGroups;
+    }
+
+    protected function getParentGroups(string $orgId, string $groupId)
+    {
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        return $group->subGroups->all();
     }
 
     public function addRoleToGroup(

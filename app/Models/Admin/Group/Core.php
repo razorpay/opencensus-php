@@ -28,6 +28,11 @@ class Core extends Base\Core
             $group->subGroups()->sync($input['sub_groups']);
         }
 
+        if (isset($input['roles']) === true)
+        {
+            $group->roles()->sync($input['roles']);
+        }
+
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
             $orgId, $group->getId());
 
@@ -59,6 +64,11 @@ class Core extends Base\Core
         if (isset($input['sub_groups']) === true)
         {
             $group->subGroups()->sync($input['sub_groups']);
+        }
+
+        if (isset($input['roles']) === true)
+        {
+            $group->roles()->sync($input['roles']);
         }
 
         $this->repo->saveOrFail($group);
