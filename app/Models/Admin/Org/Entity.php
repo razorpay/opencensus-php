@@ -99,4 +99,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
     }
+
+    /**
+     * Public getters
+     * */
+    public function getEmailDomains()
+    {
+        return $this->getAttribute(self::EMAIL_DOMAINS);
+    }
 }

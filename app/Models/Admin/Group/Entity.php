@@ -10,8 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
 use RZP\Models\Merchant;
-
-
+use RZP\Models\Admin\Org;
 
 class Entity extends Base\PublicEntity
 {
@@ -48,6 +47,10 @@ class Entity extends Base\PublicEntity
         'roles',
         'merchants',
         'sub_groups',
+    ];
+
+    protected $publicSetters = [
+        self::ORG_ID,
     ];
 
     // Immediate higher groups which have access to this group and its
@@ -87,6 +90,11 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function setPublicOrgIdAttribute(array & $array)
+    {
+        $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
     }
 
     public function toArrayPublic()
