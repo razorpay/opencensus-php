@@ -53,6 +53,7 @@ class Razorpay_Sniffs_Operators_LowerCaseLogicalOperatorSniff implements PHP_Cod
             }
 
             $error = 'Logical Operators must be lowercase; expected "%s" but found "%s"';
+
             $data  = [
                 strtolower($operatorName),
                 $operatorName,

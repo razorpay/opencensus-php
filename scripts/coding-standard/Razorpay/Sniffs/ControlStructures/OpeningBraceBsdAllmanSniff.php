@@ -47,8 +47,9 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
             $closeBracket = $tokens[$stackPtr]['parenthesis_closer'];
         }
 
-        $tokenLine = $tokens[$closeBracket]['line'];
-        $braceLine    = $tokens[$openingBrace]['line'];
+        $tokenLine      = $tokens[$closeBracket]['line'];
+        $braceLine      = $tokens[$openingBrace]['line'];
+
         $lineDifference = ($braceLine - $tokenLine);
 
         if ($lineDifference === 0)
