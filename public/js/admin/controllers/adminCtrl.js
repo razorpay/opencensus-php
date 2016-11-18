@@ -184,10 +184,10 @@ app.controller('AdminCtrl', [
 
     organization.fetchCurrentOrg().then(function (data) {
       if (data.main_logo_url) {
-        $('.navbar-brand .full_logo').attr('src', data.main_logo_url);
+        $scope.logo_full = data.main_logo_url;
       }
       else {
-        $('.navbar-brand .full_logo').attr('src', 'img/logo_full.png');
+        $scope.logo_full = 'img/logo_full.png';
       }
     });
   }

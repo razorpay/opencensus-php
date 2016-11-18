@@ -7,8 +7,12 @@ app.controller('SigninCtrl', [
   'alertsFactory',
   'user',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, $stateParams, alertsFactory, user, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $state, $stateParams, alertsFactory, user,
+    transformRequestAsFormPost, organization) {
     $scope.data = {};
+    $scope.login_logo = '';
+
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     if ($stateParams.email) {
@@ -76,5 +80,15 @@ app.controller('SigninCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.login_logo_url) {
+        $scope.login_logo = data.login_logo_url
+      }
+      else {
+        $scope.login_logo = 'img/logo_black.png';
+      }
+    });
   }
 ]);

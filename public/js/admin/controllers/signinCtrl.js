@@ -10,6 +10,8 @@ app.controller('SigninCtrl', [
   'organization',
   function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost, organization) {
     $scope.data = {};
+    $scope.login_logo = '';
+
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     if ($stateParams.username) {
@@ -45,10 +47,10 @@ app.controller('SigninCtrl', [
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
       if (data.login_logo_url) {
-        $('#login_logo').attr('src', data.login_logo_url);
+        $scope.login_logo = data.login_logo_url
       }
       else {
-        $('#login_logo').attr('src', 'img/logo_black.png');
+        $scope.login_logo = 'img/logo_black.png';
       }
     });
   }
