@@ -266,7 +266,29 @@ angular.module('app.services', [])
      * TODO: return promises instead of thr reference of th variable
     **/
 
+    var _org;
+
     return {
+      fetchCurrentOrg: function () {
+        var deferred = $q.defer();
+
+        if (angular.isDefined(_org)) {
+          deferred.resolve(_org);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/org')
+          .success(function (data) {
+            if (data.success) {
+              _org = data.data;
+            }
+
+            deferred.resolve(_org);
+          });
+
+        return deferred.promise;
+      },
       fetchRoles: function () {
         var roles = {};
         $http.get('/admin/generic', {

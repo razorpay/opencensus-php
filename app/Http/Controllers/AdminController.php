@@ -119,30 +119,6 @@ class AdminController extends Controller
                 return AppResponse::jsonResponse($error, []);
             }
         }
-
-        // Old code replica
-        // // If the user is not logged in
-        // if (!Auth::guard('admin')->check())
-        // {
-        //     // if code is provided get user data and sign in
-        //     if ($code !== null or env('OAUTH_MOCK') === false)
-        //     {
-        //         $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
-        //
-        //         if (empty($error))
-        //         {
-        //             return redirect('/admin');
-        //         }
-        //         else
-        //         {
-        //             return AppResponse::jsonResponse($error, []);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         return redirect((string) $googleService->getAuthorizationUri());
-        //     }
-        // }
     }
 
     public function postSignin()
@@ -169,7 +145,11 @@ class AdminController extends Controller
     {
         $domain = request()->server->get('SERVER_NAME');
 
-        return (new Admin\Service)->getOrg(self::ORG_CHART[$domain]);
+        $org = self::ORG_CHART[$domain];
+
+        list($error, $org) = (new Admin\Service)->getOrg($org);
+
+        return AppResponse::jsonResponse($error, $org);
     }
 
     public function getAdmin()

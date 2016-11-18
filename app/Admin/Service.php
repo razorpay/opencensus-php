@@ -2325,7 +2325,16 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        return $this->api->org->fetch($orgId)->toArray();
+        try
+        {
+            $data = $this->api->org->fetch($orgId)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
     }
 
     public function sendInvitation($input)

@@ -7,7 +7,8 @@ app.controller('SigninCtrl', [
   'alertsFactory',
   'admin',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost, organization) {
     $scope.data = {};
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -40,5 +41,15 @@ app.controller('SigninCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.login_logo_url) {
+        $('#login_logo').attr('src', data.login_logo_url);
+      }
+      else {
+        $('#login_logo').attr('src', 'img/logo_black.png');
+      }
+    });
   }
 ]);
