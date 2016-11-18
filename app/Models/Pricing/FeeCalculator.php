@@ -143,6 +143,12 @@ class FeeCalculator
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
+            $this->trace->debug(
+                TraceCode::PRICING_RULE_SELECTION,
+                ['count' => count($rules)]);
+
+            $this->traceAllRules($rules);
+
             if (count($rules) > 0)
             {
                 $rule = $this->getRelevantPaymentPricingRule($rules, $method);
