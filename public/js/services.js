@@ -164,6 +164,7 @@ angular.module('app.services', [])
         type: $type,
         msg: $message
       });
+      window.scrollTo(0, 0)
     };
 
     this.resetAlerts = function (last) {
