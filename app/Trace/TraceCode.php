@@ -372,6 +372,9 @@ class TraceCode
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
 
+    // Trace code for item/line_items
+    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
