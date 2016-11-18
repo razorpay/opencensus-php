@@ -320,7 +320,8 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::STATUS])) and
             ($content[ResponseFields::STATUS] === Status::SUCCESS))
         {
-            $walletAttributes = $this->getWalletContentFromVerify();
+            $walletAttributes = $this->getWalletContentFromVerify(
+                $gatewayPayment, $content);
 
             if ($gatewayPayment === null)
             {
@@ -328,7 +329,9 @@ class Gateway extends Base\Gateway
             }
             else if ($gatewayPayment['received'] === false)
             {
-                $gatewayPayment->fill($walletAttributes);
+                $attrs = $this->getMappedAttributes($walletAttributes);
+
+                $gatewayPayment->fill($attrs);
 
                 $gatewayPayment->saveOrFail();
             }
@@ -339,7 +342,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getWalletContentFromVerify()
+    protected function getWalletContentFromVerify($gatewayPayment, $content)
     {
         $contentToSave = [
             RequestFields::MID         => $this->getMerchantId(),
@@ -349,6 +352,13 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_REF_NO  => $this->input['payment']['id'],
             'received'                 => true,
         ];
+
+        // Payment was late authorized
+        if ((empty($gatewayPayment['gateway_payment_id']) === true) and
+            (empty($content[ResponseFields::FDC_TXN_ID]) === false))
+        {
+            $contentToSave[ResponseFields::TRAN_ID] = $content[ResponseFields::FDC_TXN_ID];
+        }
 
         if (isset($gatewayPayment['amount']) === false)
         {
@@ -584,10 +594,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function setProxy(&$request)
+    protected function setProxy(& $request)
     {
-        if (($this->mode === Mode::LIVE) and
-            ($this->proxyEnabled === true))
+        if ($this->mode === Mode::LIVE)
         {
             $request['options']['proxy'] = $this->proxy;
         }
