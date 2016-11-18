@@ -17,10 +17,8 @@ class ExpiresInRule extends Base
     {
         if ($admin->getPasswordExpiry() > time())
         {
-            $adminArray = $admin->toArrayPublic();
-            $adminArray['action'] = 'password_reset';
-
-            return $adminArray;
+            throw new Exception\BadRequestValidationFailureException(
+                'Account password has expired. Please contact administrator.');
         }
     }
 }

@@ -108,8 +108,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $afterLoginRules = [
-        self::EXPIRES_IN,
-        self::ENFORCE_INITIAL_PASSWORD_CHANGE,
+        self::EXPIRES_IN
     ];
 
     public function toArray()
