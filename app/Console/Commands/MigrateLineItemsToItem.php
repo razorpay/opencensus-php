@@ -24,7 +24,7 @@ class MigrateLineItemsToItem extends Command
      */
     protected $signature = 'rzp:migrateLineItemsToItem
                             {--mode=test : Database mode the command will run in (test|live)}
-                            {--created_at=0 : Filter line_items with this value}';
+                            {--created_at=0 : Filter line_items with created_at greater than this value}';
 
     /**
      * The console command description.
@@ -51,10 +51,6 @@ class MigrateLineItemsToItem extends Command
         $this->migrateLineItemsToItem();
     }
 
-    /**
-     *
-     * @return
-     */
     protected function migrateLineItemsToItem()
     {
         $lineItems = DB::table('line_items')
@@ -65,10 +61,10 @@ class MigrateLineItemsToItem extends Command
 
         $this->info(sprintf('Total line_items fetched: %s', count($lineItems)));
 
-        DB::transaction(function () use ($lineItems) {
-
-            foreach ($lineItems as $lineItem) {
-
+        DB::transaction(function() use ($lineItems)
+        {
+            foreach ($lineItems as $lineItem)
+            {
                 $newItemId = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
 
                 DB::table('items')->insert(
@@ -90,8 +86,7 @@ class MigrateLineItemsToItem extends Command
                                                 'item_id'     => $newItemId,
                                                 'entity_id'   => $lineItem->invoice_id,
                                                 'entity_type' => 'RZP\\Models\\Invoice\\Entity',
-                                            ]
-                                        );
+                                            ]);
             }
         });
     }
