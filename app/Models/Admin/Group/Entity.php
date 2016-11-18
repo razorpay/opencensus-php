@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     // merchants
     public function parents()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function isDeleted()
@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
 
     public function subGroups()
     {
-        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()
