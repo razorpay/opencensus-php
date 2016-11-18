@@ -5,7 +5,6 @@ app.controller('AddOrgCtrl', [
   '$stateParams',
   '$upload',
   function ($scope, $http, alertsFactory, $stateParams, $upload) {
-    debugger
     $scope.fetchOrg = function(id) {
       var request = $http({
         url: '/admin/generic',
@@ -105,17 +104,17 @@ app.controller('AddOrgCtrl', [
       // end@onLoginLogoSelect
     };
 
-    $scope.onDashboardLogoSelect = function ($files, fieldname) {
+    $scope.onMainLogoSelect = function ($files, fieldname) {
       var file = $files[0];
 
-      $scope.logos.dashboardFileName = file;
-      $scope.logos.dashboardFieldName = fieldname;
+      $scope.logos.mainFileName = file;
+      $scope.logos.mainFieldName = fieldname;
 
       var request = $upload.upload({
         url: '/admin/org/' + $scope.organization.id,
         method: 'POST',
-        file: $scope.logos.dashboardFileName,
-        fileFormDataName: $scope.logos.dashboardFieldName,
+        file: $scope.logos.mainFileName,
+        fileFormDataName: $scope.logos.mainFieldName,
         data: { type: 'main' }
       });
 
