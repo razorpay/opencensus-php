@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
+    const CATEGORY          = 'category';
 
     protected $table = Constants\Table::PERMISSION;
 
@@ -22,13 +23,21 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::DESCRIPTION,
+        self::CATEGORY,
     ];
 
     protected $public = [
         self::ID,
         self::NAME,
         self::DESCRIPTION,
-        self::CREATED_AT,
+        self::CATEGORY,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::CATEGORY,
     ];
 
     /**
