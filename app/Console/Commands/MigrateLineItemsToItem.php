@@ -5,7 +5,6 @@ namespace RZP\Console\Commands;
 use DB;
 use Illuminate\Console\Command;
 
-
 /**
  * Migrates items related attribute from line_items to items.
 
@@ -90,5 +89,4 @@ class MigrateLineItemsToItem extends Command
             }
         });
     }
-
 }
