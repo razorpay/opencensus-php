@@ -189,7 +189,7 @@ app.controller('AdminCtrl', [
       else {
         $('.navbar-brand .full_logo').attr('src', 'img/logo_full.png');
       }
-    })
+    });
   }
 ]).controller('passwordModalCtrl', [
   '$scope',
