@@ -68,7 +68,7 @@ class CreateInvoices extends Migration
 
             $table->text(Entity::NOTES);
 
-            $table->string(Entity::SHORT_URL, 40)
+            $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
 
             $table->tinyInteger(Entity::VIEW_LESS)
@@ -132,17 +132,17 @@ class CreateInvoices extends Migration
 
             $table->dropForeign
             (
-                Table::TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::MERCHANT . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADDRESS . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
             );
         });
 

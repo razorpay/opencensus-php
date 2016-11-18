@@ -1,0 +1,18 @@
+# path to phpcs "binary"
+PHPCS_BIN=/usr/bin/phpcs
+
+# the coding standard, you can also specify a path to your own standard here 
+# e. g. /path/to/my/standard/dir/
+PHPCS_CODING_STANDARD=$(dirname $0)
+
+# comma-separated list of file patterns being ignored
+PHPCS_IGNORE=
+
+# egrep compatible pattern of  files to be checked
+PHPCS_FILE_PATTERN="\.(php|html|js)$"
+
+# ignore warnings
+PHPCS_IGNORE_WARNINGS=0
+
+# encoding
+PHPCS_ENCODING=utf-8
