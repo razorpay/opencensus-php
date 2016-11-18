@@ -293,6 +293,10 @@ final class Route
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'device_create'                           => ['post',     'devices/create',                                 'UpiController@deviceCreate'                                        ],
+        'device_verify'                           => ['get',      'devices/verify',                                 'UpiController@deviceVerify'                                        ],
+        'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                            ],
+        'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
     );
 
     public static $public = array(
