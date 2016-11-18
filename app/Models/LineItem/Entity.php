@@ -27,13 +27,14 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::PUBLIC_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::QUANTITY,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::ITEM_ID,
         self::ITEM,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -44,8 +45,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::QUANTITY,
     ];
 
@@ -69,6 +68,8 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters Ends --------------------------
 
+    // -------------------------- Public Setters --------------------------
+
     protected function setPublicItemIdAttribute(array & $array)
     {
         $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
@@ -78,6 +79,8 @@ class Entity extends Base\PublicEntity
     {
         $array[self::ITEM] = $this->item->toArrayPublic();
     }
+
+    // -------------------------- Public Setters Ends --------------------------
 
     // -------------------- Relations ---------------------------
 

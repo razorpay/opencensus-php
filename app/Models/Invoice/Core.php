@@ -33,6 +33,13 @@ class Core extends Base\Core
 
     public function sendNotification(Entity $invoice, $medium)
     {
+        $this->trace->info(
+            TraceCode::INVOICE_SEND_NOTIFICATION,
+            [
+                'invoice_id' => $invoice->getId(),
+                'medium'     => $medium,
+            ]);
+
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
 

@@ -42,7 +42,7 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->integer(Entity::SCHEDULED_AT)
-              ->nullable();
+                  ->nullable();
 
             $table->integer(Entity::ISSUED_AT)
                   ->nullable();

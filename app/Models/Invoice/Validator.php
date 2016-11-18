@@ -49,7 +49,14 @@ class Validator extends Base\Validator
         if ($itemsCount === 0)
         {
             throw new BadRequestValidationFailureException(
-                'Input must contain at least one input'
+                'Invoice must contain at least one line item.'
+            );
+        }
+
+        if ($itemsCount > 10)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice cannot have more than 10 line items.'
             );
         }
     }

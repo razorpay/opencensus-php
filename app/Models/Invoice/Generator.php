@@ -108,7 +108,13 @@ class Generator extends Base\Core
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $this->invoice->getId(),
+                        'input'         => $input,
+                    ]);
             }
 
             throw $e;
@@ -227,24 +233,13 @@ class Generator extends Base\Core
             {
                 $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
 
-                $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
-
-                $this->validateInvoiceAndItemCurrency($item->getCurrency());
+                $item = $this->getItemFromItemId($itemId);
             }
             else
             {
-                if (isset($lineItemDetails[Item\Entity::CURRENCY]))
-                {
-                    $this->validateInvoiceAndItemCurrency($lineItemDetails[Item\Entity::CURRENCY]);
-                }
-                else
-                {
-                    $lineItemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
-                }
-
                 list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
 
-                $item = (new Item\Core)->create($itemDetails, $this->merchant);
+                $item = $this->createItemFromItemDetails($itemDetails);
             }
 
             $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice, $item);
@@ -253,6 +248,29 @@ class Generator extends Base\Core
         }
 
         return $lineItems;
+    }
+
+    protected function getItemFromItemId($itemId)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
+
+        $this->validateInvoiceAndItemCurrency($item->getCurrency());
+
+        return $item;
+    }
+
+    protected function createItemFromItemDetails(array $itemDetails)
+    {
+        if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
+        {
+            $itemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+        }
+
+        $this->validateInvoiceAndItemCurrency($itemDetails[Item\Entity::CURRENCY]);
+
+        $item = (new Item\Core)->create($itemDetails, $this->merchant);
+
+        return $item;
     }
 
     protected function createOrderForInvoice()
@@ -340,8 +358,6 @@ class Generator extends Base\Core
 
     /**
      * @param string $itemCurrency
-     *
-     * @return
      *
      * @throws BadRequestValidationFailureException
      */
