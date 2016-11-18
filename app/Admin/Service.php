@@ -2463,7 +2463,7 @@ class Service extends Base\Service
             'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
             'Key'           => $keyName,
             'SourceFile'    => $filePath,
-            'ContentType'   => 'image/jpeg',
+            'ContentType'   => 'image/png',
             'ACL'           => 'public-read',
         ];
 
