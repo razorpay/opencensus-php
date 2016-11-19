@@ -17,20 +17,12 @@ export default class InvoicesListContainer extends ModalContainer {
     this.props.fetchInvoices()
   }
 
-  showPaymentLink() {
-
-  }
-
   render() {
     let { loading, invoices } = this.props
 
     return (
       <div>
-        <Header title='Invoices'>
-          <a href='#/app/invoices/new' class='pull-right btn btn-primary btn-rounded'>
-            <i class='fa fa-plus'></i>
-            <span>New Invoice</span>
-          </a>
+        <Header title='Invoices (Link)'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={this.openModal}

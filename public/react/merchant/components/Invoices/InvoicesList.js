@@ -17,7 +17,7 @@ const InvoiceListItem = ({ invoice }) => {
         {
           invoice.customer_details.customer_name ||
           invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_phone
+          invoice.customer_details.customer_contact
         }
       </td>
       <td class='text-right'>

@@ -8,12 +8,43 @@ import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
 import { createInvoice, appendInvoiceToList } from 'merchant/modules/invoices'
 
+function validate(values) {
+  let errors = {}
+  let customer = values.customer
+  let item = values.line_items ? values.line_items[0] : null
+  let lineItemError = {}
+
+  if (isBlank(customer) || (isBlank(customer.contact) && isBlank(customer.email))) {
+    errors.customer = {
+      contact: 'Please provide contact or email'
+    }
+  }
+
+  if (isBlank(item) || isBlank(item.amount)) {
+    lineItemError.amount = 'Please provide the amount'
+  }
+
+  if (isBlank(item) || isBlank(item.name)) {
+    lineItemError.name = 'Please provide product/service name'
+  }
+
+  errors.line_items = [lineItemError]
+  return errors
+}
+
 @connect(
   null,
   { createInvoice, appendInvoiceToList }
 )
 @reduxForm({
-  form: 'newPaymentLink'
+  form: 'newPaymentLink',
+  validate,
+  initialValues: {
+    currency: 'INR',
+    date: Math.ceil(new Date().getTime()/1000),
+    sms_notify: true,
+    email_notify: true
+  }
 })
 export default class CreatePaymentLink extends Component {
   constructor() {
@@ -25,11 +56,17 @@ export default class CreatePaymentLink extends Component {
   }
 
   create(fieldProps) {
-    fieldProps.date = Math.ceil(new Date().getTime()/1000)
-    fieldProps.currency = 'INR'
-    fieldProps.line_items[0].amount = fieldProps.line_items[0].amount * 100
+    let { line_items, ...props } = fieldProps
+    let item = line_items[0]
 
-    return this.props.createInvoice(fieldProps).then((response) => {
+    props.sms_notify = fieldProps.sms_notify ? 1 : 0
+    props.email_notify = fieldProps.email_notify ? 1 : 0
+    props.line_items = []
+    props.line_items.push({
+      name: item.name,
+      amount: item.amount * 100
+    })
+    return this.props.createInvoice(props).then((response) => {
       this.props.appendInvoiceToList(response.data)
       this.props.closeModal()
     }).catch(({ errors }) => {
@@ -40,7 +77,7 @@ export default class CreatePaymentLink extends Component {
   }
 
   render() {
-    const { handleSubmit, isNew } = this.props
+    const { handleSubmit } = this.props
 
     return (
       <div>
@@ -97,6 +134,29 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                 />
+              </div>
+            </div>
+
+            <div class='form-group'>
+              <div class='checkbox col-md-8 col-md-offset-3'>
+                <label>
+                  <Field
+                    name='sms_notify'
+                    component='input'
+                    type='checkbox'
+                  />
+                  Send via SMS
+                </label>
+              </div>
+              <div class='checkbox col-md-8 col-md-offset-3'>
+                <label>
+                  <Field
+                    name='email_notify'
+                    component='input'
+                    type='checkbox'
+                  />
+                  Send via email
+                </label>
               </div>
             </div>
           </div>
