@@ -116,6 +116,9 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
     Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 
+    Route::get('/{mode}/invoices', 'InvoiceController@getInvoices')->name('get_invoices');
+    Route::post('/{mode}/invoices', 'InvoiceController@postCreateInvoice')->name('post_invoices');
+
     // Upgrades a standard invited user to a merchant
     Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
 

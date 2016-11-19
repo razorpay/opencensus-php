@@ -1,23 +1,22 @@
 import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 import Time from 'rzp/ui/Time'
+import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
 
 const InvoiceListItem = ({ invoice }) => {
   return (
     <tr>
       <td>
-        <Time value={invoice.invoice_date} />
+        <Time value={invoice.date} />
       </td>
-      <td>{invoice.invoice_number}</td>
       <td>
         <InvoiceStatus status={invoice.status} />
       </td>
-      <td>
-        <Time value={invoice.due_date} />
+      <td>{invoice.customer_details.customer_name}</td>
+      <td class='text-right'>
+        <Amount value={invoice.amount} />
       </td>
-      <td>{invoice.customer.name}</td>
-      <td class='text-right'>{invoice.total_amount}</td>
     </tr>
   )
 }
@@ -41,9 +40,7 @@ export default ({ invoices, isLoading }) => {
         <thead>
           <tr>
             <th>Invoice Date</th>
-            <th>Invoice #</th>
             <th>Status</th>
-            <th>Due Date </th>
             <th>Customer Name</th>
             <th class='text-right'>Amount (INR)</th>
           </tr>
