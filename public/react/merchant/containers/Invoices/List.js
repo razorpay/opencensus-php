@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 import Modal from 'rzp/ui/Modal'
+import Pager from 'rzp/ui/Pager'
 
 import { fetchInvoices } from 'merchant/modules/invoices'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
@@ -13,8 +14,27 @@ import CreatePaymentLink from './CreatePaymentLink'
   { fetchInvoices }
 )
 export default class InvoicesListContainer extends ModalContainer {
+  constructor() {
+    super(...arguments)
+    this.state.skip = 0
+    this.state.count = 25
+    this.fetchInvoices = ::this.fetchInvoices
+  }
+
   componentWillMount() {
-    this.props.fetchInvoices()
+    this.fetchInvoices()
+  }
+
+  fetchInvoices(params) {
+    if (params) {
+      this.setState(params)
+    }
+
+    params = params || {
+      count: this.state.count,
+      skip: this.state.skip
+    }
+    this.props.fetchInvoices(params)
   }
 
   render() {
@@ -35,6 +55,13 @@ export default class InvoicesListContainer extends ModalContainer {
         <div class='content-wrapper'>
           <div class='panel panel-default'>
             <InvoicesList invoices={invoices} isLoading={loading} />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={invoices.length}
+              onClick={this.fetchInvoices}
+            />
           </div>
         </div>
 

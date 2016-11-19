@@ -11,11 +11,14 @@ export const appendInvoiceToList = (invoice) => {
   }
 }
 
-export const fetchInvoices = () => {
+export const fetchInvoices = (params) => {
   return (dispatch) => {
     return dispatch({
       type: INVOICES_FETCH,
-      payload: ajax('/invoices')
+      payload: ajax({
+        url: '/invoices',
+        data: params
+      })
     })
   }
 }
