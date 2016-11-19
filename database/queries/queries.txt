@@ -1219,3 +1219,6 @@ ALTER TABLE schedules
 ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
+
+ALTER TABLE payment_analytics
+    ADD COLUMN merchant_id VARCHAR(14) NOT NULL AFTER payment_id;
