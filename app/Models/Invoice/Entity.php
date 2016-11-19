@@ -164,7 +164,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::REF_NUM,
-        self::ENTITY,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
@@ -189,7 +188,6 @@ class Entity extends Base\PublicEntity
     // Fields to be added while retrieving the entity
     protected $appends = [
         self::PUBLIC_ID,
-        self::ENTITY,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
     ];
