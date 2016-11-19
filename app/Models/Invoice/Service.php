@@ -99,15 +99,19 @@ class Service extends Base\Service
         // Since this is via direct auth, this will not set on its own.
         // $this->app['basicauth']->checkAndSetKeyId($publicKey);
 
-        return [
+        $viewDetails = [
             'customer_email'    => $invoice->getCustomerEmail(),
             'customer_contact'  => $invoice->getCustomerContact(),
             'invoice_id'        => Entity::getSignedId($invoiceId),
+            'status'            => $invoice->getStatus(),
             'key_id'            => $publicKey,
             'amount'            => $invoice->order->getAmount(),
             'environment'       => $this->app->environment(),
             'view_less'         => $invoice->getViewLess(),
             'merchant_details'  => $merchantDetails,
+            'payment_id'        => $invoice->getPaymentId(),
         ];
+
+        return $viewDetails;
     }
 }
