@@ -23,6 +23,8 @@ class CreatePaymentAnalytics extends Migration
 
             $table->char(Analytics::PAYMENT_ID, Analytics::ID_LENGTH);
 
+            $table->char(Analytics::MERCHANT_ID, Analytics::ID_LENGTH);
+
             $table->string(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
