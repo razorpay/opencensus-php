@@ -249,6 +249,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OLD_PASSWORDS, $oldPasswords);
     }
 
+    /*
+     * Mutators
+     *
+     */
+    public function setEmailAttribute(string $email)
+    {
+        $this->attributes[self::EMAIL] = strtolower($email);
+    }
+
     protected function setPasswordAttribute($password)
     {
         $this->attributes[self::PASSWORD] = Hash::make($password);
