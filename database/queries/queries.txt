@@ -1309,3 +1309,20 @@ UPDATE billdesk
     JOIN orders ON orders.id = payments.order_id
 SET
     billdesk.AccountNumber = orders.account_number;
+
+----
+# Following queries are executed for altering cybersource table
+# These changes have arised because of cybersource refactoring
+ALTER TABLE cybersource
+    ADD COLUMN xid VARCHAR(40),
+    ADD COLUMN avsCode CHAR(2),
+    ADD COLUMN cardCategory CHAR(2),
+    ADD COLUMN cardGroup CHAR(2),
+    ADD COLUMN cvCode CHAR(2),
+    ADD COLUMN veresEnrolled CHAR(2),
+    ADD COLUMN authorizationCode CHAR(6),
+    ADD COLUMN receiptNumber CHAR(6),
+    ADD COLUMN merchantAdviceCode CHAR(30),
+    ADD COLUMN gatewayTransactionId CHAR(30),
+    ADD COLUMN processorResponse CHAR(10),
+    AFTER STATUS;
