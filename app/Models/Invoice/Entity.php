@@ -88,6 +88,7 @@ class Entity extends Base\PublicEntity
         // self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
+        self::REF_NUM           => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
@@ -129,6 +130,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
+        self::REF_NUM,
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
@@ -161,6 +163,7 @@ class Entity extends Base\PublicEntity
     // Fields to be exposed to the client
     protected $public = [
         self::ID,
+        self::REF_NUM,
         self::ENTITY,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
