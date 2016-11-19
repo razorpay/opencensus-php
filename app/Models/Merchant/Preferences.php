@@ -11,6 +11,12 @@ class Preferences
      * Maintains lits of gateways excluded for a merchant
      */
     const MERCHANT_TERMINAL_EXCLUDE_LIST = [
+        // 1MG
+        '6e9vU1F6c16Wgy' => [
+            Gateway::HDFC,
+            Gateway::CYBERSOURCE,
+        ],
+
         // SAMCO
         '4jLz4KmKAk487o' => [
             Gateway::HDFC,
