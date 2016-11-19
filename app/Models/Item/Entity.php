@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::ACTIVE            => true,
+        self::ACTIVE            => 1,
         self::DESCRIPTION       => null,
         self::CURRENCY          => 'INR',
     ];
