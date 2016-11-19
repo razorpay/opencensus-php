@@ -10,8 +10,9 @@ const webpackConfig = {
       moment: 'moment/min/moment.min.js'
     },
     modules: [
-      path.resolve('node_modules'),
-      path.resolve('public/react'),
+      'node_modules',
+      'web_modules',
+      path.resolve(__dirname, 'public/react'),
     ],
     extensions: ['.js', '.jsx', '.styl']
   },
