@@ -11,7 +11,7 @@ return [
             'url'     => '/items',
             'method'  => 'post',
             'content' => [
-                'active'      => true,
+                // 'active'      => true,
                 'name'        => 'Item 1',
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,

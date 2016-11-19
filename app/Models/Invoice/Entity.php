@@ -320,6 +320,27 @@ class Entity extends Base\PublicEntity
         Status::checkStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+
+        // Sets corresponding timestamps as per new status
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        switch ($status) {
+
+            case Status::ISSUED:
+                $this->setAttribute(self::ISSUED_AT, $now);
+                break;
+
+            case Status::PAID:
+                $this->setAttribute(self::PAID_AT, $now);
+                break;
+
+            case Status::EXPIRED:
+                $this->setAttribute(self::EXPIRED_AT, $now);
+                break;
+
+            default:
+                break;
+        }
     }
 
     public function setShortUrl($shortUrl)
@@ -349,14 +370,6 @@ class Entity extends Base\PublicEntity
     protected function getLineItemsAttribute()
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
-
-        // Flatten response: Merge item attributes into line_item level.
-        foreach ($lineItems as & $lineItem)
-        {
-            unset($lineItem['item']['id']);
-            $lineItem = array_merge($lineItem, $lineItem['item']);
-            unset($lineItem['item']);
-        }
 
         return $lineItems;
     }

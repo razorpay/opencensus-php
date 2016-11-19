@@ -32,16 +32,24 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::QUANTITY,
         self::ITEM_ID,
-        self::ITEM,
         self::CREATED_AT,
         self::UPDATED_AT,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $public = [
         self::ID,
         self::QUANTITY,
         self::ITEM_ID,
-        self::ITEM,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $fillable = [
@@ -77,7 +85,13 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemAttribute(array & $array)
     {
-        $array[self::ITEM] = $this->item->toArrayPublic();
+        // Flatten response: Merge item attributes into line_item level.
+
+        $item = $this->item->toArrayPublic();
+
+        unset($item[Item\Entity::ID]);
+
+        $array = array_merge($array, $item);
     }
 
     // -------------------------- Public Setters Ends --------------------------
