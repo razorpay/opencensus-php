@@ -29,4 +29,11 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $permIds)
                     ->get();
     }
+
+    public function fetchAll($input)
+    {
+        return $this->newQuery()
+                    ->orderBy(Entity::CATEGORY)
+                    ->get();
+    }
 }

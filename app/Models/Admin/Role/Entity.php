@@ -6,6 +6,7 @@ use illuminate\database\eloquent\softdeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Admin\Permission;
 use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
@@ -108,12 +109,16 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-         $role = parent::toArrayPublic();
+        $role = parent::toArrayPublic();
 
-         $permissions = $this->permissions;
+        if (isset($role['permissions']) === true)
+        {
+            foreach ($role['permissions'] as $key => $entity)
+            {
+                $role['permissions'][$key]['id'] = Permission\Entity::getSignedId($entity['id']);
+            }
+        }
 
-         $role['permissions'] = $permissions->toArrayPublic()['items'];
-
-         return $role;
+        return $role;
     }
 }

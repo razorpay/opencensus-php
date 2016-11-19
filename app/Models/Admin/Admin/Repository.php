@@ -22,6 +22,8 @@ class Repository extends Base\Repository
 
     public function findOrFailByEmail($email)
     {
+        $email = strtolower($email);
+
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();

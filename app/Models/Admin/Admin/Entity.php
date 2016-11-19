@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = array(
+        self::ID,
         self::ORG_ID,
     );
 
@@ -246,6 +247,15 @@ class Entity extends Base\PublicEntity
         $oldPasswords[] = $this->getAttribute(self::PASSWORD);
 
         $this->setAttribute(self::OLD_PASSWORDS, $oldPasswords);
+    }
+
+    /*
+     * Mutators
+     *
+     */
+    public function setEmailAttribute(string $email)
+    {
+        $this->attributes[self::EMAIL] = strtolower($email);
     }
 
     protected function setPasswordAttribute($password)

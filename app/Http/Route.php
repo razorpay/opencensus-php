@@ -704,6 +704,7 @@ final class Route
         'edit_merchant_pricing'      => ['merchant_assign_pricing'],
         'add_merchant_adjustment'    => ['adj_add'],
         'edit_merchant_email'        => ['merchant_edit_email'],
+        'group_get_allowed_groups'   => ['group_get_allowed_groups'],
     ];
 
     public static $direct = array(

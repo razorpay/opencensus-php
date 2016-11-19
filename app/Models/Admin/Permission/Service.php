@@ -25,7 +25,7 @@ class Service extends Base\Service
 
     public function getMultiplePermissions(array $input)
     {
-        $permission = $this->repo->permission->fetch($input);
+        $permission = $this->repo->permission->fetchAll($input);
 
         return $permission->toArrayPublic();
     }
