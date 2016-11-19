@@ -1,13 +1,19 @@
 <?php
 
+use RZP\Constants\HashAlgo;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
     'testValidEmailTag' => [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'kotak_beneficiary_mail',
                 'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => '55842a61c53b54f30202a5ee2557eef2c2997ab7408b8cdf8f08743aa5f13ee0',
-                'timestamp' => 1479133857,
+                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
+                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],
@@ -22,10 +28,10 @@ return [
     'testNoEmailTag' => [
         'request' => [
             'content' => [
-                'timestamp' => 1479133494,
+                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => '55842a61c53b54f30202a5ee2557eef2c2997ab7408b8cdf8f08743aa5f13ee0',
+                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
                 'event' => 'dropped'
             ],
             'method' => 'POST',
@@ -41,8 +47,8 @@ return [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
                 'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => '55842a61c53b54f30202a5ee2557eef2c2997ab7408b8cdf8f08743aa5f13ee0',
-                'timestamp' => 1479133494,
+                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
+                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],
@@ -54,4 +60,31 @@ return [
             'content' => [],
         ],
     ],
+    'testInvalidSignature' => [
+        'request' => [
+            'content' => [
+                'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
+                'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
+                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', 'random_mailgun_key'),
+                'timestamp' => time(),
+                'recipient' => 'random@email.com',
+                'event' => 'dropped'
+            ],
+            'method' => 'POST',
+            'url' => '/mailgun/callback/failure',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_MAILGUN_SIGNATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\RecoverableException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MAILGUN_SIGNATURE
+        ],
+    ]
 ];

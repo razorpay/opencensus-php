@@ -93,7 +93,7 @@
             <div class="mchild">
               <div class="contact">9876543210</div>
               <div class="logout">Logout</div>
-              <div class="logout logout-all">Logout form everywhere</div>
+              <div class="logout logout-all">Logout from everywhere</div>
             </div>
           </div>
         </div>

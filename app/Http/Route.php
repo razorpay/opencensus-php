@@ -153,6 +153,7 @@ final class Route
         'schedule_fetch_multiple'                 => ['get',      'schedules',                                      'ScheduleController@getSchedules'                                   ],
         'schedule_delete'                         => ['delete',   'schedules/{id}',                                 'ScheduleController@deleteSchedule'                                 ],
         'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_migration'                      => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
@@ -518,13 +519,13 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_migration',
         'feature_get_multiple',
         'feature_add',
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
         'methods_update_merchants',
-        'mailgun_webhook'
     );
 
     public static $proxy = array(
@@ -586,6 +587,7 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'mailgun_webhook'
     );
 
     public static $internalApps = array(
@@ -626,8 +628,7 @@ final class Route
         ),
 
         'mailgun' => array(
-            'reconciliate',
-            'mailgun_webhook'
+            'reconciliate'
         ),
 
         'hosted' => array(
