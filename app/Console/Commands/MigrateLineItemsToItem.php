@@ -4,6 +4,8 @@ namespace RZP\Console\Commands;
 
 use DB;
 use Illuminate\Console\Command;
+use RZP\Constants\Entity;
+use RZP\Models\Item;
 
 /**
  * Migrates items related attribute from line_items to items.
@@ -12,7 +14,7 @@ use Illuminate\Console\Command;
  *  - Move item related data from `line_items` to `items`
  *  - Puts corresponding `items.id` into `line_items.item_id`
  *  - Copy `line_items.invoice_id` into `line_items.entity_id`
- *          and populate `line_items.entity_type` with 'RZP\\Models\\Invoice\\Entity'
+ *          and populate `line_items.entity_type` with 'invoice'
  */
 class MigrateLineItemsToItem extends Command
 {
@@ -68,14 +70,14 @@ class MigrateLineItemsToItem extends Command
 
                 DB::table('items')->insert(
                     [
-                        'id'          => $newItemId,
-                        'merchant_id' => $lineItem->merchant_id,
-                        'name'        => $lineItem->name,
-                        'description' => $lineItem->description,
-                        'amount'      => $lineItem->amount,
-                        'currency'    => $lineItem->currency,
-                        'created_at'  => $lineItem->created_at,
-                        'updated_at'  => $lineItem->updated_at,
+                        Item\Entity::ID          => $newItemId,
+                        Item\Entity::MERCHANT_ID => $lineItem->merchant_id,
+                        Item\Entity::NAME        => $lineItem->name,
+                        Item\Entity::DESCRIPTION => $lineItem->description,
+                        Item\Entity::AMOUNT      => $lineItem->amount,
+                        Item\Entity::CURRENCY    => $lineItem->currency,
+                        Item\Entity::CREATED_AT  => $lineItem->created_at,
+                        Item\Entity::UPDATED_AT  => $lineItem->updated_at,
                     ]
                 );
 
@@ -84,7 +86,7 @@ class MigrateLineItemsToItem extends Command
                                             [
                                                 'item_id'     => $newItemId,
                                                 'entity_id'   => $lineItem->invoice_id,
-                                                'entity_type' => 'RZP\\Models\\Invoice\\Entity',
+                                                'entity_type' => Entity::INVOICE,
                                             ]);
             }
         });
