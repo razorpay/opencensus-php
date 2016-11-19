@@ -202,7 +202,11 @@ class Creator extends Base\Core
      */
     public function get()
     {
-        return $this->file->toArrayPublic();
+        $data = $this->file->toArrayPublic();
+
+        $data['local_file_path'] = $this->getFullFilePath();
+
+        return $data;
     }
 
     protected function validateBeforeSave()

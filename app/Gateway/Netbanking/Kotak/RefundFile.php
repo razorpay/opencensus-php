@@ -42,7 +42,7 @@ class RefundFile extends Base\RefundFile
 
         //return [$totalAmount, $fileFullPath];
 
-        return [$totalAmount, $file['location']];
+        return [$totalAmount, $file['local_file_path']];
     }
 
     protected function getTextData($data, $prependLine = '')
