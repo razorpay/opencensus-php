@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
-import Modal from 'rzp/ui/modal'
+import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import { fetchItems } from 'merchant/modules/items'
 import ItemsList from 'merchant/components/Items/ItemsList'

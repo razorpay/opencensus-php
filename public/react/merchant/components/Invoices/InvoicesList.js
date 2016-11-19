@@ -13,7 +13,13 @@ const InvoiceListItem = ({ invoice }) => {
       <td>
         <InvoiceStatus status={invoice.status} />
       </td>
-      <td>{invoice.customer_details.customer_name}</td>
+      <td>
+        {
+          invoice.customer_details.customer_name ||
+          invoice.customer_details.customer_email ||
+          invoice.customer_details.customer_phone
+        }
+      </td>
       <td class='text-right'>
         <Amount value={invoice.amount} />
       </td>

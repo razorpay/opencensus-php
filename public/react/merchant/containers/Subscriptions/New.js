@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 import { PowerSelect } from 'react-power-select'
 
-import Modal from 'rzp/ui/modal'
+import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'

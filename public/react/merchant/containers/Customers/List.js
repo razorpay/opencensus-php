@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
-import Modal from 'rzp/ui/modal'
+import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import { fetchCustomers } from 'merchant/modules/customers'
 import CustomersList from 'merchant/components/Customers/CustomersList'

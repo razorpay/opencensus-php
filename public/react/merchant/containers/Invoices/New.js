@@ -3,7 +3,7 @@ import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 
-import Modal from 'rzp/ui/modal'
+import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
