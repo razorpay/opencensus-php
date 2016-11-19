@@ -24,7 +24,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'currency' => 'INR',
                 'user_id'  => 'abcdefghij1234',
             ],
         ],
@@ -50,6 +49,7 @@ return [
                 'email_status' => 'sent',
                 'view_less' => true,
                 'amount' => 100000,
+                'currency' => 'INR',
             ],
         ],
     ],

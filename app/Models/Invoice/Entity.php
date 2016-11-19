@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::USER_ID           => null,
+        self::CURRENCY          => 'INR',
     ];
 
     // Generates fields to be filled in the DB.
