@@ -17,12 +17,6 @@ class Preferences
             Gateway::CYBERSOURCE,
         ],
 
-        // SAMCO
-        '4jLz4KmKAk487o' => [
-            Gateway::HDFC,
-            Gateway::CYBERSOURCE,
-        ],
-
         // NETMEDS
         '4eG3tTq19vAYxo' => [
             Gateway::HDFC,
