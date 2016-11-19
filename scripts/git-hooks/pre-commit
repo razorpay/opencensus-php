@@ -6,6 +6,8 @@ TMP_STAGING=".staging"
 
 rm -rf $TMP_STAGING
 
+printf "Running Linter\n"
+
 while read FILE; do
 if [[ -f $FILE ]]; then
     mkdir -p "$TMP_STAGING/$(dirname $FILE)"
@@ -21,6 +23,11 @@ rm -rf $TMP_STAGING
 
 if [[ $EXIT_CODE -eq 1 ]];then
   printf "\e[1;31m\tAborting commit due to syntax errors in staged files.\e[0m\n" >&2;
+  exit 1
 fi
 
-exit $EXIT_CODE
+printf "\e[1;92m\tNo syntax error found.\e[0m\n" >&2;
+
+printf "Validating Coding Standards\n"
+
+bash ./scripts/bin/phpcs
