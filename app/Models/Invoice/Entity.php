@@ -322,24 +322,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // Sets corresponding timestamps as per new status
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        switch ($status) {
-
-            case Status::ISSUED:
-                $this->setAttribute(self::ISSUED_AT, $now);
-                break;
-
-            case Status::PAID:
-                $this->setAttribute(self::PAID_AT, $now);
-                break;
-
-            case Status::EXPIRED:
-                $this->setAttribute(self::EXPIRED_AT, $now);
-                break;
-
-            default:
-                break;
+        if (in_array($status, Status::$timestampedStatuses, true))
+        {
+            $this->setAttribute(
+                sprintf('%s_at', $status),
+                Carbon::now('Asia/Kolkata')->timestamp
+            );
         }
     }
 

@@ -293,7 +293,7 @@ $factory(\RZP\Models\Invoice\Entity::class, [
 $factory(\RZP\Models\LineItem\Entity::class, [
     'id' => '100000lineitem',
     'entity_id' => '1000000invoice',
-    'entity_type' => 'RZP\Models\Invoice\Entity',
+    'entity_type' => 'invoice',
     'item_id' => '1000000000item',
     'quantity' => 1,
 ]);
