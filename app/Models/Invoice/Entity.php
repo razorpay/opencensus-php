@@ -326,10 +326,10 @@ class Entity extends Base\PublicEntity
         // Sets corresponding timestamps as per new status
         if (in_array($status, Status::$timestampedStatuses, true))
         {
-            $this->setAttribute(
-                sprintf('%s_at', $status),
-                Carbon::now('Asia/Kolkata')->timestamp
-            );
+            $timestampKey = $status . '_at';
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute($timestampKey, $currentTime);
         }
     }
 
