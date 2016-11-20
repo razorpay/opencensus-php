@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
@@ -24,14 +25,22 @@ class RefundFile extends Base\RefundFile
     {
         $data = $this->getRefundData($input);
 
-        $urlCsv = $this->writeToCsvFile($data, $this->getFileToWriteNameWithoutExt());
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $urlCsv = $this->writeToCsvFile($data, $fileName);
+
+        $creator = $this->createFile(
+            FileStore\Format::CSV,
+            $data,
+            $fileName,
+            FileStore\Type::ICICI_UPI_REFUND);
 
         $this->sendRefundEmail();
 
         return $urlCsv;
     }
 
-    protected function sendRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
         $fullpath = $this->getCsvFullFilePath();
 

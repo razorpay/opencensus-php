@@ -1,0 +1,6 @@
+
+# Requirements
+
+ * phpcs
+    $ pear install PHP_CodeSniffer
+
