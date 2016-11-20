@@ -283,7 +283,11 @@ class GatewayController extends Controller
             {
                 $provider = $upiRecord->extractProviderFromVpa();
 
-                $upiRecord->setProvider(ProviderCode::getBankCode($provider));
+                $upiRecord->setProvider($provider);
+
+                $upiRecord->setBank(ProviderCode::getBankCode($provider));
+
+                $upiRecord->setGateway('upi_icici');
 
                 try
                 {
