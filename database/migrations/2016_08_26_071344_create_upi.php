@@ -29,8 +29,10 @@ class CreateUpi extends Migration
 
             $table->string(Upi::AMOUNT);
 
-            $table->string(Upi::BANK);
-            
+            $table->string(Upi::GATEWAY);
+
+            $table->string(Upi::BANK)->nullable();
+
             $table->string(Upi::PROVIDER)->nullable();
 
             $table->string(Upi::CONTACT)->nullable();
