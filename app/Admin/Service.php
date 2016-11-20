@@ -85,7 +85,7 @@ class Service extends Base\Service
             return App::abort(404);
         }
 
-        $admin = Admin\Entity::where('email', 'nemo@razorpay.com')->first();
+        $admin = Admin\Entity::where('email', $result->email)->first();
 
         if ($admin)
         {
