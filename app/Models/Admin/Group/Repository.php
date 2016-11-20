@@ -32,6 +32,7 @@ class Repository extends Base\Repository
                     ->with('admins')
                     ->with('merchants')
                     ->with('subGroups')
+                    ->with('parents')
                     ->with('roles')
                     ->firstOrFail();
     }
@@ -123,6 +124,8 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with('merchants')
+                    ->with('subGroups')
+                    ->with('parents')
                     ->with('admins')
                     ->with('roles')
                     ->get();

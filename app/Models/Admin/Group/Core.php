@@ -28,6 +28,11 @@ class Core extends Base\Core
             $group->subGroups()->sync($input['sub_groups']);
         }
 
+        if (isset($input['parents']) === true)
+        {
+            $group->parents()->sync($input['parents']);
+        }
+
         if (isset($input['roles']) === true)
         {
             $group->roles()->sync($input['roles']);

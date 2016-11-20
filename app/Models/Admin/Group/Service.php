@@ -58,6 +58,18 @@ class Service extends Base\Service
             $input['roles'] = $roleIds;
         }
 
+        if (isset($input['parents']) === true)
+        {
+            $parentGroupIds = [];
+
+            foreach ($input['parents'] as $parentGroupId)
+            {
+                $parentGroupIds[] = Entity::verifyIdAndStripSign($parentGroupId);
+            }
+
+            $input['parents'] = $parentGroupIds;
+        }
+
         $group = $this->core->create($orgId, $input);
 
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
@@ -143,7 +155,7 @@ class Service extends Base\Service
     }
 
     /**
-    * This function gets all org groups and then calls filter on it to 
+    * This function gets all org groups and then calls filter on it to
     * filter out the ones not allowed
     */
     public function fetchAllowedGroups(string $orgId, string $groupId, array $input)

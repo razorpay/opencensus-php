@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         'admins'            => 'sometimes|array',
         'merchants'         => 'sometimes|array',
         'roles'             => 'sometimes|array',
+        'parents'           => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -23,6 +24,7 @@ class Validator extends Base\Validator
         'admins'            => 'sometimes|array',
         'merchants'         => 'sometimes|array',
         'roles'             => 'sometimes|array',
+        'parents'           => 'sometimes|array',
     ];
 
     public function validateCreateInput(string $orgId, array $input)

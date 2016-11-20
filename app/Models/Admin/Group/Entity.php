@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         'roles',
         'merchants',
         'sub_groups',
+        'parents',
     ];
 
     protected $publicSetters = [
@@ -131,6 +132,14 @@ class Entity extends Base\PublicEntity
             foreach ($group['sub_groups'] as $key => $entity)
             {
                 $group['sub_groups'][$key]['id'] = Entity::getSignedId($entity['id']);
+            }
+        }
+
+        if (isset($group['parents']) === true)
+        {
+            foreach ($group['parents'] as $key => $entity)
+            {
+                $group['parents'][$key]['id'] = Entity::getSignedId($entity['id']);
             }
         }
 
