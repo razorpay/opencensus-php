@@ -458,7 +458,6 @@ app.controller('ActionsCtrl', [
       });
 
       request.success(function (data) {
-        console.log(data);
         if (data.success) {
           $scope.alerts.addAlert('success', 'Schedule added successfully', true);
         } else {
