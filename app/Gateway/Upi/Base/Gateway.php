@@ -22,7 +22,7 @@ class Gateway extends Base\Gateway
 
         $payment->setAction($action);
 
-        $payment->setGateway($this->gateway);
+        $payment->setAcquirer($this->gateway);
 
         $payment->fill($attr);
 

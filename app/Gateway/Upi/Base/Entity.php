@@ -10,7 +10,7 @@ class Entity extends Base\Entity
     const ACTION                = 'action';
     const NAME                  = 'name';
     const AMOUNT                = 'amount';
-    const GATEWAY               = 'gateway';
+    const ACQUIRER              = 'acquirer';
     const BANK                  = 'bank';
     const PROVIDER              = 'provider';
     const EMAIL                 = 'email';
@@ -30,7 +30,7 @@ class Entity extends Base\Entity
         self::ID,
         self::ACTION,
         self::AMOUNT,
-        self::GATEWAY,
+        self::ACQUIRER,
         self::BANK,
         self::PROVIDER,
         self::CONTACT,
@@ -47,7 +47,7 @@ class Entity extends Base\Entity
     protected $fillable = array(
         self::ACTION,
         self::AMOUNT,
-        self::GATEWAY,
+        self::ACQUIRER,
         self::BANK,
         self::PROVIDER,
         self::CONTACT,
@@ -65,9 +65,9 @@ class Entity extends Base\Entity
         'amount'  =>  'int'
     );
 
-    public function setGateway($gateway)
+    public function setAcquirer($acquirer)
     {
-        $this->setAttribute(self::GATEWAY, $gateway);
+        $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 
     public function setBank($bank)
