@@ -2270,4 +2270,21 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function assignMerchantSchedule($merchantId, $input)
+    {
+        $error = $data = null;
+
+        //setSchedule
+
+        try
+        {
+            $data = $this->api->merchant->setSchedule($merchantId, $input)->toArray();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+        return null;
+    }
+
 }
