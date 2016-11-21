@@ -33,7 +33,7 @@ class SegmentClient extends Base\Core
     /**
      * Guzzle timeout for posting to lumberjack
      */
-    const CONNECT_TIMEOUT = 1;
+    const CONNECT_TIMEOUT = 5;
 
     /**
      * seperator for array flattening
