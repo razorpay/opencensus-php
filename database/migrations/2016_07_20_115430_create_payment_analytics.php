@@ -81,7 +81,14 @@ class CreatePaymentAnalytics extends Migration
                 ->on(Table::PAYMENT)
                 ->on_delete('restrict');
 
+            $table->foreign(Analytics::MERCHANT_ID)
+                ->references(Merchant\Entity::ID)
+                ->on(Table::MERCHANT)
+                ->on_delete('restrict');
+
             $table->index(Analytics::CHECKOUT_ID);
+            $table->index(Analytics::PAYMENT_ID);
+            $table->index(Analytics::MERCHANT_ID);
 
             $table->index(Analytics::CREATED_AT);
         });
