@@ -8,7 +8,8 @@ app.controller('MerchantDetailCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'riskMap',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap) {
+  '$upload',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, $upload) {
     $scope.riskMap = riskMap;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
@@ -326,12 +327,15 @@ app.controller('MerchantDetailCtrl', [
       });
     };
     $scope.assignTerminal = function (terminal) {
-      var request = $http({
+      var requestData = {
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/terminal',
-        transformRequest: transformRequestAsFormPost,
         data: terminal
-      });
+      };
+      if (typeof terminal.gateway_client_certificate !== 'undefined') {
+        requestData['file'] = terminal.gateway_client_certificate;
+      }
+      var request = $upload.upload(requestData);
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
@@ -1023,8 +1027,21 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('assignTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
-  function ($scope, $modalInstance) {
+  '$upload',
+  function ($scope, $modalInstance, $upload) {
+    $scope.certificate_details = {};
+    $scope.onFileSelect = function ($files, fieldname) {
+      var file = $files[0];
+      if (terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
+        $scope.alerts.addAlert('danger', 'Invalid certificate file', true);
+        return;
+      }
+      $scope.certificate_details.gateway_client_certificate = file;
+    };
     $scope.ok = function (terminal) {
+      if (typeof $scope.certificate_details.gateway_client_certificate !== 'undefined') {
+        terminal.gateway_client_certificate = $scope.certificate_details.gateway_client_certificate;
+      }
       $modalInstance.close(terminal);
     };
     $scope.cancel = function () {

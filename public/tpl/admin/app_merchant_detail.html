@@ -573,7 +573,7 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1,}">
+    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1}" enctype="multipart/form-data">
       <div class="form-group">
         <label class="col-lg-3 control-label">Mode:</label>
         <div class="col-lg-9" >
@@ -672,6 +672,13 @@
         <label for="gateway_secure_secret" class="col-lg-3 control-label">Gateway Secure Secret:</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Gateway Client Certificate:</label>
+        <div class="col-lg-9">
+          <input ui-jq="filestyle" type="file" name="file" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" ng-file-select="onFileSelect($files, 'gateway_client_certificate')">
+          <span class="help-block">Certificate file for FirstData</span>
         </div>
       </div>
       <div class="form-group">

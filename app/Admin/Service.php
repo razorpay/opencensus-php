@@ -1036,6 +1036,12 @@ class Service extends Base\Service
 
             $this->setApiCredentials(null, $mode);
 
+            if (isset($input['gateway_client_certificate']))
+            {
+                $input['gateway_client_certificate'] = $this->encodeGatewayClientCertificate(
+                                                        $input['gateway_client_certificate']);
+            }
+
             try
             {
                 $data = $this->api->merchant->fetch($id)->setTerminal($input)->toArray();
@@ -1047,6 +1053,19 @@ class Service extends Base\Service
         }
 
         return array($error, $data);
+    }
+
+    /**
+     * Encodes gateway client certificate to base64 and sends it to api, where it is
+     * decoded and stored as a file
+     * https://github.com/razorpay/api/blob/master/app/Gateway/FirstData/Gateway.php#L893
+     * @param  certificateFile Certificate file object
+     */
+    protected function encodeGatewayClientCertificate(\SplFileInfo $certificateFile)
+    {
+        $gateway_client_certificate = file_get_contents($certificateFile->getPathname());
+
+        return base64_encode($gateway_client_certificate);
     }
 
     public function fetchMerchantPricing($id)
