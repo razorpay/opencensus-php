@@ -268,7 +268,7 @@ var injectScript = (function () {
 })();
 
 var reactTemplateProvider = function(template) {
-  return function ($q, $stateParams) {
+  return ['$q', '$stateParams', function ($q, $stateParams) {
     var deferred = $q.defer();
     if (!window.React) {
       // Really dirty hack which will vanish soon
@@ -281,5 +281,5 @@ var reactTemplateProvider = function(template) {
       deferred.resolve(template)
     }
     return deferred.promise;
-  }
+  }]
 }
