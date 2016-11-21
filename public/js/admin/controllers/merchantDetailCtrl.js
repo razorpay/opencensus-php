@@ -555,6 +555,15 @@ app.controller('MerchantDetailCtrl', [
       }, $.noop);
     };
 
+    $scope.openAssignSchedule = function() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'assignScheduleModalContent.html',
+        controller: 'assignScheduleModalCtrl'
+      });
+
+    };
+
     $scope.openTagMerchant = function () {
       var tags = $scope.merchant.details.tags || [];
       var modalInstance = $modal.open({
@@ -1428,7 +1437,29 @@ app.controller('MerchantDetailCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
+]).controller('assignScheduleModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  function ($scope, $modalInstance, $http) {
+    $scope.loading = true;
+    $scope.schedule_list = {};
+
+    var request = $http.get('/admin/schedule/list');
+    request.success(function (data) {
+      console.log(data.data.items);
+
+      for (var key in data.data.items) {
+        var value = data.data.items[key];
+        $scope.schedule_list[value.id] = value.name;
+      }
+      $scope.loading = false;
+
+      console.log("list", $scope.schedule_list);
+    });
+  }
 ]);
+
 
 function removeLineBreaks(str) {
   return str.replace(/[\n|\r]/g, ' ')
