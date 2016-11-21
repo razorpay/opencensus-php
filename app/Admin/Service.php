@@ -2274,17 +2274,17 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        //setSchedule
+        $this->setApiCredentials();
 
         try
         {
             $data = $this->api->merchant->setSchedule($merchantId, $input)->toArray();
         }
-        catch (BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error = [$e->getMessage()];
         }
-        return null;
+        return [$error, $data];
     }
 
 }

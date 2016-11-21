@@ -858,11 +858,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postMerchantSchedule($merchantId)
+    public function postMerchantSchedule($id)
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->assignMerchantSchedule($merchantId, $input);
+        list($error, $response) = (new Admin\Service)->assignMerchantSchedule($id, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }

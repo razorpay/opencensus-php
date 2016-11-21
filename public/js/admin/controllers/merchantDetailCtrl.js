@@ -325,6 +325,33 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    $scope.assignSchedule = function (schedule_id) {
+
+      var body = {'settlement_schedule_id':schedule_id};
+
+      var request = $http({
+        method: 'post',
+        url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
+        transformRequest: transformRequestAsFormPost,
+        data: body
+      });
+
+      request.success(function (data){
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Schedule Assigned successfully', true);
+          $scope.merchant.schedule_id = data.data.settlement_schedule_id;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.assignTerminal = function (terminal) {
       var request = $http({
         method: 'post',
@@ -557,10 +584,21 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.openAssignSchedule = function() {
 
+      var currentSchedule = $scope.merchant.schedule_id || '';
+
       var modalInstance = $modal.open({
         templateUrl: 'assignScheduleModalContent.html',
-        controller: 'assignScheduleModalCtrl'
+        controller: 'assignScheduleModalCtrl',
+        resolve: {
+          current: function() {
+            return currentSchedule;
+          }
+        }
       });
+
+      modalInstance.result.then(function (data) {
+        $scope.assignSchedule(data);
+      }, $.noop);
 
     };
 
@@ -1441,13 +1479,14 @@ app.controller('MerchantDetailCtrl', [
   '$scope',
   '$modalInstance',
   '$http',
-  function ($scope, $modalInstance, $http) {
+  'current',
+  function ($scope, $modalInstance, $http, current) {
     $scope.loading = true;
     $scope.schedule_list = {};
+    $scope.schedule_id = current;
 
     var request = $http.get('/admin/schedule/list');
     request.success(function (data) {
-      console.log(data.data.items);
 
       for (var key in data.data.items) {
         var value = data.data.items[key];
@@ -1455,8 +1494,18 @@ app.controller('MerchantDetailCtrl', [
       }
       $scope.loading = false;
 
-      console.log("list", $scope.schedule_list);
     });
+
+    $scope.scheduleListLength = function() {
+      return Object.keys($scope.schedule_list).length;
+    };
+
+    $scope.ok = function (schedule_id) {
+      $modalInstance.close(schedule_id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
   }
 ]);
 
