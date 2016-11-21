@@ -242,7 +242,12 @@ class Generator extends Base\Core
                 $item = $this->createItemFromItemDetails($itemDetails);
             }
 
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice, $item);
+            $lineItem = $this->lineItemCore->create(
+                $lineItemDetails,
+                $this->merchant,
+                $this->invoice,
+                $item
+            );
 
             $lineItems[] = $lineItem;
         }

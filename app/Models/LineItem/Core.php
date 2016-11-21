@@ -3,6 +3,7 @@
 namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Invoice;
 use RZP\Models\Item;
 use RZP\Exception;
@@ -11,13 +12,18 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     /**
-     * @param array          $input
-     * @param Invoice\Entity $invoice
-     * @param Item\Entity    $item
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param Invoice\Entity  $invoice
+     * @param Item\Entity     $item
      *
      * @return Entity
      */
-    public function create(array $input, Invoice\Entity $invoice, Item\Entity $item)
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        Invoice\Entity $invoice,
+        Item\Entity $item)
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_REQUEST,
@@ -33,7 +39,7 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
-        $lineItem->merchant()->associate($this->merchant);
+        $lineItem->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($lineItem);
 
