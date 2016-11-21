@@ -262,11 +262,7 @@ angular.module('app.services', [])
   '$idle',
   function ($q, $http, $timeout, $idle) {
 
-    /**
-     * TODO: return promises instead of thr reference of th variable
-    **/
-
-    var _org;
+    var _org, _roles;
 
     return {
       fetchCurrentOrg: function () {
@@ -290,27 +286,33 @@ angular.module('app.services', [])
         return deferred.promise;
       },
       fetchRoles: function () {
-        var roles = {};
-        $http.get('/admin/generic', {
-          ignoreErrors: true,
-          params: {
-            route_name: 'role_get_multiple'
-          }
-        }).success(function (data) {
-          if (data.success === true) {
-            if (data.data.items.length > 0) {
-              angular.forEach(data.data.items, function (role) {
-                roles[role.id] = role.name;
-              });
+        var deferred = $q.defer();
+
+        if (angular.isDefined(_roles)){
+          deferred.resolve(_roles);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/generic', {
+            ignoreErrors: true,
+            params: {
+              route_name: 'role_get_multiple'
             }
-          }
-          else {
-            roles = {};
-          }
-        }).error(function () {
-          return data.errors
-        });
-        return roles;
+          })
+          .success(function (data) {
+            if (data.success) {
+              _roles = data.data.items;
+              deferred.resolve(_roles);
+            } else {
+              deferred.reject(data.errors);
+            }
+          })
+          .error(function(data) {
+            deferred.reject(data.errors);
+          });
+
+        return deferred.promise;
       },
       fetchGroups: function () {
         var groups = [];

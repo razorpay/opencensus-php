@@ -11,8 +11,15 @@ app.controller('OrgsUsersCtrl', [
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();
-    $scope.roles = organization.fetchRoles();
     $scope.groups = organization.fetchGroups();
+
+    organization.fetchRoles().then(function(roles) {
+      $scope.roles = {};
+
+      angular.forEach(roles, function (role) {
+        $scope.roles[role.id] = role.name;
+      });
+    });
 
     /**
      *  Modals
