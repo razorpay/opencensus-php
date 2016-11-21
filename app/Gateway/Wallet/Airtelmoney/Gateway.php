@@ -597,7 +597,8 @@ class Gateway extends Base\Gateway
 
     protected function setProxy(& $request)
     {
-        if ($this->mode === Mode::LIVE)
+        if (($this->mode === Mode::LIVE) and
+            ($this->proxyEnabled === true))
         {
             $request['options']['proxy'] = $this->proxy;
         }
