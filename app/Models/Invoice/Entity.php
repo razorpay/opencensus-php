@@ -59,8 +59,6 @@ class Entity extends Base\PublicEntity
     const EMAIL_NOTIFY          = 'email_notify';
     const SMS_NOTIFY            = 'sms_notify';
 
-    const DUE_IN                = 'due_in';
-    const SCHEDULED_IN          = 'scheduled_in';
     // Input key to send whether the invoice should be created in draft state
     const DRAFT                 = 'draft';
 
@@ -109,8 +107,8 @@ class Entity extends Base\PublicEntity
     // Fields that can be inserted by ->fill() directly
     // This array should also include the fields mentioned in the generator.
     protected $fillable = [
-        // self::DUE_BY,
-        // self::SCHEDULED_AT,
+        self::DUE_BY,
+        self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
@@ -171,8 +169,8 @@ class Entity extends Base\PublicEntity
         self::ORDER_ID,
         self::LINE_ITEMS,
         self::STATUS,
-        // self::DUE_BY,
-        // self::SCHEDULED_AT,
+        self::DUE_BY,
+        self::SCHEDULED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
@@ -428,28 +426,30 @@ class Entity extends Base\PublicEntity
 
     public function generateDueBy($input)
     {
-        $dueDays = self::DEFAULT_DUE_DAYS;
-
-        if (empty($input[self::DUE_IN]) === false)
+        if (empty($input[self::DUE_BY]) === false)
         {
-            $dueDays = $input[self::DUE_IN];
+            $dueBy = $input[self::DUE_BY];
         }
-
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays($dueDays)->timestamp;
+        else
+        {
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)->timestamp;
+        }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
     }
 
     public function generateScheduledAt($input)
     {
-        $scheduledAt = Carbon::now('Asia/Kolkata');
-
-        if (empty($input[self::SCHEDULED_IN]) === false)
+        if (empty($input[self::SCHEDULED_AT]) === false)
         {
-            $scheduledAt = $scheduledAt->addDays($input[self::SCHEDULED_IN]);
+            $scheduledAt = $input[self::SCHEDULED_AT];
+        }
+        else
+        {
+            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
         }
 
-        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt->timestamp);
+        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
     }
 
     // public function generateDiscount($input)

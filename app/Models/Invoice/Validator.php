@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -13,9 +15,8 @@ class Validator extends Base\Validator
         // Entity::ADJUSTMENT          => 'sometimes|integer',
         // Entity::SHIPPING            => 'sometimes|integer|min:1',
 
-        // If due_in is 0, it will get expired immediately. Hence the minimum value of 1.
-        // Entity::DUE_IN              => 'sometimes|integer|min:1|max:365',
-        // Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
+        Entity::DUE_BY              => 'sometimes|integer',
+        Entity::SCHEDULED_AT        => 'sometimes|integer',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
@@ -61,10 +62,52 @@ class Validator extends Base\Validator
         }
     }
 
-    // protected static $createValidators = [
-    //     Entity::DISCOUNT_FLAT,
-    //     Entity::DISCOUNT_PERCENT,
-    // ];
+    protected static $createValidators = [
+        // Entity::DISCOUNT_FLAT,
+        // Entity::DISCOUNT_PERCENT,
+        Entity::DUE_BY,
+        Entity::SCHEDULED_AT,
+    ];
+
+    public function validateDueBy($input)
+    {
+        // Should be greater than current timestamp
+        if (isset($input[Entity::DUE_BY]) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::DUE_BY] < Carbon::now('Asia/Kolkata')->timestamp)
+        {
+            throw new BadRequestValidationFailureException(
+                'due_by must be greater than current time'
+            );
+        }
+    }
+
+    public function validateScheduledAt($input)
+    {
+        if (isset($input[Entity::SCHEDULED_AT]) === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::DUE_BY]))
+        {
+            $dueBy = $input[Entity::DUE_BY];
+        }
+        else
+        {
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(Entity::DEFAULT_DUE_DAYS)->timestamp;
+        }
+
+        if ($input[Entity::SCHEDULED_AT] >= $dueBy)
+        {
+            throw new BadRequestValidationFailureException(
+                'scheduled_at must be less than due_by'
+            );
+        }
+    }
 
     // public function validateDiscountFlat($input)
     // {

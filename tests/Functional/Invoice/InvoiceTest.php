@@ -167,6 +167,27 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDefaultDueByAndScheduledAt()
+    {
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertNotEmpty($invoice['due_by']);
+        $this->assertNotEmpty($invoice['scheduled_at']);
+        $this->assertLessThan($invoice['due_by'], $invoice['scheduled_at']);
+    }
+
+    public function testCreateInvoiceWithIncorrectDueBy()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithIncorrectScheduledAt()
+    {
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
