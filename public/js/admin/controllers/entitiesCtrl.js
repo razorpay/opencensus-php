@@ -329,8 +329,7 @@ app.controller('EntitiesCtrl', [
       },
       payment_analytics: {
         checkout_id: ['Checkout Id'],
-        payment_id: ['Payment Id'],
-        merchant_id: ['Merchant Id']
+        payment_id: ['Payment Id']
       },
       payment: {
         app_token: ['App Token'],
