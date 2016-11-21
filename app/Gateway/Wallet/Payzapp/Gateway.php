@@ -160,13 +160,6 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if (($input['refund']['amount'] !== $input['payment']['amount']) and
-            ($input['merchant']['id'] !== '2aTeFCKTYWwfrF'))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
-        }
-
         $this->setDomainType();
 
         $request = $this->getRefundRequestContent($input);
@@ -375,7 +368,7 @@ class Gateway extends Base\Gateway
             'amount'                => $input['refund']['amount'],
             'wallet'                => $input['payment']['wallet'],
             'email'                 => $input['payment']['email'],
-            'received'              => 0,
+            'received'              => 1,
             'contact'               => $input['payment']['contact'],
             'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
             'refund_id'             => $input['refund']['id'],
