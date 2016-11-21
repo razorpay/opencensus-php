@@ -6,14 +6,10 @@ use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Item;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * @param array          $input
      * @param Invoice\Entity $invoice
@@ -22,6 +18,14 @@ class Core extends Base\Core
      */
     public function create(array $input, Invoice\Entity $invoice)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_CREATE_REQUEST,
+            [
+                'input'         => $input,
+                'invoice_id'    => $invoice->getId(),
+                'input'         => $input,
+            ]);
+
         // If ITEM_ID set use that otherwise create new item using details provided
         if (isset($input[Entity::ITEM_ID]) === true)
         {

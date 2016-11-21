@@ -11,6 +11,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
+                'ref_num'       => "00000000000001",
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -23,12 +24,12 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'currency' => 'INR',
                 'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
             'content' => [
+                'ref_num'       => "00000000000001",
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
@@ -48,6 +49,7 @@ return [
                 'email_status' => 'sent',
                 'view_less' => true,
                 'amount' => 100000,
+                'currency' => 'INR',
             ],
         ],
     ],
@@ -84,6 +86,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'ref_num'       => null,
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',

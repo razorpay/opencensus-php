@@ -87,7 +87,13 @@ class Generator extends Base\Core
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $this->invoice->getId(),
+                        'input'         => $input,
+                    ]);
             }
 
             throw $e;
@@ -181,6 +187,29 @@ class Generator extends Base\Core
 
             $this->invoice->lineItems()->save($lineItem);
         }
+    }
+
+    protected function getItemFromItemId($itemId)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
+
+        $this->validateInvoiceAndItemCurrency($item->getCurrency());
+
+        return $item;
+    }
+
+    protected function createItemFromItemDetails(array $itemDetails)
+    {
+        if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
+        {
+            $itemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+        }
+
+        $this->validateInvoiceAndItemCurrency($itemDetails[Item\Entity::CURRENCY]);
+
+        $item = (new Item\Core)->create($itemDetails, $this->merchant);
+
+        return $item;
     }
 
     protected function createOrderForInvoice()

@@ -88,10 +88,12 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
+        self::REF_NUM           => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::USER_ID           => null,
+        self::CURRENCY          => 'INR',
     ];
 
     // Generates fields to be filled in the DB.
@@ -129,6 +131,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
+        self::REF_NUM,
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
@@ -161,6 +164,7 @@ class Entity extends Base\PublicEntity
     // Fields to be exposed to the client
     protected $public = [
         self::ID,
+        self::REF_NUM,
         self::ENTITY,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
@@ -320,6 +324,15 @@ class Entity extends Base\PublicEntity
         Status::checkStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+
+        // Sets corresponding timestamps as per new status
+        if (in_array($status, Status::$timestampedStatuses, true))
+        {
+            $timestampKey = $status . '_at';
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
     }
 
     public function setShortUrl($shortUrl)
@@ -349,14 +362,6 @@ class Entity extends Base\PublicEntity
     protected function getLineItemsAttribute()
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
-
-        // Flatten response: Merge item attributes into line_item level.
-        foreach ($lineItems as & $lineItem)
-        {
-            unset($lineItem['item']['id']);
-            $lineItem = array_merge($lineItem, $lineItem['item']);
-            unset($lineItem['item']);
-        }
 
         return $lineItems;
     }

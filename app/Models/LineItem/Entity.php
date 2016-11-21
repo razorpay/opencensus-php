@@ -27,25 +27,32 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::PUBLIC_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::QUANTITY,
+        self::ITEM_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::ITEM_ID,
-        self::ITEM,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $public = [
         self::ID,
         self::QUANTITY,
         self::ITEM_ID,
-        self::ITEM,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $fillable = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::QUANTITY,
     ];
 
@@ -69,6 +76,8 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters Ends --------------------------
 
+    // -------------------------- Public Setters --------------------------
+
     protected function setPublicItemIdAttribute(array & $array)
     {
         $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
@@ -76,8 +85,16 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemAttribute(array & $array)
     {
-        $array[self::ITEM] = $this->item->toArrayPublic();
+        // Flatten response: Merge item attributes into line_item level.
+
+        $item = $this->item->toArrayPublic();
+
+        unset($item[Item\Entity::ID]);
+
+        $array = array_merge($array, $item);
     }
+
+    // -------------------------- Public Setters Ends --------------------------
 
     // -------------------- Relations ---------------------------
 

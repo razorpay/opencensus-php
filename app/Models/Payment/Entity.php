@@ -403,7 +403,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {

@@ -23,8 +23,8 @@ class CreateItems extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->boolean(Entity::ACTIVE)
-                  ->default(true);
+            $table->tinyInteger(Entity::ACTIVE)
+                  ->default(1);
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
@@ -40,6 +40,7 @@ class CreateItems extends Migration
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index(Entity::ACTIVE);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
 

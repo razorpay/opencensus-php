@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'required|custom',
-        Entity::CURRENCY            => 'required|in:INR',
+        Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::STATUS              => 'sometimes|string|min:4|max:7|in:draft,issued',
     ];
@@ -67,7 +67,14 @@ class Validator extends Base\Validator
         if ($itemsCount === 0)
         {
             throw new BadRequestValidationFailureException(
-                'Input must contain at least one input'
+                'Invoice must contain at least one line item.'
+            );
+        }
+
+        if ($itemsCount > 10)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice cannot have more than 10 line items.'
             );
         }
     }
