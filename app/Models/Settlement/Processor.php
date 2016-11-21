@@ -167,6 +167,8 @@ class Processor extends Base\Core
 
             $schedules->callOnEveryItem('updateNextRun');
 
+            $this->repo->saveOrFailCollection($schedules);
+
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
