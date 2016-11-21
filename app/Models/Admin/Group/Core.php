@@ -28,6 +28,11 @@ class Core extends Base\Core
             $group->subGroups()->sync($input['sub_groups']);
         }
 
+        if (isset($input['parents']) === true)
+        {
+            $group->parents()->sync($input['parents']);
+        }
+
         if (isset($input['roles']) === true)
         {
             $group->roles()->sync($input['roles']);
@@ -56,19 +61,9 @@ class Core extends Base\Core
 
         $group->edit($input);
 
-        if (isset($input['admins']) === true)
-        {
-            $group->admins()->sync($input['admins']);
-        }
-
         if (isset($input['sub_groups']) === true)
         {
             $group->subGroups()->sync($input['sub_groups']);
-        }
-
-        if (isset($input['roles']) === true)
-        {
-            $group->roles()->sync($input['roles']);
         }
 
         $this->repo->saveOrFail($group);
@@ -79,4 +74,3 @@ class Core extends Base\Core
         return $group;
     }
 }
-

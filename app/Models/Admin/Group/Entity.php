@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         'roles',
         'merchants',
         'sub_groups',
+        'parents',
     ];
 
     protected $publicSetters = [
@@ -54,16 +55,25 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
     ];
 
-    // Immediate higher groups which have access to this group and its
-    // merchants
-    public function parents()
-    {
-        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
-    }
-
     public function isDeleted()
     {
         return ($this->getAttribute(self::DELETED_AT) !== null);
+    }
+
+    // Immediate higher groups which have access to this
+    // group and its merchants
+    public function parents()
+    {
+        // Since we're doing morphToMany, it'll mean that all the entity IDs
+        // on the **left** in GROUP_MAP will be the parents.
+        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+    }
+
+    public function subGroups()
+    {
+        // Since we're doing morphedByMany, it'll mean all the entity IDs
+        // on the **right** in GROUP_MAP are the children
+        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     // Admins part of this group who have defined permissions
@@ -71,11 +81,6 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('RZP\Models\Admin\Admin\Entity', 'entity', Table::GROUP_MAP);
-    }
-
-    public function subGroups()
-    {
-        return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()
@@ -131,6 +136,14 @@ class Entity extends Base\PublicEntity
             foreach ($group['sub_groups'] as $key => $entity)
             {
                 $group['sub_groups'][$key]['id'] = Entity::getSignedId($entity['id']);
+            }
+        }
+
+        if (isset($group['parents']) === true)
+        {
+            foreach ($group['parents'] as $key => $entity)
+            {
+                $group['parents'][$key]['id'] = Entity::getSignedId($entity['id']);
             }
         }
 

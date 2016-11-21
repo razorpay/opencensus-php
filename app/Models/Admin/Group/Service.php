@@ -58,6 +58,18 @@ class Service extends Base\Service
             $input['roles'] = $roleIds;
         }
 
+        if (isset($input['parents']) === true)
+        {
+            $parentGroupIds = [];
+
+            foreach ($input['parents'] as $parentGroupId)
+            {
+                $parentGroupIds[] = Entity::verifyIdAndStripSign($parentGroupId);
+            }
+
+            $input['parents'] = $parentGroupIds;
+        }
+
         $group = $this->core->create($orgId, $input);
 
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
@@ -82,18 +94,6 @@ class Service extends Base\Service
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $groupId = Entity::verifyIdAndStripSign($groupId);
 
-        if (isset($input['admins']) === true)
-        {
-            $adminIds = [];
-
-            foreach ($input['admins'] as $adminId)
-            {
-                $adminIds[] = Admin\Entity::verifyIdAndStripSign($adminId);
-            }
-
-            $input['admins'] = $adminIds;
-        }
-
         if (isset($input['sub_groups']) === true)
         {
             $groupIds = [];
@@ -104,18 +104,6 @@ class Service extends Base\Service
             }
 
             $input['sub_groups'] = $groupIds;
-        }
-
-        if (isset($input['roles']) === true)
-        {
-            $roleIds = [];
-
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-            }
-
-            $input['roles'] = $roleIds;
         }
 
         $group = $this->core->edit($orgId, $groupId, $input);
@@ -143,7 +131,7 @@ class Service extends Base\Service
     }
 
     /**
-    * This function gets all org groups and then calls filter on it to 
+    * This function gets all org groups and then calls filter on it to
     * filter out the ones not allowed
     */
     public function fetchAllowedGroups(string $orgId, string $groupId, array $input)
@@ -153,6 +141,11 @@ class Service extends Base\Service
 
         $allOrgGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
         $allowedGroups = $this->filterAllowedGroups($orgId, $groupId, $allOrgGroups->all());
+
+        foreach ($allowedGroups as $key => $group)
+        {
+            $group['id'] = "grp_{$group['id']}";
+        }
 
         return $allowedGroups;
     }
