@@ -93,7 +93,7 @@ class Core extends Base\Core
         }
 
         return [
-            'razorpay_payment_id' => Payment\Entity::getSignedId($paymentId)
+            'razorpay_payment_id' => $paymentId
         ];
     }
 

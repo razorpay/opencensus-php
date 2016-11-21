@@ -50,7 +50,6 @@ class CreateItems extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
         });
     }
 

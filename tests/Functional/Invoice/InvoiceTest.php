@@ -55,11 +55,12 @@ class InvoiceTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
         $payment['amount'] = $order->getAmount();
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthAndCapturePayment($payment);
 
         $order = $this->getLastEntity('order', true);
         $invoice = $this->getLastEntity('invoice', true);
 
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
     }
@@ -222,6 +223,7 @@ class InvoiceTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $invoice = $this->getLastEntity('invoice', true);
 
+        $this->assertEquals($capturedPayment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
 
