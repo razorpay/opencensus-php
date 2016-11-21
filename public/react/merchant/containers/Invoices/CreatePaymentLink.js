@@ -83,7 +83,7 @@ export default class CreatePaymentLink extends Component {
     return (
       <div>
         <ModalHeader
-          title='New Payment Link'
+          title='Create Payment Link'
           onCloseClick={this.props.closeModal}
         />
 
@@ -118,7 +118,7 @@ export default class CreatePaymentLink extends Component {
 
             <div class='form-group'>
               <label class='col-md-3 control-label help-label'>
-                <div>Name</div>
+                <div>Item Name</div>
                 <small>Product/Service</small>
               </label>
               <div class='col-md-8'>

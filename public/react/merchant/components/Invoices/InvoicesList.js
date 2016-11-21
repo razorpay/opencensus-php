@@ -24,7 +24,7 @@ const InvoiceListItem = ({ invoice }) => {
       <td class='text-right'>
         <Amount value={invoice.amount} />
       </td>
-      <td>
+      <td class='text-right'>
         <InvoiceStatus status={invoice.status} />
       </td>
     </tr>
@@ -54,7 +54,7 @@ export default ({ invoices, isLoading }) => {
             <th>Customer</th>
             <th>Payment Link</th>
             <th class='text-right'>Amount (INR)</th>
-            <th>Status</th>
+            <th class='text-right'>Status</th>
           </tr>
         </thead>
         <tbody>

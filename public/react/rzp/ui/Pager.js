@@ -33,7 +33,7 @@ export default class Pager extends Component {
         margin: '20px'
       }}>
         {
-          length ?
+          !(nextDisabled && prevDisabled) ?
           <div class='btn-group pull-right'>
             <button
               type='button'
