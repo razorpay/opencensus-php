@@ -2284,6 +2284,25 @@ class Service extends Base\Service
         {
             $error = [$e->getMessage()];
         }
+
+        return [$error, $data];
+    }
+
+    public function createSchedule($input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->schedule->create($input);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
         return [$error, $data];
     }
 

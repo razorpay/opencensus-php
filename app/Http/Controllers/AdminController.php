@@ -866,4 +866,13 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    public function createSchedule()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->createSchedule($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }
