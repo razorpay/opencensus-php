@@ -71,18 +71,6 @@ app.controller('AddGroupCtrl', [
       });
     }
 
-    $scope.selectAllUsers = function() {
-      $scope.selected_users = {};
-
-      if (!$scope.select_all_users) {
-        return;
-      }
-
-      $scope.users.map(function(user){
-        $scope.selected_users[user.id] = true;
-      });
-    }
-
     $scope.save = function (group) {
       var body = group;
 
