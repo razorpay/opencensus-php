@@ -287,7 +287,13 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList2,
         freecharge: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
-        receipt_email_enabled: booleanList
+        receipt_email_enabled: booleanList,
+        fee_bearer: [
+            'all',
+            'platform',
+            'customer'
+        ],
+        hold_funds: booleanList
       },
       methods: {
         amex: booleanList,
@@ -301,7 +307,7 @@ app.controller('EntitiesCtrl', [
         olamoney: booleanList,
         upi: booleanList,
         airtelmoney: booleanList,
-        freecharge: booleanList,
+        freecharge: booleanList
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
