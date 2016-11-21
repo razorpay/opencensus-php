@@ -64,7 +64,7 @@ export default ({ invoice, isLoading }) => {
                 <span
                   class={`pull-right ${notificationClassMap[invoice.email_status]}`}
                 >
-                  {invoice.email_status}
+                  {invoice.email_status ? invoice.email_status : '--'}
                 </span>
                 Email Status
               </div>
@@ -73,7 +73,7 @@ export default ({ invoice, isLoading }) => {
                 <span
                   class={`pull-right ${notificationClassMap[invoice.sms_status]}`}
                 >
-                  {invoice.sms_status}
+                  {invoice.sms_status ? invoice.sms_status : '--'}
                 </span>
                 SMS Status
               </div>

@@ -8,14 +8,14 @@ import store from './store'
 
 // import './mocks/faker'
 
-import CustomersListContainer from './containers/Customers/List'
-import ItemsListContainer from './containers/Items/List'
+// import CustomersListContainer from './containers/Customers/List'
+// import ItemsListContainer from './containers/Items/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
 import InvoiceDetailsContainer from './containers/Invoices/Details'
-import PlansListContainer from './containers/Plans/List'
-import SubscriptionsListContainer from './containers/Subscriptions/List'
-import SubscriptionsNewContainer from './containers/Subscriptions/New'
+// import PlansListContainer from './containers/Plans/List'
+// import SubscriptionsListContainer from './containers/Subscriptions/List'
+// import SubscriptionsNewContainer from './containers/Subscriptions/New'
 
 
 // This is required for ngReact. Remove this finally
@@ -69,11 +69,11 @@ function createNgDirective(directiveName, component, ...args) {
   ])
 }
 
-createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoicesNew', InvoicesNewContainer)
-createNgDirective('subscriptionsList', SubscriptionsListContainer)
-createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
-createNgDirective('customersList', CustomersListContainer)
-createNgDirective('plansList', PlansListContainer)
-createNgDirective('itemsList', ItemsListContainer)
+createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
+// createNgDirective('subscriptionsList', SubscriptionsListContainer)
+// createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
+// createNgDirective('customersList', CustomersListContainer)
+// createNgDirective('plansList', PlansListContainer)
+// createNgDirective('itemsList', ItemsListContainer)
