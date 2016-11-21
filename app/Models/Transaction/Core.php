@@ -412,7 +412,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateAmountCredits(Entity $txn, Payment\Entity $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
         assert ($txn->isTypePayment() === true);
 
