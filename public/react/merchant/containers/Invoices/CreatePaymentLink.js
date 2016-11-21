@@ -92,9 +92,9 @@ export default class CreatePaymentLink extends Component {
           message={this.state.errors}
         />
 
-        <form class='form-horizontal'>
+        <form class='form-horizontal payment-link-form'>
           <div class='modal-body'>
-            <div class='form-group'>
+            <div class='form-group customer'>
               <label class='col-md-3 control-label'>Customer</label>
               <div class='col-md-4'>
                 <Field
@@ -106,7 +106,7 @@ export default class CreatePaymentLink extends Component {
                 />
               </div>
 
-              <div class='col-md-4'>
+              <div class='col-md-4 or-separator'>
                 <Field
                   name='customer[email]'
                   component={InputField}
@@ -117,7 +117,10 @@ export default class CreatePaymentLink extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Product/Service Name</label>
+              <label class='col-md-3 control-label help-label'>
+                <div>Name</div>
+                <small>Product/Service</small>
+              </label>
               <div class='col-md-8'>
                 <Field
                   name='line_items[0][name]'
@@ -128,7 +131,10 @@ export default class CreatePaymentLink extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Amount</label>
+              <label class='col-md-3 control-label help-label'>
+                <div>Amount</div>
+                <small>(in INR)</small>
+              </label>
               <div class='col-md-8'>
                 <Field
                   name='line_items[0][amount]'
@@ -139,24 +145,23 @@ export default class CreatePaymentLink extends Component {
             </div>
 
             <div class='form-group'>
-              <div class='checkbox col-md-8 col-md-offset-3'>
-                <label>
+              <label class='col-md-3 control-label'>Notify Customer</label>
+              <div class='col-md-8'>
+                <label class='checkbox-inline'>
                   <Field
                     name='sms_notify'
                     component='input'
                     type='checkbox'
                   />
-                  Send via SMS
+                  SMS
                 </label>
-              </div>
-              <div class='checkbox col-md-8 col-md-offset-3'>
-                <label>
+                <label class='checkbox-inline'>
                   <Field
                     name='email_notify'
                     component='input'
                     type='checkbox'
                   />
-                  Send via email
+                  Email
                 </label>
               </div>
             </div>
