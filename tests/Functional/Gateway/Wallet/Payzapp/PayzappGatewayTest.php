@@ -96,6 +96,16 @@ class PayzappGatewayTest extends TestCase
 
         $payment = $this->capturePayment($response['razorpay_payment_id'], $payment['amount']);
 
+        $this->mockServerContentFunction(function (&$content, $action) use ($refundAmount)
+        {
+            if ($action === 'refund')
+            {
+                $assertion = ($content['amount'] === $refundAmount);
+
+                assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
         $data = $this->testData[__FUNCTION__];
 
         $this->refundPayment($payment['id'], $refundAmount);
@@ -149,10 +159,6 @@ class PayzappGatewayTest extends TestCase
             $this->ba->noAuth();
             $request = $this->makeFirstGatewayPaymentMockRequest(
                                                 $url, $method, $content);
-        }
-        else
-        {
-            ;
         }
 
         return $this->submitPaymentCallbackRequest($request);
