@@ -94,18 +94,6 @@ class Service extends Base\Service
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $groupId = Entity::verifyIdAndStripSign($groupId);
 
-        if (isset($input['admins']) === true)
-        {
-            $adminIds = [];
-
-            foreach ($input['admins'] as $adminId)
-            {
-                $adminIds[] = Admin\Entity::verifyIdAndStripSign($adminId);
-            }
-
-            $input['admins'] = $adminIds;
-        }
-
         if (isset($input['sub_groups']) === true)
         {
             $groupIds = [];
@@ -116,18 +104,6 @@ class Service extends Base\Service
             }
 
             $input['sub_groups'] = $groupIds;
-        }
-
-        if (isset($input['roles']) === true)
-        {
-            $roleIds = [];
-
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-            }
-
-            $input['roles'] = $roleIds;
         }
 
         $group = $this->core->edit($orgId, $groupId, $input);
@@ -165,6 +141,11 @@ class Service extends Base\Service
 
         $allOrgGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
         $allowedGroups = $this->filterAllowedGroups($orgId, $groupId, $allOrgGroups->all());
+
+        foreach ($allowedGroups as $key => $group)
+        {
+            $group['id'] = "grp_{$group['id']}";
+        }
 
         return $allowedGroups;
     }
