@@ -77,9 +77,9 @@
       </a>
     </li>
 
-    <li ng-show="merchant">
+    <li ng-show="merchant && user.tags.indexOf('Invoice') != -1">
       <a id="invoicesNav" ui-sref="app.invoices">
-        <i class="fa fa-inr text-primary-lter"></i>
+        <i class="fa fa-money text-primary-lter"></i>
         <span>Invoices</span>
       </a>
     </li>

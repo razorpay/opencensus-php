@@ -48,7 +48,7 @@ export default ({ invoices, isLoading }) => {
           <tr>
             <th>Invoice Date</th>
             <th>Status</th>
-            <th>Customer Name</th>
+            <th>Customer</th>
             <th>Payment Link</th>
             <th class='text-right'>Amount (INR)</th>
           </tr>
