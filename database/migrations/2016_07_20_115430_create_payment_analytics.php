@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class CreatePaymentAnalytics extends Migration
