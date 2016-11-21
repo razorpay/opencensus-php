@@ -1221,4 +1221,9 @@ ALTER TABLE adjustment
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
 
 ALTER TABLE payment_analytics
-    ADD COLUMN merchant_id VARCHAR(14) NOT NULL AFTER payment_id;
+    ADD COLUMN merchant_id VARCHAR(14) NOT NULL AFTER payment_id,
+    ADD INDEX payment_analytics_merchant_id_index (merchant_id),
+    ADD INDEX payment_analytics_payment_id_index (payment_id);
+
+ALTER TABLE payment_analytics
+    ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
