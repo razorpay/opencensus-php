@@ -346,7 +346,7 @@ class Razorpay_Sniffs_Operators_OperatorSpacingSniff implements PHP_CodeSniffer_
                 (($found !== 'newline') or ($this->ignoreNewlines === false))
             )
             {
-                $error = 'Expected You 1 space after "%s"; %s found';
+                $error = 'Expected 1 space after "%s"; %s found';
                 $data  = array(
                     $operator,
                     $found,
