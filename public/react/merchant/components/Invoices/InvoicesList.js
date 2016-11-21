@@ -20,6 +20,7 @@ const InvoiceListItem = ({ invoice }) => {
           invoice.customer_details.customer_contact
         }
       </td>
+      <td>{invoice.short_url}</td>
       <td class='text-right'>
         <Amount value={invoice.amount} />
       </td>
@@ -48,6 +49,7 @@ export default ({ invoices, isLoading }) => {
             <th>Invoice Date</th>
             <th>Status</th>
             <th>Customer Name</th>
+            <th>Payment Link</th>
             <th class='text-right'>Amount (INR)</th>
           </tr>
         </thead>
