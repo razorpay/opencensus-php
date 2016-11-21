@@ -15,7 +15,6 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-
 class FeeCalculator
 {
     const SERVICE_TAX_PERCENT = 15.0;
@@ -75,9 +74,9 @@ class FeeCalculator
     {
         $fee = $this->calculateRzpFee($rule, $amount);
 
-        $totaltaxes = $this->calculateServiceTaxes($fee, self::TAX_COMPONENTS);
+        $totalTaxes = $this->calculateServiceTaxes($fee, self::TAX_COMPONENTS);
 
-        $totalFees = $fee + $totaltaxes;
+        $totalFees = $fee + $totalTaxes;
 
         if ($totalFees > $amount)
         {
@@ -86,7 +85,7 @@ class FeeCalculator
                 Payment\Entity::AMOUNT);
         }
 
-        return  array($totalFees, $totaltaxes);
+        return array($totalFees, $totalTaxes);
     }
 
     public static function getServiceTaxRate()
@@ -527,7 +526,6 @@ class FeeCalculator
                                 $fee,
                                 $rule->getId());
 
-
         $this->feesSplit->push($rzpFee);
 
         return $fee;
@@ -535,8 +533,6 @@ class FeeCalculator
 
     public function calculateServiceTaxes($fee, $taxComponents)
     {
-        $totaltaxes = 0;
-
         $splitTaxes = 0;
 
         $totalTaxPercentage = 0;
@@ -546,11 +542,11 @@ class FeeCalculator
             $totalTaxPercentage += $taxPercentage;
         }
 
-        $totaltaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+        $totalTaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
 
         foreach ($taxComponents as $name => $percentage)
         {
-            $taxValue = (int) round(($percentage * $totaltaxes) / $totalTaxPercentage);
+            $taxValue = (int) round(($percentage * $totalTaxes) / $totalTaxPercentage);
 
             $taxBreakup = $this->createFeeBreakup(
                                             $name,
@@ -563,18 +559,18 @@ class FeeCalculator
         }
 
         // TODO: Find a cleaner approach to encounter the difference in tax
-        if ($totaltaxes !== $splitTaxes)
+        if ($totalTaxes !== $splitTaxes)
         {
             foreach ($this->feesSplit as & $feeSplit)
             {
                 if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
                 {
-                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totaltaxes - $splitTaxes);
+                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totalTaxes - $splitTaxes);
                 }
             }
         }
 
-        return $totaltaxes;
+        return $totalTaxes;
     }
 
     public function calculateServiceTaxesFromFees($fee, $taxComponents = self::TAX_COMPONENTS)
