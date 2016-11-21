@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { createInvoice, appendInvoiceToList } from 'merchant/modules/invoices'
+import { createInvoice, appendInvoiceToList } from 'merchant/modules/invoices/list'
 
 function validate(values) {
   let errors = {}

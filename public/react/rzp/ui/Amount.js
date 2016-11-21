@@ -1,5 +1,5 @@
-export default ({ value }) => {
+export default ({ value, ...attrs }) => {
   return (
-    <span>{(value/100).toFixed(2)}</span>
+    <span {...attrs}>{(value/100).toFixed(2)}</span>
   )
 }

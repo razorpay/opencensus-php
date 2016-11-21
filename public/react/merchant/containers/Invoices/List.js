@@ -4,7 +4,7 @@ import Header from 'rzp/ui/Header'
 import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 
-import { fetchInvoices } from 'merchant/modules/invoices'
+import { fetchInvoices } from 'merchant/modules/invoices/list'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 import ModalContainer from 'merchant/containers/ModalContainer'
 import CreatePaymentLink from './CreatePaymentLink'

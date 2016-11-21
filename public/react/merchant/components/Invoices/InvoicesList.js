@@ -7,12 +7,11 @@ import InvoiceStatus from './InvoiceStatus'
 const InvoiceListItem = ({ invoice }) => {
   return (
     <tr>
-      <td>{invoice.id}</td>
       <td>
-        <Time value={invoice.date} />
+        <a href={`#/app/invoices/${invoice.id}`}>{invoice.id}</a>
       </td>
       <td>
-        <InvoiceStatus status={invoice.status} />
+        <Time value={invoice.date} />
       </td>
       <td>
         {
@@ -24,6 +23,9 @@ const InvoiceListItem = ({ invoice }) => {
       <td>{invoice.short_url}</td>
       <td class='text-right'>
         <Amount value={invoice.amount} />
+      </td>
+      <td>
+        <InvoiceStatus status={invoice.status} />
       </td>
     </tr>
   )
@@ -49,10 +51,10 @@ export default ({ invoices, isLoading }) => {
           <tr>
             <th>Invoice Id</th>
             <th>Invoice Date</th>
-            <th>Status</th>
             <th>Customer</th>
             <th>Payment Link</th>
             <th class='text-right'>Amount (INR)</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>

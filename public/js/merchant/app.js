@@ -173,6 +173,12 @@ var app = angular.module('app', [
     .state('app.invoices', {
       url: '/invoices',
       templateProvider: reactTemplateProvider('<invoices-list />')
+    }).state('app.invoicedetails', {
+      url: '/invoices/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.invoiceId = $stateParams.id
+      }],
+      templateProvider: reactTemplateProvider('<invoice-detail id="invoiceId" />')
     }).state('app.invoicesnew', {
       url: '/invoices/new',
       templateProvider: reactTemplateProvider('<invoices-new />')
