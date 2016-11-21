@@ -133,6 +133,14 @@ class Service extends Base\Service
     /**
     * This function gets all org groups and then calls filter on it to
     * filter out the ones not allowed
+    *
+    * Logic: Imagine a graph (feel free to draw a tree for better
+    * visualization though). For a selected node (group in our case)
+    * remove:
+    *
+    * - Its **siblings**.
+    * - Its **direct** parent-linked chain.
+    * - Its **siblings** and its **own** child hierarchy.
     */
     public function fetchAllowedGroups(string $orgId, string $groupId, array $input)
     {
