@@ -76,7 +76,6 @@ app.controller('AddGroupCtrl', [
       var body = group;
 
       body.sub_groups = [];
-      body.admins = [];
 
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
@@ -86,27 +85,6 @@ app.controller('AddGroupCtrl', [
 
         }
       }
-
-      // for (var key in $scope.selected_users) {
-      //   if ($scope.selected_users.hasOwnProperty(key)) {
-
-      //     if ($scope.selected_users[key]) {
-      //       body.admins.push(key);
-      //     }
-
-      //   }
-      // }
-
-      // var request = $http({
-      //   url: '/admin/generic',
-      //   method: 'POST',
-      //   params: {
-      //     route_name: 'group_create'
-      //   },
-      //   data: {
-      //     body: body
-      //   }
-      // });
 
       if ($scope.group_id) {
         // Edit
