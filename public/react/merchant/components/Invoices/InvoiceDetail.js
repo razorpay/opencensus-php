@@ -4,6 +4,11 @@ import Spinner from 'rzp/ui/Spinner'
 import ListGroupToggler from 'rzp/ui/ListGroupToggler'
 import InvoiceStatus from './InvoiceStatus'
 
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning'
+}
+
 export default ({ invoice, isLoading }) => {
   return (
     <div>
@@ -56,12 +61,20 @@ export default ({ invoice, isLoading }) => {
               </div>
 
               <div class='list-group-item'>
-                <span class='pull-right'>{invoice.email_status}</span>
+                <span
+                  class={`pull-right ${notificationClassMap[invoice.email_status]}`}
+                >
+                  {invoice.email_status}
+                </span>
                 Email Status
               </div>
 
               <div class='list-group-item'>
-                <span class='pull-right'>{invoice.sms_status}</span>
+                <span
+                  class={`pull-right ${notificationClassMap[invoice.sms_status]}`}
+                >
+                  {invoice.sms_status}
+                </span>
                 SMS Status
               </div>
 
