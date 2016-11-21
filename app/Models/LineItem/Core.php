@@ -33,6 +33,8 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
+        $lineItem->merchant()->associate($this->merchant);
+
         $this->repo->saveOrFail($lineItem);
 
         return $lineItem;
