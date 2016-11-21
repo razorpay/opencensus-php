@@ -185,7 +185,7 @@ class Handler extends Base\Handler
         $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['name']);
 
         $s3ContentObj = [
-            'ContentType' => $fileDetails['extension'],
+            'ContentType' => $fileDetails['mime'],
             'SourceFile'  => $fileDetails['path'],
             'Metadata'    => $fileDetails['metadata'],
         ];
