@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attr);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         return $payment;
     }
