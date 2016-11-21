@@ -36,11 +36,18 @@ class Core extends Base\Core
     {
         $this->checkIfInDrafStatus($invoice);
 
-        $invoice->edit($input);
+        $this->repo->transaction(
+            function() use ($invoice, $input)
+            {
+                $this->consumeExtraInputKeys($invoice, $input);
 
-        (new Generator($this->merchant, $invoice))->ensureCustomerAssociation($input);
+                $invoice->edit($input);
 
-        $this->repo->saveOrFail($invoice);
+                (new Generator($this->merchant, $invoice))->ensureCustomerAssociation($input);
+
+                $this->repo->saveOrFail($invoice);
+            }
+        );
 
         return $invoice;
     }

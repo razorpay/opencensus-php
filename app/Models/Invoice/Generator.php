@@ -189,29 +189,6 @@ class Generator extends Base\Core
         }
     }
 
-    protected function getItemFromItemId($itemId)
-    {
-        $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
-
-        $this->validateInvoiceAndItemCurrency($item->getCurrency());
-
-        return $item;
-    }
-
-    protected function createItemFromItemDetails(array $itemDetails)
-    {
-        if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
-        {
-            $itemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
-        }
-
-        $this->validateInvoiceAndItemCurrency($itemDetails[Item\Entity::CURRENCY]);
-
-        $item = (new Item\Core)->create($itemDetails, $this->merchant);
-
-        return $item;
-    }
-
     protected function createOrderForInvoice()
     {
         $orderAmount = $this->invoice->getAmount();

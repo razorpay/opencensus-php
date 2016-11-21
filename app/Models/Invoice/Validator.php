@@ -31,12 +31,9 @@ class Validator extends Base\Validator
         Entity::LINE_ITEMS          => 'required|custom',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::STATUS              => 'sometimes|string|min:4|max:7|in:draft,issued',
     ];
 
     protected static $editRules  = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
@@ -46,9 +43,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
-        // Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::STATUS              => 'sometimes|string|min:4|max:7|in:draft,issued',
     ];
 
     public function validateSource($attribute, $value)
