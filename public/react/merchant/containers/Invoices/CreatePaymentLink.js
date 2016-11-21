@@ -66,6 +66,7 @@ export default class CreatePaymentLink extends Component {
       name: item.name,
       amount: item.amount * 100
     })
+    props.type = 'link'
     return this.props.createInvoice(props).then((response) => {
       this.props.appendInvoiceToList(response.data)
       this.props.closeModal()
