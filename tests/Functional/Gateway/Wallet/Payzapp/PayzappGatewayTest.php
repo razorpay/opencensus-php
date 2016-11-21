@@ -88,6 +88,8 @@ class PayzappGatewayTest extends TestCase
 
     public function testPartialRefund()
     {
+        $this->markTestSkipped('Partial not supported right now');
+
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
         $response = $this->doAuthPayment($payment);

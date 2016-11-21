@@ -160,6 +160,13 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        if (($input['refund']['amount'] !== $input['payment']['amount']) and
+            ($input['merchant']['id'] !== '2aTeFCKTYWwfrF'))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED);
+        }
+
         $this->setDomainType();
 
         $request = $this->getRefundRequestContent($input);
@@ -216,10 +223,10 @@ class Gateway extends Base\Gateway
     protected function pickupData($input)
     {
         $content = array(
-            'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
-            'dataPickupCode'    =>      $input['gateway']['dataPickUpCode'],
-            'merTxnId'          =>      $input['gateway']['merTxnId'],
-            'merchantInfo'      =>      array(
+            'wibmoTxnId'        => $input['gateway']['wibmoTxnId'],
+            'dataPickupCode'    => $input['gateway']['dataPickUpCode'],
+            'merTxnId'          => $input['gateway']['merTxnId'],
+            'merchantInfo'      => array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
                 'merAppId'              => $input['terminal']['gateway_terminal_id'],
                 'merCountryCode'        => 'IN',
@@ -334,10 +341,10 @@ class Gateway extends Base\Gateway
         $responseDescription = $this->getResponseDescription($txnStatus);
 
         $postVerifyAttributes = array(
-            'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $responseDescription,
-            'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $responseDescription,
+            'response_code'         => $txnStatus['pg_error_code'],
+            'response_description'  => $responseDescription,
+            'status_code'           => $txnStatus['status'],
+            'error_message'         => $responseDescription,
         );
 
         // If the wallet entity does not have an acosa transaction id, fill it.
@@ -363,19 +370,19 @@ class Gateway extends Base\Gateway
     protected function getRefundEntityAttributesFromRefundResponse($input, $content)
     {
         $refundAttributes = array(
-            'payment_id'            =>    $input['payment']['id'],
-            'action'                =>    $this->action,
-            'amount'                =>    $input['refund']['amount'],
-            'wallet'                =>    $input['payment']['wallet'],
-            'email'                 =>    $input['payment']['email'],
-            'received'              =>    0,
-            'contact'               =>    $input['payment']['contact'],
-            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
-            'refund_id'             =>    $input['refund']['id'],
-            'response_code'         =>    $content['pg_error_code'],
-            'response_description'  =>    $content['pg_error_detail'],
-            'status_code'           =>    $content['status'],
-            'error_message'         =>    $content['pg_error_detail'],
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['refund']['amount'],
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'received'              => 0,
+            'contact'               => $input['payment']['contact'],
+            'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
+            'refund_id'             => $input['refund']['id'],
+            'response_code'         => $content['pg_error_code'],
+            'response_description'  => $content['pg_error_detail'],
+            'status_code'           => $content['status'],
+            'error_message'         => $content['pg_error_detail'],
         );
 
         if (isset($content['new_transaction_id']))
