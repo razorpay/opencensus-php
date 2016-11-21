@@ -468,9 +468,6 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::TRAN_DATE],
             DateFormat::TRAN_DATE_FORMAT);
 
-        //TODO Temporary solution for checksum
-        $this->verifyPaymentInAuthorize($input, $content);
-
         // Create a payment gateway entity and save it.
         $contentToSave = [
             ResponseFields::STATUS     => $content[ResponseFields::STATUS],
@@ -485,6 +482,10 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+        //TODO Temporary solution for checksum
+        $this->verifyPaymentInAuthorize($input, $content);
+
     }
 
     protected function verifyPaymentInAuthorize(array $input, array $content)
@@ -596,7 +597,8 @@ class Gateway extends Base\Gateway
 
     protected function setProxy(& $request)
     {
-        if ($this->mode === Mode::LIVE)
+        if (($this->mode === Mode::LIVE) and
+            ($this->proxyEnabled === true))
         {
             $request['options']['proxy'] = $this->proxy;
         }
