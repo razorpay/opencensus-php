@@ -151,3 +151,17 @@ tr:hover .row-action > .btn-group {
     color: #d8b617;
   }
 }
+
+@keyframes luminate {
+  from {
+    background-color: rgba(255, 255, 163, 0.75)
+  }
+
+  to {
+    background-color: transparent
+  }
+}
+
+.table > tbody > tr.luminate > td {
+  animation: luminate 3s linear;
+}

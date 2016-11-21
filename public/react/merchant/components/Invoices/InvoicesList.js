@@ -4,9 +4,9 @@ import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
 
-const InvoiceListItem = ({ invoice }) => {
+const InvoiceListItem = ({ invoice, ...attrs }) => {
   return (
-    <tr>
+    <tr {...attrs}>
       <td>
         <a href={`#/app/invoices/${invoice.id}`}>{invoice.id}</a>
       </td>
@@ -31,14 +31,18 @@ const InvoiceListItem = ({ invoice }) => {
   )
 }
 
-export default ({ invoices, isLoading }) => {
+export default ({ invoices, isLoading, highlightRow = () => {} }) => {
   let tableRowComponent
 
   if (isLoading) {
     tableRowComponent = <TableLoader colSpan='6' />
   } else if (invoices.length) {
-    tableRowComponent = invoices.map(
-      (invoice) => <InvoiceListItem key={invoice.id} invoice={invoice} />
+    tableRowComponent = invoices.map((invoice) =>
+      <InvoiceListItem
+        key={invoice.id}
+        invoice={invoice}
+        class={highlightRow(invoice) ? 'luminate' : ''}
+      />
     )
   } else {
     tableRowComponent = <EmptyTableRow colSpan='9' message='No Invoices found!' />

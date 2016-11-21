@@ -18,6 +18,8 @@ export default class InvoicesListContainer extends ModalContainer {
     super(...arguments)
     this.state.skip = 0
     this.state.count = 25
+    this.state.highlightRowId = null
+
     this.fetchInvoices = ::this.fetchInvoices
   }
 
@@ -44,7 +46,7 @@ export default class InvoicesListContainer extends ModalContainer {
 
     return (
       <div>
-        <Header title='Invoices (Link)'>
+        <Header title={`Invoices (Link) - Total ${invoices.length}`}>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={this.openModal}
@@ -56,7 +58,11 @@ export default class InvoicesListContainer extends ModalContainer {
 
         <div class='content-wrapper'>
           <div class='panel panel-default'>
-            <InvoicesList invoices={invoices} isLoading={loading} />
+            <InvoicesList
+              invoices={invoices}
+              isLoading={loading}
+              highlightRow={(invoice) => invoice.id === this.state.highlightRowId}
+            />
 
             <Pager
               count={this.state.count}
@@ -73,7 +79,11 @@ export default class InvoicesListContainer extends ModalContainer {
           closeTimeoutMS={300}
         >
           <CreatePaymentLink
-            onSave={this.refreshList}
+            onSave={(invoice) => {
+              this.setState({
+                highlightRowId: invoice.id
+              })
+            }}
             closeModal={this.closeModal}
           />
         </Modal>

@@ -80,8 +80,8 @@ export default ({ invoice, isLoading }) => {
 
               <ListGroupToggler label='Items'>
                 {
-                  invoice.line_items.map((item) => (
-                    <div class='list-group-item'>
+                  invoice.line_items.map((item, index) => (
+                    <div class='list-group-item' key={index}>
                       <Amount class='pull-right' value={item.amount} />
                       {item.name}
                     </div>

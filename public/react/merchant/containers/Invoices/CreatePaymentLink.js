@@ -69,6 +69,7 @@ export default class CreatePaymentLink extends Component {
     props.type = 'link'
     return this.props.createInvoice(props).then((response) => {
       this.props.appendInvoiceToList(response.data)
+      this.props.onSave(response.data)
       this.props.closeModal()
     }).catch(({ errors }) => {
       this.setState({

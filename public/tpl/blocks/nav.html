@@ -28,6 +28,12 @@
         <span>Refunds</span>
       </a>
     </li>
+    <li ng-show="merchant && user.tags.indexOf('Invoice') != -1">
+      <a id="invoicesNav" ui-sref="app.invoices">
+        <i class="fa fa-money text-primary-lter"></i>
+        <span>Invoices</span>
+      </a>
+    </li>
     <li ng-show="merchant" not-my-role="sellerapp support">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
@@ -74,13 +80,6 @@
         <i class="fa fa-gift icon text-danger-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>
         <span>Referrals</span>
-      </a>
-    </li>
-
-    <li ng-show="merchant && user.tags.indexOf('Invoice') != -1">
-      <a id="invoicesNav" ui-sref="app.invoices">
-        <i class="fa fa-money text-primary-lter"></i>
-        <span>Invoices</span>
       </a>
     </li>
 
