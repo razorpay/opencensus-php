@@ -183,7 +183,7 @@ class Generator extends Base\Core
     {
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->invoice);
+            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant, $this->invoice);
 
             $this->invoice->lineItems()->save($lineItem);
         }

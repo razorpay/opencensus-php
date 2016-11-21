@@ -59,8 +59,6 @@ class Entity extends Base\PublicEntity
     const EMAIL_NOTIFY          = 'email_notify';
     const SMS_NOTIFY            = 'sms_notify';
 
-    const DUE_IN                = 'due_in';
-    const SCHEDULED_IN          = 'scheduled_in';
     // Input key to send whether the invoice should be created in draft state
     const DRAFT                 = 'draft';
 
@@ -428,28 +426,30 @@ class Entity extends Base\PublicEntity
 
     public function generateDueBy($input)
     {
-        $dueDays = self::DEFAULT_DUE_DAYS;
-
-        if (empty($input[self::DUE_IN]) === false)
+        if (empty($input[self::DUE_BY]) === false)
         {
-            $dueDays = $input[self::DUE_IN];
+            $dueBy = $input[self::DUE_BY];
         }
-
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays($dueDays)->timestamp;
+        else
+        {
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)->timestamp;
+        }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
     }
 
     public function generateScheduledAt($input)
     {
-        $scheduledAt = Carbon::now('Asia/Kolkata');
-
-        if (empty($input[self::SCHEDULED_IN]) === false)
+        if (empty($input[self::SCHEDULED_AT]) === false)
         {
-            $scheduledAt = $scheduledAt->addDays($input[self::SCHEDULED_IN]);
+            $scheduledAt = $input[self::SCHEDULED_AT];
+        }
+        else
+        {
+            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
         }
 
-        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt->timestamp);
+        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
     }
 
     // public function generateDiscount($input)

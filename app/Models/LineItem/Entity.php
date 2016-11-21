@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
 {
     const ENTITY_ID        = 'entity_id';
     const ENTITY_TYPE      = 'entity_type';
+    const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
     const QUANTITY         = 'quantity';
 
@@ -106,6 +107,11 @@ class Entity extends Base\PublicEntity
     public function item()
     {
         return $this->belongsTo('RZP\Models\Item\Entity');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // -------------------- End Relations -----------------------
