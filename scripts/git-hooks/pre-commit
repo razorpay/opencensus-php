@@ -28,6 +28,5 @@ fi
 
 printf "\e[1;92m\tNo syntax error found.\e[0m\n" >&2;
 
-printf "Validating Coding Standards\n"
-
-bash ./scripts/bin/phpcs
+# printf "Validating Coding Standards\n"
+# bash ./scripts/bin/phpcs

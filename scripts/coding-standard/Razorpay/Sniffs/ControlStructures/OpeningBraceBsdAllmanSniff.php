@@ -36,6 +36,11 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
     {
         $tokens = $phpcsFile->getTokens();
 
+        if (isset($tokens[$stackPtr]['scope_opener']) === false)
+        {
+            return;
+        }
+
         $openingBrace = $tokens[$stackPtr]['scope_opener'];
 
         if ($tokens[$stackPtr]['code'] === T_ELSE)
