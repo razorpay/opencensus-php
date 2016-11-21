@@ -287,7 +287,7 @@ class GatewayController extends Controller
 
                 $upiRecord->setBank(ProviderCode::getBankCode($provider));
 
-                $upiRecord->setAcquirer('upi_icici');
+                $upiRecord->setAcquirer('icici');
 
                 try
                 {

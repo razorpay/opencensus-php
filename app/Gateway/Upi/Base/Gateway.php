@@ -6,7 +6,7 @@ use RZP\Gateway\Base;
 
 class Gateway extends Base\Gateway
 {
-    const BANK = null;
+    const ACQUIRER = null;
 
     protected function createGatewayPaymentEntity($attributes, $action = null)
     {
@@ -22,7 +22,7 @@ class Gateway extends Base\Gateway
 
         $payment->setAction($action);
 
-        $payment->setAcquirer($this->gateway);
+        $payment->setAcquirer(static::ACQUIRER);
 
         $payment->fill($attr);
 

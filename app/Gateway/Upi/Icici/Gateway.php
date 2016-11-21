@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'upi_icici';
 
-    // const BANK = 'icici';
+    const ACQUIRER = 'icici';
 
     protected $map = [
         Entity::VPA                       => Entity::VPA,
