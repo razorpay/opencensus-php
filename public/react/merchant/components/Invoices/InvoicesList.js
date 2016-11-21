@@ -7,6 +7,7 @@ import InvoiceStatus from './InvoiceStatus'
 const InvoiceListItem = ({ invoice }) => {
   return (
     <tr>
+      <td>{invoice.id}</td>
       <td>
         <Time value={invoice.date} />
       </td>
@@ -46,6 +47,7 @@ export default ({ invoices, isLoading }) => {
       <table class='table table-hover'>
         <thead>
           <tr>
+            <th>Invoice Id</th>
             <th>Invoice Date</th>
             <th>Status</th>
             <th>Customer</th>

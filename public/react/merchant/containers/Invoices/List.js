@@ -34,6 +34,8 @@ export default class InvoicesListContainer extends ModalContainer {
       count: this.state.count,
       skip: this.state.skip
     }
+
+    // params.type = 'link'
     this.props.fetchInvoices(params)
   }
 
