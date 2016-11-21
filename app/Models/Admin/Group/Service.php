@@ -158,6 +158,97 @@ class Service extends Base\Service
         return $filteredGroups;
     }
 
+    public function addRoleToGroup(
+        string $orgId,
+        string $groupId,
+        array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        $roleIds = $input['role_ids'];
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $groupId);
+
+        // Not using sync with Ids and roles
+        foreach ($roleIds as $roleId)
+        {
+            $role = $this->repo->role->findOrFail($roleId);
+
+            $this->repo->group->addRoleToGroup($group, $role);
+        }
+    }
+
+    public function addMerchantsToGroup(
+        string $orgId,
+        string $groupId,
+        array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        $merchantIds = $input['merchant_ids'];
+
+        // TODO Wrap it in a transaction or sync the m2m field
+        // Check for merchantIds
+        foreach ($merchantIds as $merchantId)
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+
+            $this->repo->group->addMerchantToGroup($group, $merchant);
+        }
+    }
+
+    public function addAdminsToGroup(
+        string $orgId,
+        string $groupId,
+        array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $groupId);
+
+        $adminIds = [];
+
+        if (isset($input['admins']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Admins not given in the input');
+        }
+
+        foreach ($input['admins'] as $adminId)
+        {
+            $adminId = Admin\Entity::verifyIdAndStripSign($adminId);
+
+            $admin = $this->repo->admin->findOrFail($adminId);
+
+            $this->repo->group->addAdminToGroup($group, $admin);
+        }
+
+        return $group->toArrayPublic();
+    }
+
+    public function revokeRoleFromGroup(
+        string $orgId,
+        string $groupId,
+        array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $roleId = Merchant\Entity::verifyIdAndStripSign($roleId);
+
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+            $orgId, $groupId);
+
+        $role = $this->repo->role->findOrFail($roleId);
+
+        $this->repo->group->revokeRoleOrFail($group, $role);
+    }
+
     /**
     * This functions does all the filtering. It gets all the groups in parent hierarchy
     * and all the siblings and removes these from the array of all org groups and returns
@@ -165,36 +256,16 @@ class Service extends Base\Service
     */
     protected function filterEligibleParents(string $orgId, string $groupId, $allGroups)
     {
-        // Directly linked (first level) parents (nodes) of the group
-        // $parentGroups = $this->getParentGroups($orgId, $groupId);
-
-        // Directly linked (first level) children
-        // $childGroups = $this->getChildGroups($orgId, $groupId);
-
-        // Get all siblings across all the directly linked parents
-        // $siblingGroups = $this->getSiblingGroups($parentGroups);
-
-        // Recursive function to get entire parent tree/hierarchy
-        // $rejectGroups = $this->getAllRejectGroups($parentGroups, $childGroups, $siblingGroups, $orgId);
-
-        // $rejectGroups = array_unique($rejectGroups);
-
-        // Defining diff in case of array of objects
-        // return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {
-        //     return $a->id - $b->id;
-        // });
-
+        // Get entire parent lineage (recursively)
         $rejectParents = $this->getRejectParents($orgId, $groupId);
-        // sd($rejectParents);
 
-        // Recrusive function to get entire children tree/hierarchy
+        // Get entire children tree/hierarchy (recursively)
         $rejectChildren = $this->getRejectChildren($orgId, $groupId);
-        // sd($rejectChildren);
 
-        // Recursive function to get sublings **and** its tree/hierarchy
+        // Get sublings **and** its tree/hierarchy (recursively)
         $rejectSiblings = $this->getRejectSiblings($orgId, $groupId);
-        // sd($rejectSiblings);
 
+        // Merge all the groups to be rejected
         $rejects = array_merge($rejectParents, $rejectChildren, $rejectSiblings);
 
         // Remove $rejects from $allGroups
@@ -301,92 +372,6 @@ class Service extends Base\Service
         return $rejectNodes;
     }
 
-    // @old
-    protected function getSiblingGroups(array $parentGroups)
-    {
-        $siblings = [];
-
-        foreach ($parentGroups as $parent) {
-            $siblings = $parent->subGroups->all();
-        }
-
-        return $siblings;
-    }
-
-    // @old
-    protected function getAllRejectGroups(
-        array $parentGroups, array $childGroups, array $siblingGroups, string $orgId)
-    {
-        $workingGroups1 = $parentGroups;
-        $workingGroups2 = [];
-        $rejectGroups = [];
-
-        $rejectGroups = $this->getParentRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
-
-        $workingGroups1 = $childGroups;
-        $workingGroups2 = [];
-
-        $rejectGroups = $this->getChildRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
-
-        $rejectGroups = $this->getSiblingRejectGroups($siblingGroups, $rejectGroups, $orgId);
-
-        return $rejectGroups;
-    }
-
-    // @old
-    protected function getParentRejectGroups(
-        array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
-    {
-        foreach ($workingGroups1 as $key => $workingGroup) {
-            $rejectGroups[] = $workingGroup;
-
-            $workingGroupParents = $this->getParentGroups($orgId, $workingGroup->id);
-            $workingGroups2 = $workingGroupParents;
-        }
-
-        if (empty($workingGroups2) === false)
-        {
-            $this->getParentRejectGroups($workingGroups2, [], $rejectGroups, $orgId);
-        }
-
-        return $rejectGroups;
-    }
-
-    // @old
-    protected function getChildRejectGroups(
-        array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
-    {
-        foreach ($workingGroups1 as $key => $workingGroup) {
-            $rejectGroups[] = $workingGroup;
-
-            $workingGroupChildren = $this->getChildGroups($orgId, $workingGroup->id);
-            $workingGroups2 = $workingGroupChildren;
-        }
-
-        if (empty($workingGroups2) === false)
-        {
-            $this->getChildRejectGroups($workingGroups2, [], $rejectGroups, $orgId);
-        }
-
-        return $rejectGroups;
-    }
-
-    // @old
-    protected function getSiblingRejectGroups(
-        array $siblingGroups, array &$rejectGroups, string $orgId)
-    {
-        foreach ($siblingGroups as $group) {
-            $childGroups = $this->getChildGroups($orgId, $group->id);
-            $workingGroups1 = $childGroups;
-            $workingGroups2 = [];
-
-            $rejectGroups = $this->getChildRejectGroups($workingGroups1, $workingGroups2, $rejectGroups, $orgId);
-        }
-
-        return $rejectGroups;
-    }
-
-    // @used by the new code as well
     protected function getParentGroups(string $orgId, string $groupId)
     {
         // Get the group from current org
@@ -396,7 +381,6 @@ class Service extends Base\Service
         return $group->parents;
     }
 
-    // @used by the new code as well
     protected function getChildrenGroups(string $orgId, string $groupId)
     {
         // Get the group from current org
@@ -404,96 +388,5 @@ class Service extends Base\Service
 
         // Get all the direct children to which the group has been linked
         return $group->subGroups;
-    }
-
-    public function addRoleToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-
-        $roleIds = $input['role_ids'];
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
-        // Not using sync with Ids and roles
-        foreach ($roleIds as $roleId)
-        {
-            $role = $this->repo->role->findOrFail($roleId);
-
-            $this->repo->group->addRoleToGroup($group, $role);
-        }
-    }
-
-    public function addMerchantsToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-
-        $merchantIds = $input['merchant_ids'];
-
-        // TODO Wrap it in a transaction or sync the m2m field
-        // Check for merchantIds
-        foreach ($merchantIds as $merchantId)
-        {
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
-
-            $this->repo->group->addMerchantToGroup($group, $merchant);
-        }
-    }
-
-    public function addAdminsToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
-        $adminIds = [];
-
-        if (isset($input['admins']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Admins not given in the input');
-        }
-
-        foreach ($input['admins'] as $adminId)
-        {
-            $adminId = Admin\Entity::verifyIdAndStripSign($adminId);
-
-            $admin = $this->repo->admin->findOrFail($adminId);
-
-            $this->repo->group->addAdminToGroup($group, $admin);
-        }
-
-        return $group->toArrayPublic();
-    }
-
-    public function revokeRoleFromGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-        $roleId = Merchant\Entity::verifyIdAndStripSign($roleId);
-
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
-        $role = $this->repo->role->findOrFail($roleId);
-
-        $this->repo->group->revokeRoleOrFail($group, $role);
     }
 }
