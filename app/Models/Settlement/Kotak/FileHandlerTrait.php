@@ -7,6 +7,7 @@ use Excel;
 use Config;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -262,7 +263,7 @@ trait FileHandlerTrait
             return $fullpath;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         try
         {
@@ -303,7 +304,7 @@ trait FileHandlerTrait
             return $filePath;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         try
         {
@@ -338,7 +339,7 @@ trait FileHandlerTrait
             return $key;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         $awsBucket = $config[$bucket];
 

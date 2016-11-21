@@ -251,6 +251,8 @@ return array(
 
     'checkout' => env('CHECKOUT_URL'),
 
+    'invoice' => env('INVOICE_URL'),
+
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),

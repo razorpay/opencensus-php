@@ -50,12 +50,19 @@ class ReconciliationGenerator
     {
         $setlFile = $this->getFile($input);
 
+        $generateFailedReconciliations = false;
+
+        if(isset($input['failed_recons']) === true)
+        {
+            $generateFailedReconciliations = ($input['failed_recons'] === '1');
+        }
+
         if ($setlFile === null)
             return [];
 
         $data = $this->parseTextFile($setlFile);
 
-        $data = $this->addNewFields($data);
+        $data = $this->addNewFields($data, $generateFailedReconciliations);
 
         $txt = $this->generateText($data);
 
@@ -71,28 +78,40 @@ class ReconciliationGenerator
         return Kotak\NodalAccount::getHeadings();
     }
 
-    protected function addNewFields($data)
+    protected function addNewFields($data, $generateFailedReconciliations = false)
     {
         $date = Carbon::today('Asia/Kolkata')->format('d/m/Y H:i:s');
 
         foreach ($data as &$row)
         {
-            $utr = random_integer(10);
-
-            $newFields = array(
-                'Status Of transaction' => 'P',
-                'UTR number'            => 'KKBKH1' . $utr,
-                'Reject Reason'         => '',
-                'DateTime'              => $date,
-                'Int.ref no.'           => 'kotak',
-                'Dummy'                 => ''
-            );
+            $newFields = $this->generateReconciliationFields($date, $generateFailedReconciliations);
 
             $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date']);
 
             $row['Payment_Date'] = $date->format('d-M-y');
 
             $row = array_merge($row, $newFields);
+        }
+
+        return $data;
+    }
+
+    protected function generateReconciliationFields($date, $generateFailedReconciliations)
+    {
+        $utr = random_integer(10);
+
+        $data = [
+            'Status Of transaction' => 'P',
+            'UTR number'            => 'KKBKH1' . $utr,
+            'Reject Reason'         => '',
+            'DateTime'              => $date,
+            'Int.ref no.'           => 'kotak',
+            'Dummy'                 => ''
+        ];
+
+        if ($generateFailedReconciliations === true)
+        {
+            $data['Reject Reason']         = 'Dummy Reason';
         }
 
         return $data;

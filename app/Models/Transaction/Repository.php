@@ -298,7 +298,7 @@ class Repository extends Base\Repository
 
     public function getTransactionsToBeMigrated()
     {
-        $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
+        // $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
 
         $query = $this->newQuery()
                     ->select('transactions.*')
@@ -313,12 +313,12 @@ class Repository extends Base\Repository
                                   ->from(TABLE::FEE_BREAKUP);
                         });
 
-        if ($latestFeeBreakup !== null)
-        {
-            $txnId = $latestFeeBreakup->getTransactionId();
+        // if ($latestFeeBreakup !== null)
+        // {
+        //     $txnId = $latestFeeBreakup->getTransactionId();
 
-            $query->where('transactions.id', '>', $txnId);
-        }
+        //     $query->where('transactions.id', '>', $txnId);
+        // }
 
         return $query->limit(1000)->get();
     }
@@ -335,5 +335,18 @@ class Repository extends Base\Repository
                        ->get();
 
         return $txnIds;
+    }
+
+    public function getTransactionsToSetPricingId()
+    {
+        $transactions = $this->newQuery()
+                            ->select('transactions.*')
+                            ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                            ->where(Entity::TYPE, 'payment')
+                            ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                            ->whereNull(Entity::PRICING_RULE_ID)
+                            ->get();
+
+        return $transactions;
     }
 }

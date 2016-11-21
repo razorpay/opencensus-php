@@ -33,7 +33,7 @@ class SegmentClient extends Base\Core
     /**
      * Guzzle timeout for posting to lumberjack
      */
-    const CONNECT_TIMEOUT = 1;
+    const CONNECT_TIMEOUT = 5;
 
     /**
      * seperator for array flattening
@@ -213,7 +213,8 @@ class SegmentClient extends Base\Core
 
     protected function sendLumberjackRequest($headers, $url, $events)
     {
-        if ($this->mock)
+        if (($this->mock) or
+            ($this->mode === Mode::TEST))
         {
             return;
         }

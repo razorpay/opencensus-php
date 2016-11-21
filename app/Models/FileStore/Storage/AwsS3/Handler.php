@@ -11,7 +11,6 @@ use RZP\Models\FileStore\Storage\Base;
 
 class Handler extends Base\Handler
 {
-
     protected $config;
 
     public function __construct()
@@ -21,6 +20,17 @@ class Handler extends Base\Handler
         $this->config = $this->app['config']->get('aws');
     }
 
+    public static function getClient()
+    {
+        $awsConfig = Config::get('aws');
+
+        $awsConfig['region'] = $awsConfig['bucket_region'];
+
+        $client = new \Aws\Sdk($awsConfig);
+
+        return $client->createClient('s3');
+    }
+
     public function save($bucket, $fileDetails)
     {
         if ($this->config['mock'] === true)
@@ -28,7 +38,7 @@ class Handler extends Base\Handler
             return $fileDetails['path'];
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -55,7 +65,7 @@ class Handler extends Base\Handler
             return $filePath;
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -84,7 +94,7 @@ class Handler extends Base\Handler
             return '';
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -106,7 +116,7 @@ class Handler extends Base\Handler
 
     public function delete($bucket, $key)
     {
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -133,7 +143,7 @@ class Handler extends Base\Handler
             return $key;
         }
 
-        $s3 = $this->getClient();
+        $s3 = self::getClient();
 
         try
         {
@@ -170,17 +180,12 @@ class Handler extends Base\Handler
         return $this->config[$bucketType];
     }
 
-    protected function getClient()
-    {
-        return AWS::createClient('s3');
-    }
-
     protected function getS3SaveObj($bucket, $fileDetails)
     {
         $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['name']);
 
         $s3ContentObj = [
-            'ContentType' => $fileDetails['extension'],
+            'ContentType' => $fileDetails['mime'],
             'SourceFile'  => $fileDetails['path'],
             'Metadata'    => $fileDetails['metadata'],
         ];
