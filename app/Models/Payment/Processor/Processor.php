@@ -7,6 +7,7 @@ use BasicAuth;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
@@ -19,7 +20,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Base\PublicCollection;
+use RZP\Models\Transaction;
 
 class Processor
 {
@@ -860,13 +861,8 @@ class Processor
         return substr($contact, -10);
     }
 
-    public function saveFeeDetails($txn, $feesSplit)
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
-        if (empty($feesSplit) == true)
-        {
-            return;
-        }
-
         $this->repo->transaction(function() use ($txn, $feesSplit)
         {
             foreach ($feesSplit as $feeSplit)
@@ -875,6 +871,14 @@ class Processor
 
                 $this->repo->saveOrFail($feeSplit);
             }
+
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_CREATED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
         });
     }
 }

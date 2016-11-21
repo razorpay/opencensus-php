@@ -4,6 +4,7 @@ namespace RZP\Gateway\Wallet\Airtelmoney;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
@@ -23,14 +24,22 @@ class RefundFile extends Base\RefundFile
     {
         $data = $this->getRefundData($input);
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $urlExcel = $this->writeToExcelFile($data, $fileName);
+
+        $creator = $this->createFile(
+            FileStore\Format::XLSX,
+            $data,
+            $fileName,
+            FileStore\Type::AIRTELMONEY_WALLET_REFUND);
 
         $this->sendRefundEmail();
 
         return $urlExcel;
     }
 
-    protected function sendRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
         $fullpath = $this->getExcelFullFilePath();
 

@@ -29,6 +29,8 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
     );
 
     public function getSharedAccount()
