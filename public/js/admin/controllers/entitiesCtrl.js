@@ -423,7 +423,8 @@ app.controller('EntitiesCtrl', [
       },
       webhook: {
         merchant_id: ['Merchant Id'],
-      }
+      },
+      schedule: {}
     };
 
     var onWatchUpdate = function(newValue, oldValue) {
