@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
     {
         // Since we're doing morphToMany, it'll mean that all the entity IDs
         // on the **left** in GROUP_MAP will be the parents.
+        //
+        // SQL = WHERE entity_id = calling_entity_id AND entity_type = 'group'
         return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
@@ -73,6 +75,8 @@ class Entity extends Base\PublicEntity
     {
         // Since we're doing morphedByMany, it'll mean all the entity IDs
         // on the **right** in GROUP_MAP are the children
+        //
+        // SQL = WHERE group_id = calling_entity_id AND entity_type = 'group'
         return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 

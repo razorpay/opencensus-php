@@ -142,20 +142,20 @@ class Service extends Base\Service
     * - Its **direct** parent-linked chain.
     * - Its **siblings** and its **own** child hierarchy.
     */
-    public function fetchAllowedGroups(string $orgId, string $groupId, array $input)
+
+    public function fetchEligibleParents(string $orgId, string $groupId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $groupId = Entity::verifyIdAndStripSign($groupId);
 
-        $allOrgGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
-        $allowedGroups = $this->filterAllowedGroups($orgId, $groupId, $allOrgGroups->all());
+        // Get all groups of the current organization
+        $allGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
 
-        foreach ($allowedGroups as $key => $group)
-        {
-            $group['id'] = "grp_{$group['id']}";
-        }
+        $allGroups = $allGroups->toArray();
 
-        return $allowedGroups;
+        $filteredGroups = $this->filterEligibleParents($orgId, $groupId, $allGroups);
+
+        return $filteredGroups;
     }
 
     /**
@@ -163,23 +163,145 @@ class Service extends Base\Service
     * and all the siblings and removes these from the array of all org groups and returns
     * the difference.
     */
-    protected function filterAllowedGroups(string $orgId, string $groupId, $allOrgGroups)
+    protected function filterEligibleParents(string $orgId, string $groupId, $allGroups)
     {
-        $parentGroups = $this->getParentGroups($orgId, $groupId); //first level parents
+        // Directly linked (first level) parents (nodes) of the group
+        // $parentGroups = $this->getParentGroups($orgId, $groupId);
 
-        $childGroups = $this->getChildGroups($orgId, $groupId);
+        // Directly linked (first level) children
+        // $childGroups = $this->getChildGroups($orgId, $groupId);
 
-        $siblingGroups = $this->getSiblingGroups($parentGroups);
+        // Get all siblings across all the directly linked parents
+        // $siblingGroups = $this->getSiblingGroups($parentGroups);
 
-        $rejectGroups = $this->getAllRejectGroups($parentGroups, $childGroups, $siblingGroups, $orgId); //recursive function to get all parent hierarchy
+        // Recursive function to get entire parent tree/hierarchy
+        // $rejectGroups = $this->getAllRejectGroups($parentGroups, $childGroups, $siblingGroups, $orgId);
 
-        $rejectGroups = array_unique($rejectGroups);
+        // $rejectGroups = array_unique($rejectGroups);
 
-        return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {  //Defining diff in case of array of objects
-              return $a->id - $b->id;
-            });
+        // Defining diff in case of array of objects
+        // return array_udiff($allOrgGroups, $rejectGroups, function($a, $b) {
+        //     return $a->id - $b->id;
+        // });
+
+        $rejectParents = $this->getRejectParents($orgId, $groupId);
+        // sd($rejectParents);
+
+        // Recrusive function to get entire children tree/hierarchy
+        $rejectChildren = $this->getRejectChildren($orgId, $groupId);
+        // sd($rejectChildren);
+
+        // Recursive function to get sublings **and** its tree/hierarchy
+        $rejectSiblings = $this->getRejectSiblings($orgId, $groupId);
+        // sd($rejectSiblings);
+
+        $rejects = array_merge($rejectParents, $rejectChildren, $rejectSiblings);
+
+        // Remove $rejects from $allGroups
+        $filtered = [];
+
+        foreach ($allGroups as $group)
+        {
+            $isReject = false;
+
+            foreach ($rejects as $reject)
+            {
+                if (($group['id'] === $reject['id']) or
+                    ($group['id'] === $groupId))
+                {
+                    $isReject = true;
+                }
+            }
+
+            if ($isReject === false)
+            {
+                $group['id'] = Entity::getSignedId($group['id']);
+
+                $filtered[] = $group;
+            }
+        }
+
+        return $filtered;
     }
 
+    // @new
+    protected function getRejectParents($orgId, $groupId)
+    {
+        $rejectNodes = [];
+
+        // Get all direct parents of incoming groupId
+        $parentGroups = $this->getParentGroups($orgId, $groupId)->toArray();
+
+        // Throw all direct parents in the rejected node list
+        $rejectNodes = $parentGroups;
+
+        // Loop through the parents list, take each parent
+        // and then get their direct parents by recursion and so on...
+        foreach ($parentGroups as $group)
+        {
+            // For every parent group, check its further direct parents
+            $rejects = $this->getRejectParents($orgId, $group['id']);
+
+            $rejectNodes = array_merge($rejectNodes, $rejects);
+        }
+
+        return $rejectNodes;
+    }
+
+    // @new
+    protected function getRejectChildren($orgId, $groupId)
+    {
+        $rejectNodes = [];
+
+        // Get all direct children of incoming groupId
+        $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
+
+        // Throw all direct children in the rejected node list
+        $rejectNodes = $childrenGroups;
+
+        foreach ($childrenGroups as $group)
+        {
+            // For every child group, check its further direct children
+            $rejects = $this->getRejectChildren($orgId, $group['id']);
+
+            $rejectNodes = array_merge($rejectNodes, $rejects);
+        }
+
+        return $rejectNodes;
+    }
+
+    // @new
+    protected function getRejectSiblings($orgId, $groupId)
+    {
+        $rejectNodes = [];
+
+        $parentGroups = $this->getParentGroups($orgId, $groupId);
+
+        foreach ($parentGroups as $parent)
+        {
+            $siblings = $parent->subGroups->toArray();
+
+            foreach ($siblings as $sibling)
+            {
+                // If sibling is the current group itself then continue
+                if ($sibling['id'] === $groupId)
+                {
+                    continue;
+                }
+
+                // Get tree/hierarchy of sibling
+                $siblingChildren = $this->getRejectChildren($orgId, $sibling['id']);
+
+                // Merge previous reject nodes with sibling hierarchy/tree
+                // and the current sibling in context
+                $rejectNodes = array_merge($rejectNodes, [$sibling], $siblingChildren);
+            }
+        }
+
+        return $rejectNodes;
+    }
+
+    // @old
     protected function getSiblingGroups(array $parentGroups)
     {
         $siblings = [];
@@ -187,9 +309,11 @@ class Service extends Base\Service
         foreach ($parentGroups as $parent) {
             $siblings = $parent->subGroups->all();
         }
+
         return $siblings;
     }
 
+    // @old
     protected function getAllRejectGroups(
         array $parentGroups, array $childGroups, array $siblingGroups, string $orgId)
     {
@@ -209,6 +333,7 @@ class Service extends Base\Service
         return $rejectGroups;
     }
 
+    // @old
     protected function getParentRejectGroups(
         array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
     {
@@ -227,6 +352,7 @@ class Service extends Base\Service
         return $rejectGroups;
     }
 
+    // @old
     protected function getChildRejectGroups(
         array $workingGroups1, array $workingGroups2, array &$rejectGroups, string $orgId)
     {
@@ -245,6 +371,7 @@ class Service extends Base\Service
         return $rejectGroups;
     }
 
+    // @old
     protected function getSiblingRejectGroups(
         array $siblingGroups, array &$rejectGroups, string $orgId)
     {
@@ -259,16 +386,24 @@ class Service extends Base\Service
         return $rejectGroups;
     }
 
+    // @used by the new code as well
     protected function getParentGroups(string $orgId, string $groupId)
     {
+        // Get the group from current org
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
-        return $group->parents->all();
+
+        // Get all the direct parents to which the group has been linked
+        return $group->parents;
     }
 
-    protected function getChildGroups(string $orgId, string $groupId)
+    // @used by the new code as well
+    protected function getChildrenGroups(string $orgId, string $groupId)
     {
+        // Get the group from current org
         $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
-        return $group->subGroups->all();
+
+        // Get all the direct children to which the group has been linked
+        return $group->subGroups;
     }
 
     public function addRoleToGroup(

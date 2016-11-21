@@ -296,11 +296,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    /*
+        We'll fetch all the groups eligible to be the "parent"
+        of the incoming groupID
+    */
     public function getAllowedGroups(string $id, string $groupId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->fetchAllowedGroups($id, $groupId, $input);
+        $data = (new Admin\Group\Service)->fetchEligibleParents($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
