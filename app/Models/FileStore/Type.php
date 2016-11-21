@@ -9,6 +9,14 @@ class Type
 {
     const KOTAK_NETBANKING_REFUND   = 'kotak_netbanking_refund';
 
+    const HDFC_NETBANKING_REFUND    = 'hdfc_netbanking_refund';
+
+    const AIRTELMONEY_WALLET_REFUND = 'airtelmoney_wallet_refund';
+
+    const PAYUMONEY_WALLET_REFUND   = 'payumoney_wallet_refund';
+
+    const ICICI_UPI_REFUND          = 'icici_upi_refund';
+
     const BATCH_INPUT               = 'batch_input';
 
     const BATCH_OUTPUT              = 'batch_output';
@@ -21,6 +29,10 @@ class Type
     const TYPE_MAP = [
         self::BLANK => [
             self::KOTAK_NETBANKING_REFUND,
+            self::HDFC_NETBANKING_REFUND,
+            self::AIRTELMONEY_WALLET_REFUND,
+            self::PAYUMONEY_WALLET_REFUND,
+            self::ICICI_UPI_REFUND,
         ],
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
@@ -33,6 +45,10 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::KOTAK_NETBANKING_REFUND,
+        self::HDFC_NETBANKING_REFUND,
+        self::AIRTELMONEY_WALLET_REFUND,
+        self::PAYUMONEY_WALLET_REFUND,
+        self::ICICI_UPI_REFUND,
     ];
 
     public static function validateType($type)

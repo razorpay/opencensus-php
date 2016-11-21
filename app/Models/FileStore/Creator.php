@@ -5,6 +5,8 @@ namespace RZP\Models\FileStore;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
+use RZP\Models\FileStore\Formatter;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Creator extends Base\Core
 {
@@ -24,6 +26,10 @@ class Creator extends Base\Core
      */
     protected $delimiter;
 
+    /**
+     * @var array column Formatter used in file
+     */
+    protected $columnFormat = [];
     /**
      * @var string file Path of local file
      */
@@ -113,6 +119,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the Mime of File Store
+     * @return Creator object
+     */
+    public function mime($mime)
+    {
+        $this->file->setMime($mime);
+
+        return $this;
+    }
+
+    /**
      * Set the Store  of File Store
      *
      * @param string $store Service to be used for storing file
@@ -157,6 +174,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the Column Format used for creation of file
+     * @return Creator object
+     */
+    public function columnFormat($columnFormat = [])
+    {
+        $this->columnFormat = $columnFormat;
+
+        return $this;
+    }
+
+    /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
      *
@@ -171,6 +199,10 @@ class Creator extends Base\Core
             $this->writeToLocalFile();
         }
         // TODO : add else condition and add filePath
+
+        $this->mime($this->localFile->getMimeType());
+
+        $this->validateBeforeUpload();
 
         $this->upload();
 
@@ -190,7 +222,11 @@ class Creator extends Base\Core
      */
     public function get()
     {
-        return $this->file->toArrayPublic();
+        $data = $this->file->toArrayPublic();
+
+        $data['local_file_path'] = $this->getFullFilePath();
+
+        return $data;
     }
 
     protected function validateBeforeSave()
@@ -198,6 +234,15 @@ class Creator extends Base\Core
         Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
 
         Type::validateType($this->file->getType());
+    }
+
+    protected function validateBeforeUpload()
+    {
+        $extension = $this->file->getExtension();
+
+        $mime = $this->file->getMime();
+
+        Format::validateMimeForExtension($mime, $extension);
     }
 
     /**
@@ -210,10 +255,14 @@ class Creator extends Base\Core
     {
         $bucket = $this->storageHandler->getBucketName($this->file->getType());
 
+        $this->file->setBucket($bucket);
+
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
         $fileDetails = [
-            'name'      => $this->file->getName(),
+            'name'      => $fileName,
             'path'      => $this->filePath,
-            'extension' => $this->file->getMime(),
+            'mime'      => $this->file->getMime(),
             'metadata'  => [],
         ];
 
@@ -230,27 +279,69 @@ class Creator extends Base\Core
      */
     protected function writeToLocalFile()
     {
-        if (in_array($this->file->getExtension(), Format::VALID_LOCAL_EXTENSIONS))
+        $extension = $this->file->getExtension();
+
+        switch($extension)
         {
-            $fullPath = $this->getFullFilePath();
+            case Format::TXT:
+                $this->writeTextFile();
 
-            if (file_exists($this->getStorageDir()) === false)
-            {
-                mkdir($this->getStorageDir(), 0777, true);
-            }
+                break;
 
-            $file = fopen($fullPath, 'w');
-            fwrite($file, $this->content);
-            fclose($file);
+            case Format::XLSX:
+                \Config::set('excel::export.calculate', true);
 
-            chmod($fullPath, 0777);  // keep it 0777. This step is important.
+            case Format::CSV:
+                $this->writeToExcelFile();
 
-            $this->filePath = $fullPath;
+                break;
+
+            case 'default':
+                throw new Exception\LogicException('Not A Valid Extension');
         }
-        else
+    }
+
+    protected function writeTextFile()
+    {
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fullPath = $this->getFullFilePath();
+
+        if (file_exists($this->getStorageDir()) === false)
         {
-            throw new Exception\LogicException('Not A Valid Extension');
+            mkdir($this->getStorageDir(), 0777, true);
         }
+
+        $file = fopen($fullPath, 'w');
+        fwrite($file, $this->content);
+        fclose($file);
+
+        chmod($fullPath, 0777);  // keep it 0777. This step is important
+
+        $this->createUploadedFile($fullPath, $fileName);
+    }
+
+    protected function writeToExcelFile()
+    {
+        $fileNameWithoutExt = $this->file->getName();
+
+        $fileMetadata = Formatter\ExcelFormatter::writeToExcelFile(
+            $this->content,
+            $fileNameWithoutExt,
+            $this->columnFormat,
+            $this->file->getExtension(),
+            self::DEFAULT_STORE);
+
+        $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
+    }
+
+    protected function createUploadedFile($filePath, $fileName)
+    {
+        $file = new UploadedFile($filePath, $fileName);
+
+        $this->localFile = $file;
+
+        $this->filePath = $filePath;
     }
 
     protected function associateMerchantWithFile()
@@ -285,12 +376,12 @@ class Creator extends Base\Core
 
     protected function getRelativePath()
     {
-        return self::STORAGE_DIRECTORY . $this->file->getName();
+        return self::STORAGE_DIRECTORY . $this->file->getName() . '.' .$this->file->getExtension();
     }
 
     protected function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName();
+        return $this->getStorageDir() . $this->file->getName() . '.' .$this->file->getExtension();
     }
 
     protected function getStorageDir()
