@@ -133,7 +133,6 @@ class Entity extends Base\PublicEntity
         $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
     }
 
-
     public function getPermissionsList()
     {
         $permissions = [];
