@@ -85,7 +85,6 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $enrollRequest = array(
-
         'url' => Hdfc\Urls::ENROLL_URL,
         'type' => 'enroll',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',

@@ -486,7 +486,7 @@ class Processor
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
         else if (($exception instanceof Exception\GatewayErrorException) and
-            ($exception->hasTwoFaError()))
+                 ($exception->hasTwoFaError()))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
         }
