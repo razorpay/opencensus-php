@@ -2296,7 +2296,7 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->schedule->create($input);
+            $data = $this->api->schedule->createSchedule($input);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

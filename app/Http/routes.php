@@ -258,7 +258,7 @@ Route::group(['middleware'  =>  'admin'], function()
 
     Route::get('admin/schedule/list', 'AdminController@getScheduleList');
     Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
-    Route::post('admin/schedule/create', 'AdminController@createSchedule');
+    Route::post('admin/schedules', 'AdminController@createSchedule');
 
     Route::group(['middleware'  =>  ['admin', 'superadmin']], function()
     {

@@ -442,6 +442,35 @@ app.controller('ActionsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    $scope.openAddSchedule = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'addScheduleModalContent.html',
+        controller: 'addScheduleModalCtrl'
+      });
+      modalInstance.result.then($scope.addSchedule, $.noop);
+    };
+    $scope.addSchedule = function (schedule) {
+      var request = $http({
+        method: 'post',
+        url: 'admin/schedules',
+        transformRequest: transformRequestAsFormPost,
+        data: schedule
+      });
+
+      request.success(function (data) {
+        console.log(data);
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Schedule added successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
   }
 ]).controller('initiateSetlModalCtrl', [
   '$scope',
@@ -697,6 +726,21 @@ app.controller('ActionsCtrl', [
         data.on = date;
       }
       $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('addScheduleModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  function ($scope, $modalInstance, $http) {
+    $scope.schedule = {
+      'type': 'settlement'
+    };
+    $scope.ok = function (schedule) {
+      $modalInstance.close(schedule);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

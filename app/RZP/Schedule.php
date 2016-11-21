@@ -14,11 +14,13 @@ class Schedule extends Entity
         return $this->request('GET', $relativeUrl)->toArray();
     }
 
-    public function create($input)
+    public function createSchedule($input)
     {
         $relativeUrl = $this->getEntityUrl();
 
         $res = $this->request('POST', $relativeUrl, $input)->toArray();
+
+        return $res;
     }
 
 }
