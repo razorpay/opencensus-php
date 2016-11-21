@@ -41,7 +41,7 @@ app.controller('RolesCtrl', [
     **/
 
     organization.fetchRoles().then(function(roles) {
-      $scope.roles = roles
+      $scope.roles = roles;
       $scope.count = $scope.roles.length;
     }).catch(function(errors){
       $scope.alerts.resetAlerts();
@@ -50,34 +50,6 @@ app.controller('RolesCtrl', [
         $scope.alerts.addAlert('danger', value);
       });
     });
-
-    $scope.addRole = function (role) {
-      var request = $http({
-        url: '/admin/generic',
-        method: 'POST',
-        params: {
-          route_name: 'role_create',
-        },
-        data: {
-          body: {
-            name: role.name,
-            description: role.description
-          }
-        }
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.roles.push({
-            id: data.data.id,
-            name: data.data.name,
-            description: data.data.description
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
 
     $scope.deleteRole = function(id) {
       var request = $http.delete('/admin/generic', {

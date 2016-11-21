@@ -262,7 +262,7 @@ angular.module('app.services', [])
   '$idle',
   function ($q, $http, $timeout, $idle) {
 
-    var _org, _roles;
+    var _org;
 
     return {
       fetchCurrentOrg: function () {
@@ -285,11 +285,56 @@ angular.module('app.services', [])
 
         return deferred.promise;
       },
+      addOrEditRole: function (role) {
+        var deferred = $q.defer();
+        var _this = this;
+
+        // Request for creating
+        var request_data = {
+          url: '/admin/generic',
+          method: 'POST',
+          params: {
+            route_name: 'role_create'
+          },
+          data: {
+            body: role
+          }
+        }
+
+        if (role.role_id) {
+          request_data = $.extend(request_data, {
+            method: 'PUT',
+            params: {
+              route_name: 'role_edit',
+              url_params: {
+                '{roleId}': role.role_id
+              }
+            },
+
+          })
+        }
+
+        $http(request_data)
+        .success(function (data) {
+          if (data.success) {
+            _this.roles.push(data.data);
+            deferred.resolve(data.data);
+          } else {
+            deferred.reject(data.errors);
+          }
+        })
+        .error(function(data) {
+          deferred.reject(data.errors);
+        });
+
+        return deferred.promise;
+      },
       fetchRoles: function () {
         var deferred = $q.defer();
+        var _this = this;
 
-        if (angular.isDefined(_roles)){
-          deferred.resolve(_roles);
+        if (angular.isDefined(_this.roles)){
+          deferred.resolve(_this.roles);
           return deferred.promise;
         }
 
@@ -302,8 +347,8 @@ angular.module('app.services', [])
           })
           .success(function (data) {
             if (data.success) {
-              _roles = data.data.items;
-              deferred.resolve(_roles);
+              _this.roles = data.data.items;
+              deferred.resolve(_this.roles);
             } else {
               deferred.reject(data.errors);
             }
