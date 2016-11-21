@@ -850,4 +850,11 @@ class AdminController extends Controller
     }
 
     // ----- /Credits -----
+
+    public function getScheduleList()
+    {
+        list($error, $response) = (new Admin\Service)->getScheduleList();
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

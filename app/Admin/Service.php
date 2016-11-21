@@ -10,6 +10,7 @@ use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
 use App\Session as SessionTable;
+use App\Schedules;
 
 use Auth;
 use Config;
@@ -2242,6 +2243,24 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->merchant->deleteMerchantCredits($merchantId, $creditId);
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function getScheduleList()
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->schedule->getScheduleList();
         }
         catch (BadRequestError $e)
         {
