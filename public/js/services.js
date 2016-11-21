@@ -350,10 +350,11 @@ angular.module('app.services', [])
           if (data.success === true) {
             if (data.data) {
               angular.forEach(data.data, function (group) {
-                var groupObj = {};
-                groupObj['name'] = group.name;
-                groupObj['code'] = group.id;
-                groupObj['description'] = group.description;
+                var groupObj = {
+                  id: group.id,
+                  name: group.name,
+                  description: group.description
+                };
                 groups.push(groupObj);
               });
             }

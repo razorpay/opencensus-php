@@ -18,7 +18,8 @@ app.controller('AddGroupCtrl', [
     var group_id = $stateParams.id;
     if (group_id) {
       $scope.groups = organization.fetchAllowedGroups(group_id);
-    } else {
+    }
+    else {
       $scope.groups = organization.fetchGroups();
     }
 
