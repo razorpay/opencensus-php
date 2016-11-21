@@ -107,8 +107,8 @@ class Entity extends Base\PublicEntity
     // Fields that can be inserted by ->fill() directly
     // This array should also include the fields mentioned in the generator.
     protected $fillable = [
-        self::DUE_BY,
-        self::SCHEDULED_AT,
+        // self::DUE_BY,
+        // self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
@@ -169,8 +169,8 @@ class Entity extends Base\PublicEntity
         self::ORDER_ID,
         self::LINE_ITEMS,
         self::STATUS,
-        self::DUE_BY,
-        self::SCHEDULED_AT,
+        // self::DUE_BY,
+        // self::SCHEDULED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
