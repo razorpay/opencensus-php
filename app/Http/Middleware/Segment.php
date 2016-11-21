@@ -65,5 +65,9 @@ class Segment
         {
             $this->app['trace']->traceException($e);
         }
+        catch (\Error $e)
+        {
+            $this->app['trace']->traceError($e);
+        }
     }
 }
