@@ -57,7 +57,7 @@ class Library
         $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
 
         // Step size may vary based on the period of the schedule
-        $step = self::getStep($schedule, Steps::ANCHORED_STEPS);
+        $step = self::getStep($schedule);
 
         // Increment by step size until condition is met and we arrive
         // at an anchor date.
@@ -79,7 +79,7 @@ class Library
     protected static function resolveUnAnchored($settledAt, $schedule, $nextRun)
     {
         // Step size may vary based on the period of the schedule
-        $step = self::getStep($schedule, Steps::NON_ANCHORED_STEPS);
+        $step = self::getStep($schedule);
 
         $interval = $schedule->getInterval();
 
@@ -157,9 +157,9 @@ class Library
     }
 
     // Get Carbon modifier
-    protected static function getStep($schedule, $stepsArray)
+    protected static function getStep($schedule)
     {
-        $stepType = $stepsArray[$schedule->getPeriod()];
+        $stepType = Steps::STEP_LIST[$schedule->getPeriod()];
 
         $step = 'add' . $stepType;
 
