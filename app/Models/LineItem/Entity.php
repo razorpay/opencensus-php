@@ -3,88 +3,72 @@
 namespace RZP\Models\LineItem;
 
 use App;
-use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Invoice;
-use RZP\Trace\TraceCode;
+use RZP\Models\Item;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME                  = 'name';
-    const DESCRIPTION           = 'description';
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-    const MERCHANT_ID           = 'merchant_id';
-    // This is something like an SKU
-    //const LISTING_ID            = 'listing_id';
-    const INVOICE_ID            = 'invoice_id';
+    const ENTITY_ID        = 'entity_id';
+    const ENTITY_TYPE      = 'entity_type';
+    const MERCHANT_ID      = 'merchant_id';
+    const ITEM_ID          = 'item_id';
+    const QUANTITY         = 'quantity';
 
-    const QUANTITY              = 'quantity';
+    const ITEM             = 'item';
 
     protected static $sign = 'li';
 
-    protected $entity = 'line_item';
-
-    protected $table = Table::LINE_ITEM;
+    protected $entity      = 'line_item';
 
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::DESCRIPTION       => null,
-        //self::LISTING_ID        => null,
         self::QUANTITY          => 1,
     ];
 
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
-        self::INVOICE_ID,
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
-        //self::LISTING_ID,
-        self::CURRENCY,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::QUANTITY,
+        self::ITEM_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::MERCHANT_ID,
-        self::QUANTITY,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $public = [
         self::ID,
-        // self::INVOICE_ID,
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
-        self::CURRENCY,
         self::QUANTITY,
-        self::CREATED_AT,
+        self::ITEM_ID,
+
+        Item\Entity::NAME,
+        Item\Entity::DESCRIPTION,
+        Item\Entity::AMOUNT,
+        Item\Entity::CURRENCY,
     ];
 
     protected $fillable = [
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
         self::QUANTITY,
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
         self::QUANTITY  => 'int',
     ];
 
-    // protected $publicSetters = [
-    //     self::ID,
-    //     self::ENTITY,
-    //     self::INVOICE_ID,
-    // ];
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ITEM_ID,
+        self::ITEM,
+    ];
 
     // -------------------------- Getters --------------------------
-
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
 
     public function getQuantity()
     {
@@ -93,23 +77,41 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters Ends --------------------------
 
-    protected function setPublicInvoiceIdAttribute(array & $array)
-    {
-        $invoiceId = $this->getAttribute(self::INVOICE_ID);
+    // -------------------------- Public Setters --------------------------
 
-        $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+    protected function setPublicItemIdAttribute(array & $array)
+    {
+        $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
     }
 
+    protected function setPublicItemAttribute(array & $array)
+    {
+        // Flatten response: Merge item attributes into line_item level.
+
+        $item = $this->item->toArrayPublic();
+
+        unset($item[Item\Entity::ID]);
+
+        $array = array_merge($array, $item);
+    }
+
+    // -------------------------- Public Setters Ends --------------------------
+
     // -------------------- Relations ---------------------------
+
+    public function entity()
+    {
+        return $this->morphTo();
+    }
+
+    public function item()
+    {
+        return $this->belongsTo('RZP\Models\Item\Entity');
+    }
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
-    }
-
-    public function invoice()
-    {
-        return $this->belongsTo('RZP\Models\Invoice\Entity');
     }
 
     // -------------------- End Relations -----------------------
