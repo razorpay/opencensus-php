@@ -122,6 +122,7 @@ class TraceCode
     const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
+    const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';

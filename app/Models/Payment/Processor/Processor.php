@@ -863,6 +863,14 @@ class Processor
 
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
         $this->repo->transaction(function() use ($txn, $feesSplit)
         {
             foreach ($feesSplit as $feeSplit)

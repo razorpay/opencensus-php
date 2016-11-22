@@ -828,7 +828,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->saveFeeDetails($txn, $feesSplit);
     }
 
-    protected function saveFeeDetails($txn, $feesSplit)
+    protected function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
         foreach ($feesSplit as $feeSplit)
         {
@@ -836,6 +836,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             $this->repo->saveOrFail($feeSplit);
         }
+
+        $this->trace->info(
+            TraceCode::FEES_BREAKUP_CREATED,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)
