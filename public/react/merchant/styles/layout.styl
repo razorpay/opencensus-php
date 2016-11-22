@@ -1,0 +1,167 @@
+// Only page layout styles should reside in this file.
+// This will be moved under `rzp` later
+
+@import './bootstrap-ext'
+@import 'react-dates/lib/css/_datepicker.css';
+@import 'react-power-select/dist/react-power-select.css';
+@import './invoice'
+
+.content-wrapper {
+  padding: 30px 20px;
+
+  a {
+    color: #337ab7;
+  }
+}
+
+// React Modal Style Overrides
+
+body.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+.ReactModal__Content h4 {
+  margin: 0;
+}
+
+
+.ReactModal__Content {
+  transition: transform 300ms ease-in-out;
+  transform: translateY(-15%);
+
+  &--after-open {
+    transform: translateY(0);
+  }
+  &--before-close {
+    transform: translateY(-15%);
+  }
+}
+
+.ReactModalPortal > * {
+  // When the modal is closed, overlay div has no css class
+  // This selector should be overridden by the `&--after-open` class below
+  opacity: 0;
+}
+
+.ReactModal__Overlay {
+  transition: opacity 250ms ease-in-out;
+  opacity: 0;
+
+  &--after-open {
+    opacity: 1;
+  }
+  &--before-close {
+    opacity: 0;
+  }
+}
+
+// react-dates style overrides
+
+.SingleDatePicker {
+  display: block;
+}
+
+.SingleDatePickerInput {
+  border-color: #cfdadd;
+}
+
+.DateInput {
+  font-weight: inherit;
+  font-size: 14px;
+  padding: 0;
+  width: 100%;
+}
+
+.DateInput__display-text {
+  color: #aaa;
+}
+
+.DateInput__display-text--focused {
+  background-color: #fff;
+  border-color: inherit;
+  color: inherit;
+}
+
+.DateInput__display-text--has-input {
+  color: #555;
+}
+
+.DateInput--with-caret::before {
+  top: 34px;
+}
+
+.DateInput--with-caret::after {
+  top: 35px;
+}
+
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected-start,
+.CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected {
+  background-color: #23b7e5;
+  border-color: #23b7e5;
+}
+
+
+
+// End of third party style overrides
+
+.butterbar {
+  position: fixed;
+  top: 50px;
+  left: 200px;
+  right: 0;
+  z-index: 1;
+}
+
+.page-spinner-container {
+  display: flex;
+  height: 350px;
+
+  .spinner {
+    margin: auto;
+  }
+}
+
+.modal-body .page-spinner-container {
+  height: 150px;
+}
+
+.quick-create {
+  padding: 8px 12px;
+  background-color: rgba(195, 195, 195, 0.23);
+  color: #337ab7;
+  cursor: pointer;
+}
+
+.row-action > .btn-group {
+  visibility: hidden;
+}
+
+tr:hover .row-action > .btn-group {
+  visibility: visible;
+}
+
+.panel-detail {
+  max-width: 700px;
+  margin: auto;
+
+  .text-warning {
+    color: #d8b617;
+  }
+}
+
+@keyframes luminate {
+  from {
+    background-color: rgba(255, 255, 163, 0.75)
+  }
+
+  to {
+    background-color: transparent
+  }
+}
+
+.table > tbody > tr.luminate > td {
+  animation: luminate 3s linear;
+}

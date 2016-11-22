@@ -18,7 +18,8 @@ var app = angular.module('app', [
   'ngBusy',
   'noCAPTCHA',
   'angulartics',
-  'angulartics.segment.io'
+  'angulartics.segment.io',
+  'react'
 ]).run([
   '$rootScope',
   '$state',
@@ -165,7 +166,41 @@ var app = angular.module('app', [
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/app_profile.html'
-    })  //Guest Routes
+    })
+
+    // React
+
+    .state('app.invoices', {
+      url: '/invoices',
+      templateProvider: reactTemplateProvider('<invoices-list />')
+    }).state('app.invoicedetails', {
+      url: '/invoices/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.invoiceId = $stateParams.id
+      }],
+      templateProvider: reactTemplateProvider('<invoice-detail id="invoiceId" />')
+    }).state('app.invoicesnew', {
+      url: '/invoices/new',
+      templateProvider: reactTemplateProvider('<invoices-new />')
+    }).state('app.subscriptions', {
+      url: '/subscriptions',
+      templateProvider: reactTemplateProvider('<subscriptions-list />')
+    }).state('app.subscriptionsnew', {
+      url: '/subscriptions/new',
+      templateProvider: reactTemplateProvider('<subscriptions-new />')
+    }).state('app.customers', {
+      url: '/customers',
+      templateProvider: reactTemplateProvider('<customers-list />')
+    }).state('app.plans', {
+      url: '/plans',
+      templateProvider: reactTemplateProvider('<plans-list />')
+    }).state('app.items', {
+      url: '/items',
+      templateProvider: reactTemplateProvider('<items-list />')
+    })
+
+
+      //Guest Routes
 .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',
@@ -222,3 +257,35 @@ var app = angular.module('app', [
     $keepaliveProvider.interval(60);
   }
 ]);
+
+var injectScript = (function () {
+  var relative = document.getElementsByTagName('script')[0];
+  return function (src, callback) {
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = src;
+    if (callback) {
+      script.onload = function() {
+        callback.call()
+      }
+    }
+    document.getElementsByTagName('head')[0].appendChild(script)
+  }
+})();
+
+var reactTemplateProvider = function(template) {
+  return ['$q', '$stateParams', function ($q, $stateParams) {
+    var deferred = $q.defer();
+    if (!window.React) {
+      // Really dirty hack which will vanish soon
+      var url = "<% asset('js/generated/merchant_react.js') %>"
+      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js'
+      injectScript(url, function() {
+        deferred.resolve(template)
+      })
+    } else {
+      deferred.resolve(template)
+    }
+    return deferred.promise;
+  }]
+}

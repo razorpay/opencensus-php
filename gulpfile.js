@@ -1,20 +1,20 @@
 'use strict'
 
 const gulp = require('gulp')
+const webpack = require('webpack')
 const through = require('through')
 const plumber = require('gulp-plumber')
 const run = require('run-sequence')
 const lazypipe = require('lazypipe')
-
 const stylus = require('gulp-stylus')
 const cssnano = require('gulp-cssnano')
 const bootstrap = require('bootstrap-styl')
 const autoprefixer = require('gulp-autoprefixer')
-
 const concatMulti = require('gulp-concat-multi')
 const uglify = require('gulp-uglify')
-
 const rev = require('gulp-rev')
+const webpackConfig = require('./webpack.config.js')
+
 const revMap = {}
 
 // functions and variables to be passed to blade.php.tmpl file
@@ -28,8 +28,9 @@ const tmplData = {
 }
 
 // minimal string interpolation for processing tmpl
-function interpolate(template) {
-  return template.replace(/\{\{([^\}]+)\}\}/g, (match, keypath)=> {
+function interpolate(template, pattern) {
+  pattern = pattern || /\{\{([^\}]+)\}\}/g
+  return template.replace(pattern, (match, keypath)=> {
     return new Function('_', 'return _.' + keypath.trim())(tmplData);
   })
 }
@@ -83,18 +84,24 @@ const concatJs = lazypipe()
       'public/js/angular/ui-validate.js',
       'public/js/angular/ui-bootstrap-tpls.min.js',
       'public/js/angular/angular-busy.js',
+      'public/js/angular/ng-react.js',
       'public/js/libs/angular-file-upload.min.js',
       'public/js/libs/angulartics.min.js',
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
-      'public/js/libs/jquery-tourbus.js'
+      'public/js/libs/jquery-tourbus.js',
     ],
 
     'js/generated/merchant.js': [
       'public/js/libs/angular-recaptcha.js',
       'public/js/merchant/**/*.js',
       'public/js/*.js',
-      'public/js/libs/moment.min.js'
+      'node_modules/moment/min/moment.min.js'
+      // 'public/js/libs/moment.min.js',
+    ],
+
+    'js/generated/merchant_react.js': [
+      'public/react/dist/merchant_react.js'
     ],
 
     'js/generated/admin.js': [
@@ -105,9 +112,9 @@ const concatJs = lazypipe()
   })
 
 
-gulp.task('js', ()=> concatJs().pipe(gulp.dest('public')))
+gulp.task('js', ['webpack'], () => concatJs().pipe(gulp.dest('public')))
 
-gulp.task('js:prod', ()=> {
+gulp.task('js:prod', () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e){
@@ -123,18 +130,63 @@ gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
     .pipe(through(function(file) {
       file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
-      file.contents = new Buffer(interpolate(String(file.contents), tmplData));
+      file.contents = new Buffer(interpolate(String(file.contents)));
       this.emit('data', file)
     }))
     .pipe(gulp.dest('resources/views'))
 })
 
-gulp.task('default', ()=> {
-  run(['css:prod', 'js:prod'], 'tmpl')
+gulp.task('reactRevReplace', () => {
+  return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
+    .pipe(through(function(file) {
+      file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g));
+      this.emit('data', file)
+    }))
+    .pipe(gulp.dest('public/js/generated'))
 })
 
-gulp.task('dev', ()=> {
-  run(['css', 'js'], 'tmpl')
+const runWebpack = (webpackConfig, cb) => {
+  webpack(webpackConfig, (err, stats) => {
+    if (err) throw new Error(err)
+    console.log(stats.toString({
+      colors: true
+    }))
+    cb()
+  })
+}
+
+gulp.task('webpack', (cb) => {
+  runWebpack(Object.create(webpackConfig), cb)
+})
+
+gulp.task('webpack:prod', (cb) => {
+  let config = Object.create(webpackConfig)
+  config.plugins = config.plugins.concat(
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      output: {
+        comments: false
+      }
+    })
+  )
+
+  runWebpack(config, cb)
+})
+
+gulp.task('default', (cb) => {
+  run('webpack:prod', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
+})
+
+gulp.task('dev', (cb) => {
+  run(['css', 'js'], 'tmpl', cb)
 })
 
 gulp.task('watch', ['dev'], ()=> {
@@ -142,6 +194,8 @@ gulp.task('watch', ['dev'], ()=> {
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',
-    'public/js/merchant/**/*.js'
+    'public/js/merchant/**/*.js',
+    'public/react/merchant/**/*',
+    'public/react/rzp/**/*'
   ], ['js'])
 })

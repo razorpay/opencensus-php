@@ -28,6 +28,12 @@
         <span>Refunds</span>
       </a>
     </li>
+    <li ng-show="merchant && user.tags.indexOf('Invoiceview') != -1">
+      <a id="invoicesNav" ui-sref="app.invoices">
+        <i class="fa fa-money text-primary-lter"></i>
+        <span>Invoices</span>
+      </a>
+    </li>
     <li ng-show="merchant" not-my-role="sellerapp support">
       <a id="settlementsNav" ui-sref="app.settlements.list">
         <i class="fa  fa-check-square-o icon text-success"></i>
@@ -76,6 +82,43 @@
         <span>Referrals</span>
       </a>
     </li>
+
+<!--
+    <li ng-show="merchant">
+      <a id="customersNav" ui-sref="app.customers">
+        <i class="fa fa-user text-primary-lter"></i>
+        <span>Customers</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant">
+      <a id="itemsNav" ui-sref="app.items">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Items</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant">
+      <a id="invoicesNav" ui-sref="app.invoices">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Invoices</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant">
+      <a id="plansNav" ui-sref="app.plans">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Plans</span>
+      </a>
+    </li>
+
+    <li ng-show="merchant">
+      <a id="subscriptionsNav" ui-sref="app.subscriptions">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Subscriptions</span>
+      </a>
+    </li>
+ -->
     <li class="line dk"></li>
   </ul>
 
