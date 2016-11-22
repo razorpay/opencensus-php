@@ -130,6 +130,62 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function refundAuthorizedInBulk($ids)
+    {
+        $paymentIds = explode(',', $ids);
+
+        $count = count($paymentIds);
+
+        $success = $failure = 0;
+
+        $failurePayments = $successRefunds = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            $payment = $this->repo->payment->findById($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $refund = $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
+
+                $success++;
+
+                $successRefunds[] = $refund->getId();
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_REFUND_FAILURE,
+                    [
+                        'payment_id' => $paymentId,
+                    ]);
+
+                $this->trace->traceException($ex);
+
+                $failure++;
+
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'count' => $count,
+            'success' => $success,
+            'failure' => $failure,
+            'failure_payments' => $failurePayments,
+            'success_refunds' => $successRefunds,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_AUTHORIZE_BULK,
+            $data
+        );
+
+        return $data;
+    }
+
     public function verify($id)
     {
         $payment = $this->core->retrieveById($id);
