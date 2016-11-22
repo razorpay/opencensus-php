@@ -7,18 +7,18 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const ID                            = 'id';
-    const AMOUNT                        = 'amount';
-    const GATEWAY_PAYMENT_ID            = 'gateway_payment_id';
-    const TDATE                         = 'tdate';
-    const STATUS                        = 'status';
-    const TRANSACTION_RESULT            = 'transaction_result';
-    const GATEWAY_TRANSACTION_ID        = 'gateway_transaction_id';
-    const ENDPOINT_TRANSACTION_ID       = 'endpoint_transaction_id';
-    const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
-    const AUTH_CODE                     = 'auth_code';
-    const APPROVAL_CODE                 = 'approval_code';
-    const ERROR_MESSAGE                 = 'error_message';
+    const ID                      = 'id';
+    const AMOUNT                  = 'amount';
+    const GATEWAY_PAYMENT_ID      = 'gateway_payment_id';
+    const TDATE                   = 'tdate';
+    const STATUS                  = 'status';
+    const TRANSACTION_RESULT      = 'transaction_result';
+    const GATEWAY_TRANSACTION_ID  = 'gateway_transaction_id';
+    const ENDPOINT_TRANSACTION_ID = 'endpoint_transaction_id';
+    const GATEWAY_TERMINAL_ID     = 'gateway_terminal_id';
+    const AUTH_CODE               = 'auth_code';
+    const APPROVAL_CODE           = 'approval_code';
+    const ERROR_MESSAGE           = 'error_message';
 
     protected $fillable = [
         self::PAYMENT_ID,
