@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 
 class MerchantFilter extends Terminal\Filter
 {
@@ -12,6 +13,7 @@ class MerchantFilter extends Terminal\Filter
         'tpv',
         // 'risk',
         'category',
+        'gateway',
     ];
 
     /**
@@ -103,4 +105,24 @@ class MerchantFilter extends Terminal\Filter
         return ($category === $merchantTerminalCategory);
     }
 
+    public function gatewayFilter($terminal, $input)
+    {
+        $merchantId = $input['payment']->getMerchantId();
+
+        $merchants = array_keys(Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST);
+
+        if (in_array($merchantId, $merchants))
+        {
+            $gateway = $terminal->getGateway();
+
+            $excludedGateways = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST[$merchantId];
+
+            if (in_array($gateway, $excludedGateways))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
