@@ -345,7 +345,8 @@ class Gateway extends Base\Gateway
             }
 
             // Payment was late authorized
-            if ((empty($gatewayPayment['gateway_payment_id']) === true) and
+            if (((empty($gatewayPayment['gateway_payment_id']) === true) or
+                 (empty($gatewayPayment['reference1']) === true)) and
                 (empty($content[ResponseFields::FDC_TXN_ID]) === false))
             {
                 $date = $this->getEpochTime(
