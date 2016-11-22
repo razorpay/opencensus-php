@@ -48,7 +48,7 @@ app.controller('AddGroupCtrl', [
             description: data.data.description,
           };
 
-          data.data.sub_groups.forEach(function (group) {
+          data.data.parents.forEach(function (group) {
             $scope.selected_groups[group.id] = true;
           });
         }
@@ -75,12 +75,12 @@ app.controller('AddGroupCtrl', [
     $scope.save = function (group) {
       var body = group;
 
-      body.sub_groups = [];
+      body.parents = [];
 
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
           if ($scope.selected_groups[key]) {
-            body.sub_groups.push(key);
+            body.parents.push(key);
           }
 
         }
