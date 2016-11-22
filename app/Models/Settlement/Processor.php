@@ -172,7 +172,7 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, $txns->getIds());
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
