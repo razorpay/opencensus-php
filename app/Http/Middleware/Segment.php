@@ -61,13 +61,9 @@ class Segment
         {
             $this->app['segment']->buildRequestAndSend();
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->app['trace']->traceException($e);
-        }
-        catch (\Error $e)
-        {
-            $this->app['trace']->traceError($e);
         }
     }
 }

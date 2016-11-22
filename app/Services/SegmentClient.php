@@ -214,12 +214,6 @@ class SegmentClient extends Base\Core
 
     protected function sendLumberjackRequest($headers, $url, $events)
     {
-        if (($this->mock) or
-            ($this->mode === Mode::TEST))
-        {
-            return;
-        }
-
         // TODO: make this async using guzzler async events
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
@@ -227,9 +221,15 @@ class SegmentClient extends Base\Core
         {
             $options = ['json' => $events, 'connect_timeout' => self::CONNECT_TIMEOUT];
 
+            if (($this->mock) or
+                ($this->mode === Mode::TEST))
+            {
+                return;
+            }
+
             $response = $client->request('POST', $url, $options);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
         }

@@ -682,6 +682,28 @@ final class Route
         'payment_otp_resend',
         'payment_topup_ajax');
 
+    const CRITICAL_ROUTES = array(
+        'payment_create',
+        'payment_create_private',
+        'payment_create_recurring',
+        'payment_create_private_old',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'payment_create_fees',
+        'payment_create_wallet',
+        'payment_callback_post',
+        'payment_callback_get',
+        'payment_callback_with_key_post',
+        'payment_callback_with_key_get',
+        'payment_get_status',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax',
+        'payment_topup_post',
+        'payment_redirect_callback',
+    );
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -694,6 +716,23 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    /**
+     * Check if provided route is critical route.
+     * If null then check for current route
+     *
+     * @param  string  $route
+     * @return boolean
+     */
+    public function isCriticalRoute($route = null)
+    {
+        if ($route === null)
+        {
+            $route = $this->getCurrentRouteName();
+        }
+
+        return in_array($route, self::CRITICAL_ROUTES, true);
     }
 
     public static function getSlaveRoutes()
