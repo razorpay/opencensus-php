@@ -1665,7 +1665,7 @@ trait Authorize
 
             $status = $this->payment->getStatus();
 
-            if ($payment->hasBeenAuthorized() === true)
+            if ($status === Status::AUTHORIZED)
             {
                 return;
             }
