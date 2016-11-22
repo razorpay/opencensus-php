@@ -107,7 +107,8 @@ class Core extends Base\Core
 
         $data['invoice'] = [
             'order_id'  => Order\Entity::getSignedId($orderId),
-            'url'       => $invoice->getShortUrl()
+            'url'       => $invoice->getShortUrl(),
+            'amount'    => $invoice->getAmount(),
         ];
 
         $data['customer'] = $customer->toArrayPublic();

@@ -50,6 +50,7 @@ final class Route
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
+        'payments_multiple_authorize_refund'      => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
@@ -294,6 +295,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
     );
 
@@ -345,7 +347,7 @@ final class Route
         'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
-        'otp_verify'
+        'otp_verify',
     );
 
     public static $publicCallback = array(
@@ -528,7 +530,9 @@ final class Route
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
+        'upi_fill_provider',
         'methods_update_merchants',
+        'payments_multiple_authorize_refund',
     );
 
     public static $proxy = array(
