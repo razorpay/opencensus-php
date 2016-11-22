@@ -53,7 +53,7 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing)
+    public function calculate(Pricing\Plan $pricing)
     {
         $entity = $this->entity;
 
@@ -71,7 +71,7 @@ class FeeCalculator
 
         list($fee, $serviceTax) = $this->getFees($amount);
 
-        return array($fee, $serviceTax, $this->feesSplit);
+        return [$fee, $serviceTax, $this->feesSplit];
     }
 
     protected function getFees($amount)
@@ -96,7 +96,7 @@ class FeeCalculator
                 Payment\Entity::AMOUNT);
         }
 
-        return array($totalFees, $totalTaxes);
+        return [$totalFees, $totalTaxes];
     }
 
     public static function getServiceTaxRate()
@@ -116,7 +116,7 @@ class FeeCalculator
         return $this->pricingRules;
     }
 
-    protected function getRelevantPricingRule($pricing)
+    protected function getRelevantPricingRule(Pricing\Plan $pricing)
     {
         $entity = $this->entity;
 
@@ -124,12 +124,12 @@ class FeeCalculator
 
         $features = $entity->getFeatures();
 
-        $this->getBasicPricingRule($entityName, $pricing);
+        $this->getBasicPricingRule($pricing, $entityName);
 
-        $this->getAdOnPricingRule($features, $pricing);
+        $this->getAdOnPricingRule($pricing, $features);
     }
 
-    protected function getAdOnPricingRule($features, $pricing)
+    protected function getAdOnPricingRule(Pricing\Plan $pricing, array $features)
     {
         $method = $this->entity->getMethod();
 
@@ -157,7 +157,7 @@ class FeeCalculator
         }
     }
 
-    protected function getBasicPricingRule($feature, $pricing)
+    protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
         $method = $this->entity->getMethod();
 
@@ -565,7 +565,7 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    public function calculateRzpFee($rule, $amount)
+    public function calculateRzpFee(Pricing\Entity $rule, $amount)
     {
         list($percent, $fixed) = $rule->getRates();
 
@@ -584,7 +584,7 @@ class FeeCalculator
         return $fee;
     }
 
-    public function calculateServiceTaxes($fee, $taxComponents)
+    public function calculateServiceTaxes($fee, array $taxComponents)
     {
         $splitTaxes = 0;
 
