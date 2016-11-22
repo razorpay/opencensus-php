@@ -1215,19 +1215,21 @@ ALTER TABLE payments
 ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
 
-----
 ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
-
----
 
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
     ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
     MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
 
---
+----
+
+ALTER TABLE payment_analytics
+    ADD COLUMN merchant_id VARCHAR(14) AFTER payment_id,
+    ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+
 -- Queries around "invoices" prs deployment
 
 ALTER TABLE `invoices` ADD COLUMN `ref_num`    char(14) DEFAULT NULL AFTER `id`;
