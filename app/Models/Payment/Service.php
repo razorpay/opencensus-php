@@ -144,7 +144,7 @@ class Service extends Base\Service
         {
             Entity::verifyIdAndSilentlyStripSign($paymentId);
 
-            $payment = $this->repo->payment->findById($paymentId);
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
             $merchant = $payment->merchant;
 
