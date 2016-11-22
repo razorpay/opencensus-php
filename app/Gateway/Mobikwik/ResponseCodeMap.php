@@ -25,9 +25,9 @@ class ResponseCodeMap
         '50' => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         '51' => 'Length of parameter orderid must be between 8 to 30 characters',
         '52' => 'Parameter orderid must be alphanumeric only',
-        '53' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_EMAIL,
+        '53' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_EMAIL,
         '54' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        '55' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_MOBILE,
+        '55' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_MOBILE,
         '56' => 'Parameter merchantname is invalid. It must be alphanumeric and its length must be between 1 to 30 characters',
         '57' => 'Parameter redirecturl is invalid',
         '60' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED,
@@ -68,12 +68,7 @@ class ResponseCodeMap
     {
         $codes = self::$codes;
 
-        return $codes[(int)$code];
-    }
-
-    public static function getStatus($code)
-    {
-        ; // @todo
+        return $codes[$code];
     }
 
     public static function getApiErrorCode($code)
