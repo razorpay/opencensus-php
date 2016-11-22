@@ -8,6 +8,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Item;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -38,6 +39,11 @@ class Core extends Base\Core
                 $input[Entity::ITEM_ID],
                 $merchant
             );
+
+            if ($item->isActive() === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE);
+            }
 
             $this->throwIfCurrencyNotSame($item->getCurrency(), $invoice);
         }

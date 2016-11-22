@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
 
     public static $allFields    = [
-        // self::ACTIVE,
+        self::ACTIVE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -79,6 +79,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function isActive()
+    {
+        return $this->getAttribute(self::ACTIVE);
     }
 
     // -------------------------- Getters Ends --------------------------

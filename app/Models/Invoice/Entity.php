@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
+        self::STATUS,
     ];
 
     // Fields that can be inserted by ->fill() directly
@@ -112,7 +113,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
-        // self::TERMS,
+        self::TERMS,
         self::NOTES,
         self::REF_NUM,
         self::VIEW_LESS,
@@ -174,7 +175,7 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
-        // self::TERMS,
+        self::TERMS,
         self::AMOUNT,
         self::NOTES,
         self::CURRENCY,
@@ -450,6 +451,14 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
+    }
+
+    public function generateStatus($input)
+    {
+        if (empty($input[self::DRAFT]) === false)
+        {
+            $this->setAttribute(self::STATUS, Status::DRAFT);
+        }
     }
 
     // public function generateDiscount($input)

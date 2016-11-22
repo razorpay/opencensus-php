@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         Entity::LINE_ITEMS          => 'required|custom',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|boolean',
     ];
 
     protected static $editRules  = [

@@ -39,8 +39,6 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($invoice, $input)
             {
-                $this->consumeExtraInputKeys($invoice, $input);
-
                 $invoice->edit($input);
 
                 (new Generator($this->merchant, $invoice))->ensureCustomerAssociation($input);
