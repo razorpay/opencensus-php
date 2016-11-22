@@ -76,12 +76,13 @@ class Category
     ];
 
     const MIN_AMOUNT_METHOD_NETBANKING= [
+        // 'broking'        => 10,
         // 'grocery'        => 10,
         // 'ecommerce'      => 10,
-        // 'govt_education' => 10,
-        // 'pvt_education'  => 10,
+        'govt_education' => 100000,
+        'pvt_education'  => 100000,
         // 'utilities'      => 10,
-        // 'corporate'      => 10,
+        'corporate'      => 100000,
         // 'insurance'      => 10,
         // 'housing'        => 10,
         // 'mutual_funds'   => 10,
@@ -89,20 +90,19 @@ class Category
     ];
 
     const MIN_AMOUNT_NETWORK_AMEX = [
-        // 'grocery'        => 10,
-        // 'ecommerce'      => 10,
-        // 'govt_education' => 10,
-        // 'pvt_education'  => 10,
-        // 'utilities'      => 10,
-        // 'corporate'      => 10,
-        // 'insurance'      => 10,
-        // 'housing'        => 10,
-        // 'mutual_funds'   => 10,
-        // 'travel_agency'  => 10,
+        // 'sup_hypermrkt_deptstore'    => 10,
+        // 'retail_services'            => 10,
+        // 'education'                  => 10,
+        // 'utilities'                  => 10,
+        // 'corporate'                  => 10,
+        // 'insurance'                  => 10,
+        // 'housing'                    => 10,
+        // 'mutual_funds'               => 10,
+        // 'travel_agency'              => 10,
     ];
 
     const DEFAULT_MIN_AMOUNT = [
-        'METHOD_NETBANKING'     => 1000,
+        'METHOD_NETBANKING'     => 100,
         'NETWORK_AMEX'          => 100,
     ];
 
@@ -313,7 +313,7 @@ class Category
         // min_amount from respective array
         if (empty($constantName) === false)
         {
-            if (in_array($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+            if (array_key_exists($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
             {
                 $minAmount = constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
             }
@@ -323,7 +323,7 @@ class Category
                 $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
             }
         }
-        
+
         return $minAmount;
     }
 }

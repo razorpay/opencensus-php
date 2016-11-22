@@ -359,21 +359,18 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
                                 ['id' => 'DCrpNbKtkTrmnl', 'network_category' => 'corporate']);
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
-                                ['id' => 'DEduNbKtkTrmnl', 'network_category' => 'pvt_education']);
-        $this->fixtures->create('terminal:netbanking_kotak_terminal',
-                                ['id' => 'DrctNbKtkTrmnl']);
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-                                ['id' => 'SCorNbKtkTrmnl','network_category' => 'corporate']);
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-                                ['id' => 'SEduNbKtkTrmnl','network_category' => 'govt_education']);
-        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
-                                ['id' => 'SharNbKtkTrmnl']);
-        $this->fixtures->create('terminal:shared_amex_category_terminals');
-
+                                ['id' => 'DrctNbKtkTrmnl', 'network_category' => 'ecommerce']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'KKBK';
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals('DrctNbKtkTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+        $payment['amount'] = 300000;
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 

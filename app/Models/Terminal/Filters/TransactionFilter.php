@@ -205,6 +205,6 @@ class TransactionFilter extends Terminal\Filter
 
         $minAmount = Terminal\Category::getMinAmount($method, $network, $category);
 
-        return ($amount > $minAmount) ? true : false;
+        return ($amount > $minAmount);
     }
 }
