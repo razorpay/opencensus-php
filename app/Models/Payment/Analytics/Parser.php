@@ -74,6 +74,8 @@ class Parser extends Base\Core
     {
         $input[Entity::PAYMENT_ID] = $payment->getId();
 
+        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
+
         $this->setHttpRequestData($input);
 
         $this->setAttempts($input, $payment);
