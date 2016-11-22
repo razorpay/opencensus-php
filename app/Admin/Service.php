@@ -1036,7 +1036,7 @@ class Service extends Base\Service
 
             $this->setApiCredentials(null, $mode);
 
-            if (isset($input['gateway_client_certificate']))
+            if (isset($input['gateway_client_certificate']) === true)
             {
                 $input['gateway_client_certificate'] = $this->encodeGatewayClientCertificate(
                                                         $input['gateway_client_certificate']);

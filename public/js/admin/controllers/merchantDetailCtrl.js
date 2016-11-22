@@ -1029,20 +1029,17 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   '$upload',
   function ($scope, $modalInstance, $upload) {
-    $scope.certificate_details = {};
+    $scope.terminal = {gateway:'hdfc', mode:'live', card:1};
     $scope.onFileSelect = function ($files, fieldname) {
       var file = $files[0];
-      if (terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
+      if ($scope.terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
         $scope.alerts.addAlert('danger', 'Invalid certificate file', true);
         return;
       }
-      $scope.certificate_details.gateway_client_certificate = file;
+      $scope.terminal.gateway_client_certificate = file;
     };
-    $scope.ok = function (terminal) {
-      if (typeof $scope.certificate_details.gateway_client_certificate !== 'undefined') {
-        terminal.gateway_client_certificate = $scope.certificate_details.gateway_client_certificate;
-      }
-      $modalInstance.close(terminal);
+    $scope.ok = function () {
+      $modalInstance.close($scope.terminal);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
