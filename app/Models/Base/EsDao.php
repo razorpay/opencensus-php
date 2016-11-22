@@ -16,6 +16,9 @@ class EsDao
 
     protected $mode;
 
+    // Logically seperated instance for heimdall
+    protected $esHeimdall;
+
     public function __construct($mode = null)
     {
         $this->app = App::getFacadeRoot();
@@ -25,6 +28,9 @@ class EsDao
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
 
+        // Heimdall hostname
+        $heimdallHost = $this->config->get('database.es_heimdall_host');
+
         // Since, we are using only one index, declaring the index name
         // in this class itself. If we have different indices based on some
         // logic, it makes sense to move it to an appropriate class then.
@@ -32,9 +38,11 @@ class EsDao
         // Live and Test have different index names in the ES cluster.
         $this->setIndexName($mode);
 
-        $this->es = $this->app['es'];
+        $this->es = $this->buildEsClient($hostName);
 
-        $params = [
+        $this->esHeimdall = $this->buildEsClient($heimdallHost);
+
+        /*$params = [
             'hosts' => [
                 $hostName
             ],
@@ -43,6 +51,25 @@ class EsDao
         // Since the es client is being set on this, ensure that only this es
         // instance is used to perform any operations on the client.
         $this->es->setEsClient($params);
+
+        $params['hosts'] = [$heimdallHost];
+        
+        $this->esHeimdall->setEsClient($params);*/
+    }
+
+    protected function buildEsClient($hostName)
+    {
+        $es = $this->app['es'];
+
+        $params = [
+            'hosts' => [
+                $hostName
+            ],
+        ];
+
+        $es->setEsClient($params);
+        
+        return $es;
     }
 
 
@@ -268,5 +295,40 @@ class EsDao
         ];
 
         return $this->es->changeIndexSettings($params);
+    }
+
+    public function storeAdminEvent($indexName, $admin, $action, $customProperties, $caller)
+    {
+
+        $created = time();
+
+        // Note: createIndex has been implemented in the wrong way in EsClient.php
+        // Documentation says $this->client->index($params)
+        // [Source: https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_quickstart.html].
+        // However Esclient implements something like $this->client->indices()->create which
+        // does not allow the default params. Hence, using the getClient function from EsClient
+        // and using it to create the necessary documents/indexes
+
+
+        $params = [
+            'index' => $indexName,
+            'type'  => 'admin',
+            'body'  => [
+                'created' => $created,
+                'admin' => (object) $admin->toArrayPublic(),
+                'action' => $action,
+                'caller' => $caller
+                ]
+        ];
+
+        if ((empty($customProperties) === false) and (is_array($customProperties) === true))
+        {
+            $params['body']['extra'] = (object) $customProperties;
+        }
+
+        $updateReponse = $this->esHeimdall->createIndex($params);
+        // TODO: log this if need arises
+
+        sd($updateReponse);
     }
 }

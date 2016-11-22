@@ -377,6 +377,9 @@ class TraceCode
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
 
+    /* Additional Tracecode for HeimDall */
+    const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

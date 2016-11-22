@@ -5,6 +5,9 @@ namespace RZP\Listeners;
 use App;
 use RZP\Events\AuditLogEntry;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Models\Base\EsDao;
+use RZP\Constants\Mode;
+USE RZP\Trace\TraceCode;
 
 
 use Illuminate\Queue\InteractsWithQueue;
@@ -32,6 +35,10 @@ class AuditLogListener
 
     protected $trace;
 
+    protected $esDao;
+
+    protected $baseIndex;
+
     /**
      * Create the event listener.
      *
@@ -46,7 +53,16 @@ class AuditLogListener
         $this->trace = $this->app['trace'];
 
         $this->queue = $this->app['queue'];
+
+        $this->esDao = new EsDao();
+        
+        $config = $this->app['config'];
+
+        $mode = (empty($this->app['rzp.mode'] === true)) ? Mode::TEST : $this->app['rzp.mode'];
+
+        $this->baseIndex = $config->get('database.es_heimdall')[$mode];
     }
+
 
     /**
      * Handle the event.
@@ -62,7 +78,17 @@ class AuditLogListener
         // save to es
         // $event = $this->event->firing();
 
-        sd($event->admin, $event->action, $this->event->firing());
-        // $this->trace->info("EVENT_RECORD", [$event]);
+        // steps for adding to ES
+        // 1. Create an index against the org id (we want different organizations to have different org ids)
+        // 2. Store the event data
+        // Note: elastic search index names are always in lower case. Hence, to search
+        // always convert the index name to lower case and search
+
+        $indexName  = strtolower($this->baseIndex . '_' . $event->admin->org->getId());
+
+        $this->esDao->storeAdminEvent($indexName, $event->admin, $event->action,
+                                        $event->customProperties,$this->event->firing());
+
+        $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, [$event]);
     }
 }

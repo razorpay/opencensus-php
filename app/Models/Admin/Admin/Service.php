@@ -13,6 +13,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Admin\Action;
 
 class Service extends Base\Service
 {
@@ -49,7 +50,7 @@ class Service extends Base\Service
 
             $validate = $this->authPolicy->validateLogin($admin, $input['password'], 'after');
 
-            $this->fireAdminLogin($admin);
+            $this->fireAdminAction($admin, Action::LOGIN);
 
             if ($validate !== null)
             {
@@ -61,17 +62,19 @@ class Service extends Base\Service
         else
         {
             $admin->incrementFailedAttempts();
+
+            $this->fireAdminAction($admin, Action::LOGIN_FAIL, ['failed_attempts' => $admin->getFailedAttempts]);
+
             $this->repo->saveOrFail($admin);
         }
 
         return null;
     }
 
-    protected function fireAdminLogin($admin)
+    protected function fireAdminAction($admin, $action, $customProperties = null)
     {
-        // Event::fire();
-        \App::getFacadeRoot()['trace']->info("MISC_TRACE_CODE", [$admin]);
-        $this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, 'create'));
+        \App::getFacadeRoot()['trace']->info("MISC_TRACE_CODE", ["admin" => $admin, "action" => $action]);
+        $this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function loginWithOAuth($input)
@@ -87,11 +90,16 @@ class Service extends Base\Service
         {
             $data = $this->generateLoginToken($admin);
 
+            $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+
             return $data;
         }
         else
         {
             $admin->incrementFailedAttempts();
+            
+            $this->fireAdminAction($admin, Action::LOGIN_FAIL_OUATH, ['failed_attempts' => $admin->getFailedAttempts()]);
+
             $this->repo->saveOrFail($admin);
         }
 
@@ -101,6 +109,7 @@ class Service extends Base\Service
     private function generateLoginToken($admin)
     {
         $admin->resetFailedAttempts();
+
         $this->repo->saveOrFail($admin);
 
         $tokenAttributes = [
@@ -114,6 +123,8 @@ class Service extends Base\Service
         $admin = $admin->toArrayPublic();
 
         $admin['token'] = $token->getToken();
+
+        $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
 
         return $admin;
     }
@@ -160,16 +171,9 @@ class Service extends Base\Service
 
         $admin = $this->core->create($orgId, $input);
 
-        $this->fireAdminCreated($admin);
+        $this->fireAdminAction($admin, Action::CREATE_ADMIN);
 
         return $admin->toArrayPublic();
-    }
-
-    protected function fireAdminCreated($admin)
-    {
-        Event::fire(new RZP\Events\AuditLogEntry(['admin' => $admin, 'event' => 'create']));
-        \App::getFacadeRoot()['trace']->info("HELLO_WORLD", $data);
-        // $this->app['events']->fire('events.auditlogentry', );
     }
 
     public function getAdmin(string $orgId, string $adminId)
@@ -250,7 +254,12 @@ class Service extends Base\Service
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
         $adminId = Entity::verifyIdAndStripSign($adminId);
+
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
+
+        $this->fireAdminAction($admin, Action::DELETE_ADMIN);
 
         $data = $this->core->delete($orgId, $adminId);
 
@@ -280,6 +289,8 @@ class Service extends Base\Service
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
             $orgId, $adminId);
 
+        $this->fireAdminAction($admin, Action::UPDATE_ADMIN_ROLES, ['roles' => $input['roles']]);
+
         return $admin->toArrayPublic();
     }
 
@@ -294,6 +305,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
+
+        $this->fireAdminAction($admin, Action::ADD_MERCHANT_TO_ADMIN, ['merchant' => $merchant->toArrayPublic()]);
 
         $this->repo->admin->addMerchantOrFail($admin, $merchant);
     }
@@ -317,6 +330,8 @@ class Service extends Base\Service
             throw new Exception\LogicException(
                 'The role does not belong to the organization');
         }
+
+        $this->fireAdminAction($admin, Action::REVOKE_ADMIN_ROLE, ['role' => $role->toArrayPublic()]);
 
         $this->repo->admin->revokeRoleOrFail($admin, $role);
     }

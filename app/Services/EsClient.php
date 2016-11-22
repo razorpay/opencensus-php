@@ -86,7 +86,7 @@ class EsClient
 
     public function createIndex($params)
     {
-        return $this->client->indices()->create($params);
+        return $this->client->index($params);
     }
 
     public function deleteIndex($params)
@@ -97,6 +97,11 @@ class EsClient
     public function changeIndexSettings($params)
     {
         $this->client->indices()->putSettings($params);
+    }
+
+    public function getClient()
+    {
+        return $this->client;
     }
 
 

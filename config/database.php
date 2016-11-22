@@ -155,7 +155,14 @@ return array(
         'test' => env('ES_TEST_INDEX')
     ],
 
+    'es_heimdall' => [
+        'live' => env('ES_HEIMDALL_LIVE_INDEX'),
+        'test' => env('ES_HEIMDALL_TEST_INDEX')
+    ],
+
     'es_host'  => env('ES_HOST'),
+
+    'es_heimdall_host' => env('ES_HEIMDALL_HOST'),
 
     'es_mock'  => env('ES_MOCK'),
 
