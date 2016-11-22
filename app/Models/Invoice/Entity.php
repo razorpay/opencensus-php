@@ -535,5 +535,17 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::STATUS, '=', $status);
     }
 
-// -------------------------------------- Query scopes section ends --------------------------------------
+    // -------------------------------------- Query scopes section ends --------------------------------------
+
+    public function recomputeAmountFromLineItems()
+    {
+        $totalAmount = 0;
+
+        foreach ($this->lineItems()->get() as $lineItem) {
+
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+        }
+
+        $this->setAmount($totalAmount);
+    }
 }

@@ -122,18 +122,6 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    protected function setAmount()
-    {
-        $totalAmount = 0;
-
-        foreach ($this->invoice->lineItems()->get() as $lineItem) {
-
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
-        }
-
-        $this->invoice->setAmount($totalAmount);
-    }
-
     public static function getInvoiceLink($invoiceId, $mode)
     {
         // This is required here because this piece of code is a little prone to bugs.
@@ -167,9 +155,7 @@ class Generator extends Base\Core
     protected function ensureDependentEntitiesCreated(array $input)
     {
         $this->ensureLineItemsCreated($input[Entity::LINE_ITEMS]);
-        $this->setAmount();
-        // $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
-        // $this->invoice->setAmount(1000);
+        $this->invoice->recomputeAmountFromLineItems();
 
         $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);

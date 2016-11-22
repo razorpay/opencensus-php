@@ -32,7 +32,57 @@ class Core extends Base\Core
                 'input'         => $input,
             ]);
 
-        // If ITEM_ID set use that otherwise create new item using details provided
+        list($input, $itemDetails) = $this->separateInput($input);
+
+        $item = $this->ensureItemAssociation($input, $itemDetails, $merchant, $invoice);
+
+        $lineItem = (new Entity)->build($input);
+
+        $lineItem->entity()->associate($invoice);
+        $lineItem->item()->associate($item);
+        $lineItem->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($lineItem);
+
+        return $lineItem;
+    }
+
+    public function update(
+        Entity $lineItem,
+        array $input,
+        Merchant\Entity $merchant,
+        Invoice\Entity $invoice)
+    {
+        list($input, $itemDetails) = $this->separateInput($input);
+
+        if (isset($input[Entity::ITEM_ID]) or $itemDetails)
+        {
+            $item = $this->ensureItemAssociation($input, $itemDetails, $merchant, $invoice);
+            $lineItem->item()->associate($item);
+        }
+
+        $lineItem->edit($input);
+
+        $this->repo->saveOrFail($lineItem);
+
+        return $lineItem;
+    }
+
+    public function delete(Entity $lineItem)
+    {
+        $this->repo->line_item->deleteOrFail($lineItem);
+
+        return true;
+    }
+
+
+
+    protected function ensureItemAssociation(
+        array $input,
+        array $itemDetails,
+        Merchant\Entity $merchant,
+        Invoice\Entity $invoice)
+    {
         if (isset($input[Entity::ITEM_ID]) === true)
         {
             $item = $this->repo->item->findByPublicIdAndMerchant(
@@ -49,34 +99,20 @@ class Core extends Base\Core
         }
         else
         {
-            if (isset($input[Item\Entity::CURRENCY]))
+            if (isset($itemDetails[Item\Entity::CURRENCY]))
             {
-                $this->throwIfCurrencyNotSame($input[Item\Entity::CURRENCY], $invoice);
+                $this->throwIfCurrencyNotSame($itemDetails[Item\Entity::CURRENCY], $invoice);
             }
             else
             {
-                $input[Item\Entity::CURRENCY] = $invoice->getCurrency();
+                $itemDetails[Item\Entity::CURRENCY] = $invoice->getCurrency();
             }
-
-            list($input, $itemDetails) = $this->separateInput($input);
 
             $item = (new Item\Core)->create($itemDetails, $merchant);
         }
 
-        $lineItem = (new Entity)->build($input);
-
-        // Associates invoice & item to this line item
-        $lineItem->entity()->associate($invoice);
-        $lineItem->item()->associate($item);
-
-        $lineItem->merchant()->associate($merchant);
-
-        $this->repo->saveOrFail($lineItem);
-
-        return $lineItem;
+        return $item;
     }
-
-
 
     /**
      * Request payload contains flattened linesItemDetails, i.e. It has line item attributes

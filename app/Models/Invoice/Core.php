@@ -9,12 +9,20 @@ use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->lineItemCore = new LineItem\Core();
+    }
+
     public function create(array $input)
     {
         $this->trace->info(
@@ -57,6 +65,66 @@ class Core extends Base\Core
         $this->repo->invoice->deleteOrFail($invoice);
 
         return true;
+    }
+
+    public function addLineItem(
+        Entity $invoice,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        $this->checkIfInDrafStatus($invoice);
+
+        $this->repo->transaction(
+            function() use ($invoice, $input, $merchant)
+            {
+                $this->lineItemCore->create($input, $merchant, $invoice);
+
+                $invoice->recomputeAmountFromLineItems();
+                $this->repo->saveOrFail($invoice);
+            }
+        );
+
+        return $invoice;
+    }
+
+    public function updateLineItem(
+        Entity $invoice,
+        LineItem\Entity $lineItem,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        $this->checkIfInDrafStatus($invoice);
+
+        $this->repo->transaction(
+            function() use ($invoice, $lineItem, $input, $merchant)
+            {
+                $this->lineItemCore->update($lineItem, $input, $merchant, $invoice);
+
+                $invoice->recomputeAmountFromLineItems();
+                $this->repo->saveOrFail($invoice);
+            }
+        );
+
+        return $invoice;
+    }
+
+    public function removeLineItem(
+        Entity $invoice,
+        LineItem\Entity $lineItem)
+    {
+        $this->checkIfInDrafStatus($invoice);
+
+        $this->repo->transaction(
+            function() use ($lineItem, $invoice)
+            {
+                $this->lineItemCore->delete($lineItem);
+
+                $invoice->recomputeAmountFromLineItems();
+                $this->repo->saveOrFail($invoice);
+            }
+        );
+
+        return $invoice;
     }
 
     public function sendNotification(Entity $invoice, $medium)

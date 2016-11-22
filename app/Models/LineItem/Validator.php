@@ -10,4 +10,9 @@ class Validator extends Base\Validator
         Entity::QUANTITY            => 'sometimes|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|string|max:19',
     ];
+
+    protected static $editRules = [
+        Entity::QUANTITY            => 'sometimes|integer|min:1',
+        Entity::ITEM_ID             => 'sometimes|string|max:19',
+    ];
 }

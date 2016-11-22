@@ -59,6 +59,37 @@ class InvoiceController extends Controller
         return ApiResponse::json([]);
     }
 
+    // ------------------------------------------------------------
+    // Add, update and remove line items under given invoice
+
+    public function addLineItem($id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->addLineItem($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function updateLineItem($id, $lineItemId)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->updateLineItem($id, $lineItemId, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function removeLineItem($id, $lineItemId)
+    {
+        $invoice = $this->service->removeLineItem($id, $lineItemId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    // ------------------------------------------------------------
+
+
     public function sendNotifications()
     {
         $summary = $this->service->sendNotificationsInBulk();

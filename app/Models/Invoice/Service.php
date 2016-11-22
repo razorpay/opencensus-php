@@ -52,6 +52,29 @@ class Service extends Base\Service
         return $this->core->delete($item);
     }
 
+    public function addLineItem(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $this->core->addLineItem($invoice, $input, $this->merchant)->toArrayPublic();
+    }
+
+    public function updateLineItem(string $id, string $lineItemId, array $input)
+    {
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $lineItem = $this->repo->line_item->findByPublicIdAndMerchant($lineItemId, $this->merchant);
+
+        return $this->core->updateLineItem($invoice, $lineItem, $input, $this->merchant)->toArrayPublic();
+    }
+
+    public function removeLineItem(string $id, string $lineItemId)
+    {
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $lineItem = $this->repo->line_item->findByPublicIdAndMerchant($lineItemId, $this->merchant);
+
+        return $this->core->removeLineItem($invoice, $lineItem);
+    }
+
     public function sendNotification($id, $medium)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
