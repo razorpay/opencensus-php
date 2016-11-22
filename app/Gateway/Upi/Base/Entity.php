@@ -65,6 +65,11 @@ class Entity extends Base\Entity
         'amount'  =>  'int'
     );
 
+    protected static $generators = [
+        self::PROVIDER,
+        self::BANK,
+    ];
+
     public function setAcquirer($acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
@@ -107,5 +112,25 @@ class Entity extends Base\Entity
     public function getMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    protected function generateProvider(& $input)
+    {
+        $vpa = $input[self::VPA];
+
+        $vpaParts = explode('@', $vpa);
+
+        $provider = $vpaParts[1];
+
+        $this->setAttribute(self::PROVIDER, $provider);
+    }
+
+    protected function generateBank($input)
+    {
+        $provider = $this->getAttribute(self::PROVIDER);
+
+        $bank = ProviderCode::getBankCode($provider);
+
+        $this->setAttribute(self::BANK, $bank);
     }
 }

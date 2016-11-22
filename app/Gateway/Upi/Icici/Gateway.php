@@ -111,18 +111,8 @@ class Gateway extends Base\Gateway
      */
     protected function getGatewayEntityAttributes(array $input)
     {
-        $vpa = $input['payment']['vpa'];
-
-        $vpaParts = explode('@', $vpa);
-
-        $pspCode = $vpaParts[1];
-
-        $bankCode = ProviderCode::getBankCode($pspCode);
-
         return [
-            Entity::VPA         => $vpa,
-            Entity::PROVIDER    => $pspCode,
-            Entity::BANK        => $bankCode
+            Entity::VPA => $input['payment']['vpa'],
         ];
     }
 

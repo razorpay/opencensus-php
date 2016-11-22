@@ -24,6 +24,8 @@ class Gateway extends Base\Gateway
 
         $payment->setAcquirer(static::ACQUIRER);
 
+        $payment->generate($attr);
+
         $payment->fill($attr);
 
         $this->repo->saveOrFail($payment);
