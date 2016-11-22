@@ -650,7 +650,7 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+        return ($this->isAttributeNull(self::AUTHORIZED_AT) === false);
     }
 
     public function hasTransaction()
