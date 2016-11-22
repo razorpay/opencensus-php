@@ -202,5 +202,8 @@ app.controller('ActivationCtrl', [
         $scope.check[step] = false;
       });
     }
+
+    // Get org details for certain display things
+    $scope.org = location.hostname.indexOf('wl') !== -1 ? 'hdfc' : localStorage.getItem('theme');
   }
 ]);

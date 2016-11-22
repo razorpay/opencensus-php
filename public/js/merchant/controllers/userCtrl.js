@@ -270,6 +270,7 @@ app.controller('UserCtrl', [
       }
     }
 
+    // Show correct logo according to the organization
     organization.fetchCurrentOrg().then(function (data) {
       if (data.main_logo_url) {
         $scope.logo_full = data.main_logo_url;
