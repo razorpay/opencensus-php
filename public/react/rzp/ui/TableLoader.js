@@ -1,9 +1,10 @@
 import Spinner from 'rzp/ui/Spinner'
+import './EmptyTableRow/EmptyTableRow.styl'
 
 export default (props) => {
   return (
     <tr>
-      <td className='text-center' colSpan={props.colSpan} style={{padding: '50px'}}>
+      <td class='text-center empty-table' colSpan={props.colSpan}>
         <Spinner />
       </td>
     </tr>

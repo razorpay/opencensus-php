@@ -17,6 +17,10 @@ class Session {
   get currentMode() {
     return this.session.modeFactory.getMode()
   }
+
+  get isLiveMode() {
+    return this.currentMode === 'live'
+  }
 }
 
 export default new Session()

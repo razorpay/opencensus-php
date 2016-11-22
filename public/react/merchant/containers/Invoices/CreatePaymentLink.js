@@ -47,6 +47,10 @@ function validate(values) {
   }
 })
 export default class CreatePaymentLink extends Component {
+  static contextTypes = {
+    session: PropTypes.object
+  }
+
   constructor() {
     super(...arguments)
     this.create = ::this.create
@@ -166,6 +170,16 @@ export default class CreatePaymentLink extends Component {
                 </label>
               </div>
             </div>
+            {
+              !this.context.session.isLiveMode &&
+              <div class='row'>
+                <div class='col-md-8 col-md-offset-3'>
+                  <div class='alert-sm alert-warning'>
+                    SMS will not be sent in Test Mode
+                  </div>
+                </div>
+              </div>
+            }
           </div>
 
           <div class='modal-footer'>

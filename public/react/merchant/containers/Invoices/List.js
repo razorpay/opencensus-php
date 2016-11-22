@@ -46,7 +46,7 @@ export default class InvoicesListContainer extends ModalContainer {
 
     return (
       <div>
-        <Header title={`Invoices (Link) - Total ${invoices.length}`}>
+        <Header title='Invoices'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={this.openModal}
