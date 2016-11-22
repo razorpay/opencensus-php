@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Transaction\FeeBreakup\Entity as FeeBreakup;
 
-class UpdateFeesBreakupTable extends Migration
+class AlterFeesBreakupTable extends Migration
 {
     /**
      * Run the migrations.
