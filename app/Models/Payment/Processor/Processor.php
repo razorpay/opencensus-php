@@ -465,6 +465,16 @@ class Processor
 
         $payment->setStatus(Payment\Status::FAILED);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_FAILED,
+            [
+                'payment_id'    => $payment->getId(),
+                'old_status'    => $status,
+                'error'         => $error,
+                'segment_data'  => $segmentCustomProperties,
+            ]
+        );
+
         $payment->setError($code, $desc, $internalCode);
 
         $payment->setVerified(null);
@@ -638,7 +648,7 @@ class Processor
         return $order;
     }
 
-    protected function setOrderDetails($payment, $input)
+    protected function setOrderDetails(Payment\Entity $payment, array $input)
     {
         if (empty($input['order_id']) === true)
         {
@@ -676,6 +686,13 @@ class Processor
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
         $this->order->incrementAttempts();
+
+        $this->trace->info(
+            TraceCode::ORDER_STATUS_ATTEMPTED,
+            [
+                'order_id'      => $this->order->getId(),
+                'attempts'      => $this->order->getAttempts(),
+            ]);
 
         $this->order->saveOrFail();
 

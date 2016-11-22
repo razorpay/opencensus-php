@@ -37,6 +37,12 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
+            [
+                'payment_id' => $payment->getId()
+            ]);
+
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateNodalBalance($txn);
@@ -130,6 +136,13 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_CREATED,
+            [
+                'payment_id' => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]);
 
         return [$txn, $feesSplit];
     }
