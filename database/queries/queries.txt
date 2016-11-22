@@ -1220,6 +1220,12 @@ ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
 
+---
+
+ALTER TABLE upi
+    ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
+    ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
+    MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
 
 --
 -- Queries around "invoices" prs deployment
@@ -1256,3 +1262,5 @@ ALTER TABLE `line_items` DROP COLUMN `amount`;
 ALTER TABLE `line_items` MODIFY COLUMN `item_id`     char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_id`   char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
+
+-----
