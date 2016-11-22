@@ -130,34 +130,6 @@ class Service extends Base\Service
         return $groups->toArrayPublic();
     }
 
-    /**
-    * This function gets all org groups and then calls filter on it to
-    * filter out the ones not allowed
-    *
-    * Logic: Imagine a graph (feel free to draw a tree for better
-    * visualization though). For a selected node (group in our case)
-    * remove:
-    *
-    * - Its **siblings**.
-    * - Its **direct** parent-linked chain.
-    * - Its **siblings** and its **own** child hierarchy.
-    */
-
-    public function fetchEligibleParents(string $orgId, string $groupId, array $input)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-
-        // Get all groups of the current organization
-        $allGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
-
-        $allGroups = $allGroups->toArray();
-
-        $filteredGroups = $this->filterEligibleParents($orgId, $groupId, $allGroups);
-
-        return $filteredGroups;
-    }
-
     public function addRoleToGroup(
         string $orgId,
         string $groupId,
@@ -250,12 +222,44 @@ class Service extends Base\Service
     }
 
     /**
+    * This function gets all org groups and then calls filter on it to
+    * filter out the ones not allowed
+    *
+    * Logic: Imagine a graph (feel free to draw a tree for better
+    * visualization though). For a selected node (group in our case)
+    * remove:
+    *
+    * - Its **siblings**.
+    * - Its **direct** parent-linked chain.
+    * - Its **siblings** and its **own** child hierarchy.
+    */
+
+    public function fetchEligibleParents(string $orgId, string $groupId, array $input)
+    {
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $groupId = Entity::verifyIdAndStripSign($groupId);
+
+        // Get all groups of the current organization
+        $allGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
+
+        $allGroups = $allGroups->toArray();
+
+        $filteredGroups = $this->filterEligibleParents($orgId, $groupId, $allGroups);
+
+        return $filteredGroups;
+    }
+
+    /**
     * This functions does all the filtering. It gets all the groups in parent hierarchy
     * and all the siblings and removes these from the array of all org groups and returns
     * the difference.
     */
     protected function filterEligibleParents(string $orgId, string $groupId, $allGroups)
     {
+        $currentGroup = [
+            $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId)
+        ];
+
         // Get entire parent lineage (recursively)
         $rejectParents = $this->getRejectParents($orgId, $groupId);
 
@@ -266,7 +270,7 @@ class Service extends Base\Service
         $rejectSiblings = $this->getRejectSiblings($orgId, $groupId);
 
         // Merge all the groups to be rejected
-        $rejects = array_merge($rejectParents, $rejectChildren, $rejectSiblings);
+        $rejects = array_merge($currentGroup, $rejectParents, $rejectChildren, $rejectSiblings);
 
         // Remove $rejects from $allGroups
         $filtered = [];
@@ -277,8 +281,7 @@ class Service extends Base\Service
 
             foreach ($rejects as $reject)
             {
-                if (($group['id'] === $reject['id']) or
-                    ($group['id'] === $groupId))
+                if ($group['id'] === $reject['id'])
                 {
                     $isReject = true;
                 }
