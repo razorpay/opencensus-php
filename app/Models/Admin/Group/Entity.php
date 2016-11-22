@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
     {
         // Since we're doing morphToMany, it'll mean that all the entity IDs
         // on the **left** in GROUP_MAP will be the parents.
+        //
+        // SQL = WHERE entity_id = calling_entity_id AND entity_type = 'group'
         return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
@@ -73,6 +75,8 @@ class Entity extends Base\PublicEntity
     {
         // Since we're doing morphedByMany, it'll mean all the entity IDs
         // on the **right** in GROUP_MAP are the children
+        //
+        // SQL = WHERE group_id = calling_entity_id AND entity_type = 'group'
         return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
@@ -101,52 +105,5 @@ class Entity extends Base\PublicEntity
     public function setPublicOrgIdAttribute(array & $array)
     {
         $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
-    }
-
-    public function toArrayPublic()
-    {
-        $group = parent::toArrayPublic();
-
-        if (isset($group['admins']) === true)
-        {
-            foreach ($group['admins'] as $key => $entity)
-            {
-                $group['admins'][$key]['id'] = Admin\Entity::getSignedId($entity['id']);
-            }
-        }
-
-        if (isset($group['merchants']) === true)
-        {
-            foreach ($group['merchants'] as $key => $entity)
-            {
-                $group['merchants'][$key]['id'] = Merchant\Entity::getSignedId($entity['id']);
-            }
-        }
-
-        if (isset($group['roles']) === true)
-        {
-            foreach ($group['roles'] as $key => $entity)
-            {
-                $group['roles'][$key]['id'] = Role\Entity::getSignedId($entity['id']);
-            }
-        }
-
-        if (isset($group['sub_groups']) === true)
-        {
-            foreach ($group['sub_groups'] as $key => $entity)
-            {
-                $group['sub_groups'][$key]['id'] = Entity::getSignedId($entity['id']);
-            }
-        }
-
-        if (isset($group['parents']) === true)
-        {
-            foreach ($group['parents'] as $key => $entity)
-            {
-                $group['parents'][$key]['id'] = Entity::getSignedId($entity['id']);
-            }
-        }
-
-        return $group;
     }
 }

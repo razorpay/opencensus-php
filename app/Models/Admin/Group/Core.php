@@ -61,9 +61,9 @@ class Core extends Base\Core
 
         $group->edit($input);
 
-        if (isset($input['sub_groups']) === true)
+        if (isset($input['parents']) === true)
         {
-            $group->subGroups()->sync($input['sub_groups']);
+            $group->parents()->sync($input['parents']);
         }
 
         $this->repo->saveOrFail($group);
