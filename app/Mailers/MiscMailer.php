@@ -33,7 +33,7 @@ class MiscMailer extends Mailer
         $this->data = compact('invitation_array', 'admin');
 
         $this->email = $invitation_array['email'];
-        $this->subject = 'Invitation to sign up '; //TODO add org name and better the subject line
+        $this->subject = 'Invitation to signup - HDFC Merchant Services'; //TODO add org name and better the subject line
 
         return $this;
     }
