@@ -5,17 +5,17 @@ class Session {
     this.initialize(data)
   }
 
-  initialize(data) {
+  initialize(data = {}) {
     this.session = data
     return this
   }
 
   get isAuthenticated() {
-    return !!this.session
+    return !!this.session.identity
   }
 
   get currentMode() {
-    return 'test' // TODO: need to handle from localstorage
+    return this.session.modeFactory.getMode()
   }
 }
 

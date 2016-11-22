@@ -35,7 +35,7 @@ window.ReactDOM = ReactDOM
  *  2. https://facebook.github.io/react/docs/context.html
  */
 
-function contextProvider({ component, ngRouter, store, user }) {
+function contextProvider({ component, ngRouter, store, user, modeFactory }) {
   return (props) => {
     return React.createElement(
       Provider,
@@ -45,7 +45,7 @@ function contextProvider({ component, ngRouter, store, user }) {
         { ngRouter },
         React.createElement(
           SessionProvider,
-          { user },
+          { user, modeFactory },
           React.createElement(component, props)
         )
       )
@@ -58,12 +58,14 @@ function createNgDirective(directiveName, component, ...args) {
     'reactDirective',
     '$state',
     'user',
-    (reactDirective, $state, user) => {
+    'modeFactory',
+    (reactDirective, $state, user, modeFactory) => {
       return reactDirective(contextProvider({
         component,
         ngRouter: $state,
         store,
-        user
+        user,
+        modeFactory,
       }), ...args)
     }
   ])
