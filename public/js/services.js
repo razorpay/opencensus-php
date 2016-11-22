@@ -262,10 +262,6 @@ angular.module('app.services', [])
   '$idle',
   function ($q, $http, $timeout, $idle) {
 
-    /**
-     * TODO: return promises instead of thr reference of th variable
-    **/
-
     var _org;
 
     return {
@@ -289,28 +285,79 @@ angular.module('app.services', [])
 
         return deferred.promise;
       },
-      fetchRoles: function () {
-        var roles = {};
-        $http.get('/admin/generic', {
-          ignoreErrors: true,
+      addOrEditRole: function (role) {
+        var deferred = $q.defer();
+        var _this = this;
+
+        // Request for creating
+        var request_data = {
+          url: '/admin/generic',
+          method: 'POST',
           params: {
-            route_name: 'role_get_multiple'
+            route_name: 'role_create'
+          },
+          data: {
+            body: role
           }
-        }).success(function (data) {
-          if (data.success === true) {
-            if (data.data.items.length > 0) {
-              angular.forEach(data.data.items, function (role) {
-                roles[role.id] = role.name;
-              });
-            }
+        }
+
+        if (role.role_id) {
+          request_data = $.extend(request_data, {
+            method: 'PUT',
+            params: {
+              route_name: 'role_edit',
+              url_params: {
+                '{roleId}': role.role_id
+              }
+            },
+
+          })
+        }
+
+        $http(request_data)
+        .success(function (data) {
+          if (data.success) {
+            _this.roles.push(data.data);
+            deferred.resolve(data.data);
+          } else {
+            deferred.reject(data.errors);
           }
-          else {
-            roles = {};
-          }
-        }).error(function () {
-          return data.errors
+        })
+        .error(function(data) {
+          deferred.reject(data.errors);
         });
-        return roles;
+
+        return deferred.promise;
+      },
+      fetchRoles: function () {
+        var deferred = $q.defer();
+        var _this = this;
+
+        if (angular.isDefined(_this.roles)){
+          deferred.resolve(_this.roles);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/generic', {
+            ignoreErrors: true,
+            params: {
+              route_name: 'role_get_multiple'
+            }
+          })
+          .success(function (data) {
+            if (data.success) {
+              _this.roles = data.data.items;
+              deferred.resolve(_this.roles);
+            } else {
+              deferred.reject(data.errors);
+            }
+          })
+          .error(function(data) {
+            deferred.reject(data.errors);
+          });
+
+        return deferred.promise;
       },
       fetchGroups: function () {
         var groups = [];

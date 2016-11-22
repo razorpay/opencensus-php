@@ -36,57 +36,20 @@ app.controller('RolesCtrl', [
     };
 
 
-    /* TODO: use fetchRoles from factory */
-    $scope.getRoles = function () {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'role_get_multiple',
-        }
+    /**
+     *  Actions
+    **/
+
+    organization.fetchRoles().then(function(roles) {
+      $scope.roles = roles;
+      $scope.count = $scope.roles.length;
+    }).catch(function(errors){
+      $scope.alerts.resetAlerts();
+
+      angular.forEach(errors, function (value, key) {
+        $scope.alerts.addAlert('danger', value);
       });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.roles = data.data.items
-          $scope.count = data.data.count;
-        }
-        else {
-          $scope.alerts.addAlert('danger', null, true);
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-
-    };
-
-    $scope.getRoles();
-
-    $scope.addRole = function (role) {
-      var request = $http({
-        url: '/admin/generic',
-        method: 'POST',
-        params: {
-          route_name: 'role_create',
-        },
-        data: {
-          body: {
-            name: role.name,
-            description: role.description
-          }
-        }
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.roles.push({
-            id: data.data.id,
-            name: data.data.name,
-            description: data.data.description
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
+    });
 
     $scope.deleteRole = function(id) {
       var request = $http.delete('/admin/generic', {

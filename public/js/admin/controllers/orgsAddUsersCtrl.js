@@ -42,7 +42,13 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.select_all = false;
     $scope.role = '';
 
-    $scope.roles = organization.fetchRoles();
+    organization.fetchRoles().then(function(roles) {
+      $scope.roles = {};
+
+      angular.forEach(roles, function (role) {
+        $scope.roles[role.id] = role.name;
+      });
+    });
     $scope.groups = organization.fetchGroups();
 
     if ($stateParams.id) {

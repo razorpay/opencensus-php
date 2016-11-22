@@ -81,53 +81,15 @@ app.controller('OrgsAddRolesCtrl', [
         }
       }
 
-      if ($scope.role_id) {
-        // Edit
+      organization.addOrEditRole(body).then(function(data) {
+        $scope.alerts.addAlert('success', 'Role saved', true);
+      }).catch(function(errors){
+        $scope.alerts.resetAlerts();
 
-        var request = $http({
-          url: '/admin/generic',
-          method: 'PUT',
-          params: {
-            route_name: 'role_edit',
-
-            url_params: {
-              '{roleId}' : $scope.role_id
-            }
-          },
-          data: {
-            body: body
-          }
+        angular.forEach(errors, function (value, key) {
+          $scope.alerts.addAlert('danger', value);
         });
-      }
-      else {
-        // Create
-
-        var request = $http({
-          url: '/admin/generic',
-          method: 'POST',
-          params: {
-            route_name: 'role_create'
-          },
-          data: {
-            body: body
-          }
-        });
-      }
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Role saved', true);
-        }
-        else {
-          $scope.alerts.resetAlerts();
-
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      })
     }
   }
 ]);
