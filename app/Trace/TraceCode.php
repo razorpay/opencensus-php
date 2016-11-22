@@ -129,6 +129,7 @@ class TraceCode
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
     const INVOICE_BITLY_RESPONSE                    = 'INVOICE_BITLY_RESPONSE';
     const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
+    const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
@@ -386,6 +387,10 @@ class TraceCode
     const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
+
+    // Trace code for item/line_items
+    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
+    const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

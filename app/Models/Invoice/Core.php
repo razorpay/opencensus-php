@@ -7,7 +7,6 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Exception;
-use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Customer;
@@ -15,25 +14,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    protected $itemService;
-
-    protected $itemCore;
-    protected $orderCore;
-    protected $customerCore;
-
-    protected $invoiceGenerator;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->itemService = new LineItem\Service();
-
-        $this->itemCore = new LineItem\Core();
-        $this->orderCore = new Order\Core();
-        $this->customerCore = new Customer\Core();
-    }
-
     public function create(array $input)
     {
         $this->trace->info(
@@ -53,9 +33,22 @@ class Core extends Base\Core
 
     public function sendNotification(Entity $invoice, $medium)
     {
+        $this->trace->info(
+            TraceCode::INVOICE_SEND_NOTIFICATION,
+            [
+                'invoice_id' => $invoice->getId(),
+                'medium'     => $medium,
+            ]);
+
+        $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
 
-        $response = (new Notifier($invoice))->$commFunc();
+        if (method_exists($notifier, $commFunc) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Not a valid medium");
+        }
+
+        $response = $notifier->$commFunc();
 
         $this->repo->saveOrFail($invoice);
 
@@ -100,7 +93,7 @@ class Core extends Base\Core
         }
 
         return [
-            'razorpay_payment_id' => Payment\Entity::getSignedId($paymentId)
+            'razorpay_payment_id' => $paymentId
         ];
     }
 
