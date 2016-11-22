@@ -98,7 +98,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
                 'capture_response' => $response
-            ]);
+            ]
+        );
 
         $captureFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
 
@@ -121,7 +122,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'refund_response' => $response
-            ]);
+            ]
+        );
 
         $refundFields = $this->getCaptureRefundOrVoidFields($response, $input['refund']);
 
@@ -144,7 +146,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_VOID_RESPONSE,
             [
                 'void_response' => $response
-            ]);
+            ]
+        );
 
         $voidFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
 
@@ -525,7 +528,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RESPONSE,
             [
                 'raw_xml_response' => $xml->asXml()
-            ]);
+            ]
+        );
 
         $soapEnvBody = $xml->children('SOAP-ENV', true)->Body;
 
@@ -566,7 +570,8 @@ class Gateway extends Base\Gateway
                     'payment_id' => $payment['id'],
                     'message'    => 'Payment verification failed.',
                     'gateway'    => $this->gateway,
-                ]);
+                ]
+            );
 
             return null;
         }
@@ -795,7 +800,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function arrayToXml($array, $wrap=null)
+    protected function arrayToXml($array, $wrap = null)
     {
         // set initial value for XML string
         $xml = '';
@@ -842,7 +847,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $gatewayCallback);
+            $gatewayCallback
+        );
     }
 
     protected function scrubCardInfo(& $content)
