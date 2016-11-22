@@ -2,7 +2,7 @@ Hi!
 
 <br><br>
 
-{{ $admin['name'] }} has invited you to sign up for online transactions ({{$invitation_array['admin_id']}}). <!-- TODO Parse invitation array and fill correct data -->
+{{ $admin['name'] }} has invited you to sign up for HDFC Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
 
 <br><br>
 
