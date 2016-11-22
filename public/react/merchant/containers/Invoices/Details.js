@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
-
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
 
@@ -15,14 +14,18 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   render() {
-    let { loading, invoice } = this.props
+    let { loading, invoice, error } = this.props
 
     return (
       <div>
         <Header title='Invoice Detail' />
 
         <div class='content-wrapper'>
-          <InvoiceDetail invoice={invoice} isLoading={loading} />
+          <InvoiceDetail
+            invoice={invoice}
+            isLoading={loading}
+            errors={error}
+          />
         </div>
       </div>
     )

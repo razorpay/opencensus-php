@@ -16,7 +16,11 @@ export const fetchInvoice = (id) => {
 
 let initialState = {
   loading: true,
-  invoice: {}
+  invoice: {
+    customer_details: {},
+    line_items: []
+  },
+  error: null
 }
 
 export default function (state = fromJS(initialState), action) {
@@ -27,14 +31,15 @@ export default function (state = fromJS(initialState), action) {
     case `${INVOICE_FETCH}::SUCCESS`:
       return state.merge({
         loading: false,
-        invoice: action.payload.data.items[0]
+        invoice: action.payload.data.items[0],
+        error: null
       })
 
     case `${INVOICE_FETCH}::ERROR`:
       return state.merge({
         loading: false,
-        error: action.error,
-        invoice: {}
+        error: action.payload.errors,
+        invoice: initialState.invoice
       })
 
     default:
