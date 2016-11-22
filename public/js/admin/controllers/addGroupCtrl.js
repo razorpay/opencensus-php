@@ -14,8 +14,11 @@ app.controller('AddGroupCtrl', [
     $scope.select_all_groups = false;
     $scope.select_all_users = false;
     $scope.selected_groups = {};
+    // Full details (objects) of selected groups
+    $scope.selected_groups_full = [];
 
     var group_id = $stateParams.id;
+
     if (group_id) {
       $scope.groups = organization.fetchAllowedGroups(group_id);
     }
@@ -50,7 +53,10 @@ app.controller('AddGroupCtrl', [
 
           data.data.parents.forEach(function (group) {
             $scope.selected_groups[group.id] = true;
+
+            $scope.selected_groups_full.push(group);
           });
+          console.log($scope.selected_groups_full);
         }
       });
     }
@@ -82,7 +88,6 @@ app.controller('AddGroupCtrl', [
           if ($scope.selected_groups[key]) {
             body.parents.push(key);
           }
-
         }
       }
 
