@@ -47,13 +47,23 @@ export default class InvoicesListContainer extends ModalContainer {
     return (
       <div>
         <Header title='Invoices'>
-          <button
-            class='pull-right btn btn-primary btn-rounded'
-            onClick={this.openModal}
-          >
-            <i class='fa fa-plus'></i>
-            <span>Create Payment Link</span>
-          </button>
+          <div class='btn-toolbar pull-right'>
+            <button
+              class='btn btn-primary btn-rounded'
+              onClick={this.openModal}
+            >
+              <i class='fa fa-plus'></i>
+              <span>Create Payment Link</span>
+            </button>
+
+            <a
+              href='#/app/invoices/new'
+              class='btn btn-primary btn-rounded'
+            >
+              <i class='fa fa-plus'></i>
+              <span>New Invoice</span>
+            </a>
+          </div>
         </Header>
 
         <div class='content-wrapper'>

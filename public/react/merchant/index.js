@@ -6,10 +6,10 @@ import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
 import SessionProvider from './SessionProvider'
 import store from './store'
 
-// import './mocks/faker'
+import './mocks/faker'
 
-// import CustomersListContainer from './containers/Customers/List'
-// import ItemsListContainer from './containers/Items/List'
+import CustomersListContainer from './containers/Customers/List'
+import ItemsListContainer from './containers/Items/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
 import InvoiceDetailsContainer from './containers/Invoices/Details'

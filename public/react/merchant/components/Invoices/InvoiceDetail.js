@@ -24,8 +24,19 @@ export default ({ invoice, isLoading, errors }) => {
             <div class='panel-heading'>
               Invoice Id: <b>{invoice.id}</b>
             </div>
+
             <div class='panel-body'>
               <div class='list-group'>
+                <div class='list-group-item'>
+                  <span class='pull-right'>{invoice.customer_details.customer_email}</span>
+                  Customer Email
+                </div>
+
+                <div class='list-group-item'>
+                  <span class='pull-right'>{invoice.customer_details.customer_contact}</span>
+                  Customer Contact
+                </div>
+
                 <div class='list-group-item'>
                   <Amount class='pull-right' value={invoice.amount} />
                   Amount
@@ -51,16 +62,6 @@ export default ({ invoice, isLoading, errors }) => {
                 <div class='list-group-item'>
                   <span class='pull-right'>{invoice.currency}</span>
                   Currency
-                </div>
-
-                <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.customer_details.customer_email}</span>
-                  Email
-                </div>
-
-                <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.customer_details.customer_contact}</span>
-                  Contact
                 </div>
 
                 <div class='list-group-item'>

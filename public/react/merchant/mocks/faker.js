@@ -174,12 +174,12 @@ fakeApi.put('/test/item/:id', (db, request) => {
 })
 
 
-fakeApi.get('/test/invoices', (db, request) => {
-  return {
-    success: true,
-    data: {
-      count: 10,
-      items: db.getCollection('invoice').data
-    }
-  }
-})
+// fakeApi.get('/test/invoices', (db, request) => {
+//   return {
+//     success: true,
+//     data: {
+//       count: 10,
+//       items: db.getCollection('invoice').data
+//     }
+//   }
+// })
