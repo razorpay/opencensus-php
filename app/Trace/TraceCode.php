@@ -86,6 +86,7 @@ class TraceCode
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
     const ORDER_REFUNDED                            = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
+    const REFUND_AUTHORIZE_BULK                     = 'REFUND_AUTHORIZE_BULK';
     const PAYMENT_STATUS_FAILED                     = 'PAYMENT_STATUS_FAILED';
     const ORDER_STATUS_AUTHORIZED                   = 'ORDER_STATUS_AUTHORIZED';
     const PAYMENT_STATUS_AUTHORIZED                 = 'PAYMENT_STATUS_AUTHORIZED';

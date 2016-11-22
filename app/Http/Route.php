@@ -50,6 +50,7 @@ final class Route
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
+        'payments_multiple_authorize_refund'      => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedBulk'                        ],
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
@@ -528,6 +529,7 @@ final class Route
         'feature_bulk_remove',
         'upi_fill_provider',
         'methods_update_merchants',
+        'payments_multiple_authorize_refund',
     );
 
     public static $proxy = array(
