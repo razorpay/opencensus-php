@@ -554,13 +554,6 @@ app.controller('MerchantDetailCtrl', [
         resolve: {
           current: function () {
             return currentPlan;
-          },
-          selectDropdown: function () {
-            return function () {
-              $('select[name="pricing_plan_id"]').select2({
-                placeholder: 'Select a pricing option'
-              });
-            };
           }
         }
       });
@@ -953,8 +946,7 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   '$http',
   'current',
-  'selectDropdown',
-  function ($scope, $modalInstance, $http, current, selectDropdown) {
+  function ($scope, $modalInstance, $http, current) {
     $scope.loading = true;
     $scope.pricing_plans = {};
     $scope.pricing_plan_id = current;
@@ -967,10 +959,10 @@ app.controller('MerchantDetailCtrl', [
         }
         $scope.loading = false;
 
+        // Trigger select2 on the dropdown
         setTimeout(function () {
           $('select[name="pricing_plan_id"]').select2();
         }, 100);
-
       }
     });
 
