@@ -711,6 +711,14 @@ class Service extends Base\Service
 
             $payment->setStatus(Payment\Status::FAILED);
 
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_FAILED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'error_code'        => $payment->getErrorCode(),
+                    'error_description' => $payment->getErrorDescription(),
+                ]);
+
             $payment->setVerifyBucket(0);
 
             $saved = $this->repo->save($payment);
