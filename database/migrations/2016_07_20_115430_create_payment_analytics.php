@@ -88,8 +88,6 @@ class CreatePaymentAnalytics extends Migration
                 ->on_delete('restrict');
 
             $table->index(Analytics::CHECKOUT_ID);
-            $table->index(Analytics::PAYMENT_ID);
-            $table->index(Analytics::MERCHANT_ID);
 
             $table->index(Analytics::CREATED_AT);
         });
@@ -106,6 +104,10 @@ class CreatePaymentAnalytics extends Migration
         {
             $table->dropForeign(
                 Table::PAYMENT_ANALYTICS.'_'.Analytics::PAYMENT_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::PAYMENT_ANALYTICS.'_'.Analytics::MERCHANT_ID.'_foreign');
+
         });
 
         Schema::drop(Table::PAYMENT_ANALYTICS);
