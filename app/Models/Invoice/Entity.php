@@ -91,7 +91,12 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::USER_ID           => null,
+        self::AMOUNT            => 100,
         self::CURRENCY          => 'INR',
+        self::CUSTOMER_NAME     => null,
+        self::CUSTOMER_EMAIL    => null,
+        self::CUSTOMER_CONTACT  => null,
+        self::CUSTOMER_ADDRESS  => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -279,6 +284,11 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function isDraft()
+    {
+        return $this->getStatus() === Status::DRAFT;
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -373,7 +383,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $array[self::CUSTOMER_ID] = $customerId ? Customer\Entity::getSignedId($customerId) : null;
     }
 
     protected function setPublicOrderIdAttribute(array & $array)
@@ -536,16 +546,4 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------------------- Query scopes section ends --------------------------------------
-
-    public function recomputeAmountFromLineItems()
-    {
-        $totalAmount = 0;
-
-        foreach ($this->lineItems()->get() as $lineItem) {
-
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
-        }
-
-        $this->setAmount($totalAmount);
-    }
 }

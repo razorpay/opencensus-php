@@ -19,7 +19,7 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        $invoice = $this->core->create($input);
+        $invoice = $this->core->create($input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
@@ -42,7 +42,14 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->update($invoice, $input)->toArrayPublic();
+        return $this->core->update($invoice, $input, $this->merchant)->toArrayPublic();
+    }
+
+    public function issue(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $this->core->issue($invoice)->toArrayPublic();
     }
 
     public function delete(string $id)

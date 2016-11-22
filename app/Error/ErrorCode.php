@@ -381,5 +381,6 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
     const BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED                                      = 'BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED';
+    const BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED                                     = 'BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED';
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
 }

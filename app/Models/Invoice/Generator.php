@@ -104,8 +104,13 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function setShortUrl()
+    public function setShortUrl()
     {
+        if ($this->invoice->isDraft())
+        {
+            return;
+        }
+
         $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
@@ -154,8 +159,10 @@ class Generator extends Base\Core
 
     protected function ensureDependentEntitiesCreated(array $input)
     {
-        $this->ensureLineItemsCreated($input[Entity::LINE_ITEMS]);
-        $this->invoice->recomputeAmountFromLineItems();
+        if (isset($input[Entity::LINE_ITEMS]))
+        {
+            $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input[Entity::LINE_ITEMS]);
+        }
 
         $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);
@@ -165,14 +172,20 @@ class Generator extends Base\Core
         $this->invoice->merchant()->associate($this->merchant);
     }
 
-    protected function ensureLineItemsCreated(array $lineItemsDetails)
+    protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $lineItemsDetails)
     {
+        $totalAmount = 0;
+
         foreach ($lineItemsDetails as $lineItemDetails)
         {
             $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant, $this->invoice);
 
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+
             $this->invoice->lineItems()->save($lineItem);
         }
+
+        $this->invoice->setAmount($totalAmount);
     }
 
     protected function createOrderForInvoice()
@@ -238,12 +251,12 @@ class Generator extends Base\Core
             $this->invoice->setCustomerEmail($customer->getEmail());
             $this->invoice->setCustomerAddress($customer->getCurrentShippingAddressId());
         }
-        elseif (empty($this->invoice->customer))
+        elseif (empty($this->invoice->customer) and $this->invoice->isDraft() === false)
         {
 
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
-                $input
+                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT
+                // $input
             );
         }
     }

@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
-        Entity::LINE_ITEMS          => 'required|custom',
+        Entity::LINE_ITEMS          => 'sometimes|custom',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',

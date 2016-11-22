@@ -23,14 +23,14 @@ class Core extends Base\Core
         $this->lineItemCore = new LineItem\Core();
     }
 
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
 
-        $invoice = (new Generator($this->merchant))->generate($input);
+        $invoice = (new Generator($merchant))->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -40,7 +40,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function update(Entity $invoice, array $input)
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
         $this->checkIfInDrafStatus($invoice);
 
@@ -49,11 +49,23 @@ class Core extends Base\Core
             {
                 $invoice->edit($input);
 
-                (new Generator($this->merchant, $invoice))->ensureCustomerAssociation($input);
+                (new Generator($merchant, $invoice))->ensureCustomerAssociation($input);
 
                 $this->repo->saveOrFail($invoice);
             }
         );
+
+        return $invoice;
+    }
+
+    public function issue(Entity $invoice)
+    {
+        $this->checkIfInvoiceCanBeIssued($invoice);
+
+        $invoice->setStatus(Status::ISSUED);
+        (new Generator(null, $invoice))->setShortUrl();
+
+        $this->repo->saveOrFail($invoice);
 
         return $invoice;
     }
@@ -79,7 +91,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->create($input, $merchant, $invoice);
 
-                $invoice->recomputeAmountFromLineItems();
+                $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
             }
         );
@@ -100,7 +112,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->update($lineItem, $input, $merchant, $invoice);
 
-                $invoice->recomputeAmountFromLineItems();
+                $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
             }
         );
@@ -119,7 +131,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->delete($lineItem);
 
-                $invoice->recomputeAmountFromLineItems();
+                $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
             }
         );
@@ -219,8 +231,37 @@ class Core extends Base\Core
     {
         if ($invoice->getStatus() !== Status::DRAFT)
         {
-
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED);
         }
+    }
+
+    protected function checkIfInvoiceCanBeIssued(Entity $invoice)
+    {
+        // Ensure:
+        // - In draft status
+        // - Customer associated
+        // - Line items exists
+
+        $this->checkIfInDrafStatus($invoice);
+
+        if (empty($invoice->customer) or $invoice->lineItems()->count() === 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED);
+        }
+    }
+
+    protected function recomputeInvoiceAmount(Entity $invoice)
+    {
+        $totalAmount = 0;
+
+        foreach ($invoice->lineItems()->get() as $lineItem) {
+
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+        }
+
+        $invoice->setAmount($totalAmount);
+
+        $invoice->order->setAmount($totalAmount);
+        $this->repo->order->saveOrFail($invoice->order);
     }
 }
