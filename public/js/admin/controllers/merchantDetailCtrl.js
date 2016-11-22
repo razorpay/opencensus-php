@@ -538,6 +538,9 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+ 
+    // Assign pricing modal
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
       // Switch the default plan to Promotional Pricing
@@ -551,9 +554,17 @@ app.controller('MerchantDetailCtrl', [
         resolve: {
           current: function () {
             return currentPlan;
+          },
+          selectDropdown: function () {
+            return function () {
+              $('select[name="pricing_plan_id"]').select2({
+                placeholder: 'Select a pricing option'
+              });
+            };
           }
         }
       });
+
       modalInstance.result.then(function (data) {
         $scope.assignPricing(data);
       }, $.noop);
@@ -942,7 +953,8 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   '$http',
   'current',
-  function ($scope, $modalInstance, $http, current) {
+  'selectDropdown',
+  function ($scope, $modalInstance, $http, current, selectDropdown) {
     $scope.loading = true;
     $scope.pricing_plans = {};
     $scope.pricing_plan_id = current;
@@ -954,6 +966,11 @@ app.controller('MerchantDetailCtrl', [
           $scope.pricing_plans[value.id] = value.name;
         }
         $scope.loading = false;
+
+        setTimeout(function () {
+          $('select[name="pricing_plan_id"]').select2();
+        }, 100);
+
       }
     });
 
