@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Output Keys --------------------------------------
     const CUSTOMER_DETAILS      = 'customer_details';
+    const PAYMENT_ID            = 'payment_id';
 
     // ------------------------ Output Keys End -----------------------------------
 
@@ -140,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
         self::ORDER_ID,
+        self::PAYMENT_ID,
         // self::CUSTOMER_EMAIL,
         // self::CUSTOMER_CONTACT,
         // self::CUSTOMER_NAME,
@@ -174,6 +176,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
         self::LINE_ITEMS,
+        self::PAYMENT_ID,
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
@@ -197,6 +200,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
+        self::PAYMENT_ID,
     ];
 
     // The functions for these fields will be called only
@@ -272,16 +276,7 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentId()
     {
-        $repo = App::getFacadeRoot()['repo'];
-
-        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
-
-        if ($payment !== null)
-        {
-            return $payment->getId();
-        }
-
-        return null;
+        return $this->getAttribute(self::PAYMENT_ID);
     }
 
     public function isDraft()
@@ -373,6 +368,20 @@ class Entity extends Base\PublicEntity
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
 
         return $lineItems;
+    }
+
+    protected function getPaymentIdAttribute()
+    {
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+
+        if ($payment !== null)
+        {
+            return $payment->getPublicId();
+        }
+
+        return null;
     }
 
     // -------------------------------------- End Accessors --------------------------------------

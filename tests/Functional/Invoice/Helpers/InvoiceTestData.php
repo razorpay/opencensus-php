@@ -50,6 +50,7 @@ return [
                 'view_less' => true,
                 'amount' => 100000,
                 'currency' => 'INR',
+                'payment_id' => null,
             ],
         ],
     ],

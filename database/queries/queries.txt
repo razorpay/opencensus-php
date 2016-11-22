@@ -1215,7 +1215,54 @@ ALTER TABLE payments
 ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
 
-----
 ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
+
+ALTER TABLE upi
+    ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
+    ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
+    MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
+
+----
+
+ALTER TABLE payment_analytics
+    ADD COLUMN merchant_id VARCHAR(14) AFTER payment_id,
+    ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+
+-- Queries around "invoices" prs deployment
+
+ALTER TABLE `invoices` ADD COLUMN `ref_num`    char(14) DEFAULT NULL AFTER `id`;
+ALTER TABLE `invoices` ADD COLUMN `issued_at`  int(11)  DEFAULT NULL AFTER `scheduled_at`;
+ALTER TABLE `invoices` ADD COLUMN `paid_at`    int(11)  DEFAULT NULL AFTER `issued_at`;
+ALTER TABLE `invoices` ADD COLUMN `expired_at` int(11)  DEFAULT NULL AFTER `paid_at`;
+
+ALTER TABLE `invoices` ADD UNIQUE INDEX `invoices_merchant_id_ref_num_unique` (`merchant_id`,`ref_num`);
+
+ALTER TABLE `line_items` ADD COLUMN `item_id`     char(14)     DEFAULT NULL AFTER `id`;
+ALTER TABLE `line_items` ADD COLUMN `entity_id`   char(14)     DEFAULT NULL AFTER `item_id`;
+ALTER TABLE `line_items` ADD COLUMN `entity_type` varchar(32)  DEFAULT NULL AFTER `entity_id`;
+
+ALTER TABLE `line_items` MODIFY COLUMN `name`        varchar(512) DEFAULT NULL;
+ALTER TABLE `line_items` MODIFY COLUMN `amount`      int          DEFAULT NULL;
+
+ALTER TABLE `line_items` ADD CONSTRAINT `line_items_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`);
+CREATE INDEX `line_items_entity_id_index`   ON `line_items` (`entity_id`);
+CREATE INDEX `line_items_entity_type_index` ON `line_items` (`entity_type`);
+
+
+-- Run these queries post https://github.com/razorpay/api/pull/1575/ 's code deployment
+
+ALTER TABLE `line_items` DROP FOREIGN KEY `line_items_invoice_id_foreign`;
+DROP INDEX `line_items_amount_index` ON `line_items`;
+
+ALTER TABLE `line_items` DROP COLUMN `invoice_id`;
+ALTER TABLE `line_items` DROP COLUMN `name`;
+ALTER TABLE `line_items` DROP COLUMN `description`;
+ALTER TABLE `line_items` DROP COLUMN `amount`;
+
+ALTER TABLE `line_items` MODIFY COLUMN `item_id`     char(14)    NOT NULL;
+ALTER TABLE `line_items` MODIFY COLUMN `entity_id`   char(14)    NOT NULL;
+ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
+
+-----

@@ -201,7 +201,7 @@ class Core extends Base\Core
         }
 
         return [
-            'razorpay_payment_id' => Payment\Entity::getSignedId($paymentId)
+            'razorpay_payment_id' => $paymentId
         ];
     }
 
@@ -215,7 +215,8 @@ class Core extends Base\Core
 
         $data['invoice'] = [
             'order_id'  => Order\Entity::getSignedId($orderId),
-            'url'       => $invoice->getShortUrl()
+            'url'       => $invoice->getShortUrl(),
+            'amount'    => $invoice->getAmount(),
         ];
 
         $data['customer'] = $customer->toArrayPublic();

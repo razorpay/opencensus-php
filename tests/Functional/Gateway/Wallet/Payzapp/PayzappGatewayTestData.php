@@ -205,7 +205,7 @@ return [
           'action'                  => 'refund',
           'amount'                  => 50000,
           'wallet'                  => 'payzapp',
-          'received'                => false,
+          'received'                => true,
           'email'                   => 'a@b.com',
           'contact'                 => '+919918899029',
           'gateway_merchant_id'     => '3456',
