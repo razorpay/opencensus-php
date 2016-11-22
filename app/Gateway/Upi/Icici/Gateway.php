@@ -14,6 +14,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Utility;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -24,10 +25,12 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'upi_icici';
 
-    const BANK = 'icici';
+    const ACQUIRER = 'icici';
 
-    protected $map = array(
+    protected $map = [
         Entity::VPA                       => Entity::VPA,
+        Entity::PROVIDER                  => Entity::PROVIDER,
+        Entity::BANK                      => Entity::BANK,
         Entity::RECEIVED                  => Entity::RECEIVED,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
@@ -36,7 +39,7 @@ class Gateway extends Base\Gateway
         ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
-    );
+    ];
 
     /**
      * Authorizes a payment using UPI Gateway
@@ -101,7 +104,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We only store the VPA because the rest of the fields
+     * We only store the VPA, bank and provider because the rest of the fields
      * are filled by the callback
      * @param  array  $input
      * @return Array
@@ -109,7 +112,7 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input)
     {
         return [
-            Entity::VPA     => $input['payment']['vpa'],
+            Entity::VPA => $input['payment']['vpa'],
         ];
     }
 
