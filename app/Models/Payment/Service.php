@@ -130,9 +130,9 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
-    public function refundAuthorizedInBulk($ids)
+    public function refundAuthorizedInBulk(array $input)
     {
-        $paymentIds = explode(',', $ids);
+        $paymentIds = $input['payment_ids'];
 
         $count = count($paymentIds);
 
@@ -142,6 +142,8 @@ class Service extends Base\Service
 
         foreach ($paymentIds as $paymentId)
         {
+            Entity::verifyIdAndSilentlyStripSign($paymentId);
+
             $payment = $this->repo->payment->findById($paymentId);
 
             $merchant = $payment->merchant;
