@@ -94,16 +94,16 @@ class Service extends Base\Service
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
         $groupId = Entity::verifyIdAndStripSign($groupId);
 
-        if (isset($input['sub_groups']) === true)
+        if (isset($input['parents']) === true)
         {
             $groupIds = [];
 
-            foreach ($input['sub_groups'] as $subGroupId)
+            foreach ($input['parents'] as $parentId)
             {
-                $groupIds[] = Entity::verifyIdAndStripSign($subGroupId);
+                $groupIds[] = Entity::verifyIdAndStripSign($parentId);
             }
 
-            $input['sub_groups'] = $groupIds;
+            $input['parents'] = $groupIds;
         }
 
         $group = $this->core->edit($orgId, $groupId, $input);
