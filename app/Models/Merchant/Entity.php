@@ -33,7 +33,6 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
-    const ORG_ID                    = 'org_id';
 
     /**
      * Category for particular methods or gateways
@@ -114,7 +113,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LOGO_URL,
-        self::ORG_ID,
      );
 
     protected $defaults = array(
@@ -132,7 +130,6 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
-        self::ORG_ID                 => null,
     );
 
     protected $publicSetters = array(
@@ -267,12 +264,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'RZP\Models\Terminal\Entity');
-    }
-
-    public function org()
-    {
-        return $this->hasOne(
-            'RZP\Models\Admin\Org\Entity');
     }
 
     public function transactions()
@@ -424,11 +415,6 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
-    }
-
-    public function getOrgId()
-    {
-        return $this->getAttribute(self::ORG_ID);
     }
 
     public function features()

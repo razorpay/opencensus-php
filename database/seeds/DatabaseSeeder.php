@@ -39,36 +39,6 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
 
-            DB::table(Table::ORG)->insert(
-                [
-                    'id'                => '6dLbNSpv5XbCOF',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'rzp',
-                    'display_name'      => 'razorpay pvt ltd',
-                    'email'             => 'admin@rzp.in',
-                    'email_domains'     => 'razorpay.com',
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => time(),
-                    'updated_at'        => time(),
-                ]
-            );
-
-            DB::table(Table::ORG)->insert(
-                [
-                    'id'                => '6dLbNSpv5XbCOG',
-                    'auth_type'         => 'password',
-                    'business_name'     => 'HDFC',
-                    'display_name'      => 'HDFC Bank Pvt Ltd',
-                    'email'             => 'hdfc@bank.rzp.in',
-                    'email_domains'     => 'hdfcbank.in',
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => time(),
-                    'updated_at'        => time(),
-                ]
-            );
-
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
@@ -81,7 +51,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -105,7 +74,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -129,7 +97,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -154,7 +121,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -182,7 +148,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -207,7 +172,6 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
@@ -274,6 +238,36 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => time(),
                     'updated_at'    => time(),
                 )
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => '6dLbNSpv5XbCOF',
+                    'auth_type'         => 'google_auth',
+                    'business_name'     => 'rzp',
+                    'display_name'      => 'razorpay pvt ltd',
+                    'email'             => 'admin@rzp.in',
+                    'email_domains'     => 'razorpay.com',
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => time(),
+                    'updated_at'        => time(),
+                ]
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => '6dLbNSpv5XbCOG',
+                    'auth_type'         => 'password',
+                    'business_name'     => 'HDFC',
+                    'display_name'      => 'HDFC Bank Pvt Ltd',
+                    'email'             => 'hdfc@bank.rzp.in',
+                    'email_domains'     => 'hdfcbank.in',
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => time(),
+                    'updated_at'        => time(),
+                ]
             );
 
             DB::table(Table::ADMIN)->insert([
