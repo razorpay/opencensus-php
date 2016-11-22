@@ -158,12 +158,6 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                $this->trace->info(
-                    TraceCode::PAYMENT_REFUND_FAILURE,
-                    [
-                        'payment_id' => $paymentId,
-                    ]);
-
                 $this->trace->traceException($ex);
 
                 $failure++;
