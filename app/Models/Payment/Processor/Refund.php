@@ -331,6 +331,24 @@ trait Refund
         }
     }
 
+    protected function voidOnGateway($data)
+    {
+        try
+        {
+            $this->callGatewayFunction(Payment\Action::VOID, $data);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_VOID_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_VOID_FAILURE);
+
+            throw $e;
+        }
+    }
+
     protected function recordRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
@@ -396,6 +414,10 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
+            else if ($this->canGatewayVoid($payment) === true)
+            {
+                $this->voidOnGateway($data);
+            }
 
             $this->recordRefund();
 
@@ -403,6 +425,13 @@ trait Refund
         });
 
         return $refund;
+    }
+
+    protected function canGatewayVoid($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        return Payment\Gateway::supportsVoid($gateway);
     }
 
     protected function updatePaymentRefunded()

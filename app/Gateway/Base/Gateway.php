@@ -184,12 +184,12 @@ class Gateway
 
     public function debit(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function checkBalance(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function capture(array $input)
@@ -209,6 +209,12 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::REFUND;
+    }
+
+    public function void(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::VOID;
     }
 
     public function verify(array $input)
@@ -299,7 +305,6 @@ class Gateway
 
             return $row;
         }, $input['data']);
-
 
         $ns = $this->getGatewayNamespace();
         $class = $ns . '\\' . 'RefundFile';

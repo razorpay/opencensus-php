@@ -128,7 +128,7 @@ class Gateway
      *
      * @var array
      */
-    public static $authAndCapture = array(
+    public static $authAndCapture = [
         self::HDFC => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
@@ -136,7 +136,17 @@ class Gateway
         self::AMEX => [],
         self::CYBERSOURCE => [],
         self::FIRST_DATA => [],
-    );
+    ];
+
+    /**
+     * Card gateways which supports full auth reversal
+     *
+     * @var array
+     */
+    public static $void = [
+        // self::CYBERSOURCE
+        // self::FIRST_DATA
+    ];
 
 
     /**
@@ -474,6 +484,11 @@ class Gateway
                 return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
             }
         }
+    }
+
+    public static function supportsVoid($gateway)
+    {
+        return in_array($gateway, self::$void, true);
     }
 
     /**
