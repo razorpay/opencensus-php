@@ -32,7 +32,7 @@ DEBUG=true
 WAITER_ATTEMPTS=60
 
 # Number of seconds to wait between attempts for resource to be in a state.
-WAITER_INTERVAL=1
+WAITER_INTERVAL=3
 
 # AutoScaling Standby features at minimum require this version to work.
 MIN_CLI_VERSION='1.3.25'
