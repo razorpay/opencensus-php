@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Exception;
 
@@ -15,6 +16,15 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
+            'load'       => 0,
+        ],
+
+        '1000AxisMigsTl' => [
+            'gateway'    => Gateway::AXIS_MIGS,
+            'advance'    => [
+                'method'  => 'card',
+                'type'    => 'debit'
+            ],
             'load'       => 0,
         ],
 
@@ -57,7 +67,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $chancePercent = $options->getChance();
 
-            $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
+            $boostedTerminalId = $this->getBoostedTerminalId($input, $terminals, $chancePercent);
 
             if (is_null($boostedTerminalId) == false)
             {
@@ -78,7 +88,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         return $sortedTerminals;
     }
 
-    protected function getBoostedTerminalId($terminals, $chancePercent)
+    protected function getBoostedTerminalId($input, $terminals, $chancePercent)
     {
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
@@ -92,10 +102,18 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             $this->validateRules($cumulativeProbabity);
 
+            $advanceCheck = true;
+
+            if (isset($rule['advance']) === true)
+            {
+                $advanceCheck = $this->applyAdvancedRules($input, $rule);
+            }
+
             // Checking >100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected bheaviour.
-            if ($chancePercent > (100 - $cumulativeProbabity))
+            if (($advanceCheck === true) and
+                ($chancePercent > (100 - $cumulativeProbabity)))
             {
                 return $terminalId;
             }
@@ -123,6 +141,33 @@ class TerminalLoadSorter extends Terminal\Sorter
         }
 
         return $applicableRules;
+    }
+
+    protected function applyAdvancedRules(array $input, array $rule)
+    {
+        if (isset($rule['advance']['method']) === true)
+        {
+            switch ($rule['advance']['method'])
+            {
+                case Method::CARD:
+
+                    if (isset($rule['advance']['type']) === true)
+                    {
+                        $cardType = $input['payment']->card->getType();
+
+                        if ($rule['advance']['type'] === $cardType)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    break;
+            }
+        }
+
+        return true;
     }
 
     protected function validateRules($cumulativeProbability)
