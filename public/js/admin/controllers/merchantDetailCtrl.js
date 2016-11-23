@@ -538,6 +538,9 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+ 
+    // Assign pricing modal
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
       // Switch the default plan to Promotional Pricing
@@ -554,6 +557,7 @@ app.controller('MerchantDetailCtrl', [
           }
         }
       });
+
       modalInstance.result.then(function (data) {
         $scope.assignPricing(data);
       }, $.noop);
@@ -954,6 +958,11 @@ app.controller('MerchantDetailCtrl', [
           $scope.pricing_plans[value.id] = value.name;
         }
         $scope.loading = false;
+
+        // Trigger select2 on the dropdown
+        setTimeout(function () {
+          $('select[name="pricing_plan_id"]').select2();
+        }, 100);
       }
     });
 
