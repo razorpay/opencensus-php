@@ -11,7 +11,7 @@ class RequestFields
         ]
     ];
 
-    const 'GenerateMerchantDEK' = [
+    const GenerateMerchantDEK = [
         'UPI' => [
             'DeviceID',
             'Channel',
@@ -25,7 +25,7 @@ class RequestFields
         ]
     ];
 
-    const 'MerchantListPublicKeys'  = [
+    const MerchantListPublicKeys  = [
         'UPI'   =>  [
             'Channel',
             'MobileNo',
@@ -47,7 +47,7 @@ class RequestFields
         'TxnType',
     ];
 
-    const 'MerchantGenerateBankOTP' = [
+    const MerchantGenerateBankOTP = [
         'BankName','AddrType', 'PayerCode',
         'UPI'   =>  [
             'Channel', 'MobileNo', 'OrgId', 'BankId', 'Remarks', 'UserID', 'UserPwd', 'DeviceID', 'PayerType', 'MerchantID', 'TerminalID', 'MerchantCredentials',
@@ -62,7 +62,7 @@ class RequestFields
         'PayerAccNo'
     ];
 
-    const 'MerchantAddBank' = [
+    const MerchantAddBank = [
         'UPI'   =>  [
             'Channel',
             'MobileNo',
@@ -78,32 +78,32 @@ class RequestFields
         ]
     ];
 
-    const 'MerchantProfileCreation' = [
-        'AdhaarNo'
-        'QuestionId'
-        'Answer'
-        'DOB'
-        'Email'
-        'FirstName'
-        'Gender'
-        'devName'
-        'devModel'
-        'os'
-        'osVersion'
-        'appName'
-        'appVersion'
-        'LastName'
-        'UserName'
-        'AppPwd'
-        'GcmID'
-        'VirAdddr'
+    const MerchantProfileCreation = [
+        'AdhaarNo',
+        'QuestionId',
+        'Answer',
+        'DOB',
+        'Email',
+        'FirstName',
+        'Gender',
+        'devName',
+        'devModel',
+        'os',
+        'osVersion',
+        'appName',
+        'appVersion',
+        'LastName',
+        'UserName',
+        'AppPwd',
+        'GcmID',
+        'VirAdddr',
         'UPI'   =>  [
             'Channel','MobileNo','MsgId','OrgId','BankId','Remarks','TimeStamp','DeviceID',
             'PayerType','SubMerchantID','MerchantID','TerminalID','MerchantCredentials',
         ]
     ];
 
-    const 'MerchantViewRegAccnts'   =   [
+    const MerchantViewRegAccnts   =   [
         'UPI'   =>  [
             'Channel','MobileNo','MsgId','OrgId','BankId','Remarks','TimeStamp','DeviceID','PayerType','SubMerchantID','MerchantID','TerminalID','MerchantCredentials',
         ],
@@ -118,10 +118,50 @@ class RequestFields
      */
     public static function getRequestTemplate(string $method)
     {
-        $attribs =  constant(__NAMESPACE__ , "::$method");
+        $attribs =  constant(__NAMESPACE__  . "\RequestFields::$method");
+
+        $attribs = self::makeEmptyStrings($attribs);
+
+        $defaults = self::makeEmptyStrings(self::DEFAULT_ATTRIBUTES);
 
         // TODO: Make sure this is recursive as well
-        return $attribs + self::DEFAULT_ATTRIBUTES;
+        return array_merge_recursive($attribs, $defaults);
+    }
+
+    protected static function makeEmptyStrings(array $attribs)
+    {
+        $res = [];
+
+        foreach ($attribs as $key => $value)
+        {
+            if (is_numeric($key))
+            {
+                $res[$value] = '';
+            }
+            // If we have a sequential array inside
+            else if (is_array($value) and array_keys($value) === range(0, count($value) - 1))
+            {
+                $res[$key] = self::makeAssociativeArray($value);
+            }
+            else
+            {
+                throw new \Exception('Should not reach here');
+            }
+        }
+
+        return $res;
+    }
+
+    protected static function makeAssociativeArray(array $arr)
+    {
+        $res = [];
+
+        foreach ($arr as $value)
+        {
+            $res[$value] = '';
+        }
+
+        return $res;
     }
 
     /**

@@ -17,17 +17,26 @@ class UpiController extends Controller
 
     public function deviceCreate()
     {
+
     }
 
     public function deviceVerify()
     {
+
     }
 
     public function getVpas()
     {
+
     }
 
     public function vpaAvailable()
     {
+
+    }
+
+    public function callIDFCAPI()
+    {
+        $input = Input::all();
     }
 }
