@@ -25,6 +25,13 @@ class Service
         $this->api = new Api($id, $secret);
     }
 
+    public function setApiCredentialsForPublicAuth($key)
+    {
+        ApiRequest::addHeader('X-Dashboard', 'true');
+
+        $this->api = new Api($key, null);
+    }
+
     public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
     {
         if (config('slack.enable'))

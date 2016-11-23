@@ -143,7 +143,7 @@ export default (props) => {
                   Created At
                 </div>
               </div>
-{/*
+
               <div class='text-center'>
                 <div class='btn-toolbar inline'>
                   <AsyncButton
@@ -165,7 +165,7 @@ export default (props) => {
                   />
                 </div>
               </div>
-*/}
+
             </div>
           </div>
         </div>
