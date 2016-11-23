@@ -16,11 +16,13 @@ use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
+    protected $lineItemCore;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->lineItemCore = new LineItem\Core();
+        $this->lineItemCore = new LineItem\Core;
     }
 
     public function create(array $input, Merchant\Entity $merchant)
@@ -45,7 +47,7 @@ class Core extends Base\Core
         $this->checkIfInDrafStatus($invoice);
 
         $this->repo->transaction(
-            function() use ($invoice, $input)
+            function() use ($invoice, $merchant, $input)
             {
                 $invoice->edit($input);
 
