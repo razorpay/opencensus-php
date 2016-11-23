@@ -1488,12 +1488,11 @@ app.controller('MerchantDetailCtrl', [
     var request = $http.get('/admin/schedule/list');
     request.success(function (data) {
 
-      for (var key in data.data.items) {
-        var value = data.data.items[key];
+      angular.forEach(data.data.items, function(value) {
         $scope.schedule_list[value.id] = value.name;
-      }
-      $scope.loading = false;
+      });
 
+      $scope.loading = false;
     });
 
     $scope.scheduleListLength = function() {
