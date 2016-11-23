@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
 use RZP\Trace;
@@ -66,6 +67,8 @@ class Reconciler3
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process($input)
