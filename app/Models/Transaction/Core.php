@@ -171,6 +171,16 @@ class Core extends Base\Core
             $serviceTax = 0;
             $credit = $amount;
         }
+        else if (($payment->isCard() === true) and
+                 ($payment->card->isDebit() === true) and
+                 ($payment->isGateway(Payment\Gateway::AXIS_MIGS) === true))
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
         else if ($amountCredits > 0)
         {
             $this->trace->info(
