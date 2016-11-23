@@ -280,6 +280,7 @@ final class Route
         'item_fetch'                              => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                     => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                             => ['put',      'items/{id}',                                     'ItemController@updateItem'                                         ],
+        'item_update_active_attr'                 => ['post',     'items/{id}/active/{active}',                     'ItemController@updateItemActiveAttribute'                          ],
         'item_delete'                             => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -403,6 +404,7 @@ final class Route
         'item_fetch',
         'item_fetch_multiple',
         'item_update',
+        'item_update_active_attr',
         'item_delete',
         'customer_create_address',
         'customer_delete_address',
@@ -702,6 +704,7 @@ final class Route
         'item_fetch'                    => 'invoice',
         'item_fetch_multiple'           => 'invoice',
         'item_update'                   => 'invoice',
+        'item_update_active_attr'       => 'invoice',
         'item_delete'                   => 'invoice',
     );
 

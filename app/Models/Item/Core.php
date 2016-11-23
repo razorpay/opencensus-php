@@ -31,9 +31,12 @@ class Core extends Base\Core
         return $item;
     }
 
-    public function update(Entity $item, array $input)
+    public function update(Entity $item, array $input, bool $check = true)
     {
-        $this->checkIfLineItemAssociated($item);
+        if ($check)
+        {
+            $this->checkIfLineItemAssociated($item);
+        }
 
         $item->edit($input);
 

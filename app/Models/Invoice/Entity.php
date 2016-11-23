@@ -97,7 +97,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::USER_ID           => null,
-        self::AMOUNT            => 100,
+        self::AMOUNT            => null,
         self::CURRENCY          => 'INR',
         self::CUSTOMER_NAME     => null,
         self::CUSTOMER_EMAIL    => null,
@@ -405,7 +405,7 @@ class Entity extends Base\PublicEntity
     {
         $orderId = $this->getAttribute(self::ORDER_ID);
 
-        $array[self::ORDER_ID] = Order\Entity::getSignedId($orderId);
+        $array[self::ORDER_ID] = $orderId ? Order\Entity::getSignedId($orderId) : null;
     }
 
     protected function setPublicUserIdAttribute(array & $array)

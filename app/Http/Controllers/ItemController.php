@@ -58,4 +58,11 @@ class ItemController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function updateItemActiveAttribute($id, $active)
+    {
+        $item = $this->service->updateItemActiveAttribute($id, $active);
+
+        return ApiResponse::json($item);
+    }
 }

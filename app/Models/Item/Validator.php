@@ -15,6 +15,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules  = [
+        Entity::ACTIVE              => 'sometimes|boolean',
         Entity::NAME                => 'sometimes|string',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'sometimes|integer',

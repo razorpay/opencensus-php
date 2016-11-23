@@ -49,4 +49,13 @@ class Service extends Base\Service
 
         return $this->core->delete($item);
     }
+
+    public function updateItemActiveAttribute(string $id, string $active)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $input[Entity::ACTIVE] = boolval($active);
+
+        return $this->core->update($item, $input, false)->toArrayPublic();
+    }
 }
