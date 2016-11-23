@@ -36,12 +36,26 @@ class Category
         'travel_agency',
     ];
 
+
+    /**
+     * INCOMPATIBLE categories will not allow terminals, that
+     * do not match the corresponding categories.
+     * The list below is of the category2 on merchant entity.
+     * The terminals marked null or default will be filtered
+     * out.
+     **/
+    const INCOMPATIBLE = [
+        'securities',
+        'commondities',
+    ];
+
     /**
      * For netbanking, each of the categories on the left will
      * be mapped to the category on the right.
      * */
     const METHOD_NETBANKING = [
-        // 'broking'     => 'broking',
+        'securities'     => 'securities',
+        'commondities'   => 'commondities',
         'grocery'        => 'grocery',
         'ecommerce'      => 'ecommerce',
         'govt_education' => 'govt_education',
@@ -49,9 +63,9 @@ class Category
         'utilities'      => 'utilities',
         'corporate'      => 'corporate',
         'insurance'      => 'insurance',
-        'housing'        =>  'housing',
-        'mutual_funds'   =>  'mutual_funds',
-        'travel_agency'  =>  'travel_agency',
+        'housing'        => 'housing',
+        'mutual_funds'   => 'mutual_funds',
+        'travel_agency'  => 'travel_agency',
     ];
 
     /**
@@ -62,7 +76,8 @@ class Category
      * then it shoould be left empty
      * */
     const NETWORK_AMEX = [
-        // 'broking'     => 'incompatible',
+        'securities'     => 'incompatible',
+        'commondities'   => 'incompatible',
         'grocery'        => 'sup_hypermrkt_deptstore',
         'ecommerce'      => 'retail_services',
         'govt_education' => 'education',
@@ -70,9 +85,9 @@ class Category
         'utilities'      => 'utilities',
         'corporate'      => '',
         'insurance'      => 'insurance',
-        'housing'        =>  'housing',
-        'mutual_funds'   =>  'mutual_funds',
-        'travel_agency'  =>  'travel_agency',
+        'housing'        => 'housing',
+        'mutual_funds'   => 'mutual_funds',
+        'travel_agency'  => 'travel_agency',
     ];
 
     public static function getDefaultForMethod($method)
@@ -175,6 +190,11 @@ class Category
         }
 
         return $returnCategory;
+    }
+
+    public static function isMerchantCategoryIncompatible($category)
+    {
+        return in_array();
     }
 
     protected static function isConstantDefined($type, $name)

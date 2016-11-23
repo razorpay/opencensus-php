@@ -12,6 +12,7 @@ class MerchantFilter extends Terminal\Filter
     protected $properties = [
         'tpv',
         // 'risk',
+        'incompatible',
         'category',
         'gateway',
     ];
@@ -66,6 +67,41 @@ class MerchantFilter extends Terminal\Filter
         }
 
         // Else allow - By default allow all transactions
+        return true;
+    }
+
+    /**
+     * For merchants with a category2 that is incompatible,
+     * the null and the default match terminals will be filtered out
+     **/
+    public function incompatibleFilter($terminal, $input)
+    {
+        $merchantTerminalCategory = $input['merchant']->getCategory2();
+
+        if ((isset($merchantTerminalCategory) === true) and
+            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory)))
+        {
+            $category = $terminal->getNetworkCategory();
+
+            // If the terminal's category is null, don't allow.
+            if (empty($category) === true)
+            {
+                return false;
+            }
+
+            $method = $input['payment']->getMethod();
+
+            $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+
+            // If category is a defaultCategory don't allow,
+            if ($category === $defaultCategory)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
