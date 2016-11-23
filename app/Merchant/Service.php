@@ -583,7 +583,7 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    public function notify($mode, $id, $medium)
+    public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];
 
@@ -601,7 +601,7 @@ class Service extends Base\Service
         {
 
             return [
-                sprintf("No keyId found for given merchant with id: %s", $merchantId),
+                [sprintf("No keyId found for given merchant with id: %s", $merchantId)],
                 $data
             ];
         }
@@ -611,7 +611,7 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->invoice->notify($id, $medium)->toArray();
+            $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

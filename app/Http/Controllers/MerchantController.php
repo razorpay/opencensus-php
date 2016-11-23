@@ -236,9 +236,9 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function notifyInvoice($mode, $id, $medium)
+    public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
-        list($error, $data)  = (new Merchant\Service)->notify($mode, $id, $medium);
+        list($error, $data)  = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
 
         return AppResponse::jsonResponse($error, $data);
     }

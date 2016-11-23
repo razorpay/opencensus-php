@@ -113,7 +113,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoices_fetch_all');
     Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoices_fetch_single');
     Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoices_create');
-    Route::post('/{mode}/invoices/{id}/notify/{medium}', 'MerchantController@notifyInvoice')->name('invoices_notify');
+    Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
     Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 

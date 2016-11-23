@@ -28,7 +28,7 @@ class Invoice extends Entity
         return parent::fetch($id);
     }
 
-    public function notify($id, $medium)
+    public function sendNotification($id, $medium)
     {
         $relativeUrl = sprintf("invoices/%s/notify/%s", $id, $medium);
 
