@@ -361,15 +361,17 @@ trait Capture
         $payment = $this->payment;
         $invoice = null;
 
-        if ($payment->getApiOrderId() !== null)
+        if ($payment->getApiOrderId() === null)
         {
-            $order = $payment->order;
-            $invoice = $order->invoice;
+            return;
+        }
 
-            if ($invoice === null)
-            {
-                return;
-            }
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        if ($invoice === null)
+        {
+            return;
         }
 
         $this->eventInvoicePaid($payment);
