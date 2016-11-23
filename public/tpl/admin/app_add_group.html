@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label for='description' class="col-lg-2 control-label">Parent Groups</label>
+          <label for='description' class="col-lg-2 control-label">Add to Parent Group</label>
           <div class="col-lg-10 scrollable-table">
             <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
@@ -52,6 +52,50 @@
                   <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for='description' class="col-lg-2 control-label">Parent Group</label>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in group.parents">
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+                <tr ng-show="group.parents.length == 0">
+                  <td colspan="7">No Parents defined</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for='description' class="col-lg-2 control-label">Sub Groups</label>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in group.sub_groups">
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+                <tr ng-show="group.sub_groups.length == 0">
+                  <td colspan="7">No Sub groups defined</td>
                 </tr>
               </tbody>
             </table>

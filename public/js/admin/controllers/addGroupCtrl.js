@@ -49,6 +49,8 @@ app.controller('AddGroupCtrl', [
           $scope.group = {
             name: data.data.name,
             description: data.data.description,
+            parents: data.data.parents,
+            sub_groups: data.data.sub_groups,
           };
 
           data.data.parents.forEach(function (group) {
