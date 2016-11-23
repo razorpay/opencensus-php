@@ -106,19 +106,4 @@ class Entity extends Base\PublicEntity
     {
         $array[self::ORG_ID] = Org::getSignedId($array[self::ORG_ID]);
     }
-
-    public function toArrayPublic()
-    {
-        $role = parent::toArrayPublic();
-
-        if (isset($role['permissions']) === true)
-        {
-            foreach ($role['permissions'] as $key => $entity)
-            {
-                $role['permissions'][$key]['id'] = Permission\Entity::getSignedId($entity['id']);
-            }
-        }
-
-        return $role;
-    }
 }
