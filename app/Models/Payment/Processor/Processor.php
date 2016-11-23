@@ -192,10 +192,10 @@ class Processor
 
         $data = array(
             'originalAmount'    => $input['amount'],
-            'fees'              => 0,
-            'razorpay_fee'      => 0,
-            'serviceTax'        => 0,
-            'amount'            => $input['amount']
+            'fees'              => $fee,
+            'razorpay_fee'      => $fee - $serviceTax,
+            'serviceTax'        => $serviceTax,
+            'amount'            => $input['amount'] + $fee
         );
 
         // Converts all the amounts to rupees
