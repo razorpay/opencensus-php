@@ -14,10 +14,6 @@ app.controller('ProfileCtrl', [
         if (result.success) {
           $scope.creditsData = result.data;
         }
-        $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
-      })
-      .error(function (){
-        $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
       });
     };
 
