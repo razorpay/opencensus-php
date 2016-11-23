@@ -26,15 +26,30 @@ class CreateInvoices extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            $table->char(Entity::REF_NUM, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Entity::ORDER_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
+            $table->integer(Entity::DATE)
+                  ->nullable();
+
             $table->integer(Entity::DUE_BY);
 
             $table->integer(Entity::SCHEDULED_AT);
+
+            $table->integer(Entity::ISSUED_AT)
+                  ->nullable();
+
+            $table->integer(Entity::PAID_AT)
+                  ->nullable();
+
+            $table->integer(Entity::EXPIRED_AT)
+                  ->nullable();
 
             $table->string(Entity::STATUS, 32);
 
@@ -63,12 +78,9 @@ class CreateInvoices extends Migration
             $table->text(Entity::TERMS)
                   ->nullable();
 
-            $table->integer(Entity::DATE)
-                  ->nullable();
-
             $table->text(Entity::NOTES);
 
-            $table->string(Entity::SHORT_URL, 40)
+            $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
 
             $table->tinyInteger(Entity::VIEW_LESS)
@@ -93,6 +105,8 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
+
+            $table->unique([Entity::MERCHANT_ID, Entity::REF_NUM]);
 
             $table->foreign(Entity::ORDER_ID)
                   ->references(Order\Entity::ID)
@@ -132,17 +146,17 @@ class CreateInvoices extends Migration
 
             $table->dropForeign
             (
-                Table::TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::MERCHANT . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::INVOICE . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADDRESS . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
             );
         });
 

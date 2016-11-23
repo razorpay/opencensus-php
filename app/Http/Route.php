@@ -50,6 +50,7 @@ final class Route
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
+        'payments_multiple_authorize_refund'      => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
@@ -269,9 +270,11 @@ final class Route
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_expire'                          => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
-        // 'line_item_create'                        => ['post',     'line_items',                                     'LineItemController@createLineItem'                                 ],
-        // 'line_item_fetch'                         => ['get',      'line_items/{id}',                                'LineItemController@getLineItem'                                    ],
-        // 'line_item_fetch_multiple'                => ['get',      'line_items',                                     'LineItemController@getLineItems'                                   ],
+        'item_create'                             => ['post',     'items',                                          'ItemController@createItem'                                         ],
+        'item_fetch'                              => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
+        'item_fetch_multiple'                     => ['get',      'items',                                          'ItemController@getItems'                                           ],
+        // 'item_update'                             => ['put',      'items/{id}',                                     'ItemController@updateItem'                                         ],
+        // 'item_delete'                             => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'app_delete_token'                        => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                        => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                      => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -292,6 +295,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
     );
 
@@ -343,7 +347,7 @@ final class Route
         'app_fetch_payments',
         'customer_logout_global',
         'otp_post',
-        'otp_verify'
+        'otp_verify',
     );
 
     public static $publicCallback = array(
@@ -383,10 +387,11 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
-        // 'invoice_send_notification',
-        // 'line_item_create',
-        // 'line_item_fetch',
-        // 'line_item_fetch_multiple',
+        'item_create',
+        'item_fetch',
+        'item_fetch_multiple',
+        // 'item_update',
+        // 'item_delete',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -525,7 +530,9 @@ final class Route
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
+        'upi_fill_provider',
         'methods_update_merchants',
+        'payments_multiple_authorize_refund',
     );
 
     public static $proxy = array(
@@ -673,6 +680,11 @@ final class Route
         'invoice_send_notification'     => 'invoice',
         'invoice_notification_update'   => 'invoice',
         'invoice_get_status'            => 'invoice',
+        'item_create'                   => 'invoice',
+        'item_fetch'                    => 'invoice',
+        'item_fetch_multiple'           => 'invoice',
+        // 'item_update'                   => 'invoice',
+        // 'item_delete'                   => 'invoice',
     );
 
     const RAZORPAYJS_ROUTES = array(

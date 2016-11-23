@@ -83,7 +83,7 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callabck again. This could be due to
+     * we are hitting callback again. This could be due to
      * browser refresh by the customer or s2s callback notification being
      * delivered by the gateway before browser hits the callback route etc.
      */

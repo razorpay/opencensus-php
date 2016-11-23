@@ -1,0 +1,20 @@
+# path to phpcs "binary"
+OS=`uname -s`
+
+PHPCS_BIN=$(which phpcs)
+
+# the coding standard, you can also specify a path to your own standard here
+# e. g. /path/to/my/standard/dir/
+PHPCS_CODING_STANDARD=$(git rev-parse --show-toplevel)/scripts/coding-standard/Razorpay/
+
+# comma-separated list of file patterns being ignored
+PHPCS_IGNORE=scripts/*,vendor/*
+
+# egrep compatible pattern of  files to be checked
+PHPCS_FILE_PATTERN="\.(php)$"
+
+# ignore warnings
+PHPCS_IGNORE_WARNINGS=1
+
+# encoding
+PHPCS_ENCODING=

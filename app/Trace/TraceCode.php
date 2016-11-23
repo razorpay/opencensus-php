@@ -86,6 +86,15 @@ class TraceCode
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
     const ORDER_REFUNDED                            = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                              = 'WEBHOOK_EDIT';
+    const REFUND_AUTHORIZE_BULK                     = 'REFUND_AUTHORIZE_BULK';
+    const PAYMENT_STATUS_FAILED                     = 'PAYMENT_STATUS_FAILED';
+    const ORDER_STATUS_AUTHORIZED                   = 'ORDER_STATUS_AUTHORIZED';
+    const PAYMENT_STATUS_AUTHORIZED                 = 'PAYMENT_STATUS_AUTHORIZED';
+    const PAYMENT_STATUS_CAPTURED                   = 'PAYMENT_STATUS_CAPTURED';
+    const ORDER_STATUS_PAID                         = 'ORDER_STATUS_PAID';
+    const ORDER_STATUS_ATTEMPTED                    = 'ORDER_STATUS_ATTEMPTED';
+    const PAYMENT_AUTHORIZE_CREATE_TRANSACTION      = 'PAYMENT_AUTHORIZE_CREATE_TRANSACTION';
+    const TRANSACTION_CREATED                       = 'TRANSACTION_CREATED';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -118,8 +127,12 @@ class TraceCode
     const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
+    const INVOICE_BITLY_RESPONSE                    = 'INVOICE_BITLY_RESPONSE';
+    const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
+    const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
+    const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
@@ -374,6 +387,10 @@ class TraceCode
     const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
+
+    // Trace code for item/line_items
+    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
+    const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

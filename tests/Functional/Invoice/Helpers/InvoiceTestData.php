@@ -11,6 +11,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
+                'ref_num'       => "00000000000001",
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -23,12 +24,12 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'currency' => 'INR',
                 'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
             'content' => [
+                'ref_num'       => "00000000000001",
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
@@ -48,6 +49,8 @@ return [
                 'email_status' => 'sent',
                 'view_less' => true,
                 'amount' => 100000,
+                'currency' => 'INR',
+                'payment_id' => null,
             ],
         ],
     ],
@@ -84,6 +87,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'ref_num'       => null,
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
@@ -202,6 +206,131 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'USD',
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'amount'        => 200000,
+                        'quantity'      => 2,
+                    ]
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency of all items should be same as of the invoice itself',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency2' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'item_id'       => 'item_1000000000item',
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'amount'        => 200000,
+                        'quantity'      => 2,
+                    ]
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency of all items should be same as of the invoice itself',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'item_id'       => 'item_1000000000item',
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ],
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details'     => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name' => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount' => 100000,
+                        'quantity' => 1,
+                    ],
+                ],
+                'currency'     => 'INR',
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+                'amount'       => 600000
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue' => [
         'request' => [
             'url' => '/invoices',
@@ -243,6 +372,45 @@ return [
             ],
         ],
     ],
+
+    'testCreateInvoiceWithDuplicateMerchantRefId' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'ref_num'         => '00000000000001',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'amount'        => 200000,
+                        'quantity'      => 2,
+                    ]
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Duplicate value for ref_num in invoice',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+        ],
+    ],
+
 
     'testGetInvoice' => [
         'request' => [
@@ -347,15 +515,49 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invoice status cannot be retrieved now',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
+        ],
+    ],
+
+    'testSendNotificationWithSmsMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/sms',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
+    'testSendNotificationWithInvalidMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/invalid',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid medium',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

@@ -104,7 +104,15 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            $refundData['response_description'] = substr($content[ResponseFields::MSG], 0, 255);
+            if (isset($content[ResponseFields::MSG]) === true)
+            {
+                $refundData['response_description'] = substr($content[ResponseFields::MSG], 0, 255);
+            }
+            else if (isset($content[ResponseFields::MESSAGE]) === true)
+            {
+                $refundData['response_description'] = substr($content[ResponseFields::MESSAGE], 0, 255);
+
+            }
             $refundData['status_code'] = $content[ResponseFields::STATUS];
 
             $this->createGatewayRefundEntity($refundData);
@@ -320,7 +328,8 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::STATUS])) and
             ($content[ResponseFields::STATUS] === Status::SUCCESS))
         {
-            $walletAttributes = $this->getWalletContentFromVerify();
+            $walletAttributes = $this->getWalletContentFromVerify(
+                $gatewayPayment, $content);
 
             if ($gatewayPayment === null)
             {
@@ -328,9 +337,37 @@ class Gateway extends Base\Gateway
             }
             else if ($gatewayPayment['received'] === false)
             {
-                $gatewayPayment->fill($walletAttributes);
+                $attrs = $this->getMappedAttributes($walletAttributes);
 
-                $gatewayPayment->saveOrFail();
+                $gatewayPayment->fill($attrs);
+
+                $this->repo->saveOrFail($gatewayPayment);
+            }
+
+            // Payment was late authorized
+            if (((empty($gatewayPayment['gateway_payment_id']) === true) or
+                 (empty($gatewayPayment['reference1']) === true)) and
+                (empty($content[ResponseFields::FDC_TXN_ID]) === false))
+            {
+                $date = $this->getEpochTime(
+                    $content[ResponseFields::FDC_TXN_DATE],
+                    DateFormat::FDC_TXN_DATE_FORMAT);
+
+                $walletAttributes = [];
+
+                $walletAttributes[ResponseFields::TRAN_ID] = $content[ResponseFields::FDC_TXN_ID];
+
+                $walletAttributes[ResponseFields::TRAN_DATE] = $date;
+
+                $walletAttributes[ResponseFields::STATUS] = $content[ResponseFields::STATUS];
+
+                $walletAttributes[ResponseFields::MSG] = 'eCommerce transaction successful';
+
+                $attrs = $this->getMappedAttributes($walletAttributes);
+
+                $gatewayPayment->fill($attrs);
+
+                $this->repo->saveOrFail($gatewayPayment);
             }
         }
 
@@ -339,7 +376,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getWalletContentFromVerify()
+    protected function getWalletContentFromVerify($gatewayPayment, $content)
     {
         $contentToSave = [
             RequestFields::MID         => $this->getMerchantId(),
@@ -458,9 +495,6 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::TRAN_DATE],
             DateFormat::TRAN_DATE_FORMAT);
 
-        //TODO Temporary solution for checksum
-        $this->verifyPaymentInAuthorize($input, $content);
-
         // Create a payment gateway entity and save it.
         $contentToSave = [
             ResponseFields::STATUS     => $content[ResponseFields::STATUS],
@@ -475,6 +509,10 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+        //TODO Temporary solution for checksum
+        $this->verifyPaymentInAuthorize($input, $content);
+
     }
 
     protected function verifyPaymentInAuthorize(array $input, array $content)
@@ -584,10 +622,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function setProxy(&$request)
+    protected function setProxy(& $request)
     {
-        if (($this->mode === Mode::LIVE) and
-            ($this->proxyEnabled === true))
+        if ($this->mode === Mode::LIVE)
         {
             $request['options']['proxy'] = $this->proxy;
         }
