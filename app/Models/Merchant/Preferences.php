@@ -22,5 +22,10 @@ class Preferences
             Gateway::HDFC,
             Gateway::CYBERSOURCE,
         ],
+
+        // Soch
+        '6QGdVzDAIpBniU' => [
+            Gateway::HDFC,
+        ]
     ];
 }

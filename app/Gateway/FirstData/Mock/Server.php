@@ -109,7 +109,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
             FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
             FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
-            FirstData\ApiResponseFields::BUILDTIME                   => (string)$dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::BUILDTIME                   => (string) $dateTime->format("Y.m.d @ H:i:s T"),
             FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
             FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
             FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
@@ -118,12 +118,12 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
-            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string)$dateTime->getTimestamp(),
-            FirstData\ApiResponseFields::TDATE                       => (string)$dateTime->getTimestamp() . random_integer(5),
-            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string)$dateTime->format("Y.m.d H:i:s (T)"),
+            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimestamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
             FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
-            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string)$dateTime->getTimestamp(),
+            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         ];
 
@@ -150,7 +150,7 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
             FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
             FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
-            FirstData\ApiResponseFields::BUILDTIME                   => (string)$dateTime->format("Y.m.d @ H:i:s T"),
+            FirstData\ApiResponseFields::BUILDTIME                   => (string) $dateTime->format("Y.m.d @ H:i:s T"),
             FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
             FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
             FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
@@ -159,12 +159,12 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
             FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
-            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string)$dateTime->getTimestamp(),
-            FirstData\ApiResponseFields::TDATE                       => (string)$dateTime->getTimestamp() . random_integer(5),
-            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string)$dateTime->format("Y.m.d H:i:s (T)"),
+            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimestamp(),
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
             FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
-            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string)$dateTime->getTimestamp(),
+            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         ];
 
@@ -189,11 +189,11 @@ class Server extends Base\Mock\Server
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
-        $tdate = (string)$dateTime->getTimestamp();
+        $tdate = (string) $dateTime->getTimestamp();
 
         $approvalCode = $this->getApprovalCode();
 
-        $tdateFormatted = (string)$dateTime->format("Y.m.d H:i:s (T)");
+        $tdateFormatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
 
         $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateFormatted);
 
