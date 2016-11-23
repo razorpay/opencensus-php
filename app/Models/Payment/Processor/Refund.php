@@ -331,19 +331,19 @@ trait Refund
         }
     }
 
-    protected function voidOnGateway($data)
+    protected function reverseAuthOnGateway($data)
     {
         try
         {
-            $this->callGatewayFunction(Payment\Action::VOID, $data);
+            $this->callGatewayFunction(Payment\Action::REVERSE_AUTH, $data);
         }
         catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_VOID_FAILURE);
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REVERSE_AUTH_FAILURE);
 
             $this->tracePaymentFailed(
                     $e->getError(),
-                    TraceCode::PAYMENT_VOID_FAILURE);
+                    TraceCode::PAYMENT_REVERSE_AUTH_FAILURE);
 
             throw $e;
         }
@@ -373,7 +373,8 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]);
+            ]
+        );
 
         $this->setPayment($payment);
 
@@ -414,9 +415,9 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
-            else if ($this->canGatewayVoid($payment) === true)
+            else if ($this->gatewaySupportsReverseAuth($payment) === true)
             {
-                $this->voidOnGateway($data);
+                $this->reverseAuthOnGateway($data);
             }
 
             $this->recordRefund();
@@ -427,11 +428,11 @@ trait Refund
         return $refund;
     }
 
-    protected function canGatewayVoid($payment)
+    protected function gatewaySupportsReverseAuth($payment)
     {
         $gateway = $payment->getGateway();
 
-        return Payment\Gateway::supportsVoid($gateway);
+        return Payment\Gateway::supportsReverseAuth($gateway);
     }
 
     protected function updatePaymentRefunded()
@@ -524,7 +525,7 @@ trait Refund
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
             $this->repo->saveOrFail($txn);
-            
+
             $this->trace->info(
                 TraceCode::REFUND_TRANSACTION_CREATED,
                 [
@@ -533,7 +534,8 @@ trait Refund
                     'transaction_id'    => $txn->getId(),
                     'auth_capture'      => $supportsAuthAndCapture,
                     'force_refund_txn'  => $forceRefundTransaction,
-                ]);
+                ]
+            );
 
             return $txn;
         }
@@ -556,7 +558,8 @@ trait Refund
                     'message' => 'Batch entry already processed',
                     'batch'   => $batch->getId(),
                     'refunds' => $refunds->toArrayPublic()
-                ]);
+                ]
+            );
 
             assert($count === 1);
 

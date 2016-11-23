@@ -211,6 +211,12 @@ class Gateway
         $this->action = Action::REFUND;
     }
 
+    public function reverseAuth(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::REVERSE_AUTH;
+    }
+
     public function void(array $input)
     {
         $this->input = $input;
@@ -276,7 +282,8 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]);
+                ]
+            );
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -386,7 +393,8 @@ class Gateway
                     'payment_id' => $verify->input['payment']['id'],
                     'message'    => 'payment id not found in the gateway database',
                     'gateway'    => $this->gateway
-                ]);
+                ]
+            );
 
             return null;
         }

@@ -14,7 +14,6 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
-
         parent::__construct();
 
         $this->repo = new FirstData\Repository;

@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $captureFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
+        $captureFields = $this->getCaptureRefundOrRevAuthFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
 
@@ -125,35 +125,35 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $refundFields = $this->getCaptureRefundOrVoidFields($response, $input['refund']);
+        $refundFields = $this->getCaptureRefundOrRevAuthFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
         $this->checkApprovalCode($refundEntity);
     }
 
-    public function void(array $input)
+    public function reverseAuth(array $input)
     {
-        parent::action($input, Base\Action::VOID);
+        parent::reverseAuth($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::VOID);
+        $requestContent = $this->getRequestArray($input, TxnType::REVERSE_AUTH);
 
-        $this->trace->info(TraceCode::GATEWAY_VOID_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_REVERSE_AUTH_REQUEST, $requestContent);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
-            TraceCode::GATEWAY_VOID_RESPONSE,
+            TraceCode::GATEWAY_REVERSE_AUTH_RESPONSE,
             [
-                'void_response' => $response
+                'reverse_auth_response' => $response
             ]
         );
 
-        $voidFields = $this->getCaptureRefundOrVoidFields($response, $input['payment']);
+        $reverseAuthFields = $this->getCaptureRefundOrRevAuthFields($response, $input['payment']);
 
-        $voidEntity = $this->createGatewayPaymentEntity($voidFields, $input);
+        $reverseAuthEntity = $this->createGatewayPaymentEntity($reverseAuthFields, $input);
 
-        $this->checkApprovalCode($voidEntity);
+        $this->checkApprovalCode($reverseAuthEntity);
     }
 
     public function verify(array $input)
@@ -285,7 +285,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCaptureRefundOrVoidFields($response, $input)
+    protected function getCaptureRefundOrRevAuthFields($response, $input)
     {
         $attributes = [
             Entity::RECEIVED               => true,
@@ -781,7 +781,7 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
 
-        if ($txnType !== TxnType::VOID)
+        if ($txnType !== TxnType::REVERSE_AUTH)
         {
             $currency     = $input['payment'][Payment\Entity::CURRENCY];
             $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];

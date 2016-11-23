@@ -139,11 +139,11 @@ class Gateway
     ];
 
     /**
-     * Card gateways which supports full auth reversal
+     * Card gateways which support full auth reversal
      *
      * @var array
      */
-    public static $void = [
+    public static $revAuth = [
         // self::CYBERSOURCE
         // self::FIRST_DATA
     ];
@@ -486,9 +486,9 @@ class Gateway
         }
     }
 
-    public static function supportsVoid($gateway)
+    public static function supportsReverseAuth($gateway)
     {
-        return in_array($gateway, self::$void, true);
+        return in_array($gateway, self::$revAuth, true);
     }
 
     /**
