@@ -282,6 +282,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getPaidAt()
+    {
+        return $this->getAttribute(self::PAID_AT);
+    }
+
+    public function getIssuedAt()
+    {
+        return $this->getAttribute(self::ISSUED_AT);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -309,14 +319,20 @@ class Entity extends Base\PublicEntity
 
     public function setSmsStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::SMS_STATUS, $status);
     }
 
     public function setEmailStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
     }
