@@ -23,13 +23,16 @@ app.controller('GroupDetailCtrl', [
         params: {
           route_name: 'group_get',
           url_params: {
-            '{groupId}': 'grp_6euDnqS4zQR4ke'  //TODO Add actual ids
+            '{groupId}': $scope.group.id,
           }
         }
       });
       request.success(function (data) {
         $scope.group.name = data.data.name;
         $scope.group.description = data.data.description;
+        $scope.group.admins = data.data.admins;
+        $scope.group.parentGroups = data.data.parents;
+        $scope.group.subGroups = data.data.sub_groups;
       }).error(function () {
         console.log('Fetch Group Request Failed');
       });
@@ -54,25 +57,6 @@ app.controller('GroupDetailCtrl', [
         console.log('Fetch Org Admins Request Failed');
       });
 
-      var requestGroupAdmins = $http.get('/admin/generic', {
-        ignoreErrors: true,
-        params: {
-          route_name: 'group_admins_get',
-        }
-      });
-      var groupAdmins = [];
-      requestGroupAdmins.success(function (data) {
-        angular.forEach(data.data.items, function (admin) {
-          var groupAdmin = {};
-          groupAdmin['id'] = admin.id;
-          groupAdmin['name'] = admin.name;
-          groupAdmin['email'] = admin.email;
-          groupAdmins.push(groupAdmin);
-        });
-        $scope.groupAdmins = groupAdmins;
-      }).error(function () {
-        console.log('Fetch Group Admins Request Failed');
-      });
     }
 
     $scope.openAddAdminModal = function () {

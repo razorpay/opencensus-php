@@ -1,7 +1,7 @@
 <div ng-controller="GroupDetailCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h1 class="m-n font-thin h3">
-      Group Detail
+      Group Detail - {{group.name}}
       <spinner class="inline"></spinner>
     </h1>
   </div>
@@ -27,15 +27,17 @@
               <th>Admin Id</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Employee Code</th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="row in groupAdmins" class="merchants-table-body">
-              <td><a ui-sref="app.group.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
+            <tr ng-repeat="row in group.admins" class="merchants-table-body">
+              <td>{{row.id}}</td>
               <td>{{row.name}}</td>
               <td>{{row.email}}</td>
+              <td>{{row.employee_code}}</td>
             </tr>
-            <tr ng-show="groups.length == 0">
+            <tr ng-show="group.admins.length == 0">
               <td colspan="7">No Admins</td>
             </tr>
           </tbody>
@@ -43,6 +45,63 @@
       </div>
     </div>
   </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Parent Groups
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Group Id</th>
+              <th>Group Name</th>
+              <th>Group Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in group.parentGroups" class="merchants-table-body">
+              <td><a ui-sref="app.groups.detail({id:'grp_'+row.id})" target="_blank">grp_{{row.id}}</a></td>
+              <td>{{row.name}}</td>
+              <td>{{row.description}}</td>
+            </tr>
+            <tr ng-show="group.parentGroups.length == 0">
+              <td colspan="7">No Parent Groups</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Sub Groups
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Group Id</th>
+              <th>Group Name</th>
+              <th>Group Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in group.subGroups" class="merchants-table-body">
+              <td><a ui-sref="app.groups.detail({id:'grp_'+row.id})" target="_blank">grp_{{row.id}}</a></td>
+              <td>{{row.name}}</td>
+              <td>{{row.description}}</td>
+            </tr>
+            <tr ng-show="group.subGroups.length == 0">
+              <td colspan="7">No Sub Groups</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script type="text/ng-template" id="addAdminModal.html">
