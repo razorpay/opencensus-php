@@ -27,6 +27,7 @@ class Repository extends Base\Repository
     protected $proxyFetchParamRules = [
         Entity::USER_ID => 'sometimes|alpha_num',
         Entity::STATUS  => 'sometimes|string',
+        Entity::TYPE    => 'sometimes|string|max:16',
     ];
 
     public function getInvoicesForNotification($medium)

@@ -55,11 +55,12 @@ class InvoiceTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
         $payment['amount'] = $order->getAmount();
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthAndCapturePayment($payment);
 
         $order = $this->getLastEntity('order', true);
         $invoice = $this->getLastEntity('invoice', true);
 
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
     }
@@ -75,13 +76,45 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
 
         $lineItems = $this->getEntities('line_item', [], true);
-
         $this->assertEquals(2, $lineItems['count']);
+
+        $items = $this->getEntities('item', [], true);
+        $this->assertEquals(2, $items['count']);
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['invoice_id']);
-        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['invoice_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['entity_id']);
+
+        $this->assertEquals($items['items'][0]['id'], $lineItems['items'][0]['item_id']);
+        $this->assertEquals($items['items'][1]['id'], $lineItems['items'][1]['item_id']);
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
+    {
+        $this->fixtures->create('item');
+
+        $response = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals(600000, $order['amount']);
+        $this->assertEquals('created', $order['status']);
+        $this->assertEquals('cust_100000customer', $response['customer_id']);
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(2, $lineItems['count']);
+
+        $items = $this->getEntities('item', [], true);
+        $this->assertEquals(2, $items['count']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['entity_id']);
+
+        $this->assertEquals($items['items'][0]['id'], $lineItems['items'][0]['item_id']);
+        $this->assertEquals($items['items'][1]['id'], $lineItems['items'][1]['item_id']);
     }
 
     public function testCreateInvoiceWithNewCustomerAndAddress()
@@ -105,11 +138,43 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency2()
+    {
+        // Usage one existing item with different currency
+        $this->fixtures->create('item', ['currency' => 'USD']);
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
         $this->fixtures->create('invoice');
+
+        $this->fixtures->create('item');
 
         $this->fixtures->create('line_item');
 
@@ -124,8 +189,11 @@ class InvoiceTest extends TestCase
         $invoice1 = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
         $invoice2 = $this->fixtures->create('invoice', ['id' => '100000invoice2', 'order_id' => '10000000order2']);
 
-        $this->fixtures->create('line_item', ['invoice_id' => $invoice1->getId()]);
-        $this->fixtures->create('line_item', ['id' => '10000lineitem2', 'invoice_id' => $invoice2->getId()]);
+        $item1 = $this->fixtures->create('item');
+        $item2 = $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'Item 2']);
+
+        $this->fixtures->create('line_item', ['entity_id' => $invoice1->getId()]);
+        $this->fixtures->create('line_item', ['id' => '10000lineitem2', 'entity_id' => $invoice2->getId(), 'item_id' => $item2->getId()]);
 
         $this->startTest();
     }
@@ -155,6 +223,7 @@ class InvoiceTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $invoice = $this->getLastEntity('invoice', true);
 
+        $this->assertEquals($capturedPayment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
 
@@ -184,6 +253,26 @@ class InvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSendNotificationWithSmsMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testSendNotificationWithInvalidMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
     protected function assertInvoiceCreateResponse(array $response)
     {
         $order = $this->getLastEntity('order', true);
@@ -193,7 +282,7 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
-        $this->assertEquals($invoice['id'], 'inv_' . $lineItem['invoice_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
         $this->assertContains('http://bitly.dev/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }

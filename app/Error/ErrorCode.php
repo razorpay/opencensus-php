@@ -241,6 +241,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
+    const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                        = 'BAD_REQUEST_PAYMENT_NOT_AUTHORIZED';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
@@ -384,4 +385,7 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
+
+    const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
+    const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
 }

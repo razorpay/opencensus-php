@@ -9,10 +9,12 @@ use Config;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
+use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
@@ -76,25 +78,47 @@ class Generator extends Base\Core
 
         $lineItemsDetails = $input[Entity::LINE_ITEMS];
 
-        $this->repo->transaction(
-            function() use ($lineItemsDetails, $customerDetails, $input)
+        try
+        {
+            $this->repo->transaction(
+                function() use ($lineItemsDetails, $customerDetails, $input)
+                {
+                    $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
+
+                    $this->setCustomerDetailsAttributes();
+
+                    $this->setStatus($input);
+
+                    $this->setShortUrl();
+
+                    // Saving here for the associations
+                    $this->repo->saveOrFail($this->invoice);
+
+                    // This function should be called only after saving the invoice entity and the items entities
+                    // because the invoice should be created and saved before it can be associated with the items.
+                    $this->associateLineItemsToInvoice();
+                }
+            );
+        }
+        catch (\Exception $e)
+        {
+            // TODO: Have better alternatives, need to discuss and implement that.
+            //       For now, this is the quickest
+
+            // Check if is Mysql duplicate on unique index error
+            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
-                $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
-
-                $this->setCustomerDetailsAttributes();
-
-                $this->setStatus($input);
-
-                $this->setShortUrl();
-
-                // Saving here for the associations
-                $this->repo->saveOrFail($this->invoice);
-
-                // This function should be called only after saving the invoice entity and the items entities
-                // because the invoice should be created and saved before it can be associated with the items.
-                $this->associateLineItemsToInvoice();
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $this->invoice->getId(),
+                        'input'         => $input,
+                    ]);
             }
-        );
+
+            throw $e;
+        }
 
         (new Notifier($this->invoice))->sendNotificationToCustomer();
 
@@ -177,7 +201,7 @@ class Generator extends Base\Core
     {
         foreach ($this->lineItems as $lineItem)
         {
-            $lineItem->invoice()->associate($this->invoice);
+            $lineItem->entity()->associate($this->invoice);
 
             $this->repo->saveOrFail($lineItem);
         }
@@ -205,29 +229,53 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            $lineItemsDetails[LineItem\Entity::CURRENCY] = $this->invoice->getCurrency();
+            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
+            {
+                $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
 
-            // Not supporting creating new line items from existing line items, currently.
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
+                $item = $this->getItemFromItemId($itemId);
+            }
+            else
+            {
+                list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
 
-            // // TODO: We can remove the if block because line_item and invoice and have a one-to-one mapping.
-            // if (empty($lineItemDetails[LineItem\Entity::ID]) === false)
-            // {
-            //     $lineItemId = $lineItemDetails[LineItem\Entity::ID];
-            //
-            //     LineItem\Entity::verifyIdAndStripSign($lineItemId);
-            //
-            //     $lineItem = $this->repo->line_item->findByIdAndMerchantId($lineItemId, $this->merchant->getId());
-            // }
-            // else
-            // {
-            //     $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant);
-            // }
+                $item = $this->createItemFromItemDetails($itemDetails);
+            }
+
+            $lineItem = $this->lineItemCore->create(
+                $lineItemDetails,
+                $this->merchant,
+                $this->invoice,
+                $item
+            );
 
             $lineItems[] = $lineItem;
         }
 
         return $lineItems;
+    }
+
+    protected function getItemFromItemId($itemId)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
+
+        $this->validateInvoiceAndItemCurrency($item->getCurrency());
+
+        return $item;
+    }
+
+    protected function createItemFromItemDetails(array $itemDetails)
+    {
+        if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
+        {
+            $itemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+        }
+
+        $this->validateInvoiceAndItemCurrency($itemDetails[Item\Entity::CURRENCY]);
+
+        $item = (new Item\Core)->create($itemDetails, $this->merchant);
+
+        return $item;
     }
 
     protected function createOrderForInvoice()
@@ -285,5 +333,46 @@ class Generator extends Base\Core
         }
 
         return $customer;
+    }
+
+    /**
+     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
+     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
+     *     This function separates those payloads for it to be used further.
+     *
+     * @param array $lineItemDetails
+     *
+     * @return array
+     */
+    protected function separateInput(array $lineItemDetails)
+    {
+        $itemDetails = [];
+
+        foreach ($lineItemDetails as $key => $value)
+        {
+            if (in_array($key, Item\Entity::$allFields, true))
+            {
+                $itemDetails[$key] = $value;
+
+                unset($lineItemDetails[$key]);
+            }
+        }
+
+        return [$lineItemDetails, $itemDetails];
+    }
+
+    /**
+     * @param string $itemCurrency
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateInvoiceAndItemCurrency(string $itemCurrency)
+    {
+        if ($itemCurrency !== $this->invoice->getCurrency())
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency of all items should be same as of the invoice itself'
+            );
+        }
     }
 }

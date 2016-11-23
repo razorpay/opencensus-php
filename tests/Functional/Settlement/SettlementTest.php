@@ -34,8 +34,11 @@ class SettlementTest extends TestCase
         {
             $payments = $this->fixtures->times(2)->create(
                 'payment:captured',
-                ['merchant_id' => $merchant->getId(),
-                 'amount' => '10000']);
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'amount' => '10000'
+                ]
+            );
 
             foreach ($payments as $payment)
             {
@@ -118,7 +121,8 @@ class SettlementTest extends TestCase
                 'method'      => 'card',
                 'created_at'  => $createdAt,
                 'updated_at'  => $createdAt + 10
-            ]);
+            ]
+        );
 
         return $payments;
     }
@@ -138,7 +142,6 @@ class SettlementTest extends TestCase
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
-
 
         $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
 
@@ -354,6 +357,52 @@ class SettlementTest extends TestCase
         }
 
         $this->assertSame($totalAmount, $setl['amount']);
+    }
+
+    public function testSettlementIgnoredTxns()
+    {
+        $this->ba->appAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+
+        $payment = $this->fixtures->create(
+            'payment:captured',
+            [
+                'amount'      => '1000',
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        $refund = $this->fixtures->create(
+            'refund:from_payment',
+            [
+                'payment' => $payment,
+                'amount'  => '1000',
+            ]
+        );
+
+        // Payment for 10 rupees, followed by full refund.
+        // Net amount to be settled is -23 paise, so will be ignored.
+
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        $txns = $this->getEntities('transaction', ['count' => 2]);
+
+        foreach ($txns['items'] as $txn)
+        {
+            $this->assertEquals($txn['settled'], false);
+        }
     }
 
     public function testSettlementFileGeneration()

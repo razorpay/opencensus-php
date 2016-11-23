@@ -167,20 +167,22 @@ class Processor extends Base\Core
 
             $schedules->callOnEveryItem('updateNextRun');
 
+            $this->repo->saveOrFailCollection($schedules);
+
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, [$txns]);
+        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, $txns->getIds());
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
         return $this->repo->transaction(function() use ($txns, $channel)
         {
-            $settlements = $this->createSettlementsFromTxns($txns, $channel);
+            list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
 
-            $this->repo->transaction->settled($txns, $this->setlTime);
+            $this->repo->transaction->settled($settledTxns, $this->setlTime);
 
-            return [$settlements, $txns->count()];
+            return [$settlements, $settledTxns->count()];
         });
     }
 
@@ -221,7 +223,7 @@ class Processor extends Base\Core
     protected function createSettlementsFromTxns($txns, $channel)
     {
         $settlements = new Base\PublicCollection;
-        $settledTxnCount = 0;
+        $txnsSettled = new Base\PublicCollection;
 
         $i = 0;
         $count = $txns->count();
@@ -244,11 +246,11 @@ class Processor extends Base\Core
             {
                 $txn = $txns[$i];
 
-                $setlAmount += $txn->getCredit() - $txn->getDebit();
+                $setlAmount     += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
-                $setlApiFee += $txn->getApiFee();
-                $setlFee += $txn->getFee();
-                $serviceTax += $txn->getServiceTax();
+                $setlApiFee     += $txn->getApiFee();
+                $setlFee        += $txn->getFee();
+                $serviceTax     += $txn->getServiceTax();
 
                 $setlTxns->push($txn);
                 $i++;
@@ -270,10 +272,12 @@ class Processor extends Base\Core
                                         $setlApiFee,
                                         $serviceTax);
 
+            $txnsSettled = $txnsSettled->merge($setlTxns);
+
             $settlements->push($setl);
         }
 
-        return $settlements;
+        return [$settlements, $txnsSettled];
     }
 
     protected function createDailySetlEntity($settlements, $txnsCount, $channel)

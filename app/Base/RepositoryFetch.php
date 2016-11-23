@@ -278,7 +278,7 @@ trait RepositoryFetch
     {
         $entity = $this->getEntityClass();
 
-        $id = $entity::verifyIdAndStripSign($id);
+        $entity::verifyIdAndStripSign($id);
 
         return $this->findByIdAndMerchant($id, $merchant);
     }

@@ -232,6 +232,16 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
     public function invoices()
     {
         return $this->hasMany('RZP\Models\Invoice\Entity');
