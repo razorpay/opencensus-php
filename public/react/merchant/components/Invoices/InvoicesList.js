@@ -15,9 +15,9 @@ const InvoiceListItem = ({ invoice, ...attrs }) => {
       </td>
       <td>
         {
-          invoice.customer_details.customer_name ||
+          invoice.customer_details.customer_contact ||
           invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_contact
+          invoice.customer_details.customer_name
         }
       </td>
       <td>{invoice.short_url}</td>
