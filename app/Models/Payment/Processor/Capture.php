@@ -335,7 +335,7 @@ trait Capture
         });
 
         $this->eventOrderPaid();
-        $this->eventInvoicePaid();
+        $this->notifyInvoicePaid();
 
         //
         // Analytics
@@ -356,19 +356,39 @@ trait Capture
         }
     }
 
-    protected function eventInvoicePaid()
+    protected function notifyInvoicePaid()
     {
         $payment = $this->payment;
+        $invoice = null;
 
         if ($payment->getApiOrderId() !== null)
         {
             $order = $payment->order;
+            $invoice = $order->invoice;
 
-            if ($order->invoice !== null)
+            if ($invoice === null)
             {
-                $this->app['events']->fire('api.invoice.paid', array($payment));
+                return;
             }
         }
+
+        $this->eventInvoicePaid($payment);
+
+        $this->communicateInvoicePaid($invoice);
+    }
+
+    protected function communicateInvoicePaid(Invoice\Entity $invoice)
+    {
+        $notifier = new Notify($this->payment, $invoice);
+
+        $trigger = Notify::INVOICE_PAID;
+
+        $notifier->trigger($trigger);
+    }
+
+    protected function eventInvoicePaid($payment)
+    {
+        $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

@@ -96,6 +96,8 @@ class Notifier extends Base\Core
 
         if (empty($contact) === true)
         {
+            $this->invoice->setSmsStatus(null);
+
             return false;
         }
 
@@ -159,6 +161,8 @@ class Notifier extends Base\Core
 
         if (empty($customerEmail) === true)
         {
+            $this->invoice->setEmailStatus(null);
+
             return false;
         }
 
