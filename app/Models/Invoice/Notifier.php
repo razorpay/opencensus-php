@@ -168,8 +168,7 @@ class Notifier extends Base\Core
 
         $merchantName = $this->invoice->merchant->getBillingLabelElseName();
 
-        // TODO: Figure out a proper subject name
-        $subject = 'Razorpay | Invoice from ' . $merchantName;
+        $subject = $this->getSubjectForInvoiceEmail($this->invoice->getType(), $merchantName);
 
         $data = [
             'email'         => $this->invoice->getCustomerEmail(),
@@ -199,6 +198,26 @@ class Notifier extends Base\Core
         });
 
         return true;
+    }
+
+    protected function getSubjectForInvoiceEmail($type, $merchantName)
+    {
+        switch ($type)
+        {
+            case Type::LINK:
+            case Type::ECOD:
+                $subject = 'Payment requested by ' . $merchantName;
+                break;
+            case Type::INVOICE:
+                $subject = 'Invoice from ' . $merchantName;
+                break;
+            default:
+                $subject = 'Payment requested by ' . $merchantName;
+        }
+
+        $subject = 'Razorpay | ' . $subject;
+
+        return $subject;
     }
 
     public function sendNotificationsInBulk()

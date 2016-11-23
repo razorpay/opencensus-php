@@ -292,6 +292,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUED_AT);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
