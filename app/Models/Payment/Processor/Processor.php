@@ -21,6 +21,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transaction;
+use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -176,15 +177,25 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) =
+        if (($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+            ($payment->isCard() === true) and
+            ($payment->card->isDebit() === true))
+        {
+            $fee = 0;
+            $serviceTax = 0;
+        }
+        else
+        {
+            list($fee, $serviceTax, $ruleKey, $feesSplit) =
                             (new Pricing\Fee)->calculateMerchantFees($payment);
+        }
 
         $data = array(
             'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $serviceTax,
-            'serviceTax'        => $serviceTax,
-            'amount'            => $input['amount'] + $fee
+            'fees'              => 0,
+            'razorpay_fee'      => 0,
+            'serviceTax'        => 0,
+            'amount'            => $input['amount']
         );
 
         // Converts all the amounts to rupees
