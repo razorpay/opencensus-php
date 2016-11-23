@@ -110,6 +110,21 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
+    public function testPaymentRevAuth()
+    {
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'refunded');
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($gatewayPayment['action'], 'rev_auth');
+    }
+
     public function testPaymentDoubleCapture()
     {
         $this->doAuthAndCapturePayment($this->payment);

@@ -175,6 +175,35 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($refundResponse);
     }
 
+    public function revAuth($input)
+    {
+        parent::revAuth($input);
+
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $dateTime = Carbon::now('Asia/Kolkata');
+
+        $content = [
+            FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
+        ];
+
+        $this->content($content);
+
+        $refundResponse = $this->buildIpgApiOrderResponse($content);
+
+        return $this->prepareResponse($refundResponse);
+    }
+
     public function verify($input)
     {
         $xml = simplexml_load_string($input);

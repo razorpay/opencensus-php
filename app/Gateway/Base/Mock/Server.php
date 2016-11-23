@@ -64,6 +64,13 @@ class Server
         $this->input = $input;
     }
 
+    protected function revAuth($input)
+    {
+        $this->action = 'rev_auth';
+
+        $this->input = $input;
+    }
+
     protected function verify($input)
     {
         $this->action = 'verify';

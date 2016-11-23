@@ -331,19 +331,19 @@ trait Refund
         }
     }
 
-    protected function reverseAuthOnGateway($data)
+    protected function revAuthOnGateway($data)
     {
         try
         {
-            $this->callGatewayFunction(Payment\Action::REVERSE_AUTH, $data);
+            $this->callGatewayFunction(Payment\Action::REV_AUTH, $data);
         }
         catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REVERSE_AUTH_FAILURE);
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REV_AUTH_FAILURE);
 
             $this->tracePaymentFailed(
                     $e->getError(),
-                    TraceCode::PAYMENT_REVERSE_AUTH_FAILURE);
+                    TraceCode::PAYMENT_REV_AUTH_FAILURE);
 
             throw $e;
         }
@@ -415,9 +415,9 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
-            else if ($this->gatewaySupportsReverseAuth($payment) === true)
+            else if ($this->gatewaySupportsRevAuth($payment) === true)
             {
-                $this->reverseAuthOnGateway($data);
+                $this->revAuthOnGateway($data);
             }
 
             $this->recordRefund();
@@ -428,11 +428,11 @@ trait Refund
         return $refund;
     }
 
-    protected function gatewaySupportsReverseAuth($payment)
+    protected function gatewaySupportsRevAuth($payment)
     {
         $gateway = $payment->getGateway();
 
-        return Payment\Gateway::supportsReverseAuth($gateway);
+        return Payment\Gateway::supportsRevAuth($gateway);
     }
 
     protected function updatePaymentRefunded()

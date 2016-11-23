@@ -132,28 +132,28 @@ class Gateway extends Base\Gateway
         $this->checkApprovalCode($refundEntity);
     }
 
-    public function reverseAuth(array $input)
+    public function revAuth(array $input)
     {
-        parent::reverseAuth($input);
+        parent::revAuth($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::REVERSE_AUTH);
+        $requestContent = $this->getRequestArray($input, TxnType::REV_AUTH);
 
-        $this->trace->info(TraceCode::GATEWAY_REVERSE_AUTH_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_REV_AUTH_REQUEST, $requestContent);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
-            TraceCode::GATEWAY_REVERSE_AUTH_RESPONSE,
+            TraceCode::GATEWAY_REV_AUTH_RESPONSE,
             [
-                'reverse_auth_response' => $response
+                'rev_auth_response' => $response
             ]
         );
 
-        $reverseAuthFields = $this->getCaptureRefundOrRevAuthFields($response, $input['payment']);
+        $revAuthFields = $this->getCaptureRefundOrRevAuthFields($response, $input['payment']);
 
-        $reverseAuthEntity = $this->createGatewayPaymentEntity($reverseAuthFields, $input);
+        $revAuthEntity = $this->createGatewayPaymentEntity($revAuthFields, $input);
 
-        $this->checkApprovalCode($reverseAuthEntity);
+        $this->checkApprovalCode($revAuthEntity);
     }
 
     public function verify(array $input)
@@ -781,7 +781,7 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
 
-        if ($txnType !== TxnType::REVERSE_AUTH)
+        if ($txnType !== TxnType::REV_AUTH)
         {
             $currency     = $input['payment'][Payment\Entity::CURRENCY];
             $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
