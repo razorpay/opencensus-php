@@ -21,6 +21,7 @@ const InvoiceListItem = ({ invoice, ...attrs }) => {
         }
       </td>
       <td>{invoice.short_url}</td>
+      <td>{invoice.type}</td>
       <td class='text-right'>
         <Amount value={invoice.amount} />
       </td>
@@ -35,7 +36,7 @@ export default ({ invoices, isLoading, highlightRow = () => {} }) => {
   let tableRowComponent
 
   if (isLoading) {
-    tableRowComponent = <TableLoader colSpan='6' />
+    tableRowComponent = <TableLoader colSpan='7' />
   } else if (invoices.length) {
     tableRowComponent = invoices.map((invoice) =>
       <InvoiceListItem
@@ -45,7 +46,7 @@ export default ({ invoices, isLoading, highlightRow = () => {} }) => {
       />
     )
   } else {
-    tableRowComponent = <EmptyTableRow colSpan='9' message='No Invoices found!' />
+    tableRowComponent = <EmptyTableRow colSpan='7' message='No Invoices found!' />
   }
 
   return (
@@ -57,6 +58,7 @@ export default ({ invoices, isLoading, highlightRow = () => {} }) => {
             <th>Invoice Date</th>
             <th>Customer</th>
             <th>Payment Link</th>
+            <th>Type</th>
             <th class='text-right'>Amount (INR)</th>
             <th class='text-right'>Status</th>
           </tr>

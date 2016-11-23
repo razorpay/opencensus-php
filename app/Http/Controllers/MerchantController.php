@@ -236,6 +236,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function sendInvoiceNotification($mode, $invoiceId, $medium)
+    {
+        list($error, $data)  = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function putEditWebhook($mode, $id)
     {
         $input = Input::all();

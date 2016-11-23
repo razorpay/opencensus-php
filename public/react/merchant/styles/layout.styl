@@ -65,6 +65,10 @@ body.ReactModal__Body--open {
   border-color: #cfdadd;
 }
 
+.SingleDatePicker__tether--show {
+  top: -11px !important;
+}
+
 .DateInput {
   font-weight: inherit;
   font-size: 14px;
@@ -143,7 +147,7 @@ tr:hover .row-action > .btn-group {
   visibility: visible;
 }
 
-.panel-detail {
+.panel-detail-container {
   max-width: 700px;
   margin: auto;
 
@@ -153,15 +157,23 @@ tr:hover .row-action > .btn-group {
 }
 
 @keyframes luminate {
-  from {
-    background-color: rgba(255, 255, 163, 0.75)
+  0% {
+    background-color: rgba(251, 251, 157, 0.75)
   }
 
-  to {
+  75% {
+    background-color: rgba(251, 251, 157, 0.5)
+  }
+
+  100% {
     background-color: transparent
   }
 }
 
 .table > tbody > tr.luminate > td {
-  animation: luminate 3s linear;
+  animation: luminate 4s linear;
+}
+
+.alert-sm {
+  padding: 5px 10px;
 }

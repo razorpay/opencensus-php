@@ -583,6 +583,44 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function sendInvoiceNotification($mode, $invoiceId, $medium)
+    {
+        $errors = $data = [];
+
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        // Fetches keyId from api for given merchant
+        list($errors, $data) = $this->fetchKeysFromApi($merchantId, $mode);
+
+        if ($errors)
+        {
+            return [$errors, $data];
+        }
+
+        if ($data['count'] === 0)
+        {
+
+            return [
+                [sprintf("No keyId found for given merchant with id: %s", $merchantId)],
+                $data
+            ];
+        }
+
+        $keyId = $data['items'][0]['id'];
+        $this->setApiCredentialsForPublicAuth($keyId);
+
+        try
+        {
+            $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
     /**
      * Remove the team member on the given merchant.
      *

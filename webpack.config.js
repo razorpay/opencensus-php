@@ -7,7 +7,8 @@ const webpackConfig = {
   context: process.cwd() + '/public/react',
   resolve: {
     alias: {
-      moment: 'moment/min/moment.min.js'
+      moment: 'moment/min/moment.min.js',
+      react: path.resolve(__dirname, 'node_modules/react')
     },
     modules: [
       'node_modules',
