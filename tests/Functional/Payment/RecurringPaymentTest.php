@@ -180,7 +180,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['recurring']);
 
-        $payment[Payment::CARD]['number'] = '4000000000000002';
+        $payment[Payment::CARD]['number'] = '4245126853998870';
 
         $data = $this->testData[__FUNCTION__];
 

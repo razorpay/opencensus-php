@@ -75,7 +75,7 @@ class ValidationTest extends TestCase
         $core = new Card\Core;
 
         $map = array(
-            ['6073849700004947', '888', 'RuPay', 'debit'],
+            ['6073849700004947', '888', 'RuPay', 'credit'],
             ['341111111111111', '8888', 'American Express', 'credit'],
             ['5010000000000007', '888', 'Maestro', 'debit'],
         );
