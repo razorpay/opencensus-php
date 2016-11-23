@@ -40,6 +40,10 @@ class Reconciler3
         'Presented and Paid',
     ];
 
+    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 300;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -65,6 +69,20 @@ class Reconciler3
     }
 
     public function process($input)
+    {
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input)
+            {
+                return $this->processReconciliation($input);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        return $data;
+    }
+
+    public function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
