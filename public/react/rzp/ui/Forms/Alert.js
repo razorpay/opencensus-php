@@ -12,7 +12,7 @@ class Alert extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.message && (nextProps.message !== this.props.message)) {
+    if (typeof nextProps.message === 'string' || (nextProps.message && (nextProps.message !== this.props.message))) {
       this.setState({
         close: false
       })

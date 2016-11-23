@@ -26,7 +26,7 @@ export default class InvoiceDetailContainer extends Component {
       this.setState({
         statusMsg: {
           type: 'success',
-          message: `${type === 'sms' ? 'SMS' : 'EMAIL' } sent successfully`
+          message: `${type === 'sms' ? 'SMS' : 'Email' } sent successfully`
         }
       })
     }).catch((error) => {
