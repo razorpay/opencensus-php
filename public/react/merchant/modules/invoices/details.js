@@ -2,6 +2,8 @@ import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const INVOICE_FETCH = 'INVOICE_FETCH'
+const SMS_SEND = 'SMS_SEND'
+const EMAIL_SEND = 'EMAIL_SEND'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
@@ -9,6 +11,18 @@ export const fetchInvoice = (id) => {
       type: INVOICE_FETCH,
       payload: ajax({
         url: `/invoices/${id}`
+      })
+    })
+  }
+}
+
+export const notifyCustomer = (id, type) => {
+  return (dispatch) => {
+    return dispatch({
+      type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
+      payload: ajax({
+        url: `/invoices/${id}/notify/${type}`,
+        method: 'post'
       })
     })
   }
@@ -41,6 +55,16 @@ export default function (state = fromJS(initialState), action) {
         error: action.payload.errors,
         invoice: initialState.invoice
       })
+
+    case `${SMS_SEND}::SUCCESS`:
+      return state.setIn(['invoice', 'sms_status'], 'sent')
+
+    case `${EMAIL_SEND}::SUCCESS`:
+      return state.setIn(['invoice', 'email_status'], 'sent')
+
+    case `${SMS_SEND}::ERROR`:
+    case `${EMAIL_SEND}::ERROR`:
+      return state.set('error', action.payload.errors)
 
     default:
       return state

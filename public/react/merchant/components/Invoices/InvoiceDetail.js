@@ -1,3 +1,4 @@
+import AsyncButton from 'react-async-button'
 import Amount from 'rzp/ui/Amount'
 import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
@@ -10,7 +11,8 @@ const notificationClassMap = {
   pending: 'text-warning'
 }
 
-export default ({ invoice, isLoading, errors }) => {
+export default (props) => {
+  let { invoice, isLoading, statusMsg } = props
   return (
     <div>
       {
@@ -19,7 +21,7 @@ export default ({ invoice, isLoading, errors }) => {
           <Spinner />
         </div> :
         <div class='panel-detail-container'>
-          <Alert type='error' message={errors} />
+          <Alert type={statusMsg.type} message={statusMsg.message} />
           <div class='panel panel-default'>
             <div class='panel-heading'>
               Invoice Id: <b>{invoice.id}</b>
@@ -28,12 +30,22 @@ export default ({ invoice, isLoading, errors }) => {
             <div class='panel-body'>
               <div class='list-group'>
                 <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.customer_details.customer_email}</span>
+                  <span class='pull-right'>
+                    {
+                      invoice.customer_details.customer_email ?
+                      invoice.customer_details.customer_email : '--'
+                    }
+                  </span>
                   Customer Email
                 </div>
 
                 <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.customer_details.customer_contact}</span>
+                  <span class='pull-right'>
+                    {
+                      invoice.customer_details.customer_contact ?
+                      invoice.customer_details.customer_contact : '--'
+                    }
+                  </span>
                   Customer Contact
                 </div>
 
@@ -43,13 +55,18 @@ export default ({ invoice, isLoading, errors }) => {
                 </div>
 
                 <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.short_url}</span>
-                  Payment Link
+                  <span class='pull-right'>{invoice.currency}</span>
+                  Currency
                 </div>
 
                 <div class='list-group-item'>
                   <Time class='pull-right' value={invoice.date} />
                   Invoice Date
+                </div>
+
+                <div class='list-group-item'>
+                  <span class='pull-right'>{invoice.short_url}</span>
+                  Payment Link
                 </div>
 
                 <div class='list-group-item'>
@@ -60,8 +77,28 @@ export default ({ invoice, isLoading, errors }) => {
                 </div>
 
                 <div class='list-group-item'>
-                  <span class='pull-right'>{invoice.currency}</span>
-                  Currency
+                  <span class='pull-right'>
+                    {
+                      invoice.payment_id ?
+                      <a href={`#/app/payments/${invoice.payment_id}`}>
+                        {invoice.payment_id}
+                      </a> : '--'
+                    }
+                  </span>
+                  Payment Id
+                </div>
+
+                <div class='list-group-item'>
+                  <span class='pull-right'>
+                    {
+                      invoice.paid_at ?
+                      <Time class='pull-right'
+                        value={invoice.paid_at}
+                        format='DD MMM YYYY, hh:mm:ss a'
+                      /> : '--'
+                    }
+                  </span>
+                  Paid At
                 </div>
 
                 <div class='list-group-item'>
@@ -94,6 +131,11 @@ export default ({ invoice, isLoading, errors }) => {
                 </ListGroupToggler>
 
                 <div class='list-group-item'>
+                  <span class='pull-right'>{invoice.type}</span>
+                  Type
+                </div>
+
+                <div class='list-group-item'>
                   <Time class='pull-right'
                     value={invoice.created_at}
                     format='DD MMM YYYY, hh:mm:ss a'
@@ -101,6 +143,29 @@ export default ({ invoice, isLoading, errors }) => {
                   Created At
                 </div>
               </div>
+{/*
+              <div class='text-center'>
+                <div class='btn-toolbar inline'>
+                  <AsyncButton
+                    class='btn btn-primary btn-rounded'
+                    text={
+                      !invoice.sms_status ? 'Send SMS' : 'Resend SMS'
+                    }
+                    pendingText='Sending SMS...'
+                    onClick={() => props.onNotify('sms')}
+                  />
+
+                  <AsyncButton
+                    class='btn btn-primary btn-rounded'
+                    text={
+                      !invoice.email_status ? 'Send Email' : 'Resend Email'
+                    }
+                    pendingText='Sending Email...'
+                    onClick={() => props.onNotify('email')}
+                  />
+                </div>
+              </div>
+*/}
             </div>
           </div>
         </div>
