@@ -119,7 +119,13 @@ class MerchantFilter extends Terminal\Filter
 
             if (in_array($gateway, $excludedGateways))
             {
-                return false;
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
             }
         }
 
