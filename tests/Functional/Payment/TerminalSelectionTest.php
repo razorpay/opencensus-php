@@ -218,6 +218,7 @@ class TerminalSelectionTest extends TestCase
                                 ['id' => 'SharNbKtkTrmnl']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = '5000000';
         $payment['bank'] = 'KKBK';
 
         $content = $this->doAuthAndCapturePayment($payment);
@@ -305,6 +306,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['amount'] = '500000';
         $payment['bank'] = 'KKBK';
 
         $this->doAuthAndCapturePayment($payment);
