@@ -83,9 +83,11 @@
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1" ng-click="setReceiptEmail(0)">
           Disable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
-
         <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
+        </a>
+        <a href class="list-group-item assign-schedule" ng-click="openAssignSchedule()">
+          Assign Schedule <i class="pull-right fa fa-clock-o"></i>
         </a>
         <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()">
           Assign Terminal <i class="pull-right fa fa-terminal"></i>
@@ -543,6 +545,30 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
 </script>
+
+<script type="text/ng-template" id="assignScheduleModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Schedule Plan</h3>
+  </div>
+  <div class="modal-body schedule-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Schedules</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="schedule_id" ng-model="schedule_id" ng-options="id as name for (id, name) in schedule_list">
+          </select>
+        </div>
+      </div>
+      <h5 ng-if="loading">Loading Schedules....</h5>
+      <!-- <h4 ng-if="loading === false && pricingPlansLength() == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4> -->
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(schedule_id)">OK</button>
+  </div>
+</script>
+
 <script type="text/ng-template" id="editMerchantMethods.html">
   <div class="modal-header">
     <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>

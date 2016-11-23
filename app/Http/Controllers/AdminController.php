@@ -850,4 +850,29 @@ class AdminController extends Controller
     }
 
     // ----- /Credits -----
+
+    public function getScheduleList()
+    {
+        list($error, $response) = (new Admin\Service)->getScheduleList();
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function postMerchantSchedule($id)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->assignMerchantSchedule($id, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function createSchedule()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->createSchedule($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

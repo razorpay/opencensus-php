@@ -10,6 +10,7 @@ use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
 use App\Session as SessionTable;
+use App\Schedules;
 
 use Auth;
 use Config;
@@ -2263,6 +2264,81 @@ class Service extends Base\Service
             $data = $this->api->merchant->deleteMerchantCredits($merchantId, $creditId);
         }
         catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    /**
+    * Gets Schedule list
+    * Uses admin auth on the API
+    *
+    * @return array containing all available schedules
+    */
+    public function getScheduleList()
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->schedule->getScheduleList();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    /**
+    * Assigns schedule to a merchant
+    * Uses admin auth on the API
+    *
+    * @param $merchantId integer
+    * @param $input input array
+    * @return $data array
+    */
+    public function assignMerchantSchedule($merchantId, $input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->setSchedule($merchantId, $input)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    /**
+    * Create new schedule
+    * Uses admin auth on the API
+    *
+    * @param $input input array
+    * @return $data array with schedule details created
+    */
+    public function createSchedule($input)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->schedule->createSchedule($input);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error = [$e->getMessage()];
         }

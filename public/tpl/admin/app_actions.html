@@ -58,6 +58,9 @@
         <a href class="list-group-item" ng-click="openEditNewsletter()">
           Send Merchant Newsletter
         </a>
+        <a href class="list-group-item" ng-click="openAddSchedule()">
+          Create Schedule
+        </a>
         <a href class="list-group-item" ng-click="triggerError()"
           ng-confirm-click="Are you sure you want to trigger an error?"
         >
@@ -667,3 +670,62 @@
       <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode)">Generate</button>
   </div>
 </script>
+
+<script type="text/ng-template" id="addScheduleModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add Schedule</h3>
+  </div>
+  <div class="modal-body schedule-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="name" class="col-lg-2 control-label" ng-model="schedule.name">Name</label>
+        <div class="col-lg-10">
+          <input type="text" class="form-control m-b" name="name" ng-model="schedule.name" placeholder="Weekly-2" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="period" class="col-lg-2 control-label">Period</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="period" ng-model="schedule.period" required>
+            <option value="hourly">Hourly</option>
+            <option value="daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="monthly-date">Monthly-Date</option>
+            <option value="monthly-week">Monthly-Week</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="type" class="col-lg-2 control-label">Type</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="type" ng-model="schedule.type" required>
+            <option value="settlement">Settlement</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="interval" class="col-lg-2 control-label">Interval</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="interval" ng-model="schedule.interval">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="delay" class="col-lg-2 control-label">Delay</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="delay" ng-model="schedule.delay">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="anchor" class="col-lg-2 control-label" ng-model="schedule.anchor">Anchor</label>
+        <div class="col-lg-10">
+          <input type="text" class="form-control m-b" name="anchor" ng-model="schedule.anchor">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Please make sure you have checked all fields properly." ng-click="ok(schedule)">OK</button>
+  </div>
+</script>
+

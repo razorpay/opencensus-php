@@ -257,6 +257,10 @@ Route::group(['middleware'  =>  'admin'], function()
 
     Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
+    Route::get('admin/schedule/list', 'AdminController@getScheduleList');
+    Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
+    Route::post('admin/schedules', 'AdminController@createSchedule');
+
     Route::group(['middleware'  =>  ['admin', 'superadmin']], function()
     {
         // This is the RAW API route which processes api calls
