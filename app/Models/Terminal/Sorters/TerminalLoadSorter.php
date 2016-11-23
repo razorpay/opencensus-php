@@ -18,6 +18,11 @@ class TerminalLoadSorter extends Terminal\Sorter
             'load'       => 0,
         ],
 
+        '1000AxisMigsTl' => [
+            'gateway'    => Gateway::AXIS_MIGS,
+            'load'       => 5,
+        ],
+
         // Test terminals, won't be used on prod.
         //
         // Because of the way applicableRules are computed, the terminals
