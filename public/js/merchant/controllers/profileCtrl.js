@@ -7,16 +7,17 @@ app.controller('ProfileCtrl', [
     var getCreditsData = function() {
 
       $scope.creditsData = '';
-
       var url = '/' + $scope.mode + '/credits';
-      
-      $http.get(url).then(function successCallBack(dataResponse) {
+      var request = $http.get(url);
 
-        $scope.creditsData = dataResponse.data;
-
-      },
-      function errorCallBack(response) {
-//        console.log('Error occured status', (response.status).toString());
+      request.success(function (result) {
+        if (result.success) {
+          $scope.creditsData = result.data;
+        }
+        $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
+      })
+      .error(function (){
+        $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
       });
     };
 

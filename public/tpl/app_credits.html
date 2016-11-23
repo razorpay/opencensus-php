@@ -21,12 +21,12 @@
     </alert>
     <div class="row wrapper" ng-show="user.current">
       <div class="list-group">
-        <a class="list-group-item" ng-hide="fee_credits != 0">
+        <a class="list-group-item" ng-show="credits != 0">
           <span class="pull-right">{{credits/100|rupee}}</span>
           Amount Credits
         </a>
 
-        <a class="list-group-item" ng-hide="credits != 0">
+        <a class="list-group-item" ng-show="fee_credits != 0">
           <span class="pull-right">{{fee_credits/100|rupee}}</span>
           Fee Credits
         </a>
@@ -70,7 +70,7 @@
           </div>
 
         </div>
-        
+
       </div>
     </div>
   </div>
