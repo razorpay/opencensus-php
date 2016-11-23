@@ -64,9 +64,9 @@ class Server
         $this->input = $input;
     }
 
-    protected function revAuth($input)
+    protected function reverse($input)
     {
-        $this->action = 'rev_auth';
+        $this->action = 'reverse';
 
         $this->input = $input;
     }

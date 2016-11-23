@@ -143,7 +143,7 @@ class Gateway
      *
      * @var array
      */
-    public static $revAuth = [
+    public static $reverse = [
         // self::CYBERSOURCE
         self::FIRST_DATA
     ];
@@ -486,9 +486,9 @@ class Gateway
         }
     }
 
-    public static function supportsRevAuth($gateway)
+    public static function supportsReverse($gateway)
     {
-        return in_array($gateway, self::$revAuth, true);
+        return in_array($gateway, self::$reverse, true);
     }
 
     /**

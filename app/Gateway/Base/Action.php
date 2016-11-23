@@ -11,5 +11,5 @@ class Action
     const VOID      = 'void';
     const VERIFY    = 'verify';
     const CALLBACK  = 'callback';
-    const REV_AUTH  = 'rev_auth';
+    const REVERSE   = 'reverse';
 }

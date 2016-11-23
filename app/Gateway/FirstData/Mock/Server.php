@@ -175,9 +175,9 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($refundResponse);
     }
 
-    public function revAuth($input)
+    public function reverse($input)
     {
-        parent::revAuth($input);
+        parent::reverse($input);
 
         $xml = simplexml_load_string($input);
 

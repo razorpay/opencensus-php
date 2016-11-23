@@ -211,10 +211,10 @@ class Gateway
         $this->action = Action::REFUND;
     }
 
-    public function revAuth(array $input)
+    public function reverse(array $input)
     {
         $this->input = $input;
-        $this->action = Action::REV_AUTH;
+        $this->action = Action::REVERSE;
     }
 
     public function void(array $input)

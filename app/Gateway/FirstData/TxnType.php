@@ -4,17 +4,17 @@ namespace RZP\Gateway\FirstData;
 
 class TxnType
 {
-    const SALE     = 'sale';
-    const AUTH     = 'preauth';
-    const CAPTURE  = 'postauth';
-    const REV_AUTH = 'void';
-    const REFUND   = 'return';
+    const SALE    = 'sale';
+    const AUTH    = 'preauth';
+    const CAPTURE = 'postauth';
+    const REVERSE = 'void';
+    const REFUND  = 'return';
 
     public static $typeList = [
         self::SALE,
         self::AUTH,
         self::CAPTURE,
-        self::REV_AUTH,
+        self::REVERSE,
     ];
 
     // Indicates which entity to use to select charge_total

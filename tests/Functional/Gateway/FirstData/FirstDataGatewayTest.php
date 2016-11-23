@@ -110,7 +110,7 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
-    public function testPaymentRevAuth()
+    public function testPaymentReverse()
     {
         $payment = $this->doAuthPayment($this->payment);
 
@@ -122,7 +122,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['action'], 'rev_auth');
+        $this->assertEquals($gatewayPayment['action'], 'reverse');
     }
 
     public function testPaymentDoubleCapture()

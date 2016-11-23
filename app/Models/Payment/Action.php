@@ -16,7 +16,7 @@ class Action
     const CAPTURE               = 'capture';
     const REFUND                = 'refund';
     const VOID                  = 'void';
-    const REV_AUTH              = 'rev_auth';
+    const REVERSE               = 'reverse';
     const TOPUP                 = 'topup';
     const DEBIT                 = 'debit';
     const VERIFY                = 'verify';
