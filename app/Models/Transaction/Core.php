@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -171,9 +172,9 @@ class Core extends Base\Core
             $serviceTax = 0;
             $credit = $amount;
         }
-        else if (($payment->isCard() === true) and
-                 ($payment->card->isDebit() === true) and
-                 ($payment->isGateway(Payment\Gateway::AXIS_MIGS) === true))
+        else if (($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+                 ($payment->isCard() === true) and
+                 ($payment->card->isDebit() === true))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
