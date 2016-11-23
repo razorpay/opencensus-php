@@ -111,24 +111,25 @@ class AirtelmoneyGatewayTest extends TestCase
         $payment = $this->fixtures->create(
             'payment',
             [
-                'email'         => 'a@b.com',
-                'amount'        => 50000,
-                'contact'       => '9918899029',
-                'status'        => 'authorized',
-                'method'        => 'wallet',
-                'wallet'        => 'airtelmoney',
-                'gateway'       => 'wallet_airtelmoney',
-                'card_id'       => null,
-                'terminal_id'   => $this->sharedTerminal->id,
+                'email'           => 'a@b.com',
+                'amount'          => 50000,
+                'contact'         => '9918899029',
+                'status'          => 'authorized',
+                'method'          => 'wallet',
+                'wallet'          => 'airtelmoney',
+                'gateway'         => 'wallet_airtelmoney',
+                'card_id'         => null,
+                'terminal_id'     => $this->sharedTerminal->id,
                 'late_authorized' => 1,
             ]);
 
         $wallet = $this->fixtures->create('wallet', [
-            'payment_id'    => $payment->getId(),
-            'amount'        => $payment->getAmount(),
-            'wallet'        => 'airtelmoney',
-            'action'        => 'authorize',
+            'payment_id'         => $payment->getId(),
+            'amount'             => $payment->getAmount(),
+            'wallet'             => 'airtelmoney',
+            'action'             => 'authorize',
             'gateway_payment_id' => null,
+            'reference1'         => null,
         ]);
 
         $id = $payment->getPublicId();
@@ -138,6 +139,8 @@ class AirtelmoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNotNull($wallet['gateway_payment_id']);
+
+        $this->assertNotNull($wallet['reference1']);
     }
 
     public function testRefundPayment()

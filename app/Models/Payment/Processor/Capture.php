@@ -378,6 +378,13 @@ trait Capture
         $payment->setCaptureTimestamp();
 
         $payment->setAutoCaptured($autoCaptured);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_CAPTURED,
+            [
+                'payment_id'    => $payment->getId(),
+                'auto_capture'  => $autoCaptured,
+            ]);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
@@ -429,15 +436,14 @@ trait Capture
 
         if (isset($order) === true)
         {
+            $order->setStatus(Order\Status::PAID);
+
             $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+                TraceCode::ORDER_STATUS_PAID,
                 [
                     'payment_id' => $payment->getId(),
                     'order_id' => $order->getId(),
-                ]
-            );
-
-            $order->setStatus(Order\Status::PAID);
+                ]);
 
             $this->repo->saveOrFail($order);
 
