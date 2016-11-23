@@ -99,8 +99,11 @@ class CreateInvoices extends Migration
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable();
 
             $table->index(Entity::CREATED_AT);
+            $table->index(Entity::DELETED_AT);
             $table->index(Entity::STATUS);
             $table->index(Entity::DUE_BY);
             $table->index(Entity::SCHEDULED_AT);

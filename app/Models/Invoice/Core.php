@@ -260,8 +260,5 @@ class Core extends Base\Core
         }
 
         $invoice->setAmount($totalAmount);
-
-        $invoice->order->setAmount($totalAmount);
-        $this->repo->order->saveOrFail($invoice->order);
     }
 }

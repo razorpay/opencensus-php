@@ -3,16 +3,21 @@
 namespace RZP\Models\LineItem;
 
 use App;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Models\Item;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ENTITY_ID        = 'entity_id';
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
     const QUANTITY         = 'quantity';
+    const DELETED_AT       = 'deleted_at';
 
     const ITEM             = 'item';
 
@@ -35,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::ITEM_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
 
         Item\Entity::NAME,
         Item\Entity::DESCRIPTION,

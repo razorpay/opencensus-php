@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -13,6 +14,8 @@ use RZP\Models\Order;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+
+    use SoftDeletes;
 
     // ------------------ Entity Keys --------------------------------
 
@@ -47,6 +50,7 @@ class Entity extends Base\PublicEntity
     const USER_ID               = 'user_id';
     const SOURCE                = 'source';
     const TYPE                  = 'type';
+    const DELETED_AT            = 'deleted_at';
 
     // ---------------------- Input Keys -------------------------------------
 
@@ -165,7 +169,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::USER_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     // Fields to be exposed to the client

@@ -3,16 +3,21 @@
 namespace RZP\Models\Item;
 
 use App;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ACTIVE                = 'active';
     const NAME                  = 'name';
     const MERCHANT_ID           = 'merchant_id';
     const DESCRIPTION           = 'description';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
+    const DELETED_AT            = 'deleted_at';
 
     public static $allFields    = [
         self::ACTIVE,
@@ -45,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     protected $public = [
