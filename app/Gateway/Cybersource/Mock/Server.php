@@ -26,7 +26,7 @@ class Server extends Base\Mock\Server
     // Dummy function for mock soap client
     public function Security($header)
     {
-        ;
+        return null;
     }
 
     public function acs(array $input)
@@ -71,7 +71,7 @@ class Server extends Base\Mock\Server
                 break;
 
             case isset($request[F::CC_AUTH_REVERSAL_SERVICE]):
-                $action = 'void';
+                $action = 'auth_reversal';
                 break;
 
             default:
@@ -210,13 +210,13 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function void($input)
+    protected function authReversal($input)
     {
-        parent::action($input, 'void');
+        parent::action($input, 'auth_reversal');
 
         $this->validateActionInput($input);
 
-        $this->content($input, 'validate_void');
+        $this->content($input, 'validate_auth_reversal');
 
         $response = [];
 

@@ -8,6 +8,7 @@ use RZP\Constants;
 class Entity extends Base\Entity
 {
     const ID                     = 'id';
+    const ACQUIRER               = 'acquirer';
     const VERES_ENROLLED         = 'veresEnrolled';
     const AMOUNT                 = 'amount';
     const STATUS                 = 'status';
@@ -110,6 +111,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::COMMERCE_INDICATOR);
     }
 
+    public function getUcafAuthenticationData()
+    {
+        return $this->getAttribute(self::AUTH_DATA);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -175,5 +181,10 @@ class Entity extends Base\Entity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setAcquirer($acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 }

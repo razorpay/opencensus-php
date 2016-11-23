@@ -34,13 +34,16 @@ class Validator extends Base\Validator
         'merchantReferenceCode'                => 'required|string|size:14',
         'ccAuthService'                        => 'required|array',
         'ccAuthService.run'                    => 'required|in:true',
-        'ccAuthService.eci'                    => 'sometimes|numeric|digits_between:1,2',
+        'ccAuthService.eciRaw'                 => 'sometimes|numeric|digits_between:1,2',
         'ccAuthService.commerceIndicator'      => 'sometimes|in:internet,recurring,vbv_attempted,vbv,spa',
         'ccAuthService.veresEnrolled'          => 'sometimes|in:Y,N,U',
+        'ccAuthService.paresStatus'            => 'sometimes|in:Y,N,A,U',
+        'ccAuthService.xid'                    => 'sometimes|string',
+        'ccAuthService.cavv'                   => 'sometimes|string',
         'invoiceHeader'                        => 'sometimes|array',
         'invoiceHeader.merchantDescriptor'     => 'sometimes|max:22|alpha_num',
         'ucaf'                                 => 'sometimes|array',
-        'ucaf.commerceIndicator'               => 'sometimes_if:card.cardType,002|string',
+        'ucaf.commerceIndicator'               => 'sometimes|string',
         'payerAuthValidateService'             => 'sometimes|array',
         'payerAuthValidateService.run'         => 'required_with:payerAuthValidateService|string|in:true',
         'payerAuthValidateService.signedPARes' => 'required_with:payerAuthValidateService|string',
@@ -105,7 +108,7 @@ class Validator extends Base\Validator
         'purchaseTotals.grandTotalAmount'      => 'required|numeric',
     ];
 
-    protected static $voidRules = [
+    protected static $authReversalRules = [
         'merchantID'                           => 'required|string|max:30',
         'merchantReferenceCode'                => 'required|string|size:14',
         'ccAuthReversalService'                => 'required|array',

@@ -24,6 +24,9 @@ class CreateCybersourceGateway extends Migration
 
             $table->char(Cybersource::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
+            $table->string(Cybersource::ACQUIRER, 10)
+                  ->nullable();
+
             $table->char(Cybersource::ACTION, 10)
                   ->nullable();
 

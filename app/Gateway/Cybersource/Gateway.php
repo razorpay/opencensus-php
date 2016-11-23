@@ -153,29 +153,30 @@ class Gateway extends Base\Gateway
     /**
      * @codeCoverageIgnore
      */
-    public function void(array $input)
+    public function authReversal(array $input)
     {
-        parent::action($input, Action::VOID);
+        parent::action($input, Action::AUTH_REVERSAL);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $request = $this->getVoidRequestArray($input, $gatewayPayment);
+        $request = $this->getAuthReversalRequestArray($input, $gatewayPayment);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_VOID_REQUEST, $request, $input);
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTH_REVERSAL_REQUEST, $request, $input);
 
         try
         {
             $response = $this->postRequest($request);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_VOID_RESPONSE, $response, $input);
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_AUTH_REVERSAL_RESPONSE, $response, $input);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
                 $this->checkErrorsAndThrowException($response);
             }
 
-            $gatewayAttributes = $this->getAttributeFromVoidResponse($input, $response);
+            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
             $this->createGatewayPaymentEntity($gatewayAttributes, $input);
         }
@@ -393,7 +394,7 @@ class Gateway extends Base\Gateway
             case Result::ENROLLED:
                 $this->persistCardDetailsTemporarily($input);
 
-                return $this->getFieldsForFormSubmitToBankACS($input, $response);
+                return $this->getFieldsForFormSubmitToBankAcs($input, $response);
 
             case Result::NOT_ENROLLED:
 
@@ -489,7 +490,7 @@ class Gateway extends Base\Gateway
     {
         $payerAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
 
-        $authRequest = $this->getAuthorizeRequestArray($input, $payerAuthValidateReply);
+        $authRequest = $this->getAuthorizeEnrolledRequestArray($input, $payerAuthValidateReply, $gatewayPayment);
 
         $this->traceGatewayRequest(
             TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST, $authRequest, $input);
@@ -658,7 +659,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getFieldsForFormSubmitToBankACS(array $input, array $response)
+    protected function getFieldsForFormSubmitToBankAcs(array $input, array $response)
     {
         $content = [
             'TermUrl' => $input['callbackUrl'],
@@ -847,7 +848,7 @@ class Gateway extends Base\Gateway
     /**
      * @codeCoverageIgnore
      */
-    protected function getAttributeFromVoidResponse(array $input, array $response)
+    protected function getAttributeFromAuthReversalResponse(array $input, array $response)
     {
         $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
 
@@ -855,7 +856,7 @@ class Gateway extends Base\Gateway
             E::REF                => $response[F::REQUEST_ID],
             E::REASON_CODE        => $response[F::REASON_CODE],
             E::PROCESSOR_RESPONSE => $ccAuthReversalReply[F::PROCESSOR_RESPONSE] ?? null,
-            E::STATUS             => Status::VOIDED,
+            E::STATUS             => Status::AUTH_REVERSED,
             E::RECEIVED           => true
         ];
 
@@ -956,18 +957,43 @@ class Gateway extends Base\Gateway
         unset($authRequest['content'][F::CARD][F::CVN]);
 
         // Set commerceIndicator as recurring
-        $authRequest['content'][F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = CommerceIndicator::RECURRING;
+        $authRequest['content'][F::CC_AUTH_SERVICE] = [
+            F::RUN                => 'true',
+            F::COMMERCE_INDICATOR => CommerceIndicator::RECURRING
+        ];
 
         return $authRequest;
     }
 
-    protected function getAuthorizeEnrolledRequestArray(array $input)
+    protected function getAuthorizeEnrolledRequestArray(
+        array $input,
+        array $payerAuthValidateReply,
+        Entity $gatewayPayment)
     {
-        $authValidateService = $this->getAuthValidateContentArray($input);
+        $authServiceRequest  = $this->getAuthorizeRequestArray($input, $payerAuthValidateReply);
 
-        $authServiceRequest  = $this->getAuthorizeRequestArray($input);
+        $ccAuthService = $authServiceRequest['content'][F::CC_AUTH_SERVICE];
 
-        $authServiceRequest['content'] = array_merge($authValidateService, $authServiceRequest['content']);
+        $ccAuthService = [
+            F::RUN                => 'true',
+            F::XID                => $gatewayPayment->getXid(),
+            F::ECI_RAW            => $gatewayPayment->getEci(),
+            F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
+        ];
+
+        $cardNetwork = $input['card']['network_code'];
+
+        if ($cardNetwork === Card\Network::VISA)
+        {
+            $ccAuthService[F::CAVV] = $gatewayPayment->getCavv();
+        }
+
+        if ($cardNetwork === Card\Network::MC)
+        {
+            $content[F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+        }
+
+        $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;
 
         return $authServiceRequest;
     }
@@ -1001,7 +1027,7 @@ class Gateway extends Base\Gateway
     /**
      * @codeCoverageIgnore
      */
-    protected function getVoidRequestArray(array $input, Entity $gatewayPayment)
+    protected function getAuthReversalRequestArray(array $input, Entity $gatewayPayment)
     {
         $content = [];
 
@@ -1115,12 +1141,15 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
         $amount    = $input['payment']['amount'];
+        $acquirer  = $input['terminal']->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
 
         $gatewayPayment->setAmount($amount);
 
         $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->fill($attributes);
 
@@ -1138,6 +1167,7 @@ class Gateway extends Base\Gateway
         $paymentId    = $input['payment']['id'];
         $refundId     = $input['refund']['id'];
         $refundAmount = $input['refund']['amount'];
+        $acquirer  = $input['terminal']->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
 
@@ -1146,6 +1176,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setAmount($refundAmount);
 
         $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->fill($attributes);
 
@@ -1253,17 +1285,17 @@ class Gateway extends Base\Gateway
         // $passwordObj->Type = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordTex';
 
         $wsseAuth = [
-            'Username' => (new SoapVar($username, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
-            'Password' => (new SoapVar($password, XSD_STRING, NULL, $wsseNs, NULL, $wsseNs)),
+            'Username' => (new SoapVar($username, XSD_STRING, null, $wsseNs, null, $wsseNs)),
+            'Password' => (new SoapVar($password, XSD_STRING, null, $wsseNs, null, $wsseNs)),
         ];
 
         $wsseToken = [
-            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs))
+            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, null, $wsseNs, 'UsernameToken', $wsseNs))
         ];
 
-        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, NULL, $wsseNs, 'UsernameToken', $wsseNs);
+        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, null, $wsseNs, 'UsernameToken', $wsseNs);
 
-        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, NULL, $wsseNs, 'Security', $wsseNs);
+        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, null, $wsseNs, 'Security', $wsseNs);
 
         $objSoapVarWSSEHeader = new \SoapHeader($wsseNs, 'Security', $wsseHeaderSoap, $mustUnderstand);
 
@@ -1388,7 +1420,8 @@ class Gateway extends Base\Gateway
                     'gateway'       => 'cybersource',
                     'gateway_input' => $input['gateway'],
                     'payment_id'    => $input['payment']['id']
-                ]);
+                ]
+            );
 
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);

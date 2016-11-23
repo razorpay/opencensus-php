@@ -1323,8 +1323,13 @@ ALTER TABLE cybersource
     ADD COLUMN receiptNumber CHAR(6) DEFAULT NULL,
     ADD COLUMN merchantAdviceCode CHAR(30) DEFAULT NULL,
     ADD COLUMN gatewayTransactionId CHAR(30) DEFAULT NULL,
-    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL,
+    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL
+AFTER status;
+
+ALTER TABLE cybersource
     MODIFY COLUMN pares_status CHAR(2) DEFAULT NULL,
     MODIFY COLUMN eci CHAR(2) DEFAULT NULL,
-    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL
-AFTER STATUS;
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL;
+
+ALTER TABLE cybersource
+    ADD COLUMN acquirer CHAR(10) DEFAULT NULL AFTER payment_id;
