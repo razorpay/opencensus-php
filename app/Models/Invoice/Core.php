@@ -58,12 +58,11 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function issue(Entity $invoice)
+    public function issue(Entity $invoice, Merchant\Entity $merchant)
     {
         $this->checkIfInvoiceCanBeIssued($invoice);
 
-        $invoice->setStatus(Status::ISSUED);
-        (new Generator(null, $invoice))->setShortUrl();
+        $invoice = (new Generator($merchant, $invoice))->issue();
 
         $this->repo->saveOrFail($invoice);
 

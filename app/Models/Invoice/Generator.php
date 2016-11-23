@@ -104,7 +104,22 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    public function setShortUrl()
+    /**
+     * Creates order for invoice and marks it issued
+     *
+     * @return Entity
+     */
+    public function issue()
+    {
+        $order = $this->createOrderForInvoice();
+        $this->invoice->order()->associate($order);
+
+        $this->invoice->setStatus(Status::ISSUED);
+
+        return $this->invoice;
+    }
+
+    protected function setShortUrl()
     {
         if ($this->invoice->isDraft())
         {
@@ -164,8 +179,11 @@ class Generator extends Base\Core
             $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input[Entity::LINE_ITEMS]);
         }
 
-        $order = $this->createOrderForInvoice();
-        $this->invoice->order()->associate($order);
+        if ($this->invoice->isDraft() === false)
+        {
+            $order = $this->createOrderForInvoice();
+            $this->invoice->order()->associate($order);
+        }
 
         $this->ensureCustomerAssociation($input);
 

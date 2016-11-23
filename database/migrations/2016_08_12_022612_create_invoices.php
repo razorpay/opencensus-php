@@ -29,7 +29,8 @@ class CreateInvoices extends Migration
             $table->char(Entity::REF_NUM, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Entity::ORDER_ID, Entity::ID_LENGTH);
+            $table->char(Entity::ORDER_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();

@@ -84,6 +84,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::ORDER_ID          => null,
         self::STATUS            => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,

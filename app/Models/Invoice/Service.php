@@ -49,7 +49,7 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->issue($invoice)->toArrayPublic();
+        return $this->core->issue($invoice, $this->merchant)->toArrayPublic();
     }
 
     public function delete(string $id)
