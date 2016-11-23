@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
-        Entity::PERIOD   => 'required|alpha',
+        Entity::PERIOD   => 'required|string',
         Entity::TYPE     => 'required|string|in:settlement',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
