@@ -218,14 +218,14 @@ class Reconciler3
             {
                 $status = Settlement\Status::FAILED;
 
-                $failureReason = 'Reconciliation: ' . $failureReason;
+                $failureReason = 'Reconciliation';
             }
         }
         else
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation';
         }
 
         // if already processed

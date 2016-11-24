@@ -699,6 +699,20 @@ class Gateway
         }
     }
 
+    protected function getDynamicMerchantName($merchant)
+    {
+        $label = $merchant->getBillingLabel();
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        if (empty($label) === true)
+        {
+            $label = "Razorpay Payments";
+        }
+
+        return str_limit($label, 20);
+    }
+
     protected function verifyOtpAttempts($payment, $limit = null)
     {
         if ($limit === null)
