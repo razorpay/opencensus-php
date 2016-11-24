@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -13,21 +15,21 @@ class Validator extends Base\Validator
         // Entity::ADJUSTMENT          => 'sometimes|integer',
         // Entity::SHIPPING            => 'sometimes|integer|min:1',
 
-        // If due_in is 0, it will get expired immediately. Hence the minimum value of 1.
-        //Entity::DUE_IN              => 'sometimes|integer|min:1|max:365',
-        //Entity::SCHEDULED_IN        => 'sometimes|integer|min:0|max:365',
+        // Entity::DUE_BY              => 'sometimes|integer',
+        // Entity::SCHEDULED_AT        => 'sometimes|integer',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'required|custom',
-        Entity::CURRENCY            => 'required|in:INR',
+        Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
     ];
 
@@ -48,7 +50,14 @@ class Validator extends Base\Validator
         if ($itemsCount === 0)
         {
             throw new BadRequestValidationFailureException(
-                'Input must contain at least one input'
+                'Invoice must contain at least one line item.'
+            );
+        }
+
+        if ($itemsCount > 10)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice cannot have more than 10 line items.'
             );
         }
     }
