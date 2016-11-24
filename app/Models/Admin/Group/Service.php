@@ -105,6 +105,10 @@ class Service extends Base\Service
 
             $input['parents'] = $groupIds;
         }
+        else
+        {
+            $input['parents'] = [];
+        }
 
         $group = $this->core->edit($orgId, $groupId, $input);
 
