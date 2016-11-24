@@ -469,7 +469,7 @@
         <div class="form-group">
           <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
           <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current" required>
           </div>
         </div>
         <!-- <div class="form-group">
@@ -631,7 +631,9 @@
         <div class="m-t m-b text-center prev-next">
           <div ng-switch="org">
             <p class="m-t m-b" ng-switch-when="hdfc">
-              <strong>Note:</strong> Ownership of Merchant will remain with <strong>HDFC Bank Ltd</strong>
+              <strong>Note:</strong> Ownership of Merchant will remain with <strong>HDFC Bank Ltd.</strong>
+              <br />
+              SmartUp is a joint initiative between HDFC Bank Ltd. and Razorpay
             </p>
           </div>
           <button type="submit" class="btn btn-submit btn-default btn-rounded">Click here to submit</button>
