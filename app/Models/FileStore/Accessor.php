@@ -9,29 +9,9 @@ use RZP\Models\Merchant\Account;
 class Accessor extends Base\Service
 {
     /**
-     * Id of object to fetched
+     * Param Dictionary for doing Db Query
      */
-    protected $id;
-
-    /**
-     * Merchant id of the file object to be fetched
-     */
-    protected $merchantId;
-
-    /**
-     * Entity id of the file object to be fetched
-     */
-    protected $entityId;
-
-    /**
-     * Entity Type of the file object to be fetched
-     */
-    protected $entityType;
-
-    /**
-     * File Type of the file object to be fetched
-     */
-    protected $type;
+    protected $params = [];
 
     const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
 
@@ -44,35 +24,7 @@ class Accessor extends Base\Service
      */
     public function id(string $id)
     {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * Set the Entity Id in Query Param
-     *
-     * @param string $entityId Entity ID of object to fetch
-     *
-     * @return Accessor object
-     */
-    public function entityId(string $entityId)
-    {
-        $this->entityId = $entityId;
-
-        return $this;
-    }
-
-    /**
-     * Set the Entity Type  in Query Param
-     *
-     * @param string $entityType Entity Type of object to fetch
-     *
-     * @return Accessor object
-     */
-    public function entityType(string $entityType)
-    {
-        $this->entityType = $entityType;
+        $this->params[Entity::ID] = $id;
 
         return $this;
     }
@@ -86,7 +38,21 @@ class Accessor extends Base\Service
      */
     public function merchantId(string $merchantId)
     {
-        $this->merchantId = $merchantId;
+        $this->params[Entity::MERCHANT_ID] = $merchantId;
+
+        return $this;
+    }
+
+    /**
+     * Set the Entity Id in Query Param
+     *
+     * @param string $entityId Entity ID of object to fetch
+     *
+     * @return Accessor object
+     */
+    public function entityId(string $entityId)
+    {
+        $this->params[Entity::ENTITY_ID] = $entityId;
 
         return $this;
     }
@@ -100,7 +66,7 @@ class Accessor extends Base\Service
      */
     public function type(string $type)
     {
-        $this->type = $type;
+        $this->params[Entity::TYPE] = $type;
 
         return $this;
     }
@@ -114,13 +80,7 @@ class Accessor extends Base\Service
     {
         $this->updateMerchantId();
 
-        $data = $this->repo->file_store->fetchByParams(
-            $this->id,
-            $this->merchantId,
-            $this->entityId,
-            $this->entityType,
-            $this->type
-        );
+        $data = $this->repo->file_store->fetch($this->params);
 
         return $data->toArrayPublic();
     }
@@ -138,6 +98,11 @@ class Accessor extends Base\Service
         if ($merchant !== null)
         {
             $this->merchantId($merchant->getId());
+        }
+
+        if (isset($this->params[Entity::MERCHANT_ID]) === false)
+        {
+            $this->merchantId(self::DEFAULT_MERCHANT_ID);
         }
     }
 
