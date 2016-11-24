@@ -797,9 +797,11 @@ class Gateway extends Base\Gateway
 
     protected function getCaptureRequestArray($input)
     {
-        $body = $this->getCommonRequestArray($input, TxnType::CAPTURE);
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
 
         $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
@@ -808,9 +810,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray($input)
     {
-        $body = $this->getCommonRequestArray($input, TxnType::REFUND);
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
 
         $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
@@ -819,26 +823,20 @@ class Gateway extends Base\Gateway
 
     protected function getReverseRequestArray($input)
     {
-        $body = $this->getCommonRequestArray($input, TxnType::REVERSE);
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                             $input['payment'][Payment\Entity::ID],
                                             Base\Action::AUTHORIZE);
 
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_TDATE] = $gatewayPayment[Entity::TDATE];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
+            ApiRequestFields::V1_TDATE    => $gatewayPayment[Entity::TDATE],
+        ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
-    }
-
-    protected function getCommonRequestArray($input, $txnType)
-    {
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = $txnType;
-
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
-
-        return $body;
     }
 
     protected function setPaymentRequestArray(& $body, $input, $txnType)
