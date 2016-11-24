@@ -1,18 +1,17 @@
 import { PropTypes } from 'react'
-import { PowerSelect } from 'react-power-select'
 import HighlightedOption from './HighlightedOption'
 import QuickAddComponent from './QuickAdd'
 import { findBy } from 'rzp/utils/rzp-utils'
 
-export default function ReduxPowerSelect(props) {
+const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
   let {
     input,
     meta,
     selected,
-    optionLabelPath,
-    optionValuePath,
+    optionLabelPath = 'name',
+    optionValuePath = 'id',
     onQuickAdd,
-    onChange,
+    onChange = () => {},
     ...otherProps
   } = props
 
@@ -22,7 +21,7 @@ export default function ReduxPowerSelect(props) {
   let showQuickAdd = !!onQuickAdd
 
   return (
-    <PowerSelect
+    <PowerSelectComponent
       {...otherProps}
       selected={selectedOption}
       searchIndices={searchIndices}
@@ -38,6 +37,7 @@ export default function ReduxPowerSelect(props) {
         showQuickAdd && <QuickAddComponent {...props} onClick={onQuickAdd} />
       }
       onChange={(option) => {
+        option = option || input.value
         input.onChange(option[optionValuePath])
         onChange(option)
       }}
@@ -45,16 +45,4 @@ export default function ReduxPowerSelect(props) {
   )
 }
 
-ReduxPowerSelect.defaultProps = {
-  optionLabelPath: 'name',
-  optionValuePath: 'id',
-  showQuickAdd: true,
-  onChange: () => {}
-}
-
-ReduxPowerSelect.propTypes = {
-  optionLabelPath: PropTypes.string,
-  optionValuePath: PropTypes.string,
-  onQuickAdd: PropTypes.func,
-  onChange: PropTypes.func
-}
+export default ReduxPowerSelectHOC

@@ -7,7 +7,7 @@ import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import ReduxPowerSelect from 'rzp/ui/Select/ReduxPowerSelect'
+import PowerSelect from 'rzp/ui/Select/PowerSelect'
 
 import LineItemTable from './LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
@@ -117,7 +117,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                       <label>Customer Name</label>
                       <Field
                         name='customer_id'
-                        component={ReduxPowerSelect}
+                        component={PowerSelect}
                         options={this.props.customers}
                         selected={this.props.customer_id}
                         optionLabelPath='customer_name'

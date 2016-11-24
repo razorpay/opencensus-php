@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
-import ReduxTypeAhead from 'rzp/ui/Forms/ReduxTypeAhead'
+import TypeAhead from 'rzp/ui/Select/TypeAhead'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -29,12 +29,10 @@ export default class InvoiceLineItem extends Component {
         <td>
           <Field
             name={`${fieldName}.item`}
-            component={ReduxTypeAhead}
+            component={TypeAhead}
             options={items}
             selected={fieldItem.item}
-            selectedLabel='name'
-            optionComponent={(option) => <span>{option.name}</span>}
-            searchIndices={['name']}
+            optionLabelPath='name'
             placeholder='Select an item'
             onChange={(selectedItem) => {
               this.props.change(`${fieldName}.rate`, selectedItem.rate || '0.00')
