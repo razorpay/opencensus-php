@@ -220,15 +220,21 @@ class Gateway extends Base\Gateway
             'TransactionDescription' => $input['payment']['contact'],
         );
 
+        if ($this->mode === Mode::TEST)
+        {
+            $data['MerchantId'] = $this->getTestMerchantId();
+        }
+
         // Change Content for Merchants with TPV Required
         if ($input['merchant']->isTPVRequired())
         {
             $data['TransactionDescription'] = $input['order']['account_number'];
-        }
 
-        if ($this->mode === Mode::TEST)
-        {
-            $data['MerchantId'] = $this->getTestMerchantId();
+
+            if ($this->mode === Mode::TEST)
+            {
+                $data['MerchantId'] = $this->getTestTPVMerchantId();
+            }
         }
 
         return $data;
@@ -316,6 +322,11 @@ class Gateway extends Base\Gateway
     protected function getTestMerchantId()
     {
         return 'OSTEST';
+    }
+
+    protected function getTestTPVMerchantId()
+    {
+        return 'OTTEST';
     }
 
     protected function getLiveSecret()
