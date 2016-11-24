@@ -18,14 +18,14 @@ class Core extends Base\Core
      */
     public function createTransfer(Base\Entity $from, Base\Entity $to, Transaction\Entity $transaction)
     {
-        $transfer = (new Entity)->generateId();
+        $transfer = new Entity;
 
         $transferData = [
             Entity::FROM            => $from->getEntityName(),
             Entity::FROM_ID         => $from->getId(),
             Entity::TO              => $to->getEntityName(),
             Entity::TO_ID           => $to->getId(),
-            Entity::AMOUNT          => 123
+            Entity::AMOUNT          => $transaction->getAmount()
         ];
 
         $transfer->transaction()->associate($transaction);

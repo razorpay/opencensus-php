@@ -25,8 +25,7 @@ class Entity extends Base\PublicEntity
         self::FROM_ID,
         self::TO,
         self::TO_ID,
-        self::AMOUNT,
-        self::TRANSACTION_ID
+        self::AMOUNT
     ];
 
     protected $visible = [
