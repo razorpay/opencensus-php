@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 
 class Notify
@@ -16,6 +17,7 @@ class Notify
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
+    const INVOICE_PAID = 'invoice_paid';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -91,23 +93,36 @@ class Notify
                 'from' => 'care',
                 'view' => 'emails.payment.cardsaving',
             ]
-        ]
+        ],
+        self::INVOICE_PAID => [
+            'merchant' => [
+                'view' => [
+                    'html' => 'emails.invoice.merchant',
+                    'text' => 'emails.invoice.merchant_text',
+                ]
+            ]
+        ],
     ];
 
     protected $payment;
     protected $refund;
     protected $mode;
     protected $trace;
+    protected $template;
+    protected $invoice;
 
     /**
      * Creates a new Notify instance
+     *
      * @param Payment\Entity $payment The payment associated with the Notify
+     * @param Invoice\Entity $invoice The invoice associated with the Notify
      */
-    function __construct(Payment\Entity $payment)
+    function __construct(Payment\Entity $payment, Invoice\Entity $invoice = null)
     {
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
+        $this->invoice = $invoice;
         $this->refreshTemplate();
 
         $this->mode = $this->app['rzp.mode'];
@@ -139,9 +154,12 @@ class Notify
     /**
      * Sends out a mail given the view, subject and email address
      * Uses Mail::queue to queue emails
+     *
      * @param  string $view    array or string of mail views to use
      * @param  string $subject Subject of email
      * @param  string $to      Email address to send to
+     * @param string  $from
+     *
      * @return null
      */
     protected function sendMail($view, $subject, $to, $from = 'reports')
@@ -359,12 +377,7 @@ class Notify
 
     protected function getSubject($event, $merchant = true)
     {
-        $action = 'Payment';
-
-        if ($event === self::REFUNDED)
-        {
-            $action = 'Refund';
-        }
+        $action = $this->getAction($event);
 
         /**
          * The reason we have a fallback to the amount here is because
@@ -400,6 +413,24 @@ class Notify
         }
 
         return $subject;
+    }
+
+    protected function getAction($event)
+    {
+        switch ($event)
+        {
+            case self::REFUNDED:
+                $action = 'Refund';
+                break;
+            case self::INVOICE_PAID:
+                $action = 'Invoice';
+                break;
+            default:
+                $action = 'Payment';
+                break;
+        }
+
+        return $action;
     }
 
     protected function getMerchantForSlack()
@@ -469,6 +500,10 @@ class Notify
                 $data = $this->template['payment'];
                 break;
 
+            case self::INVOICE_PAID:
+                $data = $this->template['invoice'];
+                break;
+
             case self::REFUNDED:
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
@@ -520,7 +555,7 @@ class Notify
                 'phone' =>  $this->payment->getContact()
             ],
             'merchant'  =>  [
-                'billing_label' =>  $this->payment->merchant->getBillingLabel(),
+                'billing_label' =>  $this->payment->merchant->getBillingLabelElseName(),
                 'website'       =>  $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
                 'email'         =>  $this->payment->merchant->getTransactionReportEmail(),
@@ -538,7 +573,7 @@ class Notify
                 'method'    =>  $this->payment->getMethodWithDetail(),
                 'orderId'   =>  $this->payment->getOrderId(),
                 'risk'      =>  $this->payment->merchant->getRiskRating()
-            ]
+            ],
         ];
 
         if ($this->payment->card !== null)
@@ -563,6 +598,19 @@ class Notify
                 'timestamp' =>  $this->refund->getCreatedAt(),
                 'payment_id'=>  $this->refund->payment->getId(),
                 'public_id' =>  $this->refund->getPublicId(),
+            ];
+        }
+
+        if ($this->invoice)
+        {
+            $data['invoice'] = [
+                'id'    => $this->invoice->getId(),
+                'amount' => "INR ".number_format($this->invoice->getAmount()/100, 2),
+                'timestamp' => $this->invoice->getCreatedAt(),
+                'payment_id' => $this->invoice->getPaymentId(),
+                'public_id' => $this->invoice->getPublicId(),
+                'paid_at' => $this->invoice->getPaidAt(),
+                'issued_at' => $this->invoice->getIssuedAt(),
             ];
         }
 
