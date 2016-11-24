@@ -10,15 +10,13 @@ use RZP\Models\Merchant;
 class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
-        'tpv',
-        // 'risk',
         'incompatible',
         'category',
         'gateway',
     ];
 
     /**
-     * Filter applies for securities merchants
+     * Filter applies for securities, commodities merchants
      * Only for the netbanking method.
      * Allow Only Third Party Validation (TPV) terminals for
      * TPV required merchants, and non TPV terminals for non

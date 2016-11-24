@@ -23,7 +23,8 @@ class Category
      * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        // 'broking',
+        'securities',
+        'commondities',
         'grocery',
         'ecommerce',
         'govt_education',
@@ -194,7 +195,7 @@ class Category
 
     public static function isMerchantCategoryIncompatible($category)
     {
-        return in_array();
+        return in_array($category, self::INCOMPATIBLE);
     }
 
     protected static function isConstantDefined($type, $name)

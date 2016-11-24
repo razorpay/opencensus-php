@@ -458,7 +458,8 @@ class Terminal extends Base
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,
-            'category'              => 9999,
+            'category'              => 0,
+            'network_category'      => 'securities',
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
