@@ -124,11 +124,16 @@ class CybersourceGatewayVisaTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4000000000000000014';
 
-        $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('authorized', $cybersource['status']);
+        $this->assertEquals('authorize_failed', $cybersource['status']);
         $this->assertEquals('U', $cybersource['veresEnrolled']);
         $this->assertEquals('internet', $cybersource['commerce_indicator']);
         $this->assertNull($cybersource['xid']);
@@ -175,11 +180,16 @@ class CybersourceGatewayVisaTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4000000000000085';
 
-        $response = $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('authorized', $cybersource['status']);
+        $this->assertEquals('authorize_failed', $cybersource['status']);
         $this->assertEquals('U', $cybersource['veresEnrolled']);
         $this->assertEquals('internet', $cybersource['commerce_indicator']);
         $this->assertNull($cybersource['xid']);
@@ -191,11 +201,16 @@ class CybersourceGatewayVisaTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4000000000000077';
 
-        $response = $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $cybersource = $this->getLastEntity('cybersource', true);
 
-        $this->assertEquals('authorized', $cybersource['status']);
+        $this->assertEquals('authorize_failed', $cybersource['status']);
         $this->assertEquals('U', $cybersource['veresEnrolled']);
         $this->assertEquals('internet', $cybersource['commerce_indicator']);
         $this->assertNull($cybersource['xid']);

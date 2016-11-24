@@ -613,50 +613,46 @@ class Gateway extends Base\Gateway
     {
         $networkCode = $input['card']['network_code'];
 
-        if ((isset($response[F::ECI]) === true) or
-            (isset($response[F::UCAF_COLLECTION_INDICATOR]) === true))
+        switch ($networkCode)
         {
-            switch ($networkCode)
-            {
-                case Card\Network::VISA:
+            case Card\Network::VISA:
 
-                    $eciRaw = $response[F::ECI] ?? '07';
+                $eciRaw = $response[F::ECI] ?? '07';
 
-                    // NOTE: Make sure PHP return correct int on conversion
-                    // Example: '012' should be converted to decimal 12 not octal 12
-                    $eci = (int) $eciRaw;
+                // NOTE: Make sure PHP return correct int on conversion
+                // Example: '012' should be converted to decimal 12 not octal 12
+                $eci = (int) $eciRaw;
 
-                    if ($eci === 7)
-                    {
-                        $desc = 'ECI value shouldn\'t be 7.';
-                    }
+                if ($eci === 7)
+                {
+                    $desc = 'ECI value shouldn\'t be 7.';
+                }
 
-                    break;
+                break;
 
-                case Card\Network::MC:
-                    $eciRaw = $response[F::UCAF_COLLECTION_INDICATOR] ?? '07';
+            case Card\Network::MC:
+                $eciRaw = $response[F::UCAF_COLLECTION_INDICATOR] ?? '07';
 
-                    $eci = (int) $eciRaw;
+                $eci = (int) $eciRaw;
 
-                    if (($eci === 7) or ($eci === 0))
-                    {
-                        $desc = 'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci;
-                    }
+                if (($eci === 7) or ($eci === 0))
+                {
+                    $desc = 'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci;
+                }
 
-                    break;
-            }
-
-            if (isset($desc) === true)
-            {
-                $gatewayPayment->setStatus(Status::AUTHORIZE_FAILED);
-                $this->repo->saveOrFail($gatewayPayment);
-
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR, $eciRaw, $desc);
-            }
-
-            $this->eci = $eciRaw;
+                break;
         }
+
+        if (isset($desc) === true)
+        {
+            $gatewayPayment->setStatus(Status::AUTHORIZE_FAILED);
+            $this->repo->saveOrFail($gatewayPayment);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR, $eciRaw, $desc);
+        }
+
+        $this->eci = $eciRaw;
     }
 
     protected function getFieldsForFormSubmitToBankAcs(array $input, array $response)

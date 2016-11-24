@@ -9,15 +9,31 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+        ],
+    ],
+
+    'testEnrolledCardUnavailableAuthentication' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         ],
     ],
 
@@ -57,15 +73,47 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+        ],
+    ],
+
+    'testEnrollmentErrorCheckWithErrorResponse' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+        ],
+    ],
+
+    'testEnrollmentErrorCheckWithIncorrectConf' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         ],
     ],
 
