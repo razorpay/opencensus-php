@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $captureFields = $this->getCaptureRefundOrReverseFields($response, $input['payment']);
+        $captureFields = $this->getCaptureFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
 
@@ -125,7 +125,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $refundFields = $this->getCaptureRefundOrReverseFields($response, $input['refund']);
+        $refundFields = $this->getRefundFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
@@ -149,7 +149,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $reverseFields = $this->getCaptureRefundOrReverseFields($response, $input['payment']);
+        $reverseFields = $this->getReverseFields($response, $input['refund']);
 
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
@@ -285,7 +285,36 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCaptureRefundOrReverseFields($response, $input)
+    protected function getCaptureFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+
+        return $attributes;
+    }
+
+    protected function getRefundFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getReverseFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getCommonResponseFields($response, $input)
     {
         $attributes = [
             Entity::RECEIVED               => true,
@@ -297,10 +326,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
             Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
             Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
-            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE] ?? null,
         ];
-
-        $this->setRefundIdIfNeeded($attributes, $input);
 
         $this->setErrorMessageIfNeeded($attributes);
 
@@ -324,12 +350,9 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function setRefundIdIfNeeded(& $attributes, $input)
+    protected function setRefundId(& $attributes, $input)
     {
-        if ($this->action == Base\Action::REFUND)
-        {
-            $attributes[Entity::REFUND_ID] = $input['id'];
-        }
+        $attributes[Entity::REFUND_ID] = $input['id'];
     }
 
     protected function setErrorMessageIfNeeded(& $attributes)
