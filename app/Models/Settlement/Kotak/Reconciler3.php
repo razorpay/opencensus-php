@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
 use RZP\Trace;
@@ -40,6 +41,10 @@ class Reconciler3
         'Presented and Paid',
     ];
 
+    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 300;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -62,9 +67,25 @@ class Reconciler3
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process($input)
+    {
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input)
+            {
+                return $this->processReconciliation($input);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        return $data;
+    }
+
+    public function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
