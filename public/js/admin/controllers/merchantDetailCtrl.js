@@ -9,10 +9,12 @@ app.controller('MerchantDetailCtrl', [
   '$modal',
   'riskMap',
   'admin',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin) {
+  '$upload',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload) {
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
+
     $scope.riskMap = riskMap;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
@@ -329,13 +331,43 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.assignTerminal = function (terminal) {
+    $scope.assignSchedule = function (schedule_id) {
+
+      var body = {'settlement_schedule_id':schedule_id};
+
       var request = $http({
         method: 'post',
-        url: '/admin/merchant/' + $scope.merchant.id + '/terminal',
+        url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
         transformRequest: transformRequestAsFormPost,
-        data: terminal
+        data: body
       });
+
+      request.success(function (data){
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Schedule Assigned successfully', true);
+          $scope.merchant.schedule_id = data.data.settlement_schedule_id;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.assignTerminal = function (terminal) {
+      var requestData = {
+        method: 'post',
+        url: '/admin/merchant/' + $scope.merchant.id + '/terminal',
+        data: terminal
+      };
+      if (typeof terminal.gateway_client_certificate !== 'undefined') {
+        requestData['file'] = terminal.gateway_client_certificate;
+      }
+      var request = $upload.upload(requestData);
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
@@ -538,6 +570,9 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+
+    // Assign pricing modal
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
       // Switch the default plan to Promotional Pricing
@@ -554,9 +589,30 @@ app.controller('MerchantDetailCtrl', [
           }
         }
       });
+
       modalInstance.result.then(function (data) {
         $scope.assignPricing(data);
       }, $.noop);
+    };
+
+    $scope.openAssignSchedule = function() {
+
+      var currentSchedule = $scope.merchant.schedule_id || '';
+
+      var modalInstance = $modal.open({
+        templateUrl: 'assignScheduleModalContent.html',
+        controller: 'assignScheduleModalCtrl',
+        resolve: {
+          current: function() {
+            return currentSchedule;
+          }
+        }
+      });
+
+      modalInstance.result.then(function (data) {
+        $scope.assignSchedule(data);
+      }, $.noop);
+
     };
 
     $scope.openTagMerchant = function () {
@@ -954,6 +1010,11 @@ app.controller('MerchantDetailCtrl', [
           $scope.pricing_plans[value.id] = value.name;
         }
         $scope.loading = false;
+
+        // Trigger select2 on the dropdown
+        setTimeout(function () {
+          $('select[name="pricing_plan_id"]').select2();
+        }, 100);
       }
     });
 
@@ -1027,9 +1088,19 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('assignTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
-  function ($scope, $modalInstance) {
-    $scope.ok = function (terminal) {
-      $modalInstance.close(terminal);
+  '$upload',
+  function ($scope, $modalInstance, $upload) {
+    $scope.terminal = {gateway:'hdfc', mode:'live', card:1};
+    $scope.onFileSelect = function ($files, fieldname) {
+      var file = $files[0];
+      if ($scope.terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
+        $scope.alerts.addAlert('danger', 'Invalid certificate file', true);
+        return;
+      }
+      $scope.terminal.gateway_client_certificate = file;
+    };
+    $scope.ok = function () {
+      $modalInstance.close($scope.terminal);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
@@ -1432,7 +1503,39 @@ app.controller('MerchantDetailCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
+]).controller('assignScheduleModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    $scope.loading = true;
+    $scope.schedule_list = {};
+    $scope.schedule_id = current;
+
+    var request = $http.get('/admin/schedule/list');
+    request.success(function (data) {
+
+      angular.forEach(data.data.items, function(value) {
+        $scope.schedule_list[value.id] = value.name;
+      });
+
+      $scope.loading = false;
+    });
+
+    $scope.scheduleListLength = function() {
+      return Object.keys($scope.schedule_list).length;
+    };
+
+    $scope.ok = function (schedule_id) {
+      $modalInstance.close(schedule_id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
 ]);
+
 
 function removeLineBreaks(str) {
   return str.replace(/[\n|\r]/g, ' ')

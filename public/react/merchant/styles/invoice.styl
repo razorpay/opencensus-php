@@ -1,0 +1,96 @@
+.invoice-creation-container {
+  max-width: 900px;
+
+  .panel-body {
+    padding: 40px;
+  }
+
+  .form-group {
+    margin-bottom: 30px;
+
+    > label {
+      font-size: 17px;
+      font-weight: bold;
+    }
+  }
+
+  .invoice-lineitem {
+    margin: 30px -40px;
+
+    .power-select {
+      max-width: 80%;
+    }
+
+    .table > thead > tr > th {
+      padding: 12px 20px;
+      background-color: #E3F4FE;
+    }
+
+    .table > tbody > tr > td {
+      padding: 15px 20px;
+
+      &:first-child {
+        padding-left: 40px;
+      }
+
+      &:last-child {
+        padding-right: 40px;
+        position: relative
+      }
+    }
+
+    .remove-row-action {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -32px;
+      padding: 16px 10px;
+      cursor: pointer;
+      visibility: hidden;
+    }
+
+    .table > tbody > tr:hover .remove-row-action {
+      visibility: visible;
+    }
+  }
+}
+
+.invoice-total {
+  font-size: 17px;
+
+  .dl-horizontal {
+    padding-top: 20px;
+    border-top: 1px solid #aaa;
+    padding-right: 40px;
+  }
+
+  dt {
+    margin-bottom: 15px;
+  }
+}
+
+.add-line-item {
+  line-height: 0.9;
+  padding: 4px 10px;
+}
+
+.payment-link-form {
+  .or-separator::before {
+    content: '(or)';
+    position: absolute;
+    left: -8px;
+    top: 10px;
+    color: #999;
+    font-size: 11px;
+  }
+}
+
+.help-label {
+  padding-top: 2px;
+  line-height: 1.1;
+
+  small {
+    font-size: 11px;
+    color: #999;
+  }
+}

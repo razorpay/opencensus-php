@@ -362,6 +362,7 @@ app.controller('ActionsCtrl', [
         modalInstance.result.then($scope.archiveMerchant, $.noop);
       };
 
+
       $scope.openConfirmMerchant = function () {
         var modalInstance = $modal.open({
           templateUrl: 'confirmMerchantModal.html',
@@ -445,6 +446,117 @@ app.controller('ActionsCtrl', [
         });
       };
     });
+
+    $scope.openConfirmMerchant = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'confirmMerchantModal.html',
+        controller: 'archiveMerchantModalCtrl'
+      });
+      modalInstance.result.then($scope.confirmMerchant, $.noop);
+    };
+    $scope.openAuthorizeFailedPayment = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'authorizeFailedPaymentModalContent.html',
+        controller: 'authorizeFailedPaymentModalCtrl'
+      });
+      modalInstance.result.then(function (data) {
+        $scope.authorizeFailedPayment(data.id, data.mode);
+      }, $.noop);
+    };
+    $scope.triggerError = function () {
+      var request = $http({
+        method: 'post',
+        url: '/admin/trigger/error'
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Error triggerred successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.openEditNewsletter = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'sendNewsletter.html',
+        controller: 'sendNewsletterCtrl',
+        size: 'lg'
+      });
+      modalInstance.result.then(function (data) {
+        console.debug(data);
+        if (data.lists) {
+          // Send live email newsletter
+          $scope.sendNewsletter(data);
+        } else {
+          $scope.sendTestEmail(data);
+        }
+      }, $.noop);
+    };
+    $scope.downloadBeneficiaryFile = function () {
+      $scope.date = moment().format('yyyy-MM-dd');
+      var modalInstance = $modal.open({
+        templateUrl: 'downloadBeneficiaryFile.html',
+        controller: 'downloadBeneficiaryFileCtrl'
+      });
+      modalInstance.result.then(function (date) {
+        if (date) {
+          window.open('/admin/beneficiary/dl');
+        } else {
+          window.open('/admin/beneficiary/dl?date=' + date);
+        }
+      }, $.noop);
+    };
+    $scope.generateBeneficiaryFile = function () {
+      var request = $http({
+        method: 'post',
+        url: '/admin/beneficiary'
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.openAddSchedule = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'addScheduleModalContent.html',
+        controller: 'addScheduleModalCtrl'
+      });
+      modalInstance.result.then($scope.addSchedule, $.noop);
+    };
+    $scope.addSchedule = function (schedule) {
+      var request = $http({
+        method: 'post',
+        url: 'admin/schedules',
+        transformRequest: transformRequestAsFormPost,
+        data: schedule
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Schedule added successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
   }
 ]).controller('initiateSetlModalCtrl', [
   '$scope',
@@ -700,6 +812,21 @@ app.controller('ActionsCtrl', [
         data.on = date;
       }
       $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('addScheduleModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  function ($scope, $modalInstance, $http) {
+    $scope.schedule = {
+      'type': 'settlement'
+    };
+    $scope.ok = function (schedule) {
+      $modalInstance.close(schedule);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

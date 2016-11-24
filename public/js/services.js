@@ -22,6 +22,11 @@ angular.module('app.services', [])
         _identity = identity;
         _authenticated = identity !== null;
       },
+
+      getIdentity: function() {
+        return _identity
+      },
+
       identity: function (force) {
         var deferred = $q.defer();
         if (force === true)

@@ -353,4 +353,14 @@ class Merchant extends Entity
 
         return $res;
     }
+
+    public function setSchedule($merchantId, $params)
+    {
+        // merchants/{id}/schedules
+        $relativeUrl = $this->getEntityUrl().$merchantId.'/schedules';
+
+        $res = $this->request('POST', $relativeUrl, $params);
+
+        return $res;
+    }
 }

@@ -43,6 +43,7 @@ class Validator extends Base\Validator
         'gateway_terminal_password_confirmation'    => '',
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
+        'gateway_client_certificate'                => 'sometimes|file|mimetypes:application/octet-stream',
         'card'                                      => 'required',
         'emi'                                       => '',
         'emi_duration'                              => '',

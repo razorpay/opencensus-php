@@ -27,7 +27,6 @@
             tooltip-placement="right" tooltip="User Role"
             ng-model="team.role" ng-options="role as (role | roletoname) for role in roleOptions track by role"
           >
-          {{role|roletoname}}
           </select>
         </div>
       </div>
@@ -42,7 +41,7 @@
           <div class="m-b col-sm-4 b-w">{{ user.email }}</div>
           <div class="m-b col-sm-2">{{ user.name }}</div>
           <div class="m-b col-sm-3" ng-show="rolesSupport">
-            <select ng-model="user.pivot.role" ng-options="role.id as role.name for role in roleOptions" class="form-control" required>
+            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roleOptions track by role" class="form-control" required>
             </select>
           </div>
           <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">

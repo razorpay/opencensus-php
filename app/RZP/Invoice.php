@@ -27,4 +27,11 @@ class Invoice extends Entity
         // if we dont' send the user_id here
         return parent::fetch($id);
     }
+
+    public function sendNotification($id, $medium)
+    {
+        $relativeUrl = sprintf("invoices/%s/notify/%s", $id, $medium);
+
+        return $this->request('POST', $relativeUrl, []);
+    }
 }
