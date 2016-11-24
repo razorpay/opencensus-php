@@ -162,6 +162,6 @@ class PublicCollection extends Collection
 
     public static function isPublicCollection($object)
     {
-        return getType($object) === static::class;
+        return get_class($object) === static::class;
     }
 }
