@@ -28,7 +28,7 @@ class Gateway
         // TODO: Sign it if $hmac===true
 
         return $this->createSoapRequestBody($type, $req);
-    }
+    }I
 
     protected function setMerchantCreds(array &$params)
     {
@@ -97,6 +97,13 @@ EOT;
         ];
     }
 
+    /**
+     * This just generates a UUID.
+     * TODO: replace with a crypto-safe version
+     * This is prone to collisions
+     * @link http://stackoverflow.com/a/2040279/368328
+     * @return string UUID
+     */
     protected function generateMsgId()
     {
         $uuid = sprintf('%04x%04x%04x%04x%04x%04x%04x%04x',
