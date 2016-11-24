@@ -351,4 +351,55 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
     }
+
+    protected function getPaymentForTPV($attributes = [])
+    {
+        $order = $this->fixtures->create('order:tpv_order', $attributes);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $payment['bank'] = $order->getBank();
+
+        return $payment;
+    }
+
+    public function testSecuritiesMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl1']);
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl2', 'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl3', 'network_category' => 'securities']);
+
+        $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
+
+        $payment = $this->getPaymentForTPV(['bank' => 'KKBK']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('SharNbKtkTmnl3', $payment1['terminal_id']);
+
+        $this->fixtures->terminal->edit('SharNbKtkTmnl3',['enabled' => false]);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'KKBK']);
+
+        $data = [];
+
+        // TPV payment should not be routed through either ecommerce or null terminal
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
 }

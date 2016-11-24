@@ -220,6 +220,12 @@ class Gateway extends Base\Gateway
             'TransactionDescription' => $input['payment']['contact'],
         );
 
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['TransactionDescription'] = $input['order']['account_number'];
+        }
+
         if ($this->mode === Mode::TEST)
         {
             $data['MerchantId'] = $this->getTestMerchantId();
