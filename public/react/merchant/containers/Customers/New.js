@@ -73,7 +73,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Name</label>
               <div class='col-md-9'>
                 <Field
-                  name='name'
+                  name='customer_name'
                   component={InputField}
                   class='form-control'
                   autoFocus={true}
@@ -85,7 +85,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Email</label>
               <div class='col-md-9'>
                 <Field
-                  name='email'
+                  name='customer_email'
                   component={InputField}
                   type='email'
                   class='form-control'
@@ -97,7 +97,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Contact No.</label>
               <div class='col-md-9'>
                 <Field
-                  name='contact'
+                  name='customer_contact'
                   component={InputField}
                   class='form-control'
                   type='tel'
@@ -109,7 +109,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Address</label>
               <div class='col-md-9'>
                 <Field
-                  name='address'
+                  name='customer_address'
                   component='textarea'
                   class='form-control'
                 />

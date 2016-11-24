@@ -7,7 +7,7 @@ import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
+import ReduxPowerSelect from 'rzp/ui/Select/ReduxPowerSelect'
 
 import LineItemTable from './LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
@@ -48,6 +48,7 @@ export default class InvoicesNewContainer extends ModalContainer {
     super(...arguments)
     this.save = ::this.save
     this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
+    this.quickCreateCustomer = ::this.quickCreateCustomer
   }
 
   componentWillMount() {
@@ -57,6 +58,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   selectCustomerAndCloseModal(customer) {
     this.props.change('customer', customer)
+    this.props.change('customer_id', customer.id)
     this.closeModal()
   }
 
@@ -114,26 +116,13 @@ export default class InvoicesNewContainer extends ModalContainer {
                     <div class='form-group'>
                       <label>Customer Name</label>
                       <Field
-                        name='customer'
+                        name='customer_id'
                         component={ReduxPowerSelect}
                         options={this.props.customers}
-                        selected={selectedCustomer}
-                        selectedLabel='name'
-                        optionComponent={(option) => <span>{option.name}</span>}
-                        searchIndices={['name']}
+                        selected={this.props.customer_id}
+                        optionLabelPath='customer_name'
                         placeholder='Select a customer'
-                        afterOptionsComponent={({ select }) => (
-                          <div
-                            class='quick-create'
-                            onClick={() => {
-                              this.quickCreateCustomer()
-                              select.close()
-                            }}
-                          >
-                            <i class='fa fa-plus'></i>
-                            <span>Add New Customer</span>
-                          </div>
-                        )}
+                        onQuickAdd={this.quickCreateCustomer}
                       />
                       {
                         selectedCustomer.address &&

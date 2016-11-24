@@ -54,7 +54,6 @@ export default class InvoicesListContainer extends ModalContainer {
               <i class='fa fa-plus'></i>
               <span>Create Payment Link</span>
             </button>
-{/*
             <a
               href='#/app/invoices/new'
               class='btn btn-primary btn-rounded'
@@ -62,7 +61,6 @@ export default class InvoicesListContainer extends ModalContainer {
               <i class='fa fa-plus'></i>
               <span>New Invoice</span>
             </a>
-*/}
           </div>
         </Header>
 
