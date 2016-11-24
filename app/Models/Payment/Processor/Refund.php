@@ -345,6 +345,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            throw $e;
         }
     }
 
