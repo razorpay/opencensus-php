@@ -116,7 +116,6 @@ class TerminalSelectionTest extends TestCase
 
         $emiPlan = $this->emiPlan;
 
-
         $this->payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
@@ -137,11 +136,11 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 91 to 100 should give Cybersource
-            [ 'chanceValue' => 100, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 86 to 90 should give First Data
-            [ 'chanceValue' => 86,  'expected_terminal_id' => '1000FrstDataTl' ],
-            // Chance 85 or below should give HDFC
+            // Chance from 86 to 95 should give Cybersource
+            [ 'chanceValue' => 95, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 80 to 85 should give First Data
+            [ 'chanceValue' => 81,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
         ];
