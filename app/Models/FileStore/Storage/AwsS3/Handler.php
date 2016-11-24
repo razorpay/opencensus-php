@@ -58,6 +58,30 @@ class Handler extends Base\Handler
         return $result['ObjectURL'];
     }
 
+    public function read($bucket, $key)
+    {
+        $s3 = self::getClient();
+
+        try
+        {
+            $s3Obj = $this->getS3FetchObj($bucket, $name);
+
+            $result = $s3->getObject($s3Obj);
+
+            $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
+        }
+
+        catch (\Exception $e)
+        {
+
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
+
+        return $result['Body'];
+    }
+
     public function getSignedUrl($bucket, $key, $duration = '15')
     {
         if ($this->config['mock'] === true)

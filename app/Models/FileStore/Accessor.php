@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 
-class Accessor extends Base\Service
+class Accessor extends Base\Core
 {
     /**
      * Param Dictionary for doing Db Query
@@ -86,6 +86,28 @@ class Accessor extends Base\Service
     }
 
     /**
+     * Returns File Contents
+     *
+     * @return string File Contents
+     * @throws Exception\LogicException
+     */
+    public function getFile()
+    {
+        $data = $this->get();
+
+        if ($data['count'] !== 1)
+        {
+            throw new Exception\LogicException('Multi file fetch not supported');
+        }
+
+        $store = $data['store'];
+
+        $storageHandler = Store::getHandler($store);
+
+        return $storageHandler->read($data['bucket'], $data['name']);
+    }
+
+    /**
      * Updates Merchant Id for non-admin calls
      *
      * @return void
@@ -104,25 +126,5 @@ class Accessor extends Base\Service
         {
             $this->merchantId(self::DEFAULT_MERCHANT_ID);
         }
-    }
-
-    /**
-     * Returns File Contents
-     *
-     * @return string File Contents
-     * @throws Exception\LogicException
-     */
-    public function getFile()
-    {
-        $data = $this->get();
-
-        if ($data['count'] !== 1)
-        {
-            throw new Exception\LogicException(
-                'Multi file fetch not supported');
-        }
-
-        // TODO : fetch the contents instead of location
-        return $data['items'][0]['location'];
     }
 }
