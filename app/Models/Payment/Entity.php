@@ -1341,7 +1341,7 @@ class Entity extends Base\PublicEntity
     }
 
     // List of all features based on various conditions
-    public function getFeatures()
+    public function getPricingFeatures()
     {
         $features = [];
 

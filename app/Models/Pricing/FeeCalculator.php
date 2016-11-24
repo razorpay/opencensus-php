@@ -111,25 +111,20 @@ class FeeCalculator
         return $this->feesSplit;
     }
 
-    public function getPricingRules()
-    {
-        return $this->pricingRules;
-    }
-
     protected function getRelevantPricingRule(Pricing\Plan $pricing)
     {
         $entity = $this->entity;
 
         $entityName = $entity->getEntity();
 
-        $features = $entity->getFeatures();
+        $features = $entity->getPricingFeatures();
 
         $this->getBasicPricingRule($pricing, $entityName);
 
-        $this->getAdOnPricingRule($pricing, $features);
+        $this->getAdOnPricingRule($pricing, $features, $entityName);
     }
 
-    protected function getAdOnPricingRule(Pricing\Plan $pricing, array $features)
+    protected function getAdOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
         $method = $this->entity->getMethod();
 
@@ -148,7 +143,8 @@ class FeeCalculator
 
             $this->traceAllRules($rules);
 
-            if (count($rules) > 0)
+            if ((count($rules) > 0) and
+                $entityName === Pricing\Feature::PAYMENT)
             {
                 $rule = $this->getRelevantPaymentPricingRule($rules, $method);
 

@@ -155,6 +155,58 @@ class DataMigration extends Base\Service
         return $response;
     }
 
+    public function createFeeBreakupForTransaction($input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $transactionIds = $input['transactionIds'];
+
+        $response = [];
+
+        foreach ($transactionIds as $transactionId)
+        {
+            $transaction = $this->repo->transaction->findByPublicId($transactionId);
+
+            $merchant = $transaction->merchant;
+
+            $payment = $this->repo->payment->findOrFail($transaction->getEntityId());
+
+            $this->feeCalculator = new FeeCalculator($payment);
+
+            $taxTime = $this->getTaxTime($payment);
+
+            $feesSplit = new Base\PublicCollection;
+
+            if ($transaction->getFee() === 0)
+            {
+                $response[$transactionId] = 'Transaction Fees is 0';
+
+                continue;
+            }
+
+            $pricingPlanId = $merchant->getPricingPlanId();
+
+            $pricing = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+
+            list($fee, $serviceTax, $feesSplit) = $this->feeCalculator->calculate($pricing);
+
+            $isValidPricing = $this->matchTaxesAndFeesWithOriginal($transaction, $fee - $serviceTax, $serviceTax);
+
+            if ($isValidPricing === true)
+            {
+                $this->saveFeeDetails($transaction, $feesSplit, $taxTime);
+
+                $response[$transactionId] = 'Successfully migrated';
+            }
+            else
+            {
+                $response[$transactionId] = 'Fees Mismatch';
+            }
+        }
+
+        return $response;
+    }
+
     protected function savePricingRule($transaction, $pricingRuleId)
     {
         $transaction->setPricingRule($pricingRuleId);

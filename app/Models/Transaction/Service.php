@@ -49,4 +49,8 @@ class Service extends Base\Service
         return (new Transaction\DataMigration())->addPricingRuleForeOlderTransactions();
     }
 
+    public function createFeeBreakupForTransaction($id)
+    {
+        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($id);
+    }
 }

@@ -55,4 +55,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postCreateFeeBreakup()
+    {
+        $input = Request::all();
+
+        $data = (new Transaction\Service)->createFeeBreakupForTransaction($input);
+
+        return ApiResponse::json($data);
+    }
 }
