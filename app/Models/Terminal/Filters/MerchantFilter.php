@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Models\Card\Network;
 
 class MerchantFilter extends Terminal\Filter
 {

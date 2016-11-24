@@ -87,10 +87,14 @@ class Entity extends Base\PublicEntity
         // self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
+        self::ISSUED_AT         => null,
+        self::PAID_AT           => null,
+        self::EXPIRED_AT        => null,
         self::REF_NUM           => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
+        self::TYPE              => null,
         self::USER_ID           => null,
         self::CURRENCY          => 'INR',
     ];
@@ -142,6 +146,8 @@ class Entity extends Base\PublicEntity
         // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
         self::SCHEDULED_AT,
+        self::ISSUED_AT,
+        self::PAID_AT,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::SMS_STATUS,
@@ -158,7 +164,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::USER_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     // Fields to be exposed to the client
@@ -174,6 +180,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
+        self::ISSUED_AT,
+        self::PAID_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
@@ -183,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::TYPE,
         // self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
@@ -273,6 +282,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getPaidAt()
+    {
+        return $this->getAttribute(self::PAID_AT);
+    }
+
+    public function getIssuedAt()
+    {
+        return $this->getAttribute(self::ISSUED_AT);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -300,14 +324,20 @@ class Entity extends Base\PublicEntity
 
     public function setSmsStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::SMS_STATUS, $status);
     }
 
     public function setEmailStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
     }

@@ -94,9 +94,7 @@ trait Callback
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if ((($payment->isAuthorized() === true) or
-             (($payment->isCaptured() === true) and
-              ($payment->getAutoCaptured() === true))) and
+        if (($payment->hasBeenAuthorized() === true) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
