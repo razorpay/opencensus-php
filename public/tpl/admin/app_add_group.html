@@ -7,7 +7,7 @@
 <div class="wrapper-md">
   <div class="panel panel-default" ng-controller="AddGroupCtrl">
     <div class="panel-heading">
-      {{ group_id ? 'Edit ' + group_id : 'Add a new Group' }}
+      {{ group_id ? 'Edit ' + group.name + ' (' + group_id + ')' : 'Add a new Group' }}
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
