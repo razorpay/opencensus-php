@@ -64,7 +64,7 @@ class Handler extends Base\Handler
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucket, $name);
+            $s3Obj = $this->getS3FetchObj($bucket, $key);
 
             $result = $s3->getObject($s3Obj);
 
@@ -79,7 +79,7 @@ class Handler extends Base\Handler
             throw $e;
         }
 
-        return $result['Body'];
+        return $result['Body']->getContents();
     }
 
     public function getSignedUrl($bucket, $key, $duration = '15')

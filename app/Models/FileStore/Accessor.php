@@ -78,11 +78,18 @@ class Accessor extends Base\Core
      */
     public function get()
     {
+        $data = $this->getObject();
+
+        return $data->toArrayPublic();
+    }
+
+    protected function getObject()
+    {
         $this->updateMerchantId();
 
         $data = $this->repo->file_store->fetch($this->params);
 
-        return $data->toArrayPublic();
+        return $data;
     }
 
     /**
@@ -93,18 +100,18 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $data = $this->get();
+        $data = $this->getObject();
 
-        if ($data['count'] !== 1)
+        if ($data->count() !== 1)
         {
             throw new Exception\LogicException('Multi file fetch not supported');
         }
 
-        $store = $data['store'];
+        $data = $data->first();
 
-        $storageHandler = Store::getHandler($store);
+        $storageHandler = Store::getHandler($data->store);
 
-        return $storageHandler->read($data['bucket'], $data['name']);
+        return $storageHandler->read($data->bucket, $data->name);
     }
 
     /**
@@ -114,7 +121,7 @@ class Accessor extends Base\Core
      */
     protected function updateMerchantId()
     {
-        $merchant = $this->app['basicauth']->merchant;
+        $merchant = $this->app['basicauth']->getMerchant();
 
         // Update Merchant ID, if request is done by non-admin
         if ($merchant !== null)
