@@ -68,7 +68,7 @@
               <tbody>
                 <tr ng-repeat="(key, row) in group.parents">
                   <td>
-                    <input type="checkbox" name='groups[]' ng-model='selected_groups["grp_" + row.id]' value="{{ 'grp_' + row.id }}" ng-checked="true">
+                    <input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{ row.id }}" ng-checked="true">
                   </td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>

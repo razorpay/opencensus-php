@@ -72,7 +72,7 @@ app.controller('AddGroupCtrl', [
             };
 
             data.data.parents.forEach(function (group) {
-              $scope.selected_groups['grp_' + group.id] = true;
+              $scope.selected_groups[group.id] = true;
             });
           }
         });
