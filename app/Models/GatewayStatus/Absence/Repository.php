@@ -9,6 +9,16 @@ class Repository extends Base\Repository
 {
     protected $entity = 'gateway_absence';
 
+    protected $entityFetchParamRules = array(
+        Entity::GATEWAY        => 'sometimes|string|max:255',
+        Entity::ISSUER         => 'sometimes|string|max:50',
+        Entity::METHOD         => 'sometimes|string|max:30',
+        Entity::FROM           => 'sometimes|integer',
+        Entity::TO             => 'sometimes|integer',
+        Entity::PARTIAL        => 'sometimes|bool',
+        Entity::SOURCE         => 'sometimes|string|max:30'
+    );
+
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::GATEWAY        => 'sometimes|string|max:255',
@@ -51,15 +61,23 @@ class Repository extends Base\Repository
             $query->where(Entity::ISSUER, '=', $input[Entity::ISSUER]);
         }
 
+        if (isset($input[Entity::METHOD]))
+        {
+            $query->where(Entity::METHOD, '=', $input[Entity::METHOD]);
+        }
+        
+        if (isset($input[Entity::SOURCE]))
+        {
+            $query->where(Entity::SOURCE, '=', $input[Entity::SOURCE]);
+        }
+
         if (isset($input[Entity::FROM]))
         {
             $query->where(Entity::FROM, '<=', $input[Entity::FROM]);
         }
 
-        if (empty($to) === false)
-        {
-            $query->where(function ($query) use ($to)
-            {
+        if (empty($to) === false) {
+            $query->where(function ($query) use ($to) {
                 $query->whereNull(Entity::TO);
                 $query->orwhere(Entity::TO, '>=', $to);
             });

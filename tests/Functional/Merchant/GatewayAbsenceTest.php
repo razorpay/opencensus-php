@@ -20,11 +20,19 @@ class GatewayAbsenceTest extends TestCase
         'axis_migs' => 'card'
     ];
 
+    protected $statusCakeToken;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/GatewayAbsenceTestData.php';
 
         parent::setUp();
+
+        $statusCakeUserName = $this->app['config']->get('gateway.absence.statuscake.username');
+
+        $statusCakeApiKey = $this->app['config']->get('gateway.absence.statuscake.api_key');
+
+        $this->statusCakeToken = md5($statusCakeUserName . $statusCakeApiKey);
 
         $this->ba->appAuth();
     }
@@ -36,6 +44,33 @@ class GatewayAbsenceTest extends TestCase
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
+    }
+
+    public function testGatewayCreateAbsenceDuplicate()
+    {
+        $request = [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'statuscake',
+                'from' => time()
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+        
+        $response = $this->makeRequestAndGetContent($request);
+        
+        $request['content']['reason_code'] = 'ISSUER_DOWN';
+        
+        $response2 = $this->makeRequestAndGetContent($request);
+        
+        $this->assertEquals($response['id'], $response2['id']);
+        
+        $this->assertEquals($response['reason_code'], $response2['reason_code']);
     }
 
     public function testGatewayCreateAbsenceNetbankingPartial()
@@ -331,6 +366,63 @@ class GatewayAbsenceTest extends TestCase
 
         $this->assertEquals($content['count'], 1);
     }
+
+    public function testStatusCakeWebHook()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeWebHookUpdate()
+    {
+        $this->ba->directAuth();
+
+        $content = [
+            'URL' => 'http://www.example.com',
+            'Token' => $this->statusCakeToken,
+            'Method' => 'Website',
+            'Name' => 'Test',
+            'StatusCode' => 400,
+            'Status' => 'Down',
+            'Tags' => 'HDFC'
+        ];
+
+        $request = [
+            'content' => $content,
+            'url' => '/statuscake/callback',
+            'method' => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(isset($response['to']), false);
+
+        $content['Status'] = 'Up';
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(isset($response['to']), true);
+    }
+
+    public function testStatusCakeWebHookMissingToken()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeWebHookInvalidToken()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
 
 
 

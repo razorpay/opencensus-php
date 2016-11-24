@@ -408,4 +408,79 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+    'testStatusCakeWebHook' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'issuer' => 'HDFC',
+                'method' => 'netbanking',
+                'reason_code' => 'ISSUER_DOWN',
+                'gateway' => 'netbanking_hdfc'
+            ]
+        ]
+    ],
+    'testStatusCakeWebHookMissingToken' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testStatusCakeWebHookInvalidToken' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Token' => 'Some Token',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
 ];

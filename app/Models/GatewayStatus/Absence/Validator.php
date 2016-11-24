@@ -30,8 +30,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::FROM            => 'required|integer',
-        Entity::TO              => 'sometimes|integer',
+        Entity::FROM            => 'sometimes|integer',
+        Entity::TO              => 'required|integer',
     ];
 
     protected static $createValidators = [

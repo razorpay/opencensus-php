@@ -11,6 +11,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\GatewayStatus\Absence\Entity;
 use RZP\Models\GatewayStatus\Absence\ReasonCode;
 use RZP\Models\GatewayStatus\Absence\Processor;
+use RZP\Error\ErrorCode;
 
 class StatusCakeProcessor extends AbstractProcessor
 {
@@ -69,17 +70,19 @@ class StatusCakeProcessor extends AbstractProcessor
                     Entity::GATEWAY => $data[Entity::GATEWAY],
                     Entity::ISSUER  => $data[Entity::ISSUER],
                     Entity::METHOD  => $data[Entity::METHOD],
-                    Entity::SOURCE  => $data[Entity::SOURCE],
-                    Entity::TO      => null
+                    Entity::SOURCE  => $data[Entity::SOURCE]
                 ];
-                
-                $absentees = $this->repo->gateway_absence->fetch($params);
 
-                if (count($absentees) > 0)
+                $absent = $this->processor->verifyIfExists($data);
+
+                if (empty($absent) === false)
                 {
-                    $absent = $absentees->first();
+                    $editData = [
+                        Entity::FROM => $absent->getFrom(),
+                        Entity::TO => time()
+                    ];
 
-                    return $this->procssor->editAction($absent->id, $data);
+                    return $this->processor->editAction($absent->id, $editData);
                 }
             }
             else
@@ -101,10 +104,10 @@ class StatusCakeProcessor extends AbstractProcessor
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN, ['data' => $input]);
 
-            return Exception\BadRequestException("Statuscake Token Missing Or Incorrect");
+            throw new Exception\BadRequestValidationFailureException("StatusCake Token Missing");
         }
 
-        return $this->validateToken($input['Token']);
+        return $this->validateToken($input);
     }
 
     protected function validateToken(array $input)
@@ -119,7 +122,7 @@ class StatusCakeProcessor extends AbstractProcessor
 
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TOKEN, $msg);
 
-            return Exception\BadRequestValidationFailureException("StatusCake Token Validation Failure");
+            throw new Exception\BadRequestValidationFailureException("StatusCake Token Validation Failure");
         }
 
         return $this->validateInput($input);
@@ -129,11 +132,11 @@ class StatusCakeProcessor extends AbstractProcessor
     {
         $issuer = $input['Tags'];
 
-        if ((empty($tag) === true) or ((IFSC::exists(strtoupper($issuer)) === false)))
+        if ((empty($issuer) === true) or ((IFSC::exists(strtoupper($issuer)) === false)))
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
 
-            return Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
+            throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
         }
     }
 
@@ -142,10 +145,11 @@ class StatusCakeProcessor extends AbstractProcessor
         $formatted = [
             Entity::SOURCE      => ReasonCode::SOURCE_STATUSCAKE,
             Entity::REASON_CODE => ReasonCode::ISSUER_DOWN,
-            Entity::METHOD      => Method::NETBANKING
+            Entity::METHOD      => Method::NETBANKING,
+            Entity::PARTIAL     => false,
         ];
 
-        $sStatus = $input['Status'];
+        $sStatus = strtoupper($input['Status']);
 
         $status = ($sStatus === self::STATUS_UP) ? 1 : 0;
 
@@ -168,7 +172,7 @@ class StatusCakeProcessor extends AbstractProcessor
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, $input);
             
-            return Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer' . $issuer);
+            throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer' . $issuer);
         }
 
         // gateway here is just for reference. What we care about is actually the bank

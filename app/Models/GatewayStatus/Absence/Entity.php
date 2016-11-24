@@ -124,4 +124,5 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
+
 }
