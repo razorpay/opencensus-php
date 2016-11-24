@@ -27,31 +27,14 @@
           </div>
         </div>
         <div class="form-group">
-          <label for='description' class="col-lg-2 control-label">Parent Group</label>
-          <div class="col-lg-10 scrollable-table">
-            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
-              <thead>
-                <tr>
-                  <th>Group</th>
-                  <th>Group description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="(key, row) in group.parents">
-                  <td>{{row.name}}</td>
-                  <td>{{row.description}}</td>
-                </tr>
-                <tr ng-show="group.parents.length == 0">
-                  <td colspan="7">No Parents defined</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for='description' class="col-lg-2 control-label">Add to Parent Group</label>
-          <div class="col-lg-10 scrollable-table">
-            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+          <label for='description' class="col-lg-2 control-label">Assign Parent Group</label>
+          <div class="col-lg-10">
+            <select class="select2" style="width: 100%" ng-model="new_parent_group">
+              <option></option>
+              <option ng-repeat="(key, row) in groups" value="{{ row.id }}">{{ row.name }} - {{ row.description }}</option>
+            </select>
+
+            <!-- <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
               <thead>
                 <tr>
                   <th data-sort-ignore="true">
@@ -66,6 +49,32 @@
                   <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+            </table> -->
+          </div>
+        </div>
+        <div class="form-group">
+          <label for='description' class="col-lg-2 control-label">Parent Group</label>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th>&nbsp;</th>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in group.parents">
+                  <td>
+                    <input type="checkbox" name='groups[]' ng-model='selected_groups["grp_" + row.id]' value="{{ 'grp_' + row.id }}" ng-checked="true">
+                  </td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+                <tr ng-show="group.parents.length == 0">
+                  <td colspan="7">No Parents defined</td>
                 </tr>
               </tbody>
             </table>

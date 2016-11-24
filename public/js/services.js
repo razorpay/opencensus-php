@@ -390,7 +390,10 @@ angular.module('app.services', [])
         return groups;
       },
       fetchAllowedGroups: function (groupId) {
-        var groups = [];
+        var deferred = $q.defer();
+
+        var allowed_groups = [];
+
         $http.get('/admin/generic', {
           params: {
             route_name: 'group_get_allowed_groups',
@@ -407,16 +410,21 @@ angular.module('app.services', [])
                   name: group.name,
                   description: group.description
                 };
-                groups.push(groupObj);
+
+                allowed_groups.push(groupObj);
               });
+
+              deferred.resolve(allowed_groups);
             }
           }
           else {
             groups = {};
           }
         }).error(function () {
+
         });
-        return groups;
+
+        return deferred.promise;
       },
       fetchPermissions: function () {
         if (this.permissions) {
