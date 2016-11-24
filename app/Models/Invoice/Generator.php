@@ -67,6 +67,10 @@ class Generator extends Base\Core
         $customerDetails = [];
 
         $this->invoice->build($input);
+        $this->invoice->merchant()->associate($this->merchant);
+
+        $this->invoice->getValidator()->checkIfMerchantHasKeys($this->invoice);
+
         // This is being done so that we can do associations without saving the invoice.
         // Also, to generate a shortUrl, we need the invoice ID.
         $this->invoice->generateId();
@@ -219,8 +223,6 @@ class Generator extends Base\Core
 
         $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
         $this->invoice->customer()->associate($this->customer);
-
-        $this->invoice->merchant()->associate($this->merchant);
     }
 
     protected function createLineItemsFromInput(array $lineItemsDetails)

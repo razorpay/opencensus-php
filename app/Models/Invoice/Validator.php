@@ -6,6 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -58,6 +60,18 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invoice cannot have more than 10 line items.'
+            );
+        }
+    }
+
+    public function checkIfMerchantHasKeys($entity)
+    {
+        $keysCount = $entity->merchant->keys()->count();
+
+        if ($keysCount === 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_CREATE_WITHOUT_MERCHANT_KEYS
             );
         }
     }

@@ -19,7 +19,7 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        $invoice = $this->core->create($input);
+        $invoice = $this->core->create($input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
