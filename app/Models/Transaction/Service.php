@@ -34,23 +34,8 @@ class Service extends Base\Service
         return $report->getReport($input, 'transaction');
     }
 
-    public function migrateOlderTransactions()
+    public function createFeeBreakupForTransaction($input)
     {
-        return (new Transaction\DataMigration())->migrateOlderTransactions();
-    }
-
-    public function settleOlderTransactions($input)
-    {
-        return (new Transaction\DataMigration())->settleOlderTransactions($input);
-    }
-
-    public function addPricingRuleForeOlderTransactions()
-    {
-        return (new Transaction\DataMigration())->addPricingRuleForeOlderTransactions();
-    }
-
-    public function createFeeBreakupForTransaction($id)
-    {
-        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($id);
+        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
     }
 }
