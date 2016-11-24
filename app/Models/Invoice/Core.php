@@ -14,14 +14,14 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
 
-        $invoice = (new Generator($this->merchant))->generate($input);
+        $invoice = (new Generator($merchant))->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
