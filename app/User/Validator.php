@@ -6,6 +6,7 @@ use App\Base;
 
 class Validator extends Base\Validator
 {
+    const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
     public static $createRules = array(
         // Individual Name
         'name'                  => 'required|alpha_space|max:200',
@@ -19,7 +20,7 @@ class Validator extends Base\Validator
         'email'                 => 'required|email|unique:users',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
-        'captcha'               => 'required',
+        'captcha'               => 'required_unless:captcha_disable,'. self::DISABLE_CAPTCHA_SECRET,
         'invitation'            => 'max:40',
         'ref'                   => 'sometimes|max:255'
     );
@@ -29,28 +30,28 @@ class Validator extends Base\Validator
     ];
 
 
-    protected static $createValidators = array('captcha');
+    protected static $createValidators = ['captcha'];
 
-    protected static $unsetCreateInput = array(
+    protected static $unsetCreateInput = [
         'captcha'
-    );
+    ];
 
-    protected static $loginRules = array(
+    protected static $loginRules = [
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',
-    );
+    ];
 
-    protected static $unsetLoginInput = array(
+    protected static $unsetLoginInput = [
         'password'
-    );
+    ];
 
-    protected static $changePasswordRules = array(
+    protected static $changePasswordRules = [
         'old_password'              => 'required',
         'password'                  => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation'     => 'required|between:7,50'
-    );
+    ];
 
-    protected static $changePasswordValidators = array('changePassword');
+    protected static $changePasswordValidators = ['changePassword'];
 
     protected function validateChangePassword($input)
     {
@@ -66,6 +67,12 @@ class Validator extends Base\Validator
 
     protected function validateCaptcha($input)
     {
+        if ((isset($input['captcha_disable'])) and
+            ($input['captcha_disable'] === self::DISABLE_CAPTCHA_SECRET))
+        {
+            return;
+        }
+
         if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' OR $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
         {
             $captchaResponse = $input['captcha'];
