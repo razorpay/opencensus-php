@@ -44,6 +44,7 @@ class Entity
     const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
+    const TRANSFER              = 'transfer';
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';

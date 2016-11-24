@@ -53,4 +53,13 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     ];
 
+    // -------------------- Relations ---------------------------
+
+    public function transaction()
+    {
+        return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    // -------------------- End Relations -----------------------
+
 }
