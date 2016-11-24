@@ -86,7 +86,7 @@ class Creator extends Base\Core
      *
      * @return Creator object
      */
-    public function content(string $content)
+    public function content($content)
     {
         $this->content = $content;
 
