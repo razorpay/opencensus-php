@@ -333,7 +333,6 @@ class MerchantFeeTest extends TestCase
                 'fixed_rate'          => 0,
                 'international'       => 0,
             ));
-
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
@@ -351,7 +350,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
-         ];
+        ];
 
         if ($withCreditCardRule)
         {
@@ -420,13 +419,13 @@ class MerchantFeeTest extends TestCase
 
         // Credit Card rule not available in plan,
         // Card type unknown will be treated as
-        // debit card and their rules will be applied
+        // credit card and their rules will be applied
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "4pmdaEzu3jmDTx"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
 
         $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::CREDIT);
 
@@ -439,14 +438,14 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
 
         // Credit Card rule not available in plan,
-        // Unknown Cards will be treated as debit card
+        // Unknown Cards will be treated as credit card
         // and subsequent rules will be applied.
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "4pmdaEzu3jmDTx"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
 
         $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::CREDIT);
 

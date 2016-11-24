@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
+    const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -56,6 +58,7 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -87,7 +90,7 @@ class Entity extends Base\PublicEntity
 
     public function payment()
     {
-        return $this->hasOne('RZP\Models\Payment\Entity');
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     // ----------------------- Getters ---------------------------------------------

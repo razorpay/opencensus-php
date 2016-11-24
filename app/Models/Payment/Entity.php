@@ -404,7 +404,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
@@ -651,7 +651,7 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->isAttributeNull(self::AUTHORIZED_AT));
+        return ($this->isAttributeNull(self::AUTHORIZED_AT) === false);
     }
 
     public function hasTransaction()

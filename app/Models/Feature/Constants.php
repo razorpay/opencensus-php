@@ -18,6 +18,7 @@ class Constants
     const RECURRING     = 'recurring';
     const S2S           = 's2s';
     const INVOICE       = 'invoice';
+    const NOZEROPRICING = 'nozeropricing';
 
     public static $allFeatures = [
         self::DUMMY,
@@ -31,5 +32,6 @@ class Constants
         self::RECURRING,
         self::S2S,
         self::INVOICE,
+        self::NOZEROPRICING,
     ];
 }

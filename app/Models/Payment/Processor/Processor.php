@@ -21,6 +21,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transaction;
+use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -176,8 +177,19 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $feesSplit) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment);
+        if (($this->app->runningUnitTests() === false) and
+            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+            ($payment->isCard() === true) and
+            ($payment->card->isInternational() === false) and
+            ($payment->card->isDebit() === true))
+        {
+            $fee = 0;
+            $serviceTax = 0;
+        }
+        else
+        {
+            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        }
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -880,6 +892,14 @@ class Processor
 
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
         $this->repo->transaction(function() use ($txn, $feesSplit)
         {
             foreach ($feesSplit as $feeSplit)

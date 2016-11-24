@@ -25,6 +25,20 @@ return [
         ],
     ],
 
+    'testAddReverseAdjustment' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/adjustments/reversal',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+
+    ],
+
    'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
         'request' => [
             'content' => [
