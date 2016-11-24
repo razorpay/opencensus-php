@@ -63,19 +63,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantHasKeys(Merchant\Entity $merchant, string $mode)
+    public function validateMerchantHasKeys(Merchant\Entity $merchant)
     {
         $keys = $merchant->keys;
 
-        $keyPrefix = 'rzp_' . $mode;
-
         foreach ($keys as $key)
         {
-            $publicKey = $key->getPublicId($mode);
-            $expiredOrExpiring = $key->isExpiredOrExpiring();
-
-            if ((strpos($publicKey, $keyPrefix) === 0) and
-                ($expiredOrExpiring === false))
+            if ($key->isExpiredOrExpiring() === false)
             {
                 return;
             }
@@ -86,7 +80,6 @@ class Validator extends Base\Validator
             null,
             [
                 'merchant_id' => $merchant->getId(),
-                'mode' => $mode,
             ]);
     }
 

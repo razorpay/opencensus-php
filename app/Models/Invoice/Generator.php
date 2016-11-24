@@ -71,7 +71,7 @@ class Generator extends Base\Core
 
         // This is being done because dashboard can create an invoice for the merchant even
         // if the merchant has not generated any keys at all.
-        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant, $this->mode);
+        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant);
 
         // This is being done so that we can do associations without saving the invoice.
         // Also, to generate a shortUrl, we need the invoice ID.
