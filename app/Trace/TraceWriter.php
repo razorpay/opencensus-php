@@ -13,30 +13,6 @@ use Queue;
 
 class TraceWriter extends Logger
 {
-    // used as channel for Monolog\Logger
-    const CHANNEL = "Razorpay API";
-
-    protected $app;
-
-    protected $config = array();
-
-    protected $debug = false;
-
-    protected $testHandler = null;
-
-    public function __construct($app)
-    {
-        parent::__construct(static::CHANNEL);
-
-        $this->app = $app;
-
-        $this->getConfig($this->app['config']);
-
-        $this->defineHandlers();
-
-        $this->defineProcessors();
-    }
-
     protected function getConfig($config)
     {
         $this->config = $config->get('trace');
@@ -114,8 +90,7 @@ class TraceWriter extends Logger
 
     protected function pushStreamHandler()
     {
-        $stream = new Handler\StreamHandler(
-            $this->config['logpath']);
+        $stream = new Handler\StreamHandler($this->config['logpath']);
 
         $jsonFormatter = new JsonFormatter;
 
@@ -145,10 +120,13 @@ class TraceWriter extends Logger
                 return $this->config['debug_options'][$option];
             }
             else
-                throw new Exception\InvalidArgumentException($option . ' in debug not defined');
+            {
+                throw new Exception\InvalidArgumentException(
+                    $option . ' in debug not defined');
+            }
         }
-        else
-            return false;
+
+        return false;
     }
 
     /**
