@@ -160,7 +160,16 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $data['MerchantCode'] = 'RAZORPAY';
-//            $data['ClientCode'] = random_alpha_string(10);
+        }
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['ClientAccNum'] = $input['order']['account_number'];
+
+            if ($this->mode === Mode::TEST)
+            {
+                $data['MerchantCode'] = 'RAZORPAY1';
+            }
         }
 
         $data['CheckSum'] = $this->generateHash($data);

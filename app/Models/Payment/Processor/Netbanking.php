@@ -30,7 +30,7 @@ class Netbanking
     ];
 
     protected static $selfTPV = [
-        // IFSC::HDFC,
+        IFSC::HDFC,
         IFSC::KKBK
     ];
 
