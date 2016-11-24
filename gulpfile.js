@@ -150,12 +150,8 @@ gulp.task('tmpl', ()=> {
     .pipe(gulp.dest('resources/views'))
 })
 
-gulp.task('default', ()=> {
-  run(['compileThemes', 'css:prod', 'js:prod'], 'tmpl')
-})
-
 gulp.task('dev', ()=> {
-  run(['compileThemes', 'css', 'js'], 'tmpl')
+  run('compileThemes', ['css', 'js'], 'tmpl')
 })
 
 gulp.task('reactRevReplace', () => {
@@ -204,7 +200,7 @@ gulp.task('webpack:prod', (cb) => {
 })
 
 gulp.task('default', (cb) => {
-  run('webpack:prod', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
+  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
 })
 
 gulp.task('dev', (cb) => {
