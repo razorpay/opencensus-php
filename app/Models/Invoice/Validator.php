@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
-use Carbon\Carbon;
-
 use RZP\Base;
+use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BadRequestException;
 use RZP\Error\ErrorCode;
@@ -64,16 +63,31 @@ class Validator extends Base\Validator
         }
     }
 
-    public function checkIfMerchantHasKeys($entity)
+    public function validateMerchantHasKeys(Merchant\Entity $merchant, string $mode)
     {
-        $keysCount = $entity->merchant->keys()->count();
+        $keys = $merchant->keys;
 
-        if ($keysCount === 0)
+        $keyPrefix = 'rzp_' . $mode;
+
+        foreach ($keys as $key)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_CREATE_WITHOUT_MERCHANT_KEYS
-            );
+            $publicKey = $key->getPublicId($mode);
+            $expiredOrExpiring = $key->isExpiredOrExpiring();
+
+            if ((strpos($publicKey, $keyPrefix) === 0) and
+                ($expiredOrExpiring === false))
+            {
+                return;
+            }
         }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+            null,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode' => $mode,
+            ]);
     }
 
     // protected static $createValidators = [

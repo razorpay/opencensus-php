@@ -381,6 +381,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
     const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
-    const BAD_REQUEST_INVOICE_CREATE_WITHOUT_MERCHANT_KEYS                          = 'BAD_REQUEST_INVOICE_CREATE_WITHOUT_MERCHANT_KEYS';
+    const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
 }
