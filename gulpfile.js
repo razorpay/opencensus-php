@@ -101,7 +101,8 @@ const concatJs = lazypipe()
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
       'public/js/libs/jquery-tourbus.js',
-      'public/js/themes/*.js',
+      'public/js/themes/init.js',
+      'public/js/themes/theme.js',
       'public/js/libs/select2.min.js',
     ],
 
