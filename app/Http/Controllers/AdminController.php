@@ -3,11 +3,10 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Admin;
-use Request;
-use Redirect;
 use App;
+use Redirect;
+use Request;
+use RZP\Models\Admin;
 
 class AdminController extends Controller
 {
@@ -73,5 +72,14 @@ class AdminController extends Controller
         $data = (new Admin\Scorecard)->generateScorecard($input);
 
         return ApiResponse::json($data);
+    }
+    
+    public function postMailgunCallback($type)
+    {
+        $input = Request::all();
+
+        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+
+        return ApiResponse::json([], $responseStatus);
     }
 }

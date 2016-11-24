@@ -4,12 +4,12 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
+    const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
@@ -31,16 +31,13 @@ class Entity extends Base\PublicEntity
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
-    protected $table = Table::PAYMENT_ANALYTICS;
-
     protected $entity = 'payment_analytics';
 
-    protected static $sign = '';
-
-    protected static $delimiter = '';
+    public $incrementing = true;
 
     protected $fillable = array(
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -61,6 +58,7 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -92,7 +90,7 @@ class Entity extends Base\PublicEntity
 
     public function payment()
     {
-        return $this->hasOne('RZP\Models\Payment\Entity');
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     // ----------------------- Getters ---------------------------------------------
@@ -304,10 +302,21 @@ class Entity extends Base\PublicEntity
 
     protected function modifyOs(& $input)
     {
-        if ((isset($input[self::OS])) and
-            (strtolower($input[self::OS]) === 'os x'))
+        if (isset($input[self::OS]) === true)
         {
-            $input[self::OS] = Metadata::MACOS;
+            switch (strtolower($input[self::OS]))
+            {
+                case 'os x':
+                    $input[self::OS] = Metadata::MACOS;
+                    break;
+
+                case 'androidos':
+                    $input[self::OS] = Metadata::ANDROID;
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
 }

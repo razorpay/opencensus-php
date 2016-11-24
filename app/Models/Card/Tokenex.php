@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Tokenex
 {
@@ -46,7 +45,7 @@ class Tokenex
 
             return $token;
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $app['trace']->error(
                 TraceCode::TOKENEX_REQUEST,

@@ -4,9 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Terminal\Category;
-use RZP\Models\Pricing\Service as PricingService;
+use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
@@ -23,6 +21,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
+    const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
@@ -45,13 +44,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = \RZP\Constants\Table::MERCHANT;
-
     protected $entity = 'merchant';
-
-    protected static $sign = '';
-
-    protected static $delimiter = '';
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);
@@ -74,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
@@ -105,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
         self::BRAND_COLOR,
         self::RISK_RATING,
@@ -114,19 +109,20 @@ class Entity extends Base\PublicEntity
      );
 
     protected $defaults = array(
-        self::CATEGORY2             => null,
-        self::LIVE                  => false,
-        self::ACTIVATED             => false,
-        self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true,
-        self::HOLD_FUNDS            => false,
-        self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES              => Features::CARD_SAVING,
-        self::FEE_BEARER            => FeeBearer::PLATFORM,
-        self::BRAND_COLOR           => null,
-        self::RISK_RATING           => 3,
-        self::LOGO_URL              => null,
-        self::MAX_PAYMENT_AMOUNT    => null,
+        self::CATEGORY2              => null,
+        self::LIVE                   => false,
+        self::ACTIVATED              => false,
+        self::ACTIVATED_AT           => null,
+        self::RECEIPT_EMAIL_ENABLED  => true,
+        self::HOLD_FUNDS             => false,
+        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE_ID => null,
+        self::FEATURES               => Features::CARD_SAVING,
+        self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::BRAND_COLOR            => null,
+        self::RISK_RATING            => 3,
+        self::LOGO_URL               => null,
+        self::MAX_PAYMENT_AMOUNT     => null,
     );
 
     protected $publicSetters = array(
@@ -134,6 +130,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::LOGO_URL
     );
+
+    protected $casts = [
+        self::HOLD_FUNDS => 'bool'
+    ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
@@ -179,7 +179,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures());
+        return in_array($feature, $this->features(), true);
     }
 
     public function activate()
@@ -199,22 +199,50 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
     }
 
+    public function hasSchedule()
+    {
+        return ($this->getSettlementScheduleId() !== null);
+    }
+
     public function keys()
     {
-        return $this->hasMany(
-            'RZP\Models\Key\Entity');
+        return $this->hasMany('RZP\Models\Key\Entity');
     }
 
     public function pricing()
     {
+        return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+    }
+
+    public function schedule()
+    {
         return $this->belongsTo(
-            'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+            'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
     }
 
     public function payments()
     {
-        return $this->hasMany(
-            'RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
+    public function customers()
+    {
+        return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
     public function balance()
@@ -392,9 +420,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
-    public function getFeatures()
+    public function features()
     {
-        return $this->getAttribute(self::FEATURES);
+        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
+                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()
@@ -449,7 +478,7 @@ class Entity extends Base\PublicEntity
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['region'];
+        $regionName = $awsConfig['bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 
@@ -458,6 +487,21 @@ class Entity extends Base\PublicEntity
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
 
         return $awsLogoUrl;
+    }
+
+    protected function getFeaturesAttribute()
+    {
+        $features = $this->attributes[self::FEATURES];
+        if (empty($features) === true)
+        {
+            return [];
+        }
+        else
+        {
+            $features = explode(Features::DELIMITER, $features);
+
+            return array_map('trim', $features);
+        }
     }
 
     protected function getLogoUrlBasedOnSize($logoUrl, $size)
@@ -482,34 +526,6 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
-    }
-
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-
-        if (empty($features))
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-            return array_map('trim', $features);
-        }
-    }
-
-    protected function setFeaturesAttribute($features)
-    {
-        if (is_array($features))
-        {
-            $this->attributes[self::FEATURES] =
-                implode(Features::DELIMITER, $features);
-        }
-        else
-        {
-            $this->attributes[self::FEATURES] = $features;
-        }
     }
 
     protected function setEmailAttribute($email)
@@ -552,9 +568,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
+    public function getSettlementScheduleId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_SCHEDULE_ID);
+    }
+
     public function holdFunds()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    public function setHoldFunds($holdFunds)
+    {
+        $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
     }
 
     public function isReceiptEmailsEnabled()

@@ -161,6 +161,16 @@ class Server
         return $this->validator;
     }
 
+    public function processSoap($input, $location, $action)
+    {
+        $wsdlFile = $this->getWsdlFile();
+
+        $server = new SoapServer($wsdlFile);
+        $server->setObject($this);
+
+        return $server->handle($input);
+    }
+
     protected function getRepo()
     {
         $class = $this->getGatewayNamespace() . '\Repository';

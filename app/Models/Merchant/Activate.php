@@ -2,21 +2,17 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use Carbon\Carbon;
 use Mail;
-
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Models\Key;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
-use RZP\Models\Merchant\Webhook;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-
 use RZP\Trace\TraceCode;
 
 class Activate extends Base\Core

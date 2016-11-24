@@ -24,6 +24,36 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function copy($input, $terminal)
+    {
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED);
+        }
+
+        $merchantIds = $input['merchant_ids'];
+
+        $response = [];
+
+        unset($terminal['used_count']);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $newTerminal = $terminal->replicate();
+            $newTerminal['merchant_id'] = $merchantId;
+
+            $this->repo->saveOrFail($newTerminal);
+
+            $response[] = [
+                'terminal' => $newTerminal->getId(),
+                'merchant' => $merchantId
+            ];
+        }
+
+        return $response;
+    }
+
     public function edit($terminal, $input)
     {
         $this->validateExistingTerminal($terminal);

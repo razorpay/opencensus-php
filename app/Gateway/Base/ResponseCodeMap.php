@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 class ResponseCodeMap
 {

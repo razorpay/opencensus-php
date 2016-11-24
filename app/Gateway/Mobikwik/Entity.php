@@ -2,9 +2,9 @@
 
 namespace RZP\Gateway\Mobikwik;
 
-use RZP\Models\Base;
+use RZP\Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
@@ -44,15 +44,7 @@ class Entity extends Base\PublicEntity
         'ispartial'
     );
 
-    protected $table = 'mobikwik';
-
-    protected $guarded = array();
-
-    protected static $sign = 'pay';
-
     protected $entity = 'mobikwik';
-
-    public $incrementing = true;
 
     public function setPaymentId($paymentId)
     {

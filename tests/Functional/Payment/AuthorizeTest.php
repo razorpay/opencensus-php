@@ -13,7 +13,7 @@ class AuthorizeTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
+        $this->testDataFilePath = __DIR__.'/helpers/AuthorizeTestData.php';
 
         parent::setUp();
 
@@ -62,6 +62,11 @@ class AuthorizeTest extends TestCase
     }
 
     public function testContactTooLong()
+    {
+        $this->startTest();
+    }
+
+    public function testNegativeAmount()
     {
         $this->startTest();
     }
@@ -330,6 +335,19 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidWalletS2SPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testWalletWithInternationalContact()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
@@ -349,7 +367,8 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
-        $this->fixtures->merchant->editFeatures('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
         $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
 
         $this->ba->privateAuth();
@@ -363,7 +382,8 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
-        $this->fixtures->merchant->editFeatures('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
         $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->ba->privateAuth();

@@ -166,6 +166,7 @@ $factory(\RZP\Models\Adjustment\Entity::class, [
     'channel' => 'kotak',
     'description' => $faker->string,
     'transaction_id' => 'factory:Models\Transaction\Entity',
+    'settlement_id' => 'factory:Models\Settlement\Entity'
 ]);
 
 $factory(\RZP\Gateway\Hdfc\Entity::class, [
@@ -259,6 +260,45 @@ $factory(\RZP\Models\Order\Entity::class, [
     'updated_at' => $faker->timestamp,
 ]);
 
+$factory(\RZP\Models\Item\Entity::class, [
+    'id' => '1000000000item',
+    'merchant_id' => '10000000000000',
+    'name' => 'Some item name',
+    'description' => 'Some item description',
+    'amount' => 100000,
+    'currency' => 'INR',
+]);
+
+$factory(\RZP\Models\Invoice\Entity::class, [
+    'id' => '1000000invoice',
+    'merchant_id' => '10000000000000',
+    'customer_id' => '100000customer',
+    'order_id' => '100000000order',
+    'customer_email' => 'test@razorpay.com',
+    'customer_contact' => '1234567890',
+    'customer_name' => 'test',
+    'customer_address' => null,
+    'short_url' => 'http://bitly.dev/2eZ11Vn',
+    'view_less' => 1,
+    'sms_status' => 'sent',
+    'email_status' => 'sent',
+    'notes' => null,
+    'status' => 'issued',
+    'due_by' => $faker->timestamp,
+    'scheduled_at' => $faker->timestamp,
+    'amount' => 100000,
+    'currency' => 'INR',
+]);
+
+$factory(\RZP\Models\LineItem\Entity::class, [
+    'id' => '100000lineitem',
+    'merchant_id' => '10000000000000',
+    'entity_id' => '1000000invoice',
+    'entity_type' => 'invoice',
+    'item_id' => '1000000000item',
+    'quantity' => 1,
+]);
+
 $factory(\RZP\Models\Customer\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
@@ -290,7 +330,13 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
     'id'            => $faker->uniqueid,
     'merchant_id'   => '10000000000000',
     'value'         => 150,
+    'type'          => 'amount',
     'campaign'      => 'silent-ads',
+]);
+
+
+$factory(\RZP\Models\Transaction\FeeBreakup\Entity::class, [
+    'id'            => $faker->uniqueid,
 ]);
 
 $factory(\RZP\Models\Batch\Entity::class, [
@@ -304,4 +350,9 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
     'amount'        => 0,
     'contact'       => '9918899029',
     'email'         => 'a@b.com',
+]);
+
+$factory(\RZP\Models\Feature\Entity::class, [
+    'id'                => $faker->uniqueid,
+    'entity_type'       => 'merchant'
 ]);

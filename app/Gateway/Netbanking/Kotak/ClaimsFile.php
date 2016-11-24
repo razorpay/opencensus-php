@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Claims';
+    protected static $fileToWriteName = 'Kotak_Netbanking_Claim';
 
     protected static $headers = [
         'S.No',
@@ -65,10 +65,6 @@ class ClaimsFile extends Base\RefundFile
 
             $totalAmount = $totalAmount + ($row['payment']['amount'] / 100);
         }
-
-        $name = $this->getFileToWriteName();
-
-        $i--;
 
         $txt = $this->getTextData($data);
 

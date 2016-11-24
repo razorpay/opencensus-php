@@ -3,7 +3,6 @@
 namespace RZP\Exception;
 
 use RZP\Error\Error;
-use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {

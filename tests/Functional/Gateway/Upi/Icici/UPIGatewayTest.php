@@ -41,6 +41,25 @@ class UPIGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testPaymentViaRedirection()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        // Payment status is a polling API which checkout hits
+        // continously. Replicating the same in test case
+        $this->checkPaymentStatus($paymentId, 'created');
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        return $paymentId;
+    }
+
     public function testPaymentWithXmlResponse()
     {
         $this->mockServerContentFunction(function (& $content)
@@ -262,6 +281,54 @@ EOT;
         $upi = $this->getLastEntity('upi', true);
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');
         $this->assertArrayHasKey('gateway_payment_id', $upi);
+    }
+
+    public function testUpiEntityMigrationForUnknownProviderCode()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'handle@unknownprovider';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $request = [
+            'url'       => '/gateway/upi_fill_provider',
+            'method'    => 'put',
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upi, 'testUpiEntityMigrationUnknownProviderCode');
+    }
+
+    public function testUpiEntityMigrationForKnownProviderCode()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'handle@hdfcbank';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $request = [
+            'url'       => '/gateway/upi_fill_provider',
+            'method'    => 'put',
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upi, 'testUpiEntityMigrationKnownProviderCode');
     }
 
     public function testRefundExcelFile()

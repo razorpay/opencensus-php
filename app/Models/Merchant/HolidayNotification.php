@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Newsletter;
@@ -139,6 +140,7 @@ class HolidayNotification
 
         // Get Next working day that is not a bank holiday
         $ignoreBankHolidays = true;
+
         $nextWorkingDay = Holidays::getNextWorkingDay($today, $ignoreBankHolidays);
 
         // Ensure if that is a settlement holiday then send mail
@@ -157,7 +159,7 @@ class HolidayNotification
 
         $slackData = ['holidays' => $holidays];
 
-        $slackSettings = ['channel' => '#settlements'];
+        $slackSettings = ['channel' => Config::get('slack.channels.settlements')];
 
         $this->app['slack']->queue($slackMsg, $slackData, $slackSettings);
     }

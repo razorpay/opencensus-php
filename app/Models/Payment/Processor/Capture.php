@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -9,6 +10,7 @@ use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -55,6 +57,8 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
+        $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
+
         try
         {
             $payment = $this->capturePayment($payment, $amount);
@@ -65,6 +69,16 @@ trait Capture
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 ['auto_capture' => 1,
                 'payment_id' => $payment->getPublicId()]);
+
+            $customProperties = [
+                'error' => $e->getError(),
+                'public_error' => $e->getPublicError(),
+                'errMsg' => $e->getDataAsString()
+            ];
+
+            $this->app['segment']->trackPayment($payment,
+                                                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                                                $customProperties);
 
             return false;
         }
@@ -83,7 +97,7 @@ trait Capture
      *
      * If the merchant wants to capture the payment later, he can capture it and the process would
      * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
-     *
+     * TODO: add segment here
      * @param $payment
      * @return array
      */
@@ -177,8 +191,9 @@ trait Capture
         $payment->getValidator()->captureValidate($payment, $amount);
 
         $data = array(
-            'payment' => $payment->toArray(),
-            'amount' => $amount);
+            'payment'   => $payment->toArray(),
+            'amount'    => $amount
+        );
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -282,10 +297,13 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-            $txn = $txnCore->createFromPaymentAuthorized($payment);
+
+            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
 
             $this->repo->saveOrFail($txn);
             $this->repo->saveOrFail($payment);
+
+            $this->saveFeeDetails($txn, $feesSplit);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -317,6 +335,7 @@ trait Capture
         });
 
         $this->eventOrderPaid();
+        $this->notifyInvoicePaid();
 
         //
         // Analytics
@@ -337,6 +356,43 @@ trait Capture
         }
     }
 
+    protected function notifyInvoicePaid()
+    {
+        $payment = $this->payment;
+        $invoice = null;
+
+        if ($payment->getApiOrderId() === null)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        if ($invoice === null)
+        {
+            return;
+        }
+
+        $this->eventInvoicePaid($payment);
+
+        $this->communicateInvoicePaid($invoice);
+    }
+
+    protected function communicateInvoicePaid(Invoice\Entity $invoice)
+    {
+        $notifier = new Notify($this->payment, $invoice);
+
+        $trigger = Notify::INVOICE_PAID;
+
+        $notifier->trigger($trigger);
+    }
+
+    protected function eventInvoicePaid($payment)
+    {
+        $this->app['events']->fire('api.invoice.paid', array($payment));
+    }
+
     protected function updatePaymentCaptured($payment, $autoCaptured = false)
     {
         $payment->setStatus(Payment\Status::CAPTURED);
@@ -344,6 +400,13 @@ trait Capture
         $payment->setCaptureTimestamp();
 
         $payment->setAutoCaptured($autoCaptured);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_CAPTURED,
+            [
+                'payment_id'    => $payment->getId(),
+                'auto_capture'  => $autoCaptured,
+            ]);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
@@ -352,9 +415,11 @@ trait Capture
 
         $auth = ($payment->transaction === null);
 
+        $feesSplit = new PublicCollection;
+
         if ($auth === true)
         {
-            $txn = $txnCore->createFromPaymentCaptured($payment);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
         }
         else
         {
@@ -371,6 +436,8 @@ trait Capture
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($payment);
+
+        $this->saveFeeDetails($txn, $feesSplit);
     }
 
     protected function verifyOrderUnpaid($payment)
@@ -385,23 +452,58 @@ trait Capture
         }
     }
 
-    protected function updatePaidOrderStatus($payment)
+    protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
         $order = $payment->order;
 
         if (isset($order) === true)
         {
+            $order->setStatus(Order\Status::PAID);
+
             $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+                TraceCode::ORDER_STATUS_PAID,
                 [
                     'payment_id' => $payment->getId(),
                     'order_id' => $order->getId(),
-                ]
-            );
-
-            $order->setStatus(Order\Status::PAID);
+                ]);
 
             $this->repo->saveOrFail($order);
+
+            if ($order->invoice !== null)
+            {
+                $this->updatePaidInvoiceStatus($order, $payment);
+            }
         }
+    }
+
+    protected function updatePaidInvoiceStatus(Order\Entity $order, Payment\Entity $payment)
+    {
+        $invoice = $order->invoice;
+
+        assert($invoice !== null);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
+            [
+                'payment_id'    => $payment->getId(),
+                'invoice_id'    => $invoice->getId(),
+                'order_id'      => $order->getId(),
+            ]);
+
+        if ($invoice->getStatus() === Invoice\Status::PAID)
+        {
+            throw new Exception\LogicException(
+                'The invoice is already paid for.',
+                null,
+                [
+                    'payment_id'    => $order->payment->getId(),
+                    'invoice_id'    => $invoice->getId(),
+                    'order_id'      => $order->getId(),
+                ]);
+        }
+
+        $invoice->setStatus(Invoice\Status::PAID);
+
+        $this->repo->saveOrFail($invoice);
     }
 }

@@ -31,6 +31,9 @@ class Category
         'utilities',
         'corporate',
         'insurance',
+        'housing',
+        'mutual_funds',
+        'travel_agency',
     ];
 
     /**
@@ -38,14 +41,17 @@ class Category
      * be mapped to the category on the right.
      * */
     const METHOD_NETBANKING = [
-        // 'broking'       => 'broking',
-        'grocery'       => 'grocery',
-        'ecommerce'     => 'ecommerce',
-        'govt_education'=> 'govt_education',
-        'pvt_education' => 'pvt_education',
-        'utilities'     => 'utilities',
-        'corporate'     => 'corporate',
-        'insurance'     => 'insurance',
+        // 'broking'     => 'broking',
+        'grocery'        => 'grocery',
+        'ecommerce'      => 'ecommerce',
+        'govt_education' => 'govt_education',
+        'pvt_education'  => 'pvt_education',
+        'utilities'      => 'utilities',
+        'corporate'      => 'corporate',
+        'insurance'      => 'insurance',
+        'housing'        =>  'housing',
+        'mutual_funds'   =>  'mutual_funds',
+        'travel_agency'  =>  'travel_agency',
     ];
 
     /**
@@ -56,14 +62,17 @@ class Category
      * then it shoould be left empty
      * */
     const NETWORK_AMEX = [
-        // 'broking'       => 'incompatible',
-        'grocery'       => 'sup_hypermrkt_deptstore',
-        'ecommerce'     => 'retail_services',
-        'govt_education'=> 'education',
-        'pvt_education' => 'education', //confirm this is not education services
-        'utilities'     => 'utilities',
-        'corporate'     => '',
-        'insurance'     => 'insurance',
+        // 'broking'     => 'incompatible',
+        'grocery'        => 'sup_hypermrkt_deptstore',
+        'ecommerce'      => 'retail_services',
+        'govt_education' => 'education',
+        'pvt_education'  => 'education', //confirm this is not education services
+        'utilities'      => 'utilities',
+        'corporate'      => '',
+        'insurance'      => 'insurance',
+        'housing'        =>  'housing',
+        'mutual_funds'   =>  'mutual_funds',
+        'travel_agency'  =>  'travel_agency',
     ];
 
     public static function getDefaultForMethod($method)

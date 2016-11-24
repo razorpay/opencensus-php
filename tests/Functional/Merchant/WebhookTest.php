@@ -84,9 +84,86 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testInvoicePaidWebhookEventData()
+    {
+        $this->createWebhook(['events' => ['invoice.paid' => '1']]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
+        $this->fixtures->create('invoice');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice()
+    {
+        $this->createWebhook(['events' => ['order.paid' => '1', 'invoice.paid' => '1']]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        // This webhook will be called for order.paid event.
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+            $this->assertArrayNotHasKey('invoice', $data['event']);
+
+            return true;
+        });
+
+        $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testInvoicePaidWebhookEventNotEnabled()
+    {
+        $this->createWebhook(['events' => ['order.paid' => "1"]]);
+
+        $inferno = $this->mockInferno();
+
+        // It should be called only once - for order.paid
+        $inferno->shouldReceive('fire')
+                ->once();
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
+        $this->fixtures->create('invoice');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testOrderPaidWebhookEventData()
     {
-        $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);
+        $this->createWebhook(['events' => ['order.paid' => "1"]]);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -112,7 +189,7 @@ class WebhookTest extends TestCase
 
     public function testOrderPaidWebhookEventDataWithoutOrder()
     {
-        $webhook = $this->createWebhook(['events' => ['order.paid' => "1"]]);
+        $this->createWebhook(['events' => ['order.paid' => "1"]]);
 
         $inferno = $this->mockInferno();
 

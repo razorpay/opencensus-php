@@ -3,8 +3,9 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
-use CreditCardFraudDetection;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -82,13 +83,33 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
+        $this->app->singleton('segment', function($app)
+        {
+            return new SegmentClient($app);
+        });
+
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
+        
+        $this->registerBitly();
 
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+
+        $this->registerMorphRelationMaps();
+    }
+
+    /**
+     * Defines string to className map for polymorphic associations
+     */
+    public function boot()
+    {
+        Relation::morphMap([
+            'merchant' => Constants\Entity::getEntityClass(Constants\Entity::MERCHANT),
+        ]);
     }
 
     /**
@@ -109,7 +130,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'repo',
             'es',
-            'maxmind'
+            'maxmind',
+            'bitly',
+            'segment',
         );
     }
 
@@ -149,6 +172,21 @@ class ApiServiceProvider extends BaseServiceProvider
             return new MaxMind($app);
         });
     }
+    
+    protected function registerBitly()
+    {
+        $this->app->singleton('bitly', function($app)
+        {
+            $bitlyMock = $app['config']->get('applications.bitly.mock');
+            
+            if ($bitlyMock === true)
+            {
+                return new Mock\Bitly($app);
+            }
+            
+            return new Bitly($app);
+        });
+    }
 
     protected function registerApiMutex()
     {
@@ -163,5 +201,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
             return new Mutex($app);
         });
+    }
+
+    protected function registerMorphRelationMaps()
+    {
+        Relation::morphMap([
+            'invoice' => \RZP\Models\Invoice\Entity::class,
+        ]);
     }
 }

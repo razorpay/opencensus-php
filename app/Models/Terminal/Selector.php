@@ -4,13 +4,11 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment;
-
-use RZP\Trace;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Selector
 {
@@ -31,9 +29,9 @@ class Selector
      * @var array
      */
     protected static $sorters = [
-        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
+        Sorters\ExclusivitySorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
         Sorters\TerminalLoadSorter::class,
@@ -141,19 +139,6 @@ class Selector
                     'No terminal found.',
                     ['payment' => $this->payment->toArrayAdmin()]);
             }
-        }
-        // if binning is enabled, make the binned terminal the top most one
-        // add other terminals in case of failing binned terminal
-        if ($options and $options->getChance() > 0)
-        {
-            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
-
-            array_unshift($sortedTerminals, $terminal);
-
-            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
-
-            // array unique removes index. We need to renumber it.
-            $sortedTerminals = array_values($sortedTerminals);
         }
 
         $terminal = $sortedTerminals[0];

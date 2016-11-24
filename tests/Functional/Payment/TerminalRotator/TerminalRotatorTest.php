@@ -16,6 +16,8 @@ class TerminalRotatorTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/TerminalRotatorTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -64,7 +66,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment2['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
 
-        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
+        $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment2);
 
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
@@ -78,7 +80,7 @@ class TerminalRotatorTest extends TestCase
         // only a order id, ensure the payment goes through
         // the other terminal
 
-        $order = $this->createOrder();
+        $order = $this->createTestOrder();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
 
@@ -98,8 +100,8 @@ class TerminalRotatorTest extends TestCase
 
         $payment2['order_id'] = $order['id'];
 
-        $newTerminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment2);
-        
+        $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment2);
+
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
         $this->assertEquals(count($intersection), 0);
@@ -136,8 +138,8 @@ class TerminalRotatorTest extends TestCase
         // only a order id, enusre the same terminals are picked up
         // not excluded and the payment fails again with the
         // same exception that it failed before.
-        
-        $order = $this->createOrder();
+
+        $order = $this->createTestOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
 
@@ -147,32 +149,29 @@ class TerminalRotatorTest extends TestCase
 
         $this->ba->publicAuth();
 
-        try
-        {
-            $this->doAuthPayment($payment1);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::class);
-        }
+        $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment1)
+            {
+                $this->doAuthPayment($payment1);
+            });
 
         $payment2 = $this->getPaymentArray();
 
         $payment2['order_id'] = $order['id'];
 
-        try
-        {
+        $this->runRequestResponseFlow($data, function() use ($payment2) {
             $this->doAuthPayment($payment2);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::class);
-        }
+        });
     }
 
     public function testExclusionWithMultipleAvailableTerminals()
     {
-        $order = $this->createOrder();
+        $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
+
+        $order = $this->createTestOrder();
 
         $this->fixtures->create('terminal:shared_hdfc_terminal');
 
@@ -184,27 +183,17 @@ class TerminalRotatorTest extends TestCase
 
         $this->ba->publicAuth();
 
-        try
-        {
+        $this->runRequestResponseFlow($data, function() use ($payment1) {
             $this->doAuthPayment($payment1);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::class);
-        }
+        });
 
         $payment2 = $this->getPaymentArray();
 
         $payment2['order_id'] = $order['id'];
 
-        try
-        {
-            $this->doAuthPayment($payment2);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::class);
-        }
+        $this->runRequestResponseFlow($data, function() use ($payment1) {
+            $this->doAuthPayment($payment1);
+        });
 
         $payment = $this->getLastPayment(true);
 
@@ -241,44 +230,41 @@ class TerminalRotatorTest extends TestCase
         return $terminalsUsed;
     }
 
-    protected function stripSign(& $id)
+    protected function createTestOrder()
     {
-        $ix = strpos($id, '_');
-        if ($ix !== false)
-        {
-            $id = substr($id, $ix + 1);
-        }
-    }
-
-    protected function createOrder()
-    {
-        $request = array(
-            'content' => array(
+        $input = array(
                 'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
-            ),
-            'method' => 'POST',
-            'url' => '/orders'
-        );
+            );
 
-        $this->ba->privateAuth();
-
-        $order = $this->makeRequestAndGetContent($request);
-
-        return $order;
+        return $this->createOrder($input);
     }
 
+    protected function doValidPaymentAndFetchUsedTerminals($payment)
+    {
+        $this->doAuthPayment($payment);
+
+        $payment  = $this->getLastPayment(true);
+
+        Payment\Entity::verifyIdAndStripSign($payment['id']);
+
+        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
+
+        $terminalsUsed = $this->fetchUsedTerminals($analytics);
+
+        return $terminalsUsed;
+    }
     protected function doPaymentAndFetchUsedTerminals($payment)
     {
-        try
-        {
-            $this->doAuthPayment($payment);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, GatewayTimeoutException::CLASS);
-        }
+        $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
 
         $payment  = $this->getLastPayment(true);
 

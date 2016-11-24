@@ -115,7 +115,7 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchant()
     {
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 
@@ -124,7 +124,7 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantWithEmail()
     {
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 
@@ -136,7 +136,7 @@ class MerchantCreateTest extends TestCase
         // Just to check email collisions are still errors
         $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
 
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 

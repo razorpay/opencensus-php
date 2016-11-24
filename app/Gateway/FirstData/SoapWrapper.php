@@ -203,8 +203,8 @@ class SoapWrapper
                 </ipgapi:IPGApiActionResponse>
             </SOAP-ENV:Body>
         </SOAP-ENV:Envelope>
-       ";
+        ";
 
-       return $soapContent;
+        return $soapContent;
     }
 }

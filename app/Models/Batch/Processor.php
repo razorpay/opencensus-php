@@ -2,20 +2,18 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
+use Carbon\Carbon;
 use Config;
+use Mail;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Batch\Header;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Processor extends Base\Core
 {
@@ -137,11 +135,12 @@ class Processor extends Base\Core
     {
         $status = Status::PROCESSED;
 
-        if (($this->batch->getFailureCount() > 0) and
-            ($this->batch->getAttempts() < 3))
-        {
-            $status = Status::PROCESSING;
-        }
+        // TODO: Remove this comment. Currently we will mark the final state as processed.
+        // if (($this->batch->getFailureCount() > 0) and
+        //     ($this->batch->getAttempts() < 3))
+        // {
+        //     $status = Status::PROCESSING;
+        // }
 
         $this->batch->setStatus($status);
     }
@@ -204,6 +203,8 @@ class Processor extends Base\Core
         $entry[Header::REFUND_ID] = $refund->getPublicId();
         $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
         $entry[Header::STATUS] = Status::SUCCESS;
+        $entry[Header::ERROR_CODE] = null;
+        $entry[Header::ERROR_DESCRIPTION] = null;
     }
 
     /**

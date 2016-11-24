@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment\Analytics;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -30,7 +31,7 @@ class AnalyticsTest extends TestCase
 
         $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
-        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
 
@@ -43,7 +44,7 @@ class AnalyticsTest extends TestCase
         // ------------------------------------------------------------------ //
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
@@ -101,17 +102,17 @@ class AnalyticsTest extends TestCase
                             'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+        $payment['_']['library'] = 'checkoutjs';
 
-        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+        $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'browser';
+        $payment['_']['platform'] = 'browser';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '52.0.2743.116';
+        $payment['_']['platform_version'] = '52.0.2743.116';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'woo_commerce';
+        $payment['_']['integration'] = 'woo_commerce';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '0.1.2';
+        $payment['_']['integration_version'] = '0.1.2';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -139,17 +140,17 @@ class AnalyticsTest extends TestCase
                             'HTTP_REFERER'      => 'https://pay.com/demo'
                         ];
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+        $payment['_']['library'] = 'checkoutjs';
 
-        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+        $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'mobile_sdk';
+        $payment['_']['platform'] = 'mobile_sdk';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '0.4.12';
+        $payment['_']['platform_version'] = '0.4.12';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'magento';
+        $payment['_']['integration'] = 'magento';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '3.1.2';
+        $payment['_']['integration_version'] = '3.1.2';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -164,17 +165,20 @@ class AnalyticsTest extends TestCase
 
         $requestServer = [
                             'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+                            'HTTP_REFERER'      => 'https://api.razorpay.com/demo'
                         ];
 
-        $payment['_'][AnalyticsEntity::BROWSER] = 'safari';
+        $payment['_']['browser'] = 'safari';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '537.36';
+        $payment['_']['platform_version'] = '537.36';
 
-        $payment['_'][AnalyticsEntity::OS] = 'ios';
+        $payment['_']['os'] = 'ios';
 
-        $payment['_'][AnalyticsEntity::OS_VERSION] = '11.0';
+        $payment['_']['os_version'] = '11.0';
 
-        $payment['_'][AnalyticsEntity::DEVICE] = 'mobile';
+        $payment['_']['device'] = 'mobile';
+
+        $payment['_']['referer'] = 'http://a.com';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -187,22 +191,61 @@ class AnalyticsTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'unknown_library';
+        $payment['_']['library'] = 'unknown_library';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'unknown_platform';
+        $payment['_']['platform'] = 'unknown_platform';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'unknown_integration';
+        $payment['_']['integration'] = 'unknown_integration';
 
-        $payment['_'][AnalyticsEntity::BROWSER] = 'unknown_browser';
+        $payment['_']['browser'] = 'unknown_browser';
 
-        $payment['_'][AnalyticsEntity::OS] = 'unknown_os';
+        $payment['_']['os'] = 'unknown_os';
 
-        $payment['_'][AnalyticsEntity::DEVICE] = 'unknown_device';
+        $payment['_']['device'] = 'unknown_device';
 
-        $payment = $this->doAuthPayment($payment);//, $requestServer);
+        $payment = $this->doAuthPayment($payment);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
+    }
+
+    public function testHttpRefer1()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://api.razorpay.com/demo';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::REFERER]);
+    }
+
+    public function testHttpRefer2()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://razorpay.com/demo';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::REFERER]);
+    }
+
+    public function testHttpRefer3()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals('https://hello.com', $paymentAnalytic[AnalyticsEntity::REFERER]);
     }
 }

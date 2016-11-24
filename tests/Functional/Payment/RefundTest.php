@@ -127,6 +127,16 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], ' 100');
     }
 
+    public function testRefundWithFloatAmountString()
+    {
+        $this->startTest($this->payment['public_id'], '100.1');
+    }
+
+    public function testRefundWithFloatAmount()
+    {
+        $this->startTest($this->payment['public_id'], 100.1);
+    }
+
     public function testRefundofOldAuthorizedPayments()
     {
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Exception;
@@ -46,7 +46,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editCreditsRules = array(
-        Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'
+        Balance\Entity::AMOUNT_CREDITS      => 'required|integer|min:0|max:50000000'
     );
 
     protected static $editEmailRules = array(

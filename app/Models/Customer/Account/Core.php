@@ -14,9 +14,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createLocalCustomer($input, $merchant)
+    public function createLocalCustomer($input, $merchant, $failOnDuplicate = true)
     {
-        return $this->create($input, $merchant);
+        return $this->create($input, $merchant, $failOnDuplicate);
     }
 
     public function createGlobalCustomer($input)
@@ -38,7 +38,7 @@ class Core extends Base\Core
         {
             if ($failOnDuplicate === false)
             {
-                $existingCustomer->merchant->associate($merchant);
+                $existingCustomer->merchant()->associate($merchant);
 
                 return $existingCustomer;
             }
@@ -197,31 +197,28 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function getCustomerAndApp($input, $merchant)
+    public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
         $merchantId = null;
         $customer = null;
         $appToken = null;
-        $appToken = null;
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
-            $merchantId = $merchant->getId();
-
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+            $merchantId = $merchant->getId();
 
             Customer\Entity::verifyIdAndStripSign($customerId);
         }
         else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $appToken = $input[Payment\Entity::APP_TOKEN];
+            $appTokenId = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
-                $appToken,
-                $merchant);
+            $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
             if ($appToken !== null)
             {
@@ -267,10 +264,8 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
+    protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
-        $customers = null;
-
         if ($customer->merchant->isShared() === true)
         {
             $customer = $this->repo->customer->findByContactAndMerchant(

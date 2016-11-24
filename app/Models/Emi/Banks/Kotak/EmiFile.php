@@ -2,13 +2,9 @@
 
 namespace RZP\Models\Emi\Banks\Kotak;
 
-use Gateway;
-use RZP\Models\Emi;
-use RZP\Services\TokenEx;
-use RZP\Models\Emi\Banks\Base;
-use RZP\Gateway\Base\Action;
-
 use Carbon\Carbon;
+use RZP\Models\Emi;
+use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
 {
@@ -38,23 +34,17 @@ class EmiFile extends Base\EmiFile
         'Discount / Cashback Amount',
     ];
 
-    public function generate($input)
+    protected function writeEmiFile($emiData)
     {
-        $txt = $this->getEmiData($input);
+        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        $path = $this->getExcelFullFilePath();
 
-        $fullPath = $this->getExcelFullFilePath();
-
-        $this->sendEmiFile($fullPath);
-
-        return $urlExcel;
+        return compact('url', 'path');
     }
 
     protected function getEmiData($input)
     {
-        $emiPayments = [];
-
         $data = [];
 
         foreach ($input as $emiPayment)
@@ -63,28 +53,26 @@ class EmiFile extends Base\EmiFile
 
             $emiPlan = $emiPayment->emiPlan;
 
-            $emiPercent = $emiPlan['rate']/100;
-
             $authCode = $this->getAuthCode($emiPayment);
 
             $data[] = [
-            'EMI ID'                     => $emiPayment->getId(),
-            'Card Pan'                   => $this->getCardNumber($emiPayment->card),
-            'Issuer'                     => 'Kotak',
-            'Auth Code'                  => $authCode,
-            'Tx Amount'                  => $emiPayment->getAmount()/ 100,
-            'Tenure'                     => $emiPlan['duration'],
-            'Manufacturer'               => '', // Non Mandatory
-            'Merchant Name'              => 'Razorpay Payments',
-            'Address1'                   => '', // Non Mandatory
-            'Acquirer'                   => '', // Non Mandatory
-            'MID'                        => '', // Non Mandatory
-            'TID'                        => '', // Non Mandatory
-            'Tx Time'                    => $date,
-            'Settlement Time'            => '', // Non Mandatory
-            'Interest Rate'              => '', // Non Mandatory
-            'Discount / Cashback %'      => '0.00%',
-            'Discount / Cashback Amount' => '0'
+                'EMI ID'                     => $emiPayment->getId(),
+                'Card Pan'                   => $this->getCardNumber($emiPayment->card),
+                'Issuer'                     => 'Kotak',
+                'Auth Code'                  => $authCode,
+                'Tx Amount'                  => $emiPayment->getAmount()/ 100,
+                'Tenure'                     => $emiPlan['duration'],
+                'Manufacturer'               => '', // Non Mandatory
+                'Merchant Name'              => 'Razorpay Payments',
+                'Address1'                   => '', // Non Mandatory
+                'Acquirer'                   => '', // Non Mandatory
+                'MID'                        => '', // Non Mandatory
+                'TID'                        => '', // Non Mandatory
+                'Tx Time'                    => $date,
+                'Settlement Time'            => '', // Non Mandatory
+                'Interest Rate'              => '', // Non Mandatory
+                'Discount / Cashback %'      => '0.00%',
+                'Discount / Cashback Amount' => '0'
             ];
         }
 

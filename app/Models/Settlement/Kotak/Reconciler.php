@@ -176,31 +176,7 @@ class Reconciler
         return $setl;
     }
 
-    protected function getSetlReconciliationFile($input)
-    {
-        // if (isset($input['setlReconciliationFile']))
-        // {
-        //     return $input['setlReconciliationFile']->;
-        // }
-
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $path = storage_path('files/settlement');
-
-        $name = 'Kotak_Settlement_Reconciliation';
-
-        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
-
-        if (file_exists($fullpath) === false)
-        {
-            // @todo: trace here
-            return null;
-        }
-
-        return $fullpath;
-    }
-
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

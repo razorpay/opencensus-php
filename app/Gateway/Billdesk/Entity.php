@@ -72,8 +72,6 @@ class Entity extends Base\Entity
         'ProcessStatus',
     );
 
-    protected $table = 'billdesk';
-
     protected $guarded = array();
 
     protected $entity = 'billdesk';

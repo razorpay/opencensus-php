@@ -3,18 +3,12 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Constants\Mode;
-
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-
-use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Method;
-use RZP\Models\Emi\Repository;
-use RZP\Models\Terminal\Shared;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal;
+use RZP\Models\Terminal\Shared;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -155,8 +149,11 @@ class TransactionFilter extends Terminal\Filter
                 return false;
             }
 
+            $ba = app('basicauth');
+
             if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true))
+                ($payment->localToken->isRecurring() === true) and
+                ($ba->isPrivateAuth() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }

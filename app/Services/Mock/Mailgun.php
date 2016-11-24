@@ -18,9 +18,9 @@ class Mailgun extends BaseMailgun
         $instance->shouldReceive('post')
                 ->andReturn(null);
 
-        $object = new \stdClass();
+        $object = new \stdClass;
 
-        $object->http_response_body = new \stdClass();
+        $object->http_response_body = new \stdClass;
 
         $object->http_response_body->total_count = 0;
 

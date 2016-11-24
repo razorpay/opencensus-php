@@ -9,7 +9,6 @@ use App;
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator
 {
@@ -695,7 +694,7 @@ class Orchestrator
     {
         foreach ($haystack as $key => $subArray)
         {
-            if (in_array($needle, $subArray) === true)
+            if (in_array($needle, $subArray, true) === true)
             {
                 return $key;
             }

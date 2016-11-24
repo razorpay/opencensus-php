@@ -3,9 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use Database\DefaultConnection;
-use Request;
 use Redirect;
+use Request;
 use RZP\Constants\Mode;
 use View;
 
@@ -270,6 +269,8 @@ class MockGatewayController extends Controller
 
         $server = $this->gateway->server($driver);
 
-        return $server->authorize($input, $paymentId);
+        //return $server->authorize($input, $paymentId);
+        
+        return;
     }
 }

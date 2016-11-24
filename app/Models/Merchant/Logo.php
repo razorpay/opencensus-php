@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -196,7 +197,7 @@ class Logo
             return $mockFileName;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         $logoDimensions = $this->getLogoDimensionsArray();
 
@@ -227,13 +228,13 @@ class Logo
                 // The method which will upload to s3.
                 $result = $s3->putObject($s3Obj);
             }
-            catch (\Exception $e)
+            catch (\Aws\S3\Exception\S3Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,
                     ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
             }
-            catch (\Aws\S3\Exception\S3Exception $e)
+            catch (\Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,

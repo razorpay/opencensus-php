@@ -4,11 +4,9 @@ namespace RZP\Models\Admin;
 
 use Carbon\Carbon;
 use Mail;
-use RZP\Constants\Entity;
-use RZP\Models\Base;
-use RZP\Models;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models;
+use RZP\Models\Base;
 
 class Scorecard extends Base\Core
 {

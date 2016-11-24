@@ -10,8 +10,6 @@ use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'order';
 
     protected $appFetchParamRules = [

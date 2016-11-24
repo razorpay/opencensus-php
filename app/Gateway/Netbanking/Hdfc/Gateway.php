@@ -11,9 +11,8 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -126,11 +125,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function reconcileRefunds($excel, $input)
-    {
-        return (new RefundExcel)->reconcile($excel, $input);
-    }
-
     protected function validateCallbackChecksum($input)
     {
         $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
@@ -240,7 +234,7 @@ class Gateway extends Base\Gateway
         $status = VerifyResult::STATUS_MATCH;
 
         //
-        // In HDFC netbnaking, the bank only stores the payment data for
+        // In HDFC netbanking, the bank only stores the payment data for
         // 45 days! So for verification requests after 45 days, we simply
         // treat it as successful and return.
         //
@@ -252,22 +246,21 @@ class Gateway extends Base\Gateway
 
             $this->trace->info(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['message' =>
-                    'In HDFC netbnaking, the bank only stores the payment data for
-                    45 days! Since it has been more than 45 days, we simply
-                    treat it as successful and return.',
-                 'payment_id' => $input['payment']['id']]);
+                [
+                    'message' => 'In HDFC netbanking, the bank only stores the payment data for 45 days!' .
+                        ' Since it has been more than 45 days, we simply treat it as successful and return.',
+                    'payment_id' => $input['payment']['id']
+                ]);
 
             return $status;
         }
 
-        $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
-                               ($input['payment']['status'] === 'captured'));
+        $verify->apiSuccess = (($input['payment']['status'] !== Payment\Status::CREATED) and
+                               ($input['payment']['status'] !== Payment\Status::FAILED));
 
         $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
 
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -287,7 +280,7 @@ class Gateway extends Base\Gateway
     protected function processContentFromPaymentVerifyResponse($response, $request)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [$response->body]);
 
         $url = null;
@@ -299,6 +292,11 @@ class Gateway extends Base\Gateway
         $content = [];
         $parts = parse_url($url);
         parse_str($parts['query'], $content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [$content]
+        );
 
         return $content;
     }

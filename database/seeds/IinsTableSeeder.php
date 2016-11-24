@@ -3,7 +3,6 @@
 use RZP\Constants\Table;
 use RZP\Models\Card\IIN;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
 
 class IinsTableSeeder extends Seeder
 {
