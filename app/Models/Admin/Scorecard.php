@@ -21,8 +21,13 @@ class Scorecard extends Base\Core
         $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise();
 
         $message = '
-            Yesterday Volume        - ' . $yesterdayVolume / 100 . ' <br />
-            Monthly Volume till now - ' . $monthVolume / 100 . ' <br /><br />';
+            Yesterday Volume        - ' . $yesterdayVolume->getAttribute('amount') / 100 . ' <br />
+            Monthly Volume till now - ' . $monthVolume->getAttribute('amount') / 100 . ' <br /><br />';
+
+
+        $message .= '
+            Yesterday Transactions count        - ' . $yesterdayVolume->getAttribute('count') . ' <br />
+            Monthly Transactions count till now - ' . $monthVolume->getAttribute('count') . ' <br /><br />';
 
         $message .= 'Yesterday Top Merchants By Volume - <br />';
         $message .= $this->getTabularFormattedMerchantVolumeScorecard($yesterdayMerchantVolume);
