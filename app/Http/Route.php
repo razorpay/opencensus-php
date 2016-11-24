@@ -288,6 +288,7 @@ final class Route
         'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
+        'statuscake_gateway_webhook'              => ['post',     'statuscake/callback',                            'GatewayController@postStatusCakeCallback'                          ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
@@ -594,7 +595,8 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
-        'mailgun_webhook'
+        'mailgun_webhook',
+        'statuscake_gateway_webhook',
     );
 
     public static $internalApps = array(

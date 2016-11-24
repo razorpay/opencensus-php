@@ -3,37 +3,33 @@
 namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
-use RZP\Models\GatewayStatus\Absence;
-use RZP\Trace\TraceCode;
+use RZP\Models\GatewayStatus\Absence\CallbackProcessor;
+use RZP\Models\GatewayStatus\Absence\Processor;
 
 class Service extends Base\Service
 {
+    protected $processor;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->processor = new Processor();
+    }
+
     public function create(array $input)
     {
-        $downWindow = (new Absence\Core)->create($input);
-
-        return $downWindow->toArrayPublic();
+        return $this->processor->createAction($input);
     }
 
     public function edit($id, array $input)
     {
-        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
-
-        $downWindow = (new Absence\Core)->edit($downWindow, $input);
-
-        return $downWindow->toArrayPublic();
-
+        return $this->processor->editAction($id, $input);
     }
 
     public function delete($id)
     {
-        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
-
-        $this->repo->gateway_absence->deleteOrFail($downWindow);
-
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
-
-        return ['message' => 'Gateway Absence successfully deleted'];
+        return $this->processor->deleteAction($id);
     }
 
     public function findAbsentGateways(array $input)
@@ -41,5 +37,11 @@ class Service extends Base\Service
         $absentGateways = $this->repo->gateway_absence->fetchAbsent($input);
 
         return $absentGateways->toArrayPublic();
+    }
+
+    public function processStatusCakeCallback(array $input)
+    {
+        //TODO: remove return from here probably. This is initiated via statuscak webhook post
+        return (new CallbackProcessor\StatusCakeProcessor)->process($input);
     }
 }

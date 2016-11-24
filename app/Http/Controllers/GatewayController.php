@@ -250,6 +250,19 @@ class GatewayController extends Controller
     }
 
     /**
+     * Method to handle webhook callbacks from statuscake
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postStatusCakeCallback()
+    {
+        $input = Request::all();
+
+        $data = (new Absence\Service)->processStatusCakeCallback($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * Single use function - Fills provider field in the UPI table with bank code
      *
      * @return \Symfony\Component\HttpFoundation\Response

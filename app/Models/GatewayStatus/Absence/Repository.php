@@ -12,10 +12,12 @@ class Repository extends Base\Repository
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::GATEWAY        => 'sometimes|string|max:255',
-        Entity::ISSUER         => 'sometimes|string|max:255',
+        Entity::ISSUER         => 'sometimes|string|max:50',
+        Entity::METHOD         => 'sometimes|string|max:30',
         Entity::FROM           => 'sometimes|integer',
         Entity::TO             => 'sometimes|integer',
         Entity::PARTIAL        => 'sometimes|bool',
+        Entity::SOURCE         => 'sometimes|string|max:30'
     );
 
 

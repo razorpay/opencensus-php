@@ -391,6 +391,12 @@ class TraceCode
     // Trace code for item/line_items
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
+    
+    // Trace Code for Gateway Absence StatusCake
+    const GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN  = 'GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN';
+    const GATEWAY_ABSENCE_STATUSCAKE_INVALID_TOKEN  = 'GATEWAY_ABSENCE_STATUSCAKE_INVALID_TOKEN';
+    const GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER = 'GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER';
+    const GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE = 'GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

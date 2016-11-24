@@ -190,4 +190,11 @@ return array(
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
+
+    'absence' => [
+        'statuscake' => [
+            'username' => env('STATUSCAKE_USERNAME'),
+            'api_key'  => env('STATUSCAKE_API_KEY')
+        ]
+    ],
 );
