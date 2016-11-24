@@ -172,8 +172,10 @@ class Core extends Base\Core
             $serviceTax = 0;
             $credit = $amount;
         }
-        else if (($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+        else if (($this->app->runningUnitTests() === false) and
+                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
                  ($payment->isCard() === true) and
+                 ($payment->card->isInternational() === false) and
                  ($payment->card->isDebit() === true))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);

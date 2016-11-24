@@ -177,8 +177,10 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        if (($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+        if (($this->app->runningUnitTests() === false) and
+            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
             ($payment->isCard() === true) and
+            ($payment->card->isInternational() === false) and
             ($payment->card->isDebit() === true))
         {
             $fee = 0;
