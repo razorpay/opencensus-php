@@ -30,7 +30,7 @@ class Invoice extends Entity
 
     public function sendNotification($id, $medium)
     {
-        $relativeUrl = sprintf("invoices/%s/notify/%s", $id, $medium);
+        $relativeUrl = 'invoices/' . $id . '/notify/' . $medium;
 
         return $this->request('POST', $relativeUrl, []);
     }
