@@ -112,6 +112,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $features = $this->fixtures->merchant->addFeatures(['reverse']);
+
         $payment = $this->doAuthPayment($this->payment);
 
         $this->refundAuthorizedPayment($payment['razorpay_payment_id']);

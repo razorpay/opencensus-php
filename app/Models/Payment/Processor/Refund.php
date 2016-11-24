@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
@@ -344,8 +345,6 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
-
-            throw $e;
         }
     }
 
@@ -415,7 +414,8 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
-            else if ($this->gatewaySupportsReverse($payment) === true)
+            else if (($this->gatewaySupportsReverse($payment) === true) and
+                     ($payment->merchant->isFeatureEnabled(Feature::REVERSE) === true))
             {
                 $this->reverseOnGateway($data);
             }

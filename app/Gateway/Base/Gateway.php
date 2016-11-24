@@ -314,6 +314,7 @@ class Gateway
         }, $input['data']);
 
         $ns = $this->getGatewayNamespace();
+
         $class = $ns . '\\' . 'RefundFile';
 
         return (new $class)->generate($input);

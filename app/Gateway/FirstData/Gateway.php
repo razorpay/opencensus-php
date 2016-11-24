@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
-                'capture_response' => $response
+                'response' => $response
             ]
         );
 
@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'refund_response' => $response
+                'response' => $response
             ]
         );
 
@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REVERSE_RESPONSE,
             [
-                'reverse_response' => $response
+                'response' => $response
             ]
         );
 
@@ -577,11 +577,11 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-                [
-                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
-                ]
-            );
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $ipgApiActionResponse->asXML()
+            ]
+        );
 
         return $ipgApiActionResponse;
     }
