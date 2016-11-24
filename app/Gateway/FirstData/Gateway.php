@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $requestContent = $this->getRequestArray($input, TxnType::CAPTURE);
+        $requestContent = $this->getCaptureRequestArray($input, TxnType::CAPTURE);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::REFUND);
+        $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
 
@@ -136,7 +136,7 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::REVERSE);
+        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
 
         $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
 
@@ -795,32 +795,63 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($input, $txnType)
+    protected function getCaptureRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
+        $body = $this->getCommonRequestArray($input, TxnType::CAPTURE);
 
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
-
-        if ($txnType !== TxnType::REVERSE)
-        {
-            $currency     = $input['payment'][Payment\Entity::CURRENCY];
-            $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
-            $amountEntity = TxnType::$amountEntity[$txnType];
-
-            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
-            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]     = $currencyCode;
-        }
-        else
-        {
-            $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_TDATE] = $gatewayPayment[Entity::TDATE];
-        }
+        $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
+    }
+
+    protected function getRefundRequestArray($input)
+    {
+        $body = $this->getCommonRequestArray($input, TxnType::REFUND);
+
+        $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function getReverseRequestArray($input)
+    {
+        $body = $this->getCommonRequestArray($input, TxnType::REVERSE);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                            $input['payment'][Payment\Entity::ID],
+                                            Base\Action::AUTHORIZE);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_TDATE] = $gatewayPayment[Entity::TDATE];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function getCommonRequestArray($input, $txnType)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = $txnType;
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+
+        return $body;
+    }
+
+    protected function setPaymentRequestArray(& $body, $input, $txnType)
+    {
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amountEntity = TxnType::$amountEntity[$txnType];
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
     }
 
     protected function arrayToXml($array, $wrap = null)
