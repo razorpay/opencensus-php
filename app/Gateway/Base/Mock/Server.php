@@ -6,6 +6,7 @@ use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Gateway\Base\Action;
 
 class Server
 {
@@ -45,35 +46,35 @@ class Server
 
     protected function authorize($input)
     {
-        $this->action = 'authorize';
+        $this->action = Action::AUTHORIZE;
 
         $this->input = $input;
     }
 
     protected function capture($input)
     {
-        $this->action = 'capture';
+        $this->action = Action::CAPTURE;
 
         $this->input = $input;
     }
 
     protected function refund($input)
     {
-        $this->action = 'refund';
+        $this->action = Action::REFUND;
 
         $this->input = $input;
     }
 
     protected function reverse($input)
     {
-        $this->action = 'reverse';
+        $this->action = Action::REVERSE;
 
         $this->input = $input;
     }
 
     protected function verify($input)
     {
-        $this->action = 'verify';
+        $this->action = Action::VERIFY;
 
         $this->input = $input;
     }
