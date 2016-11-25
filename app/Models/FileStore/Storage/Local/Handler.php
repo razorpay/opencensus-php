@@ -17,7 +17,7 @@ class Handler extends Base\Handler
     {
         $content = file_get_contents($fileDetails['path']);
 
-        $fileName = self::STORAGE_DIRECTORY . $bucket . '/' . $fileDetails['name'];
+        $fileName = self::STORAGE_DIRECTORY . $bucket . '/' . $fileDetails['key'];
 
         Storage::put($fileName, $content);
 

@@ -11,6 +11,17 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    /**
+     * This should be set to true if you expect a unique id to be
+     * generated when the entity is being saved. Note that if a unique id
+     * is present then it won't be created.
+     *
+     * Also, if the entity is synced between test and live then it needs
+     * to be created before save is called and this cannot be true
+     * in those cases.
+     *
+     * @var boolean
+     */
     protected $generateIdOnCreate = false;
 
     const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

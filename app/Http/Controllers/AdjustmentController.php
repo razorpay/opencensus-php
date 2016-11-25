@@ -32,4 +32,13 @@ class AdjustmentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postReverseAdjustments()
+    {
+        $input = Request::all();
+
+        $data = (new Adjustment\Service)->postReverseAdjustments($input);
+
+        return ApiResponse::json($data);
+    }
 }

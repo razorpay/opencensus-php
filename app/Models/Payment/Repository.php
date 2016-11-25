@@ -469,7 +469,7 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::CREATED_AT, '>', $ts)
                     ->get();
     }
-    
+
     public function getCapturedPaymentForOrder($orderId)
     {
         return $this->newQuery()
@@ -560,7 +560,9 @@ class Repository extends Base\Repository
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
                     ->statusSuccess()
-                    ->sum(Entity::AMOUNT);
+                    ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
+                       'COUNT(*) AS count')
+                    ->first();
 
         return $vol;
     }

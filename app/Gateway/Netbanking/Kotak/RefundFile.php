@@ -22,24 +22,27 @@ class RefundFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getRefundData($input);
 
-        $name = $this->getFileToWriteName();
+        // Uncomment commented lines to disbale UFH
 
-        $filePath = $this->writeToTextFile($txt);
+        //$name = $this->getFileToWriteName();
 
-        $creator = new FileStore\Creator;
+        //$filePath = $this->writeToTextFile($txt);
 
-        $creator->extension(FileStore\Format::TXT)
-                ->content($txt)
-                ->name($name)
-                ->store(FileStore\Store::S3)
-                ->type(FileStore\Type::KOTAK_NETBANKING_REFUND)
-                ->save();
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::KOTAK_NETBANKING_REFUND);
 
         $file = $creator->get();
 
-        $fileFullPath = $this->getFullFilePath($name);
+        //$fileFullPath = $this->getFullFilePath($name);
 
-        return [$totalAmount, $fileFullPath];
+        //return [$totalAmount, $fileFullPath];
+
+        return [$totalAmount, $file['local_file_path']];
     }
 
     protected function getTextData($data, $prependLine = '')

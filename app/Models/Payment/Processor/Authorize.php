@@ -1154,6 +1154,13 @@ trait Authorize
         {
             $order->setAuthorized(true);
 
+            $this->trace->info(
+                TraceCode::ORDER_STATUS_AUTHORIZED,
+                [
+                    'order_id' => $order->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
             $this->repo->saveOrFail($order);
         }
     }
@@ -1680,7 +1687,9 @@ trait Authorize
         {
             $this->lockForUpdateAndReload($payment);
 
-            if ($this->payment->getStatus() === Status::AUTHORIZED)
+            $status = $this->payment->getStatus();
+
+            if ($payment->hasBeenAuthorized() === true)
             {
                 return;
             }
@@ -1698,6 +1707,14 @@ trait Authorize
             // If payment was earlier failed, then that means it's
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_AUTHORIZED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'late_authorize'    => $wasFailed,
+                    'old_status'        => $status,
+                ]);
 
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.

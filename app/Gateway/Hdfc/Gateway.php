@@ -90,7 +90,7 @@ class Gateway extends Base\Gateway
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
-        'headers' => array('Content-Type'=>'text/xml'),
+        'headers' => array('Content-Type' => 'text/xml'),
         'data' => array());
 
     /**
@@ -150,13 +150,13 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authNotEnrolledResponse = array(
-        'fields'    =>  array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
-                        'trackid', 'payid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
-                        'amt', 'error_text'),
-        'type'      => 'auth_not_enrolled',
-        'xml'       => '',
-        'data'      => array(),
-        'error'     => null);
+        'fields' => array(
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
+        'type' => 'auth_not_enrolled',
+        'xml' => '',
+        'data' => array(),
+        'error' => null);
 
     /**
      * The assoc array is used to construct
@@ -372,7 +372,7 @@ class Gateway extends Base\Gateway
     /**
      * HDFC gateway does not provide void
      */
-    public function void()
+    public function void(array $input)
     {
         throw new Exception\LogicException(
             'Hdfc gateway does not support voids');

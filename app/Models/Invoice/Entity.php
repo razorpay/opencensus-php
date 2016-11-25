@@ -5,7 +5,6 @@ namespace RZP\Models\Invoice;
 use App;
 use Carbon\Carbon;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
@@ -18,6 +17,9 @@ class Entity extends Base\PublicEntity
     // ------------------ Entity Keys --------------------------------
 
     const ORDER_ID              = 'order_id';
+    // Ref id provided by merchant for his own references
+    const REF_NUM               = 'ref_num';
+    const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
@@ -25,11 +27,15 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_CONTACT      = 'customer_contact';
     // Invoice status
     const STATUS                = 'status';
+    const DATE                  = 'date';
     const DUE_BY                = 'due_by';
     const SCHEDULED_AT          = 'scheduled_at';
+    const ISSUED_AT             = 'issued_at';
+    const PAID_AT               = 'paid_at';
+    const EXPIRED_AT            = 'expired_at';
+    // Email & SMS communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
-    const DATE                  = 'date';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
     const SHORT_URL             = 'short_url';
@@ -48,24 +54,22 @@ class Entity extends Base\PublicEntity
     const LINE_ITEMS            = 'line_items';
     // Input key for sending customer details
     const CUSTOMER              = 'customer';
-    // Input key on whether to notify the customer by email
+
+    // Input key on whether to notify the customer by email|sms
     const EMAIL_NOTIFY          = 'email_notify';
-    // Input key on whether to notify the customer by sms
     const SMS_NOTIFY            = 'sms_notify';
-    // Input key to send the expiry date of the invoice
-    const DUE_IN                = 'due_in';
-    // Input key to send the scheduling time for notifying the customer
-    const SCHEDULED_IN          = 'scheduled_in';
+
     // Input key to send whether the invoice should be created in draft state
     const DRAFT                 = 'draft';
 
     // ---------------------- Input Keys End -------------------------------------
 
     // ------------------------- Output Keys --------------------------------------
-
     const CUSTOMER_DETAILS      = 'customer_details';
+    const PAYMENT_ID            = 'payment_id';
 
     // ------------------------ Output Keys End -----------------------------------
+
 
     const EMAIL                 = 'email';
     const SMS                   = 'sms';
@@ -73,11 +77,9 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_DUE_DAYS      = 60;
 
-    protected static $sign = 'inv';
+    protected static $sign      = 'inv';
 
-    protected $entity = 'invoice';
-
-    protected $table = Table::INVOICE;
+    protected $entity           = 'invoice';
 
     protected $generateIdOnCreate = true;
 
@@ -85,10 +87,17 @@ class Entity extends Base\PublicEntity
         // self::STATUS            => null,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
+        self::DATE              => null,
+        self::ISSUED_AT         => null,
+        self::PAID_AT           => null,
+        self::EXPIRED_AT        => null,
+        self::REF_NUM           => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
+        self::TYPE              => null,
         self::USER_ID           => null,
+        self::CURRENCY          => 'INR',
     ];
 
     // Generates fields to be filled in the DB.
@@ -111,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         // self::TERMS,
         self::NOTES,
+        self::REF_NUM,
         self::VIEW_LESS,
         self::CURRENCY,
         self::SOURCE,
@@ -125,16 +135,20 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
+        self::REF_NUM,
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
         self::ORDER_ID,
+        self::PAYMENT_ID,
         // self::CUSTOMER_EMAIL,
         // self::CUSTOMER_CONTACT,
         // self::CUSTOMER_NAME,
         // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
         self::SCHEDULED_AT,
+        self::ISSUED_AT,
+        self::PAID_AT,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::SMS_STATUS,
@@ -151,20 +165,24 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::USER_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     // Fields to be exposed to the client
     protected $public = [
         self::ID,
+        self::REF_NUM,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::ORDER_ID,
         self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
         self::LINE_ITEMS,
+        self::PAYMENT_ID,
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
+        self::ISSUED_AT,
+        self::PAID_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
@@ -174,6 +192,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::TYPE,
         // self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
@@ -185,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
+        self::PAYMENT_ID,
     ];
 
     // The functions for these fields will be called only
@@ -260,16 +280,22 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentId()
     {
-        $repo = App::getFacadeRoot()['repo'];
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
 
-        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+    public function getPaidAt()
+    {
+        return $this->getAttribute(self::PAID_AT);
+    }
 
-        if ($payment !== null)
-        {
-            return $payment->getId();
-        }
+    public function getIssuedAt()
+    {
+        return $this->getAttribute(self::ISSUED_AT);
+    }
 
-        return null;
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     // -------------------------------------- End Getters --------------------------------------
@@ -299,14 +325,20 @@ class Entity extends Base\PublicEntity
 
     public function setSmsStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::SMS_STATUS, $status);
     }
 
     public function setEmailStatus($status)
     {
-        NotifyStatus::checkStatus($status);
+        if ($status !== null)
+        {
+            NotifyStatus::checkStatus($status);
+        }
 
         $this->setAttribute(self::EMAIL_STATUS, $status);
     }
@@ -316,6 +348,15 @@ class Entity extends Base\PublicEntity
         Status::checkStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+
+        // Sets corresponding timestamps as per new status
+        if (in_array($status, Status::$timestampedStatuses, true))
+        {
+            $timestampKey = $status . '_at';
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
     }
 
     public function setShortUrl($shortUrl)
@@ -347,6 +388,20 @@ class Entity extends Base\PublicEntity
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
 
         return $lineItems;
+    }
+
+    protected function getPaymentIdAttribute()
+    {
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+
+        if ($payment !== null)
+        {
+            return $payment->getPublicId();
+        }
+
+        return null;
     }
 
     // -------------------------------------- End Accessors --------------------------------------
@@ -411,28 +466,30 @@ class Entity extends Base\PublicEntity
 
     public function generateDueBy($input)
     {
-        $dueDays = self::DEFAULT_DUE_DAYS;
-
-        if (empty($input[self::DUE_IN]) === false)
+        if (empty($input[self::DUE_BY]) === false)
         {
-            $dueDays = $input[self::DUE_IN];
+            $dueBy = $input[self::DUE_BY];
         }
-
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays($dueDays)->timestamp;
+        else
+        {
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)->timestamp;
+        }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
     }
 
     public function generateScheduledAt($input)
     {
-        $scheduledAt = Carbon::now('Asia/Kolkata');
-
-        if (empty($input[self::SCHEDULED_IN]) === false)
+        if (empty($input[self::SCHEDULED_AT]) === false)
         {
-            $scheduledAt = $scheduledAt->addDays($input[self::SCHEDULED_IN]);
+            $scheduledAt = $input[self::SCHEDULED_AT];
+        }
+        else
+        {
+            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
         }
 
-        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt->timestamp);
+        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
     }
 
     // public function generateDiscount($input)
@@ -487,7 +544,7 @@ class Entity extends Base\PublicEntity
 
     public function lineItems()
     {
-        return $this->hasMany('RZP\Models\LineItem\Entity');
+        return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
     }
 
     public function merchant()

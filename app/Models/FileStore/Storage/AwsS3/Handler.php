@@ -182,10 +182,10 @@ class Handler extends Base\Handler
 
     protected function getS3SaveObj($bucket, $fileDetails)
     {
-        $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['name']);
+        $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['key']);
 
         $s3ContentObj = [
-            'ContentType' => $fileDetails['extension'],
+            'ContentType' => $fileDetails['mime'],
             'SourceFile'  => $fileDetails['path'],
             'Metadata'    => $fileDetails['metadata'],
         ];

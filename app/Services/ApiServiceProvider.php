@@ -98,6 +98,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+
+        $this->registerMorphRelationMaps();
     }
 
     /**
@@ -199,5 +201,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
             return new Mutex($app);
         });
+    }
+
+    protected function registerMorphRelationMaps()
+    {
+        Relation::morphMap([
+            'invoice' => \RZP\Models\Invoice\Entity::class,
+        ]);
     }
 }
