@@ -92,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
+        self::DATE              => null,
         self::ISSUED_AT         => null,
         self::PAID_AT           => null,
         self::EXPIRED_AT        => null,

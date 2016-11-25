@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Invoice;
 
-use Carbon\Carbon;
-
 use RZP\Base;
+use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -74,6 +75,26 @@ class Validator extends Base\Validator
                 'Invoice cannot have more than 10 line items.'
             );
         }
+    }
+
+    public function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
+        $keys = $merchant->keys;
+
+        foreach ($keys as $key)
+        {
+            if ($key->isExpiredOrExpiring() === false)
+            {
+                return;
+            }
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+            null,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
     }
 
     // protected static $createValidators = [

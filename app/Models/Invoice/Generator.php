@@ -61,6 +61,12 @@ class Generator extends Base\Core
         $this->invoice = new Entity;
 
         $this->invoice->build($input);
+        $this->invoice->merchant()->associate($this->merchant);
+
+        // This is being done because dashboard can create an invoice for the merchant even
+        // if the merchant has not generated any keys at all.
+        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+
         // This is being done so that we can do associations without saving the invoice.
         // Also, to generate a shortUrl, we need the invoice ID.
         $this->invoice->generateId();
@@ -186,8 +192,6 @@ class Generator extends Base\Core
         }
 
         $this->ensureCustomerAssociation($input);
-
-        $this->invoice->merchant()->associate($this->merchant);
     }
 
     protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $lineItemsDetails)

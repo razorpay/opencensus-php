@@ -110,6 +110,23 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
+    public function testPaymentReverse()
+    {
+        $features = $this->fixtures->merchant->addFeatures(['reverse']);
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'refunded');
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($gatewayPayment['action'], 'reverse');
+    }
+
     public function testPaymentDoubleCapture()
     {
         $this->doAuthAndCapturePayment($this->payment);
