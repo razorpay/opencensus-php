@@ -406,4 +406,47 @@ class TerminalSelectionTest extends TestCase
             $this->doAuthPayment($payment);
         });
     }
+
+    public function testOlderTPVMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->setCategory('6211');
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'category' => '1234']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'category' => '6211']);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('SharNbBdkTmnl3', $payment1['terminal_id']);
+
+        $this->fixtures->terminal->edit('SharNbBdkTmnl3',['network_category' => 'securities']);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        // TPV payment should not be routed through either ecommerce or null terminal
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->editCategory2('securities');
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        $this->doAuthAndCapturePayment($payment);
+    }
 }

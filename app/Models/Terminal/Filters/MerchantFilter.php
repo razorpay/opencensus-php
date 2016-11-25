@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
+        'tpv',
         'incompatible',
         'category',
         'gateway',
@@ -22,6 +23,12 @@ class MerchantFilter extends Terminal\Filter
      * TPV required merchants, and non TPV terminals for non
      * TPV merchants.
      *
+     * --- Temporarily allowing only present merchants to make payments via
+     * --- this terminals. Harding a support for 6211, 9999 earlier TPV
+     * Other will be
+     *
+     * --- REMOVE As soon all older merchants are tagged correctly.
+     *
      * @param Terminal\Entity $terminal
      * @param array $input
      * @return bool
@@ -30,7 +37,9 @@ class MerchantFilter extends Terminal\Filter
     {
         if ($input['payment']->isNetbanking())
         {
-            if ($input['merchant']->isTPVRequired())
+            $tpvCategories = [6211, 9999];
+
+            if (in_array($input['merchant']->getCategory(), $tpvCategories))
             {
                 return ($terminal->isTPVTerminal() === true);
             }
