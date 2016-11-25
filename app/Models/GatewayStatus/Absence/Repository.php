@@ -50,30 +50,15 @@ class Repository extends Base\Repository
             $to = $input[Entity::FROM];
         }
 
-        if (isset($input[Entity::GATEWAY]))
-        {
-            $query->where(Entity::GATEWAY, '=', $input[Entity::GATEWAY]);
-        }
+        $keyOperatorMap = [
+            Entity::GATEWAY => '=',
+            Entity::ISSUER => '=',
+            Entity::METHOD => '=',
+            Entity::SOURCE => '=',
+            Entity::FROM => '<='
+        ];
 
-        if (isset($input[Entity::ISSUER]))
-        {
-            $query->where(Entity::ISSUER, '=', $input[Entity::ISSUER]);
-        }
-
-        if (isset($input[Entity::METHOD]))
-        {
-            $query->where(Entity::METHOD, '=', $input[Entity::METHOD]);
-        }
-        
-        if (isset($input[Entity::SOURCE]))
-        {
-            $query->where(Entity::SOURCE, '=', $input[Entity::SOURCE]);
-        }
-
-        if (isset($input[Entity::FROM]))
-        {
-            $query->where(Entity::FROM, '<=', $input[Entity::FROM]);
-        }
+        $this->buildQuery($keyOperatorMap, $input, $query);
 
         if (empty($to) === false) {
             $query->where(function ($query) use ($to) {
@@ -83,5 +68,16 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
+    {
+        foreach($keyOperatorMap as $key => $operator)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $query->where($key, $operator , $input[$key]);
+            }
+        }
     }
 }
