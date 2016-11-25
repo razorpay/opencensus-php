@@ -6,25 +6,43 @@ use Auth;
 
 class Invoice extends Entity
 {
-    public function create($params = null)
+    public function create($params = [])
     {
-        $params['user_id'] = Auth::user()->id;
-
+        $this->appendUserId($params);
         return parent::create($params);
     }
 
     public function all($options = [])
     {
-        $options['user_id'] = Auth::user()->id;
-
+        $this->appendUserId($options);
         return parent::all($options);
+    }
+
+    /**
+     * The API decides to return only a subset
+     * of invoices if the role of a user
+     * = sellerapp. However, it decides to
+     * do that if the user_id is present.
+     *
+     * So we don't send the user id for non-sellerapp
+     * roles
+     * @param  array  $params
+     * @return array  $params
+     */
+    protected function appendUserId(array &$params)
+    {
+        $role = Auth::user()->getUserRoleWithCurrentMerchant();
+        if ($role === 'sellerapp')
+        {
+            $params['user_id'] = Auth::user()->getAuthIdentifier();
+        }
     }
 
     public function fetch($id)
     {
-        // User id should be sent here as well.
-        // Any delivery boy can see anyone's invoice
-        // if we dont' send the user_id here
+        // We don't send the user_id here
+        // on the assumption that having the
+        // id = having read rights on the same
         return parent::fetch($id);
     }
 
