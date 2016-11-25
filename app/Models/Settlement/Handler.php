@@ -49,11 +49,9 @@ class Handler extends Base\Core
 
         if ($this->setl->adjustment === null)
         {
-            $adj = $this->newAdjustmentEntity($desc);
+            $adjData = $this->buildAdjustmentData($desc);
 
-            $adjTxn = (new Transaction\Core)->createFromAdjustment($adj);
-
-            $this->repo->saveOrFail($adjTxn);
+            (new Adjustment\Core)->createAdjustment($adjData, $this->merchant);
         }
 
         if ($holdMerchantFunds === true)
@@ -66,25 +64,16 @@ class Handler extends Base\Core
         $this->trace->error(TraceCode::SETTLEMENT_MERCHANT_SETL_FAILED);
     }
 
-    protected function newAdjustmentEntity($desc)
+    protected function buildAdjustmentData($desc)
     {
-        $input = [
-            Adjustment\Entity::AMOUNT      => $this->setl->getAmount(),
-            Adjustment\Entity::CURRENCY    => 'INR',
-            Adjustment\Entity::DESCRIPTION => $desc,
+        $adjData = [
+            Adjustment\Entity::AMOUNT           => $this->setl->getAmount(),
+            Adjustment\Entity::CURRENCY         => 'INR',
+            Adjustment\Entity::DESCRIPTION      => $desc,
+            Adjustment\Entity::SETTLEMENT_ID    => $this->setl->getId()
         ];
 
-        $adj = (new Adjustment\Entity)->build($input);
-
-        $adj->setChannel($this->setl->getChannel());
-
-        $adj->settlement()->associate($this->setl);
-
-        $adj->merchant()->associate($this->merchant);
-
-        $this->repo->saveOrFail($adj);
-
-        return $adj;
+        return $adjData;
     }
 
     protected function holdMerchantFunds()
