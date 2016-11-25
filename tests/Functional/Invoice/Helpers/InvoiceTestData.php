@@ -550,7 +550,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid medium',
+                    'description' => 'invalid is not a valid communication medium',
                 ],
             ],
             'status_code' => 400,
