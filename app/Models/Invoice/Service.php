@@ -42,7 +42,9 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->update($invoice, $input, $this->merchant)->toArrayPublic();
+        $invoice = $this->core->update($invoice, $input, $this->merchant);
+
+        return $invoice->toArrayPublic();
     }
 
     public function issue(string $id)
@@ -56,7 +58,7 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->delete($item);
+        return $this->core->delete($invoice);
     }
 
     public function addLineItem(string $id, array $input)

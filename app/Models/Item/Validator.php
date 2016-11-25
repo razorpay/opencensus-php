@@ -18,9 +18,9 @@ class Validator extends Base\Validator
 
     protected static $editRules  = [
         Entity::ACTIVE              => 'sometimes|boolean',
-        Entity::NAME                => 'sometimes|string',
+        Entity::NAME                => 'sometimes|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'sometimes|integer',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
 
@@ -28,8 +28,13 @@ class Validator extends Base\Validator
      * Allows edits if:
      * - Only attempting to change ACTIVE attribute
      * - Editing fields when there is no invoice already generated using this item
+     *
+     * @param Entity $item
+     * @param array  $input
+     *
+     * @throws Exception\BadRequestException
      */
-    public function validateEditAllowed(Entity $item, array $input = array())
+    public function validateEditAllowed(Entity $item, array $input = [])
     {
         if (isset($input[Entity::ACTIVE]) and count($input) === 1)
         {

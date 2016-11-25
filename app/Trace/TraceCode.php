@@ -131,6 +131,7 @@ class TraceCode
     const INVOICE_BITLY_RESPONSE                    = 'INVOICE_BITLY_RESPONSE';
     const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
+    const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';

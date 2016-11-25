@@ -225,15 +225,21 @@ class Core extends Base\Core
         return $data;
     }
 
-
-
     // -------------------- Protected methods --------------------
 
     protected function checkIfInDraftStatus(Entity $invoice)
     {
-        if ($invoice->getStatus() !== Status::DRAFT)
+        $status = $invoice->getStatus();
+
+        if ($status !== Status::DRAFT)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED,
+                null,
+                [
+                    'invoice_id' => $invoice->getId(),
+                    'status' => $status
+                ]);
         }
     }
 

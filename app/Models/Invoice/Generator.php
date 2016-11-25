@@ -87,9 +87,6 @@ class Generator extends Base\Core
         }
         catch (\Exception $e)
         {
-            // TODO: Have better alternatives, need to discuss and implement that.
-            //       For now, this is the quickest
-
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
@@ -233,21 +230,17 @@ class Generator extends Base\Core
 
     public function ensureCustomerAssociation(array $input)
     {
-        // Attach existing customer with given CUSTOMER_ID if exists
-        // Create customer from input details
-        // If not customer already associated throw error (Case: CREATE)
-
-        $customer        = null;
-        $customerDetails = [];
-        if (isset($input[Entity::CUSTOMER]))
+        if ((isset($input[Entity::CUSTOMER_ID])) and
+            (isset($input[Entity::CUSTOMER])))
         {
-            $customerDetails = $input[Entity::CUSTOMER];
+            // TODO: Throw exception
         }
 
-        if (isset($input[Entity::CUSTOMER_ID]) === true)
+        $customer = null;
+
+        if (isset($input[Entity::CUSTOMER_ID]))
         {
             $customerId = $input[Entity::CUSTOMER_ID];
-
             $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
             $this->trace->info(
@@ -255,12 +248,20 @@ class Generator extends Base\Core
                 [
                     'invoice_id' => $this->invoice->getId(),
                     'customer_id' => $customer->getId(),
-                    'customer_input_details' => $customerDetails,
                 ]);
         }
-        elseif ($customerDetails)
+        else if (isset($input[Entity::CUSTOMER]))
         {
+            $customerDetails = $input[Entity::CUSTOMER_DETAILS];
             $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
+
+            $this->trace->info(
+                TraceCode::INVOICE_NEW_CUSTOMER,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                    'customer_id' => $customer->getId(),
+                    'customer_details' => $customerDetails,
+                ]);
         }
 
         if ($customer)
@@ -273,13 +274,18 @@ class Generator extends Base\Core
             $this->invoice->setCustomerEmail($customer->getEmail());
             $this->invoice->setCustomerAddress($customer->getCurrentShippingAddressId());
         }
-        elseif (empty($this->invoice->customer) and $this->invoice->isDraft() === false)
+        else
         {
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT
-                // $input
-            );
+            if ($this->invoice->isDraft() === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
+                    null,
+                    [
+                        // TODO: Add data
+                    ]
+                );
+            }
         }
     }
 }
