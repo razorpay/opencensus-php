@@ -376,6 +376,12 @@
           <alert ng-repeat="alert in alerts[4].getAlerts()" type="{{alert.type}}" close="alerts[4].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
+          <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
+          <div class="col-sm-8">
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current" required>
+          </div>
+        </div>
+        <div class="form-group">
           <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
           <div class="col-sm-8">
             <input ng-readonly="locked" type="password" class="form-control" name="bank_account_number" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required autocomplete="off">
@@ -385,6 +391,12 @@
           <label for="bank_account_number" class="col-sm-3 control-label">Re-enter Bank Account Number</label>
           <div class="col-sm-8">
             <input ng-readonly="locked" type="text" ng-class="{'ng-invalid': data.4.bank_account_number !== data.4.bank_account_number_confirmation, 'form-control': true, 'ng-valid': data.4.bank_account_number === data.4.bank_account_number_confirmation}" name="bank_account_number_confirmation" ng-model="data.4.bank_account_number_confirmation" placeholder="Re-enter your Bank Account Number">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
+          <div class="col-sm-8">
+            <input ng-readonly="locked" type="text" class="form-control" name="bank_branch_ifsc" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
           </div>
         </div>
         <div class="form-group">
@@ -466,24 +478,12 @@
             <input ng-readonly="locked" type="text" class="form-control" name="bank_beneficiary_pin" ng-model="data.4.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required>
           </div>
         </div>
-        <div class="form-group">
-          <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
-          <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="bank_account_type" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current" required>
-          </div>
-        </div>
         <!-- <div class="form-group">
           <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
           <div class="col-sm-8">
             <textarea class="form-control" name="bank_branch_address" ng-model="data.4.bank_branch" placeholder="Branch Address" required></textarea>
           </div>
         </div> -->
-        <div class="form-group">
-          <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
-          <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="bank_branch_ifsc" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
-          </div>
-        </div>
         <div class="m-t m-b text-center prev-next">
           <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
           <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
@@ -631,9 +631,9 @@
         <div class="m-t m-b text-center prev-next">
           <div ng-switch="org">
             <p class="m-t m-b" ng-switch-when="hdfc">
-              <strong>Note:</strong> Ownership of Merchant will remain with <strong>HDFC Bank Ltd.</strong>
+              <strong>Note:</strong> This solution is a joint initiative between HDFC Bank Ltd. and Razorpay.
               <br />
-              SmartUp is a joint initiative between HDFC Bank Ltd. and Razorpay
+              Your primary relationship will be maintained with HDFC Bank Ltd.
             </p>
           </div>
           <button type="submit" class="btn btn-submit btn-default btn-rounded">Click here to submit</button>

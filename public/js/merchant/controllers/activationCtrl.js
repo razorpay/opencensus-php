@@ -93,6 +93,10 @@ app.controller('ActivationCtrl', [
           if (!$scope.data[4].bank_branch_ifsc) {
             $scope.data[4].bank_branch_ifsc = 'HDFC';
           }
+
+          if (!$scope.data[4].bank_account_type) {
+            $scope.data[4].bank_account_type = 'Current';
+          }
         }
       });
     }
