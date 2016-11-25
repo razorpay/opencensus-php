@@ -111,7 +111,7 @@ class Accessor extends Base\Core
 
         $storageHandler = Store::getHandler($data->store);
 
-        return $storageHandler->read($data->bucket, $data->name);
+        return $storageHandler->read($data->bucket, $data->location);
     }
 
     /**
