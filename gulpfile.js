@@ -134,6 +134,10 @@ gulp.task('js:prod', () => {
     .on('error', function(e){
         console.log(e);
      })
+    .pipe(through(function(file) {
+      file.contents = new Buffer(String(file.contents).replace(/("|')?use strict("|')?;?/i, ''))
+      this.emit('data', file)
+    }))
     .pipe(rev())
     .pipe(gulp.dest('public'))
     .pipe(rev.manifest())
