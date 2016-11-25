@@ -44,7 +44,7 @@ class Core extends Base\Core
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         $this->repo->transaction(
             function() use ($invoice, $merchant, $input)
@@ -73,7 +73,7 @@ class Core extends Base\Core
 
     public function delete(Entity $invoice)
     {
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         $this->repo->invoice->deleteOrFail($invoice);
 
@@ -85,7 +85,7 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
@@ -106,7 +106,7 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -125,7 +125,7 @@ class Core extends Base\Core
         Entity $invoice,
         LineItem\Entity $lineItem)
     {
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         $this->repo->transaction(
             function() use ($lineItem, $invoice)
@@ -229,7 +229,7 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
-    protected function checkIfInDrafStatus(Entity $invoice)
+    protected function checkIfInDraftStatus(Entity $invoice)
     {
         if ($invoice->getStatus() !== Status::DRAFT)
         {
@@ -244,7 +244,7 @@ class Core extends Base\Core
         // - Customer associated
         // - Line items exists
 
-        $this->checkIfInDrafStatus($invoice);
+        $this->checkIfInDraftStatus($invoice);
 
         if (empty($invoice->customer) or $invoice->lineItems()->count() === 0)
         {
