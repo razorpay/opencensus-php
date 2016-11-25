@@ -24,7 +24,7 @@ class Category
      */
     const CATEGORIES_ALL = [
         'securities',
-        'commondities',
+        'commodities',
         'grocery',
         'ecommerce',
         'govt_education',
@@ -47,7 +47,7 @@ class Category
      **/
     const INCOMPATIBLE = [
         'securities',
-        'commondities',
+        'commodities',
     ];
 
     /**
@@ -56,7 +56,7 @@ class Category
      * */
     const METHOD_NETBANKING = [
         'securities'     => 'securities',
-        'commondities'   => 'commondities',
+        'commodities'    => 'commodities',
         'grocery'        => 'grocery',
         'ecommerce'      => 'ecommerce',
         'govt_education' => 'govt_education',
@@ -78,7 +78,7 @@ class Category
      * */
     const NETWORK_AMEX = [
         'securities'     => 'incompatible',
-        'commondities'   => 'incompatible',
+        'commodities'    => 'incompatible',
         'grocery'        => 'sup_hypermrkt_deptstore',
         'ecommerce'      => 'retail_services',
         'govt_education' => 'education',
