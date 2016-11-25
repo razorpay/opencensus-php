@@ -90,6 +90,7 @@ EOT;
             break;
 
             default:
+                throw new \Exception("Invalid Method");
                 break;
         }
 

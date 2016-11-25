@@ -13,9 +13,8 @@ class UpiController extends Controller
     public function handle(string $api, string $id)
     {
         $body = Request::getContent();
-        Trace::info('MISC_TRACE_CODE', Request::all() + ['content' => $body ] );
 
-        file_put_contents("/home/nemo/tmp/upi-res.txt", $body);
+        Trace::info('MISC_TRACE_CODE', Request::all() + ['content' => $body ] );
 
         $xml = simplexml_load_string($body);
         $e = $xml->xpath('//Head')[0];
@@ -27,9 +26,18 @@ class UpiController extends Controller
 
         Cache::forever("UPI.$msgId", $body);
 
-        if (in_array($api, ['RespListAccPvd', 'ReqListPsp'], true))
+        if (in_array($api, ['RespListAccPvd', 'ReqListPsp', 'RespListKeys'], true))
         {
-            Cache::forever("UPI.$api", $body);
+            $cache = $api;
+            if ($api === 'RespListKeys')
+            {
+                $cache = $this->isListKeysAndNotGetToken($body);
+            }
+
+            if ($cache)
+            {
+                Cache::forever("UPI.$cache", $body);
+            }
         }
         $resp = <<<EOT
 <?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
@@ -38,6 +46,24 @@ EOT;
 
         return response($resp)
             ->header('Content-Type', 'application/xml');
+    }
+
+    public function isListKeysAndNotGetToken($str)
+    {
+        $xml = simplexml_load_string($str);
+
+        $e = dom_import_simplexml($xml->xpath('//Txn')[0]);
+
+        $type = $e->getAttribute('type');
+
+        if ($type === 'ListKeys')
+        {
+            return 'ListKeys';
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public function registerDevice()
@@ -79,6 +105,14 @@ EOT;
         return $this->makeGatewayRequest('ReqListPsp');
     }
 
+    public function getPublicKeyList()
+    {
+        $xml = Cache::get('UPI.ListKeys');
+
+        return response($xml)
+            ->header('Content-Type', 'application/xml');
+    }
+
     public function getBankList()
     {
         $xml = Cache::get('UPI.RespListAccPvd');
@@ -103,14 +137,19 @@ EOT;
             {
                 $bankName = "Unknown Name";
             }
+            $prods = $e->getAttribute('prods');
 
-            $res[$ifsc] = [
-                'ifsc'  =>  $ifsc,
-                'iin'   =>  $e->getAttribute('iin'),
-                'name'  =>  $e->getAttribute('name'),
-                'products'  =>  explode(',',  $e->getAttribute('prods')),
-                'bankname'  => $bankName,
-            ];
+            if ($prods === 'UPI')
+            {
+                $res['banks'][] = [
+                    'ifsc'  =>  $ifsc,
+                    'iin'   =>  $e->getAttribute('iin'),
+                    'name'  =>  $e->getAttribute('name'),
+                    'products'  =>  $prods,
+                    'bankname'  => $bankName,
+                ];
+            }
+
         }
 
         return ApiResponse::json($res);
@@ -143,5 +182,46 @@ EOT;
             'device_id'     => $input['device_id'],
             'os_version'    => $input['os_version']
         ];
+    }
+
+    public function deviceCreate()
+    {
+
+    }
+
+    public function deviceVerify()
+    {
+
+    }
+
+    public function getVpas()
+    {
+
+    }
+
+    public function vpaAvailable()
+    {
+
+    }
+
+    public function isValidVpa($vpa)
+    {
+        return ApiResponse::json([
+            'valid'         =>  true,
+            'available'     =>  true
+        ]);
+    }
+
+    public function getBankAccountList()
+    {
+        $bas = [];
+        $bas['accounts'][] = [
+            'ifsc'          =>  'PUNB',
+            'account'       =>  '1235543534543543',
+            'type'          =>  'SAVINGS',
+            'bank_name'     =>  'Punjab National Bank',
+        ];
+
+        return ApiResponse::json($bas);
     }
 }
