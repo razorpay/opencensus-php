@@ -87,7 +87,7 @@ class MerchantFilter extends Terminal\Filter
         $merchantTerminalCategory = $input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
-            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory)))
+            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
         {
             $category = $terminal->getNetworkCategory();
 
