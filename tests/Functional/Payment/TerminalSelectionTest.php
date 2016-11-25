@@ -351,4 +351,19 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
     }
+
+    protected function getPaymentForTPV($attributes = [])
+    {
+        $order = $this->fixtures->create('order:tpv_order', $attributes);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $payment['bank'] = $order->getBank();
+
+        return $payment;
+    }
 }
