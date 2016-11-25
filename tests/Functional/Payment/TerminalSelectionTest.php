@@ -408,6 +408,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testOlderTPVMerchantTerminalSelection()
     {
+        $this->markTestSkipped('Not required now, users migrated.');
+
         $this->fixtures->merchant->setCategory('6211');
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
