@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
-        // self::ACTIVE,
+        self::ACTIVE,
         self::MERCHANT_ID,
         self::NAME,
         self::DESCRIPTION,
@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        // self::ACTIVE,
+        self::ACTIVE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -72,7 +72,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT    => 'int',
-        self::ACTIVE    => 'boolean',
     ];
 
     // -------------------------- Getters --------------------------

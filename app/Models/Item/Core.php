@@ -10,11 +10,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
-     * @return Entity
-     */
     public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
@@ -31,12 +26,9 @@ class Core extends Base\Core
         return $item;
     }
 
-    public function update(Entity $item, array $input, bool $check = true)
+    public function update(Entity $item, array $input)
     {
-        if ($check)
-        {
-            $this->checkIfLineItemAssociated($item);
-        }
+        $item->getValidator()->validateEditAllowed($item, $input);
 
         $item->edit($input);
 
@@ -47,20 +39,10 @@ class Core extends Base\Core
 
     public function delete(Entity $item)
     {
-        $this->checkIfLineItemAssociated($item);
+        $item->getValidator()->validateEditAllowed($item);
 
         $this->repo->item->deleteOrFail($item);
 
         return true;
-    }
-
-    // -------------------- Protected methods --------------------
-
-    protected function checkIfLineItemAssociated(Entity $item)
-    {
-        if ($item->lineItems()->count() > 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED);
-        }
     }
 }
