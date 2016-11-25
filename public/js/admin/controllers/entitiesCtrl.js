@@ -292,8 +292,7 @@ app.controller('EntitiesCtrl', [
             'all',
             'platform',
             'customer'
-        ],
-        hold_funds: booleanList
+        ]
       },
       methods: {
         amex: booleanList,
