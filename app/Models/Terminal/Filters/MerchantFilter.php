@@ -11,7 +11,7 @@ use RZP\Models\Card\Network;
 class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
-        'tpv',
+        // 'tpv',
         'incompatible',
         'category',
         'gateway',
