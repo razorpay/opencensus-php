@@ -7,7 +7,7 @@ app.controller('MerchantsCtrl', [
     $scope.count = 0;
 
     $scope.regenerate = function () {
-      $scope.merchant_type = '1';
+      $scope.merchant_type = '0';
       $scope.tags = '';
       $scope.filter();
     };
