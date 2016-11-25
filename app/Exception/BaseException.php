@@ -9,7 +9,7 @@ class BaseException extends Exception
 {
     protected $error = null;
 
-    protected $data = []];
+    protected $data = [];
 
     /**
      * Constructor for base exception of the

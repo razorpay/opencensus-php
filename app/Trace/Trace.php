@@ -32,8 +32,6 @@ class Trace extends TraceWriter
         $this->defineHandlers();
 
         $this->defineProcessors();
-
-        $this->mode = $app['rzp.mode'];
     }
 
     public function addRecord($level, $message, array $context = array())
@@ -94,13 +92,6 @@ class Trace extends TraceWriter
         $this->app['exception.handler']->traceException($exception, $level, $code);
     }
 
-    protected function getEnvironment()
-    {
-        $environment = \App::make('config')->get('app.context');
-
-        if (in_array($environment, ['production', 'beta']))
-    }
-
     protected function sendMailAboutTracingFailure($exception, $level, $message, $context)
     {
         $env = $this->env;
@@ -143,7 +134,7 @@ class Trace extends TraceWriter
         {
             Mail::queue(
                 'email.message',
-                $msg = json_encode($traceData, JSON_PRETTY_PRINT);
+                $msg = json_encode($traceData, JSON_PRETTY_PRINT),
                 function ($message)
                 {
                     $subject = self::CHANNEL . ' - ' . $mode . ' - Critical error occurred';
@@ -162,5 +153,10 @@ class Trace extends TraceWriter
             // Since mailing is not a critical requirement here for execution
             // we are going to continue with our normal code run.
         }
+    }
+
+    protected function getMode()
+    {
+        return $this->app['rzp.mode'];
     }
 }
