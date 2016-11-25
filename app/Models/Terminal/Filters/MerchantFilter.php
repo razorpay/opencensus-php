@@ -12,17 +12,23 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
-        // 'risk',
+        'incompatible',
         'category',
         'gateway',
     ];
 
     /**
-     * Filter applies for securities merchants
+     * Filter applies for securities, commodities merchants
      * Only for the netbanking method.
      * Allow Only Third Party Validation (TPV) terminals for
      * TPV required merchants, and non TPV terminals for non
      * TPV merchants.
+     *
+     * --- Temporarily allowing only present merchants to make payments via
+     * --- this terminals. Harding a support for 6211, 9999 earlier TPV
+     * Other will be
+     *
+     * --- REMOVE As soon all older merchants are tagged correctly.
      *
      * @param Terminal\Entity $terminal
      * @param array $input
@@ -32,7 +38,9 @@ class MerchantFilter extends Terminal\Filter
     {
         if ($input['payment']->isNetbanking())
         {
-            if ($input['merchant']->isTPVRequired())
+            $tpvCategories = [6211, 9999];
+
+            if (in_array($input['merchant']->getCategory(), $tpvCategories))
             {
                 return ($terminal->isTPVTerminal() === true);
             }
@@ -67,6 +75,41 @@ class MerchantFilter extends Terminal\Filter
         }
 
         // Else allow - By default allow all transactions
+        return true;
+    }
+
+    /**
+     * For merchants with a category2 that is incompatible,
+     * the null and the default match terminals will be filtered out
+     **/
+    public function incompatibleFilter($terminal, $input)
+    {
+        $merchantTerminalCategory = $input['merchant']->getCategory2();
+
+        if ((isset($merchantTerminalCategory) === true) and
+            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
+        {
+            $category = $terminal->getNetworkCategory();
+
+            // If the terminal's category is null, don't allow.
+            if (empty($category) === true)
+            {
+                return false;
+            }
+
+            $method = $input['payment']->getMethod();
+
+            $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+
+            // If category is a defaultCategory don't allow,
+            if ($category === $defaultCategory)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 

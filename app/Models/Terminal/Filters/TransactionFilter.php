@@ -110,7 +110,9 @@ class TransactionFilter extends Terminal\Filter
 
             $terminalGateway = $terminal->getGateway();
 
-            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $isTPV = $input['merchant']->isTPVRequired();
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
         }

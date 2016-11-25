@@ -445,7 +445,7 @@ class Entity extends Base\PublicEntity
     {
         if (is_null($this->getCategory()) === false)
         {
-            $tpvCategories = (new Merchant\Entity)->getTPVCategories();
+            $tpvCategories = ['6211', '9999'];
 
             return in_array($this->getCategory(), $tpvCategories);
         }
