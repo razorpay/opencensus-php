@@ -13,6 +13,11 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'handle_upi'                              => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@handle'                                              ],
+        'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
+        'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
+        'is_device_verified'                      => ['get',      'upi_npci/devices/{id}',                          'UpiController@isDeviceVerified'                                    ],
+        'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -581,6 +586,7 @@ final class Route
     );
 
     public static $direct = array(
+        'upi_get_bank_list',
         'account',
         'dummy_route',
         'invoice_view_live',
@@ -591,6 +597,10 @@ final class Route
         'mock_hdfc_3dsecure',
         'mock_cybersource_acs',
         'transparent_redirect_get',
+        'handle_upi',
+        'register_device',
+        'is_device_verified',
+        'zero_upi_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
