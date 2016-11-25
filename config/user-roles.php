@@ -60,5 +60,5 @@ return [
     'invoices_fetch_all'        => $all,
     'invoices_fetch_single'     => $all,
     // Support role can't create invoices, but sellerapp role can
-    'invoices_create'           => $writers + ['sellerapp'],
+    'invoices_create'           => array_merge($writers, ['sellerapp']),
 ];
