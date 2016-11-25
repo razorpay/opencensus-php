@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Exception;
 
@@ -16,6 +17,11 @@ class TerminalLoadSorter extends Terminal\Sorter
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
             'load'       => 0,
+        ],
+
+        '1000AxisMigsTl' => [
+            'gateway'    => Gateway::AXIS_MIGS,
+            'load'       => 5,
         ],
 
         // Test terminals, won't be used on prod.

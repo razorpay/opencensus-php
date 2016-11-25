@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Models\Card\Network;
 
 class MerchantFilter extends Terminal\Filter
 {
@@ -162,7 +163,13 @@ class MerchantFilter extends Terminal\Filter
 
             if (in_array($gateway, $excludedGateways))
             {
-                return false;
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
             }
         }
 

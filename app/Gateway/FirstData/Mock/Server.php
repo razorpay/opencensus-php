@@ -14,7 +14,6 @@ class Server extends Base\Mock\Server
 {
     public function __construct()
     {
-
         parent::__construct();
 
         $this->repo = new FirstData\Repository;
@@ -167,6 +166,35 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
+        ];
+
+        $this->content($content);
+
+        $refundResponse = $this->buildIpgApiOrderResponse($content);
+
+        return $this->prepareResponse($refundResponse);
+    }
+
+    public function reverse($input)
+    {
+        parent::reverse($input);
+
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $dateTime = Carbon::now('Asia/Kolkata');
+
+        $content = [
+            FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => "APPROVED",
         ];
 
         $this->content($content);
