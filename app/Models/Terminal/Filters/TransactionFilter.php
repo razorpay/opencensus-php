@@ -8,6 +8,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
 
 class TransactionFilter extends Terminal\Filter
@@ -164,11 +165,11 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     // If corporate or mutual_funds then the corresponding
-                    // terminal should not be used, i.e only the shared terminal
-                    // should be returned.
+                    // terminal should not be used. i.e allowing only the
+                    // null or the default terminal through.
                     case 'corporate':
                     case 'mutual_funds':
-                        return (($terminalNetworkCategory === $merchantCategory2) ? false : true);
+                        return ($terminalNetworkCategory !== $merchantCategory2);
                         break;
                 }
             }
