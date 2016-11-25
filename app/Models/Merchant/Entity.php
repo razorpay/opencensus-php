@@ -704,4 +704,20 @@ class Entity extends Base\PublicEntity
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
+
+    public function groups()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function toArrayPublic()
+    {
+         $merchant = parent::toArrayPublic();
+
+         $groups = $this->groups;
+
+         $merchant['groups'] = $groups->toArrayPublic()['items'];
+
+         return $merchant;
+    }
 }

@@ -344,4 +344,22 @@ class Service extends Base\Service
 
         return $admin->toArrayPublic();
     }
+
+    public function getMerchantIds($adminId)
+    {
+        $adminId = Entity::getSignedId($adminId);
+        $admin = new Entity($this->getAdminById($adminId));
+        $adminGroups = $admin->groups;
+
+        $merchants = [];
+
+        foreach ($adminGroups as $group) {
+            array_merge($merchants, $group->merchants->all());
+        }
+        array_merge($merchants, $admin->merchants->all());
+
+        $merchantIds = array_column($merchants, 'id');
+
+        return $merchantIds;
+    }
 }

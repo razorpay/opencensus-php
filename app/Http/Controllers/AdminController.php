@@ -436,4 +436,9 @@ class AdminController extends Controller
 
         return ApiResponse::json([], $responseStatus);
     }
+
+    public function getMerchantIds($adminId)
+    {
+        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($adminId);
+    }
 }
