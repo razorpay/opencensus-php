@@ -14,14 +14,14 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
 
-        $invoice = (new Generator($this->merchant))->generate($input);
+        $invoice = (new Generator($merchant))->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -40,13 +40,10 @@ class Core extends Base\Core
                 'medium'     => $medium,
             ]);
 
+        $invoice->getValidator()->validateSendNotificationRequest($invoice, $medium);
+
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
-
-        if (method_exists($notifier, $commFunc) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException("Not a valid medium");
-        }
 
         $response = $notifier->$commFunc();
 
