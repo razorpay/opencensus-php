@@ -15,6 +15,8 @@ class Accessor extends Base\Core
 
     const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
 
+    const STORAGE_DIRECTORY = 'files/filestore/';
+
     /**
      * Set the Id in Query Param
      *
@@ -78,12 +80,12 @@ class Accessor extends Base\Core
      */
     public function get()
     {
-        $data = $this->getObject();
+        $data = $this->getEntity();
 
         return $data->toArrayPublic();
     }
 
-    protected function getObject()
+    protected function getEntity()
     {
         $this->updateMerchantId();
 
@@ -100,18 +102,51 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $data = $this->getObject();
+        $data = $this->getEntity();
 
-        if ($data->count() !== 1)
-        {
-            throw new Exception\LogicException('Multi file fetch not supported');
-        }
+        $this->validateFileCount($data);
 
         $data = $data->first();
 
         $storageHandler = Store::getHandler($data->store);
 
-        return $storageHandler->read($data->bucket, $data->location);
+        $filePath = $this->createFullFilePath($data->location);
+
+        $storageHandler->saveAs($data->bucket, $data->location, $filePath);
+
+        return $filePath;
+    }
+
+    protected function createFullFilePath($location)
+    {
+        return $this->getStorageDir() . $location;
+    }
+
+    protected function getStorageDir()
+    {
+        return storage_path(self::STORAGE_DIRECTORY);
+    }
+
+    /**
+     * Throws Exception if Invalid No of files are found
+     *
+     * @param Base\PublicCollection
+     *
+     * @return void
+     * @throws Exception\LogicException
+     */
+    protected function validateFileCount($data)
+    {
+        // TODO : Make it more meaningful
+        if ($data->count() === 0)
+        {
+            throw new Exception\LogicException('No file found');
+        }
+
+        if ($data->count() > 1)
+        {
+            throw new Exception\LogicException('Multi file fetch not supported');
+        }
     }
 
     /**

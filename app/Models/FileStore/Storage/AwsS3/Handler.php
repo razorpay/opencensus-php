@@ -58,13 +58,15 @@ class Handler extends Base\Handler
         return $result['ObjectURL'];
     }
 
-    public function read($bucket, $key)
+    public function saveAs($bucket, $key, $filePath)
     {
         $s3 = self::getClient();
 
         try
         {
             $s3Obj = $this->getS3FetchObj($bucket, $key);
+
+            $s3Obj['SaveAs'] = $filePath;
 
             $result = $s3->getObject($s3Obj);
 
@@ -78,8 +80,6 @@ class Handler extends Base\Handler
 
             throw $e;
         }
-
-        return $result['Body']->getContents();
     }
 
     public function getSignedUrl($bucket, $key, $duration = '15')
