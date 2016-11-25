@@ -2,7 +2,6 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
-use DB;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository

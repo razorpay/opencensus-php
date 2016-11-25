@@ -5,24 +5,15 @@ namespace RZP\Models\GatewayStatus\Absence;
 use RZP\Models\GatewayStatus\Absence;
 use RZP\Trace\TraceCode;
 use App;
+use RZP\Models\Base;
 
-class Processor
+class Processor extends Base\Core
 {
-    protected $app;
-
-    protected $repo;
-
-    protected $trace;
-
-    protected $uniqueChechkerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD];
+    protected $uniqueCheckerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD];
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
-
-        $this->trace = $this->app['trace'];
+        parent::__construct();
     }
     
     public function createAction(array $input)
@@ -69,7 +60,7 @@ class Processor
     {
         $queryParams = [];
 
-        foreach($this->uniqueChechkerKeys as $key)
+        foreach($this->uniqueCheckerKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -78,12 +69,7 @@ class Processor
         }
 
         $absentees = $this->repo->gateway_absence->fetchAbsent($queryParams);
-
-        if ($absentees->count() > 0)
-        {
-            return $absentees->first();
-        }
-
-        return null;
+        
+        return $absentees->first();
     }
 }

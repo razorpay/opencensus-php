@@ -2,8 +2,6 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
-use App;
-
 use RZP\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception;
@@ -30,7 +28,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::FROM            => 'sometimes|integer',
+        Entity::FROM            => 'required|integer',
         Entity::TO              => 'required|integer',
     ];
 

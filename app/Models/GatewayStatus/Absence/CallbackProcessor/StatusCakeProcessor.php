@@ -11,21 +11,10 @@ use RZP\Models\Payment\Method;
 use RZP\Models\GatewayStatus\Absence\Entity;
 use RZP\Models\GatewayStatus\Absence\ReasonCode;
 use RZP\Models\GatewayStatus\Absence\Processor;
-use RZP\Error\ErrorCode;
+use RZP\Models\Base\Core;
 
-class StatusCakeProcessor extends AbstractProcessor
+class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 {
-
-    protected $app;
-
-    protected $trace;
-
-    protected $repo;
-
-    protected $sCakeUsername;
-    
-    protected $sCakeApiKey;
-
     protected $processor;
 
     const STATUS_UP = 'UP';
@@ -34,17 +23,18 @@ class StatusCakeProcessor extends AbstractProcessor
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->trace = $this->app['trace'];
+        parent::__construct();
         
-        $this->repo = $this->app['repo'];
-
-        $this->sCakeUsername = $this->app['config']->get('gateway.absence.statuscake.username');
-
-        $this->sCakeApiKey = $this->app['config']->get('gateway.absence.statuscake.api_key');
-
         $this->processor = new Processor();
+    }
+
+    protected function fetchStatusCakeCredentials()
+    {
+        $uname = $this->app['config']->get('gateway.absence.statuscake.username');
+        
+        $apiKey = $this->app['config']->get('gateway.absence.statuscake.api_key');
+        
+        return [$uname, $apiKey];
     }
 
     public function process(array $input)
@@ -52,34 +42,31 @@ class StatusCakeProcessor extends AbstractProcessor
         try
         {
             $this->validateRequest($input);
-        }
-        catch(\Exception $e)
-        {
-            throw $e;
-        }
-        
-        try 
-        {
-            list($data, $status) = $this->formatInput($input);
+
+            $sStatus = strtoupper($input['Status']);
+            
+            $status = null;
+
+            if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]))
+            {
+                $status = ($sStatus === self::STATUS_UP) ? 1 : 0;    
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $sStatus);
+            }
+            
+            $data = $this->formatInput($input, $status);
 
             if ($status === 1)
             {
-                // this is a flip from down to up, hence fetch the entry that is down and update accordingly
-                // fetch the issuer who is currently down(without to time in case of an unscheduled downtime)
-                $params = [
-                    Entity::GATEWAY => $data[Entity::GATEWAY],
-                    Entity::ISSUER  => $data[Entity::ISSUER],
-                    Entity::METHOD  => $data[Entity::METHOD],
-                    Entity::SOURCE  => $data[Entity::SOURCE]
-                ];
-
                 $absent = $this->processor->verifyIfExists($data);
 
                 if (empty($absent) === false)
                 {
                     $editData = [
                         Entity::FROM => $absent->getFrom(),
-                        Entity::TO => time()
+                        Entity::TO   => time()
                     ];
 
                     return $this->processor->editAction($absent->id, $editData);
@@ -88,7 +75,7 @@ class StatusCakeProcessor extends AbstractProcessor
             else
             {
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
-                // events for the same url. Hence we do not need to apply any de-duplication here
+                // events for the same url.
                 return $this->processor->createAction($data);
             }
         }
@@ -107,16 +94,18 @@ class StatusCakeProcessor extends AbstractProcessor
             throw new Exception\BadRequestValidationFailureException("StatusCake Token Missing");
         }
 
-        return $this->validateToken($input);
+        $this->validateToken($input);
     }
 
     protected function validateToken(array $input)
     {
         $token = $input['Token'];
+        
+        list($uname, $apiKey) = $this->fetchStatusCakeCredentials();
 
-        $key = $this->sCakeUsername.$this->sCakeApiKey;
+        $key = $uname.$apiKey;
 
-        if (strcmp(md5($key),$token) != 0)
+        if (strcmp(md5($key), $token) != 0)
         {
             $msg = ['token' => $token, 'computed' => md5($key)];
 
@@ -125,7 +114,7 @@ class StatusCakeProcessor extends AbstractProcessor
             throw new Exception\BadRequestValidationFailureException("StatusCake Token Validation Failure");
         }
 
-        return $this->validateInput($input);
+        $this->validateInput($input);
     }
 
     protected function validateInput(array $input)
@@ -140,7 +129,7 @@ class StatusCakeProcessor extends AbstractProcessor
         }
     }
 
-    protected function formatInput(array $input)
+    protected function formatInput(array $input, int $status)
     {
         $formatted = [
             Entity::SOURCE      => ReasonCode::SOURCE_STATUSCAKE,
@@ -148,10 +137,6 @@ class StatusCakeProcessor extends AbstractProcessor
             Entity::METHOD      => Method::NETBANKING,
             Entity::PARTIAL     => false,
         ];
-
-        $sStatus = strtoupper($input['Status']);
-
-        $status = ($sStatus === self::STATUS_UP) ? 1 : 0;
 
         if ($status === 1)
         {
@@ -180,6 +165,6 @@ class StatusCakeProcessor extends AbstractProcessor
 
         $formatted[Entity::COMMENT] = "STATUSCAKE STATUSCODE : ". $input['StatusCode'];
 
-        return [$formatted, $status];
+        return $formatted;
     }
 }

@@ -4,7 +4,6 @@ namespace RZP\Models\GatewayStatus\Absence;
 
 use RZP\Models\Base;
 use RZP\Models\GatewayStatus\Absence\CallbackProcessor;
-use RZP\Models\GatewayStatus\Absence\Processor;
 
 class Service extends Base\Service
 {

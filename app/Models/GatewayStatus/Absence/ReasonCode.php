@@ -37,5 +37,4 @@ class ReasonCode
     {
         return in_array(strtoupper($source), self::$sources);
     }
-
 }
