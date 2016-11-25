@@ -277,6 +277,8 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
+        $adminId = Auth::guard('api')->id();
+        $merchantIdsToList = $this->getMerchantIdsToList($adminId);
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select([
                 'id',
@@ -289,7 +291,8 @@ class Service extends Base\Service
                 'merchant_details.updated_at',
                 'submitted_at',
                 'archived_at'
-        ])->with('tagged');
+        ])->with('tagged')
+          ->whereIn('merchants.id', $merchantIdsToList);
 
 
         if (isset($input['tags']))
@@ -362,6 +365,12 @@ class Service extends Base\Service
         $response = $response->toArray();
 
         return ['count'=>count($response), 'data'=>$response];
+    }
+
+    public function getMerchantIdsToList(string $adminId)
+    {
+        $this->setApiCredentials();
+        return $this->api->admin->fetchMerchantIds($adminId);
     }
 
     public function getAdmins()

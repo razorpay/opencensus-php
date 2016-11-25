@@ -386,6 +386,7 @@ angular.module('app.services', [])
             groups = {};
           }
         }).error(function () {
+          return data.errors
         });
         return groups;
       },

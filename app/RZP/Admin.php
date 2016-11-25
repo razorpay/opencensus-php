@@ -36,6 +36,11 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
+    public function fetchMerchantIds($adminId)
+    {
+        $relativeUrl = $this->getEntityUrl(). '' .$adminId.'/merchant_ids';
+    }
+
     public function sendNewsletter($params)
     {
         $relativeUrl = $this->getEntityUrl(). 'newsletter/mail';
