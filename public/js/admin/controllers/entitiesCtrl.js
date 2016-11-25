@@ -210,7 +210,14 @@ app.controller('EntitiesCtrl', [
         vault: ['Vault'],
         vault_token: ['Vault Token'],
       },
-      credits: {},
+      credits: {
+          merchant_id: ['Merchant Id'],
+          type: [
+             'all',
+             'fee',
+             'amount'
+          ]
+      },
       customer: {
         merchant_id: ['Merchant Id'],
         email: ['Email'],
@@ -293,13 +300,16 @@ app.controller('EntitiesCtrl', [
             'platform',
             'customer'
         ],
+        risk_rating: [
+            'all',
+            1, 2, 3, 4, 5
+        ],
         hold_funds: booleanList
       },
       methods: {
         amex: booleanList,
         card: booleanList,
         emi: booleanList,
-        merchant_id: ['Merchant Id'],
         mobikwik: booleanList,
         paytm: booleanList,
         payumoney: booleanList,
@@ -307,7 +317,8 @@ app.controller('EntitiesCtrl', [
         olamoney: booleanList,
         upi: booleanList,
         airtelmoney: booleanList,
-        freecharge: booleanList
+        freecharge: booleanList,
+        merchant_id: ['Merchant Id']
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
@@ -329,7 +340,8 @@ app.controller('EntitiesCtrl', [
       },
       payment_analytics: {
         checkout_id: ['Checkout Id'],
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        merchant_id: ['Merchant Id']
       },
       payment: {
         app_token: ['App Token'],
@@ -430,7 +442,9 @@ app.controller('EntitiesCtrl', [
       webhook: {
         merchant_id: ['Merchant Id'],
       },
-      schedule: {}
+      schedule: {
+        merchant_id: ['Merchant Id']
+      }
     };
 
     var onWatchUpdate = function(newValue, oldValue) {

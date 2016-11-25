@@ -155,12 +155,16 @@ class Validator extends Base\Validator
         'promoter_pan_proof'            => 'Authorised Signatory PAN Proof',
         'promoter_address_proof'        => 'Authorised Signatory Address Proof'
     );
-    protected static $allowed_extensions = array(
-        'pdf', 'png', 'jpg', 'jpeg'
+    const ALLOWED_EXTENSIONS = array(
+        'pdf', 'png', 'jpg', 'jpeg', 'zip'
     );
 
-    protected static $allowed_mimes = array(
-       'image/jpeg', 'image/png', 'application/pdf', 'application/x-pdf'
+    const ALLOWED_MIMES = array(
+       'image/jpeg',
+       'image/png',
+       'application/pdf',
+       'application/x-pdf',
+       'application/zip'
     );
 
     public static function checkFileUpload($input)
@@ -191,8 +195,9 @@ class Validator extends Base\Validator
             try
             {
                 $mime = $file->getMimeType();
-                if ((in_array($extension, static::$allowed_extensions) === false) or
-                    (in_array($mime, static::$allowed_mimes) === false))
+
+                if ((in_array($extension, self::ALLOWED_EXTENSIONS) === false) or
+                    (in_array($mime, self::ALLOWED_MIMES) === false))
                 {
                     $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
                 }
