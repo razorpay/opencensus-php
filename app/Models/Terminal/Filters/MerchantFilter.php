@@ -11,45 +11,10 @@ use RZP\Models\Card\Network;
 class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
-        // 'tpv',
         'incompatible',
         'category',
         'gateway',
     ];
-
-    /**
-     * Filter applies for securities, commodities merchants
-     * Only for the netbanking method.
-     * Allow Only Third Party Validation (TPV) terminals for
-     * TPV required merchants, and non TPV terminals for non
-     * TPV merchants.
-     *
-     * --- Temporarily allowing only present merchants to make payments via
-     * --- this terminals. Harding a support for 6211, 9999 earlier TPV
-     * Other will be
-     *
-     * --- REMOVE As soon all older merchants are tagged correctly.
-     *
-     * @param Terminal\Entity $terminal
-     * @param array $input
-     * @return bool
-     */
-    public function tpvFilter(Terminal\Entity $terminal, array $input)
-    {
-        if ($input['payment']->isNetbanking())
-        {
-            $tpvCategories = [6211, 9999];
-
-            if (in_array($input['merchant']->getCategory(), $tpvCategories))
-            {
-                return ($terminal->isTPVTerminal() === true);
-            }
-
-            return ($terminal->isTPVTerminal() === false);
-        }
-
-        return true;
-    }
 
 
     /**
