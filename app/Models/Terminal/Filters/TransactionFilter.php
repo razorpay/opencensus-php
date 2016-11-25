@@ -18,6 +18,7 @@ class TransactionFilter extends Terminal\Filter
         'international',
         'bank',
         'maestro',
+        'icici_billdesk',
         'recurring',
     ];
 
@@ -128,6 +129,46 @@ class TransactionFilter extends Terminal\Filter
                 ($input['mode'] === Mode::LIVE))
             {
                 return Shared::isSharedTerminal($terminal);
+            }
+        }
+
+        return true;
+    }
+
+    public function iciciBilldeskFilter($terminal, $input)
+    {
+        if ($input['payment']->isNetbanking())
+        {
+            $bank = $input['payment']->getBank();
+
+            $terminalGateway = $terminal->getGateway();
+
+            if (($bank === IFSC::ICIC) and
+                ($terminalGateway === Gateway::BILLDESK))
+            {
+                $merchantCategory2 = $input['merchant']->getCategory2();
+
+                $terminalNetworkCategory = $terminal->getNetworkCategory();
+
+                // Two rules to be checked
+                switch ($merchantCategory2)
+                {
+                    // If securities or commodities then the shared terminal
+                    // should not be used, i.e on the shared terminal return
+                    // false.
+                    case 'securities' :
+                    case 'commodities' :
+                        return ($terminal->isShared() === false);
+                        break;
+
+                    // If corporate or mutual_funds then the corresponding
+                    // terminal should not be used, i.e only the shared terminal
+                    // should be returned.
+                    case 'corporate':
+                    case 'mutual_funds':
+                        return (($terminalNetworkCategory === $merchantCategory2) ? false : true);
+                        break;
+                }
             }
         }
 
