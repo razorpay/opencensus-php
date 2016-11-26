@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
     const UPI_TOKEN             = 'upi_token';
     const VERIFIED_AT           = 'verified_at';
     const REGISTERED_AT         = 'registered_at';
-    const CUSTOMER              = 'customer';
+    const CUSTOMER_DETAILS      = 'customer_details';
 
     protected static $sign = 'dev';
 
@@ -53,7 +53,7 @@ class Entity extends Base\PublicEntity
         self::OS,
         self::OS_VERSION,
         self::TAG,
-        self::CUSTOMER,
+        self::CUSTOMER_DETAILS,
         self::UPI_TOKEN,
         self::STATUS,
         self::CUSTOMER_ID,
@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::PUBLIC_ID,
-        self::CUSTOMER,
+        self::CUSTOMER_DETAILS,
     ];
 
     // ----------------------- Getters -----------------------
@@ -116,9 +116,9 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Accessors -----------------------
 
-    protected function getCustomerAttribute()
+    protected function getCustomerDetailsAttribute()
     {
-        $customer = $this->customer()->getResults();
+        $customer = $this->customer;
 
         if ($customer === null)
         {
