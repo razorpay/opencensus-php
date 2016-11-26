@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Models\Upi\Service;
 use ApiResponse;
 use View;
 use Cache;
@@ -10,11 +11,16 @@ use Request;
 
 class UpiController extends Controller
 {
+    protected $service;
+
+    public function __construct()
+    {
+        $this->service = new Service;
+    }
+
     public function handle(string $api, string $id)
     {
         $body = Request::getContent();
-
-        Trace::info('MISC_TRACE_CODE', Request::all() + ['content' => $body ] );
 
         $xml = simplexml_load_string($body);
         $e = $xml->xpath('//Head')[0];
@@ -57,7 +63,10 @@ class UpiController extends Controller
         $resp = <<<EOT
 <?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
 EOT;
-        Trace::info('GATEWAY_PAYMENT_RESPONSE', ['req'=>$body, 'ackbody' => $resp]);
+        if ($api !== 'RespHbt')
+        {
+            Trace::info('GATEWAY_PAYMENT_RESPONSE', ['req'=>$body, 'ackbody' => $resp]);
+        }
 
         return response($resp)
             ->header('Content-Type', 'application/xml');
@@ -104,16 +113,18 @@ EOT;
     {
         $input = Request::all();
 
-        $msg = $input['msg'];
-        $mobile = $input['from'];
+        Trace::info('MISC_TRACE_CODE', $input);
 
-        $deviceId = Cache::get("devices.verification.$msg");
+        // Msg91 converts the keyword to lowecase
+        $keyword = trim(strtoupper($input['keyword']))
 
-        $device = Cache::get("devices.$deviceId");
+        if ($keyword === 'VERIFY')
+        {
+            $msg = $input['message'];
+            $mobile = $input['number'];
+        }
 
-        $device['mobile'] = $mobile;
-
-        $this->makeGatewayRequest('GetToken', $device);
+        ApiResponse::json($input);
     }
 
     public function isDeviceVerified($deviceId)

@@ -308,6 +308,7 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'msg91_sms_webhook'                       => ['post',     'msg91/callback',                                 'UpiController@verifyDevice'                                        ],
         'device_create'                           => ['post',     'devices/create',                                 'UpiController@deviceCreate'                                        ],
         'device_verify'                           => ['get',      'devices/verify',                                 'UpiController@deviceVerify'                                        ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                            ],
@@ -595,6 +596,7 @@ final class Route
     );
 
     public static $direct = array(
+        'msg91_sms_webhook',
         'upi_get_bank_list',
         'upi_read_async',
         'get_bank_account_list',
