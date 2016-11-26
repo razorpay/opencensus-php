@@ -71,6 +71,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function hasBeenRegistered()
+    {
+        return ($this->getAttribute(self::REGISTERED_AT) !== null);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setStatus($status)

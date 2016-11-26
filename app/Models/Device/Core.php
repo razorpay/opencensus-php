@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Upi;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -22,11 +23,13 @@ class Core extends Base\Core
         $this->upiCore = new Upi\Core;
     }
 
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $device = new Entity();
 
         $device->build($input);
+
+        $device->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($device);
 
@@ -57,6 +60,11 @@ class Core extends Base\Core
     public function updateUpiToken(Entity $device, string $upiToken)
     {
         $device->setUpiToken($upiToken);
+        
+        if ($device->hasBeenRegistered() === false)
+        {
+            $device->setStatus(Status::REGISTERED);
+        }
 
         $device = $this->repo->saveOrFail($device);
 

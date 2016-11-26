@@ -20,7 +20,7 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $device = $this->core->create($input);
+        $device = $this->core->create($input, $this->merchant);
 
         return $device->toArrayPublic();
     }
