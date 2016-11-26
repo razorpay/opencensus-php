@@ -242,23 +242,12 @@ class Generator extends Base\Core
     {
         $lineItems = [];
 
-        foreach ($lineItemsDetails as $lineItemDetails)
+        foreach ($lineItemsDetails as $singleLineItem)
         {
-            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
-            {
-                $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
-
-                $item = $this->getItemFromItemId($itemId);
-            }
-            else
-            {
-                list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
-
-                $item = $this->createItemFromItemDetails($itemDetails);
-            }
+            $item = $this->getItemForLineItem($singleLineItem);
 
             $lineItem = $this->lineItemCore->create(
-                $lineItemDetails,
+                $singleLineItem,
                 $this->merchant,
                 $this->invoice,
                 $item
@@ -268,6 +257,32 @@ class Generator extends Base\Core
         }
 
         return $lineItems;
+    }
+
+    /**
+     * Get item details if item_id is set.
+     * Otherwise create item with item relevant input from line item.
+     * If item is created, then item related input in line item needs to
+     * be removed from line item. That's why $lineItem is passed by reference.
+     *
+     * Returns item created for the line item.
+     */
+    protected function getItemForLineItem(array & $lineItem)
+    {
+        if (isset($lineItem[LineItem\Entity::ITEM_ID]) === true)
+        {
+            $itemId = $lineItem[LineItem\Entity::ITEM_ID];
+
+            $item = $this->getItemFromItemId($itemId);
+        }
+        else
+        {
+            $itemDetails = $this->separateItemInputFromLineItemInput($lineItem);
+
+            $item = $this->createItemFromItemDetails($itemDetails);
+        }
+
+        return $item;
     }
 
     protected function getItemFromItemId($itemId)
@@ -363,15 +378,17 @@ class Generator extends Base\Core
     }
 
     /**
-     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
-     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
-     *     This function separates those payloads for it to be used further.
+     * Request payload contains flattened linesItemDetails,
+     * i.e. It has line item attributes (eg. quantity) and
+     * the contained item attributes (eg. name, amount etc.).
+     *
+     * This function separates those payloads for it to be used further.
      *
      * @param array $lineItemDetails
      *
      * @return array
      */
-    protected function separateInput(array $lineItemDetails)
+    protected function separateItemInputFromLineItemInput(array & $lineItemDetails)
     {
         $itemDetails = [];
 
@@ -385,7 +402,7 @@ class Generator extends Base\Core
             }
         }
 
-        return [$lineItemDetails, $itemDetails];
+        return $itemDetails;
     }
 
     /**
