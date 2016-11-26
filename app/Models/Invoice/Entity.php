@@ -438,7 +438,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = $customerId ? Customer\Entity::getSignedId($customerId) : null;
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     protected function setPublicOrderIdAttribute(array & $array)

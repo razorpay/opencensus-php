@@ -94,7 +94,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function getFormattedInvoiceData(Merchant\Entity $merchant, $invoiceId)
+    public function getFormattedInvoiceData($invoiceId, Merchant\Entity $merchant)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
 
@@ -114,17 +114,22 @@ class Core extends Base\Core
     }
 
     /**
-     * Pulls customer details from payment entity if not already exists in invoice since creation time.
+     * Pulls customer details from payment entity if not
+     * already exists in invoice since creation time.
      */
     public function pullCustomerDetailsFromPaymentIfNotExists(Payment\Entity $payment)
     {
         $invoice = $payment->order->invoice;
 
+        // Check if customer detail already exists in invoice.
+        // If yes then simply return.
         if ($invoice->customer)
         {
             return $payment;
         }
 
+        // If payment has a customer associated, then associate that to invoice.
+        // Otherwise simply copy the email and contact details from payment.
         if ($payment->customer)
         {
             $invoice->customer()->associate($payment->customer);
@@ -137,7 +142,5 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($invoice);
-
-        return $payment;
     }
 }
