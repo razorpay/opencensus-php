@@ -311,6 +311,7 @@ final class Route
         'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
+        'msg91_sms_webhook'                       => ['post',     'msg91/callback',                                 'UpiController@verifyDevice'                                        ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
     );
 
@@ -597,6 +598,7 @@ final class Route
     );
 
     public static $direct = array(
+        'msg91_sms_webhook',
         'upi_get_bank_list',
         'upi_read_async',
         'get_bank_account_list',
