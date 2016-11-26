@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
 
 class ApiEventSubscriber
 {
@@ -114,6 +115,8 @@ class ApiEventSubscriber
 
     protected function onInvoicePaid($payment)
     {
+        $payment = (new Invoice\Core())->pullCustomerDetailsFromPaymentIfNotExists($payment);
+
         $payload = $this->getInvoicePayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);

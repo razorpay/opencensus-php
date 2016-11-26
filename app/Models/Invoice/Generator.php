@@ -91,8 +91,6 @@ class Generator extends Base\Core
                 {
                     $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
 
-                    $this->setCustomerDetailsAttributes();
-
                     $this->setStatus($input);
 
                     $this->setShortUrl();
@@ -195,19 +193,6 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function setCustomerDetailsAttributes()
-    {
-        if (empty($this->customer))
-        {
-            return;
-        }
-
-        $this->invoice->setCustomerName($this->customer->getName());
-        $this->invoice->setCustomerContact($this->customer->getContact());
-        $this->invoice->setCustomerEmail($this->customer->getEmail());
-        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddressId());
-    }
-
     protected function associateLineItemsToInvoice()
     {
         foreach ($this->lineItems as $lineItem)
@@ -235,6 +220,7 @@ class Generator extends Base\Core
         if ($this->customer)
         {
             $this->invoice->customer()->associate($this->customer);
+            $this->invoice->setCustomerDetails($this->customer);
         }
     }
 

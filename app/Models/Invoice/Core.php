@@ -112,4 +112,32 @@ class Core extends Base\Core
 
         return $data;
     }
+
+    /**
+     * Pulls customer details from payment entity if not already exists in invoice since creation time.
+     */
+    public function pullCustomerDetailsFromPaymentIfNotExists(Payment\Entity $payment)
+    {
+        $invoice = $payment->order->invoice;
+
+        if ($invoice->customer)
+        {
+            return $payment;
+        }
+
+        if ($payment->customer)
+        {
+            $invoice->customer()->associate($payment->customer);
+            $invoice->setCustomerDetails($payment->customer);
+        }
+        else
+        {
+            $invoice->setCustomerEmail($payment->getEmail());
+            $invoice->setCustomerContact($payment->getContact());
+        }
+
+        $this->repo->saveOrFail($invoice);
+
+        return $payment;
+    }
 }

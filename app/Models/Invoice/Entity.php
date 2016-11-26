@@ -316,6 +316,19 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- Setters --------------------------------------
 
+    public function setCustomerDetails(Customer\Entity $customer)
+    {
+        if (empty($customer))
+        {
+            return;
+        }
+
+        $this->setCustomerName($customer->getName());
+        $this->setCustomerContact($customer->getContact());
+        $this->setCustomerEmail($customer->getEmail());
+        $this->setCustomerAddress($customer->getCurrentShippingAddressId());
+    }
+
     public function setCustomerName($customerName)
     {
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
