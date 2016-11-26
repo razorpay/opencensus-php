@@ -27,7 +27,6 @@ class Gateway extends Base\Gateway
 
     public function makeRequest($method, $params)
     {
-
         $txnId = upi_uuid();
         $ids = [upi_uuid(), upi_uuid()];
         $ts = upi_ts();

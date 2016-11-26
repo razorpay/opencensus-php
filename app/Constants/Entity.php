@@ -23,6 +23,7 @@ class Entity
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
+    const DEVICE                = 'device';
     const REFUND                = 'refund';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';

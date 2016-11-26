@@ -18,7 +18,7 @@ class Table
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
     const SCHEDULE              = 'schedules';
-    const UPI_DEVICE            = 'upi_devices';
+    const DEVICE                = 'devices';
     const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
@@ -27,7 +27,6 @@ class Table
     const TERMINAL              = 'terminals';
     const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
-    const SCHEDULE              = 'schedules';
     const EMI_PLAN              = 'emi_plans';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';

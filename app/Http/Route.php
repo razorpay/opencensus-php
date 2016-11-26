@@ -308,9 +308,9 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
-        'device_create'                           => ['post',     'devices/create',                                 'UpiController@deviceCreate'                                        ],
-        'device_verify'                           => ['get',      'devices/verify',                                 'UpiController@deviceVerify'                                        ],
-        'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                            ],
+        'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
+        'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
+        'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
     );
 
@@ -363,6 +363,8 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
+        'device_create',
+        'device_verify',
     );
 
     public static $publicCallback = array(
