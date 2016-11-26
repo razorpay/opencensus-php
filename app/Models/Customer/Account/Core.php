@@ -5,6 +5,7 @@ namespace RZP\Models\Customer;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
+use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
@@ -307,7 +308,7 @@ class Core extends Base\Core
     }
 
     public function sendSetMpinRequestToGateway(
-        Entity $device, Customer\Entity $customer, BankAccount\Entity $bankAccount, array $input)
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
     {
         $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();

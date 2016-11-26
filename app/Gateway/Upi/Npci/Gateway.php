@@ -110,9 +110,6 @@ EOT;
 <Detail name="ACTYPE" value="SAVINGS"/>
 <Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
 </Ac>
-<Ac addrType="MOBILE">
-<Detail name="MOBNUM" value="{$bankAcccount['beneficiary_mobile']}"/>
-</Ac>
 </Payer>
 <RegDetails type="FORMAT1">
 <Detail name="MOBILE" value="{$customer['contact']}"/>
@@ -139,18 +136,6 @@ EOT;
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
 
-    public function getRespRegMobResponse($reqMsgId)
-    {
-        extract($this->getCommonVariables());
-        return <<<EOT
-<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgID" msgId="$msgId"/>
-<Txn id="$txnId" note="SUCCESS" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
-<Resp reqMsgId="$reqMsgId" result="SUCCESS" />
-</upi:RespRegMob>
-EOT;
-    }
-
     public function makeRequest(array $input)
     {
         $method = $input['method'];
@@ -159,6 +144,41 @@ EOT;
         extract($this->getCommonVariables());
 
         switch ($method) {
+            case 'ReqManageVae':
+$str = <<<EOT
+<upi:ReqManageVae xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ManageVae" />
+<VaeList>
+<Vae op="ADD" seqNum="1" name="Razorpay" addr="pay@razor" logo="image" url="https://razorpay.com/images/logo-black.png"/>
+</VaeList>
+</upi:ReqManageVae>
+EOT;
+    break;
+            case 'ReqValAdd':
+                $str = <<<EOT
+<upi:ReqValAdd xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="SAY YES PLEASE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ValAdd" />
+<Payer addr="pay@razor" name="Abhay Rana" seqNum="1" type="PERSON" code="0000">
+<Info>
+<Rating verifiedAddress="TRUE"/>
+<Identity type="ACCOUNT" verifiedName="Abhay Rana" />
+</Info>
+</Payer>
+<Payee seqNum="1" addr="nemotest@pockets" name="LIC"/>
+</upi:ReqValAdd>
+EOT;
+
+                break;
+            case 'ReqListVae':
+                $str = <<<EOT
+<upi:ReqListVae xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ListVae" />
+</upi:ReqListVae>
+EOT;
+                break;
             case 'ReqHbt':
                 $str = <<<EOT
 <upi:ReqHbt xmlns:upi="http://npci.org/upi/schema/">
@@ -227,6 +247,17 @@ EOT;
 </upi:ReqSetCre>
 EOT;
             break;
+
+            case 'RespRegMob':
+            $reqMsgId = $input['reqMsgId'];
+
+            $str = <<<EOT
+<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgID" msgId="$msgId"/>
+<Txn id="$txnId" note="SUCCESS" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
+<Resp reqMsgId="$reqMsgId" result="SUCCESS" />
+</upi:RespRegMob>
+EOT;
 
             case 'ReqRegMob':
             $str = <<<EOT
@@ -365,7 +396,7 @@ EOT;
             TraceCode::GATEWAY_RESPONSE,
             [
                 'request'   => $request,
-                'response'  => $response->body,
+                'AAAAAAAAAAAAAAAAAAAA'  => $response->body,
                 'status'    => $response->status_code,
                 'headers'   => $response->headers
             ]);

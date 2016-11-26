@@ -16,6 +16,7 @@ class Core extends Base\Core
         }
         catch (\Exception $ex)
         {
+            throw $ex;
             return ['success'=>false, 'msg' => $ex->getMessage()];
         }
     }

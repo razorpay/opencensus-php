@@ -61,6 +61,8 @@ class UpiController extends Controller
                 $creds = $this->parseSetMpinResponse($xml);
 
                 (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds['mpin']);
+
+                $this->fireRespRegMobResponse($msgId);
             }
             else
             {
@@ -229,12 +231,14 @@ EOT;
         ];
     }
 
-    protected function setMPINForCustomer(array $creds)
+    protected function fireRespRegMobResponse($msgId)
     {
-        // @yv: set the mpin etc here
-
-        $gw = new \RZP\Gateway\Upi\Npci\Gateway;
-        $xml = $gw->getRespRegMobResponse($msgId);
+        $core = new \RZP\Models\UPI\Core;
+        $arr = [
+            'params'    =>  ['reqMsgId' => $msgId],
+            'method'    =>  'RespRegMob'
+        ];
+        $xml = $core->callUpiGateway('upi_npci', 'makeRequest', $arr);
 
         return $this->generateXmlResponse($xml);
     }

@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_COUNTRY,
     );
 
-    protected static $casts = array(
+    protected $casts = array(
         self::MOBILE_BANKING_ENABLED => 'bool',
     );
 
@@ -185,7 +185,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
     }
-    
+
     public function setMpin($mpin)
     {
         return $this->setAttribute(self::MPIN, $mpin);
