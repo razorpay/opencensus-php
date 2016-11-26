@@ -117,7 +117,7 @@ EOT;
 <RegDetails type="FORMAT1">
 <Detail name="MOBILE" value="{$customer['contact']}"/>
 <Detail name="CARDDIGITS" value="{$input['last6']}"/>
-<Detail name="EXPDATE" value="{$input['expiry']"/>
+<Detail name="EXPDATE" value="{$input['expiry']}"/>
 <Creds>
 <Cred type="OTP" subType="SMS">
 <Data code="NPCI" ki="20150822">{$input['otpcredblock']}</Data>
@@ -137,6 +137,18 @@ EOT;
     protected function makeUrl($method, $txnId)
     {
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
+    }
+
+    public function getRespRegMobResponse($reqMsgId)
+    {
+        extract($this->getCommonVariables());
+        return <<<EOT
+<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgID" msgId="$msgId"/>
+<Txn id="$txnId" note="SUCCESS" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
+<Resp reqMsgId="$reqMsgId" result="SUCCESS" />
+</upi:RespRegMob>
+EOT;
     }
 
     public function makeRequest(array $input)

@@ -76,7 +76,12 @@ EOT;
             Trace::info('GATEWAY_PAYMENT_RESPONSE', ['req'=>$body, 'ackbody' => $resp]);
         }
 
-        return response($resp)
+        return $this->generateXmlResponse($resp);
+    }
+
+    protected function generateXmlResponse(string $xml)
+    {
+        return response($xml)
             ->header('Content-Type', 'application/xml');
     }
 
@@ -222,5 +227,15 @@ EOT;
             'last6'                 =>  $last6,
             'expiry'                =>  $expiry,
         ];
+    }
+
+    protected function setMPINForCustomer(array $creds)
+    {
+        // @yv: set the mpin etc here
+
+        $gw = new \RZP\Gateway\Upi\Npci\Gateway;
+        $xml = $gw->getRespRegMobResponse($msgId);
+
+        return $this->generateXmlResponse($xml);
     }
 }
