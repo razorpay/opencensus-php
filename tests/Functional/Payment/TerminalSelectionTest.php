@@ -372,16 +372,24 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'ecommerce',
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'securities',
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
              ['id' => 'SharNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
-
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl2',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'ecommerce']);
-
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl3',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'securities']);
 
@@ -391,9 +399,9 @@ class TerminalSelectionTest extends TestCase
 
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('SharNbBdkTmnl3', $payment1['terminal_id']);
+        $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
 
-        $this->fixtures->terminal->edit('SharNbBdkTmnl3',['enabled' => false]);
+        $this->fixtures->terminal->edit('DrctNbBdkTmnl3',['enabled' => false]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
@@ -449,5 +457,35 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testCorporateMerchantsBilldeskICICI()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'corporate']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        // Ideally the terminal picked should have been the corporate terminal
+        // But because of the newly added icici billdesk filter,
+        // the ecommerce one should get picked.
+        $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
     }
 }
