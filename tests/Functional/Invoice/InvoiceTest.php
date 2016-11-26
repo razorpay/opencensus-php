@@ -168,6 +168,26 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithoutLineItemsWithAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithoutLineItemsWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithoutLineItemsAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithLineItemsAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);

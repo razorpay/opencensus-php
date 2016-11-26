@@ -36,7 +36,7 @@ class Generator extends Base\Core
      */
     protected $customer;
 
-    protected $lineItems;
+    protected $lineItems = [];
 
     /**
      * @var LineItem\Core
@@ -82,7 +82,7 @@ class Generator extends Base\Core
             $customerDetails = $input[Entity::CUSTOMER];
         }
 
-        $lineItemsDetails = $input[Entity::LINE_ITEMS];
+        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
 
         try
         {
@@ -215,10 +215,13 @@ class Generator extends Base\Core
 
     protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails, array $input)
     {
-        $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
+        if ($lineItemsDetails)
+        {
+            $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
-        $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
-        $this->invoice->setAmount($invoiceAmount);
+            $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
+            $this->invoice->setAmount($invoiceAmount);
+        }
 
         $order = $this->createOrderForInvoice();
         $this->invoice->order()->associate($order);
