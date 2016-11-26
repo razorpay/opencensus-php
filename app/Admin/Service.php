@@ -280,6 +280,7 @@ class Service extends Base\Service
         $adminId = Auth::guard('api')->id();
         $orgId = Auth::guard('api')->user()->org_id;
         $merchantIdsToList = $this->getMerchantIdsToList($orgId, $adminId);
+        $merchantIdsToList = isset($merchantIdsToList[0]) ? (array)$merchantIdsToList[0] : [];
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select([
                 'id',
@@ -293,7 +294,7 @@ class Service extends Base\Service
                 'submitted_at',
                 'archived_at'
         ])->with('tagged')
-          ->whereIn('merchants.id', (array)$merchantIdsToList[0]);
+          ->whereIn('merchants.id', $merchantIdsToList);
 
 
         if (isset($input['tags']))
