@@ -464,7 +464,7 @@ class Verify extends Base\Core
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
             // exception.
-            $this->trace->traceError($e);
+            $this->trace->traceException($e);
 
             // Just continue
             $result = Result::ERROR;
