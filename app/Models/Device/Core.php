@@ -49,7 +49,7 @@ class Core extends Base\Core
 
     public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer)
     {
-        $gatewayInput['device'] = $device->toArrayPublic();
+        $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();
 
         $response = $this->upiCore->callUpiGateway('upi_npci', 'GetToken', $gatewayInput);
@@ -60,13 +60,13 @@ class Core extends Base\Core
     public function updateUpiToken(Entity $device, string $upiToken)
     {
         $device->setUpiToken($upiToken);
-        
+
         if ($device->hasBeenRegistered() === false)
         {
             $device->setStatus(Status::REGISTERED);
         }
 
-        $device = $this->repo->saveOrFail($device);
+        $this->repo->saveOrFail($device);
 
         return $device;
     }

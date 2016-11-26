@@ -6,11 +6,8 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function callUpiGateway($gateway, $method, array $params)
+    public function callUpiGateway($gateway, $method, array $gatewayData)
     {
-        $gatewayData['method'] = $method;
-        $gatewayData['params'] = $params;
-
         try
         {
             $response = $this->app['gateway']->call($gateway, $method, $gatewayData, $this->mode);

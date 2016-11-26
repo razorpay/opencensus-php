@@ -18,6 +18,11 @@ class UpiController extends Controller
     {
         $body = Request::getContent();
 
+        $this->trace->info('GATEWAY_RESPONSE', [
+            'body'  =>  $body
+        ]);
+
+
         $xml = simplexml_load_string($body);
         $e = $xml->xpath('//Head')[0];
 
@@ -37,8 +42,13 @@ class UpiController extends Controller
                 }
                 else if ($type === 'GetToken')
                 {
-                    $deviceId = '';
-                    $upiToken = '';
+                    list($deviceId, $upiToken) = $this->parseGetTokenResponse($xml);
+
+                    $this->trace->info('GATEWAY_RESPONSE', [
+                        't' =>  $upiToken,
+                        'd' =>  $deviceId,
+                        'body'  =>  $body
+                    ]);
 
                     // Update Token
                     $device = (new Device\Service)->updateUpiToken($deviceId, $upiToken);
@@ -56,6 +66,17 @@ EOT;
 
         return response($resp)
             ->header('Content-Type', 'application/xml');
+    }
+
+    protected function parseGetTokenResponse($xml)
+    {
+        $deviceId = dom_import_simplexml($xml->xpath('//Txn')[0]);
+        $deviceId = $deviceId->getAttribute('note');
+
+        $token = dom_import_simplexml($xml->xpath('//keyValue')[0]);
+        $token = $token->nodeValue;
+
+        return [$deviceId, $token];
     }
 
     public function getTxnType($str)

@@ -9,11 +9,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'device';
 
-    public function findByVerificationTokenAndMerchant(string $verificationToken, Merchant\Entity $merchant)
+    public function findByVerificationToken(string $verificationToken)
     {
         return $this->newQuery()
                     ->where(Entity::VERIFICATION_TOKEN, '=', $verificationToken)
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->firstOrFail();
     }
 }

@@ -38,21 +38,25 @@ class Service extends Base\Service
 
     public function verify(array $input)
     {
+        // TODO: Fix this
+        \Database\DefaultConnection::set('test');
         list($verificationToken, $contact) = $this->getRelevantFieldsForVerify($input);
 
-        $device = $this->repo->device->findByVerificationTokenAndMerchant($verificationToken, $this->merchant);
+        $device = $this->repo->device->findByVerificationToken($verificationToken);
         $customer = (new Customer\Core)->createGlobalCustomer([Customer\Entity::CONTACT => $contact], false);
 
         $device = $this->core->verify($device, $customer);
 
         $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
 
-        return ['device' => $device->toArrayPublic(), 'getToken' => $response];
+        // return ['device' => $device->toArrayPublic(), 'getToken' => $response];
     }
 
     public function updateUpiToken(string $deviceId, string $upiToken)
     {
-        $device = $this->repo->device->findOrFailPublic($deviceId);
+        // TODO: Fix this
+        \Database\DefaultConnection::set('test');
+        $device = $this->repo->device->findOrFail($deviceId);
 
         $device = $this->core->updateUpiToken($device, $upiToken);
 

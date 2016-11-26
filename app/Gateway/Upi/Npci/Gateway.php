@@ -28,12 +28,12 @@ class Gateway extends Base\Gateway
     protected function getCommonVariables()
     {
         return [
-            'txnId'     = upi_uuid();
-            'ids'       = [upi_uuid(), upi_uuid()];
-            'ts'        = upi_ts();
-            'msgId'     = upi_uuid();
-            'refUrl'    = "http://www.npci.org.in/";
-            'orgId'     = 'RAZOR';
+            'txnId'     => upi_uuid(),
+            'ids'       => [upi_uuid(), upi_uuid()],
+            'ts'        => upi_ts(),
+            'msgId'     => upi_uuid(),
+            'refUrl'    => "http://www.npci.org.in/",
+            'orgId'     => 'RAZOR',
         ];
     }
 
@@ -53,7 +53,7 @@ class Gateway extends Base\Gateway
         $str = <<<EOT
 <upi:ReqListKeys xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
-<Txn id="$txnId" note="$device['id']" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
+<Txn id="$txnId" note="{$device['id']}" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
 <Creds>
 <Cred type="challenge" subType="initial">
 <Data code="NPCI" ki="20150822">$data</Data>
@@ -200,7 +200,7 @@ EOT;
                 $str = <<<EOT
 <upi:ReqListKeys xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
-<Txn id="$txnId" note="$device['id']" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
+<Txn id="$txnId" note="{$device['id']}" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
 <Creds>
 <Cred type="challenge" subType="initial">
 <Data code="NPCI" ki="20150822">$data</Data>
