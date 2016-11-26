@@ -22,7 +22,8 @@
         "php-http/guzzle6-adapter": "^1.1",
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
-        "minfraud/http": "^1.70"
+        "minfraud/http": "^1.70",
+        "razorpay/upi-clients": "dev-master"
     },
     "repositories": [
         {
@@ -32,6 +33,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/slack.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/upi-clients.git"
         }
     ],
     "require-dev": {
