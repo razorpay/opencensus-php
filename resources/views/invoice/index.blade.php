@@ -107,7 +107,12 @@
             confirm_close: true,
             escape: false
           }
-        }
+        };
+        @if ($data['merchant_details'])
+          @if ($data['merchant_details']['id'] === '6lGF5wNtCS8UA0')
+        options.theme.branding = 'payzapp';
+          @endif
+        @endif
         var merchant_details = data.merchant_details;
         if (merchant_details) {
           if (merchant_details.name) {
