@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {
@@ -104,10 +105,15 @@ class Core extends Base\Core
         {
             $iinNetwork = $details->getNetwork();
 
-            if (($network === Card\Network::UNKNOWN) and
-                (Card\Network::isValidNetwork($iinNetwork)))
+            if (Card\Network::isValidNetwork($iinNetwork))
             {
                 $card->setNetwork($iinNetwork);
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::CARD_NETWORK_INVALID,
+                    ['network' => $iinNetwork, 'iin' => $card->getIin()]);
             }
 
             $type = $details['type'];
