@@ -154,13 +154,17 @@ EOT;
                 break;
 
             case 'GetToken':
+                $device = $params;
                 $method = 'ReqListKeys';
-                $data = $params['device_id'] . "|" . $params['app_id'] . "|" . $params['mobile'] . "|" . $params['challenge'];
+                // NPCI asks for these details
+                assertTrue(strlen($device['customer']['contact']) === 12);
+                $data = $device['imei'] . "|" . $device['package_name'] . "|" . $device['customer']['contact'] . "|" . $device['challenge'];
+                // We send device.id in the notes to find the device in the response
 
                 $str = <<<EOT
 <upi:ReqListKeys xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
-<Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
+<Txn id="$txnId" note="$device['id']" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
 <Creds>
 <Cred type="challenge" subType="initial">
 <Data code="NPCI" ki="20150822">$data</Data>

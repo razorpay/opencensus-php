@@ -88,11 +88,15 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
+        $this->app->singleton('upi.client', function($app)
+        {
+            return new \Razorpay\UPI\Client;
+        });
 
         $this->registerApiMutex();
 
         $this->registerMaxMind();
-        
+
         $this->registerBitly();
 
         $this->registerValidatorResolver();
@@ -120,19 +124,20 @@ class ApiServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return array(
-            'mailgun',
-            'instance',
+            'api.mutex',
+            'bitly',
+            'card.tokenex',
+            'es',
             'exception.handler',
             'gateway',
-            'webhook.inferno',
-            'card.tokenex',
-            'api.mutex',
+            'instance',
+            'mailgun',
+            'maxmind',
             'raven',
             'repo',
-            'es',
-            'maxmind',
-            'bitly',
             'segment',
+            'upi.client',
+            'webhook.inferno',
         );
     }
 
@@ -172,18 +177,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new MaxMind($app);
         });
     }
-    
+
     protected function registerBitly()
     {
         $this->app->singleton('bitly', function($app)
         {
             $bitlyMock = $app['config']->get('applications.bitly.mock');
-            
+
             if ($bitlyMock === true)
             {
                 return new Mock\Bitly($app);
             }
-            
+
             return new Bitly($app);
         });
     }
