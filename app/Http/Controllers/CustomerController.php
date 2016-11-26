@@ -158,9 +158,9 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchUpiBankAccounts($id)
+    public function fetchUpiBankAccounts($id, $ifsc = 'RAZR')
     {
-        $data = $this->customer->fetchUpiBankAccounts($id);
+        $data = $this->customer->fetchUpiBankAccounts($id, $ifsc);
 
         return $data;
     }

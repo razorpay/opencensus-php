@@ -127,13 +127,13 @@ class Service extends Base\Service
 
         return $accounts->toArrayPublic();
     }
-    
-    public function fetchUpiBankAccounts($id)
+
+    public function fetchUpiBankAccounts($id, $ifsc)
     {
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
-        
-        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
-        
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());
+
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer, $ifsc);
+
         return $accounts->toArrayPublic();
     }
 
@@ -155,13 +155,6 @@ class Service extends Base\Service
      * @return success with tokens or failure
      */
     public function verifyOtp($input)
-    {
-        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
-
-        return $data;
-    }
-
-    public function verifyOtp($deviceId, $input)
     {
         $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
 

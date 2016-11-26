@@ -27,11 +27,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getBankAccountsForCustomer($customer)
+    public function getBankAccountsForCustomer($customer, $ifsc)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $customer->getId())
                     ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->whereRaw(Entity::IFSC_CODE . " LIKE '$ifsc%'")
                     ->get();
     }
 

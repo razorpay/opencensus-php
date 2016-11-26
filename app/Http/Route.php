@@ -310,7 +310,7 @@ final class Route
         'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'devices/{id}',                                   'DeviceController@getDevice'                                        ],
-        'upi_customer_bank_accounts_fetch'        => ['get',      'upi_npci/customers/{id}/bank_accounts',          'CustomerController@fetchUpiBankAccounts'                           ],
+        'upi_customer_bank_accounts_fetch'        => ['get',      'upi_npci/customers/{id}/bank_accounts/{ifsc}',          'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
     );
