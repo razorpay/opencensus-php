@@ -111,6 +111,28 @@ class Validator extends Base\Validator
             ]);
     }
 
+    public function validateSendNotificationRequest(Entity $invoice, string $medium)
+    {
+        if (NotifyMedium::isMediumValid($medium) === false)
+        {
+            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium');
+        }
+
+        if (($medium === NotifyMedium::EMAIL) and empty($invoice->getCustomerEmail()))
+        {
+            throw new BadRequestValidationFailureException(
+                'Email can not be sent since email address has not been provided'
+            );
+        }
+
+        if (($medium === NotifyMedium::SMS) and empty($invoice->getCustomerContact()))
+        {
+            throw new BadRequestValidationFailureException(
+                'SMS can not be sent since contact number has not been provided'
+            );
+        }
+    }
+
     // protected static $createValidators = [
     //     Entity::DISCOUNT_FLAT,
     //     Entity::DISCOUNT_PERCENT,
