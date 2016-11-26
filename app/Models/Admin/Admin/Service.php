@@ -345,15 +345,21 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
-    public function getMerchantIds($adminId)
+    public function getMerchantIds($orgId, $adminId)
     {
-        $adminId = Entity::getSignedId($adminId);
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $adminId = Entity::verifyIdAndStripSign($adminId);
         $admin = new Entity($this->getAdminById($adminId));
         $adminGroups = $admin->groups;
 
         $merchants = [];
+        $visibleGroups = [];
 
         foreach ($adminGroups as $group) {
+           array_merge($visibleGroups, $this->getGroupChildrenHierarchy($orgId, $group->id));
+        }
+
+        foreach ($visibleGroups as $group) {
             array_merge($merchants, $group->merchants->all());
         }
         array_merge($merchants, $admin->merchants->all());
@@ -361,5 +367,35 @@ class Service extends Base\Service
         $merchantIds = array_column($merchants, 'id');
 
         return $merchantIds;
+    }
+
+    protected function getGroupChildrenHierarchy($orgId, $groupId)
+    {
+        $rejectNodes = [];
+
+        // Get all direct children of incoming groupId
+        $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
+
+        // Throw all direct children in the rejected node list
+        $rejectNodes = $childrenGroups;
+
+        foreach ($childrenGroups as $group)
+        {
+            // For every child group, check its further direct children
+            $rejects = $this->getGroupChildrenHierarchy($orgId, $group['id']);
+
+            $rejectNodes = array_merge($rejectNodes, $rejects);
+        }
+
+        return $rejectNodes;
+    }
+
+    protected function getChildrenGroups(string $orgId, string $groupId)
+    {
+        // Get the group from current org
+        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+
+        // Get all the direct children to which the group has been linked
+        return $group->subGroups;
     }
 }
