@@ -67,6 +67,73 @@ EOT;
         return ['txn_id' => $txnId, 'msg_id' => $msgId];
     }
 
+    /**
+     * Inputs:
+     *     $device = device entity array
+     *     $customer = customer entity array
+     *     bank_account = bank account entity array
+     *     input =
+     *         last6
+     *         expiry (MMYY)
+     *         otpcredblock
+     *         mpincredblock
+     *         vpa (something@razor)
+     * @param
+     */
+    public function ReqRegMob($params)
+    {
+        $device = $params['device'];
+        $input = $params['input'];
+        $customer = $params['customer'];
+        $bankAccount = $params['bank_account'];
+
+        extract($this->getCommonVariables());
+
+        $str = <<<EOT
+<upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
+<Payer addr="{$input['vpa']}" name="Razorpay Customer" seqNum="1" type="PERSON" code="0000">
+<Device>
+<Tag name="MOBILE" value="{$customer['contact']}"/>
+<Tag name="GEOCODE" value="12.9667,77.5667"/>
+<Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
+<Tag name="IP" value="182.74.201.50"/>
+<Tag name="TYPE" value="MOB"/>
+<Tag name="ID" value="{$device['imei']}"/>
+<Tag name="OS" value="Android"/>
+<Tag name="APP" value="{$device['package_name']}"/>
+<Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
+</Device>
+<Ac addrType="ACCOUNT">
+<Detail name="IFSC" value="RAZR"/>
+<Detail name="ACTYPE" value="SAVINGS"/>
+<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
+</Ac>
+<Ac addrType="MOBILE">
+<Detail name="MOBNUM" value="{$bankAcccount['beneficiary_mobile']}"/>
+</Ac>
+</Payer>
+<RegDetails type="FORMAT1">
+<Detail name="MOBILE" value="{$customer['contact']}"/>
+<Detail name="CARDDIGITS" value="{$input['last6']}"/>
+<Detail name="EXPDATE" value="{$input['expiry']"/>
+<Creds>
+<Cred type="OTP" subType="SMS">
+<Data code="NPCI" ki="20150822">{$input['otpcredblock']}</Data>
+</Cred>
+<Cred type="PIN" subType="MPIN">
+<Data code="NPCI" ki="20150822">{$input['mpincredblock']}</Data>
+</Cred>
+</Creds>
+</RegDetails>
+</upi:ReqRegMob>
+EOT;
+        $this->fireRequest('ReqRegMob', $txnId, $str);
+
+        return ['txn_id' => $txnId, 'msg_id' => $msgId];
+    }
+
     protected function makeUrl($method, $txnId)
     {
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
