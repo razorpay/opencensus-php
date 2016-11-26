@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::OS_VERSION,
         self::TAG,
         self::CUSTOMER,
+        self::UPI_TOKEN,
         self::STATUS,
         self::CUSTOMER_ID,
         self::TOKEN_ID,
