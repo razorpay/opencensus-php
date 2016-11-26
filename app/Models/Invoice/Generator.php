@@ -62,45 +62,14 @@ class Generator extends Base\Core
 
     public function generate(array $input)
     {
-        $this->invoice = new Entity;
-
-        $customerDetails = [];
-
-        $this->invoice->build($input);
-        $this->invoice->merchant()->associate($this->merchant);
-
-        // This is being done because dashboard can create an invoice for the merchant even
-        // if the merchant has not generated any keys at all.
-        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant);
-
-        // This is being done so that we can do associations without saving the invoice.
-        // Also, to generate a shortUrl, we need the invoice ID.
-        $this->invoice->generateId();
-
-        if (isset($input[Entity::CUSTOMER]))
-        {
-            $customerDetails = $input[Entity::CUSTOMER];
-        }
-
-        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+        $invoice = $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($lineItemsDetails, $customerDetails, $input)
+                function() use ($invoice, $input)
                 {
-                    $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
-
-                    $this->setStatus($input);
-
-                    $this->setShortUrl();
-
-                    // Saving here for the associations
-                    $this->repo->saveOrFail($this->invoice);
-
-                    // This function should be called only after saving the invoice entity and the items entities
-                    // because the invoice should be created and saved before it can be associated with the items.
-                    $this->associateLineItemsToInvoice();
+                    $this->buildAndSaveInvoice($invoice, $input);
                 }
             );
         }
@@ -127,6 +96,58 @@ class Generator extends Base\Core
         (new Notifier($this->invoice))->sendNotificationToCustomer();
 
         return $this->invoice;
+    }
+
+    protected function generateInvoiceSkeleton(array $input)
+    {
+        $invoice = new Entity;
+
+        $invoice->build($input);
+        $invoice->merchant()->associate($this->merchant);
+
+        //
+        // This is being done because dashboard can create an invoice
+        // for the merchant even if the merchant has not generated
+        // any keys at all.
+        //
+
+        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+
+        //
+        // This is being done so that we can do associations
+        // without saving the invoice. Also, to generate a shortUrl,
+        // we need the invoice ID.
+        //
+
+        $invoice->generateId();
+
+        $this->invoice = $invoice;
+
+        return $invoice;
+    }
+
+    protected function buildAndSaveInvoice($invoice, $input)
+    {
+        $this->customer = $this->associateCustomerWithInvoice($input);
+
+        $this->createLineItemsForInvoice($input);
+
+        $this->createOrderForInvoice();
+
+        $this->setStatus($input);
+
+        $this->setShortUrl();
+
+        // Saving here for the associations
+        $this->repo->saveOrFail($this->invoice);
+
+        //
+        // This function should be called only after saving the
+        // invoice entity and the items entities because the invoice
+        // should be created and saved before it can be associated
+        // with the items.
+        //
+        $this->associateLineItemsToInvoice();
     }
 
     protected function setStatus(array $input)
@@ -203,24 +224,17 @@ class Generator extends Base\Core
         }
     }
 
-    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails, array $input)
+    protected function createLineItemsForInvoice(array $input)
     {
+        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+
         if ($lineItemsDetails)
         {
             $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
             $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
+
             $this->invoice->setAmount($invoiceAmount);
-        }
-
-        $order = $this->createOrderForInvoice();
-        $this->invoice->order()->associate($order);
-
-        $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
-        if ($this->customer)
-        {
-            $this->invoice->customer()->associate($this->customer);
-            $this->invoice->setCustomerDetails($this->customer);
         }
     }
 
@@ -297,32 +311,52 @@ class Generator extends Base\Core
 
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
+        $this->invoice->order()->associate($order);
+
         return $order;
     }
 
-    protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
+    /**
+     * Invoice can be created via passing customer_id which already exists
+     * or providing customer details in 'customer' array in input POST details.
+     *
+     * This function creates customer if it doesn't exist.
+     * It associates customer with invoice.
+     */
+    protected function associateCustomerWithInvoice(array $input)
     {
+        if (isset($input[Entity::CUSTOMER]))
+        {
+            $customerDetails = $input[Entity::CUSTOMER];
+        }
+
         $customer = null;
 
         if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
             $customerId = $input[Entity::CUSTOMER_ID];
 
-            Customer\Entity::verifyIdAndStripSign($customerId);
-
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+            $customer = $this->repo->customer->findByPublicIdAndMerchant(
+                                                $customerId, $this->merchant);
 
             $this->trace->info(
                 TraceCode::INVOICE_EXISTING_CUSTOMER,
                 [
                     'invoice_id' => $this->invoice->getId(),
                     'customer_id' => $customer->getId(),
-                    'customer_input_details' => $customerDetails,
                 ]);
         }
         else if ($customerDetails)
         {
-            $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
+            $core = new Customer\Core;
+            $customer = $core->createLocalCustomer(
+                            $customerDetails, $this->merchant, false);
+        }
+
+        if ($customer)
+        {
+            $this->invoice->customer()->associate($customer);
+            $this->invoice->setCustomerDetails($customer);
         }
 
         return $customer;
