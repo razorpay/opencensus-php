@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const UPI_TOKEN             = 'upi_token';
     const VERIFIED_AT           = 'verified_at';
     const REGISTERED_AT         = 'registered_at';
+    const CUSTOMER              = 'customer';
 
     protected static $sign = 'dev';
 
@@ -47,11 +48,13 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::TYPE,
         self::OS,
         self::OS_VERSION,
         self::IMEI,
         self::TAG,
+        self::CUSTOMER,
         self::CHALLENGE,
         self::CAPABILITY,
         self::PACKAGE_NAME,
@@ -62,6 +65,11 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::VERIFICATION_TOKEN
+    ];
+
+    protected $appends = [
+        self::PUBLIC_ID,
+        self::CUSTOMER,
     ];
 
     // ----------------------- Getters -----------------------
@@ -107,6 +115,20 @@ class Entity extends Base\PublicEntity
     public function setUpiToken($upiToken)
     {
         $this->setAttribute(self::UPI_TOKEN, $upiToken);
+    }
+
+    // ----------------------- Accessors -----------------------
+
+    protected function getCustomerAttribute()
+    {
+        $customer = $this->customer()->getResults();
+
+        if ($customer === null)
+        {
+            return null;
+        }
+
+        return $customer->toArrayPublic();
     }
 
     // ----------------------- Generators -----------------------
