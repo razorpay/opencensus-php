@@ -155,6 +155,63 @@ $str = <<<EOT
 </upi:ReqManageVae>
 EOT;
     break;
+        case 'ReqPay':
+            $str = <<<EOT
+<upi:ReqPay
+    xmlns:upi="http://npci.org/upi/schema/">
+    <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+    <Meta>
+        <Tag name="PAYREQSTART" value="$ts"/>
+        <Tag name="PAYREQEND" value="2017-01-01T20:23:02+05:30"/>
+    </Meta>
+    <Txn custRef="111111114423" id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="COLLECT">
+        <RiskScores>
+            <Score provider="sp" type="TXNRISK" value="0"/>
+        </RiskScores>
+        <Rules>
+            <Rule name="EXPIREAFTER" value="50"/>
+            <Rule name="MINAMOUNT" value="0.00"/>
+        </Rules>
+    </Txn>
+    <Payer addr="yv@razor" name="Some Person" seqNum="1" type="PERSON" code="0000">
+        <Info>
+            <Identity type="ACCOUNT" verifiedName="Some Person" />
+            <Rating verifiedAddress="FALSE"/>
+        </Info>
+        <Amount value="100.00" curr="INR">
+        <Split name="PURCHASE" value="100.00"/>
+        </Amount>
+    </Payer>
+    <Payees>
+        <Payee addr="test@razor" name="Test Account" seqNum="1" type="PERSON" code="0000">
+            <Info>
+                <Identity type="ACCOUNT" verifiedName="Test Account Razorpay" />
+                <Rating verifiedAddress="FALSE"/>
+            </Info>
+            <Amount value="100.00" curr="INR">
+                <Split name="PURCHASE" value="100.00"/>
+            </Amount>
+            <Device>
+                <Tag name="MOBILE" value="918861670264"/>
+                <Tag name="GEOCODE" value="12.9667,77.5667"/>
+                <Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
+                <Tag name="IP" value="182.74.201.50"/>
+                <Tag name="TYPE" value="MOB"/>
+                <Tag name="ID" value="869649022152494"/>
+                <Tag name="OS" value="Android"/>
+                <Tag name="APP" value="com.razorpay.sampleapp"/>
+                <Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
+            </Device>
+            <Ac addrType="ACCOUNT">
+            <Detail name="IFSC" value="RAZR0123456"/>
+            <Detail name="ACTYPE" value="SAVINGS"/>
+            <Detail name="ACNUM" value="12312312312"/>
+            </Ac>
+        </Payee>
+    </Payees>
+</upi:ReqPay>
+EOT;
+    break;
             case 'ReqValAdd':
                 $str = <<<EOT
 <upi:ReqValAdd xmlns:upi="http://npci.org/upi/schema/">
