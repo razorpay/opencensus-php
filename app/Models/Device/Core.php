@@ -4,10 +4,23 @@ namespace RZP\Models\Device;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Upi;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @var Upi\Core
+     */
+    protected $upiCore;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->upiCore = new Upi\Core;
+    }
+
     public function create(array $input)
     {
         $device = new Entity();
@@ -21,23 +34,8 @@ class Core extends Base\Core
 
     public function verifyAndGetToken(array $input)
     {
+        $response = $this->upiCore->callUpiGateway('upi_npci', 'GetToken', $input);
 
-    }
-
-    /**
-     * Responsible for calling the gateway function
-     *
-     * @param  string $action      refund/capture etc.
-     * @param  array  $gatewayData Relevant input for the corresponding
-     *                             action
-     *
-     * @return array or null
-     * @throws Exception\LogicException
-     */
-    protected function callUpiGateway($action, array $gatewayData)
-    {
-        $gateway = $this->payment->getGateway();
-
-        return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode);
+        return $response;
     }
 }

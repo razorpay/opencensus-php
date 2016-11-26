@@ -27,6 +27,7 @@ return array(
         'sharp',
         'wallet_olamoney',
         'upi_icici',
+        'upi_npci',
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
@@ -137,6 +138,10 @@ return array(
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
     ),
+
+    'upi_npci' => [
+
+    ],
 
     'wallet_payzapp' => array(
         'pg_merchant_login_id'      => env('PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'),

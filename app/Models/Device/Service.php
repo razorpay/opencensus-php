@@ -24,8 +24,8 @@ class Service extends Base\Service
 
     public function verifyAndGetToken(array $input)
     {
-        $device = $this->core->verifyAndGetToken($input);
-
-        return $device->toArrayPublic();
+        $response = $this->core->verifyAndGetToken($input);
+        
+        return $response;
     }
 }

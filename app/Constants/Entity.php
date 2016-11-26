@@ -69,6 +69,7 @@ class Entity
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
+    const UPI_NPCI              = 'upi_npci';
     const AXIS_MIGS             = 'axis_migs';
     const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
@@ -107,6 +108,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
@@ -133,6 +135,7 @@ class Entity
     );
 
     protected static $repository = array(
+        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,

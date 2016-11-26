@@ -18,6 +18,8 @@ class Gateway extends Base\Gateway
 
     const NPCI_KI = "20150822";
 
+    protected $gateway = 'upi_npci';
+
     public function __construct()
     {
     }
@@ -27,8 +29,11 @@ class Gateway extends Base\Gateway
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
 
-    public function makeRequest($method, $params)
+    public function makeRequest(array $input)
     {
+        $method = $input['method'];
+        $params = $input['params'];
+
         $txnId = upi_uuid();
         $ids = [upi_uuid(), upi_uuid()];
         $ts = upi_ts();
@@ -184,7 +189,7 @@ EOT;
 
         $this->fireRequest($method, $txnId, $str);
 
-        return [$txnId, $msgId];
+        return ['txn_id' => $txnId, 'msg_id' => $msgId];
     }
 
     protected function signXml($xml)

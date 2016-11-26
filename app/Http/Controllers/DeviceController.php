@@ -34,6 +34,8 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $device = $this->service->verifyAndGetToken($input);
+        $response = $this->service->verifyAndGetToken($input);
+
+        return ApiResponse::json($response);
     }
 }
