@@ -349,6 +349,7 @@ class Service extends Base\Service
     {
         $admin = $this->getAdmin($orgId, $adminId);
         $adminGroups = $admin['groups'];
+        $adminMerchants = $admin['merchants'];
 
         $merchants = [];
         $visibleGroups = [];
@@ -363,9 +364,9 @@ class Service extends Base\Service
 
         foreach ($visibleGroups as $group) {
             $group = new Group\Entity($group);
-            array_merge($merchants, $group->merchants->all());
+            $merchants = array_merge($merchants, $group->merchants->all());
         }
-        array_merge($merchants, $admin->merchants->all());
+        $merchants = array_merge($merchants, $adminMerchants);
 
         $merchantIds = array_column($merchants, 'id');
 
