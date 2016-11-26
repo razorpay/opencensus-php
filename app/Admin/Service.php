@@ -293,7 +293,7 @@ class Service extends Base\Service
                 'submitted_at',
                 'archived_at'
         ])->with('tagged')
-          ->whereIn('merchants.id', $merchantIdsToList);
+          ->whereIn('merchants.id', (array)$merchantIdsToList[0]);
 
 
         if (isset($input['tags']))
