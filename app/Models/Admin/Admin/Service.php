@@ -219,7 +219,7 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
-    public function getAdminById(string $adminId)
+    public function getAdminById(string &$adminId)
     {
         $adminId = Entity::verifyIdAndStripSign($adminId);
 
@@ -248,7 +248,7 @@ class Service extends Base\Service
 
         $roleIds = [];
 
-        foreach ($input['roles']  as $roleId)
+        foreach ($input['roles'] as $roleId)
         {
             $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
         }
