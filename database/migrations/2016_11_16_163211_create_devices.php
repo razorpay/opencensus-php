@@ -60,13 +60,14 @@ class CreateDevices extends Migration
                   ->nullable()
                   ->unique();
 
-            $table->string(Entity::UPI_TOKEN, 255)
+            $table->string(Entity::UPI_TOKEN, 250)
                   ->nullable();
 
             $table->integer(Entity::VERIFIED_AT)
                   ->nullable();
             $table->integer(Entity::REGISTERED_AT)
                   ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 

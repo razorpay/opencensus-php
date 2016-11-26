@@ -13,7 +13,7 @@ class Core extends Base\Core
 
         try
         {
-            $response = $this->app['gateway']->call($gateway, 'make_request', $gatewayData, $this->mode);
+            $response = $this->app['gateway']->call($gateway, $method, $gatewayData, $this->mode);
 
             return ['success'=>true, 'txnId'=>$response['txn_id'], 'msgId' => $response['msg_id']];
         }
