@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Role;
 
-use illuminate\database\eloquent\softdeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;

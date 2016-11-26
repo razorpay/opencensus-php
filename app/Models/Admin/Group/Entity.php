@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Group;
 
-use illuminate\database\eloquent\softdeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
 use RZP\Constants\Table;
