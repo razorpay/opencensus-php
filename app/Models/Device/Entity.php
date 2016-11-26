@@ -66,6 +66,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters -----------------------
 
+    public function getVerificationToken()
+    {
+        return $this->getAttribute(self::VERIFICATION_TOKEN);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
@@ -103,9 +108,9 @@ class Entity extends Base\PublicEntity
 
     protected function generateVerificationToken()
     {
-        $verificationToken = (bin2hex(openssl_random_pseudo_bytes(20)));
+        $verificationToken = bin2hex(openssl_random_pseudo_bytes(20));
 
-        if ($verificationToken === false)
+        if (empty($verificationToken))
         {
             // TODO: Throw exception
         }
