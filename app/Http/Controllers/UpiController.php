@@ -55,6 +55,10 @@ class UpiController extends Controller
                     $device = (new Device\Service)->updateUpiToken($deviceId, $upiToken);
                 }
             }
+            else
+            {
+                Cache::forever($api, $body);
+            }
         }
 
         $resp = <<<EOT
@@ -112,7 +116,7 @@ EOT;
 
     public function getBankList()
     {
-        $xml = Cache::get('UPI.RespListAccPvd');
+        $xml = Cache::get('RespListAccPvd');
 
         // return response($xml)->header('Content-Type', 'text/xml');
 
@@ -139,11 +143,11 @@ EOT;
             if ($prods === 'UPI')
             {
                 $res['banks'][] = [
-                    'ifsc'  =>  $ifsc,
-                    'iin'   =>  $e->getAttribute('iin'),
-                    'name'  =>  $e->getAttribute('name'),
-                    'products'  =>  $prods,
-                    'bankname'  => $bankName,
+                    'ifsc'          =>  $ifsc,
+                    'iin'           =>  $e->getAttribute('iin'),
+                    'name'          =>  $e->getAttribute('name'),
+                    'products'      =>  $prods,
+                    'bankname'      => $bankName,
                 ];
             }
 

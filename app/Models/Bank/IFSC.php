@@ -114,6 +114,7 @@ class IFSC
     const PSIB = 'PSIB';
     const PUNB = 'PUNB';
     const RABO = 'RABO';
+    const RAZR = 'RAZR';
     const RSCB = 'RSCB';
     const RSBL = 'RSBL';
     const RNSB = 'RNSB';
