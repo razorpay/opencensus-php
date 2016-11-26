@@ -9,6 +9,7 @@ use Trace;
 use Request;
 
 use RZP\Models\Device;
+use RZP\Models\BankAccount;
 
 class UpiController extends Controller
 {
@@ -66,17 +67,6 @@ EOT;
 
         return response($resp)
             ->header('Content-Type', 'application/xml');
-    }
-
-    protected function parseGetTokenResponse($xml)
-    {
-        $deviceId = dom_import_simplexml($xml->xpath('//Txn')[0]);
-        $deviceId = $deviceId->getAttribute('note');
-
-        $token = dom_import_simplexml($xml->xpath('//keyValue')[0]);
-        $token = $token->nodeValue;
-
-        return [$deviceId, $token];
     }
 
     public function getTxnType($str)
@@ -188,16 +178,14 @@ EOT;
         ]);
     }
 
-    public function getBankAccountList()
+    protected function parseGetTokenResponse($xml)
     {
-        $bas = [];
-        $bas['accounts'][] = [
-            'ifsc'          =>  'PUNB',
-            'account'       =>  '1235543534543543',
-            'type'          =>  'SAVINGS',
-            'bank_name'     =>  'Punjab National Bank',
-        ];
+        $deviceId = dom_import_simplexml($xml->xpath('//Txn')[0]);
+        $deviceId = $deviceId->getAttribute('note');
 
-        return ApiResponse::json($bas);
+        $token = dom_import_simplexml($xml->xpath('//keyValue')[0]);
+        $token = $token->nodeValue;
+
+        return [$deviceId, $token];
     }
 }

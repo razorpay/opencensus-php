@@ -15,7 +15,6 @@ final class Route
     protected static $apiRoutes = array(
         'handle_upi'                              => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@handle'                                              ],
         'upi_get_key_list'                        => ['get',      'upi_npci/keyList',                               'UpiController@getPublicKeyList'                                    ],
-        'get_bank_account_list'                   => ['get',      'upi_npci/bank_account_list',                     'UpiController@getBankAccountList'                                  ],
         'upi_sms_webhook'                         => ['post',     'upi_npci/smswebhook',                            'UpiController@verifyDevice'                                        ],
         'is_valid_vpa'                            => ['get',      'upi_npci/validate_vpa/{vpa}',                    'UpiController@isValidVpa'                                          ],
         'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
@@ -311,6 +310,7 @@ final class Route
         'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'devices/{id}',                                   'DeviceController@getDevice'                                        ],
+        'upi_customer_bank_accounts_fetch'        => ['get',      'upi_npci/customers/{id}/bank_accounts',          'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
     );
@@ -366,6 +366,7 @@ final class Route
         'otp_verify',
         'device_create',
         'device_fetch',
+        'upi_customer_bank_accounts_fetch',
     );
 
     public static $publicCallback = array(
@@ -601,7 +602,6 @@ final class Route
         'device_verify',
         'upi_get_bank_list',
         'upi_read_async',
-        'get_bank_account_list',
         'upi_get_key_list',
         'account',
         'dummy_route',

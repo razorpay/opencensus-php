@@ -66,9 +66,12 @@ class Core extends Base\Core
 
     /**
      * This takes the oldBank Account as it's last parameter
-     * @param  Array $input Input Array with new bank account details
-     * @param  Merchant\Entity $merchant
+     *
+     * @param  array              $input Input Array with new bank account details
+     * @param  Merchant\Entity    $merchant
      * @param  BankAccount\Entity $oldBankAccount
+     *
+     * @return mixed
      */
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {

@@ -127,6 +127,15 @@ class Service extends Base\Service
 
         return $accounts->toArrayPublic();
     }
+    
+    public function fetchUpiBankAccounts($id)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+        
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
+        
+        return $accounts->toArrayPublic();
+    }
 
     /**
      * Send Oto to customer

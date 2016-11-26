@@ -4,19 +4,20 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 use Request;
 
 class CustomerController extends Controller
 {
     protected $customer;
     protected $token;
-    
+
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->customer = new Customer\Service;
-        
+
         $this->token = new Customer\Token\Service;
     }
 
@@ -44,11 +45,11 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function getCustomers()
     {
         $input = Request::all();
-        
+
         $customers = $this->customer->fetchMultiple($input);
 
         return ApiResponse::json($customers);
@@ -155,6 +156,13 @@ class CustomerController extends Controller
         $data = $this->customer->getBankAccounts($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function fetchUpiBankAccounts($id)
+    {
+        $data = $this->customer->fetchUpiBankAccounts($id);
+
+        return $data;
     }
 
     public function postOtp()

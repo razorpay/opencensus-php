@@ -75,6 +75,7 @@ class Validator extends Base\Validator
     protected function isSpecialIfscCode($ifsc, $mode)
     {
         return (($mode === Mode::TEST) and
-                ($ifsc === Entity::SPECIAL_IFSC_CODE));
+                (($ifsc === Entity::SPECIAL_IFSC_CODE) or 
+                 ($ifsc === 'RAZR0000001')));
     }
 }
