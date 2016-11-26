@@ -24,7 +24,7 @@ angular.module('app.services', [])
       },
 
       getIdentity: function() {
-        return _identity
+        return _identity;
       },
 
       identity: function (force) {
@@ -102,7 +102,7 @@ angular.module('app.services', [])
     }
     $rootScope.$watch(function () {
       return currentMode;
-    }, function watchCallback(newValue, oldValue) {
+    }, function watchCallback(newValue) {
       $localStorage.rzp_mode = newValue;
     }, true);
     return {
@@ -130,9 +130,12 @@ angular.module('app.services', [])
   // Return the factory value.
   return transformRequest;
   function serializeData(data) {
+    if (typeof data === 'undefined') {
+      data = {};
+    }
     // If this is not an object, defer to native stringification.
     if (!angular.isObject(data)) {
-      return data == null ? '' : data.toString();
+      return (data === null) ? '' : data.toString();
     }
     var buffer = [];
     // Serialize each key in the object.
@@ -141,7 +144,7 @@ angular.module('app.services', [])
         continue;
       }
       var value = data[name];
-      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value == null ? '' : value));
+      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value === null ? '' : value));
     }
     // Serialize the buffer and clean it up for transportation.
     var source = buffer.join('&').replace(/%20/g, '+');
@@ -150,13 +153,15 @@ angular.module('app.services', [])
 })  //Alerts factory.
     //Used for creating/removing alerts for display in a page.
 .factory('alertsFactory', function () {
-  function handler() {
+  var handler = function() {
     this.alerts = [];
     this.getAlerts = function () {
       return this.alerts;
-    }, this.closeAlert = function (index) {
+    };
+    this.closeAlert = function (index) {
       this.alerts.splice(index, 1);
-    }, this.addAlert = function ($type, $message, reset) {
+    };
+    this.addAlert = function ($type, $message, reset) {
       $message = $message || 'An error occured.';
       if (reset)
         this.alerts = [];
@@ -164,22 +169,24 @@ angular.module('app.services', [])
         type: $type,
         msg: $message
       });
-    }, this.resetAlerts = function (last) {
+    };
+    this.resetAlerts = function (last) {
       if (!last)
         this.alerts = [];
       else
         this.alerts.pop();
     };
-  }
+  };
   return {
     getHandler: function () {
       return new handler();
     }
   };
 }).factory('dateFactory', function () {
-  function handler($scope) {
+  var handler = function($scope) {
     this.endDate = new Date();
-    this.startDate = new Date(new Date().setMonth(new Date().getMonth() - 1)), this.opened = {};
+    this.startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
+    this.opened = {};
     this.dateOptions = {
       formatYear: 'yy',
       startingDay: 1,
@@ -195,7 +202,7 @@ angular.module('app.services', [])
       $scope.date.opened = {};
       $scope.date.opened[key] = true;
     };
-  }
+  };
   return {
     getHandler: function ($scopeVar) {
       return new handler($scopeVar);
@@ -219,7 +226,7 @@ angular.module('app.services', [])
       },
       authenticate: function (identity) {
         _identity = identity;
-        _authenticated = identity != null;
+        _authenticated = identity !== null;
       },
       identity: function (force) {
         var deferred = $q.defer();
@@ -255,7 +262,7 @@ angular.module('app.services', [])
   '$state',
   'admin',
   '$location',
-  function ($rootScope, $state, admin, $location) {
+  function ($rootScope, $state, admin) {
     return {
       authorize: function () {
         return admin.identity().then(function () {
@@ -368,7 +375,7 @@ angular.module('app.services', [])
     3: ['Default', 'bg-info'],
     4: ['High', 'bg-danger'],
     5: ['Very High', 'bg-danger']
-  }
+  };
 }])
 .factory('jqTourbusService', function() {
   return {
