@@ -38,6 +38,11 @@ class Core extends Base\Core
 
     public function verify(Entity $device, Customer\Entity $customer)
     {
+        if ($device->hasBeenVerified() === true)
+        {
+            return $device;
+        }
+
         $device->setStatus(Status::VERIFIED);
 
         $device->customer()->associate($customer);

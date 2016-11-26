@@ -46,8 +46,12 @@ class Service extends Base\Service
         $customer = (new Customer\Core)->createGlobalCustomer([Customer\Entity::CONTACT => $contact], false);
 
         $device = $this->core->verify($device, $customer);
+        $response = [];
 
-        $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
+        if ($device->hasBeenRegistered() === false)
+        {
+            $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
+        }
 
         // return ['device' => $device->toArrayPublic(), 'getToken' => $response];
     }

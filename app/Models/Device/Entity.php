@@ -81,6 +81,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::REGISTERED_AT) !== null);
     }
 
+    public function hasBeenVerified()
+    {
+        return ($this->getAttribute(self::VERIFIED_AT) !== null);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setStatus($status)
