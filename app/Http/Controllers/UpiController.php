@@ -162,21 +162,24 @@ EOT;
         return ApiResponse::json($res);
     }
 
-    protected function makeGatewayRequest($method, array $params = [])
+    protected function makeGatewayRequest($method, array $input = [])
     {
         $gw = new \RZP\Gateway\Upi\Npci\Gateway;
 
-        try
-        {
-            list($txnId, $msgId) = $gw->makeRequest($method, $params);
+        // try
+        // {
+            $params = [];
+            $params['method'] = $method;
+            $params['params'] = $input;
+            $response = $gw->makeRequest($params);
 
-            return ApiResponse::json(['success'=>true, 'txnId'=>$txnId, 'msgId' => $msgId]);
-        }
+            return ApiResponse::json(['success'=>true] + $response);
+        // }
 
-        catch(\Exception $e)
-        {
-            return ApiResponse::json(['success'=>false, 'msg' => $e->getMessage()]);
-        }
+        // catch(\Exception $e)
+        // {
+        //     return ApiResponse::json(['success'=>false, 'msg' => $e->getMessage()]);
+        // }
 
     }
 
