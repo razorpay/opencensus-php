@@ -102,6 +102,10 @@ class Entity extends Base\PublicEntity
         self::USER_ID           => null,
         self::AMOUNT            => 0,
         self::CURRENCY          => 'INR',
+        self::CUSTOMER_NAME     => null,
+        self::CUSTOMER_EMAIL    => null,
+        self::CUSTOMER_CONTACT  => null,
+        self::CUSTOMER_ADDRESS  => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -421,7 +425,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $array[self::CUSTOMER_ID] = $customerId ? Customer\Entity::getSignedId($customerId) : null;
     }
 
     protected function setPublicOrderIdAttribute(array & $array)

@@ -108,7 +108,7 @@ class Core extends Base\Core
             'amount'    => $invoice->getAmount(),
         ];
 
-        $data['customer'] = $customer->toArrayPublic();
+        $data['customer'] = $customer ? $customer->toArrayPublic() : [];
 
         return $data;
     }

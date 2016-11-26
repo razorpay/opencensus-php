@@ -197,6 +197,11 @@ class Generator extends Base\Core
 
     protected function setCustomerDetailsAttributes()
     {
+        if (empty($this->customer))
+        {
+            return;
+        }
+
         $this->invoice->setCustomerName($this->customer->getName());
         $this->invoice->setCustomerContact($this->customer->getContact());
         $this->invoice->setCustomerEmail($this->customer->getEmail());
@@ -227,7 +232,10 @@ class Generator extends Base\Core
         $this->invoice->order()->associate($order);
 
         $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
-        $this->invoice->customer()->associate($this->customer);
+        if ($this->customer)
+        {
+            $this->invoice->customer()->associate($this->customer);
+        }
     }
 
     protected function createLineItemsFromInput(array $lineItemsDetails)
@@ -308,15 +316,7 @@ class Generator extends Base\Core
 
     protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
     {
-        // This is just for robustness. It would any way fail later in the flow.
-        if ((empty($customerDetails) === true) and
-            (empty($input[Entity::CUSTOMER_ID]) === true))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
-                $input
-            );
-        }
+        $customer = null;
 
         if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
@@ -334,7 +334,7 @@ class Generator extends Base\Core
                     'customer_input_details' => $customerDetails,
                 ]);
         }
-        else
+        else if ($customerDetails)
         {
             $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
         }
