@@ -54,6 +54,7 @@ class SoapWrapper
     public static function defaultWrapper($content, $requestType)
     {
         $soapWrapper = "
+            <?xml version='1.0' encoding='UTF-8'?>
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
                 <SOAP-ENV:Header/>
                 <SOAP-ENV:Body>
@@ -66,7 +67,7 @@ class SoapWrapper
             </SOAP-ENV:Envelope>
         ";
 
-        return $soapWrapper;
+        return trim($soapWrapper);
     }
 
     public static function verifyResponseWrapper($oid, $timestamp, $tdate, $approvalCode, $tdateformatted)

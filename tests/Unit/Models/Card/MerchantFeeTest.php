@@ -317,7 +317,6 @@ class MerchantFeeTest extends TestCase
                 'international'       => 0,
             ));
 
-
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
@@ -334,7 +333,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet3,
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
-         ];
+        ];
 
         if ($withCreditCardRule)
         {
