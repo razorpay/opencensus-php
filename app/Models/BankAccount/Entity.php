@@ -11,24 +11,26 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const ENTITY_ID             = 'entity_id';
-    const TYPE                  = 'type';
-    const IFSC_CODE             = 'ifsc_code';
-    const ACCOUNT_NUMBER        = 'account_number';
-    const BENEFICIARY_NAME      = 'beneficiary_name';
-    const BENEFICIARY_ADDRESS1  = 'beneficiary_address1';
-    const BENEFICIARY_ADDRESS2  = 'beneficiary_address2';
-    const BENEFICIARY_ADDRESS3  = 'beneficiary_address3';
-    const BENEFICIARY_ADDRESS4  = 'beneficiary_address4';
-    const BENEFICIARY_EMAIL     = 'beneficiary_email';
-    const BENEFICIARY_MOBILE    = 'beneficiary_mobile';
-    const BENEFICIARY_PIN       = 'beneficiary_pin';
-    const BENEFICIARY_CITY      = 'beneficiary_city';
-    const BENEFICIARY_STATE     = 'beneficiary_state';
-    const BENEFICIARY_COUNTRY   = 'beneficiary_country';
-    const DELETED_AT            = 'deleted_at';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const ENTITY_ID                 = 'entity_id';
+    const TYPE                      = 'type';
+    const IFSC_CODE                 = 'ifsc_code';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const BENEFICIARY_NAME          = 'beneficiary_name';
+    const BENEFICIARY_ADDRESS1      = 'beneficiary_address1';
+    const BENEFICIARY_ADDRESS2      = 'beneficiary_address2';
+    const BENEFICIARY_ADDRESS3      = 'beneficiary_address3';
+    const BENEFICIARY_ADDRESS4      = 'beneficiary_address4';
+    const BENEFICIARY_EMAIL         = 'beneficiary_email';
+    const BENEFICIARY_MOBILE        = 'beneficiary_mobile';
+    const BENEFICIARY_PIN           = 'beneficiary_pin';
+    const BENEFICIARY_CITY          = 'beneficiary_city';
+    const BENEFICIARY_STATE         = 'beneficiary_state';
+    const BENEFICIARY_COUNTRY       = 'beneficiary_country';
+    const DELETED_AT                = 'deleted_at';
+    const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
+    const MPIN                      = 'mpin';
 
     const IFSC_CODE_LENGTH      = 11;
 
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::TYPE,
         self::IFSC_CODE,
+        self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
@@ -63,6 +66,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
+        self::MPIN,
+        self::MOBILE_BANKING_ENABLED,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -101,6 +106,10 @@ class Entity extends Base\PublicEntity
     protected static $generators = array(
         self::ID,
         self::BENEFICIARY_COUNTRY,
+    );
+
+    protected static $casts = array(
+        self::MOBILE_BANKING_ENABLED => 'bool',
     );
 
     protected $generateIdOnCreate = true;
@@ -165,6 +174,21 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getMobileBankingEnabled()
+    {
+        return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
+    }
+
+    public function setMobileBankingEnabled($mobileBankingEnabled)
+    {
+        return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
+    }
+    
+    public function setMpin($mpin)
+    {
+        return $this->setAttribute(self::MPIN, $mpin);
     }
 
     protected function setIfscCodeAttribute($code)

@@ -165,9 +165,11 @@ class CustomerController extends Controller
         return $data;
     }
 
-    public function setMpin($customerId, $accountNumber)
+    public function setMpin($customerId)
     {
-        $data = $this->customer->setMpin($customerId, $accountNumber);
+        $input = Request::all();
+
+        $data = $this->customer->setMpin($customerId, $input);
 
         return $data;
     }
@@ -186,15 +188,6 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = $this->customer->verifyOtp($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function setMPINForDevice($deviceId)
-    {
-        $input = Request::all();
-
-        $data = $this->customer->setMPIN($deviceId, $input);
 
         return ApiResponse::json($data);
     }

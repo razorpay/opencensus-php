@@ -8,6 +8,8 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
+use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -302,5 +304,18 @@ class Core extends Base\Core
     protected function getSharedAccount()
     {
         return $this->repo->merchant->getSharedAccount();
+    }
+
+    public function sendSetMpinRequestToGateway(
+        Entity $device, Customer\Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $response = (new Upi\Core)->callUpiGateway('upi_npci', 'ReqRegMob', $gatewayInput);
+
+        return $response;
     }
 }

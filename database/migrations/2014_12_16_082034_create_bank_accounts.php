@@ -44,6 +44,9 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS4, 30)
                   ->nullable();
+            
+            $table->tinyInteger(BankAccount::MOBILE_BANKING_ENABLED)
+                  ->nullable();
 
             $table->string(BankAccount::BENEFICIARY_CITY, 30);
             $table->string(BankAccount::BENEFICIARY_STATE, 2);

@@ -48,7 +48,7 @@ class Service extends Base\Service
         $device = $this->core->verify($device, $customer);
         $response = [];
 
-        // if ($device->hasBeenRegistered() === false)
+        if ($device->hasBeenRegistered() === false)
         {
             $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
         }

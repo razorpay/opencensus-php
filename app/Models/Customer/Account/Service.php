@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Device;
 
 class Service extends Base\Service
 {
@@ -124,20 +125,6 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
-
-        return $accounts->toArrayPublic();
-    }
-
-    public function setMpin($id, $accountNumber)
-    {
-        $customer = $this->repo->customer->findByPublicIdAndAccountNumber($id, $this->repo->merchant->getSharedAccount());
-    }
-
-    public function fetchUpiBankAccounts($id, $ifsc)
-    {
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());
-
-        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer, $ifsc);
 
         return $accounts->toArrayPublic();
     }
@@ -400,5 +387,41 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
         return $this->repo->address->findByEntityAndId($addressId, $customer);
+    }
+
+    public function setMPINForBankAccounts($accountNumber, $mpin)
+    {
+        $bankAccounts = $this->repo->bank_account->getBankAccountsFromAccountNumber($accountNumber);
+
+        foreach ($bankAccounts as $bankAccount)
+        {
+            $bankAccount->setMpin($mpin);
+            $this->repo->saveOrFail($bankAccount);
+        }
+    }
+
+    public function setMpin($customerId, $input)
+    {
+        $accountNumber = $input['bank_account_number'];
+        $deviceId = $input['device_id'];
+        Device\Entity::stripSignWithoutValidation($deviceId);
+        Entity::stripSignWithoutValidation($customerId);
+
+        $customer = $this->repo->customer->findOrFail($customerId);
+        $bankAccount = $this->repo->bank_account->findFirstBankAccountByAccountNumber($accountNumber);
+        $device = $this->repo->device->findOrFail($deviceId);
+
+        $response = (new Customer\Core)->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+
+        return $response;
+    }
+
+    public function fetchUpiBankAccounts($id, $ifsc)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());
+
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer, $ifsc);
+
+        return $accounts->toArrayPublic();
     }
 }

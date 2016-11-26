@@ -10,6 +10,7 @@ use Request;
 
 use RZP\Models\Device;
 use RZP\Models\BankAccount;
+use RZP\Models\Customer;
 
 class UpiController extends Controller
 {
@@ -59,7 +60,7 @@ class UpiController extends Controller
             {
                 $creds = $this->parseSetMpinResponse($xml);
 
-                $this->setMPINForCustomer($creds);
+                (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds['mpin']);
             }
             else
             {
@@ -205,7 +206,7 @@ EOT;
     protected function parseSetMpinResponse($xml)
     {
         $bankAccount = dom_import_simplexml($xml->xpath('//Txn')[0]);
-        $bankAccountId = $bankAccount->getAttribute('note');
+        $bankAccountNumber = $bankAccount->getAttribute('note');
 
         $last6 = (dom_import_simplexml($xml->xpath('//RegDetails/Detail[@name="CARDDIGITS"]')[0])->getAttribute('value'));
 
@@ -214,14 +215,12 @@ EOT;
         $otp = trim(dom_import_simplexml($xml->xpath('//Cred[@type="OTP"]/Data')[0])->nodeValue);
         $mpin = trim(dom_import_simplexml($xml->xpath('//Cred[@type="PIN"]/Data')[0])->nodeValue);
 
-        sd([$otp, $mpin]);
-
         return [
-            'bank_account_id'   =>  $bankAccountId,
-            'otp'               =>  $otp,
-            'pin'               =>  $mpin,
-            'last6'             =>  $last6,
-            'expiry'            =>  $expiry,
+            'bank_account_number'   =>  $bankAccountNumber,
+            'otp'                   =>  $otp,
+            'pin'                   =>  $mpin,
+            'last6'                 =>  $last6,
+            'expiry'                =>  $expiry,
         ];
     }
 }

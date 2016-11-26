@@ -36,6 +36,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getBankAccountsFromAccountNumber($accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->get();
+    }
+
+    public function findByCustomerIdAndAccountNumber($customerId, $accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $customerId)
+                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->get();
+    }
+
+    public function findFirstBankAccountByAccountNumber($accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->firstOrFail();
+    }
+
     public function getAllOrderedByCreatedAt()
     {
         return $this->newQuery()
