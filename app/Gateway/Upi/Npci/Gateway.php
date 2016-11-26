@@ -109,10 +109,13 @@ EOT;
 <upi:ReqListAccount xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="RAZOR" msgId="$msgId"/>
 <Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="http://www.npci.org.in/" ts="$ts" type="ListAccount" />
-<Link type="MOBILE" value="918861670264"/>
-<Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON" code="">
+<Link type="MOBILE" value="919440002345"/>
+<Payer addr="razorpay@razor" seqNum="1" type="PERSON" code="0000">
+<Ac addrType="MOBILE">
+<Detail name="MOBNUM" value="919440002345"/>
+</Ac>
 <Ac addrType="ACCOUNT">
-<Detail name="IFSC" value="RAZR"/>
+<Detail name="IFSC" value="PHPL"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
 </Ac>
 </Payer>
@@ -237,7 +240,7 @@ EOT;
         $xml = str_replace("\n", "", $xml);
         chdir("/home/nemo/projects/work/razorpay/upi-clients/tmp");
         file_put_contents("/home/nemo/projects/work/razorpay/upi-clients/tmp/request.txt", $xml);
-        unlink('request.xml');
+        @unlink('request.xml');
         shell_exec("java SignatureGen");
 
         return file_get_contents('request.xml');
