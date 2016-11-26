@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Npci;
 
+use Cache;
 use Carbon\Carbon;
 use RZP\Gateway\Upi\Base;
 use ErrorException;
@@ -26,9 +27,12 @@ class Gateway extends Base\Gateway
 
     public function makeRequest($method, $params)
     {
+
         $txnId = upi_uuid();
-        $ids = [upi_uuid(), upi_uuid(), upi_uuid()];
+        $ids = [upi_uuid(), upi_uuid()];
         $ts = upi_ts();
+
+        $msgId = upi_uuid();
 
         $refUrl = "http://www.npci.org.in/";
         $orgId = 'RAZOR';
@@ -37,8 +41,8 @@ class Gateway extends Base\Gateway
             case 'ReqHbt':
                 $str = <<<EOT
 <upi:ReqHbt xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="$orgId" msgId="$ids[0]"/>
-<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[1]}" refUrl="$refUrl" ts="$ts" type="Hbt" />
+<Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="Hbt" />
 <HbtMsg type="ALIVE" value="NA"/>
 </upi:ReqHbt>
 EOT;
@@ -46,31 +50,71 @@ EOT;
             case 'ReqListPsp':
                 $str = <<<EOT
 <upi:ReqListPsp xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$ids[0]}"/>
-<Txn id="$txnId" note="" refId="{$ids[1]}" refUrl="$refUrl" ts="$ts" type="ListPsp"/>
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ListPsp"/>
 </upi:ReqListPsp>
 EOT;
                 break;
 
             case 'ReqListAccPvd':
                 $str = <<<EOT
-<upi:ReqListAccPvd xmlns:upi="http://npci.org/upi/schema/"><Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$ids[0]}"/><Txn id="$txnId" note="" refId="{$ids[1]}" refUrl="$refUrl" ts="$ts" type="ListAccPvd"/></upi:ReqListAccPvd>
+<upi:ReqListAccPvd xmlns:upi="http://npci.org/upi/schema/"><Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/><Txn id="$txnId" note="" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ListAccPvd"/></upi:ReqListAccPvd>
+EOT;
+                break;
+            case 'ReqListAccount':
+
+                $str = <<<EOT
+<upi:ReqListAccount xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="RAZOR" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="http://www.npci.org.in/" ts="$ts" type="ListAccount" />
+<Link type="MOBILE" value="918861670264"/>
+<Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON" code="">
+<Ac addrType="ACCOUNT">
+<Detail name="IFSC" value="RAZR"/>
+<Detail name="ACTYPE" value="SAVINGS"/>
+</Ac>
+</Payer>
+</upi:ReqListAccount>
 EOT;
                 break;
 
+            case 'ReqSetCre':
+                $str = <<<EOT
+<upi:ReqSetCre xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="SetCre"/>
+<Payer addr="hari@razor" name="Hari Ram" seqNum="1" type="PERSON" code="0000">
+<Ac addrType="ACCOUNT">
+<Detail name="IFSC" value="RAZR"/>
+<Detail name="ACTYPE" value="SAVINGS"/>
+<Detail name="ACNUM" value="8861670264"/>
+</Ac>
+<Creds>
+<Cred type="OTP" subType="SMS|EMAIL|HOTP|TOTP">
+<Data> base-64 encoded/encrypted authentication data</Data>
+</Cred>
+<Cred type="PIN" subType="MPIN">
+<Data>2.0|rWTunhgMF8IojvDkoEM4UnG6B9z9WqC9sxDwKh+Km4m8A1z9ZqfeGLt9NY8Tq/CZ073fpvbx5eXZMp+B3rhzIqm/QhjDcpNeDsuW745KIo//eM5aY+bDsqJUrl4TM0tS3vt9DV+kLuvcrCkQCgeVeKRAB5QpHEtKybyI9gOPlb3U5OhwZ8Uxqe4VkRAzWBtKchmyL8f5Vky3BAsXejIcV70LRwdLhq0XNqSYj8ROEOacHekBfAw6ohP0+KOJpituloB/y82KHExYE56WO67tblYcci2/g3ZkyZNSCREGGE8HyHZNexvYKcjkHcbnRILZbQfq+dlp1/0QxjWFT6ngEQ==</Data>
+</Cred>
+</Creds>
+<NewCred type="PIN" subType="MPIN">
+<Data> base-64 encoded/encrypted authentication data</Data>
+</NewCred>
+</Payer>
+</upi:ReqSetCre>
+EOT;
+
             case 'GetToken':
                 $method = 'ReqListKeys';
-                $data = \Request::get('query', null);
-
-                $data = $data ?? '869649022152494|com.razorpay.sampleapp|918861670264|nB5ssiRTpG+5VDsPdtTaBipbfnLNX6S7arzVD8Mrm/tQHn3BWziEqSOCBb1sUKsdTUjyZNXHyoSNEbg1P2BSMkPMMYR8u+5ztsRD9+OakUrd4nyDupGfy72JbP9yE67RpD4ZpNWoyTn1Er6/G2MaA8nX+zJ84VT5TDFS88o2oEPtDWKKaQr+0AY5PioReTPdnBKiNBJftknwQe0HFWLpYXhmvlqK0w64NyeZyZlAoI/50qrwAL6+olewb2TZ0XFhcQaY2JdgOlF6auIAk5t5Xh5Q+Rwhrhry7gggw0wVExUgjBkJo+vgtk/yVwd1t/VxKKEQ9JVzBh3tKGJTHJ6pSA==';
+                $data = $params['device_id'] . "|" . $params['app_id'] . "|" . $params['mobile'] . "|" . $params['challenge'];
 
                 $str = <<<EOT
 <upi:ReqListKeys xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$ids[0]}"/>
-<Txn id="$txnId" note="NOTE" refId="{$ids[1]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
 <Creds>
 <Cred type="challenge" subType="initial">
-<data code="NPCI" ki="20150822">$data</data>
+<Data code="NPCI" ki="20150822">$data</Data>
 </Cred>
 </Creds>
 </upi:ReqListKeys>
@@ -83,8 +127,8 @@ EOT;
 
                 $str = <<<EOT
 <upi:ReqListKeys xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$ids[0]}"/>
-<Txn id="$txnId" note="GET" refId="{$ids[1]}" refUrl="$refUrl" ts="$ts" type="ListKeys"/>
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="GET" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ListKeys"/>
 </upi:ReqListKeys>
 EOT;
             break;
@@ -96,7 +140,7 @@ EOT;
 
         $this->fireRequest($method, $txnId, $str);
 
-        return $txnId;
+        return [$txnId, $msgId];
     }
 
     protected function signXml($xml)
@@ -112,6 +156,8 @@ EOT;
 
     protected function fireRequest(string $method, string $txnId, string $unsignedXml)
     {
+        Cache::forever("UPI.req.$txnId", $unsignedXml);
+
         $url = $this->makeUrl($method, $txnId);
 
         $signedXml = $this->signXml($unsignedXml);

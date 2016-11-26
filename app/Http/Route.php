@@ -14,13 +14,15 @@ final class Route
 
     protected static $apiRoutes = array(
         'handle_upi'                              => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@handle'                                              ],
-        'upi_get_key_list'                              => ['get',     'upi_npci/keyList',              'UpiController@getPublicKeyList'                                              ],
+        'upi_get_key_list'                        => ['get',     'upi_npci/keyList',                                'UpiController@getPublicKeyList'                                              ],
         'get_bank_account_list'                   => ['get',      'upi_npci/bank_account_list',                     'UpiController@getBankAccountList'                                  ],
+        'upi_sms_webhook'                         => ['post',      'upi_npci/smswebhook',                           'UpiController@verifyDevice'                                  ],
         'is_valid_vpa'                            => ['get',      'upi_npci/validate_vpa/{vpa}',                    'UpiController@isValidVpa'                                         ],
         'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
         'is_device_verified'                      => ['get',      'upi_npci/devices/{id}',                          'UpiController@isDeviceVerified'                                    ],
         'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
+        'upi_read_async'                           => ['get',      'upi_npci/read/{id}',                            'UpiController@readFromCache'                                            ],
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -594,6 +596,7 @@ final class Route
 
     public static $direct = array(
         'upi_get_bank_list',
+        'upi_read_async',
         'get_bank_account_list',
         'upi_get_key_list',
         'account',
@@ -606,6 +609,7 @@ final class Route
         'mock_hdfc_3dsecure',
         'mock_cybersource_acs',
         'transparent_redirect_get',
+        'upi_sms_webhook',
         'is_valid_vpa',
         'handle_upi',
         'register_device',

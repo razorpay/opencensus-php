@@ -25,13 +25,27 @@ class UpiController extends Controller
         $ts = upi_ts();
 
         Cache::forever("UPI.$msgId", $body);
+        Cache::forever("UPI.$id", $body);
 
         if (in_array($api, ['RespListAccPvd', 'ReqListPsp', 'RespListKeys'], true))
         {
             $cache = $api;
             if ($api === 'RespListKeys')
             {
-                $cache = $this->isListKeysAndNotGetToken($body);
+                $type = $this->getTxnType($body);
+
+                if ($type === 'ListKeys')
+                {
+                    $cache = 'ListKeys';
+                }
+                else if ($type === 'GetToken')
+                {
+                    $device = Cache::get("UPI.req.$id");
+
+                    // Update Token
+                    $this->updateDeviceToken($xml);
+                    $cache = false;
+                }
             }
 
             if ($cache)
@@ -39,6 +53,7 @@ class UpiController extends Controller
                 Cache::forever("UPI.$cache", $body);
             }
         }
+
         $resp = <<<EOT
 <?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
 EOT;
@@ -48,22 +63,26 @@ EOT;
             ->header('Content-Type', 'application/xml');
     }
 
-    public function isListKeysAndNotGetToken($str)
+    protected function updateDeviceToken($xml)
+    {
+        $deviceId = 'knpVYacquVfRKQaw';
+        $device = Cache::get("devices.$deviceId");
+        $e = dom_import_simplexml($xml->xpath('//keyValue')[0]);
+
+        $token = $e->nodeValue;
+
+        $device['token'] = $token;
+
+        Cache::forever("devices.$deviceId", $device);
+    }
+
+    public function getTxnType($str)
     {
         $xml = simplexml_load_string($str);
 
         $e = dom_import_simplexml($xml->xpath('//Txn')[0]);
 
-        $type = $e->getAttribute('type');
-
-        if ($type === 'ListKeys')
-        {
-            return 'ListKeys';
-        }
-        else
-        {
-            return false;
-        }
+        return $e->getAttribute('type');
     }
 
     public function registerDevice()
@@ -73,26 +92,35 @@ EOT;
         $device = $this->generateFakeDevice($input);
 
         $id = $device['id'];
-        $verification_id = $device['id'];
+        $verification_sms = $device['verification'];
 
         Cache::forever("devices.$id", $device);
-        Cache::forever("devices.verification.$verification_id", $id);
+        Cache::forever("devices.verification.$verification_sms", $id);
 
         return ApiResponse::json($device);
+    }
+
+    public function verifyDevice()
+    {
+        $input = Request::all();
+
+        $msg = $input['msg'];
+        $mobile = $input['from'];
+
+        $deviceId = Cache::get("devices.verification.$msg");
+
+        $device = Cache::get("devices.$deviceId");
+
+        $device['mobile'] = $mobile;
+
+        $this->makeGatewayRequest('GetToken', $device);
     }
 
     public function isDeviceVerified($deviceId)
     {
         $device = Cache::get("devices.$deviceId");
 
-        if ($device and time() - $device['created_at'] > 10)
-        {
-            return ApiResponse::json(['verified'=>true, 'mobile'=>'918861670264']);
-        }
-        else
-        {
-            return ApiResponse::json(['verified'=>false,'mobile'=>'918861670264']);
-        }
+        return ApiResponse::json($device);
     }
 
     public function zeroCall($method)
@@ -111,6 +139,13 @@ EOT;
 
         return response($xml)
             ->header('Content-Type', 'application/xml');
+    }
+
+    public function readFromCache($msgId)
+    {
+        $xml = Cache::get("UPI.$msgId");
+
+        return response($xml)->header('Content-Type','text/xml');
     }
 
     public function getBankList()
@@ -161,9 +196,9 @@ EOT;
 
         try
         {
-            $txnId = $gw->makeRequest($method, $params);
+            list($txnId, $msgId) = $gw->makeRequest($method, $params);
 
-            return ApiResponse::json(['success'=>true, 'id'=>$txnId]);
+            return ApiResponse::json(['success'=>true, 'txnId'=>$txnId, 'msgId' => $msgId]);
         }
 
         catch(\Exception $e)
@@ -180,28 +215,10 @@ EOT;
             'verification'  => str_random(16),
             'created_at'    => time(),
             'device_id'     => $input['device_id'],
-            'os_version'    => $input['os_version']
+            'os_version'    => $input['os_version'],
+            'challenge'     => $input['challenge'],
+            'app_id'        => $input['app_id'],
         ];
-    }
-
-    public function deviceCreate()
-    {
-
-    }
-
-    public function deviceVerify()
-    {
-
-    }
-
-    public function getVpas()
-    {
-
-    }
-
-    public function vpaAvailable()
-    {
-
     }
 
     public function isValidVpa($vpa)
