@@ -115,6 +115,7 @@ class Name
         IFSC::PSIB => 'Punjab & Sind Bank',
         IFSC::PUNB => 'Punjab National Bank',
         IFSC::RABO => 'Rabobank International (CCRB)',
+        IFSC::RAZR => 'Iron Bank of Razorpay',
         IFSC::RSCB => 'Rajasthan State Co-operative Bank Ltd',
         IFSC::RSBL => 'Rajgurunagar Sahakari Bank Ltd',
         IFSC::RNSB => 'Rajkot Nagarik Sahakari Bank',

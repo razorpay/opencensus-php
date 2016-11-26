@@ -161,6 +161,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function verifyOtp($deviceId, $input)
+    {
+        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
+
+        return $data;
+    }
+
     /**
      * @param  check global customer existance and send otp
      * @param  boolean if to send otp or not

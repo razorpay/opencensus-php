@@ -183,6 +183,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function setMPINForDevice($deviceId)
+    {
+        $input = Request::all();
+
+        $data = $this->customer->setMPIN($deviceId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function validateDeviceToken($deviceToken)
     {
         $input = Request::all();
