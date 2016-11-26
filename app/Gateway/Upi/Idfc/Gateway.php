@@ -13,17 +13,23 @@ class Gateway
 
         $params = array_replace_recursive($requestParams, $params);
 
+        $defaultParams = $this->getDefaults();
+
         // We don't want to add extra fields from the defaults
-        array_walk_recursive($params, function (&$value, $key, $defaults) {
-            if (array_key_exists($key, $defaults))
+        array_walk_recursive(
+            $params,
+            function (&$value, $key, $defaults)
             {
-                $value = $defaults[$key];
-            }
-        }, $this->getDefaults());
+                if (array_key_exists($key, $defaults))
+                {
+                    $value = $defaults[$key];
+                }
+            },
+            $defaultParams);
 
         $this->setMerchantCreds($params);
 
-        $req = $this->getUPIReq($params);
+        $req = $this->getUpiReq($params);
 
         // TODO: Sign it if $hmac===true
 
@@ -57,7 +63,7 @@ class Gateway
 EOT;
     }
 
-    public function getUPIReq(array $attribs, string &$str = '')
+    public function getUpiReq(array $attribs, string &$str = '')
     {
         foreach ($attribs as $key => $value)
         {
@@ -65,7 +71,7 @@ EOT;
 
             if (is_array($value))
             {
-                $str .= $this->getUPIReq($value, $str);
+                $str .= $this->getUpiReq($value, $str);
             }
             else
             {
@@ -80,8 +86,8 @@ EOT;
 
     protected function getDefaults()
     {
-        return [
             // TODO: Do this properly
+        return [
             // 'UPI'   =>  [
                 'BankId'            => '401613',
                 'OrgId'             => '400054',

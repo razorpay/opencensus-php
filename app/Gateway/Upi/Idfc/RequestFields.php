@@ -69,7 +69,18 @@ class RequestFields
     const MerchantGenerateBankOTP = [
         'BankName','AddrType', 'PayerCode',
         'UPI'   =>  [
-            'Channel', 'MobileNo', 'OrgId', 'BankId', 'Remarks', 'UserID', 'UserPwd', 'DeviceID', 'PayerType', 'MerchantID', 'TerminalID', 'MerchantCredentials',
+            'Channel',
+            'MobileNo',
+            'OrgId',
+            'BankId',
+            'Remarks',
+            'UserID',
+            'UserPwd',
+            'DeviceID',
+            'PayerType',
+            'MerchantID',
+            'TerminalID',
+            'MerchantCredentials',
         ],
         'GeoCode',
         'DevLocation',
@@ -124,7 +135,19 @@ class RequestFields
 
     const MerchantViewRegAccnts   =   [
         'UPI'   =>  [
-            'Channel','MobileNo','MsgId','OrgId','BankId','Remarks','TimeStamp','DeviceID','PayerType','SubMerchantID','MerchantID','TerminalID','MerchantCredentials',
+            'Channel',
+            'MobileNo',
+            'MsgId',
+            'OrgId',
+            'BankId',
+            'Remarks',
+            'TimeStamp',
+            'DeviceID',
+            'PayerType',
+            'SubMerchantID',
+            'MerchantID',
+            'TerminalID',
+            'MerchantCredentials',
         ],
         'Category',
         'VirAddr',
@@ -158,7 +181,8 @@ class RequestFields
                 $res[$value] = '';
             }
             // If we have a sequential array inside
-            else if (is_array($value) and array_keys($value) === range(0, count($value) - 1))
+            else if ((is_array($value) and
+                     (array_keys($value) === range(0, count($value) - 1)))
             {
                 $res[$key] = self::makeAssociativeArray($value);
             }
