@@ -8,6 +8,12 @@ class Status
     const VERIFIED      = 'verified';
     const REGISTERED    = 'registered';
 
+    // These statuses have corresponding timestamps column in invoice
+    public static $timestampedStatuses = [
+        self::VERIFIED,
+        self::REGISTERED,
+    ];
+
     public static function isStatusValid($status)
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

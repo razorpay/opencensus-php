@@ -2,21 +2,17 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Models\Upi\Service;
 use ApiResponse;
 use View;
 use Cache;
 use Trace;
 use Request;
 
+use RZP\Models\Device;
+
 class UpiController extends Controller
 {
     protected $service;
-
-    public function __construct()
-    {
-        $this->service = new Service;
-    }
 
     public function handle(string $api, string $id)
     {
@@ -30,33 +26,23 @@ class UpiController extends Controller
         $msgId = $e->getAttribute('msgId');
         $ts = upi_ts();
 
-        Cache::forever("UPI.$msgId", $body);
-        Cache::forever("UPI.$id", $body);
-
         if (in_array($api, ['RespListAccPvd', 'ReqListPsp', 'RespListKeys'], true))
         {
-            $cache = $api;
             if ($api === 'RespListKeys')
             {
                 $type = $this->getTxnType($body);
 
                 if ($type === 'ListKeys')
                 {
-                    $cache = 'ListKeys';
                 }
                 else if ($type === 'GetToken')
                 {
-                    $device = Cache::get("UPI.req.$id");
+                    $deviceId = '';
+                    $upiToken = '';
 
                     // Update Token
-                    $this->updateDeviceToken($xml);
-                    $cache = false;
+                    $device = (new Device\Service)->updateUpiToken($deviceId, $upiToken);
                 }
-            }
-
-            if ($cache)
-            {
-                Cache::forever("UPI.$cache", $body);
             }
         }
 
@@ -72,19 +58,6 @@ EOT;
             ->header('Content-Type', 'application/xml');
     }
 
-    protected function updateDeviceToken($xml)
-    {
-        $deviceId = 'knpVYacquVfRKQaw';
-        $device = Cache::get("devices.$deviceId");
-        $e = dom_import_simplexml($xml->xpath('//keyValue')[0]);
-
-        $token = $e->nodeValue;
-
-        $device['token'] = $token;
-
-        Cache::forever("devices.$deviceId", $device);
-    }
-
     public function getTxnType($str)
     {
         $xml = simplexml_load_string($str);
@@ -92,39 +65,6 @@ EOT;
         $e = dom_import_simplexml($xml->xpath('//Txn')[0]);
 
         return $e->getAttribute('type');
-    }
-
-    public function registerDevice()
-    {
-        $input = Request::all();
-
-        $device = $this->generateFakeDevice($input);
-
-        $id = $device['id'];
-        $verification_sms = $device['verification'];
-
-        Cache::forever("devices.$id", $device);
-        Cache::forever("devices.verification.$verification_sms", $id);
-
-        return ApiResponse::json($device);
-    }
-
-    public function verifyDevice()
-    {
-        $input = Request::all();
-
-        Trace::info('MISC_TRACE_CODE', $input);
-
-        // Msg91 converts the keyword to lowecase
-        $keyword = trim(strtoupper($input['keyword']));
-
-        if ($keyword === 'VERIFY')
-        {
-            $msg = $input['message'];
-            $mobile = $input['number'];
-        }
-
-        ApiResponse::json($input);
     }
 
     public function isDeviceVerified($deviceId)
@@ -217,19 +157,6 @@ EOT;
             return ApiResponse::json(['success'=>false, 'msg' => $e->getMessage()]);
         }
 
-    }
-
-    protected function generateFakeDevice(array $input)
-    {
-        return [
-            'id'            => str_random(16),
-            'verification'  => str_random(16),
-            'created_at'    => time(),
-            'device_id'     => $input['device_id'],
-            'os_version'    => $input['os_version'],
-            'challenge'     => $input['challenge'],
-            'app_id'        => $input['app_id'],
-        ];
     }
 
     public function isValidVpa($vpa)

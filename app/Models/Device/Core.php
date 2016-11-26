@@ -5,6 +5,7 @@ namespace RZP\Models\Device;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Upi;
+use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -32,10 +33,33 @@ class Core extends Base\Core
         return $device;
     }
 
-    public function verifyAndGetToken(array $input)
+    public function verify(Entity $device, Customer\Entity $customer)
     {
-        $response = $this->upiCore->callUpiGateway('upi_npci', 'GetToken', $input);
+        $device->setStatus(Status::VERIFIED);
+
+        $device->customer()->associate($customer);
+
+        $this->repo->saveOrFail($device);
+
+        return $device;
+    }
+
+    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer)
+    {
+        $gatewayInput['device'] = $device->toArrayPublic();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+
+        $response = $this->upiCore->callUpiGateway('upi_npci', 'GetToken', $gatewayInput);
 
         return $response;
+    }
+
+    public function updateUpiToken(Entity $device, string $upiToken)
+    {
+        $device->setUpiToken($upiToken);
+
+        $device = $this->repo->saveOrFail($device);
+
+        return $device;
     }
 }

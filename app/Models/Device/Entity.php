@@ -3,6 +3,7 @@
 namespace RZP\Models\Device;
 
 use RZP\Models\Base;
+use Carbon\Carbon;
 
 class Entity extends Base\PublicEntity
 {
@@ -20,6 +21,8 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const VERIFICATION_TOKEN    = 'verification_token';
     const UPI_TOKEN             = 'upi_token';
+    const VERIFIED_AT           = 'verified_at';
+    const REGISTERED_AT         = 'registered_at';
 
     protected static $sign = 'dev';
 
@@ -68,6 +71,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    // ----------------------- Setters -----------------------
+
+    public function setStatus($status)
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+
+        // Sets corresponding timestamps as per new status
+        if (in_array($status, Status::$timestampedStatuses, true))
+        {
+            $timestampKey = $status . '_at';
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
+    }
+
+    public function setUpiToken($upiToken)
+    {
+        $this->setAttribute(self::UPI_TOKEN, $upiToken);
+    }
+
     // ----------------------- Generators -----------------------
 
     protected function generateVerificationToken()
@@ -80,5 +106,17 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::VERIFICATION_TOKEN, $verificationToken);
+    }
+
+    // ----------------------- Relations -----------------------
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Entity');
     }
 }

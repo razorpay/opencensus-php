@@ -52,13 +52,19 @@ class CreateDevices extends Migration
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
             $table->string(Entity::STATUS);
 
-            $table->string(Entity::VERIFICATION_TOKEN, 256);
+            $table->string(Entity::VERIFICATION_TOKEN, 256)
+                  ->nullable()
+                  ->unique();
 
             $table->string(Entity::UPI_TOKEN, 256)
                   ->nullable();
-
+            
+            $table->integer(Entity::VERIFIED_AT);
+            $table->integer(Entity::REGISTERED_AT);
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 

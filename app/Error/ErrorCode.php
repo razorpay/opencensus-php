@@ -254,6 +254,8 @@ class ErrorCode
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                    = 'BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE';
     const BAD_REQUEST_BITLY_LONG_URL_EMPTY                                          = 'BAD_REQUEST_BITLY_LONG_URL_EMPTY';
     const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                                 = 'BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT';
+    const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                       = 'BAD_REQUEST_INVALID_MESSAGE_KEYWORD';
+    const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                        = 'BAD_REQUEST_MISSING_FIELDS_MESSAGE';
 
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
 

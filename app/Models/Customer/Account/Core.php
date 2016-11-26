@@ -19,11 +19,18 @@ class Core extends Base\Core
         return $this->create($input, $merchant, $failOnDuplicate);
     }
 
-    public function createGlobalCustomer($input)
+    /**
+     * @param      $input
+     * @param bool $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createGlobalCustomer($input, $failOnDuplicate = true)
     {
         assertTrue(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->create($input, $this->getSharedAccount());
+        return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
     protected function create($input, $merchant, $failOnDuplicate = true)
@@ -171,8 +178,10 @@ class Core extends Base\Core
 
     /**
      * Gets global customer from db or create one.
-     * @param  string $contact customer's phone number
-     * @return Customer\Entity $contact
+     *
+     * @param $input
+     *
+     * @return Entity $contact
      */
     protected function getOrCreateGlobalCustomer($input)
     {
