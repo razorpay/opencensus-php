@@ -24,7 +24,7 @@ angular.module('app.services', [])
       },
 
       getIdentity: function() {
-        return _identity
+        return _identity;
       },
 
       identity: function (force) {
@@ -130,9 +130,12 @@ angular.module('app.services', [])
   // Return the factory value.
   return transformRequest;
   function serializeData(data) {
+    if (typeof data === 'undefined') {
+      data = {};
+    }
     // If this is not an object, defer to native stringification.
     if (!angular.isObject(data)) {
-      return data === null ? '' : data.toString();
+      return (data === null) ? '' : data.toString();
     }
     var buffer = [];
     // Serialize each key in the object.
@@ -152,6 +155,7 @@ angular.module('app.services', [])
 .factory('alertsFactory', function () {
   var handler = function() {
     this.alerts = [];
+
     this.getAlerts = function () {
       return this.alerts;
     };
@@ -169,6 +173,7 @@ angular.module('app.services', [])
         type: $type,
         msg: $message
       });
+
       window.scrollTo(0, 0)
     };
 
@@ -181,11 +186,13 @@ angular.module('app.services', [])
       }
     };
   };
+
   return {
     getHandler: function () {
       return new handler();
     }
   };
+
 }).factory('dateFactory', function () {
   var handler = function($scope) {
     this.endDate = new Date();

@@ -90,13 +90,10 @@ export default (props) => {
 
                 <div class='list-group-item'>
                   <span class='pull-right'>
-                    {
-                      invoice.paid_at ?
-                      <Time class='pull-right'
-                        value={invoice.paid_at}
-                        format='DD MMM YYYY, hh:mm:ss a'
-                      /> : '--'
-                    }
+                    <Time class='pull-right'
+                      value={invoice.paid_at}
+                      format='DD MMM YYYY, hh:mm:ss a'
+                    />
                   </span>
                   Paid At
                 </div>
