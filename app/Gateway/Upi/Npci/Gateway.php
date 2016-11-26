@@ -89,6 +89,8 @@ EOT;
 
         extract($this->getCommonVariables());
 
+        $this->trace->info('MISC_TRACE_CODE', $params);
+
         $str = <<<EOT
 <upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
@@ -106,7 +108,7 @@ EOT;
 <Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
 </Device>
 <Ac addrType="ACCOUNT">
-<Detail name="IFSC" value="RAZR"/>
+<Detail name="IFSC" value="RAZR0000001"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
 <Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
 </Ac>
