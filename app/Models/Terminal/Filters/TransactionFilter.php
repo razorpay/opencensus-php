@@ -140,38 +140,36 @@ class TransactionFilter extends Terminal\Filter
 
     public function iciciBilldeskFilter($terminal, $input)
     {
-        if ($input['payment']->isNetbanking())
+        $bank = $input['payment']->getBank();
+
+        $gateway = $terminal->getGateway();
+
+        $category2 = $input['merchant']->getCategory2();
+
+        $networkCategory = $terminal->getNetworkCategory();
+
+        if (($input['payment']->isNetbanking()) and
+            ($bank === IFSC::ICIC) and
+            ($gateway === Gateway::BILLDESK))
         {
-            $bank = $input['payment']->getBank();
-
-            $terminalGateway = $terminal->getGateway();
-
-            if (($bank === IFSC::ICIC) and
-                ($terminalGateway === Gateway::BILLDESK))
+            // Two rules to be checked
+            switch ($category2)
             {
-                $merchantCategory2 = $input['merchant']->getCategory2();
+                // If securities or commodities then the shared terminal
+                // should not be used, i.e on the shared terminal return
+                // false.
+                case 'securities' :
+                case 'commodities' :
+                    return ($terminal->isShared() === false);
+                    break;
 
-                $terminalNetworkCategory = $terminal->getNetworkCategory();
-
-                // Two rules to be checked
-                switch ($merchantCategory2)
-                {
-                    // If securities or commodities then the shared terminal
-                    // should not be used, i.e on the shared terminal return
-                    // false.
-                    case 'securities' :
-                    case 'commodities' :
-                        return ($terminal->isShared() === false);
-                        break;
-
-                    // If corporate or mutual_funds then the corresponding
-                    // terminal should not be used. i.e allowing only the
-                    // null or the default terminal through.
-                    case 'corporate':
-                    case 'mutual_funds':
-                        return ($terminalNetworkCategory !== $merchantCategory2);
-                        break;
-                }
+                // If corporate or mutual_funds then the corresponding
+                // terminal should not be used, as ICIC is not being allowed
+                // on that terminal
+                case 'corporate':
+                case 'mutual_funds':
+                    return ($networkCategory !== $category2);
+                    break;
             }
         }
 
