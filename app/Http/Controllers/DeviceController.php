@@ -43,6 +43,6 @@ class DeviceController extends Controller
 
         $this->service->verify($input);
 
-        return ApiResponse::json([], 204);
+        return ApiResponse::json([], 200);
     }
 }
