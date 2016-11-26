@@ -340,10 +340,7 @@ class Generator extends Base\Core
      */
     protected function associateCustomerWithInvoice(array $input)
     {
-        if (isset($input[Entity::CUSTOMER]))
-        {
-            $customerDetails = $input[Entity::CUSTOMER];
-        }
+        $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
 
         $customer = null;
 
