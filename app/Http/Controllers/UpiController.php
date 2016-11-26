@@ -116,7 +116,7 @@ EOT;
         Trace::info('MISC_TRACE_CODE', $input);
 
         // Msg91 converts the keyword to lowecase
-        $keyword = trim(strtoupper($input['keyword']))
+        $keyword = trim(strtoupper($input['keyword']));
 
         if ($keyword === 'VERIFY')
         {
