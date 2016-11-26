@@ -13,9 +13,18 @@ class Trace extends TraceWriter
 
     protected $env;
 
+    protected $mode;
+
     protected $config = array();
 
     protected $debug = false;
+
+    /**
+     * This will record whether we have fired a critical trace or not.
+     * This helps in preventing recursion when multiple critical failures
+     * pile up on top of each other.
+     */
+    protected $critical = false;
 
     protected $testHandler = null;
 
@@ -58,8 +67,10 @@ class Trace extends TraceWriter
             // we are going to continue with our normal code run.
         }
 
-        if ($level = Trace::CRITICAL)
+        if (($level = Trace::CRITICAL) and
+            ($this->critical === false))
         {
+            $this->critical = true;
             $this->sendMailAboutFailureOnCriticalRoute($traceCode, $context);
         }
     }
@@ -106,7 +117,7 @@ class Trace extends TraceWriter
                 'line'          => $exception->getLine(),
                 'trace'         => $exception->getTraceAsString(),
                 'environment'   => $env,
-                'mode'          => $this->mode,
+                'mode'          => $this->getMode(),
                 'level'         => $level,
                 'trace_message' => $message,
                 'instance'      => $app['instance']->getInstanceData(),
@@ -128,7 +139,7 @@ class Trace extends TraceWriter
 
     protected function sendMailAboutFailureOnCriticalRoute($code, $traceData)
     {
-        $mode = $this->mode;
+        $mode = $this->getMode();
 
         try
         {
@@ -157,6 +168,14 @@ class Trace extends TraceWriter
 
     protected function getMode()
     {
-        return $this->app['rzp.mode'];
+        if ($this->mode === null)
+        {
+            if (isset($this->app['rzp.mode']))
+            {
+                $this->mode = $this->app['rzp.mode'];
+            }
+        }
+
+        return $this->mode;
     }
 }
