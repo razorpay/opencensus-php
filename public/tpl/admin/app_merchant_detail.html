@@ -40,18 +40,18 @@
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
+        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
+          Enable International <i class="pull-right fa fa-globe"></i>
+        </a>
+        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
+          Disable International <i class="pull-right fa fa-globe"></i>
+        </a>
         <a href class="list-group-item"
         ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
-        </a>
-        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
-          Enable International <i class="pull-right fa fa-globe"></i>
-        </a>
-        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
-          Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
           ng-show="merchant.details.hold_funds==1 && admin.permissions.indexOf('edit_merchant_release_funds') !== -1"
