@@ -128,6 +128,11 @@ class Service extends Base\Service
         return $accounts->toArrayPublic();
     }
 
+    public function setMpin($id, $accountNumber)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndAccountNumber($id, $this->repo->merchant->getSharedAccount());
+    }
+
     public function fetchUpiBankAccounts($id, $ifsc)
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());

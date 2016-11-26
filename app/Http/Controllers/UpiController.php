@@ -32,7 +32,7 @@ class UpiController extends Controller
         $msgId = $e->getAttribute('msgId');
         $ts = upi_ts();
 
-        if (in_array($api, ['RespListAccPvd', 'ReqListPsp', 'RespListKeys'], true))
+        if (in_array($api, ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))
         {
             if ($api === 'RespListKeys')
             {
@@ -54,6 +54,12 @@ class UpiController extends Controller
                     // Update Token
                     $device = (new Device\Service)->updateUpiToken($deviceId, $upiToken);
                 }
+            }
+            else if ($api === 'ReqRegMob')
+            {
+                $creds = $this->parseSetMpinResponse($xml);
+
+                $this->setMPINForCustomer($creds);
             }
             else
             {
@@ -194,5 +200,28 @@ EOT;
         $token = $token->nodeValue;
 
         return [$deviceId, $token];
+    }
+
+    protected function parseSetMpinResponse($xml)
+    {
+        $bankAccount = dom_import_simplexml($xml->xpath('//Txn')[0]);
+        $bankAccountId = $bankAccount->getAttribute('note');
+
+        $last6 = (dom_import_simplexml($xml->xpath('//RegDetails/Detail[@name="CARDDIGITS"]')[0])->getAttribute('value'));
+
+        $expiry = (dom_import_simplexml($xml->xpath('//RegDetails/Detail[@name="EXPDATE"]')[0])->getAttribute('value'));
+
+        $otp = trim(dom_import_simplexml($xml->xpath('//Cred[@type="OTP"]/Data')[0])->nodeValue);
+        $mpin = trim(dom_import_simplexml($xml->xpath('//Cred[@type="PIN"]/Data')[0])->nodeValue);
+
+        sd([$otp, $mpin]);
+
+        return [
+            'bank_account_id'   =>  $bankAccountId,
+            'otp'               =>  $otp,
+            'pin'               =>  $mpin,
+            'last6'             =>  $last6,
+            'expiry'            =>  $expiry,
+        ];
     }
 }

@@ -27,7 +27,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getBankAccountsForCustomer($customer, $ifsc)
+    public function getBankAccountsForCustomer($customer, $ifsc = 'RAZR')
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $customer->getId())

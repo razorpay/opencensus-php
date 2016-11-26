@@ -165,6 +165,13 @@ class CustomerController extends Controller
         return $data;
     }
 
+    public function setMpin($customerId, $accountNumber)
+    {
+        $data = $this->customer->setMpin($customerId, $accountNumber);
+
+        return $data;
+    }
+
     public function postOtp()
     {
         $input = Request::all();
