@@ -25,6 +25,13 @@ class Service extends Base\Service
         return $device->toArrayPublic();
     }
 
+    public function fetch($deviceId)
+    {
+        $device = $this->repo->device->findByPublicIdAndMerchant($deviceId, $this->merchant);
+
+        return $device->toArrayPublic();
+    }
+
     public function verify(array $input)
     {
         list($verificationToken, $contact) = $this->getRelevantFieldsForVerify($input);
@@ -78,12 +85,5 @@ class Service extends Base\Service
                 $input
             );
         }
-    }
-
-    public function verifyAndGetToken(array $input)
-    {
-        $response = $this->core->verifyAndGetToken($input);
-
-        return $response;
     }
 }

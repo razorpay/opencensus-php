@@ -310,6 +310,7 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
+        'device_fetch'                            => ['get',      'devices/{id}',                                   'DeviceController@getDevice'                                        ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'msg91_sms_webhook'                       => ['post',     'msg91/callback',                                 'UpiController@verifyDevice'                                        ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
@@ -365,6 +366,7 @@ final class Route
         'otp_post',
         'otp_verify',
         'device_create',
+        'device_fetch',
         'device_verify',
     );
 

@@ -30,11 +30,18 @@ class DeviceController extends Controller
         return ApiResponse::json($device);
     }
 
+    public function getDevice($deviceId)
+    {
+        $invoice = $this->service->fetch($deviceId);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function verifyDevice()
     {
         $input = Request::all();
 
-        $response = $this->service->verifyAndGetToken($input);
+        $response = $this->service->verify($input);
 
         return ApiResponse::json($response);
     }
