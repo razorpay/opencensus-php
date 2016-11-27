@@ -384,6 +384,8 @@ class Service extends Base\Service
     {
         $error = (new Validator)->validateInput('login', $input)->messages();
 
+        $res = null;
+
         if (empty($error) === false)
         {
             return [['Email or password is invalid.'], null];
@@ -408,7 +410,14 @@ class Service extends Base\Service
             $error = ['Email or password is invalid'];
         }
 
-        return [$error, null];
+        if (empty($error))
+        {
+            $res = [
+                'id'    =>  Auth::user()->getAuthIdentifier(),
+            ];
+        }
+
+        return [$error, $res];
     }
 
     public function changePassword(array $input)
