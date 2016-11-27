@@ -153,6 +153,25 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchBankAccountsByContact($contact)
+    {
+        $contact = Customer\Validator::validateAndParseContact($contact);
+
+        // TODO: Ensure that + is always entered in the database instead
+        // of this hack
+
+        if (strlen($contact) === 13)
+        {
+            $contact = substr($contact, 1);
+        }
+
+        $merchant = $this->repo->merchant->getSharedAccount();
+
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+        return $this->repo->bank_account->getBankAccountsForCustomer($customer)->toArrayPublic();
+    }
+
     /**
      * @param  check global customer existance and send otp
      * @param  boolean if to send otp or not
@@ -416,7 +435,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchUpiBankAccounts($id, $ifsc)
+    public function fetchUpiBankAccounts($id, $ifsc = 'RAZR')
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());
 

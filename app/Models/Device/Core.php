@@ -58,7 +58,7 @@ class Core extends Base\Core
         $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();
 
-        $response = $this->upiCore->callUpiGateway('upi_npci', 'GetToken', $gatewayInput);
+        $response = $this->upiCore->callUpiGateway('GetToken', $gatewayInput);
 
         return $response;
     }

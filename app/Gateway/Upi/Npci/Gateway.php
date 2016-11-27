@@ -30,11 +30,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'upi_npci';
 
-    public function __call($method, $args)
-    {
-        throw new \Exception('Not Implemented');
-    }
-
     protected function getCommonVariables()
     {
         return [
@@ -159,11 +154,11 @@ EOT;
      * @param  [type] $request [description]
      * @return [type]          [description]
      */
-    protected function processReqListAccount($msgId, $request): void
+    protected function preProcessReqListAccount($msgId, $request)
     {
-        $mobile = $request->getLink()->getValue();
-
-        $core = new \RZP\Models\Upi\Core;
+        return [
+            'mobile'    =>  $request->getLink()->getValue()
+        ];
     }
 
     /**
@@ -223,19 +218,56 @@ EOT;
     {
         extract($params);
         $msgId = $parsedRequest->getHead()->getMsgId();
+        $params['msgId'] = $msgId;
+
+        $res = [
+            'queue' =>  false
+        ];
 
         if ($this->needsProcessing($api))
         {
             // TODO: read/write from cache
             $params['original_request_params'] = [];
-            $this->{"process$api"}($msgId, $parsedRequest);
+            $res['queue'] = true;
+            list($jobName, $data) = $this->getJobDetails($params);
+
+            $res['job'] = $jobName;
+            $res['params'] = $data;
         }
 
-        return $this->generateAckResponse($api, $msgId);
+        return $res;
     }
 
-    protected function generateAckResponse($api, $msgId)
+    protected function getJobDetails($params)
     {
+        $api = $params['api'];
+
+        $method = "preProcess$api";
+
+        $data = $this->$method($params['msgId'], $params['parsedRequest']);
+
+        // The reply message will use reqMsgId
+        $data['reqMsgId'] = $params['msgId'];
+
+        $name = $this->getJobName($api);
+
+        return [$name, $data];
+    }
+
+    protected function getJobName($api)
+    {
+        $jobs = [
+            'ReqListAccount'    =>  'RespListAccount'
+        ];
+
+        return $jobs[$api];
+    }
+
+    public function generateAckResponse($params)
+    {
+        $api = $params['api'];
+        $msgId = $params['parsedRequest']->getHead()->getMsgId();
+
         $ts = upi_ts();
         return <<<EOT
 <?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>

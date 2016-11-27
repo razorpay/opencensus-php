@@ -315,7 +315,7 @@ class Core extends Base\Core
         $gatewayInput['bank_account'] = $bankAccount->toArray();
         $gatewayInput['input'] = $input;
 
-        $response = (new Upi\Core)->callUpiGateway('upi_npci', 'ReqRegMob', $gatewayInput);
+        $response = (new Upi\Core)->callUpiGateway('ReqRegMob', $gatewayInput);
 
         return $response;
     }

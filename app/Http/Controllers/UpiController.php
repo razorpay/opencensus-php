@@ -253,7 +253,7 @@ EOT;
             'params'    =>  ['reqMsgId' => $msgId],
             'method'    =>  'RespRegMob'
         ];
-        $xml = $core->callUpiGateway('upi_npci', 'makeRequest', $arr);
+        $xml = $core->callUpiGateway('makeRequest', $arr);
 
         return $this->generateXmlResponse($xml);
     }
