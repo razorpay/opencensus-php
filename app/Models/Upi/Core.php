@@ -27,6 +27,8 @@ class Core extends Base\Core
 
     public function handleUPIRequest($api, $id, $body)
     {
+        \Trace::info('GATEWAY_PAYMENT_CALLBACK', func_get_args());
+
         $parsedRequest = $this->app['upi.client']->parse($body, $api);
 
         $params = compact('api', 'id', 'body', 'parsedRequest');
@@ -49,6 +51,11 @@ class Core extends Base\Core
 
     protected function cacheResponse($response)
     {
+        if (!isset($response['params']))
+        {
+            return;
+        }
+
         $params = $response['params'];
 
         // We cache stuff!

@@ -420,7 +420,7 @@ class Service extends Base\Service
             {
                 $last6 = substr($bankAccount->getAccountNumber(), -6);
 
-                if ($bankAccount->getMpinSetAttribute() === false and $last6 === $creds['last6'] and $creds['expiry'] === '1224');
+                if ($bankAccount->getMpinSetAttribute() === false and $creds['expiry'] === '1224');
                 {
                     $bankAccount->setMpin($creds['mpin']);
                     $this->repo->saveOrFail($bankAccount);
