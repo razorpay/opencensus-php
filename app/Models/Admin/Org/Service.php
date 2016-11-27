@@ -6,13 +6,6 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
     public function fetchMultiple(array $input)
     {
         $orgs = $this->repo->org->fetch($input);
@@ -22,7 +15,7 @@ class Service extends Base\Service
 
     public function createOrg(array $input)
     {
-        $org = $this->core->create($input);
+        $org = $this->core()->create($input);
 
         return $org->toArrayPublic();
     }
@@ -38,7 +31,7 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($id);
 
-        return $this->core->delete($org);
+        return $this->core()->delete($org);
     }
 
     public function editOrg(string $id, array $input)
