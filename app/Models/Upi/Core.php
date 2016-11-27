@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Upi;
 
+use Cache;
 use RZP\Constants\Mode;
 use RZP\Models\Customer\Service as CustomerService;
+use RZP\Models\Device;
 use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function callUpiGateway($method, array $gatewayData)
+    public function callUpiGateway($method, array $gatewayData = [])
     {
         $gateway = 'upi_npci';
         try
@@ -31,6 +33,8 @@ class Core extends Base\Core
 
         $response = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
 
+        $this->cacheResponse($response);
+
         if ($response['queue'])
         {
             $this->pushToQueue($response['job'], $response['params']);
@@ -39,6 +43,24 @@ class Core extends Base\Core
         $ackXML = $this->app['gateway']->call('upi_npci', 'generateAckResponse', $params, 'test');
 
         return $ackXML;
+    }
+
+    protected function cacheResponse($params)
+    {
+        // We cache stuff!
+        if (isset($params['cacheKey']))
+        {
+            Cache::forever($params['cacheKey'], $params['cacheValue']);
+        }
+    }
+
+    protected function updateKeyStore($params)
+    {
+        // We update the device token here
+        if (isset($params['token']) and isset($params['device_id']))
+        {
+            $device = (new Device\Service)->updateUpiToken($params['device_id'], $params['token']);
+        }
     }
 
     protected function pushToQueue($job, array $params)

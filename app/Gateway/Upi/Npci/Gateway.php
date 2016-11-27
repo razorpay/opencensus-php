@@ -14,10 +14,6 @@ use AppResponse;
 
 class Gateway extends Base\Gateway
 {
-    const NPCI_KEY_VALUE = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4rIIEHkJ2TYgO/JUJQI/sxDgbDEAIuy9uTf4DItWeIMsG9AuilOj9R+dwAv8S6/9No/z0cwsw4UnsHQG1ALVIxFznLizMjaVJ7TJ+yTS9C9bYEFakRqH8b4jje7SC7rZ9/DtZGsaWaCaDTyuZ9dMHrgcmJjeklRKxl4YVmQJpzYLrK4zOpyY+lNPBqs+aiwJa53ZogcUGBhx/nIXfDDvVOtKzNb/08U7dZuXoiY0/McQ7xEiFcEtMpEJw5EB4o3RhE9j/IQOvc7l/BfD85+YQ5rJGk4HUb6GrQXHzfHvIOf53l1Yb0IX4v9q7HiAyOdggO+PVzXMSbrcFBrEjGZD7QIDAQAB";
-
-    const NPCI_KI = "20150822";
-
     // These are various requests that
     // we need to process in some form
     // before we send an Ack response
@@ -148,6 +144,36 @@ EOT;
         $this->fireRequest('ReqRegMob', $txnId, $str);
 
         return ['txn_id' => $txnId, 'msg_id' => $msgId];
+    }
+
+    protected function preProcessRespListKeys($msgId, $request)
+    {
+        // TODO: Move this to constant inside Txn class?
+        $txn = $request->getTxn();
+        $type = $txn->getType();
+
+        if ($type === 'GetToken')
+        {
+            $deviceId = $txn->getNote();
+            $keys = $request->getKeyList();
+            if (count($keys) === 1)
+            {
+                $key = $keys[0];
+                return [
+                    'token'         =>  $key->getKeyValue(),
+                    'device_id'     =>  $deviceId,
+                ];
+            }
+            // We return the token and other details
+        }
+        else if ($type === 'ListKeys')
+        {
+            return [
+                'cacheKey'      =>  'ListKeys',
+                // TODO
+                'cacheValue'    =>  'THIS SHOULD HOLD PARSED LISTKEYS RESPONSE'
+            ];
+        }
     }
 
     /**
@@ -283,6 +309,7 @@ EOT;
         $jobs = [
             'ReqListAccount'    =>  'RespListAccount',
             'ReqRegMob'         =>  'RespRegMob',
+            'RespListKeys'      =>  'UpdateKeyStore'
         ];
 
         return $jobs[$api];
