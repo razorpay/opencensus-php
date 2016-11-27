@@ -3375,18 +3375,17 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/upi-clients.git",
-                "reference": "01c561246e477151a01f9f55d7f28fccf30661a6"
+                "reference": "cc3acc4e27cd49bb295777db3c9350821f3b51be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/upi-clients/zipball/01c561246e477151a01f9f55d7f28fccf30661a6",
-                "reference": "01c561246e477151a01f9f55d7f28fccf30661a6",
+                "url": "https://api.github.com/repos/razorpay/upi-clients/zipball/cc3acc4e27cd49bb295777db3c9350821f3b51be",
+                "reference": "cc3acc4e27cd49bb295777db3c9350821f3b51be",
                 "shasum": ""
             },
             "archive": {
                 "exclude": [
-                    "/src/xsd/",
-                    "/src/metadata/"
+                    "/src/xsd/"
                 ]
             },
             "require": {
@@ -3411,7 +3410,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2016-11-26 12:45:13"
+            "time": "2016-11-27 11:34:25"
         },
         {
             "name": "react/promise",

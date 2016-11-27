@@ -16,14 +16,24 @@ class UpiController extends Controller
 {
     protected $service;
 
+    public function newHandle(string $api, string $id)
+    {
+        $core = new \RZP\Models\Upi\Core;
+
+        $xml = $core->handleUPIRequest($api, $id, Request::getContent());
+
+        return $this->generateXmlResponse($xml);
+    }
+
     public function handle(string $api, string $id)
     {
+
+
         $body = Request::getContent();
 
         $this->trace->info('GATEWAY_RESPONSE', [
             'body'  =>  $body
         ]);
-
 
         $xml = simplexml_load_string($body);
         $e = $xml->xpath('//Head')[0];

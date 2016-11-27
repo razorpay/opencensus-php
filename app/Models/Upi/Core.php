@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Upi;
 
+use RZP\Models\Customer\Service as CustomerService;
 use RZP\Models\Base;
 
 class Core extends Base\Core
@@ -19,5 +20,23 @@ class Core extends Base\Core
             throw $ex;
             return ['success'=>false, 'msg' => $ex->getMessage()];
         }
+    }
+
+    public function handleUPIRequest($api, $id, $body)
+    {
+        $parsedRequest = $this->app['upi.client']->parse($body, $api);
+
+        $params = compact('api', 'id', 'body', 'parsedRequest');
+
+        // The gateway can make whatever requests it desiers
+        $ackXML = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
+
+        return $ackXML;
+    }
+
+    publc function getBankAccountsForMobileNumber($mobile)
+    {
+        $cust = new CustomerService;
+
     }
 }

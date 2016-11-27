@@ -18,11 +18,26 @@ class Gateway extends Base\Gateway
 
     const NPCI_KI = "20150822";
 
+    // These are various requests that
+    // we need to process in some form
+    // before we send an Ack response
+    const PROCESSABLE_REQUESTS = [
+        // Someone is asking for list of accounts
+        'ReqListAccount',
+        // Someone returned us keys for an earlier request
+        'RespListKeys'
+    ];
+
+    protected function needsProcessing(string $api): bool
+    {
+        return in_array($api, self::PROCESSABLE_REQUESTS, true);
+    }
+
     protected $gateway = 'upi_npci';
 
     public function __call($method, $args)
     {
-        throw new \Exception\RuntimeException('Not Implemented');
+        throw new \Exception('Not Implemented');
     }
 
     protected function getCommonVariables()
@@ -91,6 +106,11 @@ EOT;
 
         $this->trace->info('MISC_TRACE_CODE', $params);
 
+        if (isset($input['txnId']))
+        {
+            $txnId = $input['txnId'];
+        }
+
         $str = <<<EOT
 <upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
@@ -133,7 +153,46 @@ EOT;
         return ['txn_id' => $txnId, 'msg_id' => $msgId];
     }
 
-    protected function makeUrl($method, $txnId)
+    /**
+     * Someone is asking us for bank accounts!
+     * @param  [type] $msgId   [description]
+     * @param  [type] $request [description]
+     * @return [type]          [description]
+     */
+    protected function processReqListAccount($msgId, $request): void
+    {
+        $mobile = $request->getLink()->getValue();
+
+        $core = new \RZP\Models\Upi\Core;
+
+        $core->getBankAccountsForMobileNumber($mobile);
+    }
+
+    public function handleRequest($params)
+    {
+        extract($params);
+        $msgId = $parsedRequest->getHead()->getMsgId();
+
+        if ($this->needsProcessing($api))
+        {
+            // TODO: read/write from cache
+            $params['original_request_params'] = [];
+            $this->{"process$api"}($msgId, $parsedRequest);
+        }
+
+        return $this->generateAckResponse($api, $msgId);
+    }
+
+    protected function generateAckResponse($api, $msgId)
+    {
+        $ts = upi_ts();
+        return <<<EOT
+<?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
+EOT;
+    }
+
+
+    protected function makeUrl(string $method,string $txnId)
     {
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
@@ -273,7 +332,7 @@ EOT;
 <Detail name="MOBNUM" value="919440002345"/>
 </Ac>
 <Ac addrType="ACCOUNT">
-<Detail name="IFSC" value="PHPL"/>
+<Detail name="IFSC" value="RAZR"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
 </Ac>
 </Payer>

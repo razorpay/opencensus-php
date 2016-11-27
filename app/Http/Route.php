@@ -15,7 +15,7 @@ final class Route
     protected static $apiRoutes = array(
         'handle_upi'                              => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@handle'                                              ],
         'upi_get_key_list'                        => ['get',      'upi_npci/keyList',                               'UpiController@getPublicKeyList'                                    ],
-        'upi_sms_webhook'                         => ['post',     'upi_npci/smswebhook',                            'UpiController@verifyDevice'                                        ],
+        'upi_sms_webhook'                         => ['post',     'upi_npci/xx/{api}/1.0/urn:txnid:{id}',           'UpiController@newHandle'                                        ],
         'is_valid_vpa'                            => ['get',      'upi_npci/validate_vpa/{vpa}',                    'UpiController@isValidVpa'                                          ],
         'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
