@@ -2,8 +2,7 @@
 
 namespace RZP\Models\Admin\Group;
 
-use RZP\Base;
-
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
 use RZP\Models\Merchant;
@@ -27,7 +26,7 @@ class Repository extends Base\Repository
         string $groupId)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->where(Entity::ID, '=', $groupId)
                     ->with('admins')
                     ->with('merchants')
@@ -139,7 +138,7 @@ class Repository extends Base\Repository
     public function hasGroupByName(string $orgId, string $name)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->where(Entity::NAME, '=', $name)
                     ->exists();
     }

@@ -3,7 +3,7 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
-use RZP\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {

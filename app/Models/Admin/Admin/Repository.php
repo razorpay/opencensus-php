@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 
