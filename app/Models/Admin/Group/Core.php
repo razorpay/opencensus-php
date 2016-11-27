@@ -3,74 +3,69 @@
 namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 
 class Core extends Base\Core
 {
-    public function create(string $orgId, array $input)
+    public function create(array $input, Org\Entity $org)
     {
         $group = (new Entity)->build($input);
 
-        $group->getValidator()->validateCreateInput($orgId, $input);
-
-        $org = $this->repo->org->findOrFail($orgId);
+        $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
+        $group->getValidator()->validateCreateInput($org->getId(), $input);
 
         $group->org()->associate($org);
 
         $this->repo->saveOrFail($group);
 
-        if (isset($input['admins']) === true)
-        {
-            $group->admins()->sync($input['admins']);
-        }
+        $this->associateRelevantEntitiesToGroup($input, $group);
 
-        if (isset($input['sub_groups']) === true)
-        {
-            $group->subGroups()->sync($input['sub_groups']);
-        }
-
-        if (isset($input['parents']) === true)
-        {
-            $group->parents()->sync($input['parents']);
-        }
-
-        if (isset($input['roles']) === true)
-        {
-            $group->roles()->sync($input['roles']);
-        }
-
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $group->getId());
+        // $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
+        //     $orgId, $group->getId());
 
         return $group;
     }
 
-    public function delete(string $orgId, string $groupId)
+    public function edit(Entity $group, array $input)
     {
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
-        $this->repo->deleteOrFail($group);
-
-        return $group;
-    }
-
-    public function edit(string $orgId, string $groupId, array $input)
-    {
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
         $group->edit($input);
 
         if (isset($input['parents']) === true)
         {
+            Group\Entity::verifyIdAndStripSignMultiple($input['parents']);
+
             $group->parents()->sync($input['parents']);
         }
 
         $this->repo->saveOrFail($group);
 
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
         return $group;
+    }
+
+    protected function associateRelevantEntitiesToGroup($input, Entity $group)
+    {
+        if (isset($input['admins']) === true)
+        {
+            Admin\Entity::verifyIdAndStripSignMultiple($input['admins']);
+            $group->admins()->sync($input['admins']);
+        }
+
+        if (isset($input['sub_groups']) === true)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple($input['sub_groups']);
+            $group->subGroups()->sync($input['sub_groups']);
+        }
+
+        if (isset($input['parents']) === true)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple($input['parents']);
+            $group->parents()->sync($input['parents']);
+        }
+
+        if (isset($input['roles']) === true)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
+            $group->roles()->sync($input['roles']);
+        }
     }
 }

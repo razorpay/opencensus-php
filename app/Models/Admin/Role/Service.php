@@ -20,11 +20,7 @@ class Service extends Base\Service
 
     public function getRole($orgId, $roleId)
     {
-        Org\Entity::verifyIdAndStripSign($orgId);
-
-        Role\Entity::verifyIdAndStripSign($roleId);
-
-        $role = $this->repo->role->fetchRoleForOrg($roleId, $orgId);
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         return $role->toArrayPublic();
     }

@@ -3,8 +3,9 @@
 namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Group;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -36,9 +37,9 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function addRoleToGroup(Entity $group, Role\Entity $role)
+    public function addRolesToGroup($roles, Entity $group)
     {
-        $group->roles()->attach($role);
+        $group->roles()->attach($roles);
     }
 
     public function revokeRoleOrFail(Admin\Entity $admin, Role\Entity $role)
@@ -59,24 +60,26 @@ class Repository extends Base\Repository
         // TODO Check how to do it with the pivot table. Iterating over a collection is bad!
         $roleId = $role->getId();
 
-        return ! $group->roles()->filter(function ($role) use($roleId)
+        $empty = $group->roles()->filter(
+            function ($role) use($roleId)
             {
                 return $role->getId() === $roleId;
-            })->isEmpty();
+            })
+            ->isEmpty();
+
+        return ($empty === false);
     }
 
-    public function addMerchantToGroup(Entity $admin, Merchant\Entity $merchant)
+    public function addMerchantsToGroup($merchants, Entity $group)
     {
-        $group->merchants()->attach($merchant);
+        $group->merchants()->attach($merchants);
     }
 
-    public function removeMerchantOrFail(
-        Admin\Entity $admin,
-        Merchant\Entity $merchant)
+    public function removeMerchantFromGroup(Entity $group, Merchant\Entity $merchant)
     {
-        if ($this->hasMerchant($admin, $merchant) === true)
+        if ($this->hasMerchant($group, $merchant) === true)
         {
-            $admins->merchants()->detach($merchant);
+            $group->merchants()->detach($merchant);
         }
         else
         {
@@ -96,9 +99,9 @@ class Repository extends Base\Repository
             })->isEmpty();
     }
 
-    public function addAdminToGroup(Entity $group, Admin\Entity $admin)
+    public function addAdminsToGroup($admins, Entity $group)
     {
-        $group->admins()->attach($admin);
+        $group->admins()->attach($admins);
     }
 
     public function removeAdminFromGroup(
@@ -121,7 +124,7 @@ class Repository extends Base\Repository
     public function fetchGroupsForOrg(string $orgId, array $input = array())
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     // ->with('subGroups')
                     // ->with('parents')
                     ->get();
@@ -135,11 +138,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function hasGroupByName(string $orgId, string $name)
+    public function validateOrgHasNoSuchGroup(Group\Entity $group, Org\Entity $org)
     {
-        return $this->newQuery()
-                    ->orgId($orgId)
-                    ->where(Entity::NAME, '=', $name)
-                    ->exists();
+        $grpExists = $this->newQuery()
+                          ->orgId($org->getId())
+                          ->where(Entity::NAME, '=', $group->getName())
+                          ->exists();
+
+        if ($grpExists === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The group with the name already exists');
+        }
     }
+
 }
