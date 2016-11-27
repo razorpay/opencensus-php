@@ -29,15 +29,8 @@ class Core extends Base\Core
 
         $params = compact('api', 'id', 'body', 'parsedRequest');
 
-        // The gateway can make whatever requests it desires
         $ackXML = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
 
         return $ackXML;
-    }
-
-    public function getBankAccountsForMobileNumber($mobile)
-    {
-        $cust = new CustomerService;
-
     }
 }

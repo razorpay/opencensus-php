@@ -164,8 +164,59 @@ EOT;
         $mobile = $request->getLink()->getValue();
 
         $core = new \RZP\Models\Upi\Core;
+    }
 
-        $core->getBankAccountsForMobileNumber($mobile);
+    /**
+     * This is the private key used for
+     * decrypting responses we get from the
+     * gateway server
+     * @see getPublicKey
+     * @return string Private Key
+     */
+    protected function getPrivateKey()
+    {
+        $key = $this->config['test_private_key'];
+
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return trim(str_replace('\n', "\n", $key));
+    }
+
+    /**
+     * Decrypts responses from the ICICI API
+     * @param  string $data
+     * @return string
+     */
+    public function decrypt($data)
+    {
+        $data = base64_decode($data);
+
+        $rsa = $this->getRSAInstance();
+
+        $key = $this->getPrivateKey();
+
+        $rsa->loadKey($key);
+
+        return $rsa->decrypt($data);
+    }
+
+    protected function getRSAInstance()
+    {
+        /**
+         * We need to do this to use PCCS 1.5 instead of 1.7
+         * which is the default. This is because of what the
+         * bank uses on the other side.
+         */
+        if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
+        {
+            define('CRYPT_RSA_PKCS15_COMPAT', true);
+        }
+
+        $rsa = new RSA();
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        return $rsa;
     }
 
     public function handleRequest($params)

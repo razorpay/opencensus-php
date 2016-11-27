@@ -68,7 +68,14 @@ class UpiController extends Controller
             {
                 $creds = $this->parseSetMpinResponse($xml);
 
-                (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds['mpin']);
+                $gw = new \RZP\Gateway\Upi\Npci\Gateway;
+
+                $creds['otp'] = $gw->decrypt($creds['otp']);
+                $creds['pin'] = $gw->decrypt($creds['pin']);
+
+                sd($creds);
+
+                (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds['pin']);
 
                 $this->fireRespRegMobResponse($msgId);
             }
@@ -182,20 +189,20 @@ EOT;
     {
         $gw = new \RZP\Gateway\Upi\Npci\Gateway;
 
-        // try
-        // {
+        try
+        {
             $params = [];
             $params['method'] = $method;
             $params['params'] = $input;
             $response = $gw->makeRequest($params);
 
             return ApiResponse::json(['success'=>true] + $response);
-        // }
+        }
 
-        // catch(\Exception $e)
-        // {
-        //     return ApiResponse::json(['success'=>false, 'msg' => $e->getMessage()]);
-        // }
+        catch(\Exception $e)
+        {
+            return ApiResponse::json(['success'=>false, 'msg' => $e->getMessage()]);
+        }
 
     }
 
