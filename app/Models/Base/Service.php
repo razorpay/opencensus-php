@@ -47,6 +47,11 @@ class Service
      */
     protected $slack;
 
+    /**
+     * Instance of 'core' class of the respective namespace entity.
+     */
+    protected $core;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -68,5 +73,18 @@ class Service
     public static function getNewInstance()
     {
         return new static;
+    }
+
+    public function core()
+    {
+        if ($this->core !== null)
+        {
+            return $this->core;
+        }
+
+        $class = __CLASS__ . '\Core';
+        $this->core = new $class;
+
+        return $this->core;
     }
 }
