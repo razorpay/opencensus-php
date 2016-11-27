@@ -82,7 +82,7 @@ class Service
             return $this->core;
         }
 
-        $class = __CLASS__ . '\Core';
+        $class = __NAMESPACE__ . '\Core';
         $this->core = new $class;
 
         return $this->core;
