@@ -8,8 +8,6 @@ use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'role';
 
     protected $proxyFetchParamRules = [
