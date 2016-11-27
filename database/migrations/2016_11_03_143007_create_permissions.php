@@ -19,7 +19,7 @@ class CreatePermissions extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Permission::ID, 14)
+            $table->char(Permission::ID, Permission::ID_LENGTH)
                   ->primary();
 
             $table->string(Permission::NAME, 250);

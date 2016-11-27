@@ -20,13 +20,13 @@ class CreateGroups extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Group::ID, 14)
+            $table->char(Group::ID, Group::ID_LENGTH)
                   ->primary();
+
+            $table->char(Group::ORG_ID, Group::ID_LENGTH);
 
             $table->string(Group::NAME, 250);
             $table->string(Group::DESCRIPTION, 250);
-
-            $table->char(Group::ORG_ID, 14);
 
             $table->integer(Group::CREATED_AT);
             $table->integer(Group::UPDATED_AT);

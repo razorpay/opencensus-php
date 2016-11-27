@@ -20,48 +20,49 @@ class CreateAdmins extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Admin::ID, 14)
+            $table->char(Admin::ID, Admin::ID_LENGTH)
                   ->primary();
 
-            $table->string(Admin::EMAIL, 250);
+            $table->char(Admin::ORG_ID, Admin::ID_LENGTH);
 
-            $table->string(Admin::NAME, 250);
+            $table->string(Admin::EMAIL);
 
-            $table->string(Admin::USERNAME, 250)
+            $table->string(Admin::NAME);
+
+            $table->string(Admin::USERNAME)
                   ->nullable();
 
-            $table->string(Admin::PASSWORD, 250)
+            $table->string(Admin::PASSWORD)
                   ->nullable();
 
-            $table->string(Admin::REMEMBER_TOKEN, 250)
+            $table->string(Admin::REMEMBER_TOKEN)
                   ->nullable();
 
-            $table->string(Admin::OAUTH_ACCESS_TOKEN, 250)
+            $table->string(Admin::OAUTH_ACCESS_TOKEN)
                   ->nullable();
 
-            $table->string(Admin::OAUTH_PROVIDER_ID, 250)
+            $table->string(Admin::OAUTH_PROVIDER_ID)
                   ->nullable();
 
-            $table->char(Admin::ORG_ID, 14);
-
-            $table->string(Admin::USER_TYPE, 250)
+            $table->string(Admin::USER_TYPE)
                   ->nullable();
 
-            $table->string(Admin::EMPLOYEE_CODE, 250);
+            $table->string(Admin::EMPLOYEE_CODE);
 
-            $table->string(Admin::BRANCH_CODE, 250);
+            $table->string(Admin::BRANCH_CODE);
 
-            $table->string(Admin::DEPARTMENT_CODE, 250);
+            $table->string(Admin::DEPARTMENT_CODE);
 
-            $table->string(Admin::SUPERVISOR_CODE, 250);
+            $table->string(Admin::SUPERVISOR_CODE);
 
-            $table->string(Admin::LOCATION_CODE, 250);
+            $table->string(Admin::LOCATION_CODE);
 
             // account disabled by supervisor
             $table->boolean(Admin::DISABLED)
                   ->default(0);
 
-            // use account has been locked due to max password failure attempts
+            // user account has been locked due to
+            // max password failure attempts
             $table->boolean(Admin::LOCKED)
                   ->default(0);
 
