@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Role;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
@@ -44,7 +45,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($roleId);
     }
 
-    public function validateOrgHasNoSuchRole(Role\Entity $role, Org\Entity $org)
+    public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)
     {
         $roleExists = $this->newQuery()
                            ->where(Entity::ORG_ID, '=', $org->getId())

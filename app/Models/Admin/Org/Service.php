@@ -36,7 +36,7 @@ class Service extends Base\Service
 
     public function editOrg(string $id, array $input)
     {
-        $org = $this->repo->org->findOrFailPublic($id);
+        $org = $this->repo->org->findByPublicId($id);
 
         $org->edit($input);
 

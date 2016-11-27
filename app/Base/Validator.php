@@ -18,7 +18,7 @@ class Validator extends \Razorpay\Spine\Validation\Validator
 
     public static function validateInputKeyExists(array $input, $key)
     {
-        if (isset($input[$key] === false)
+        if (isset($input[$key]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $key . ' not given in the input');

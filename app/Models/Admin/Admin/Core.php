@@ -18,8 +18,7 @@ class Core extends Base\Core
 
         if (isset($input['password']) === true)
         {
-            (new AuthPolicy\Service)
-                ->validate($admin, $input['password']);
+            (new AuthPolicy\Service)->validate($admin, $input['password']);
 
             $admin->setOldPasswords();
         }

@@ -82,7 +82,11 @@ class Service
             return $this->core;
         }
 
-        $class = __NAMESPACE__ . '\Core';
+        $class = get_class($this);
+
+        // Remove end '\Service' from class name.
+        $class = substr($class, 0, -7) . 'Core';
+
         $this->core = new $class;
 
         return $this->core;

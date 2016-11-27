@@ -11,7 +11,7 @@ class Service extends Base\Service
 {
     public function createRole($orgId, $input)
     {
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $org = $this->repo->org->findByPublicId($orgId);
 
         $role = $this->core()->create($input, $org);
 
