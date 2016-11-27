@@ -704,6 +704,11 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
+    public function admins()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
     public function toArrayPublic()
     {
          $merchant = parent::toArrayPublic();
