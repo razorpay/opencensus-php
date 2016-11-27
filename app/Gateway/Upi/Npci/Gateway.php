@@ -28,11 +28,6 @@ class Gateway extends Base\Gateway
         'RespListKeys'
     ];
 
-    protected function needsProcessing(string $api): bool
-    {
-        return in_array($api, self::PROCESSABLE_REQUESTS, true);
-    }
-
     protected $gateway = 'upi_npci';
 
     public function __call($method, $args)
@@ -50,6 +45,11 @@ class Gateway extends Base\Gateway
             'refUrl'    => "http://www.npci.org.in/",
             'orgId'     => 'RAZOR',
         ];
+    }
+
+    protected function needsProcessing(string $api): bool
+    {
+        return in_array($api, self::PROCESSABLE_REQUESTS, true);
     }
 
     public function getToken($params)

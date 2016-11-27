@@ -17,7 +17,8 @@ class Core extends Base\Core
         }
         catch (\Exception $ex)
         {
-            throw $ex;
+            $this->trace->traceException($ex);
+
             return ['success'=>false, 'msg' => $ex->getMessage()];
         }
     }
@@ -28,13 +29,13 @@ class Core extends Base\Core
 
         $params = compact('api', 'id', 'body', 'parsedRequest');
 
-        // The gateway can make whatever requests it desiers
+        // The gateway can make whatever requests it desires
         $ackXML = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
 
         return $ackXML;
     }
 
-    publc function getBankAccountsForMobileNumber($mobile)
+    public function getBankAccountsForMobileNumber($mobile)
     {
         $cust = new CustomerService;
 

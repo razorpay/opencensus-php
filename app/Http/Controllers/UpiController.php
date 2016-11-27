@@ -27,8 +27,6 @@ class UpiController extends Controller
 
     public function handle(string $api, string $id)
     {
-
-
         $body = Request::getContent();
 
         $this->trace->info('GATEWAY_RESPONSE', [
