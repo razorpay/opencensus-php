@@ -26,7 +26,7 @@ class CreateRoles extends Migration
             $table->string(Role::NAME);
             $table->string(Role::DESCRIPTION);
 
-            $table->char(Role::ORG_ID, ID_LENGTH);
+            $table->char(Role::ORG_ID, Role::ID_LENGTH);
 
             $table->integer(Role::CREATED_AT);
             $table->integer(Role::UPDATED_AT);
