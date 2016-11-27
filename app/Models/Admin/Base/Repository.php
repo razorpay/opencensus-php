@@ -7,7 +7,7 @@ use RZP\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
 {
-    public function findByPublicIdAndOrgId(string $id, string $orgId)
+    public function findByPublicIdAndOrgId(string & $id, string & $orgId)
     {
         $entity = $this->getEntityClass();
 
@@ -20,7 +20,7 @@ class Repository extends BaseRepository
                     ->findOrFailPublic($id);
     }
 
-    public function findByPublicIdAndOrg(string $id, Org\Entity $org)
+    public function findByPublicIdAndOrg(string & $id, Org\Entity $org)
     {
         $entity = $this->getEntityClass();
 

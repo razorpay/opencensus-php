@@ -4,15 +4,14 @@ namespace RZP\Models\Admin\Admin;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org\AuthPolicy;
 
 class Core extends Base\Core
 {
-    public function create(string $orgId, array $input)
+    public function create(array $input, Org\Entity $org)
     {
-        $org = $this->repo->org->findOrFail($orgId);
-
         $admin = (new Entity)->build($input);
 
         $admin->org()->associate($org);
@@ -29,21 +28,21 @@ class Core extends Base\Core
 
         if (isset($input['roles']) === true)
         {
+            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
             $admin->roles()->sync($input['roles']);
         }
 
         if (isset($input['merchants']) === true)
         {
+            Merchant\Entity::verifyIdAndStripSignMultiple($input['merchants']);
             $admin->merchants()->sync($input['merchants']);
         }
 
         if (isset($input['groups']) === true)
         {
+            Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
             $admin->groups()->sync($input['groups']);
         }
-
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $admin->getId());
 
         return $admin;
     }
@@ -60,12 +59,9 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function delete(string $orgId, string $adminId)
+    public function delete(Entity $admin)
     {
         // Delete the admin tokens first
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
         $adminTokens = $this->repo->admin_token->fetchTokensByAdminId($admin->getId());
 
         if (empty($adminTokens) === true)
@@ -82,7 +78,10 @@ class Core extends Base\Core
             $this->repo->deleteOrFail($admin);
         }
 
-        return ['success' => true];
+        // @todo: To maintain bc. Remove first two lines later.
+        $ret = $admin->toArrayDeleted();
+        $ret = array_merge($ret, ['success' => true]);
+        return $ret;
     }
 
     public function edit(string $orgId, string $adminId, array $input)
@@ -109,21 +108,24 @@ class Core extends Base\Core
 
         if (isset($input['roles']) === true)
         {
+            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
             $admin->roles()->sync($input['roles']);
         }
 
         if (isset($input['merchants']) === true)
         {
+            Merchant\Entity::verifyIdAndStripSignMultiple($input['merchants']);
             $admin->merchants()->sync($input['merchants']);
         }
 
         if (isset($input['groups']) === true)
         {
+            Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
             $admin->groups()->sync($input['groups']);
         }
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $admin->getId());
+        // $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+        //     $orgId, $admin->getId());
 
         return $admin;
     }

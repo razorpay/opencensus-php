@@ -21,7 +21,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findOrFailByEmail($email)
+    public function findByEmail($email)
     {
         $email = strtolower($email);
 
@@ -33,7 +33,7 @@ class Repository extends Base\Repository
     public function findOrFailByAttr($orgId, $attr, $attrVal)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->where($attr, '=', $attrVal)
                     ->firstOrFail();
     }
