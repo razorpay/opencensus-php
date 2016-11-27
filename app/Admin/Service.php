@@ -279,8 +279,13 @@ class Service extends Base\Service
     {
         $adminId = Auth::guard('api')->id();
         $orgId = Auth::guard('api')->user()->org_id;
-        $merchantIdsToList = $this->getMerchantIdsToList($orgId, $adminId);
-        $merchantIdsToList = isset($merchantIdsToList[0]) ? (array)$merchantIdsToList[0] : [];
+        $merchantIds = $this->getMerchantIdsToList($orgId, $adminId);
+        $merchantIdsToList = [];
+        foreach($merchantIds as $value) //Need to understand how it can be passed better and change. This is temp
+        {
+            $merchantIdsToList[] = $value;
+        }
+        $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select([
                 'id',
