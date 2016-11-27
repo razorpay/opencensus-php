@@ -17,6 +17,11 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const ORG_ID            = 'org_id';
 
+    /**
+     * Holds all the permissions as relation key.
+     */
+    const PERMISSIONS       = 'permissions';
+
     const DELETED_AT        = 'deleted_at';
 
     protected $table = Table::ROLE;
@@ -39,7 +44,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
-        'permissions',
+        self::PERMISSIONS,
     ];
 
     protected $visible = [
@@ -47,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::ORG_ID,
-        'permissions',
+        self::PERMISSIONS,
     ];
 
     protected $publicSetters = [
@@ -97,6 +102,11 @@ class Entity extends Base\PublicEntity
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
     }
 
     /**
