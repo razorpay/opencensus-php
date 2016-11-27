@@ -25,7 +25,8 @@ class UpiController extends Controller
         return $this->generateXmlResponse($xml);
     }
 
-// ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
+    // TODO: Start supporting these in the new flow
+    // ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
     protected function generateXmlResponse(string $xml)
     {
         return response($xml)

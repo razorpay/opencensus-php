@@ -169,7 +169,7 @@ EOT;
         else if ($type === 'ListKeys')
         {
             return [
-                'cacheKey'      =>  'ListKeys',
+                'cacheKey'      =>  'UPI.ListKeys',
                 // TODO
                 'cacheValue'    =>  'THIS SHOULD HOLD PARSED LISTKEYS RESPONSE'
             ];
@@ -276,6 +276,7 @@ EOT;
 
         if ($this->needsProcessing($api))
         {
+            $res['post_processed'] = true;
             // TODO: read/write from cache
             $params['original_request_params'] = [];
             $res['queue'] = true;

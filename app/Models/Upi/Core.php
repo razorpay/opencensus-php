@@ -33,6 +33,8 @@ class Core extends Base\Core
 
         $response = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
 
+        $this->app['trace']->info('GATEWAY_RESPONSE', $response);
+
         $this->cacheResponse($response);
 
         if ($response['queue'])
@@ -45,8 +47,10 @@ class Core extends Base\Core
         return $ackXML;
     }
 
-    protected function cacheResponse($params)
+    protected function cacheResponse($response)
     {
+        $params = $response['params'];
+
         // We cache stuff!
         if (isset($params['cacheKey']))
         {
