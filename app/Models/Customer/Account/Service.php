@@ -408,15 +408,29 @@ class Service extends Base\Service
         return $this->repo->address->findByEntityAndId($addressId, $customer);
     }
 
-    public function setMPINForBankAccounts($accountNumber, $mpin)
+    public function setMPINForBankAccounts($accountNumber, $creds)
     {
         $bankAccounts = $this->repo->bank_account->getBankAccountsFromAccountNumber($accountNumber);
 
-        foreach ($bankAccounts as $bankAccount)
+        $success = false;
+
+        if ($creds['otp'] === '123456')
         {
-            $bankAccount->setMpin($mpin);
-            $this->repo->saveOrFail($bankAccount);
+            foreach ($bankAccounts as $bankAccount)
+            {
+                $last6 = substr($bankAccount->getAccountNumber(), -6);
+
+                if ($bankAccount->getMpinSetAttribute() === false and $last6 === $creds['last6'] and $creds['expiry'] === '1224');
+                {
+                    $bankAccount->setMpin($creds['mpin']);
+                    $this->repo->saveOrFail($bankAccount);
+
+                    $success = true;
+                }
+            }
         }
+
+        return $success;
     }
 
     public function setMpin($customerId, $input)

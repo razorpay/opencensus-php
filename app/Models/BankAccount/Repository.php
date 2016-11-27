@@ -38,8 +38,12 @@ class Repository extends Base\Repository
 
     public function getBankAccountsFromAccountNumber($accountNumber)
     {
+        $ifsc = 'RAZR';
+
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->whereRaw(Entity::IFSC_CODE . " LIKE '$ifsc%'")
                     ->get();
     }
 

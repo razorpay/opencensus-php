@@ -66,16 +66,8 @@ class UpiController extends Controller
             }
             else if ($api === 'ReqRegMob')
             {
-                $creds = $this->parseSetMpinResponse($xml);
 
-                $gw = new \RZP\Gateway\Upi\Npci\Gateway;
-
-                $creds['otp'] = $gw->decrypt($creds['otp']);
-                $creds['pin'] = $gw->decrypt($creds['pin']);
-
-                sd($creds);
-
-                (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds['pin']);
+                (new Customer\Service)->setMPINForBankAccounts($creds['bank_account_number'], $creds);
 
                 $this->fireRespRegMobResponse($msgId);
             }
@@ -223,27 +215,6 @@ EOT;
         $token = $token->nodeValue;
 
         return [$deviceId, $token];
-    }
-
-    protected function parseSetMpinResponse($xml)
-    {
-        $bankAccount = dom_import_simplexml($xml->xpath('//Txn')[0]);
-        $bankAccountNumber = $bankAccount->getAttribute('note');
-
-        $last6 = (dom_import_simplexml($xml->xpath('//RegDetails/Detail[@name="CARDDIGITS"]')[0])->getAttribute('value'));
-
-        $expiry = (dom_import_simplexml($xml->xpath('//RegDetails/Detail[@name="EXPDATE"]')[0])->getAttribute('value'));
-
-        $otp = trim(dom_import_simplexml($xml->xpath('//Cred[@type="OTP"]/Data')[0])->nodeValue);
-        $mpin = trim(dom_import_simplexml($xml->xpath('//Cred[@type="PIN"]/Data')[0])->nodeValue);
-
-        return [
-            'bank_account_number'   =>  $bankAccountNumber,
-            'otp'                   =>  $otp,
-            'pin'                   =>  $mpin,
-            'last6'                 =>  $last6,
-            'expiry'                =>  $expiry,
-        ];
     }
 
     protected function fireRespRegMobResponse($msgId)

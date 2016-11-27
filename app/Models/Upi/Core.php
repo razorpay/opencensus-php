@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Upi;
 
+use RZP\Constants\Mode;
 use RZP\Models\Customer\Service as CustomerService;
 use RZP\Models\Base;
 
@@ -45,16 +46,21 @@ class Core extends Base\Core
         $this->{$job}($params);
     }
 
+    /**
+     * TODO: Set up UPI under application Auth
+     * The apache vhost configuration should forward
+     * the mode in the authorization header
+     *
+     * (We'll have different IPs for prod and live)
+     */
+    protected function setMode($mode = Mode::TEST)
+    {
+        \Database\DefaultConnection::set($mode);
+    }
+
     protected function RespListAccount(array $params)
     {
-        /**
-         * TODO: Set up UPI under application Auth
-         * The apache vhost configuration should forward
-         * the mode in the authorization header
-         *
-         * (We'll have different IPs for prod and live)
-         */
-        \Database\DefaultConnection::set('test');
+        $this->setMode();
 
         $mobile = $params['mobile'];
 
@@ -69,5 +75,38 @@ class Core extends Base\Core
         $input['method'] = 'RespListAccount';
 
         $this->callUpiGateway('makeRequest', $params);
+    }
+
+    /**
+     * Verifies and sets the MPIN of the account
+     * @param array $creds
+     *  'last6'
+     *  'expiry'
+     *  'otp'
+     *  'mpin'
+     *  'account'
+     *    'IFSC'
+     *    'NUM'
+     *  'reqMsgId'
+     */
+    protected function RespRegMob(array $creds)
+    {
+        $this->setMode();
+
+        $success = (new CustomerService)->setMPINForBankAccounts($creds['account']['NUM'], $creds);
+
+        // We need to respond to UPI with a success/failure response
+
+        $result = $success ? 'SUCCESS' : 'FAILURE';
+
+        $input = [
+            'method'    =>  'RespRegMob',
+            'params'    =>  [
+                'success'   =>  $result,
+                'reqMsgId'  =>  $creds['reqMsgId']
+            ]
+        ];
+
+        sd($this->callUpiGateway('makeRequest', $input));
     }
 }

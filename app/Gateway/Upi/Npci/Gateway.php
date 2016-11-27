@@ -25,7 +25,9 @@ class Gateway extends Base\Gateway
         // Someone is asking for list of accounts
         'ReqListAccount',
         // Someone returned us keys for an earlier request
-        'RespListKeys'
+        'RespListKeys',
+        // Someone is trying to set MPIN!
+        'ReqRegMob',
     ];
 
     protected $gateway = 'upi_npci';
@@ -161,6 +163,28 @@ EOT;
         ];
     }
 
+    protected function preProcessReqRegMob($msgId, $request)
+    {
+        $creds = [];
+
+        $account = $request->getPayer()->getAc();
+
+
+        $details = $request->getRegDetails();
+        $creds['last6'] = $details->getDetailByName('CARDDIGITS');
+        $creds['expiry'] = $details->getDetailByName('EXPDATE');
+
+        $creds['otp'] = $this->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
+        $creds['mpin'] = $this->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
+
+        $creds['account'] = [
+            'IFSC'  =>  $account->getDetailByName('IFSC'),
+            'NUM'   =>  $account->getDetailByName('ACNUM')
+        ];
+
+        return $creds;
+    }
+
     /**
      * This is the private key used for
      * decrypting responses we get from the
@@ -257,7 +281,8 @@ EOT;
     protected function getJobName($api)
     {
         $jobs = [
-            'ReqListAccount'    =>  'RespListAccount'
+            'ReqListAccount'    =>  'RespListAccount',
+            'ReqRegMob'         =>  'RespRegMob',
         ];
 
         return $jobs[$api];
@@ -288,11 +313,23 @@ EOT;
         extract($this->getCommonVariables());
 
         switch ($method) {
+
+            case 'RespRegMob':
+            $result = $params['success'];
+            $reqMsgId = $params['reqMsgId'];
+$str = <<<EOT
+<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob" />
+<Resp reqMsgId="$reqMsgId" result="$result"/>
+</upi:RespRegMob>
+EOT;
+                break;
             case 'ReqManageVae':
 $str = <<<EOT
 <upi:ReqManageVae xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
-<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ManageVae" />
+
 <VaeList>
 <Vae op="ADD" seqNum="1" name="Razorpay" addr="pay@razor" logo="image" url="https://razorpay.com/images/logo-black.png"/>
 </VaeList>
@@ -448,17 +485,6 @@ EOT;
 </upi:ReqSetCre>
 EOT;
             break;
-
-            case 'RespRegMob':
-            $reqMsgId = $input['reqMsgId'];
-
-            $str = <<<EOT
-<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgID" msgId="$msgId"/>
-<Txn id="$txnId" note="SUCCESS" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
-<Resp reqMsgId="$reqMsgId" result="SUCCESS" />
-</upi:RespRegMob>
-EOT;
 
             case 'ReqRegMob':
             $str = <<<EOT

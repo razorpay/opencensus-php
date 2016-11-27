@@ -32,6 +32,9 @@ class Entity extends Base\PublicEntity
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
     const MPIN                      = 'mpin';
 
+    // Mobile Banking Enabled
+    const MPIN_SET              = 'mpin_set';
+
     const IFSC_CODE_LENGTH      = 11;
 
     const SPECIAL_IFSC_CODE     = 'RZPB0000000';
@@ -66,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
+        self::MPIN_SET,
         self::MPIN,
         self::MOBILE_BANKING_ENABLED,
         self::IFSC_CODE,
@@ -89,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
+        self::MPIN_SET,
         self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
@@ -101,6 +106,10 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
     );
+
+    protected $appends = [
+        self::MPIN_SET
+    ];
 
     protected $guarded = array(self::ID);
 
@@ -145,6 +154,11 @@ class Entity extends Base\PublicEntity
         $class = Type::getEntityClass($type);
 
         return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
+    public function getMpinSetAttribute()
+    {
+        return ($this->getAttribute(self::MPIN) !== null);
     }
 
     public function settlements()
