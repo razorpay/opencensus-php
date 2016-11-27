@@ -15,9 +15,9 @@ class Core extends Base\Core
         return $org;
     }
 
-    public function delete($id)
+    public function delete(Entity $org)
     {
-        $org = $this->repo->org->findOrFail($id);
+        $id = $org->getId();
 
         $groups = $this->repo->group->fetchGroupsForOrg($id);
 

@@ -29,27 +29,23 @@ class Service extends Base\Service
 
     public function getOrg(string $id)
     {
-        $orgId = Entity::verifyIdAndStripSign($id);
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $org = $this->repo->org->findByPublicId($id);
 
         return $org->toArrayPublic();
     }
 
     public function deleteOrg(string $id)
     {
-        $id = Entity::verifyIdAndStripSign($id);
+        $org = $this->repo->org->findByPublicId($id);
 
-        return $this->core->delete($id);
+        return $this->core->delete($org);
     }
 
     public function editOrg(string $id, array $input)
     {
-        $orgId = Entity::verifyIdAndStripSign($id);
+        $org = $this->repo->org->findOrFailPublic($id);
 
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
-        $org->fill($input);
+        $org->edit($input);
 
         $this->repo->saveOrFail($org);
 
