@@ -2,7 +2,7 @@ import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
-const CUSTOMER_ADDED = 'CUSTOMER_ADDED'
+const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDITED = 'CUSTOMER_EDITED'
 
 export const fetchCustomers = () => {
@@ -16,10 +16,13 @@ export const fetchCustomers = () => {
 
 export const createCustomer = (data) => {
   return (dispatch) => {
-    return ajax({
-      url: '/customer',
-      method: 'post',
-      data
+    return dispatch({
+      type: CUSTOMER_CREATE,
+      payload: ajax({
+        url: '/customer',
+        method: 'post',
+        data
+      })
     })
   }
 }
@@ -73,7 +76,7 @@ export default function (state = fromJS(initialState), action) {
         error: action.error
       })
 
-    case CUSTOMER_ADDED:
+    case `${CUSTOMER_CREATE}::SUCCESS`:
       return state.set('customers', state.get('customers').unshift(action.payload))
 
     case CUSTOMER_EDITED:

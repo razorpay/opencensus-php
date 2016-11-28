@@ -120,7 +120,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                         component={PowerSelect}
                         options={this.props.customers}
                         selected={this.props.customer_id}
-                        optionLabelPath='customer_name'
+                        optionLabelPath='name'
                         placeholder='Select a customer'
                         onQuickAdd={this.quickCreateCustomer}
                       />

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\AppResponse;
 use App\Merchant;
 use App\MerchantDetails;
@@ -454,6 +455,28 @@ class MerchantController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->updateMerchantFeatures($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getCustomers(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'customer');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postCustomer(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->createCustomer($mode, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }

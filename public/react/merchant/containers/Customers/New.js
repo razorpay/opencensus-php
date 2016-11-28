@@ -4,6 +4,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
+import Alert from 'rzp/ui/Forms/Alert'
 import validator from 'rzp/utils/validator'
 import * as CustomerActions from 'merchant/modules/customers'
 
@@ -35,15 +36,23 @@ const selector = formValueSelector('newCustomer')
 export default class AddCustomer extends Component {
   constructor() {
     super(...arguments)
+    this.state = {
+      errors: null
+    }
+
     this.create = ::this.create
     this.edit = ::this.edit
   }
 
   create(fieldProps) {
     return this.props.createCustomer(fieldProps).then((response) => {
-      let customer = response.data.customer
+      let customer = response.data
       this.props.customerAdded(customer)
       this.props.onSave(customer)
+    }).catch((err) => {
+      this.setState({
+        errors: err.errors
+      })
     })
   }
 
@@ -67,13 +76,18 @@ export default class AddCustomer extends Component {
           onCloseClick={this.props.closeModal}
         />
 
+        <Alert
+          type='error'
+          message={this.state.errors}
+        />
+
         <form class='form-horizontal'>
           <div class='modal-body'>
             <div class='form-group'>
               <label class='col-md-3 control-label'>Name</label>
               <div class='col-md-9'>
                 <Field
-                  name='customer_name'
+                  name='name'
                   component={InputField}
                   class='form-control'
                   autoFocus={true}
@@ -85,7 +99,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Email</label>
               <div class='col-md-9'>
                 <Field
-                  name='customer_email'
+                  name='email'
                   component={InputField}
                   type='email'
                   class='form-control'
@@ -97,7 +111,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Contact No.</label>
               <div class='col-md-9'>
                 <Field
-                  name='customer_contact'
+                  name='contact'
                   component={InputField}
                   class='form-control'
                   type='tel'
@@ -109,7 +123,7 @@ export default class AddCustomer extends Component {
               <label class='col-md-3 control-label'>Address</label>
               <div class='col-md-9'>
                 <Field
-                  name='customer_address'
+                  name='address'
                   component='textarea'
                   class='form-control'
                 />

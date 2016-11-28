@@ -941,4 +941,23 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    public function createCustomer($mode, $input)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->customer->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
 }
