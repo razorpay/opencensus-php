@@ -2,90 +2,55 @@
 
 namespace RZP\Models\Admin\Role;
 
-use RZP\Models\Admin\Org\Entity as Org;
-use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
     public function createRole($orgId, $input)
     {
-        $orgId = Org::verifyIdAndStripSign($orgId);
+        $org = $this->repo->org->findByPublicId($orgId);
 
-        if (isset($input['permissions']) === true)
-        {
-            $permIds = [];
-
-            foreach ($input['permissions'] as $permId)
-            {
-                $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
-            }
-
-            $input['permissions'] = $permIds;
-        }
-
-        $role = $this->core->create($orgId, $input);
+        $role = $this->core()->create($input, $org);
 
         return $role->toArrayPublic();
     }
 
     public function getRole($orgId, $roleId)
     {
-        $orgId = Org::verifyIdAndStripSign($orgId);
-
-        $roleId = Entity::verifyIdAndStripSign($roleId);
-
-        $role = $this->repo->role->fetchRoleForOrg($roleId, $orgId);
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         return $role->toArrayPublic();
     }
 
     public function getMultipleRoles($orgId)
     {
-        Org::verifyIdAndStripSign($orgId);
+        Org\Entity::verifyIdAndStripSign($orgId);
 
         $role = $this->repo->role->fetchRolesForOrg($orgId);
 
         return $role->toArrayPublic();
     }
 
-    public function deleteRole($orgId, $id)
+    public function deleteRole($orgId, $roleId)
     {
-        $orgId = Org::verifyIdAndStripSign($orgId);
-        $id = Entity::verifyIdAndStripSign($id);
-
-        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $id);
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         $this->repo->deleteOrFail($role);
 
-        return ['success' => true];
+        // @todo: To maintain bc. Remove first two lines later.
+        $ret = $role->toArrayDeleted();
+        $ret = array_merge($ret, ['success' => true]);
+        return $ret;
     }
 
-    public function putRole(string $orgId, string $id, array $input)
+    public function putRole(string $orgId, string $roleId, array $input)
     {
-        $orgId = Org::verifyIdAndStripSign($orgId);
-        $id = Entity::verifyIdAndStripSign($id);
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
-        if (isset($input['permissions']) === true)
-        {
-            $permIds = [];
-
-            foreach ($input['permissions'] as $permId)
-            {
-                $permIds[] = Permission\Entity::verifyIdAndStripSign($permId);
-            }
-
-            $input['permissions'] = $permIds;
-        }
-
-        $role = $this->core->edit($orgId, $id, $input);
+        $this->core()->edit($role, $input, $orgId);
 
         return $role->toArrayPublic();
     }

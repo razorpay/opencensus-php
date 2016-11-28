@@ -68,6 +68,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::HOSTNAME => 'razorpay.com'
     ];
 
     protected $guarded = [self::ID];
@@ -121,6 +122,7 @@ class Entity extends Base\PublicEntity
     {
         $emailDomains = $this->attributes[self::EMAIL_DOMAINS];
 
-        return explode($emailDomains, ',');
+        return $emailDomains;
+        // return explode($emailDomains);
     }
 }

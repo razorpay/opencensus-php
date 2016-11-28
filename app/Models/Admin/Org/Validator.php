@@ -9,7 +9,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::DISPLAY_NAME        => 'required|string|max:255',
         Entity::BUSINESS_NAME       => 'required|string|max:255',
-        Entity::HOSTNAME            => 'required|string|max:255|url',
+        Entity::HOSTNAME            => 'sometimes|string|max:255|url',
         Entity::EMAIL               => 'required|email',
         Entity::EMAIL_DOMAINS       => 'required|custom',
         Entity::AUTH_TYPE           => 'required|string|max:255',

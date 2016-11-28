@@ -22,7 +22,7 @@ class CreateGroupMap extends Migration
 
             $table->char('entity_id', 14);
 
-            $table->string('entity_type'); // admin or group
+            $table->string('entity_type', 10); // admin or group
 
             $table->unique(['group_id', 'entity_id']);
         });

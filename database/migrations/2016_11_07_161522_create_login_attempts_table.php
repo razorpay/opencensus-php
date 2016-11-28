@@ -20,12 +20,12 @@ class CreateLoginAttemptsTable extends Migration
         {
             $table->increments(LoginAttempt::ID);
 
-            $table->char(LoginAttempt::ADMIN_ID, 14);
+            $table->char(LoginAttempt::ADMIN_ID, LoginAttempt::ID_LENGTH);
 
             $table->boolean(LoginAttempt::VALID)->default(0);
 
             // Meta data
-            $table->string(LoginAttempt::USER_AGENT, 250)->nullable();
+            $table->string(LoginAttempt::USER_AGENT)->nullable();
 
             $table->ipAddress(LoginAttempt::IP_ADDRESS)->nullable();
 

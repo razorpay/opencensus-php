@@ -22,7 +22,7 @@ class Core extends Base\Core
         return $this->repo->org->findOrFailPublic($id);
     }
 
-    public function edit(string $id)
+    public function edit(string $id, $input)
     {
         $orgId = Entity::verifyIdAndStripSign($id);
 

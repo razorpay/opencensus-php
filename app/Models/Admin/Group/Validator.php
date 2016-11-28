@@ -26,20 +26,4 @@ class Validator extends Base\Validator
         'roles'             => 'sometimes|array',
         'parents'           => 'sometimes|array',
     ];
-
-    public function validateCreateInput(string $orgId, array $input)
-    {
-        $this->validateName($orgId, $input[Entity::NAME]);
-    }
-
-    public function validateName(string $orgId, string $name)
-    {
-        $grpExists = (new Repository)->hasGroupByName($orgId, $name);
-
-        if ($grpExists == true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The group with the name already exists');
-        }
-    }
 }

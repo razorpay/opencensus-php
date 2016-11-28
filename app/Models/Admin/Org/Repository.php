@@ -3,12 +3,10 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
-use RZP\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'org';
 
     // These are proxy allowed params to search on.

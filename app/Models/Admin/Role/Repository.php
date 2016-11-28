@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Admin\Role;
 
-use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'role';
 
     protected $proxyFetchParamRules = [
@@ -21,16 +22,15 @@ class Repository extends Base\Repository
     public function fetchRoleForOrg($roleId, $orgId)
     {
         return $this->newQuery()
-                    ->where(Entity::ID,'=',$roleId)
-                    ->where(Entity::ORG_ID,'=',$orgId)
+                    ->orgId($orgId)
                     ->with('permissions')
-                    ->first();
+                    ->findOrFailPublic($roleId);
     }
 
     public function fetchRolesForOrg($orgId)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID,'=',$orgId)
+                    ->orgId($orgId)
                     ->with('permissions')
                     ->get();
     }
@@ -40,17 +40,22 @@ class Repository extends Base\Repository
         string $roleId)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where(Entity::ID, '=', $roleId)
+                    ->orgId($orgId)
                     ->with('permissions')
-                    ->firstOrFail();
+                    ->findOrFailPublic($roleId);
     }
 
-    public function hasRoleByName(string $orgId, string $name)
+    public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)
     {
-        return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where(Entity::NAME, '=', $name)
-                    ->exists();
+        $roleExists = $this->newQuery()
+                           ->where(Entity::ORG_ID, '=', $org->getId())
+                           ->where(Entity::NAME, '=', $role->getName())
+                           ->exists();
+
+        if ($roleExists === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The role with the name already exists');
+        }
     }
 }
