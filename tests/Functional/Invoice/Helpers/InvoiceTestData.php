@@ -493,6 +493,51 @@ return [
         ],
     ],
 
+    'testGetInvoicesOfCapturedPaymentId' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_100000000order',
+                        'line_items' => [
+                            [
+                                'id' => 'li_100000lineitem',
+                            ]
+                        ],
+                        'status' => 'paid',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetInvoicesAfterCreatingMultipleInvoicesAndPaying' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'status' => 'paid',
+                        'customer_id' => 'cust_100000customer',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetInvoiceStatus' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/status',
@@ -550,7 +595,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid medium',
+                    'description' => 'invalid is not a valid communication medium',
                 ],
             ],
             'status_code' => 400,

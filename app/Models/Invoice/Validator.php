@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Invoice;
 
-use Carbon\Carbon;
-
 use RZP\Base;
+use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -58,6 +59,48 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invoice cannot have more than 10 line items.'
+            );
+        }
+    }
+
+    public function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
+        $keys = $merchant->keys;
+
+        foreach ($keys as $key)
+        {
+            if ($key->isExpiredOrExpiring() === false)
+            {
+                return;
+            }
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+            null,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
+    }
+
+    public function validateSendNotificationRequest(Entity $invoice, string $medium)
+    {
+        if (NotifyMedium::isMediumValid($medium) === false)
+        {
+            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium');
+        }
+
+        if (($medium === NotifyMedium::EMAIL) and empty($invoice->getCustomerEmail()))
+        {
+            throw new BadRequestValidationFailureException(
+                'Email can not be sent since email address has not been provided'
+            );
+        }
+
+        if (($medium === NotifyMedium::SMS) and empty($invoice->getCustomerContact()))
+        {
+            throw new BadRequestValidationFailureException(
+                'SMS can not be sent since contact number has not been provided'
             );
         }
     }

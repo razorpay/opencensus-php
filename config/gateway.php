@@ -178,6 +178,7 @@ return array(
 
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'  => '123456',
     ),
 
     'netbanking_kotak' => array(
