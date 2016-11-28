@@ -15,7 +15,8 @@ class CreateGatewayAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::GATEWAY_ABSENCE, function(Blueprint $table) {
+        Schema::create(Table::GATEWAY_ABSENCE, function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(AbsenceEntity::ID, AbsenceEntity::ID_LENGTH);
@@ -83,7 +84,8 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
-        Schema::table(Table::GATEWAY_ABSENCE, function($table) {
+        Schema::table(Table::GATEWAY_ABSENCE, function($table)
+        {
             $table->dropForeign(
                 TABLE::GATEWAY_ABSENCE . '_' . AbsenceEntity::TERMINAL_ID . '_foreign');
         });

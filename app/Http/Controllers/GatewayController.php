@@ -200,37 +200,39 @@ class GatewayController extends Controller
      * @return \Symfony\Component\HttpFoundation\Response
      * @internal param string $gateway
      */
-    public function postCreateGatewayAbsence()
+    public function postCreateGatewayAbsence(Absence\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->create($input);
+        $data = $service->create($input);
 
         return ApiResponse::json($data);
     }
 
     /**
      * Method to update gateway absence entity
-     * @param integer $id
+     * @param Absence\Service $service
+     * @param string $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function putUpdateGatewayAbsence($id)
+    public function putUpdateGatewayAbsence(Absence\Service $service, string $id)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->edit($id, $input);
+        $data = $service->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
     /**
      * Method to delete gateway absence entity
-     * @param integer $id
+     * @param Absence\Service $service
+     * @param string $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function deleteGatewayAbsence($id)
+    public function deleteGatewayAbsence(Absence\Service $service, string $id)
     {
-        $data = (new Absence\Service)->delete($id);
+        $data = $service->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -240,11 +242,11 @@ class GatewayController extends Controller
      * Method to get absent gateways across multiple search params
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getAbsentGateways()
+    public function getAbsentGateways(Absence\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->findAbsentGateways($input);
+        $data = $service->findAbsentGateways($input);
 
         return ApiResponse::json($data);
     }
@@ -253,11 +255,11 @@ class GatewayController extends Controller
      * Method to handle webhook callbacks from statuscake
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function postStatusCakeCallback()
+    public function postStatusCakeCallback(Absence\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->processStatusCakeCallback($input);
+        $data = $service->processStatusCakeCallback($input);
 
         return ApiResponse::json($data);
     }

@@ -151,7 +151,7 @@ class Validator extends Base\Validator
             );
         }
 
-        if (($method === Method::WALLET) and in_array($issuer, Gateway::$methodMap[Method::WALLET]) === false)
+        if (($method === Method::WALLET) and (in_array($issuer, Gateway::$methodMap[Method::WALLET]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Issuer: '. $issuer. ' is not a valid Wallet'
@@ -171,7 +171,7 @@ class Validator extends Base\Validator
         $method = $input[Entity::METHOD];
 
         // card type is not applicable for netbanking
-        if ((strtolower($method) === Method::CARD) and (in_array(strtolower($cardType), ['debit', 'credit']) == false))
+        if ((strtolower($method) === Method::CARD) and (in_array(strtolower($cardType), ['debit', 'credit']) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Card Type: '.$cardType. ' is not supported'

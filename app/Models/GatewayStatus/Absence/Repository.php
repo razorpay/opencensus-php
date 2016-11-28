@@ -60,8 +60,10 @@ class Repository extends Base\Repository
 
         $this->buildQuery($keyOperatorMap, $input, $query);
 
-        if (empty($to) === false) {
-            $query->where(function ($query) use ($to) {
+        if (empty($to) === false)
+        {
+            $query->where(function ($query) use ($to)
+            {
                 $query->whereNull(Entity::TO);
                 $query->orwhere(Entity::TO, '>=', $to);
             });

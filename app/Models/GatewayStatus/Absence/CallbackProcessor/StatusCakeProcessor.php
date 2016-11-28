@@ -21,13 +21,6 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
     const STATUS_DOWN = 'DOWN';
 
-    public function __construct()
-    {
-        parent::__construct();
-        
-        $this->processor = new Processor();
-    }
-
     protected function fetchStatusCakeCredentials()
     {
         $uname = $this->app['config']->get('gateway.absence.statuscake.username');
@@ -91,7 +84,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN, ['data' => $input]);
 
-            throw new Exception\BadRequestValidationFailureException("StatusCake Token Missing");
+            throw new Exception\BadRequestValidationFailureException('StatusCake Token Missing');
         }
 
         $this->validateToken($input);
@@ -105,7 +98,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
         $key = $uname.$apiKey;
 
-        if (strcmp(md5($key), $token) != 0)
+        if (hash_equals(md5($key), $token) === false)
         {
             $msg = ['token' => $token, 'computed' => md5($key)];
 
@@ -121,7 +114,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
     {
         $issuer = $input['Tags'];
 
-        if ((empty($issuer) === true) or ((IFSC::exists(strtoupper($issuer)) === false)))
+        if ((empty($issuer) === true) or (IFSC::exists(strtoupper($issuer)) === false))
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
 
@@ -157,7 +150,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, $input);
             
-            throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer' . $issuer);
+            throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer', $issuer, $input);
         }
 
         // gateway here is just for reference. What we care about is actually the bank
