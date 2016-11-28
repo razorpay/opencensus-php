@@ -324,7 +324,7 @@ final class Route
         'admin_merchants_delete'                  => ['delete',   'orgs/{id}/admins/{adminId}/merchants',           'AdminController@deleteMerchantFromAdmin'                           ],
         'group_create'                            => ['post',     'orgs/{id}/groups',                               'AdminController@createGroup'                                       ],
         'group_get_multiple'                      => ['get',      'orgs/{id}/groups',                               'AdminController@getGroupsMultiple'                                 ],
-        'group_get_allowed_groups'                => ['get',      'orgs/{id}/groups/{groupId}/allowed_groups',      'AdminController@getAllowedGroups'                                 ],
+        'group_get_allowed_groups'                => ['get',      'orgs/{id}/groups/{groupId}/allowed_groups',      'AdminController@getAllowedGroups'                                  ],
         'group_get'                               => ['get',      'orgs/{id}/groups/{groupId}',                     'AdminController@getGroup'                                          ],
         'group_edit'                              => ['put',      'orgs/{id}/groups/{groupId}',                     'AdminController@putGroup'                                          ],
         'group_delete'                            => ['delete',   'orgs/{id}/groups/{groupId}',                     'AdminController@deleteGroup'                                       ],
@@ -333,8 +333,9 @@ final class Route
         'group_admins_get'                        => ['get',      'orgs/{id}/groups/{groupId}/admins',              'AdminController@getAdminsForGroup'                                 ],
         'group_admins_create'                     => ['post',     'orgs/{id}/groups/{groupId}/admins',              'AdminController@addAdminsToGroup'                                  ],
         'group_roles_create'                      => ['post',     'orgs/{id}/groups/{groupId}/roles',               'AdminController@addRolesToGroup'                                   ],
-        'group_admins_delete'                     => ['delete',   'orgs/{id}/groups/{groupId}/admins',              'AdminController@removeAdminsFromGroup'
-                 ],
+        'group_admins_delete'                     => ['delete',   'orgs/{id}/groups/{groupId}/admins',              'AdminController@removeAdminsFromGroup'                             ],
+        'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'AdminController@postLockBulkAccounts'                              ],
+
         // Permission can only be created by certain organisations.
         // 'permission_create'                       => ['post',     'permissions',                                    'AdminController@createPermission'                                  ],
         // 'permission_create_json'                  => ['post',     'permissions/json',                               'AdminController@createPermissionsFromJson'                         ],
@@ -903,7 +904,7 @@ final class Route
         return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public function getPublicCallbackUrlWithHash($pid , $key = '')
+    public function getPublicCallbackUrlWithHash($pid, $key = '')
     {
         if ($key === '')
         {

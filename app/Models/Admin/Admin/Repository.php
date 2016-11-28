@@ -131,4 +131,23 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $adminIds)
                     ->get();
     }
+
+    public function lockUnactivatedAccounts($timestamp)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::LAST_LOGIN)
+                    ->where(Entity::CREATED_AT, '<=', $timestamp)
+                    ->update([
+                        Entity::LOCKED => true,
+                    ]);
+    }
+
+    public function lockUnusedAccounts($timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LAST_LOGIN, '<=', $timestamp)
+                    ->update([
+                        Entity::LOCKED => true,
+                    ]);
+    }
 }

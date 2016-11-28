@@ -372,4 +372,17 @@ class Service extends Base\Service
 
         return $merchantIds;
     }
+
+    public function lockUnusedAccounts()
+    {
+        $timestamp = Carbon::now()->subDays(30)->timestamp;
+
+        $unactivatedAccounts = $this->repo->admin->lockUnactivatedAccounts($timestamp);
+
+        $timestamp = Carbon::now()->subDays(90)->timestamp;
+
+        $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
+
+        return ['count' => $unactivatedAccounts + $unusedAccounts];
+    }
 }

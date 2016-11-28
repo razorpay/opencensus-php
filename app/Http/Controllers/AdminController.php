@@ -443,4 +443,11 @@ class AdminController extends Controller
 
         return ApiResponse::json($merchantIds);
     }
+
+    public function postLockBulkAccounts(Admin\Admin\Service $adminService)
+    {
+        $response = $adminService->lockUnusedAccounts();
+
+        return ApiResponse::json($response);
+    }
 }
