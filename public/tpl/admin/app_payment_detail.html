@@ -15,99 +15,101 @@
     </div>
       <div class="row wrapper">
         <div class="list-group">
-          <a class="list-group-item" ui-sref="app.merchants.detail({id:entity.merchant_id})">
+          <div class="list-group-item">
             <span class="pull-right">
-              {{entity.merchant_id}}
+               <a ui-sref="app.merchants.detail({id:entity.merchant_id})">
+                {{entity.merchant_id}}
+	        </a> 	
             </span>
             Merchant Id
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.amount/100 | rupee}}</span>
             Amount
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">
               {{entity.method|titlecase}}
             </span>
             Payment Method
-          </a>
-          <a href class="list-group-item" ng-show="entity.method==='netbanking'">
+          </div>
+          <div href class="list-group-item" ng-show="entity.method==='netbanking'">
             <span class="pull-right">
               {{entity.bank}}
             </span>
             Netbanking Bank
-          </a>
-          <a href class="list-group-item" ng-show="entity.method==='wallet'">
+          </div>
+          <div href class="list-group-item" ng-show="entity.method==='wallet'">
             <span class="pull-right">
               {{entity.wallet}}
             </span>
             Wallet
-          </a>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: 'card', id:entity.card_id})" class="list-group-item" ng-show="entity.method==='card'">
+          </div>
+          <div ui-sref="app.entitiesdetail({mode:mode, type: 'card', id:entity.card_id})" class="list-group-item" ng-show="entity.method==='card'">
             <span class="pull-right">
               {{entity.card_id}}
             </span>
             Card Id
-          </a>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: 'customer', id:entity.customer_id})" class="list-group-item" ng-show="entity.customer_id!==null">
+          </div>
+          <div class="list-group-item" ng-show="entity.customer_id!==null">
             <span class="pull-right">
-              {{entity.customer_id}}
+              <a ui-sref="app.entitiesdetail({mode:mode, type: 'customer', id:entity.customer_id})">{{entity.customer_id}}</a>
             </span>
             Customer Id
-          </a>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: 'emi_plan', id:entity.emi_plan_id})" class="list-group-item" ng-show="entity.method==='emi'">
+          </div>
+          <div class="list-group-item" ng-show="entity.method==='emi'">
             <span class="pull-right">
-              {{entity.emi_plan_id}}
+              <a ui-sref="app.entitiesdetail({mode:mode, type: 'emi_plan', id:entity.emi_plan_id})">{{entity.emi_plan_id}}</a>
             </span>
             EMI Plan Id
-          </a>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: 'order', id:entity.order_id})" class="list-group-item" ng-show="entity.order_id!==null">
+          </div>
+          <div  class="list-group-item" ng-show="entity.order_id!==null">
             <span class="pull-right">
-              {{entity.order_id}}
+              <a ui-sref="app.entitiesdetail({mode:mode, type: 'order', id:entity.order_id})">{{entity.order_id}}</a>
             </span>
             Order Id
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">
               {{entity.gateway|titlecase}}
             </span>
             Gateway
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.captured}}</span>
             Captured
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.amount_authorized/100 | rupee}}</span>
             Amount Authorized
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.amount_refunded/100 | rupee}}</span>
             Amount Refunded
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
             <span class="pull-right" ng-hide="entity.refund_status">None</span>
             Refund Status
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.currency}}</span>
             Currency
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.description}}<span ng-hide="entity.description">No Description</span></span>
             Description
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right" ng-class="displayClass(entity.error_code)">
               {{displayValue(entity.error_code)}}
             </span>
             Error
-          </a>
+          </div>
           <div href class="list-group-item panel-body">
             <span class="pull-right col-lg-8 text-right" ng-class="displayClass(entity.error_code)">
               {{displayValue(entity.error_description)}}
@@ -120,82 +122,82 @@
             </span>
             Internal Error Code
           </div>
-          <a href class="list-group-item">
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.email}}</span>
             Email
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right">{{entity.contact}}</span>
             Contact
-          </a>
-          <a href class="list-group-item" ng-init="isCollapsed = false">
+          </div>
+          <div href class="list-group-item" ng-init="isCollapsed = false">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
               <span ng-hide="entity.notes.length != 0">No Notes</span>
             </span>
             Notes
-          </a>
+          </div>
           <div collapse="isCollapsed" class="panel-body">
-            <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+            <div href class="list-group-item" ng-repeat="(label,key) in entity.notes">
               <span class="pull-right">{{key}}</span>
               {{label}}
-            </a>
+            </div>
           </div>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: 'transaction', id:entity.transaction_id})" class="list-group-item" ng-disable="!entity.transaction_id">
+          <div class="list-group-item" ng-disable="!entity.transaction_id">
             <span class="pull-right" ng-class="displayClass(entity.transaction_id)">
-              {{displayValue(entity.transaction_id)}}
+              <a ui-sref="app.entitiesdetail({mode:mode, type: 'transaction', id:entity.transaction_id})">{{displayValue(entity.transaction_id)}}</a>
             </span>
             Transaction Id
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span ng-class="displayClass(entity.authorized_at)" class="pull-right">{{timestamp(entity.authorized_at)}}</span>
             Authorized At
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span ng-class="displayClass(entity.created_at)" class="pull-right">{{timestamp(entity.created_at)}}</span>
             Created At
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span ng-class="displayClass(entity.updated_at)" class="pull-right">{{timestamp(entity.updated_at)}}</span>
             Updated At
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span ng-class="displayClass(entity.captured_at)" class="pull-right">{{timestamp(entity.captured_at)}}</span>
             Captured At
-          </a>
-          <a class="list-group-item" ui-sref="app.entitiesdetail({mode:mode, type: 'terminal', id:entity.terminal_id})">
+          </div>
+          <div class="list-group-item">
               <span class="pull-right">
-                {{entity.terminal_id}}
+               <a ui-sref="app.entitiesdetail({mode:mode, type: 'terminal', id:entity.terminal_id})">{{entity.terminal_id}}</a>
               </span>
             Terminal Id
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{entity.signed ? 'signed' : 'Not signed'}}">
               <i class="fa" ng-class="{'fa-check text-success': entity.signed === true, ' fa-times text-danger':entity.signed === false}"></i>
             </span>
             Signed
-          </a>
-          <a href class="list-group-item">
+          </div>
+          <div href class="list-group-item">
             <span class="pull-right" tooltip="{{getVerifiedStatus()}}">
               <i class="fa" ng-class="{'fa-check text-success': entity.verified === 1, ' fa-times text-danger':entity.verified === 0, 'fa-meh-o': entity.verified===null}"></i>
             </span>
             Verified
-          </a>
-          <a class="list-group-item" ng-repeat="key in keysNotShown()"
+          </div>
+          <div class="list-group-item" ng-repeat="key in keysNotShown()"
             ng-init="value = entity[key]"
           >
             <span class="pull-right" ng-class="displayClass(value)">
               {{displayValue(value)}}
             </span>
             {{key|titlecase}}
-          </a>
-          <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
+          </div>
+          <div href class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
               <span ng-hide="entity.refund_status">No Refunds</span>
             </span>
             Refunds
-          </a>
+          </div>
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.entitiesdetail({id:refund.id, mode:mode, type: 'refund'})">
               <span class="pull-right">{{refund.created_at*1000 | date:'medium'}}</span>
