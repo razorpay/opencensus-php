@@ -3,6 +3,7 @@
 use RZP\Constants\Table;
 
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Merchant\Entity as Merchant;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -52,6 +53,15 @@ class CreateOrgs extends Migration
             $table->index(Org::DELETED_AT);
             $table->index(Org::EMAIL);
         });
+
+        Schema::table(Table::MERCHANT, function(Blueprint $table)
+        {
+            $table->foreign(Merchant::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG)
+                  ->on_delete('restrict');
+        });
+
     }
 
     /**
@@ -61,6 +71,12 @@ class CreateOrgs extends Migration
      */
     public function down()
     {
+        Schema::table(Table::MERCHANT, function($table)
+        {
+            $table->dropForeign(
+                Table::MERCHANT.'_'.Merchant::ORG_ID.'_foreign');
+        });
+
         Schema::drop(Table::ORG);
     }
 }
