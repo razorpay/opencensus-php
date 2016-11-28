@@ -24,6 +24,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'netbanking_kotak',
+        'netbanking_icici',
         'sharp',
         'wallet_olamoney',
         'upi_icici',
@@ -45,6 +46,7 @@ return array(
     'mock_paytm'              => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_icici'   => env('NETBANKING_ICICI_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -177,12 +179,16 @@ return array(
 
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'  => '123456',
     ),
 
     'netbanking_kotak' => array(
         'live_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+    ),
+
+    'netbanking_icici' => array(
+        'master_key'   => env('ICICI_GATEWAY_MASTER_KEY'),
+        'pid'          => env('ICICI_GATEWAY_PID'),
     ),
 
     'sharp' => array(

@@ -508,6 +508,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingIciciTerminals(); // added code
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -687,8 +688,8 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '22nP3sEf2tQ123',
-                'merchant_id'           => Account::TEST_ACCOUNT,
+                'id'                    => '22nP3sEf2tQ123', // random
+                'merchant_id'           => Account::TEST_ACCOUNT, // demo
                 'gateway'               => 'netbanking_kotak',
                 'card'                  => '0',
                 'netbanking'            => '1',
@@ -714,6 +715,25 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
+            )
+        );
+    }
+
+    protected function createNetbankingIciciTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        =>  Terminal\Shared::NETBANKING_ICICI_TERMINAL,
+                'merchant_id'               =>  Account::TEST_ACCOUNT, // createNetbankingIciciTerminals
+                'gateway'                   =>  'netbanking_icici',
+                'card'                      =>  '0',
+                'netbanking'                =>  '1',
+                'gateway_merchant_id'       =>  'payee_id',
+                'gateway_terminal_id'       =>  'test_terminal_netbanking_icici',
+                'gateway_terminal_password' =>  'master_key',//Crypt::encrypt('demo_account_netbanking_icici_terminal_pass'),
+                'recurring'                 =>  0,
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
             )
         );
     }

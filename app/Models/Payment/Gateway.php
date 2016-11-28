@@ -25,6 +25,7 @@ class Gateway
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_ICICI   = 'netbanking_icici'; // change
     const UPI_ICICI          = 'upi_icici';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
@@ -52,6 +53,7 @@ class Gateway
         self::SHARP,
     );
 
+    // Do I need to add something here?
     public static $channels = array(
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -65,6 +67,7 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_ICICI   => Settlement\Channel::KOTAK, // add
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -97,6 +100,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
         ),
@@ -128,7 +132,7 @@ class Gateway
      *
      * @var array
      */
-    public static $authAndCapture = [
+    public static $authAndCapture = array(
         self::HDFC => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
@@ -136,17 +140,7 @@ class Gateway
         self::AMEX => [],
         self::CYBERSOURCE => [],
         self::FIRST_DATA => [],
-    ];
-
-    /**
-     * Card gateways which support full auth reversal
-     *
-     * @var array
-     */
-    public static $reverse = [
-        // self::CYBERSOURCE
-        self::FIRST_DATA
-    ];
+    );
 
 
     /**
@@ -235,6 +229,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_ICICI, //verify icici
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -343,6 +338,16 @@ class Gateway
         Network::DICL);
 
     /**
+     * Banks with which we have direct netbanking tie-ups.
+     * @var array
+     */
+    // add icici
+    public static $directNetbankingBankList = array(
+        IFSC::ICIC,
+        IFSC::HDFC,
+        IFSC::KKBK);
+
+    /**
      * For the banks we have direct tie-ups with,
      * here we list down the mapping from bank to netbanking gateway name.
      * There is no standardized bank gateway naming that we follow. IFSC
@@ -351,6 +356,7 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK);
 
@@ -412,7 +418,7 @@ class Gateway
 
     public static function isNetbankingBankDirectlySupported($bank)
     {
-        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
+        return in_array($bank, self::$directNetbankingBankList);
     }
 
     public static function getChannel($gateway)
@@ -478,11 +484,6 @@ class Gateway
         }
     }
 
-    public static function supportsReverse($gateway)
-    {
-        return in_array($gateway, self::$reverse, true);
-    }
-
     /**
      * Whether the gateway supports async payments
      * @param  string $gateway
@@ -530,7 +531,7 @@ class Gateway
                 (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 
-    public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
+    public static function getGatewaysForNetbankingBank($bank)
     {
         $gateways = [];
 
@@ -543,7 +544,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
             {
                 $gateways[] = $netbankingGateway;
             }
