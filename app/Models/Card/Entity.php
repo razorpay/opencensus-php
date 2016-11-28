@@ -293,7 +293,7 @@ class Entity extends Base\PublicEntity
 
         if ($cardType === Card\Type::UNKNOWN)
         {
-            $cardType = Card\Type::DEBIT;
+            $cardType = Card\Type::CREDIT;
         }
 
         return $cardType;
