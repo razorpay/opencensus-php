@@ -343,6 +343,62 @@ return [
         ],
     ],
 
+    'testInvoiceWithoutCustomerDetailsPaidWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'invoice.paid',
+            'contains' => ['payment', 'order', 'invoice'],
+            'payload'  => [
+                'order' => [
+                    'entity'       => [
+                        'entity'   => 'order',
+                        'id'       => 'order_100000000order',
+                        'amount'   => 1000000,
+                        'receipt'  => 'random',
+                        'currency' => 'INR',
+                        'status'   => 'paid',
+                        'attempts' => 1,
+                        'notes'    => []
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+                'invoice' => [
+                    'entity' => [
+                        'entity'           => 'invoice',
+                        'id'               => 'inv_1000000invoice',
+                        'customer_id'      => null,
+                        'order_id'         => 'order_100000000order',
+                        'status'           => 'paid',
+                        'sms_status'       => 'sent',
+                        'email_status'     => 'sent',
+                        'customer_details' => [
+                            'customer_name'    => null,
+                            'customer_contact' => '+919918899029',
+                            'customer_email'   => 'a@b.com'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testWebhookEventDataJustBeforeFiring' => [
         'url' => 'http://localhost/v1/dummy/route',
         'method' => 'post',

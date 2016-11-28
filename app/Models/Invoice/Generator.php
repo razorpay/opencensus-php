@@ -36,7 +36,7 @@ class Generator extends Base\Core
      */
     protected $customer;
 
-    protected $lineItems;
+    protected $lineItems = [];
 
     /**
      * @var LineItem\Core
@@ -62,55 +62,19 @@ class Generator extends Base\Core
 
     public function generate(array $input)
     {
-        $this->invoice = new Entity;
-
-        $customerDetails = [];
-
-        $this->invoice->build($input);
-        $this->invoice->merchant()->associate($this->merchant);
-
-        // This is being done because dashboard can create an invoice for the merchant even
-        // if the merchant has not generated any keys at all.
-        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant);
-
-        // This is being done so that we can do associations without saving the invoice.
-        // Also, to generate a shortUrl, we need the invoice ID.
-        $this->invoice->generateId();
-
-        if (isset($input[Entity::CUSTOMER]))
-        {
-            $customerDetails = $input[Entity::CUSTOMER];
-        }
-
-        $lineItemsDetails = $input[Entity::LINE_ITEMS];
+        $invoice = $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($lineItemsDetails, $customerDetails, $input)
+                function() use ($invoice, $input)
                 {
-                    $this->createAndSetAssociatedEntities($lineItemsDetails, $customerDetails, $input);
-
-                    $this->setCustomerDetailsAttributes();
-
-                    $this->setStatus($input);
-
-                    $this->setShortUrl();
-
-                    // Saving here for the associations
-                    $this->repo->saveOrFail($this->invoice);
-
-                    // This function should be called only after saving the invoice entity and the items entities
-                    // because the invoice should be created and saved before it can be associated with the items.
-                    $this->associateLineItemsToInvoice();
+                    $this->buildAndSaveInvoice($input);
                 }
             );
         }
         catch (\Exception $e)
         {
-            // TODO: Have better alternatives, need to discuss and implement that.
-            //       For now, this is the quickest
-
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {
@@ -131,6 +95,58 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
+    protected function generateInvoiceSkeleton(array $input)
+    {
+        $invoice = new Entity;
+
+        $invoice->build($input);
+        $invoice->merchant()->associate($this->merchant);
+
+        //
+        // This is being done because dashboard can create an invoice
+        // for the merchant even if the merchant has not generated
+        // any keys at all.
+        //
+
+        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+
+        //
+        // This is being done so that we can do associations
+        // without saving the invoice. Also, to generate a shortUrl,
+        // we need the invoice ID.
+        //
+
+        $invoice->generateId();
+
+        $this->invoice = $invoice;
+
+        return $invoice;
+    }
+
+    protected function buildAndSaveInvoice(array $input)
+    {
+        $this->customer = $this->associateCustomerWithInvoice($input);
+
+        $this->createLineItemsForInvoice($input);
+
+        $this->createOrderForInvoice();
+
+        $this->setStatus($input);
+
+        $this->setShortUrl();
+
+        // Saving here for the associations
+        $this->repo->saveOrFail($this->invoice);
+
+        //
+        // This function should be called only after saving the
+        // invoice entity and the items entities because the invoice
+        // should be created and saved before it can be associated
+        // with the items.
+        //
+        $this->associateLineItemsToInvoice();
+    }
+
     protected function setStatus(array $input)
     {
         $this->invoice->setStatus(Status::ISSUED);
@@ -149,7 +165,7 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
+        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
@@ -165,12 +181,14 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    public static function getInvoiceLink($invoiceId, $mode)
+    public static function getInvoiceLink(string $invoiceId, string $mode)
     {
+        //
         // This is required here because this piece of code is a little prone to bugs.
         // Invoice ID may not be generated at this point due to which we will
         // get a wrong url. Bitly won't throw an exception because it still gets
         // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
+        //
         if (empty($invoiceId) === true)
         {
             throw new LogicException(
@@ -195,14 +213,6 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function setCustomerDetailsAttributes()
-    {
-        $this->invoice->setCustomerName($this->customer->getName());
-        $this->invoice->setCustomerContact($this->customer->getContact());
-        $this->invoice->setCustomerEmail($this->customer->getEmail());
-        $this->invoice->setCustomerAddress($this->customer->getCurrentShippingAddressId());
-    }
-
     protected function associateLineItemsToInvoice()
     {
         foreach ($this->lineItems as $lineItem)
@@ -213,41 +223,31 @@ class Generator extends Base\Core
         }
     }
 
-    protected function createAndSetAssociatedEntities(array $lineItemsDetails, array $customerDetails, array $input)
+    protected function createLineItemsForInvoice(array $input)
     {
-        $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
+        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
 
-        $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
-        $this->invoice->setAmount($invoiceAmount);
+        if ($lineItemsDetails)
+        {
+            $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
 
-        $order = $this->createOrderForInvoice();
-        $this->invoice->order()->associate($order);
+            $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
 
-        $this->customer = $this->getExistingOrCreateCustomerFromInput($customerDetails, $input);
-        $this->invoice->customer()->associate($this->customer);
+            $this->invoice->setAmount($invoiceAmount);
+        }
     }
 
     protected function createLineItemsFromInput(array $lineItemsDetails)
     {
         $lineItems = [];
 
-        foreach ($lineItemsDetails as $lineItemDetails)
+        foreach ($lineItemsDetails as $singleLineItem)
         {
-            if (isset($lineItemDetails[LineItem\Entity::ITEM_ID]) === true)
-            {
-                $itemId = $lineItemDetails[LineItem\Entity::ITEM_ID];
-
-                $item = $this->getItemFromItemId($itemId);
-            }
-            else
-            {
-                list($lineItemDetails, $itemDetails) = $this->separateInput($lineItemDetails);
-
-                $item = $this->createItemFromItemDetails($itemDetails);
-            }
+            // It also removes the item details from the array.
+            $item = $this->getItemForLineItem($singleLineItem);
 
             $lineItem = $this->lineItemCore->create(
-                $lineItemDetails,
+                $singleLineItem,
                 $this->merchant,
                 $this->invoice,
                 $item
@@ -257,6 +257,36 @@ class Generator extends Base\Core
         }
 
         return $lineItems;
+    }
+
+    /**
+     * Get item details if item_id is set.
+     * Otherwise create item with item relevant input from line item.
+     * If item is created, then item related input in line item needs to
+     * be removed from line item. That's why $lineItem is passed by reference.
+     *
+     * Returns item created for the line item.
+     *
+     * @param array $lineItem
+     *
+     * @return Item\Entity
+     */
+    protected function getItemForLineItem(array & $lineItem)
+    {
+        if (isset($lineItem[LineItem\Entity::ITEM_ID]) === true)
+        {
+            $itemId = $lineItem[LineItem\Entity::ITEM_ID];
+
+            $item = $this->getItemFromItemId($itemId);
+        }
+        else
+        {
+            $itemDetails = $this->separateItemInputFromLineItemInput($lineItem);
+
+            $item = $this->createItemFromItemDetails($itemDetails);
+        }
+
+        return $item;
     }
 
     protected function getItemFromItemId($itemId)
@@ -286,7 +316,7 @@ class Generator extends Base\Core
     {
         $orderAmount = $this->invoice->getAmount();
 
-        $orderCurrency = self::ORDER_CURRENCY;
+        $orderCurrency = $this->invoice->getCurrency();
 
         // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';
@@ -300,55 +330,70 @@ class Generator extends Base\Core
 
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
+        $this->invoice->order()->associate($order);
+
         return $order;
     }
 
-    protected function getExistingOrCreateCustomerFromInput(array $customerDetails, array $input)
+    /**
+     * Invoice can be created via passing customer_id which already exists
+     * or providing customer details in 'customer' array in input POST details.
+     *
+     * This function creates customer if it doesn't exist.
+     * It associates customer with invoice.
+     *
+     * @param array $input
+     *
+     * @return null|Customer\Entity
+     */
+    protected function associateCustomerWithInvoice(array $input)
     {
-        // This is just for robustness. It would any way fail later in the flow.
-        if ((empty($customerDetails) === true) and
-            (empty($input[Entity::CUSTOMER_ID]) === true))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
-                $input
-            );
-        }
+        $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
+
+        $customer = null;
 
         if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
             $customerId = $input[Entity::CUSTOMER_ID];
 
-            Customer\Entity::verifyIdAndStripSign($customerId);
-
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+            $customer = $this->repo->customer->findByPublicIdAndMerchant(
+                                                $customerId, $this->merchant);
 
             $this->trace->info(
                 TraceCode::INVOICE_EXISTING_CUSTOMER,
                 [
                     'invoice_id' => $this->invoice->getId(),
                     'customer_id' => $customer->getId(),
-                    'customer_input_details' => $customerDetails,
                 ]);
         }
-        else
+        else if ($customerDetails)
         {
-            $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
+            $core = new Customer\Core;
+            $customer = $core->createLocalCustomer(
+                            $customerDetails, $this->merchant, false);
+        }
+
+        if ($customer)
+        {
+            $this->invoice->customer()->associate($customer);
+            $this->invoice->setCustomerDetails($customer);
         }
 
         return $customer;
     }
 
     /**
-     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
-     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
-     *     This function separates those payloads for it to be used further.
+     * Request payload contains flattened linesItemDetails,
+     * i.e. It has line item attributes (eg. quantity) and
+     * the contained item attributes (eg. name, amount etc.).
+     *
+     * This function separates those payloads for it to be used further.
      *
      * @param array $lineItemDetails
      *
      * @return array
      */
-    protected function separateInput(array $lineItemDetails)
+    protected function separateItemInputFromLineItemInput(array & $lineItemDetails)
     {
         $itemDetails = [];
 
@@ -362,7 +407,7 @@ class Generator extends Base\Core
             }
         }
 
-        return [$lineItemDetails, $itemDetails];
+        return $itemDetails;
     }
 
     /**
