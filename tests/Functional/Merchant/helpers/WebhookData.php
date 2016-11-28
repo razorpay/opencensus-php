@@ -246,7 +246,7 @@ return [
             ],
         ],
     ],
-    
+
     'testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice' => [
         'mode' => 'test',
         'event' => [
@@ -320,6 +320,7 @@ return [
                         'notes' => ['merchant_order_id' => 'random order id'],
                         'error_code' => null,
                         'error_description' => null,
+                        'invoice_id' => 'inv_1000000invoice',
                     ],
                 ],
                 'invoice' => [
