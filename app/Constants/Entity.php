@@ -54,6 +54,7 @@ class Entity
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const WALLETS               = 'wallets'; // WALLET used already, below
 
     //
     // Gateway entities
@@ -130,6 +131,8 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::TRANSFER              => \RZP\Models\Transaction::class,
+        self::WALLETS               => \RZP\Models\Wallet::class,
     );
 
     protected static $repository = array(
