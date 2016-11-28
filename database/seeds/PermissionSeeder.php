@@ -110,6 +110,13 @@ class PermissionSeeder extends Seeder
                 'send_newsletter' => '',
                 'trigger_dummy_error' => '',
                 'make_api_call' => '',
+                'schedule_create' => '',
+                'schedule_fetch' => '',
+                'schedule_fetch_multiple' => '',
+                'schedule_delete' => '',
+                'schedule_update' => '',
+                'schedule_assign' => '',
+                'schedule_migration' => '',
             ],
 
             'entity' => [

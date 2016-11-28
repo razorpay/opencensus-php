@@ -718,6 +718,16 @@ final class Route
         'add_merchant_adjustment'    => ['adj_add'],
         'edit_merchant_email'        => ['merchant_edit_email'],
         'group_get_allowed_groups'   => ['group_get_allowed_groups'],
+        'schedule_create'            => ['schedule_create'],
+        'schedule_fetch'             => ['schedule_fetch'],
+        'schedule_fetch_multiple'    => ['schedule_fetch_multiple'],
+        'schedule_delete'            => ['schedule_delete'],
+        'schedule_update'            => ['schedule_update'],
+        'schedule_assign'            => ['schedule_assign'],
+        'schedule_migration'         => ['schedule_migration'],
+
+
+
     ];
 
     public static $direct = array(

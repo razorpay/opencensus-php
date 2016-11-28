@@ -117,6 +117,11 @@ class AdminController extends Controller
 
         $data = (new Admin\Admin\Service)->createAdmin($id, $input);
 
+        if (isset($data) === true)
+        {
+            (new Admin\Admin\Service)->sendAdminCreateEmail($data, $input);
+        }
+
         return ApiResponse::json($data);
     }
 

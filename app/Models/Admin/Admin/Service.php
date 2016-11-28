@@ -12,6 +12,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
+use Mail;
 
 class Service extends Base\Service
 {
@@ -105,6 +106,41 @@ class Service extends Base\Service
         $admin = $this->core()->create($input, $org);
 
         return $admin->toArrayPublic();
+    }
+
+    public function sendAdminCreateEmail($data, $input)
+    {
+        $org = (new Org\Service)->getOrg($data['org_id']);
+        $from       = 'support@razorpay.com';
+        $replyTo    = 'support@razorpay.com';
+        $fromHeader = 'Team Razorpay';
+        $to         = $data['email'];
+        $subject    = 'Your admin account details for '. $org['display_name'].' dashboard';
+
+        $view = [
+                    'html'=> 'emails.admin.user',
+                    'text'=> 'emails.admin.user_text'
+                ];
+
+        $template = ['user' => [
+                            'email' => $data['email'],
+                            'password' => $input['password'],
+                            'org' => $org['display_name'],
+                            'url' => $_ENV['APP_DASHBOARD_URL'],
+                        ]
+                    ];
+
+        Mail::queue(
+            $view,
+            $template,
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
+            {
+                $message->to($to);
+                $message->from($from, $fromHeader);
+                $message->subject($subject);
+                $message->replyTo($replyTo);
+            }
+        );
     }
 
     public function getAdmin(string $orgId, string $adminId)
