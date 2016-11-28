@@ -61,7 +61,6 @@ class CreateOrgs extends Migration
                   ->on(Table::ORG)
                   ->on_delete('restrict');
         });
-
     }
 
     /**

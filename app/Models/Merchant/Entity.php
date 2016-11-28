@@ -282,7 +282,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->hasOne(
+        return $this->belongsTo(
             'RZP\Models\Admin\Org\Entity');
     }
 
