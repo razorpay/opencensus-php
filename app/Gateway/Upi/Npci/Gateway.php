@@ -156,9 +156,11 @@ EOT;
         {
             $deviceId = $txn->getNote();
             $keys = $request->getKeyList();
+
             if (count($keys) === 1)
             {
                 $key = $keys[0];
+
                 return [
                     'token'         =>  $key->getKeyValue(),
                     'device_id'     =>  $deviceId,
@@ -178,9 +180,11 @@ EOT;
 
     /**
      * Someone is asking us for bank accounts!
-     * @param  [type] $msgId   [description]
-     * @param  [type] $request [description]
-     * @return [type]          [description]
+     *
+     * @param $msgId
+     * @param $request
+     *
+     * @return array
      */
     protected function preProcessReqListAccount($msgId, $request)
     {
@@ -264,26 +268,46 @@ EOT;
         return $rsa;
     }
 
-    public function handleRequest($params)
+    /**
+     * @param $requestData
+     *   parsed_request: The full parsed request sent in UPI callback,
+     *   api: The method/api for which the UPI callback is for,
+     *   id: The transaction ID of the UPI callback,
+     *   body: The raw form of the $parsedRequest
+     *
+     * @return array
+     */
+    public function handleRequest($requestData)
     {
-        extract($params);
-        $msgId = $parsedRequest->getHead()->getMsgId();
-        $params['msgId'] = $msgId;
+        $parsedRequest = $requestData['parsed_request'];
+        $api = $requestData['api'];
 
-        $res = [
-            'queue' =>  false
-        ];
+        $msgId = $parsedRequest->getHead()->getMsgId();
+
+        $res['queue'] = false;
 
         if ($this->needsProcessing($api))
         {
-            $res['post_processed'] = true;
             // TODO: read/write from cache
             $params['original_request_params'] = [];
-            $res['queue'] = true;
+            $params['msgId'] = $msgId;
+            $params['api'] = $api;
+
+            $params = [
+                'original_request_params'   => [],
+                'msg_id'                    => $msgId,
+                'api'                       => $api,
+                'parsed_request'            => $parsedRequest,
+            ];
+
             list($jobName, $data) = $this->getJobDetails($params);
 
-            $res['job'] = $jobName;
-            $res['params'] = $data;
+            $res = [
+                'queue' => true,
+                'post_processed' => true,
+                'job' => $jobName,
+                'params' => $data,
+            ];
         }
 
         return $res;
@@ -295,10 +319,10 @@ EOT;
 
         $method = "preProcess$api";
 
-        $data = $this->$method($params['msgId'], $params['parsedRequest']);
+        $data = $this->$method($params['msg_id'], $params['parsedRequest']);
 
         // The reply message will use reqMsgId
-        $data['reqMsgId'] = $params['msgId'];
+        $data['reqMsgId'] = $params['msg_id'];
 
         $name = $this->getJobName($api);
 
@@ -316,15 +340,20 @@ EOT;
         return $jobs[$api];
     }
 
-    public function generateAckResponse($params)
+    public function generateAckResponse($ackData)
     {
-        $api = $params['api'];
-        $msgId = $params['parsedRequest']->getHead()->getMsgId();
+        $api = $ackData['api'];
+        $parsedRequest = $ackData['parsed_request'];
+
+        $msgId = $parsedRequest->getHead()->getMsgId();
 
         $ts = upi_ts();
-        return <<<EOT
+
+        $ackResponse = <<<EOT
 <?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
 EOT;
+
+        return $ackResponse;
     }
 
 

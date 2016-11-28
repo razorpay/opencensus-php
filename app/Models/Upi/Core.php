@@ -3,16 +3,29 @@
 namespace RZP\Models\Upi;
 
 use Cache;
+use Database;
 use RZP\Constants\Mode;
-use RZP\Models\Customer\Service as CustomerService;
+use RZP\Models\Customer;
 use RZP\Models\Device;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    protected $customerService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->customerService = new Customer\Service;
+    }
+
     public function callUpiGateway($method, array $gatewayData = [])
     {
+        // TODO: Take this as a parameter later when required.
         $gateway = 'upi_npci';
+
         try
         {
             $response = $this->app['gateway']->call($gateway, $method, $gatewayData, $this->mode);
@@ -25,17 +38,40 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Handles the callback received by UPI for a request sent by us.
+     *
+     * @param $api
+     * @param $id
+     * @param $body
+     *
+     * @return mixed
+     */
     public function handleUPIRequest($api, $id, $body)
     {
-        \Trace::info('GATEWAY_PAYMENT_CALLBACK', func_get_args());
+        $this->trace->info(
+            TraceCode::GATEWAY_UPI_REQUEST_CALLBACK,
+            [
+                'api'   => $api,
+                'id'    => $id,
+                'body'  => $body
+            ]);
 
         $parsedRequest = $this->app['upi.client']->parse($body, $api);
 
-        $params = compact('api', 'id', 'body', 'parsedRequest');
+        $requestData = [
+            'api'               => $api,
+            'id'                => $id,
+            'body'              => $body,
+            'parsed_request'    => $parsedRequest,
+        ];
 
-        $response = $this->app['gateway']->call('upi_npci', 'handleRequest', $params, 'test');
+        // TODO: Get the mode properly
+        $response = $this->app['gateway']->call('upi_npci', 'handle_request', $requestData, 'test');
 
-        $this->app['trace']->info('GATEWAY_RESPONSE', $response);
+        $this->trace->info(
+            'GATEWAY_RESPONSE',
+            $response);
 
         $this->cacheResponse($response);
 
@@ -44,14 +80,14 @@ class Core extends Base\Core
             $this->pushToQueue($response['job'], $response['params']);
         }
 
-        $ackXML = $this->app['gateway']->call('upi_npci', 'generateAckResponse', $params, 'test');
+        $ackXML = $this->app['gateway']->call('upi_npci', 'generateAckResponse', $requestData, 'test');
 
         return $ackXML;
     }
 
     protected function cacheResponse($response)
     {
-        if (!isset($response['params']))
+        if (isset($response['params']) === false)
         {
             return;
         }
@@ -85,10 +121,12 @@ class Core extends Base\Core
      * the mode in the authorization header
      *
      * (We'll have different IPs for prod and live)
+     *
+     * @param string $mode
      */
     protected function setMode($mode = Mode::TEST)
     {
-        \Database\DefaultConnection::set($mode);
+        Database\DefaultConnection::set($mode);
     }
 
     protected function RespListAccount(array $params)
@@ -97,9 +135,7 @@ class Core extends Base\Core
 
         $mobile = $params['mobile'];
 
-        $service = new CustomerService;
-
-        $params['bank_accounts'] = $service->fetchBankAccountsByContact($mobile)['items'];
+        $params['bank_accounts'] = $this->customerService->fetchBankAccountsByContact($mobile)['items'];
 
         $input = [];
 
@@ -126,7 +162,7 @@ class Core extends Base\Core
     {
         $this->setMode();
 
-        $success = (new CustomerService)->setMPINForBankAccounts($creds['account']['NUM'], $creds);
+        $success = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
 
         // We need to respond to UPI with a success/failure response
 

@@ -11,32 +11,29 @@ use Request;
 use RZP\Models\Device;
 use RZP\Models\BankAccount;
 use RZP\Models\Customer;
+use RZP\Models\Upi;
 
 class UpiController extends Controller
 {
-    protected $service;
+    protected $core;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Upi\Core;
+    }
 
     public function newHandle(string $api, string $id)
     {
-        $core = new \RZP\Models\Upi\Core;
-
-        $xml = $core->handleUPIRequest($api, $id, Request::getContent());
+        $xml = $this->core->handleUPIRequest($api, $id, Request::getContent());
 
         return $this->generateXmlResponse($xml);
     }
 
-    // TODO: Start supporting these in the new flow
-    // ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
-    protected function generateXmlResponse(string $xml)
-    {
-        return response($xml)
-            ->header('Content-Type', 'application/xml');
-    }
-
     public function zeroCall($method)
     {
-        $core = new \RZP\Models\Upi\Core;
-        return $core->callUpiGateway('makeRequest', ['method' => $method, 'params' => []]);
+        return $this->core->callUpiGateway('makeRequest', ['method' => $method, 'params' => []]);
     }
 
     public function getPublicKeyList()
@@ -89,7 +86,6 @@ class UpiController extends Controller
                     'bankname'      => $bankName,
                 ];
             }
-
         }
 
         return ApiResponse::json($res);
@@ -101,5 +97,12 @@ class UpiController extends Controller
             'valid'         =>  true,
             'available'     =>  true
         ]);
+    }
+
+    // TODO: Start supporting these in the new flow
+    // ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
+    protected function generateXmlResponse(string $xml)
+    {
+        return response($xml)->header('Content-Type', 'application/xml');
     }
 }
