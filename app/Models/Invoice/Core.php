@@ -135,15 +135,17 @@ class Core extends Base\Core
         {
             return;
         }
-        
-        $paymentCustomer = $payment->customer();
+
 
         // If payment has a customer associated, then associate that to invoice.
         // Otherwise simply copy the email and contact details from payment.
+
+        $paymentCustomer = $payment->customer;
+
         if ($paymentCustomer !== null)
         {
-            $invoice->customer()->associate($payment->customer);
-            $invoice->setCustomerDetails($payment->customer);
+            $invoice->customer()->associate($paymentCustomer);
+            $invoice->setCustomerDetails($paymentCustomer);
         }
         else
         {
