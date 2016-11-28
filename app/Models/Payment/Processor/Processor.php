@@ -708,19 +708,24 @@ class Processor
                 'attempts'      => $this->order->getAttempts(),
             ]);
 
-        $this->order->saveOrFail();
+        $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
     }
 
-    protected function setInvoiceDetails(Payment\Entity $payment, Order\Entity $order)
+    protected function setInvoiceDetails(Payment\Entity $payment)
     {
-        if ($order->invoice === null)
+        if ($this->order === null)
         {
             return;
         }
 
-        $invoice = $order->invoice;
+        if ($this->order->invoice === null)
+        {
+            return;
+        }
+
+        $invoice = $this->order->invoice;
 
         $payment->invoice()->associate($invoice);
     }

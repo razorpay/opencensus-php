@@ -93,7 +93,6 @@ class WebhookTest extends TestCase
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
-
             $this->assertArraySelectiveEquals($testData, $data);
             $this->assertArrayHasKey('webhook_id', $data);
             $this->assertArrayHasKey('created_at', $data['event']);

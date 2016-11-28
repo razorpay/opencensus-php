@@ -63,6 +63,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($payment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
     public function testCreateInvoiceWithMultipleLineItems()
@@ -229,6 +230,7 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals(1, count($response['items']));
         $this->assertEquals($payment['id'], $response['items'][0]['payment_id']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()
