@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class Org extends Base
@@ -28,6 +30,8 @@ class Org extends Base
 
     public function createRazorpayOrganisation()
     {
+        $now = Carbon::now()->timestamp;
+
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', ['id' => self::RZP_ORG]);
 
@@ -38,14 +42,27 @@ class Org extends Base
         ]);
 
         $this->fixtures->create('roles', [
-            'id'     => self::ADMIN_ROLE,
-            'org_id' => self::RZP_ORG,
-            'name'   => 'admin'
+            'id'            => self::ADMIN_ROLE,
+            'org_id'        => self::RZP_ORG,
+            'name'          => 'admin',
+            'created_at'    => $now,
+            'last_login_at' => $now,
         ]);
 
         $this->fixtures->create('roles', [
-            'id'     => self::MANAGER_ROLE,
-            'org_id' => self::RZP_ORG,
+            'id'            => self::MANAGER_ROLE,
+            'org_id'        => self::RZP_ORG,
+            'name'          => 'manager',
+            'created_at'    => $now,
+            'last_login_at' => $now,
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'id'         => '1RzpAdminToken',
+            'admin_id'   => self::ADMIN_ROLE,
+            'token'      => 'TheKeySecretForTests',
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
 
         return $org;

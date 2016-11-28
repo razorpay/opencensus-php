@@ -26,7 +26,6 @@ class Repository extends Base\Repository
         $email = strtolower($email);
 
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();
     }
