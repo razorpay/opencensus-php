@@ -6,7 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Models\Admin\Org;
 
-class OrganisationController
+class OrganisationController extends Controller
 {
     public function postOrganisation(Org\Service $orgService)
     {
