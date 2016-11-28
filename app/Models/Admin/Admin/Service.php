@@ -120,6 +120,8 @@ class Service extends Base\Service
 
         $adminToken = $this->repo->admin_token->retrieveByToken($token);
 
+        $adminId = $adminToken->getAdminId();
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         $roles = $admin->roles;

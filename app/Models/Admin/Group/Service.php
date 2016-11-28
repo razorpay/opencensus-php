@@ -13,6 +13,8 @@ class Service extends Base\Service
 {
     public function createGroup(string $orgId, array $input)
     {
+        Org\Entity::verifyIdAndStripSign($orgId);
+
         $org = $this->repo->org->findOrFailPublic($orgId);
 
         $group = $this->core()->create($input, $org);
@@ -43,7 +45,7 @@ class Service extends Base\Service
         $this->repo->deleteOrFail($group);
 
         // @todo: To maintain bc. Remove first two lines later.
-        $ret = $role->toArrayDeleted();
+        $ret = $group->toArrayDeleted();
         $ret = array_merge($ret, ['success' => true]);
         return $ret;
     }
@@ -162,7 +164,7 @@ class Service extends Base\Service
     */
     protected function filterEligibleParents(string $orgId, Entity $group, $allGroups)
     {
-        $currentGroup = $group;
+        $currentGroup = [$group];
         $groupId = $group->getId();
 
         // Get entire parent lineage (recursively)

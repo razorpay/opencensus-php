@@ -109,6 +109,6 @@ class Entity extends Base\PublicEntity
 
     public function getName()
     {
-        return $this->attribute(self::NAME);
+        return $this->getAttribute(self::NAME);
     }
 }

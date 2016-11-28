@@ -4,6 +4,8 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Admin;
 
 class Core extends Base\Core
 {
@@ -12,16 +14,12 @@ class Core extends Base\Core
         $group = (new Entity)->build($input);
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
-        $group->getValidator()->validateCreateInput($org->getId(), $input);
 
         $group->org()->associate($org);
 
         $this->repo->saveOrFail($group);
 
         $this->associateRelevantEntitiesToGroup($input, $group);
-
-        // $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-        //     $orgId, $group->getId());
 
         return $group;
     }
@@ -32,7 +30,7 @@ class Core extends Base\Core
 
         if (isset($input['parents']) === true)
         {
-            Group\Entity::verifyIdAndStripSignMultiple($input['parents']);
+            Entity::verifyIdAndStripSignMultiple($input['parents']);
 
             $group->parents()->sync($input['parents']);
         }
@@ -52,13 +50,13 @@ class Core extends Base\Core
 
         if (isset($input['sub_groups']) === true)
         {
-            Group\Entity::verifyIdAndStripSignMultiple($input['sub_groups']);
+            Entity::verifyIdAndStripSignMultiple($input['sub_groups']);
             $group->subGroups()->sync($input['sub_groups']);
         }
 
         if (isset($input['parents']) === true)
         {
-            Group\Entity::verifyIdAndStripSignMultiple($input['parents']);
+            Entity::verifyIdAndStripSignMultiple($input['parents']);
             $group->parents()->sync($input['parents']);
         }
 

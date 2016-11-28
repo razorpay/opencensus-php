@@ -5,7 +5,7 @@ namespace RZP\Models\Admin\Group;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -138,7 +138,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function validateOrgHasNoSuchGroup(Group\Entity $group, Org\Entity $org)
+    public function validateOrgHasNoSuchGroup(Entity $group, Org\Entity $org)
     {
         $grpExists = $this->newQuery()
                           ->orgId($org->getId())
