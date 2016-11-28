@@ -6,20 +6,20 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id'; //required?
     const CUSTOMER_ID       = 'customer_id';
     const NAME              = 'name';
     const BALANCE           = 'balance';
     const MIN_BALANCE       = 'min_balance';
     const MAX_BALANCE       = 'max_balance';
 
-    protected static $sign = 'wallet';
+    protected static $sign = 'cust';
 
-    protected $entity = 'wallet';
+    protected $entity = 'wallets';
 
-    protected $generateIdOnCreate = true;
+    protected $primaryKey = self::CUSTOMER_ID;
 
     protected $fillable = [
+        self::CUSTOMER_ID,
         self::NAME,
         self::BALANCE,
         self::MIN_BALANCE,
@@ -56,5 +56,45 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations -----------------------
+
+    public function setBalance($balance)
+    {
+        assert($balance >= 0);
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
+    public function getBalance()
+    {
+        return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getMinBalance()
+    {
+        return $this->getAttribute(self::MIN_BALANCE);
+    }
+
+    public function getMaxbalance()
+    {
+        return $this->getAttribute(self::MAX_BALANCE);
+    }
+
+
+    // Helpers
+    public function addBalance($amount)
+    {
+        $balance = $this->getBalance() + $amount;
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
+    public function deductBalance($amount)
+    {
+        $balance = $this->getBalance() - $amount;
+
+        assert($balance >= 0);
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
 
 }

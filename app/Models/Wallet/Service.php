@@ -6,9 +6,19 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function getBalance($id)
+    public function __construct()
     {
+        parent::__construct();
 
+        $this->core = new Core;
+    }
+
+    // GET /customer/:id/wallet/balance
+    public function getBalance(string $id)
+    {
+        $wallet = $this->core->fetchByCustomerId($id);
+
+        return $wallet->toArrayPublic();
     }
 
     public function getTransactionStatement($id)
@@ -16,9 +26,11 @@ class Service extends Base\Service
 
     }
 
-    public function loadMoney($id, array $input)
+    public function loadMoney($customerId, array $input)
     {
+        $wallet = $this->core->fetchOrCreate($customerId, $input);
 
+        return $this->core->credit($wallet, $input['amount']);
     }
 
     public function sendMoney($id, array $input)
