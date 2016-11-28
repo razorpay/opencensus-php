@@ -69,7 +69,7 @@ class Generator extends Base\Core
             $this->repo->transaction(
                 function() use ($invoice, $input)
                 {
-                    $this->buildAndSaveInvoice($invoice, $input);
+                    $this->buildAndSaveInvoice($input);
                 }
             );
         }
@@ -123,7 +123,7 @@ class Generator extends Base\Core
         return $invoice;
     }
 
-    protected function buildAndSaveInvoice($invoice, $input)
+    protected function buildAndSaveInvoice(array $input)
     {
         $this->customer = $this->associateCustomerWithInvoice($input);
 
@@ -165,7 +165,7 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
+        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
@@ -181,12 +181,14 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    public static function getInvoiceLink($invoiceId, $mode)
+    public static function getInvoiceLink(string $invoiceId, string $mode)
     {
+        //
         // This is required here because this piece of code is a little prone to bugs.
         // Invoice ID may not be generated at this point due to which we will
         // get a wrong url. Bitly won't throw an exception because it still gets
         // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
+        //
         if (empty($invoiceId) === true)
         {
             throw new LogicException(
@@ -241,6 +243,7 @@ class Generator extends Base\Core
 
         foreach ($lineItemsDetails as $singleLineItem)
         {
+            // It also removes the item details from the array.
             $item = $this->getItemForLineItem($singleLineItem);
 
             $lineItem = $this->lineItemCore->create(
@@ -263,6 +266,10 @@ class Generator extends Base\Core
      * be removed from line item. That's why $lineItem is passed by reference.
      *
      * Returns item created for the line item.
+     *
+     * @param array $lineItem
+     *
+     * @return Item\Entity
      */
     protected function getItemForLineItem(array & $lineItem)
     {
@@ -309,7 +316,7 @@ class Generator extends Base\Core
     {
         $orderAmount = $this->invoice->getAmount();
 
-        $orderCurrency = self::ORDER_CURRENCY;
+        $orderCurrency = $this->invoice->getCurrency();
 
         // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';
@@ -334,6 +341,10 @@ class Generator extends Base\Core
      *
      * This function creates customer if it doesn't exist.
      * It associates customer with invoice.
+     *
+     * @param array $input
+     *
+     * @return null|Customer\Entity
      */
     protected function associateCustomerWithInvoice(array $input)
     {
