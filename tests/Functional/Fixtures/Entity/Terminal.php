@@ -433,7 +433,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                    => $termId,
             'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
@@ -443,6 +443,8 @@ class Terminal extends Base
             'shared'                => 1,
         );
 
+        $attributes = array_merge($defaultValues, $attributes);
+
         return parent::create($attributes);
     }
 
@@ -450,7 +452,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                    => $termId,
             'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
@@ -461,6 +463,8 @@ class Terminal extends Base
             'category'              => 0,
             'network_category'      => 'securities',
         );
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

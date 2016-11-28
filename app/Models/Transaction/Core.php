@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -164,6 +165,18 @@ class Core extends Base\Core
         $feesSplit = new Base\PublicCollection;
 
         if ($oldTransaction === true)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if (($this->app->runningUnitTests() === false) and
+                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+                 ($payment->isCard() === true) and
+                 ($payment->card->isInternational() === false) and
+                 ($payment->card->isDebit() === true))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 

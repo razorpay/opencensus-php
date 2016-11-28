@@ -34,6 +34,27 @@ class TransactionTest extends TestCase
         $testData = $this->testData['txnDataAfterAddingAdjustment'];
         $testData['entity_id'] = $adj['id'];
         $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $adj;
+    }
+
+    public function testAddReverseAdjustment()
+    {
+        $this->ba->proxyAuth();
+        $adj = $this->testAddAdjustment();
+
+        $testData = $this->testData['testAddReverseAdjustment'];
+        $testData['request']['content']['ids'] = [
+            $adj['id']
+        ];
+
+
+        $this->ba->appAuth();
+        $response = $this->runRequestResponseFlow($testData);
+
+        $rev = $this->getLastEntity('adjustment', true);
+
+        $this->assertEquals($rev['amount'] + $adj['amount'], 0);
     }
 
     public function testAddAdjustmentWithoutUpdatingEscrowBalance()

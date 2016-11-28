@@ -379,13 +379,6 @@ class Gateway extends Base\Gateway
         return (string) crc32($str . $secret);
     }
 
-    protected function getTestSecret()
-    {
-        assert ($this->mode === Mode::TEST);
-
-        return '123456';
-    }
-
     protected function getLiveSecret()
     {
         assert ($this->mode === Mode::LIVE);

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Models\Card\Network;
 
 class MerchantFilter extends Terminal\Filter
 {
@@ -14,32 +15,6 @@ class MerchantFilter extends Terminal\Filter
         'category',
         'gateway',
     ];
-
-    /**
-     * Filter applies for securities, commodities merchants
-     * Only for the netbanking method.
-     * Allow Only Third Party Validation (TPV) terminals for
-     * TPV required merchants, and non TPV terminals for non
-     * TPV merchants.
-     *
-     * @param Terminal\Entity $terminal
-     * @param array $input
-     * @return bool
-     */
-    public function tpvFilter(Terminal\Entity $terminal, array $input)
-    {
-        if ($input['payment']->isNetbanking())
-        {
-            if ($input['merchant']->isTPVRequired())
-            {
-                return ($terminal->isTPVTerminal() === true);
-            }
-
-            return ($terminal->isTPVTerminal() === false);
-        }
-
-        return true;
-    }
 
 
     /**
@@ -77,7 +52,7 @@ class MerchantFilter extends Terminal\Filter
         $merchantTerminalCategory = $input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
-            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory)))
+            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
         {
             $category = $terminal->getNetworkCategory();
 
@@ -153,7 +128,13 @@ class MerchantFilter extends Terminal\Filter
 
             if (in_array($gateway, $excludedGateways))
             {
-                return false;
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
             }
         }
 

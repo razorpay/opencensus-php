@@ -55,6 +55,8 @@ class Netbanking
         IFSC::YESB,
     );
 
+    protected static $paytmTPV = [];
+
     protected static $billdesk = array(
         IFSC::ABNA,
         IFSC::ALLA,
@@ -176,6 +178,8 @@ class Netbanking
         IFSC::YESB,
     );
 
+    protected static $atomTPV = [];
+
     protected static $ebs = array(
         IFSC::ANDB,
         IFSC::CBIN,
@@ -216,6 +220,8 @@ class Netbanking
         IFSC::UTIB,
         */
     );
+
+    protected static $ebsTPV = [];
 
     public static function isSupportedBank($bank)
     {
@@ -326,7 +332,7 @@ class Netbanking
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
-        return isset(self::${$gateway.'TPV'}) ? in_array($bank, self::${$gateway.'TPV'}) : false;
+        return in_array($bank, self::${$gateway.'TPV'});
     }
 
     public static function isPaytmSupportedBank($bank)
