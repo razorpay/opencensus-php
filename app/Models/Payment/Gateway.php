@@ -343,14 +343,6 @@ class Gateway
         Network::DICL);
 
     /**
-     * Banks with which we have direct netbanking tie-ups.
-     * @var array
-     */
-    public static $directNetbankingBankList = array(
-        IFSC::HDFC,
-        IFSC::KKBK);
-
-    /**
      * For the banks we have direct tie-ups with,
      * here we list down the mapping from bank to netbanking gateway name.
      * There is no standardized bank gateway naming that we follow. IFSC
@@ -420,7 +412,7 @@ class Gateway
 
     public static function isNetbankingBankDirectlySupported($bank)
     {
-        return in_array($bank, self::$directNetbankingBankList);
+        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
     public static function getChannel($gateway)
@@ -538,7 +530,7 @@ class Gateway
                 (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 
-    public static function getGatewaysForNetbankingBank($bank)
+    public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
     {
         $gateways = [];
 
@@ -551,7 +543,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
             {
                 $gateways[] = $netbankingGateway;
             }
