@@ -64,13 +64,16 @@ class Checkout
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        if (isset($data['customer']) === true)
-        {
-            $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
-        }
-        else
-        {
-            $data['customer'] = $invoiceData['customer'];
+        // If invoice's customer data is set, merge it to existing data
+        if (isset($invoiceData['customer'])) {
+            if (isset($data['customer']))
+            {
+                $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
+            }
+            else
+            {
+                $data['customer'] = $invoiceData['customer'];
+            }
         }
     }
 
