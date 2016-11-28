@@ -19,7 +19,7 @@ class OrganisationController extends Controller
 
     public function getOrganisation(Org\Service $orgService, $id)
     {
-        $data = $orgService->get($id);
+        $data = $orgService->fetch($id);
 
         return ApiResponse::json($data);
     }
