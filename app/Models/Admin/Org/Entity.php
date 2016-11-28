@@ -17,16 +17,15 @@ class Entity extends Base\PublicEntity
     const BUSINESS_NAME     = 'business_name';
     const DISPLAY_NAME      = 'display_name';
     const EMAIL             = 'email';
+    const HOSTNAME          = 'hostname';
     const EMAIL_DOMAINS     = 'email_domains';
-    const DELETED_AT        = 'deleted_at';
     const LOGIN_LOGO_URL    = 'login_logo_url';
     const MAIN_LOGO_URL     = 'main_logo_url';
+    const DELETED_AT        = 'deleted_at';
 
     protected static $sign = 'org';
 
     protected $entity = 'org';
-
-    protected $table = Table::ORG;
 
     protected $generateIdOnCreate = true;
 
@@ -35,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::AUTH_TYPE,
+        self::HOSTNAME,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
@@ -46,9 +46,11 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::AUTH_TYPE,
+        self::HOSTNAME,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
+        self::DELETED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -90,9 +92,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Admin\Admin\Entity');
     }
 
-    public function isDeleted()
+    public function groups()
     {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
+        return $this->hasMany('RZP\Models\Admin\Group\Entity');
     }
 
     public function roles()
@@ -105,11 +107,20 @@ class Entity extends Base\PublicEntity
         return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
     }
 
-    /**
-     * Public getters
-     * */
     public function getEmailDomains()
     {
         return $this->getAttribute(self::EMAIL_DOMAINS);
+    }
+
+    public function getHostname()
+    {
+        return $this->getAttribute(self::HOSTNAME);
+    }
+
+    protected function getEmailDomainsAttribute()
+    {
+        $emailDomains = $this->attributes[self::EMAIL_DOMAINS];
+
+        return explode($emailDomains, ',');
     }
 }

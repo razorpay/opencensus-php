@@ -353,19 +353,19 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Feature\Entity::class, [
-    'id'                => $faker->uniqueid,
-    'entity_type'       => 'merchant'
+    'id'            => $faker->uniqueid,
+    'entity_type'   => 'merchant'
 ]);
 
 
 // Admin Roles related fixtures
-
 $factory(\RZP\Models\Admin\Org\Entity::class, [
     'id'            => $faker->uniqueid,
-    'email_domains' => 'hdfc.com,fbapi.com',
-    'email'         => 'test@hdfc.com',
-    'display_name'  => 'HDFC Bank',
-    'business_name' => 'HDFC Bank Public Limited',
+    'hostname'      => 'dashboard.razorpay.com',
+    'email_domains' => 'razorpay.com,rzp.io',
+    'email'         => 'test@razorpay.com',
+    'display_name'  => 'Razorpay',
+    'business_name' => 'Razorpay Software Pvt Ltd',
     'auth_type'     => 'password',
 ]);
 
@@ -404,8 +404,8 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-    'admin_id'      =>  '6dLbNSpv5bbbbb',
-    'token'         =>  'd986ee4a08c10b610c2e1afd10fea7c9a99c2084182f27749bc853e06c57d970',
-    'created_at'    =>  $faker->timestamp,
-    'expires_at'    =>  $faker->timestamp,
+    'admin_id'      => '6dLbNSpv5bbbbb',
+    'token'         => 'd986ee4a08c10b610c2e1afd10fea7c9a99c2084182f27749bc853e06c57d970',
+    'created_at'    => $faker->timestamp,
+    'expires_at'    => $faker->timestamp,
 ]);

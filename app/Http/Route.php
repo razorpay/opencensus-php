@@ -301,11 +301,12 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
 
 // Routes for the admin roles project
-        'org_create'                              => ['post',     'orgs',                                           'AdminController@createOrg'                                         ],
-        'org_get_multiple'                        => ['get',      'orgs',                                           'AdminController@fetchOrgMultiple'                                  ],
-        'org_edit'                                => ['put',      'orgs/{id}',                                      'AdminController@putOrg'                                            ],
-        'org_delete'                              => ['delete',   'orgs/{id}',                                      'AdminController@deleteOrg'                                         ],
-        'org_get'                                 => ['get',      'orgs/{id}',                                      'AdminController@getOrg'                                            ],
+        'org_create'                              => ['post',     'orgs',                                           'OrganisationController@postOrganisation'                           ],
+        'org_get'                                 => ['get',      'orgs/{id}',                                      'OrganisationController@getOrganisation'                            ],
+        'org_get_by_hostname'                     => ['get',      'orgs/{hostname}',                                'OrganisationController@getOrganisationByHostname'                  ],
+        'org_get_multiple'                        => ['get',      'orgs',                                           'OrganisationController@getOrganisations'                           ],
+        'org_edit'                                => ['put',      'orgs/{id}',                                      'OrganisationController@putOrganisation'                            ],
+        'org_delete'                              => ['delete',   'orgs/{id}',                                      'OrganisationController@deleteOrganisation'                         ],
         'role_create'                             => ['post',     'orgs/{id}/roles',                                'AdminController@createRole'                                        ],
         'role_get_multiple'                       => ['get',      'orgs/{id}/roles',                                'AdminController@getMultipleRoles'                                  ],
         'role_get'                                => ['get',      'orgs/{id}/roles/{roleId}',                       'AdminController@getRole'                                           ],

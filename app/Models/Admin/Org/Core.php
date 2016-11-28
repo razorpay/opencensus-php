@@ -15,8 +15,30 @@ class Core extends Base\Core
         return $org;
     }
 
+    public function fetch(string $orgId)
+    {
+        $orgId = Entity::verifyIdAndStripSign($id);
+
+        return $this->repo->org->findOrFailPublic($orgId);
+    }
+
+    public function edit(string $orgId)
+    {
+        $orgId = Entity::verifyIdAndStripSign($id);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $org->edit($input);
+
+        $this->repo->saveOrFail($org);
+
+        return $org;
+    }
+
     public function delete($id)
     {
+        $id = Entity::verifyIdAndStripSign($id);
+
         $org = $this->repo->org->findOrFail($id);
 
         $groups = $this->repo->group->fetchGroupsForOrg($id);

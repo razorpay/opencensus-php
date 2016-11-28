@@ -13,50 +13,40 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function fetchMultiple(array $input)
-    {
-        $orgs = $this->repo->org->fetch($input);
-
-        return $orgs->toArrayPublic();
-    }
-
-    public function createOrg(array $input)
+    public function create(array $input)
     {
         $org = $this->core->create($input);
 
         return $org->toArrayPublic();
     }
 
-    public function getOrg(string $id)
+    public function fetch(string $id)
     {
-        $orgId = Entity::verifyIdAndStripSign($id);
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $org = $this->core->fetch($id);
 
         return $org->toArrayPublic();
     }
 
-    public function deleteOrg(string $id)
+    public function fetchByHostname(string $hostname)
     {
-        $id = Entity::verifyIdAndStripSign($id);
+        $org = $this->repo->org->findOrFailByHostname($orgId);
 
+        return $org->toArrayPublic();
+    }
+
+    public function delete(string $id)
+    {
         return $this->core->delete($id);
     }
 
-    public function editOrg(string $id, array $input)
+    public function edit(string $id, array $input)
     {
-        $orgId = Entity::verifyIdAndStripSign($id);
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
-        $org->fill($input);
-
-        $this->repo->saveOrFail($org);
+        $org = $this->core->edit($id);
 
         return $org->toArrayPublic();
     }
 
-    public function getOrgMultiple(array $input)
+    public function fetchMultiple(array $input)
     {
         $orgs = $this->repo->org->fetch($input);
 

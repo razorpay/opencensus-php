@@ -33,7 +33,16 @@ class Repository extends Base\Repository
     public function retrieveByEmail(string $email)
     {
         return $this->newQuery()
-                    ->where(Org\Entity::EMAIL, '=', $email)
+                    ->where(Entity::EMAIL, '=', $email)
                     ->get();
+    }
+
+    public function findOrFailByHostname(string $hostname)
+    {
+        $hostname = mb_strtolower($hostname);
+
+        return $this->newQuery()
+                    ->where(Entity::HOSTNAME, '=', $hostname)
+                    ->firstOrFailPublic();
     }
 }

@@ -22,28 +22,33 @@ class CreateOrgs extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Org::ID, 14)
+            $table->char(Org::ID, Org::ID_LENGTH)
                   ->primary();
 
-            $table->string(Org::BUSINESS_NAME, 250);
+            $table->string(Org::BUSINESS_NAME);
 
-            $table->string(Org::DISPLAY_NAME, 250);
+            $table->string(Org::DISPLAY_NAME);
 
-            $table->string(Org::EMAIL, 250)
+            $table->string(Org::HOSTNAME);
+
+            $table->string(Org::EMAIL)
                   ->unique();
 
-            $table->string(Org::AUTH_TYPE, 250);
+            $table->string(Org::AUTH_TYPE);
 
             $table->text(Org::EMAIL_DOMAINS);
 
-            $table->string(Org::LOGIN_LOGO_URL, 250)
+            $table->string(Org::LOGIN_LOGO_URL)
                   ->nullable();
-            $table->string(Org::MAIN_LOGO_URL, 250)
+
+            $table->string(Org::MAIN_LOGO_URL)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);
+
             $table->integer(Org::UPDATED_AT);
+
             $table->integer(Org::DELETED_AT)
                   ->unsigned()
                   ->nullable();
@@ -51,7 +56,6 @@ class CreateOrgs extends Migration
             $table->index(Org::CREATED_AT);
             $table->index(Org::UPDATED_AT);
             $table->index(Org::DELETED_AT);
-            $table->index(Org::EMAIL);
         });
 
         Schema::table(Table::MERCHANT, function(Blueprint $table)

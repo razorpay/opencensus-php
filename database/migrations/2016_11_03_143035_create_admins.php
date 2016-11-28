@@ -78,6 +78,9 @@ class CreateAdmins extends Migration
             $table->integer(Admin::PASSWORD_EXPIRY)
                   ->nullable();
 
+            $table->integer(Admin::PASSWORD_CHANGED_AT)
+                  ->nullable();
+
             // When hit make Admin::DISABLED=1
             $table->integer(Admin::EXPIRY_AT)
                   ->nullable();
