@@ -98,7 +98,7 @@ class Generator extends Base\Core
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
                     null,
                     [
-                        'invoice_id'    => $this->invoice->getId(),
+                        'invoice_id'    => $this->invoice->getPublicId(),
                         'input'         => $input,
                     ]);
             }

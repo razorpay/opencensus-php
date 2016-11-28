@@ -6,13 +6,11 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -51,6 +49,8 @@ class Core extends Base\Core
             function() use ($invoice, $merchant, $input)
             {
                 $invoice->edit($input);
+
+                $this->consumeExtraInputKeys($invoice, $input);
 
                 (new Generator($merchant, $invoice))->update($input);
 
@@ -228,5 +228,12 @@ class Core extends Base\Core
         }
 
         $invoice->setAmount($totalAmount);
+    }
+
+    protected function consumeExtraInputKeys(Entity $invoice, array $input)
+    {
+        $invoice->generateStatus($input);
+        $invoice->generateEmailStatus($input);
+        $invoice->generateSmsStatus($input);
     }
 }

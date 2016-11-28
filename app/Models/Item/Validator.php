@@ -61,7 +61,7 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
             null,
             [
-                'item_id' => $item->id,
+                'item_id' => $item->getPublicId(),
             ]
         );
     }

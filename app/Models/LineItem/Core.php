@@ -96,7 +96,7 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
                     null,
                     [
-                        'item_id' => $item->getId(),
+                        'item_id' => $item->getPublicId(),
                     ]
                 );
             }

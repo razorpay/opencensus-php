@@ -106,7 +106,7 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
             null,
             [
-                'merchant_id' => $merchant->getId(),
+                'merchant_id' => $merchant->getPublicId(),
             ]);
     }
 
@@ -132,7 +132,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateOperation(string $status, array $input)
+    public function validateOperation(string $status, array $input = [])
     {
         switch ($status) {
 
@@ -149,7 +149,7 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
                     null,
                     [
-                        'invoice_id' => $invoice->getId(),
+                        'invoice_id' => $invoice->getPublicId(),
                         'status'     => $status
                     ]
                 );
@@ -169,7 +169,7 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
             null,
             [
-                'invoice_id' => $invoice->getId(),
+                'invoice_id' => $invoice->getPublicId(),
             ]
         );
     }
