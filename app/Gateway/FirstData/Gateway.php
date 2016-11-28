@@ -325,7 +325,7 @@ class Gateway extends Base\Gateway
             Entity::TRANSACTION_RESULT     => $response[ApiResponseFields::TRANSACTION_RESULT],
             Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
             Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
-            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
+            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID] ?? null,
         ];
 
         $this->setErrorMessageIfNeeded($attributes);
@@ -535,7 +535,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RESPONSE,
             [$response->body]);
 
-        $xml = simplexml_load_string($response->body);
+        $xml = simplexml_load_string(trim($response->body));
 
         return $xml;
     }
@@ -626,7 +626,8 @@ class Gateway extends Base\Gateway
         $servicesApiActionList = [
             Action::CAPTURE,
             Action::REFUND,
-            Action::VERIFY
+            Action::VERIFY,
+            Action::REVERSE,
         ];
 
         if (in_array($this->action, $servicesApiActionList))
@@ -784,13 +785,9 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
-
         $request[ApiRequestFields::A1_ACTION]
                     [ApiRequestFields::A1_INQUIRY_ORDER]
-                        [ApiRequestFields::A1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+                        [ApiRequestFields::A1_ORDER_ID] = $input['payment']['id'];
 
         return $request;
     }

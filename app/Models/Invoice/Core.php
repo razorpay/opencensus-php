@@ -149,13 +149,10 @@ class Core extends Base\Core
                 'medium'     => $medium,
             ]);
 
+        $invoice->getValidator()->validateSendNotificationRequest($invoice, $medium);
+
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
-
-        if (method_exists($notifier, $commFunc) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException("Not a valid medium");
-        }
 
         $response = $notifier->$commFunc();
 
