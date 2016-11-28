@@ -11,6 +11,7 @@ use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber
 {
@@ -37,6 +38,15 @@ class ApiEventSubscriber
 
     protected $params;
 
+    protected $webhookEnabledForEvent = false;
+
+    // Events for which only webhook needs to be triggered
+    protected static $webhookOnlyEvents = [
+        WebhookEvent::PAYMENT_AUTHORIZED,
+        WebhookEvent::PAYMENT_FAILED,
+        WebhookEvent::ORDER_PAID,
+    ];
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -55,7 +65,13 @@ class ApiEventSubscriber
     {
         $event = $this->getFiringEvent();
 
-        if ($this->isWebhookEnabledForEvent($params) === false)
+        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
+
+        // Returns if:
+        // - Event is web-hook only event,
+        // - Merchant doesn't have web-hook enabled
+        if (in_array($event, self::$webhookOnlyEvents, true) and
+            ($this->webhookEnabledForEvent === false))
         {
             return;
         }
@@ -118,6 +134,12 @@ class ApiEventSubscriber
         $invCore = new Invoice\Core;
         $invCore->setCustomerDetailsFromPaymentIfAbsent($payment);
 
+        if ($this->webhookEnabledForEvent === false)
+        {
+            return;
+        }
+
+        // WebHook specific statements
         $payload = $this->getInvoicePayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
