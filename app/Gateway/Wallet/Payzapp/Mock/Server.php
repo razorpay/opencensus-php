@@ -93,7 +93,7 @@ class Server extends Base\Mock\Server
         $this->content($input, 'refund');
 
         $refundResponse = 'status=50020&pg_error_code=0&pg_error_detail=No Error&
-        &new_transaction_id='.$refundTxnId.'&new_merchant_reference_no='.$input['original_merchant_reference_no'];
+        &new_transaction_id='.$refundTxnId.'&new_merchant_reference_no='.$input['new_merchant_reference_no'];
 
         return $this->makeResponse($refundResponse);
     }

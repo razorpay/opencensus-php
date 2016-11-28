@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Terminal;
 use RZP\Trace;
 
 class Entity extends Base\PublicEntity
@@ -33,6 +34,7 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
+    const ORG_ID                    = 'org_id';
 
     /**
      * Category for particular methods or gateways
@@ -113,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LOGO_URL,
+        self::ORG_ID,
      );
 
     protected $defaults = array(
@@ -130,6 +133,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
+        self::ORG_ID                 => null,
     );
 
     protected $publicSetters = array(
@@ -232,6 +236,16 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
     public function invoices()
     {
         return $this->hasMany('RZP\Models\Invoice\Entity');
@@ -264,6 +278,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'RZP\Models\Terminal\Entity');
+    }
+
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
     }
 
     public function transactions()
@@ -415,6 +435,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
     }
 
     public function features()
@@ -666,23 +691,16 @@ class Entity extends Base\PublicEntity
      */
     public function isTPVRequired()
     {
-        // 9999 - Test MCC requiring TPV
-        // 6211 - Live MCC requiring TPV
         $tpvCategories = $this->getTPVCategories();
 
-        $category = $this->getCategory();
+        $category = $this->getCategory2();
 
-        if (isset($tpvCategories[$category]))
-        {
-            return true;
-        }
-
-        return false;
+        return in_array($category, $tpvCategories);
     }
 
     public function getTPVCategories()
     {
-        return array(9999 => 9999, 6211 => 6211);
+        return Terminal\Category::INCOMPATIBLE;
     }
 
     public function isShared()
@@ -693,5 +711,26 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
+    }
+
+    public function groups()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function admins()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function toArrayPublic()
+    {
+         $merchant = parent::toArrayPublic();
+
+         $groups = $this->groups;
+
+         $merchant['groups'] = $groups->toArrayPublic()['items'];
+
+         return $merchant;
     }
 }

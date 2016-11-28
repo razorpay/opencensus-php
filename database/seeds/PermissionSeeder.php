@@ -91,6 +91,7 @@ class PermissionSeeder extends Seeder
                 'edit_merchant_confirm' => '',
                 'edit_merchant_lock_activation' => '',
                 'edit_merchant_unlock_activation' => '',
+                'edit_merchant_hold_funds' => '',
                 'edit_merchant_release_funds' => '',
                 'edit_merchant_enable_receipt' => '',
                 'edit_merchant_disable_receipt' => '',
@@ -182,6 +183,7 @@ class PermissionSeeder extends Seeder
                 'edit_merchant_confirm' => '',
                 'edit_merchant_lock_activation' => '',
                 'edit_merchant_unlock_activation' => '',
+                'edit_merchant_hold_funds' => '',
                 'edit_merchant_release_funds' => '',
 
                 'view_merchant_balance_test' => '',

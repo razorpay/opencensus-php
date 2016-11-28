@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Models\LineItem\Entity;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Item;
 use RZP\Constants\Table;
 
 class CreateLineItems extends Migration
@@ -26,17 +27,12 @@ class CreateLineItems extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            // This is nullable because the association happens after
-            // creating a line item.
-            $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH)
+            $table->char(Entity::ITEM_ID, Entity::ID_LENGTH);
+
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
                   ->nullable();
-
-            $table->string(Entity::NAME, 512);
-
-            $table->string(Entity::DESCRIPTION, 2048)
+            $table->string(Entity::ENTITY_TYPE, 32)
                   ->nullable();
-
-            $table->integer(Entity::AMOUNT);
 
             $table->integer(Entity::QUANTITY);
 
@@ -45,18 +41,18 @@ class CreateLineItems extends Migration
 
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
-            $table->index(Entity::AMOUNT);
-            //$table->index(Entity::LISTING_ID);
+            $table->index(Entity::ENTITY_ID);
+            $table->index(Entity::ENTITY_TYPE);
 
             $table->foreign(Entity::MERCHANT_ID)
-                ->references(Merchant\Entity::ID)
-                ->on(Table::MERCHANT)
-                ->on_delete('restrict');
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT);
 
-            $table->foreign(Entity::INVOICE_ID)
-                  ->references(Invoice\Entity::ID)
-                  ->on(Table::INVOICE)
+            $table->foreign(Entity::ITEM_ID)
+                  ->references(Item\Entity::ID)
+                  ->on(Table::ITEM)
                   ->on_delete('restrict');
+
         });
     }
 
@@ -76,7 +72,7 @@ class CreateLineItems extends Migration
 
             $table->dropForeign
             (
-                Table::LINE_ITEM . '_' . Entity::INVOICE_ID . '_foreign'
+                Table::LINE_ITEM . '_' . Entity::ITEM_ID . '_foreign'
             );
         });
 

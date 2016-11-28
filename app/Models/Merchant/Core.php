@@ -30,6 +30,11 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($merchant);
 
+        if (isset($input['groups']) === true)
+        {
+            $merchant->groups()->sync($input['groups']);
+        }
+
         return $merchant;
     }
 
@@ -92,6 +97,11 @@ class Core extends Base\Core
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
+
+        if (isset($input['groups']) === true)
+        {
+            $merchant->groups()->sync($input['groups']);
+        }
 
         $this->saveAndNotify($merchant);
 

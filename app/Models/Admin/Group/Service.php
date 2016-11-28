@@ -105,6 +105,10 @@ class Service extends Base\Service
 
             $input['parents'] = $groupIds;
         }
+        else
+        {
+            $input['parents'] = [];
+        }
 
         $group = $this->core->edit($orgId, $groupId, $input);
 
@@ -264,7 +268,8 @@ class Service extends Base\Service
         $rejectParents = $this->getRejectParents($orgId, $groupId);
 
         // Get entire children tree/hierarchy (recursively)
-        $rejectChildren = $this->getRejectChildren($orgId, $groupId);
+        $children = [];
+        $rejectChildren = $this->getRejectChildren($orgId, $groupId, $children);
 
         // Get sublings **and** its tree/hierarchy (recursively)
         $rejectSiblings = $this->getRejectSiblings($orgId, $groupId);
@@ -323,20 +328,20 @@ class Service extends Base\Service
     }
 
     // @new
-    protected function getRejectChildren($orgId, $groupId)
+    public function getRejectChildren($orgId, $groupId, &$rejectNodes)
     {
-        $rejectNodes = [];
+        // $rejectNodes = [];
 
         // Get all direct children of incoming groupId
         $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
 
         // Throw all direct children in the rejected node list
-        $rejectNodes = $childrenGroups;
+        $rejectNodes = array_merge($rejectNodes, $childrenGroups);
 
         foreach ($childrenGroups as $group)
         {
             // For every child group, check its further direct children
-            $rejects = $this->getRejectChildren($orgId, $group['id']);
+            $rejects = $this->getRejectChildren($orgId, $group['id'], $rejectNodes);
 
             $rejectNodes = array_merge($rejectNodes, $rejects);
         }
@@ -364,7 +369,8 @@ class Service extends Base\Service
                 }
 
                 // Get tree/hierarchy of sibling
-                $siblingChildren = $this->getRejectChildren($orgId, $sibling['id']);
+                $children = [];
+                $siblingChildren = $this->getRejectChildren($orgId, $sibling['id'], $children);
 
                 // Merge previous reject nodes with sibling hierarchy/tree
                 // and the current sibling in context

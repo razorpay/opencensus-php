@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -37,6 +38,12 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
+            [
+                'payment_id' => $payment->getId()
+            ]);
+
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateNodalBalance($txn);
@@ -131,6 +138,13 @@ class Core extends Base\Core
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
 
+        $this->trace->info(
+            TraceCode::TRANSACTION_CREATED,
+            [
+                'payment_id' => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]);
+
         return [$txn, $feesSplit];
     }
 
@@ -151,6 +165,18 @@ class Core extends Base\Core
         $feesSplit = new Base\PublicCollection;
 
         if ($oldTransaction === true)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if (($this->app->runningUnitTests() === false) and
+                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+                 ($payment->isCard() === true) and
+                 ($payment->card->isInternational() === false) and
+                 ($payment->card->isDebit() === true))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
@@ -412,7 +438,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateAmountCredits($txn, $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -459,7 +485,7 @@ class Core extends Base\Core
         $this->repo->balance->updateBalance($nodalBalance);
     }
 
-    public function updateFeeCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateFeeCredits(Transaction\Entity $txn)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -558,11 +584,11 @@ class Core extends Base\Core
     {
         if ($txn->isGratis() === true)
         {
-            return $this->updateAmountCredits($txn, $payment);
+            $this->updateAmountCredits($txn, $payment);
         }
         else if ($txn->getFeeCredits() > 0)
         {
-            return $this->updateFeeCredits($txn, $payment);
+            $this->updateFeeCredits($txn);
         }
     }
 }

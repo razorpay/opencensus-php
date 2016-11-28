@@ -55,7 +55,7 @@ class AuditLogListener
         $this->queue = $this->app['queue'];
 
         $this->esDao = new EsDao();
-        
+
         $config = $this->app['config'];
 
         $mode = (empty($this->app['rzp.mode'] === true)) ? Mode::TEST : $this->app['rzp.mode'];
@@ -85,7 +85,7 @@ class AuditLogListener
         // always convert the index name to lower case and search
 
         $indexName  = strtolower($this->baseIndex . '_' . $event->admin->org->getId());
-
+sd($indexName);
         $this->esDao->storeAdminEvent($indexName, $event->admin, $event->action,
                                         $event->customProperties,$this->event->firing());
 

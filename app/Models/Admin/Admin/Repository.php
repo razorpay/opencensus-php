@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Group;
 
 class Repository extends Base\Repository
 {
@@ -112,6 +113,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $adminId)
+                    ->with('groups')
                     ->firstOrFail();
     }
 

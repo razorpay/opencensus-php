@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Role;
 
-use illuminate\database\eloquent\softdeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;
@@ -105,20 +105,5 @@ class Entity extends Base\PublicEntity
     public function setPublicOrgIdAttribute(array &$array)
     {
         $array[self::ORG_ID] = Org::getSignedId($array[self::ORG_ID]);
-    }
-
-    public function toArrayPublic()
-    {
-        $role = parent::toArrayPublic();
-
-        if (isset($role['permissions']) === true)
-        {
-            foreach ($role['permissions'] as $key => $entity)
-            {
-                $role['permissions'][$key]['id'] = Permission\Entity::getSignedId($entity['id']);
-            }
-        }
-
-        return $role;
     }
 }

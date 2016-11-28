@@ -21,4 +21,10 @@ class Period
         self::MONTHLY_DATE,
         self::MONTHLY_WEEK,
     ];
+
+    const ANCHORED_PERIODS = [
+        self::WEEKLY,
+        self::MONTHLY_DATE,
+        self::MONTHLY_WEEK,
+    ];
 }

@@ -43,6 +43,8 @@ class CreateFeesBreakupTable extends Migration
                   ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
+
+            $table->unique([FeeBreakup::NAME, FeeBreakup::TRANSACTION_ID]);
         });
     }
 
@@ -56,6 +58,8 @@ class CreateFeesBreakupTable extends Migration
         Schema::table(Table::FEE_BREAKUP, function($table)
         {
             $table->dropForeign(Table::FEE_BREAKUP .'_' .FeeBreakup::TRANSACTION_ID .'_foreign');
+
+            $table->dropUnique([FeeBreakup::NAME, FeeBreakup::TRANSACTION_ID]);
         });
 
         Schema::drop(Table::FEE_BREAKUP);

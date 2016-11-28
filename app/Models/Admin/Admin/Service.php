@@ -242,7 +242,7 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
-    public function getAdminById(string $adminId)
+    public function getAdminById(string &$adminId)
     {
         $adminId = Entity::verifyIdAndStripSign($adminId);
 
@@ -276,7 +276,7 @@ class Service extends Base\Service
 
         $roleIds = [];
 
-        foreach ($input['roles']  as $roleId)
+        foreach ($input['roles'] as $roleId)
         {
             $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
         }
@@ -377,5 +377,33 @@ class Service extends Base\Service
         $admin = $this->core->edit($orgId, $adminId, $input);
 
         return $admin->toArrayPublic();
+    }
+
+    public function getMerchantIds($orgId, $adminId)
+    {
+        $admin = $this->getAdmin($orgId, $adminId);
+        $adminGroups = $admin['groups'];
+        $adminMerchants = $admin['merchants'];
+
+        $merchants = [];
+        $visibleGroups = [];
+        $admin = new Entity($admin);
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        foreach ($adminGroups as $group) {
+            $groupId = Group\Entity::verifyIdAndStripSign($group['id']);
+            (new Group\Service)->getRejectChildren($orgId, $groupId, $visibleGroups);
+        }
+        $visibleGroups = array_unique($visibleGroups, SORT_REGULAR);
+
+        foreach ($visibleGroups as $group) {
+            $group = new Group\Entity($group);
+            $merchants = array_merge($merchants, $group->merchants->all());
+        }
+        $merchants = array_merge($merchants, $adminMerchants);
+
+        $merchantIds = array_column($merchants, 'id');
+
+        return $merchantIds;
     }
 }

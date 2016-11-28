@@ -14,7 +14,7 @@ class Url
     const ACOSA_TEST_DOMAIN     = 'pg.pc.enstage-sas.com';
     const ACOSA_LIVE_DOMAIN     = 'pg.wibmo.com';
 
-    const REFUND                = '/AccosaPGAPI/MerchantAPI';
+    const REFUND                = '/AccosaPGAPI/DirectMerchantAPI';
     const VERIFY                = '/AccosaPG/PGServer';
 
 }

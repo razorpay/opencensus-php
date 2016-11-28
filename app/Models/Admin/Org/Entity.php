@@ -80,9 +80,14 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Org\AuthPolicy\Entity');
     }
 
+    public function merchants()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Entity');
+    }
+
     public function admins()
     {
-        return $this->hasMany('Admin\Entity');
+        return $this->hasMany('RZP\Models\Admin\Admin\Entity');
     }
 
     public function isDeleted()

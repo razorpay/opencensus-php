@@ -19,6 +19,7 @@ class Entity
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
+    const ITEM                  = 'item';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';

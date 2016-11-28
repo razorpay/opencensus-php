@@ -93,15 +93,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerApiMutex();
 
         $this->registerMaxMind();
-        
+
         $this->registerBitly();
 
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
 
-        // Used for admin role org permission.
-        $this->registerAdminRelationMap();
+        $this->registerMorphRelationMaps();
     }
 
     /**
@@ -151,17 +150,6 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerAdminRelationMap()
-    {
-        Relation::morphMap([
-            'org'        => Admin\Org\Entity::class,
-            'group'      => Admin\Group\Entity::class,
-            'admin'      => Admin\Admin\Entity::class,
-            'role'       => Admin\Role\Entity::class,
-            'permission' => Admin\Permission\Entity::class,
-        ]);
-    }
-
     protected function registerValidatorResolver()
     {
         $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
@@ -185,18 +173,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new MaxMind($app);
         });
     }
-    
+
     protected function registerBitly()
     {
         $this->app->singleton('bitly', function($app)
         {
             $bitlyMock = $app['config']->get('applications.bitly.mock');
-            
+
             if ($bitlyMock === true)
             {
                 return new Mock\Bitly($app);
             }
-            
+
             return new Bitly($app);
         });
     }
@@ -214,5 +202,19 @@ class ApiServiceProvider extends BaseServiceProvider
 
             return new Mutex($app);
         });
+    }
+
+    protected function registerMorphRelationMaps()
+    {
+        Relation::morphMap([
+            'invoice' => \RZP\Models\Invoice\Entity::class,
+
+            // heimdall
+            'org'        => Admin\Org\Entity::class,
+            'group'      => Admin\Group\Entity::class,
+            'admin'      => Admin\Admin\Entity::class,
+            'role'       => Admin\Role\Entity::class,
+            'permission' => Admin\Permission\Entity::class,
+        ]);
     }
 }

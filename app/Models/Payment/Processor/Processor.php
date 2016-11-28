@@ -7,6 +7,7 @@ use BasicAuth;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
@@ -19,7 +20,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Base\PublicCollection;
+use RZP\Models\Transaction;
+use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -175,8 +177,20 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) =
+        if (($this->app->runningUnitTests() === false) and
+            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+            ($payment->isCard() === true) and
+            ($payment->card->isInternational() === false) and
+            ($payment->card->isDebit() === true))
+        {
+            $fee = 0;
+            $serviceTax = 0;
+        }
+        else
+        {
+            list($fee, $serviceTax, $ruleKey, $feesSplit) =
                             (new Pricing\Fee)->calculateMerchantFees($payment);
+        }
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -464,6 +478,16 @@ class Processor
 
         $payment->setStatus(Payment\Status::FAILED);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_FAILED,
+            [
+                'payment_id'    => $payment->getId(),
+                'old_status'    => $status,
+                'error'         => $error,
+                'segment_data'  => $segmentCustomProperties,
+            ]
+        );
+
         $payment->setError($code, $desc, $internalCode);
 
         $payment->setVerified(null);
@@ -637,7 +661,7 @@ class Processor
         return $order;
     }
 
-    protected function setOrderDetails($payment, $input)
+    protected function setOrderDetails(Payment\Entity $payment, array $input)
     {
         if (empty($input['order_id']) === true)
         {
@@ -675,6 +699,13 @@ class Processor
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
         $this->order->incrementAttempts();
+
+        $this->trace->info(
+            TraceCode::ORDER_STATUS_ATTEMPTED,
+            [
+                'order_id'      => $this->order->getId(),
+                'attempts'      => $this->order->getAttempts(),
+            ]);
 
         $this->order->saveOrFail();
 
@@ -860,12 +891,15 @@ class Processor
         return substr($contact, -10);
     }
 
-    public function saveFeeDetails($txn, $feesSplit)
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
-        if (empty($feesSplit) == true)
-        {
-            return;
-        }
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
 
         $this->repo->transaction(function() use ($txn, $feesSplit)
         {
@@ -875,6 +909,14 @@ class Processor
 
                 $this->repo->saveOrFail($feeSplit);
             }
+
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_CREATED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
         });
     }
 }

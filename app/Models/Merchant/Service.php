@@ -23,6 +23,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin;
+use RZP\Models\Admin\Group;
 
 class Service extends Base\Service
 {
@@ -87,6 +88,18 @@ class Service extends Base\Service
     public function edit($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input['groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['groups'] as $id)
+            {
+                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['groups'] = $groupIds;
+        }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 

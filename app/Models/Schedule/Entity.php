@@ -61,13 +61,22 @@ class Entity extends Base\PublicEntity
 
     public function updateNextRun()
     {
-        $lastRun = Carbon::now('Asia/Kolkata')->timestamp;
+        $lastRun = Carbon::now('Asia/Kolkata');
 
-        $nextRun = Library::getNextApplicableTime($lastRun, $this);
+        $stepType = Steps::STEP_LIST[$this->getPeriod()];
 
-        $this->setNextRun($nextRun);
+        $step = 'add' . $stepType;
 
-        $this->saveOrFail();
+        $nextRun = $lastRun->$step();
+
+        if($this->getPeriod() !== Period::HOURLY)
+        {
+            $nextRun->hour(0);
+        }
+
+        $nextRun->minute(0)->second(0);
+
+        $this->setNextRun($nextRun->timestamp);
     }
 
     // -------------------------- Checks -------------------------------------------
@@ -91,7 +100,7 @@ class Entity extends Base\PublicEntity
     {
         $period = $input[self::PERIOD];
 
-        $anchoredPeriods = array_keys(Steps::ANCHORED_STEPS);
+        $anchoredPeriods = Period::ANCHORED_PERIODS;
 
         if ((in_array($period, $anchoredPeriods, true) === true) and
             isset($input[self::ANCHOR]) === false)
