@@ -218,6 +218,78 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInvoicesOfCapturedPaymentId()
+    {
+        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $invoice = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+
+        $this->fixtures->create('item');
+
+        $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $order = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'] = ['payment_id' => $payment['id']];
+
+        $this->ba->privateAuth();
+        $response = $this->startTest($testData);
+
+        $this->assertEquals(1, count($response['items']));
+        $this->assertEquals($payment['id'], $response['items'][0]['payment_id']);
+    }
+
+    public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()
+    {
+        $order1 = $this->fixtures->create('order', ['id' => '100000000order']);
+        $order2 = $this->fixtures->create('order', ['id' => '10000000order2']);
+
+        $invoice1 = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+        $invoice2 = $this->fixtures->create('invoice', ['id' => '100000invoice2', 'order_id' => '10000000order2']);
+
+        $payment1 = $this->getDefaultPaymentArray();
+        $payment2 = $this->getDefaultPaymentArray();
+
+        $payment1['order_id'] = $order1->getPublicId();
+        $payment2['order_id'] = $order2->getPublicId();
+
+        $payment1['amount'] = $order1->getAmount();
+        $payment2['amount'] = $order2->getAmount();
+
+        $payment1 = $this->doAuthAndCapturePayment($payment1);
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'] = ['payment_id' => $payment1['id']];
+
+        $this->ba->privateAuth();
+        $response = $this->startTest($testData);
+
+        $this->assertEquals(1, count($response['items']));
+        $this->assertEquals($payment1['id'], $response['items'][0]['payment_id']);
+        $this->assertEquals($invoice1->getPublicId(), $response['items'][0]['id']);
+
+        $testData['request']['content'] = ['payment_id' => $payment2['id']];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals(1, count($response['items']));
+        $this->assertEquals($payment2['id'], $response['items'][0]['payment_id']);
+        $this->assertEquals($invoice2->getPublicId(), $response['items'][0]['id']);
+    }
+
     public function testGetInvoiceStatus()
     {
         $this->ba->publicAuth();
