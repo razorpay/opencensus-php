@@ -13,7 +13,6 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    // GET /customer/:id/wallet/balance
     public function getBalance(string $id)
     {
         $wallet = $this->core->fetchByCustomerId($id);
