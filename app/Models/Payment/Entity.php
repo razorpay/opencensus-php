@@ -1064,6 +1064,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
+    }
+
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
@@ -1205,11 +1210,17 @@ class Entity extends Base\PublicEntity
 
         $data['card_type'] = null;
         $data['card_network'] = null;
+        $data['invoice_id'] = null;
 
         if ($this->isMethodCardOrEmi())
         {
             $data['card_type'] = $this->card->getType();
             $data['card_network'] = $this->card->getNetwork();
+        }
+
+        if ($this->getInvoiceId() !== null)
+        {
+            $data['invoice_id'] = $this->getInvoiceId();
         }
 
         return $data;
@@ -1251,7 +1262,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
-    
+
     public function invoice()
     {
         return $this->belongsTo('RZP\Models\Invoice\Entity');
