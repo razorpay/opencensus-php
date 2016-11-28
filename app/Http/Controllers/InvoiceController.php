@@ -52,18 +52,11 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
-    public function issueInvoice($id)
-    {
-        $invoice = $this->service->issue($id);
-
-        return ApiResponse::json($invoice);
-    }
-
     public function deleteInvoice($id)
     {
-        $this->service->delete($id);
+        $response = $this->service->delete($id);
 
-        return ApiResponse::json([]);
+        return ApiResponse::json($response);
     }
 
     // ------------------------------------------------------------

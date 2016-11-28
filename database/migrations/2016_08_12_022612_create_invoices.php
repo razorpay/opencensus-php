@@ -61,7 +61,8 @@ class CreateInvoices extends Migration
             $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
-            $table->bigInteger(Entity::AMOUNT);
+            $table->bigInteger(Entity::AMOUNT)
+                  ->nullable();
 
             $table->string(Entity::CURRENCY, 3);
 

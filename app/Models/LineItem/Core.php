@@ -92,7 +92,13 @@ class Core extends Base\Core
 
             if ($item->isActive() === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
+                    null,
+                    [
+                        'item_id' => $item->getId(),
+                    ]
+                );
             }
 
             $this->throwIfCurrencyNotSame($item->getCurrency(), $invoice);

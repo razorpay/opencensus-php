@@ -54,8 +54,8 @@ class ItemController extends Controller
 
     public function deleteItem($id)
     {
-        $this->service->delete($id);
+        $response = $this->service->delete($id);
 
-        return ApiResponse::json([]);
+        return ApiResponse::json($response);
     }
 }

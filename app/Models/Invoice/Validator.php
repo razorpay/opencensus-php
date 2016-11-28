@@ -36,6 +36,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules  = [
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
@@ -46,6 +48,17 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        // In edit requests: You can only make an invoice from draft -> issued
+        Entity::DRAFT               => 'sometimes|in:0',
+    ];
+
+    protected static $editIssuedRules  = [
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
     ];
 
     public function validateSource($attribute, $value)
@@ -117,6 +130,48 @@ class Validator extends Base\Validator
                 'SMS can not be sent since contact number has not been provided'
             );
         }
+    }
+
+    public function validateOperation(string $status, array $input)
+    {
+        switch ($status) {
+
+            case Status::DRAFT:
+                $this->validateInput('edit', $input);
+                break;
+
+            case Status::ISSUED:
+                $this->validateInput('edit_issued', $input);
+                break;
+
+            default:
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
+                    null,
+                    [
+                        'invoice_id' => $invoice->getId(),
+                        'status'     => $status
+                    ]
+                );
+                break;
+        }
+    }
+
+    public function validateInvoiceIssue(Entity $invoice)
+    {
+        if ($invoice->customer and
+            $invoice->lineItems()->count())
+        {
+            return;
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
+            null,
+            [
+                'invoice_id' => $invoice->getId(),
+            ]
+        );
     }
 
     // protected static $createValidators = [

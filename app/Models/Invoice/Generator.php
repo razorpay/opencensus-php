@@ -76,7 +76,11 @@ class Generator extends Base\Core
             $this->repo->transaction(
                 function() use ($input)
                 {
-                    $this->ensureDependentEntitiesCreated($input);
+                    $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+
+                    $this->associateCustomerWithInvoice($input);
+
+                    $this->associateOrderWithInvoice();
 
                     // Set any other attributes, if required
                     $this->setShortUrl();
@@ -107,19 +111,13 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    /**
-     * Creates order for invoice and marks it issued
-     *
-     * @return Entity
-     */
-    public function issue()
+    public function update(array $input)
     {
-        $order = $this->createOrderForInvoice();
-        $this->invoice->order()->associate($order);
+        $this->associateCustomerWithInvoice($input);
 
-        $this->invoice->setStatus(Status::ISSUED);
+        $this->associateOrderWithInvoice($input);
 
-        return $this->invoice;
+        $this->setShortUrl();
     }
 
     protected function setShortUrl()
@@ -175,25 +173,10 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function ensureDependentEntitiesCreated(array $input)
+    protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $input)
     {
-        if (isset($input[Entity::LINE_ITEMS]))
-        {
-            $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input[Entity::LINE_ITEMS]);
-        }
-
-        if ($this->invoice->isDraft() === false)
-        {
-            $order = $this->createOrderForInvoice();
-            $this->invoice->order()->associate($order);
-        }
-
-        $this->ensureCustomerAssociation($input);
-    }
-
-    protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $lineItemsDetails)
-    {
-        $totalAmount = 0;
+        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+        $totalAmount      = 0;
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
@@ -207,8 +190,16 @@ class Generator extends Base\Core
         $this->invoice->setAmount($totalAmount);
     }
 
-    protected function createOrderForInvoice()
+    protected function associateOrderWithInvoice()
     {
+        if ($this->invoice->isDraft())
+        {
+            return;
+        }
+
+        $this->invoice->getValidator()
+                      ->validateInvoiceIssue($this->invoice);
+
         $orderAmount = $this->invoice->getAmount();
 
         $orderCurrency = self::ORDER_CURRENCY;
@@ -225,10 +216,10 @@ class Generator extends Base\Core
 
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
-        return $order;
+        $this->invoice->order()->associate($order);
     }
 
-    public function ensureCustomerAssociation(array $input)
+    public function associateCustomerWithInvoice(array $input)
     {
         if ((isset($input[Entity::CUSTOMER_ID])) and
             (isset($input[Entity::CUSTOMER])))
@@ -276,7 +267,7 @@ class Generator extends Base\Core
         }
         else
         {
-            if ($this->invoice->isDraft() === false)
+            if (($this->invoice->isDraft() === false) and empty($this->invoice->customer))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,

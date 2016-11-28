@@ -44,14 +44,15 @@ class Core extends Base\Core
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
-        $this->checkIfInDraftStatus($invoice);
+        $invoice->getValidator()
+                ->validateOperation($invoice->getStatus(), $input);
 
         $this->repo->transaction(
             function() use ($invoice, $merchant, $input)
             {
                 $invoice->edit($input);
 
-                (new Generator($merchant, $invoice))->ensureCustomerAssociation($input);
+                (new Generator($merchant, $invoice))->update($input);
 
                 $this->repo->saveOrFail($invoice);
             }
@@ -60,24 +61,14 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function issue(Entity $invoice, Merchant\Entity $merchant)
-    {
-        $this->checkIfInvoiceCanBeIssued($invoice);
-
-        $invoice = (new Generator($merchant, $invoice))->issue();
-
-        $this->repo->saveOrFail($invoice);
-
-        return $invoice;
-    }
-
     public function delete(Entity $invoice)
     {
-        $this->checkIfInDraftStatus($invoice);
+        $invoice->getValidator()
+                ->validateOperation($invoice->getStatus());
 
         $this->repo->invoice->deleteOrFail($invoice);
 
-        return true;
+        return [];
     }
 
     public function addLineItem(
@@ -85,7 +76,8 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $this->checkIfInDraftStatus($invoice);
+        $invoice->getValidator()
+                ->validateOperation($invoice->getStatus());
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
@@ -106,7 +98,8 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $this->checkIfInDraftStatus($invoice);
+        $invoice->getValidator()
+                ->validateOperation($invoice->getStatus());
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -125,7 +118,8 @@ class Core extends Base\Core
         Entity $invoice,
         LineItem\Entity $lineItem)
     {
-        $this->checkIfInDraftStatus($invoice);
+        $invoice->getValidator()
+                ->validateOperation($invoice->getStatus());
 
         $this->repo->transaction(
             function() use ($lineItem, $invoice)
@@ -223,37 +217,6 @@ class Core extends Base\Core
     }
 
     // -------------------- Protected methods --------------------
-
-    protected function checkIfInDraftStatus(Entity $invoice)
-    {
-        $status = $invoice->getStatus();
-
-        if ($status !== Status::DRAFT)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_EDIT_NOT_ALLOWED,
-                null,
-                [
-                    'invoice_id' => $invoice->getId(),
-                    'status' => $status
-                ]);
-        }
-    }
-
-    protected function checkIfInvoiceCanBeIssued(Entity $invoice)
-    {
-        // Ensure:
-        // - In draft status
-        // - Customer associated
-        // - Line items exists
-
-        $this->checkIfInDraftStatus($invoice);
-
-        if (empty($invoice->customer) or $invoice->lineItems()->count() === 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED);
-        }
-    }
 
     protected function recomputeInvoiceAmount(Entity $invoice)
     {

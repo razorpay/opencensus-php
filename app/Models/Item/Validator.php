@@ -24,26 +24,46 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
 
+    // Fields which are always editable, irrespective of other custom validations
+    protected static $fieldsAlwaysEditable = [
+        Entity::ACTIVE,
+    ];
+
     /**
      * Allows edits if:
-     * - Only attempting to change ACTIVE attribute
+     * - Editing fields which are editable always
      * - Editing fields when there is no invoice already generated using this item
-     *
-     * @param Entity $item
-     * @param array  $input
      *
      * @throws Exception\BadRequestException
      */
-    public function validateEditAllowed(Entity $item, array $input = [])
+    public function validateEditOperation(Entity $item, array $input = [])
     {
-        if (isset($input[Entity::ACTIVE]) and count($input) === 1)
-        {
-            return;
-        }
+        $inputKeys = array_keys($input);
 
-        if ($item->lineItems()->count() > 0)
+        if (array_diff($inputKeys, static::$fieldsAlwaysEditable)
+            and $item->lineItems()->count() > 0)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED);
+            $this->raiseOperationNotAllowed($item);
         }
     }
+
+    public function validateDeleteOperation(Entity $item)
+    {
+        if ($item->lineItems()->count() > 0)
+        {
+            $this->raiseOperationNotAllowed($item);
+        }
+    }
+
+    protected function raiseOperationNotAllowed(Entity $item)
+    {
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
+            null,
+            [
+                'item_id' => $item->id,
+            ]
+        );
+    }
+
 }

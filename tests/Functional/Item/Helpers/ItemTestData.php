@@ -118,7 +118,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
         ],
     ],
 
@@ -148,7 +148,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
         ],
     ],
 ];

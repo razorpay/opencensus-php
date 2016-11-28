@@ -28,7 +28,7 @@ class Core extends Base\Core
 
     public function update(Entity $item, array $input)
     {
-        $item->getValidator()->validateEditAllowed($item, $input);
+        $item->getValidator()->validateEditOperation($item, $input);
 
         $item->edit($input);
 
@@ -39,10 +39,10 @@ class Core extends Base\Core
 
     public function delete(Entity $item)
     {
-        $item->getValidator()->validateEditAllowed($item);
+        $item->getValidator()->validateDeleteOperation($item);
 
         $this->repo->item->deleteOrFail($item);
 
-        return true;
+        return [];
     }
 }

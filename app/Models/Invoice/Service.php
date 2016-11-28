@@ -47,13 +47,6 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function issue(string $id)
-    {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
-
-        return $this->core->issue($invoice, $this->merchant)->toArrayPublic();
-    }
-
     public function delete(string $id)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
