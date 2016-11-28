@@ -53,13 +53,7 @@ app.controller('TeamManagementCtrl', [
           'operations',
           'finance',
           'support',
-          'admin'
-        ]);
-      }
-
-      // If merchant has invoice support, grant another role
-      if (data.tags.indexOf('Invoice') > -1) {
-        $scope.roleOptions = $scope.roleOptions.concat([
+          'admin',
           'sellerapp'
         ]);
       }
