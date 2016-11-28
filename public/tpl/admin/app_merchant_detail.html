@@ -196,6 +196,30 @@
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </div>
+<!--         <div href class="list-group-item">
+=======
+        </a> -->
+
+        <!-- Amount -->
+        <div href class="list-group-item" ng-show="merchant.credits.test != 0">
+          <span class="pull-right">{{merchant.credits.test/100 | rupee }}</span>
+          Amount Credits (Test)
+        </div>
+        <div href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.credits.live != 0">
+          <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
+          Amount Credits (Live)
+        </div>
+
+        <!-- Fee -->
+        <div href class="list-group-item" ng-show="merchant.fee_credits.test != 0">
+          <span class="pull-right">{{merchant.fee_credits.test/100 | rupee }}</span>
+          Fee Credits (Test)
+        </div>
+        <div href class="list-group-item" ng-show="merchant.details.activated == 1 && merchant.fee_credits.live != 0">
+          <span class="pull-right">{{merchant.fee_credits.live/100 | rupee }}</span>
+          Fee Credits (Live)
+        </div>
+
         <div href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name

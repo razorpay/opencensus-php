@@ -1,9 +1,26 @@
 app.controller('ProfileCtrl', [
   '$scope',
   '$http',
+
   function ($scope, $http) {
 
+    var getCreditsData = function() {
+
+      $scope.creditsData = '';
+      var url = '/' + $scope.mode + '/credits';
+      var request = $http.get(url);
+
+      request.success(function (result) {
+        if (result.success) {
+          $scope.creditsData = result.data;
+        }
+      });
+    };
+
+    getCreditsData();
+
     var fetchBalance = function() {
+
       var request = $http.get('/' + $scope.mode + '/balance');
       request.success(function (result) {
         if(result.success) {
