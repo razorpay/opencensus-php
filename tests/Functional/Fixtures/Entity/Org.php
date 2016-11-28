@@ -4,6 +4,12 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class Org extends Base
 {
+    const HDFC_ORG     = 'HDFCbankOrgnId';
+    const RZP_ORG      = 'RazorpayOrgnId';
+    const DEFAULT_GRP  = '1RazorpayGrpId';
+    const ADMIN_ROLE   = 'RzpAdminRoleId';
+    const MANAGER_ROLE = 'RzpMngerRoleId';
+
     public function setUp()
     {
         $this->fixtures->create('merchant:razorpay_organisation');
@@ -13,7 +19,7 @@ class Org extends Base
     {
         // Default organisation to be used for tests
         $this->fixtures->create('org', [
-            'id'            => 'HDFCbankOrgnId',
+            'id'            => self::HDFC_ORG,
             'hostname'      => 'hdfcbank.com',
             'email'         => 'test@hdfcbank.com',
             'email_domains' => 'hdfcbank.com'
@@ -23,23 +29,23 @@ class Org extends Base
     public function createRazorpayOrganisation()
     {
         // Default organisation to be used for tests
-        $org = $this->fixtures->create('org', ['id' => 'RazorpayOrgnId']);
+        $org = $this->fixtures->create('org', ['id' => self::RZP_ORG]);
 
         $this->fixtures->create('group', [
-            'id'     => '1RazorpayGrpId',
+            'id'     => self::DEFAULT_GRP,
             'name'   => 'razorpay_group',
-            'org_id' => 'RazorpayOrgnId'
+            'org_id' => self::RZP_ORG,
         ]);
 
         $this->fixtures->create('roles', [
-            'id'     => 'RzpAdminRoleId',
-            'org_id' => 'RazorpayOrgnId',
+            'id'     => self::ADMIN_ROLE,
+            'org_id' => self::RZP_ORG,
             'name'   => 'admin'
         ]);
 
         $this->fixtures->create('roles', [
-            'id'     => 'RzpMngerRoleId',
-            'org_id' => 'RazorpayOrgnId'
+            'id'     => self::MANAGER_ROLE,
+            'org_id' => self::RZP_ORG,
         ]);
 
         return $org;
