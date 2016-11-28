@@ -82,7 +82,7 @@ class CreateAdmins extends Migration
                   ->nullable();
 
             // When hit make Admin::DISABLED=1
-            $table->integer(Admin::EXPIRY_AT)
+            $table->integer(Admin::EXPIRED_AT)
                   ->nullable();
 
             $table->integer(Admin::CREATED_AT);

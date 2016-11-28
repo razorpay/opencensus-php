@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const OLD_PASSWORDS         = 'old_passwords';
     const PASSWORD_EXPIRY       = 'password_expiry';
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
+    const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
 
     protected static $sign = 'admin';
