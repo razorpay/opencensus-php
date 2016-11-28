@@ -111,6 +111,44 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    /**
+     * Invoice created without customer details, once paid should contain those
+     * information in invoices entity and same should be sent as hook payload.
+     *
+     */
+    public function testInvoiceWithoutCustomerDetailsPaidWebhookEventData()
+    {
+        $this->createWebhook(['events' => ['invoice.paid' => '1']]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
+        $this->fixtures->create('invoice', [
+                'customer_id'      => null,
+                'customer_name'    => null,
+                'customer_email'   => null,
+                'customer_contact' => null,
+                'customer_address' => null,
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice()
     {
         $this->createWebhook(['events' => ['order.paid' => '1', 'invoice.paid' => '1']]);
