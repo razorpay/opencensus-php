@@ -252,7 +252,7 @@ class Generator extends Base\Core
         }
         else if (isset($input[Entity::CUSTOMER]))
         {
-            $customerDetails = $input[Entity::CUSTOMER_DETAILS];
+            $customerDetails = $input[Entity::CUSTOMER];
             $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
 
             $this->trace->info(
