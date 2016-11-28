@@ -114,23 +114,30 @@ class Core extends Base\Core
     }
 
     /**
-     * Pulls customer details from payment entity if not
-     * already exists in invoice since creation time.
+     * Pulls customer details from payment entity if
+     * does not exist already or is not created during
+     * invoice creation.
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return Payment\Entity
      */
-    public function pullCustomerDetailsFromPaymentIfNotExists(Payment\Entity $payment)
+    public function setCustomerDetailsFromPaymentIfAbsent(Payment\Entity $payment)
     {
         $invoice = $payment->order->invoice;
 
-        // Check if customer detail already exists in invoice.
-        // If yes then simply return.
+        // If invoice is already associated with a customer,
+        // don't do anything.
         if ($invoice->customer)
         {
-            return $payment;
+            return;
         }
+        
+        $paymentCustomer = $payment->customer();
 
         // If payment has a customer associated, then associate that to invoice.
         // Otherwise simply copy the email and contact details from payment.
-        if ($payment->customer)
+        if ($paymentCustomer !== null)
         {
             $invoice->customer()->associate($payment->customer);
             $invoice->setCustomerDetails($payment->customer);

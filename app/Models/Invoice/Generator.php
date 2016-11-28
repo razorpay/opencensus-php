@@ -75,9 +75,6 @@ class Generator extends Base\Core
         }
         catch (\Exception $e)
         {
-            // TODO: Have better alternatives, need to discuss and implement that.
-            //       For now, this is the quickest
-
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
             {

@@ -116,7 +116,7 @@ class ApiEventSubscriber
     protected function onInvoicePaid($payment)
     {
         $invCore = new Invoice\Core;
-        $invCore->pullCustomerDetailsFromPaymentIfNotExists($payment);
+        $invCore->setCustomerDetailsFromPaymentIfAbsent($payment);
 
         $payload = $this->getInvoicePayload($payment);
 
