@@ -17,7 +17,7 @@ class Core extends Base\Core
 
     public function fetch(string $orgId)
     {
-        $orgId = Entity::verifyIdAndStripSign($id);
+        $orgId = Entity::verifyIdAndStripSign($orgId);
 
         return $this->repo->org->findOrFailPublic($orgId);
     }
