@@ -136,7 +136,6 @@ class Core extends Base\Core
             return;
         }
 
-
         // If payment has a customer associated, then associate that to invoice.
         // Otherwise simply copy the email and contact details from payment.
 
