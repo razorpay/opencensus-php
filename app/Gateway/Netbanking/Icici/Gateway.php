@@ -110,22 +110,40 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $content = $this->getPaymentVerifyData($input);
-        // Not sure this works the way it should..... Gotta dump the payment variables and check if this works.
-        $content[ResponseFields::BANK_PAYMENT_ID] = $payment['bank_payment_id'];
+
+        $payment_date = $this->getPaymentDate($payment);
+
+        // Getting payment date in the specified format
+        $content[ResponseFields::PAYMENT_DATE] = $payment_date;
 
         $request = $this->getResponseArray($content);
 
-        $response = $this->sendGatewayRequest($request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $request);
+
+        $response = parent::sendGatewayRequest($request);
+
+        sd($response->body);
 
         $verify->verifyResponse = $response;
+        // Why is this body empty?? It definitely shouldn't be empty
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
 
-        // Not sure about this. I have to test this out.
+        // Not sure how the response object is going to be passed in here
         return $response;
     }
 
     public function verifyPayment($verify)
     {
+        $verify_body = explode(' ', $verify->verifyResponseBody);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $verify_body);
+
+        // sd($verify->verifyResponseBody);
     }
 
     public function getPaymentRequestData($input)
@@ -149,11 +167,11 @@ class Gateway extends Base\Gateway
         $pid = $this->config['pid'];
 
         $data = array(
-            RequestFields::MODE_OF_OPERATION        => ModeFields::VERIFY . '&',
-            RequestFields::PAYEE_ID                 => $pid . '&',
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'] . '&', // payment_id
-            RequestFields::ITEM_CODE                => $input['payment']['id'] . '&',
-            RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 . '&',
+            RequestFields::MODE_OF_OPERATION        => ModeFields::VERIFY,
+            RequestFields::PAYEE_ID                 => $pid,
+            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
+            RequestFields::ITEM_CODE                => $input['payment']['id'],
+            RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 ,
             RequestFields::CURRENCY_CODE            => 'INR',
         );
 
@@ -218,7 +236,7 @@ class Gateway extends Base\Gateway
     {
         return array(
             'url' => Url::LIVE_DOMAIN,
-            'method' => 'get',
+            'method' => 'post',
             'content' => $content
         );
     }
@@ -228,6 +246,13 @@ class Gateway extends Base\Gateway
         return array(
             RequestFields::AMOUNT => $content[RequestFields::AMOUNT]
         );
+    }
+
+    public function getPaymentDate($payment)
+    {
+        $timestamp = $payment['original']['created_at'];
+
+        return date('Y-m-d', $timestamp);
     }
 
 

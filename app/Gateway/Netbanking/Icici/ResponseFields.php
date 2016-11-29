@@ -6,4 +6,5 @@ class ResponseFields
 {
     const STATUS            = 'PAID';
     const BANK_PAYMENT_ID   = 'BID';
+    const PAYMENT_DATE      = 'Pmt_Date';
 }

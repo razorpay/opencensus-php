@@ -45,7 +45,7 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-
+        sd($input);
     }
 
     public function createPostData($input)
