@@ -99,4 +99,35 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
     }
+
+    public function testGetMultipleRoles()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['count'], 2);
+    }
+
+    public function testDuplicateRole()
+    {
+        $name = 'asd';
+        $role = $this->fixtures->create(
+            'role',
+            ['org_id' => $this->org->getId(), 'name' => $name]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
+
+        return $this->startTest();
+    }
 }
