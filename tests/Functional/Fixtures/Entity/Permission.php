@@ -3,8 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Admin\Permission;
-use RZP\Models\Admin\Permission\Name as Permissions;
+use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 
 class Permission extends Base
 {
@@ -13,12 +12,12 @@ class Permission extends Base
         $records = self::getPermissionRecordsFromFile(storage_path().'/permissions/permissions.csv');
 
         $columns = [
-            Permission\Entity::ID,
-            Permission\Entity::NAME,
-            Permission\Entity::CATEGORY,
-            Permission\Entity::DESCRIPTION,
-            Permission\Entity::CREATED_AT,
-            Permission\Entity::UPDATED_AT,
+            PermissionEntity::ID,
+            PermissionEntity::NAME,
+            PermissionEntity::CATEGORY,
+            PermissionEntity::DESCRIPTION,
+            PermissionEntity::CREATED_AT,
+            PermissionEntity::UPDATED_AT,
         ];
 
         $assocRecords = array();
@@ -53,8 +52,8 @@ class Permission extends Base
 
         while(($permissionRecord = fgetcsv($fileHandle)) !== false)
         {
-            $permissionRecord[Permission\Entity::CREATED_AT] = $time;
-            $permissionRecord[Permission\Entity::UPDATED_AT] = $time;
+            $permissionRecord[PermissionEntity::CREATED_AT] = $time;
+            $permissionRecord[PermissionEntity::UPDATED_AT] = $time;
             array_push($records, $permissionRecord);
         }
 

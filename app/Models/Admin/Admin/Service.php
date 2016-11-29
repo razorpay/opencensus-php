@@ -110,7 +110,8 @@ class Service extends Base\Service
 
     public function sendAdminCreateEmail($data, $input)
     {
-        $org = (new Org\Service)->getOrg($data['org_id']);
+        $org = (new Org\Service)->fetch($data['org_id']);
+
         $from       = 'support@razorpay.com';
         $replyTo    = 'support@razorpay.com';
         $fromHeader = 'Team Razorpay';
@@ -118,17 +119,18 @@ class Service extends Base\Service
         $subject    = 'Your admin account details for '. $org['display_name'].' dashboard';
 
         $view = [
-                    'html'=> 'emails.admin.user',
-                    'text'=> 'emails.admin.user_text'
-                ];
+            'html' => 'emails.admin.user',
+            'text' => 'emails.admin.user_text'
+        ];
 
-        $template = ['user' => [
-                            'email' => $data['email'],
-                            'password' => $input['password'],
-                            'org' => $org['display_name'],
-                            'url' => $_ENV['APP_DASHBOARD_URL'],
-                        ]
-                    ];
+        $template = [
+            'user' => [
+                'email' => $data['email'],
+                'password' => $input['password'],
+                'org' => $org['display_name'],
+                'url' => $_ENV['APP_DASHBOARD_URL'],
+            ]
+        ];
 
         Mail::queue(
             $view,

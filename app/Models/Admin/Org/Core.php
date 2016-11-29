@@ -15,11 +15,11 @@ class Core extends Base\Core
         return $org;
     }
 
-    public function fetch(string $id)
+    public function fetch(string $orgId)
     {
         $orgId = Entity::verifyIdAndStripSign($orgId);
 
-        return $this->repo->org->findOrFailPublic($id);
+        return $this->repo->org->findOrFailPublic($orgId);
     }
 
     public function edit(string $orgId, array $input)
