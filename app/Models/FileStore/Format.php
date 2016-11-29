@@ -52,7 +52,7 @@ class Format
         // TODO : Fix content checking
         if (in_array($extension, self::SUPPORTED_EXTENSION_TYPES) === false)
         {
-            throw new Exception\LogicException('Invalid Extension');
+            throw new Exception\BadRequestValidationFailureException('Invalid Extension');
         }
     }
 

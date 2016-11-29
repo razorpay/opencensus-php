@@ -117,7 +117,7 @@ class Accessor extends Base\Core
         return $filePath;
     }
 
-    protected function createFullFilePath($location)
+    protected function createFullFilePath(string $location)
     {
         return $this->getStorageDir() . $location;
     }
@@ -135,7 +135,7 @@ class Accessor extends Base\Core
      * @return void
      * @throws Exception\LogicException
      */
-    protected function validateFileCount($data)
+    protected function validateFileCount(Base\PublicCollection $data)
     {
         // TODO : Make it more meaningful
         if ($data->count() === 0)
@@ -156,7 +156,10 @@ class Accessor extends Base\Core
      */
     protected function updateMerchantId()
     {
-        $merchant = $this->app['basicauth']->getMerchant();
+        if (isset($this->app['basicauth']) === true)
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+        }
 
         // Update Merchant ID, if request is done by non-admin
         if ($merchant !== null)

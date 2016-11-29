@@ -10,8 +10,6 @@ use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundFile extends Base\Core
 {
-    use FileHandlerTrait;
-
     public function __construct()
     {
         parent::__construct();
