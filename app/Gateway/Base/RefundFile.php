@@ -34,9 +34,11 @@ class RefundFile extends Base\Core
         $creator = new FileStore\Creator;
 
         // TODO : move this to Mock class
-        $lines = substr_count($content, "\n");
-        if ($this->mode === Mode::TEST)
+
+        if (($this->mode === Mode::TEST) and (gettype($content) === 'string'))
         {
+            $lines = substr_count($content, "\n");
+
             switch($lines)
             {
                 case 3:
