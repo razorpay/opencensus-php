@@ -11,47 +11,13 @@ use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundFile extends Base\Core
 {
+    use FileHandlerTrait;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mail = Mail::getFacadeRoot();
-    }
-
-    protected function getFileToWriteName($ext = '.txt')
-    {
-        return $this->getFileToWriteNameWithoutExt() . $ext;
-    }
-
-    protected function getFileToWriteNameWithoutExt()
-    {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $mode = $this->mode;
-
-        return static::$fileToWriteName . '_' . $mode . '_' . $time;
-    }
-
-    protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
-    {
-        $txt = '';
-
-        $count = count($data);
-
-        foreach ($data as $row)
-        {
-            $txt .= implode($glue, array_values($row)) ;
-
-            $count--;
-
-           if (($ignoreLastNewline === false) or
-               (($ignoreLastNewline === true) and ($count > 0)))
-           {
-                $txt .= "\r\n";
-           }
-        }
-
-        return $txt;
     }
 
     public function generate($input)
