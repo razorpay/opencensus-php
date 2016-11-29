@@ -577,6 +577,42 @@ return [
         ],
     ],
 
+    'testGetInvoiceByReceipt' => [
+        'request' => [
+            'url' => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'receipt' => '00000000000002'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'               => 'inv_1000002invoice',
+                        'receipt'          => '00000000000002',
+                        'customer_id'      => 'cust_100000customer',
+                        'customer_details' => [
+                            'customer_email'   => 'test@razorpay.com',
+                            'customer_contact' => '1234567890',
+                            'customer_name'    => 'test',
+                            'customer_address' => null,
+                        ],
+                        'line_items'       => [],
+                        'customer_id'      => 'cust_100000customer',
+                        'short_url'        => 'http://bitly.dev/2eZ11Vn',
+                        'notes'            => [],
+                        'status'           => 'issued',
+                        'sms_status'       => 'sent',
+                        'email_status'     => 'sent',
+                        'view_less'        => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetInvoiceStatusAfterPayment' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/status',
