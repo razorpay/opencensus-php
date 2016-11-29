@@ -21,6 +21,23 @@ class Repository extends Base\Repository
         Entity::NAME    => 'sometimes|string',
     ];
 
+    public function findByPublicIdAndOrgIdWithRelations(
+        string $orgId,
+        string $groupId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        Entity::verifyIdAndStripSign($groupId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->with('admins')
+                    ->with('merchants')
+                    ->with('subGroups')
+                    ->with('parents')
+                    ->with('roles')
+                    ->findOrFailPublic($groupId);
+    }
 
     public function retrieveByOrgIdAndIdOrFail(
         string $orgId,
