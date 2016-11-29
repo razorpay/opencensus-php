@@ -20,6 +20,58 @@ class GroupTest extends TestCase
         parent::setUp();
 
         $this->org = $this->fixtures->create('org');
+
+        $this->ba->adminAuth('test');
+    }
+
+    public function testCreateGroup()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        return $this->startTest();
+    }
+
+    public function testDeleteGroup()
+    {
+        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditGroup()
+    {
+        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleGroups()
+    {
+        $groups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
     }
 
     public function testAdminGroupPolymorphicRelationship()
