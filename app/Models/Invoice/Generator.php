@@ -32,6 +32,13 @@ class Generator extends Base\Core
     protected $merchant;
 
     /**
+     * @var Customer\Entity
+     */
+    protected $customer;
+
+    protected $lineItems = [];
+
+    /**
      * @var LineItem\Core
      */
     protected $lineItemCore;
@@ -44,11 +51,12 @@ class Generator extends Base\Core
 
     public function __construct(
         Merchant\Entity $merchant,
-        Entity          $invoice = null)
+        Entity $invoice = null)
     {
         parent::__construct();
 
         $this->merchant = $merchant;
+
         $this->invoice  = $invoice;
 
         $this->bitly = $this->app['bitly'];
@@ -58,34 +66,14 @@ class Generator extends Base\Core
 
     public function generate(array $input)
     {
-        $this->invoice = new Entity;
-
-        $this->invoice->build($input);
-        $this->invoice->merchant()->associate($this->merchant);
-
-        // This is being done because dashboard can create an invoice for the merchant even
-        // if the merchant has not generated any keys at all.
-        $this->invoice->getValidator()->validateMerchantHasKeys($this->merchant);
-
-        // This is being done so that we can do associations without saving the invoice.
-        // Also, to generate a shortUrl, we need the invoice ID.
-        $this->invoice->generateId();
+        $invoice = $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($input)
+                function() use ($invoice, $input)
                 {
-                    $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
-
-                    $this->associateCustomerWithInvoice($input);
-
-                    $this->associateOrderWithInvoice();
-
-                    // Set any other attributes, if required
-                    $this->setShortUrl();
-
-                    $this->repo->saveOrFail($this->invoice);
+                    $this->buildAndSaveInvoice($input);
                 }
             );
         }
@@ -98,7 +86,7 @@ class Generator extends Base\Core
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
                     null,
                     [
-                        'invoice_id'    => $this->invoice->getPublicId(),
+                        'invoice_id'    => $this->invoice->getId(),
                         'input'         => $input,
                     ]);
             }
@@ -111,23 +99,50 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    public function update(array $input)
+    protected function generateInvoiceSkeleton(array $input)
     {
-        $this->associateCustomerWithInvoice($input);
+        $invoice = new Entity;
 
-        $this->associateOrderWithInvoice($input);
+        $invoice->build($input);
+        $invoice->merchant()->associate($this->merchant);
+
+        //
+        // This is being done because dashboard can create an invoice
+        // for the merchant even if the merchant has not generated
+        // any keys at all.
+        //
+
+        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+
+        //
+        // This is being done so that we can do associations
+        // without saving the invoice. Also, to generate a shortUrl,
+        // we need the invoice ID.
+        //
+
+        $invoice->generateId();
+
+        $this->invoice = $invoice;
+
+        return $invoice;
+    }
+
+    protected function buildAndSaveInvoice(array $input)
+    {
+        $this->customer = $this->associateCustomerWithInvoice($input);
+
+        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+
+        $this->createOrderForInvoice();
 
         $this->setShortUrl();
+
+        $this->repo->saveOrFail($this->invoice);
     }
 
     protected function setShortUrl()
     {
-        if ($this->invoice->isDraft())
-        {
-            return;
-        }
-
-        $longUrl = $this->getInvoiceLink($this->invoice->getId(), $this->mode);
+        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
 
@@ -143,12 +158,14 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    public static function getInvoiceLink($invoiceId, $mode)
+    public static function getInvoiceLink(string $invoiceId, string $mode)
     {
+        //
         // This is required here because this piece of code is a little prone to bugs.
         // Invoice ID may not be generated at this point due to which we will
         // get a wrong url. Bitly won't throw an exception because it still gets
         // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
+        //
         if (empty($invoiceId) === true)
         {
             throw new LogicException(
@@ -173,14 +190,34 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
+    protected function associateLineItemsToInvoice()
+    {
+        foreach ($this->lineItems as $lineItem)
+        {
+            $lineItem->entity()->associate($this->invoice);
+
+            $this->repo->saveOrFail($lineItem);
+        }
+    }
+
     protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $input)
     {
         $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+
+        if (empty($lineItemsDetails))
+        {
+            return;
+        }
+
         $totalAmount      = 0;
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
-            $lineItem = $this->lineItemCore->create($lineItemDetails, $this->merchant, $this->invoice);
+            $lineItem = $this->lineItemCore->create(
+                $lineItemDetails,
+                $this->merchant,
+                $this->invoice
+            );
 
             $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
 
@@ -190,19 +227,11 @@ class Generator extends Base\Core
         $this->invoice->setAmount($totalAmount);
     }
 
-    protected function associateOrderWithInvoice()
+    protected function createOrderForInvoice()
     {
-        if ($this->invoice->isDraft())
-        {
-            return;
-        }
-
-        $this->invoice->getValidator()
-                      ->validateInvoiceIssue($this->invoice);
-
         $orderAmount = $this->invoice->getAmount();
 
-        $orderCurrency = self::ORDER_CURRENCY;
+        $orderCurrency = $this->invoice->getCurrency();
 
         // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';
@@ -217,22 +246,33 @@ class Generator extends Base\Core
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         $this->invoice->order()->associate($order);
+
+        return $order;
     }
 
-    public function associateCustomerWithInvoice(array $input)
+    /**
+     * Invoice can be created via passing customer_id which already exists
+     * or providing customer details in 'customer' array in input POST details.
+     *
+     * This function creates customer if it doesn't exist.
+     * It associates customer with invoice.
+     *
+     * @param array $input
+     *
+     * @return null|Customer\Entity
+     */
+    protected function associateCustomerWithInvoice(array $input)
     {
-        if ((isset($input[Entity::CUSTOMER_ID])) and
-            (isset($input[Entity::CUSTOMER])))
-        {
-            // TODO: Throw exception
-        }
+        $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
 
         $customer = null;
 
-        if (isset($input[Entity::CUSTOMER_ID]))
+        if (isset($input[Entity::CUSTOMER_ID]) === true)
         {
             $customerId = $input[Entity::CUSTOMER_ID];
-            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+
+            $customer = $this->repo->customer->findByPublicIdAndMerchant(
+                                                $customerId, $this->merchant);
 
             $this->trace->info(
                 TraceCode::INVOICE_EXISTING_CUSTOMER,
@@ -241,42 +281,19 @@ class Generator extends Base\Core
                     'customer_id' => $customer->getId(),
                 ]);
         }
-        else if (isset($input[Entity::CUSTOMER]))
+        else if ($customerDetails)
         {
-            $customerDetails = $input[Entity::CUSTOMER];
-            $customer = (new Customer\Core)->createLocalCustomer($customerDetails, $this->merchant, false);
-
-            $this->trace->info(
-                TraceCode::INVOICE_NEW_CUSTOMER,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                    'customer_id' => $customer->getId(),
-                    'customer_details' => $customerDetails,
-                ]);
+            $core = new Customer\Core;
+            $customer = $core->createLocalCustomer(
+                            $customerDetails, $this->merchant, false);
         }
 
         if ($customer)
         {
             $this->invoice->customer()->associate($customer);
+            $this->invoice->setCustomerDetails($customer);
+        }
 
-            // Set other customer's attributes in invoices
-            $this->invoice->setCustomerName($customer->getName());
-            $this->invoice->setCustomerContact($customer->getContact());
-            $this->invoice->setCustomerEmail($customer->getEmail());
-            $this->invoice->setCustomerAddress($customer->getCurrentShippingAddressId());
-        }
-        else
-        {
-            if (($this->invoice->isDraft() === false) and empty($this->invoice->customer))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT,
-                    null,
-                    [
-                        // TODO: Add data
-                    ]
-                );
-            }
-        }
+        return $customer;
     }
 }

@@ -197,7 +197,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function getFormattedInvoiceData(Merchant\Entity $merchant, $invoiceId)
+    public function getFormattedInvoiceData($invoiceId, Merchant\Entity $merchant)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
 
@@ -211,9 +211,51 @@ class Core extends Base\Core
             'amount'    => $invoice->getAmount(),
         ];
 
-        $data['customer'] = $customer->toArrayPublic();
+        if ($customer)
+        {
+            $data['customer'] = $customer->toArrayPublic();
+        }
 
         return $data;
+    }
+
+    /**
+     * Pulls customer details from payment entity if
+     * does not exist already or is not created during
+     * invoice creation.
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return Payment\Entity
+     */
+    public function setCustomerDetailsFromPaymentIfAbsent(Payment\Entity $payment)
+    {
+        $invoice = $payment->order->invoice;
+
+        // If invoice is already associated with a customer,
+        // don't do anything.
+        if ($invoice->customer)
+        {
+            return;
+        }
+
+        // If payment has a customer associated, then associate that to invoice.
+        // Otherwise simply copy the email and contact details from payment.
+
+        $paymentCustomer = $payment->customer;
+
+        if ($paymentCustomer !== null)
+        {
+            $invoice->customer()->associate($paymentCustomer);
+            $invoice->setCustomerDetails($paymentCustomer);
+        }
+        else
+        {
+            $invoice->setCustomerEmail($payment->getEmail());
+            $invoice->setCustomerContact($payment->getContact());
+        }
+
+        $this->repo->saveOrFail($invoice);
     }
 
     // -------------------- Protected methods --------------------

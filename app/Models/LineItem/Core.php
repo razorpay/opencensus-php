@@ -4,8 +4,8 @@ namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Invoice;
 use RZP\Models\Item;
+use RZP\Models\Invoice;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -32,15 +32,13 @@ class Core extends Base\Core
                 'input'         => $input,
             ]);
 
-        list($input, $itemDetails) = $this->separateInput($input);
+        list($input, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
-        $item = $this->ensureItemAssociation($input, $itemDetails, $merchant, $invoice);
+        $item = $this->createItemIfNotExists($input, $itemDetails, $merchant, $invoice);
 
         $lineItem = (new Entity)->build($input);
 
-        $lineItem->entity()->associate($invoice);
-        $lineItem->item()->associate($item);
-        $lineItem->merchant()->associate($merchant);
+        $this->setLineItemAssociations($lineItem, $merchant, $invoice, $item);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -53,11 +51,11 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        list($input, $itemDetails) = $this->separateInput($input);
+        list($input, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         if (isset($input[Entity::ITEM_ID]) or $itemDetails)
         {
-            $item = $this->ensureItemAssociation($input, $itemDetails, $merchant, $invoice);
+            $item = $this->createItemIfNotExists($input, $itemDetails, $merchant, $invoice);
             $lineItem->item()->associate($item);
         }
 
@@ -77,7 +75,7 @@ class Core extends Base\Core
 
 
 
-    protected function ensureItemAssociation(
+    protected function createItemIfNotExists(
         array $input,
         array $itemDetails,
         Merchant\Entity $merchant,
@@ -121,15 +119,17 @@ class Core extends Base\Core
     }
 
     /**
-     * Request payload contains flattened linesItemDetails, i.e. It has line item attributes
-     *     (eg. quantity) and the contained item attributes (eg. name, amount etc.).
-     *     This function separates those payloads for it to be used further.
+     * Request payload contains flattened linesItemDetails,
+     * i.e. It has line item attributes (eg. quantity) and
+     * the contained item attributes (eg. name, amount etc.).
+     *
+     * This function separates those payloads for it to be used further.
      *
      * @param array $lineItemDetails
      *
      * @return array
      */
-    protected function separateInput(array $lineItemDetails)
+    protected function separateItemInputFromLineItemInput(array $lineItemDetails)
     {
         $itemDetails = [];
 
@@ -161,5 +161,15 @@ class Core extends Base\Core
                 'Currency of all items should be same as of the invoice itself'
             );
         }
+    }
+
+    protected function setLineItemAssociations(
+        Entity $lineItem, Merchant\Entity $merchant, Base\PublicEntity $entity, Item\Entity $item)
+    {
+        $lineItem->entity()->associate($entity);
+
+        $lineItem->item()->associate($item);
+
+        $lineItem->merchant()->associate($merchant);
     }
 }

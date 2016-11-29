@@ -39,6 +39,8 @@ class Entity extends Base\PublicEntity
     // Email & SMS communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
+
+    const DESCRIPTION           = 'description';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
     const SHORT_URL             = 'short_url';
@@ -97,12 +99,13 @@ class Entity extends Base\PublicEntity
         self::PAID_AT           => null,
         self::EXPIRED_AT        => null,
         self::REF_NUM           => null,
+        self::DESCRIPTION       => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::TYPE              => null,
         self::USER_ID           => null,
-        self::AMOUNT            => null,
+        self::AMOUNT            => 0,
         self::CURRENCY          => 'INR',
         self::CUSTOMER_NAME     => null,
         self::CUSTOMER_EMAIL    => null,
@@ -130,6 +133,8 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::DATE,
         self::TERMS,
+        self::AMOUNT,
+        self::DESCRIPTION,
         self::NOTES,
         self::REF_NUM,
         self::VIEW_LESS,
@@ -166,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
         self::CURRENCY,
@@ -183,8 +189,8 @@ class Entity extends Base\PublicEntity
     // Fields to be exposed to the client
     protected $public = [
         self::ID,
-        self::REF_NUM,
         self::ENTITY,
+        self::REF_NUM,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
@@ -200,6 +206,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::AMOUNT,
+        self::DESCRIPTION,
         self::NOTES,
         self::CURRENCY,
         self::SHORT_URL,
@@ -231,6 +238,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::VIEW_LESS => 'bool',
+        self::AMOUNT    => 'int',
     ];
 
     // -------------------------------------- Getters --------------------------------------
@@ -319,6 +327,19 @@ class Entity extends Base\PublicEntity
 
 
     // -------------------------------------- Setters --------------------------------------
+
+    public function setCustomerDetails(Customer\Entity $customer)
+    {
+        if (empty($customer))
+        {
+            return;
+        }
+
+        $this->setCustomerName($customer->getName());
+        $this->setCustomerContact($customer->getContact());
+        $this->setCustomerEmail($customer->getEmail());
+        $this->setCustomerAddress($customer->getCurrentShippingAddressId());
+    }
 
     public function setCustomerName($customerName)
     {
@@ -429,7 +450,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = $customerId ? Customer\Entity::getSignedId($customerId) : null;
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     protected function setPublicOrderIdAttribute(array & $array)

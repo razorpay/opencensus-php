@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Address;
+use RZP\Models\Payment;
 
 class CreateInvoices extends Migration
 {
@@ -78,6 +79,9 @@ class CreateInvoices extends Migration
             $table->string(Entity::CUSTOMER_CONTACT)
                   ->nullable();
 
+            $table->text(Entity::DESCRIPTION)
+                  ->nullable();
+
             $table->text(Entity::TERMS)
                   ->nullable();
 
@@ -134,6 +138,14 @@ class CreateInvoices extends Migration
                   ->on(Table::ADDRESS)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment\Entity::INVOICE_ID)
+                ->references(Entity::ID)
+                ->on(Table::INVOICE)
+                ->on_delete('restrict');
+        });
     }
 
     /**
@@ -164,6 +176,12 @@ class CreateInvoices extends Migration
             (
                 Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
             );
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(
+                Table::PAYMENT . '_' . Payment\Entity::INVOICE_ID . '_foreign');
         });
 
         Schema::drop(Table::INVOICE);
