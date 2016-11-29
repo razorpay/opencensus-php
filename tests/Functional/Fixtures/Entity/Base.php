@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Config;
 use Eloquent;
 use RZP\Models;
+use RZP\Constants\Entity as E;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
