@@ -1,1 +1,1 @@
-themes = {};
+window.themes = {};
