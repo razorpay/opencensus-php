@@ -24,7 +24,7 @@ class Service extends Base\Service
 
     public function getGroup(string $orgId, string $groupId)
     {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+        $group = $this->repo->group->findByPublicIdAndOrgIdWithRelations($groupId, $orgId);
 
         return $group->toArrayPublic();
     }

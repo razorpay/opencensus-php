@@ -50,7 +50,7 @@ class Service extends Base\Service
     {
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
-        $this->core()->edit($role, $input, $orgId);
+        $this->core()->edit($role, $input);
 
         return $role->toArrayPublic();
     }
