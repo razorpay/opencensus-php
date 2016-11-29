@@ -42,9 +42,7 @@ class Generator extends Base\Core
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
-    public function __construct(
-        Merchant\Entity $merchant,
-        Entity $invoice = null)
+    public function __construct(Merchant\Entity $merchant, Entity $invoice = null)
     {
         parent::__construct();
 
@@ -59,35 +57,17 @@ class Generator extends Base\Core
 
     public function generate(array $input)
     {
-        $invoice = $this->generateInvoiceSkeleton($input);
+        $this->generateInvoiceSkeleton($input);
 
-        try
+        if ((empty($input[Entity::DRAFT]) === false) and
+            ($input[Entity::DRAFT] === '1'))
         {
-            $this->repo->transaction(
-                function() use ($invoice, $input)
-                {
-                    $this->buildAndSaveInvoice($input);
-                }
-            );
+            $this->generateDraft($input);
         }
-        catch (\Exception $e)
+        else
         {
-            // Check if is Mysql duplicate on unique index error
-            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
-                    null,
-                    [
-                        'invoice_id'    => $this->invoice->getId(),
-                        'input'         => $input,
-                    ]);
-            }
-
-            throw $e;
+            $this->generateIssued($input);
         }
-
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
 
         return $this->invoice;
     }
@@ -95,6 +75,7 @@ class Generator extends Base\Core
     /**
      * Updates associations of existing invoice
      *
+     * @param array $input
      */
     public function update(array $input)
     {
@@ -129,8 +110,42 @@ class Generator extends Base\Core
         $invoice->generateId();
 
         $this->invoice = $invoice;
+    }
 
-        return $invoice;
+    protected function generateDraft(array $input)
+    {
+        // TODO: Do draft specific things here.
+    }
+
+    protected function generateIssued(array $input)
+    {
+        try
+        {
+            $this->repo->transaction(
+                function() use ($input)
+                {
+                    $this->buildAndSaveInvoice($input);
+                }
+            );
+        }
+        catch (\Exception $e)
+        {
+            // Check if is Mysql duplicate on unique index error
+            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $this->invoice->getId(),
+                        'input'         => $input,
+                    ]);
+            }
+
+            throw $e;
+        }
+
+        (new Notifier($this->invoice))->sendNotificationToCustomer();
     }
 
     protected function buildAndSaveInvoice(array $input)
@@ -148,7 +163,8 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        if ($this->invoice->isDraft()) {
+        if ($this->invoice->isDraft())
+        {
             return;
         }
 

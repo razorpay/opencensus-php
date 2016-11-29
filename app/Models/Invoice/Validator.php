@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|boolean',
     ];
 
-    protected static $editRules  = [
+    protected static $editDraftRules  = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
@@ -50,8 +50,6 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        // In edit requests: You can only make an invoice from draft -> issued
-        Entity::DRAFT               => 'sometimes|boolean|in:0',
     ];
 
     protected static $editIssuedRules  = [
@@ -62,6 +60,11 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
     ];
+    
+    // protected static $editIssuedValidators = [
+    //     'email_notify_issued',
+    //     'sms_notify_issued',
+    // ];
 
     protected static $createValidators = [
         Entity::LINE_ITEMS,
@@ -71,6 +74,10 @@ class Validator extends Base\Validator
      * Validates: - Either line_items or amount, description should exists in input
      *            - But not both
      *            - If line_items exists then count should be between 1-10
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
      */
     public function validateLineItems(array $input)
     {
@@ -177,7 +184,7 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
                     null,
                     [
-                        'invoice_id' => $invoice->getPublicId(),
+                        'invoice_id' => $invoice->getId(),
                         'status'     => $status
                     ]
                 );

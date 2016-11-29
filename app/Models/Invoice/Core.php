@@ -30,7 +30,15 @@ class Core extends Base\Core
             $input
         );
 
-        $invoice = (new Generator($merchant))->generate($input);
+        if ((empty($input[Entity::DRAFT]) === false) and
+            ($input[Entity::DRAFT] === '1'))
+        {
+            $invoice = (new Generator($merchant))->generateDraft($input);
+        }
+        else
+        {
+            $invoice = (new Generator($merchant))->generate($input);
+        }
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -40,28 +48,49 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function update(
-        Entity $invoice,
-        array $input,
-        Merchant\Entity $merchant)
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
-        $invoice->getValidator()
-                ->validateOperation($invoice->getStatus(), $input);
+        $status = $invoice->getStatus();
 
-        $this->repo->transaction(
-            function() use ($invoice, $merchant, $input)
-            {
-                $invoice->edit($input);
+        $ruleValidator = 'edit_' . $status;
 
-                $this->consumeExtraInputKeys($invoice, $input);
+        $invoice->edit($input, $ruleValidator);
 
-                (new Generator($merchant, $invoice))->update($input);
+        $updateFunction = 'update_' . studly_case($status) . 'Invoice';
 
-                $this->repo->saveOrFail($invoice);
-            }
-        );
+        $this->$updateFunction($invoice, $input);
+
+        $this->repo->saveOrFail($invoice);
+
+        // $this->repo->transaction(
+        //     function() use ($invoice, $merchant, $input)
+        //     {
+        //         $invoice->edit($input);
+        //
+        //         $this->consumeExtraInputKeys($invoice, $input);
+        //
+        //         (new Generator($merchant, $invoice))->update($input);
+        //
+        //         $this->repo->saveOrFail($invoice);
+        //     }
+        // );
 
         return $invoice;
+    }
+
+    public function updateDraftInvoice(Entity $invoice, array $input)
+    {
+        // TODO: email and sms status should be generated based on the update input received
+        // ref_num uniques check and proper error to be thrown
+        // handle customer edits in draft here
+        // ensure this whole thing is in transaction since customer may also get created here
+    }
+
+    public function updateIssuedInvoice(Entity $invoice, array $input)
+    {
+        // TODO: ref_num unique check
+
+        // $invoice->getValidator()->validateOperation();
     }
 
     public function delete(Entity $invoice)
