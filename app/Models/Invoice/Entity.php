@@ -17,8 +17,8 @@ class Entity extends Base\PublicEntity
     // ------------------ Entity Keys --------------------------------
 
     const ORDER_ID              = 'order_id';
-    // Ref id provided by merchant for his own references
-    const REF_NUM               = 'ref_num';
+    // Invoice receipt provided by merchant for his own references
+    const RECEIPT               = 'receipt';
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
@@ -93,7 +93,7 @@ class Entity extends Base\PublicEntity
         self::ISSUED_AT         => null,
         self::PAID_AT           => null,
         self::EXPIRED_AT        => null,
-        self::REF_NUM           => null,
+        self::RECEIPT           => null,
         self::DESCRIPTION       => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
@@ -130,7 +130,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
-        self::REF_NUM,
+        self::RECEIPT,
         self::VIEW_LESS,
         self::CURRENCY,
         self::SOURCE,
@@ -145,7 +145,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
-        self::REF_NUM,
+        self::RECEIPT,
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
@@ -183,7 +183,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::REF_NUM,
+        self::RECEIPT,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,

@@ -1283,3 +1283,9 @@ ALTER TABLE payments
     ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
 ALTER TABLE payments
     ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
+
+--- Pre code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices CHANGE ref_num receipt VARCHAR(40);
+
+---
