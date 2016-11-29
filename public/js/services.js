@@ -274,7 +274,8 @@ angular.module('app.services', [])
   '$idle',
   function ($q, $http, $timeout, $idle) {
 
-    var _org;
+    var _org
+      , _roles;
 
     return {
       fetchCurrentOrg: function () {
@@ -301,6 +302,7 @@ angular.module('app.services', [])
         var deferred = $q.defer();
         var _this = this;
         var roleId = role.id;
+
         delete role.id;
 
         // Request for creating
@@ -325,13 +327,13 @@ angular.module('app.services', [])
               }
             },
 
-          })
+          });
         }
 
         $http(request_data)
         .success(function (data) {
           if (data.success) {
-            _this.roles.push(data.data);
+            _roles = undefined;
             deferred.resolve(data.data);
           } else {
             deferred.reject(data.errors);
@@ -347,8 +349,8 @@ angular.module('app.services', [])
         var deferred = $q.defer();
         var _this = this;
 
-        if (angular.isDefined(_this.roles)){
-          deferred.resolve(_this.roles);
+        if (angular.isDefined(_roles)){
+          deferred.resolve(_roles);
           return deferred.promise;
         }
 
@@ -361,8 +363,8 @@ angular.module('app.services', [])
           })
           .success(function (data) {
             if (data.success) {
-              _this.roles = data.data.items;
-              deferred.resolve(_this.roles);
+              _roles = data.data.items;
+              deferred.resolve(_roles);
             } else {
               deferred.reject(data.errors);
             }
