@@ -13,31 +13,36 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function getBalance(string $id)
+    public function getBalance(string $customerId) : array
     {
-        $wallet = $this->core->fetchByCustomerId($id);
+        $wallet = $this->repo->wallets->findByCustomerIdAndMerchant($customerId, $this->merchant);
 
         return $wallet->toArrayPublic();
     }
 
-    public function getTransactionStatement($id)
+    public function getTransactionStatement($customerId)
     {
 
     }
 
-    public function loadMoney($customerId, array $input)
+    public function loadMoney($customerId, int $amount) : array
     {
-        $wallet = $this->core->fetchOrCreate($customerId, $input);
+        $wallet = $this->core->fetchOrCreate($customerId);
 
-        return $this->core->credit($wallet, $input['amount']);
+        return $this->core->credit($wallet, $amount)->toArrayPublic();
     }
 
-    public function sendMoney($id, array $input)
+    public function sendMoney($customerId, array $input)
     {
 
     }
 
-    public function refund($id, array $input)
+    public function debit($customerId, array $input)
+    {
+
+    }
+
+    public function refund($customerId, array $input)
     {
 
     }

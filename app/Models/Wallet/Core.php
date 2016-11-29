@@ -12,19 +12,22 @@ class Core extends Base\Core
     const DEFAULT_MIN_BALANCE       = 0;
     const DEFAULT_MAX_BALANCE       = 1000000;
 
-    public function create($customerId, array $input)
+    protected function create($customerId) : Entity
     {
         $wallet = new Entity;
 
-        $customerId = Entity::verifyIdAndSilentlyStripSign($customerId);
+        $customer = $this->repo->customer->findByPublicId($customerId);
 
         $walletData = [
-            Entity::CUSTOMER_ID         => $customerId,
             Entity::NAME                => $this->merchant->getName(),
             Entity::BALANCE             => 0,
             Entity::MIN_BALANCE         => self::DEFAULT_MIN_BALANCE,
             Entity::MAX_BALANCE         => self::DEFAULT_MAX_BALANCE,
         ];
+
+        $wallet->customer()->associate($customer);
+
+        $wallet->merchant()->associate($this->merchant);
 
         $wallet->build($walletData);
 
@@ -38,7 +41,7 @@ class Core extends Base\Core
         ;
     }
 
-    public function credit(Entity $wallet, int $amount)
+    public function credit(Entity $wallet, int $amount) : Entity
     {
         $wallet->getValidator()->validateBalanceForCredit($wallet, $amount);
 
@@ -49,9 +52,9 @@ class Core extends Base\Core
         return $wallet;
     }
 
-    public function fetchOrCreate($customerId, $input)
+    public function fetchOrCreate($customerId) : Entity
     {
-        $wallet = $this->fetchByCustomerId($customerId);
+        $wallet = $this->repo->wallets->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
         if ($wallet !== null and $wallet instanceof Entity)
         {
@@ -59,11 +62,6 @@ class Core extends Base\Core
         }
 
         // No existing wallet found for the customer ID, create one
-        return $this->create($customerId, $input);
-    }
-
-    public function fetchByCustomerId(string $customerId)
-    {
-        return $this->repo->wallets->findByCustomerId($customerId);
+        return $this->create($customerId);
     }
 }
