@@ -22,8 +22,8 @@ class Repository extends Base\Repository
     ];
 
     public function findByPublicIdAndOrgIdWithRelations(
-        string $orgId,
-        string $groupId)
+        string $groupId,
+        string $orgId)
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
