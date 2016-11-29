@@ -259,6 +259,15 @@ class PermissionSeeder extends Seeder
                         ]
                     ]);
 
+                    // Razorpay Org will have all permissions
+                    DB::table(Table::PERMISSION_MAP)->insert([
+                        [
+                            'permission_id' => $id,
+                            'entity_id'     => '6dLbNSpv5XbCOF',
+                            'entity_type'   => 'org',
+                        ]
+                    ]);
+
                     // For trimmed down ones
                     if (isset($trimmedDownPermissions[$category]) and
                         isset($trimmedDownPermissions[$category][$permission]))
@@ -268,6 +277,15 @@ class PermissionSeeder extends Seeder
                                 'permission_id'     => $id,
                                 'entity_id'         => '6dLbNSpv5XbC5G',
                                 'entity_type'       => 'role',
+                            ]
+                        ]);
+
+                        // Trimmed down permissions for HDFC Bank
+                        DB::table(Table::PERMISSION_MAP)->insert([
+                            [
+                                'permission_id' => $id,
+                                'entity_id'     => '6dLbNSpv5XbCOG',
+                                'entity_type'   => 'org',
                             ]
                         ]);
                     }
