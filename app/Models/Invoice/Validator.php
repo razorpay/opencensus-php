@@ -11,9 +11,40 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
 
-    const CREATE_DRAFT  = 'create_draft';
-    const CREATE_ISSUED = 'create_issued';
+    const CREATE_DRAFT  = 'createDraft';
+    const CREATE_ISSUED = 'createIssued';
 
+    protected static $createRules = [
+
+        // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
+        // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
+        // Entity::ADJUSTMENT          => 'sometimes|integer',
+        // Entity::SHIPPING            => 'sometimes|integer|min:1',
+
+        // Entity::DUE_BY              => 'sometimes|integer',
+        // Entity::SCHEDULED_AT        => 'sometimes|integer',
+
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
+        Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|boolean',
+    ];
+
+    // This is redundant and same as $createRules but keeping it as it keeps code
+    // at other places clean
     protected static $createDraftRules = [
 
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -87,12 +118,11 @@ class Validator extends Base\Validator
         Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
     ];
 
-    // TODO: Need to give a fix in spine for this
-    protected static $create_draftValidators = [
+    protected static $createDraftValidators = [
         // Entity::LINE_ITEMS,
     ];
 
-    protected static $create_issuedValidators = [
+    protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
     ];
 

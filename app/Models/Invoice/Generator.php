@@ -138,7 +138,10 @@ class Generator extends Base\Core
     {
         $invoice = new Entity;
 
-        $invoice->build($input, $operation);
+        $invoice->build($input);
+
+        (new Validator)->validateInput(camel_case($operation), $input);
+
         $invoice->merchant()->associate($this->merchant);
 
         //
