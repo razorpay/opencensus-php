@@ -616,7 +616,7 @@ class Service extends Base\Service
         {
 
             return [
-                [sprintf("No keyId found for given merchant with id: %s", $merchantId)],
+                ['No keyId found for given merchant with id: ' . $merchantId],
                 $data
             ];
         }

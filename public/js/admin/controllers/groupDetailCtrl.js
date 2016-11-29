@@ -59,51 +59,5 @@ app.controller('GroupDetailCtrl', [
 
     }
 
-    $scope.openAddAdminModal = function () {
-      var modalInstance = $modal.open({
-        templateUrl: 'addAdminModal.html',
-        controller: 'addAdminCtrl',
-      });
-      modalInstance.result.then(function (admin) {
-        $scope.addAdmin(admin);
-      }, $.noop);
-    };
-
-    $scope.addAdmin = function (admin) {
-      var request = $http.post('/admin/generic', {
-        ignoreErrors: true,
-        params: {
-          route_name: 'group_admins_create',
-          url_params: {
-            '{groupId}': 'grp_6euDnqS4zQR4ke' //TODO Add actual ids
-          }
-        },
-        data: {
-          body: {
-            admin_ids: [admin.newAdminId]
-          }
-        }
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Admin added to group successfully.', true);
-        } else {
-          $scope.alerts.addAlert('danger', null, true);
-        }
-      }).error(function () {
-        console.log('Failed to add admin to group');
-      });
-    }
-  }
-]).controller('addAdminCtrl', [
-  '$scope',
-  '$modalInstance',
-  function ($scope, $modalInstance) {
-    $scope.ok = function (admin) {
-      $modalInstance.close(admin);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel')
-    };
   }
 ]);

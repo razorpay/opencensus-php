@@ -277,6 +277,15 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
+        $adminId = Auth::guard('api')->id();
+        $orgId = Auth::guard('api')->user()->org_id;
+        $merchantIds = $this->getMerchantIdsToList($orgId, $adminId);
+        $merchantIdsToList = [];
+        foreach($merchantIds as $value) //Need to understand how it can be passed better and change. This is temp
+        {
+            $merchantIdsToList[] = $value;
+        }
+        $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select([
                 'id',
@@ -289,7 +298,8 @@ class Service extends Base\Service
                 'merchant_details.updated_at',
                 'submitted_at',
                 'archived_at'
-        ])->with('tagged');
+        ])->with('tagged')
+          ->whereIn('merchants.id', $merchantIdsToList);
 
 
         if (isset($input['tags']))
@@ -362,6 +372,12 @@ class Service extends Base\Service
         $response = $response->toArray();
 
         return ['count'=>count($response), 'data'=>$response];
+    }
+
+    public function getMerchantIdsToList(string $orgId, string $adminId)
+    {
+        $this->setApiCredentials();
+        return $this->api->admin->fetchMerchantIds($orgId, $adminId);
     }
 
     public function getAdmins()

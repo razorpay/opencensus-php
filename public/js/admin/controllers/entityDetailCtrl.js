@@ -277,6 +277,7 @@ app.controller('EntityDetailCtrl', [
           'refund',
           'settlement',
           'settlement_details',
+          'schedule',
           'terminal',
           'token',
           'transaction',

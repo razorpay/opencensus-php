@@ -41,12 +41,16 @@
               <td>{{row.name}}</td>
               <td>{{row.description}}</td>
               <td>
-                <a class="btn-role-delete" ng-confirm-click="Are you sure you want to delete this role?" ng-click="deleteRole(row.id)">
-                  <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
-                </a>
-                <a tooltip="Edit Role" ui-sref="app.roles.edit({ id: row.id })">
-                  <i class="fa fa-pencil-square"></i>
-                </a>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-xs" ui-sref="app.roles.edit({ id: row.id })">
+                    <i class="fa fa-pencil-square"></i>
+                    edit
+                  </a>
+                  <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this role?" ng-click="deleteRole(row.id)">
+                    <i class="fa fa-user-times text-danger"></i>
+                    delete
+                  </button>
+                </div>
               </td>
             </tr>
             <tr ng-show="roles.length === 0">

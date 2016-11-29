@@ -14,11 +14,6 @@
         <div class="col-md-6 m-b-xs">
           Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
         </div>
-         <div class="col-md-6">
-            <button id='addAdminButton' class='btn btn-default pull-right' ng-click="openAddAdminModal()">
-              Add an Admin
-            </button>
-          </div>
       </div>
       <div>
         <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
@@ -61,7 +56,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="row in group.parentGroups" class="merchants-table-body">
-              <td><a ui-sref="app.groups.detail({id:'grp_'+row.id})" target="_blank">grp_{{row.id}}</a></td>
+              <td><a ui-sref="app.groups.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
               <td>{{row.name}}</td>
               <td>{{row.description}}</td>
             </tr>
@@ -89,7 +84,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="row in group.subGroups" class="merchants-table-body">
-              <td><a ui-sref="app.groups.detail({id:'grp_'+row.id})" target="_blank">grp_{{row.id}}</a></td>
+              <td><a ui-sref="app.groups.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
               <td>{{row.name}}</td>
               <td>{{row.description}}</td>
             </tr>
@@ -103,18 +98,3 @@
   </div>
 
 </div>
-
-<script type="text/ng-template" id="addAdminModal.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Add New Admin</h3>
-  </div>
-  <div class="modal-body">
-    <select class="form-control" ng-model="admin.newAdminId">
-      <option ng-repeat="orgAdmin in orgAdmins" value="{{orgAdmin.id}}">{{orgAdmin.email}}</option>
-    </select>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(admin)">OK</button>
-  </div>
-</script>

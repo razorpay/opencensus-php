@@ -126,7 +126,7 @@ const concatJs = lazypipe()
   })
 
 
-gulp.task('js', ['webpack'], () => concatJs().pipe(gulp.dest('public')))
+gulp.task('js', () => concatJs().pipe(gulp.dest('public')))
 
 gulp.task('js:prod', () => {
   return concatJs()
@@ -207,7 +207,11 @@ gulp.task('dev', (cb) => {
   run(['css', 'js'], 'tmpl', cb)
 })
 
-gulp.task('watch', ['dev'], ()=> {
+gulp.task('dev:webpack', (cb) => {
+  run('webpack', 'dev', cb)
+})
+
+gulp.task('watch:full', ['dev:webpack'], () => {
   gulp.watch('public/css/*.styl', ['css'])
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js'])
   gulp.watch([
@@ -216,5 +220,14 @@ gulp.task('watch', ['dev'], ()=> {
     'public/js/merchant/**/*.js',
     'public/react/merchant/**/*',
     'public/react/rzp/**/*'
+  ], ['dev:webpack'])
+})
+
+gulp.task('watch', ['dev'], ()=> {
+  gulp.watch('public/css/*.styl', ['css'])
+  gulp.watch([
+    'public/js/*.js',
+    'public/js/admin/**/*.js',
+    'public/js/merchant/**/*.js'
   ], ['js'])
 })

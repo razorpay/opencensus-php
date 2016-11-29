@@ -7,7 +7,9 @@
 <div class="wrapper-md">
   <div class="panel panel-default" ng-controller="OrgsAddRolesCtrl">
     <div class="panel-heading">
-      {{ role_id ? 'Edit ' + role_id : 'Add a new Role' }}
+      <h4>
+        {{ role_id ? 'Edit ' + role_id : 'Add a new Role' }}
+      </h4>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>

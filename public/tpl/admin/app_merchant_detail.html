@@ -40,18 +40,18 @@
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
+        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
+          Enable International <i class="pull-right fa fa-globe"></i>
+        </a>
+        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
+          Disable International <i class="pull-right fa fa-globe"></i>
+        </a>
         <a href class="list-group-item"
         ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
-        </a>
-        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
-          Enable International <i class="pull-right fa fa-globe"></i>
-        </a>
-        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
-          Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
           ng-show="merchant.details.hold_funds==1 && admin.permissions.indexOf('edit_merchant_release_funds') !== -1"
@@ -877,6 +877,8 @@
         <label for="category2" class="col-lg-2 control-label">Category 2:</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="category2" ng-model="merchant.category2">
+          <option value="securities">Securities</option>
+          <option value="commodities">Commodities</option>
           <option value="grocery">Grocery</option>
           <option value="ecommerce">Ecommerce</option>
           <option value="govt_education">Govt Education</option>
@@ -933,6 +935,30 @@
           <input type="number" min="1" max="30" class="form-control m-b" name="settlement_schedule" ng-model="merchant.settlement_schedule" />
         </div>
       </div>
+      <div class="form-group">
+          <div class="col-lg-2 text-right">Groups</div>
+          <div class="col-lg-10 scrollable-table">
+            <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
+              <thead>
+                <tr>
+                  <th data-sort-ignore="true">
+                    <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
+                    <label for="select_all" class="select-all-label">Select all</label>
+                  </th>
+                  <th>Group</th>
+                  <th>Group description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, row) in groups">
+                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
     </form>
   </div>
   <div class="modal-footer">
