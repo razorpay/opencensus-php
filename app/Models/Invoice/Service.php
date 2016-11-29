@@ -27,21 +27,24 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $invoices = $this->repo->invoice->fetch($input, $this->merchant->getId());
+        $invoices = $this->repo->invoice
+                               ->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();
     }
 
     public function update(string $id, array $input)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -50,30 +53,57 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $this->core->delete($invoice);
     }
 
     public function addLineItem(string $id, array $input)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->addLineItem($invoice, $input, $this->merchant)->toArrayPublic();
+        $invoice = $this->core->addLineItem(
+            $invoice,
+            $input,
+            $this->merchant
+        );
+
+        return $invoice->toArrayPublic();
     }
 
     public function updateLineItem(string $id, string $lineItemId, array $input)
     {
-        $invoice  = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
-        $lineItem = $this->repo->line_item->findByPublicIdAndMerchant($lineItemId, $this->merchant);
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->updateLineItem($invoice, $lineItem, $input, $this->merchant)->toArrayPublic();
+        $lineItem = $this->repo->line_item
+                               ->findByPublicIdAndMerchant(
+                                    $lineItemId,
+                                    $this->merchant
+                                );
+
+        $invoice = $this->core->updateLineItem(
+            $invoice,
+            $lineItem,
+            $input,
+            $this->merchant
+        );
+
+        return $invoice->toArrayPublic();
     }
 
     public function removeLineItem(string $id, string $lineItemId)
     {
-        $invoice  = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
-        $lineItem = $this->repo->line_item->findByPublicIdAndMerchant($lineItemId, $this->merchant);
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $lineItem = $this->repo->line_item
+                               ->findByPublicIdAndMerchant(
+                                    $lineItemId,
+                                    $this->merchant
+                                );
 
         return $this->core->removeLineItem($invoice, $lineItem);
     }

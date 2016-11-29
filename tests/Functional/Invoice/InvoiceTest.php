@@ -150,15 +150,6 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
-
-        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
-
-        $this->startTest();
-    }
-
-    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency2()
-    {
         // Usage one existing item with different currency
         $this->fixtures->create('item', ['currency' => 'USD']);
 

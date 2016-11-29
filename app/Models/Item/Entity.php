@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function isNotActive()
+    {
+        return !($this->isActive());
+    }
+
     // -------------------------- Getters Ends --------------------------
 
     // -------------------- Relations ---------------------------

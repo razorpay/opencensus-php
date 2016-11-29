@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         // In edit requests: You can only make an invoice from draft -> issued
-        Entity::DRAFT               => 'sometimes|in:0',
+        Entity::DRAFT               => 'sometimes|boolean|in:0',
     ];
 
     protected static $editIssuedRules  = [

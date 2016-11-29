@@ -462,7 +462,7 @@ class Entity extends Base\PublicEntity
     {
         $orderId = $this->getAttribute(self::ORDER_ID);
 
-        $array[self::ORDER_ID] = $orderId ? Order\Entity::getSignedId($orderId) : null;
+        $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
     }
 
     protected function setPublicUserIdAttribute(array & $array)
@@ -541,7 +541,7 @@ class Entity extends Base\PublicEntity
 
         if (empty($input[self::DRAFT]) === false)
         {
-            $status = $input[self::DRAFT] === 1 ? Status::DRAFT : Status::ISSUED;
+            $status = boolval($input[self::DRAFT]) ? Status::DRAFT : Status::ISSUED;
         }
 
         $this->setAttribute(self::STATUS, $status);

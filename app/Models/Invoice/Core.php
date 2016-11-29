@@ -40,7 +40,10 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
+    public function update(
+        Entity $invoice,
+        array $input,
+        Merchant\Entity $merchant)
     {
         $invoice->getValidator()
                 ->validateOperation($invoice->getStatus(), $input);
@@ -104,7 +107,12 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
             {
-                $this->lineItemCore->update($lineItem, $input, $merchant, $invoice);
+                $this->lineItemCore->update(
+                    $lineItem,
+                    $input,
+                    $merchant,
+                    $invoice
+                );
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
@@ -143,7 +151,8 @@ class Core extends Base\Core
                 'medium'     => $medium,
             ]);
 
-        $invoice->getValidator()->validateSendNotificationRequest($invoice, $medium);
+        $invoice->getValidator()
+                ->validateSendNotificationRequest($invoice, $medium);
 
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
@@ -159,7 +168,8 @@ class Core extends Base\Core
     {
         $expiredInvoices = $this->repo->invoice->getExpiredInvoices();
 
-        // TODO: Ensure that when the payment is being made, the invoice is in `issued` state only.
+        // TODO: Ensure that when the payment is being made,
+        //       the invoice is in `issued` state only.
         foreach ($expiredInvoices as $expiredInvoice)
         {
             $expiredInvoice->setStatus(Status::EXPIRED);
@@ -199,7 +209,8 @@ class Core extends Base\Core
 
     public function getFormattedInvoiceData($invoiceId, Merchant\Entity $merchant)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($invoiceId, $merchant);
 
         $orderId = $invoice->getOrderId();
 
@@ -260,6 +271,11 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
+    /**
+     * Whenever invoice gets updated via add/update/delete of it's line items,
+     * The invoice amount is calculated and set again.
+     *
+     */
     protected function recomputeInvoiceAmount(Entity $invoice)
     {
         $totalAmount = 0;
@@ -272,6 +288,11 @@ class Core extends Base\Core
         $invoice->setAmount($totalAmount);
     }
 
+    /**
+     * Invoice/Entity has few generators which are dependent on extra request
+     *     input keys. Those need to be run again in case of put request.
+     *
+     */
     protected function consumeExtraInputKeys(Entity $invoice, array $input)
     {
         $invoice->generateStatus($input);

@@ -214,44 +214,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'line_items'    => [
                     [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
-                        'currency'      => 'USD',
-                    ],
-                    [
-                        'name'          => 'Another item',
-                        'description'   => 'Another description',
-                        'amount'        => 200000,
-                        'quantity'      => 2,
-                    ]
-                ],
-                'currency' => 'INR',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Currency of all items should be same as of the invoice itself',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency2' => [
-        'request' => [
-            'url' => '/invoices',
-            'method' => 'post',
-            'content' => [
-                'customer_id' => 'cust_100000customer',
-                'line_items'    => [
-                    [
                         'item_id'       => 'item_1000000000item',
                     ],
                     [

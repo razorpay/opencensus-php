@@ -55,7 +55,13 @@ class Core extends Base\Core
 
         if (isset($input[Entity::ITEM_ID]) or $itemDetails)
         {
-            $item = $this->createItemIfNotExists($input, $itemDetails, $merchant, $invoice);
+            $item = $this->createItemIfNotExists(
+                $input,
+                $itemDetails,
+                $merchant,
+                $invoice
+            );
+
             $lineItem->item()->associate($item);
         }
 
@@ -70,10 +76,10 @@ class Core extends Base\Core
     {
         $this->repo->line_item->deleteOrFail($lineItem);
 
-        return true;
+        return [];
     }
 
-
+    // -------------------- Protected methods --------------------
 
     protected function createItemIfNotExists(
         array $input,
@@ -81,38 +87,48 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
+        $item = $this->getItemIfIdExistsInInput($input, $merchant);
+
+        if ($item and $item->isNotActive())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
+                null,
+                [
+                    'item_id' => $item->getPublicId(),
+                ]
+            );
+        }
+
+        if (empty($item))
+        {
+            // Use invoice currency if item's currency not in input
+            if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
+            {
+                $itemDetails[Item\Entity::CURRENCY] = $invoice->getCurrency();
+            }
+
+            $item = (new Item\Core)->create($itemDetails, $merchant);
+        }
+
+        $item->getValidator()->validateCurrency(
+            $item->getCurrency(),
+            $invoice->getCurrency()
+        );
+
+        return $item;
+    }
+
+    protected function getItemIfIdExistsInInput(array $input, Merchant\Entity $merchant)
+    {
+        $item = null;
+
         if (isset($input[Entity::ITEM_ID]) === true)
         {
             $item = $this->repo->item->findByPublicIdAndMerchant(
                 $input[Entity::ITEM_ID],
                 $merchant
             );
-
-            if ($item->isActive() === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
-                    null,
-                    [
-                        'item_id' => $item->getPublicId(),
-                    ]
-                );
-            }
-
-            $this->throwIfCurrencyNotSame($item->getCurrency(), $invoice);
-        }
-        else
-        {
-            if (isset($itemDetails[Item\Entity::CURRENCY]))
-            {
-                $this->throwIfCurrencyNotSame($itemDetails[Item\Entity::CURRENCY], $invoice);
-            }
-            else
-            {
-                $itemDetails[Item\Entity::CURRENCY] = $invoice->getCurrency();
-            }
-
-            $item = (new Item\Core)->create($itemDetails, $merchant);
         }
 
         return $item;
@@ -146,25 +162,11 @@ class Core extends Base\Core
         return [$lineItemDetails, $itemDetails];
     }
 
-    /**
-     * @param string $itemCurrency
-     *
-     * @return
-     *
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    protected function throwIfCurrencyNotSame(string $itemCurrency, $invoice)
-    {
-        if ($itemCurrency !== $invoice->getCurrency())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Currency of all items should be same as of the invoice itself'
-            );
-        }
-    }
-
     protected function setLineItemAssociations(
-        Entity $lineItem, Merchant\Entity $merchant, Base\PublicEntity $entity, Item\Entity $item)
+        Entity $lineItem,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $entity,
+        Item\Entity $item)
     {
         $lineItem->entity()->associate($entity);
 

@@ -47,6 +47,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateCurrency(
+        string $itemCurrency,
+        string $invoiceCurrency)
+    {
+        if ($itemCurrency !== $invoiceCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Currency of all items should be same as of the invoice itself'
+            );
+        }
+    }
+
     public function validateDeleteOperation(Entity $item)
     {
         if ($item->lineItems()->count() > 0)
@@ -65,5 +77,4 @@ class Validator extends Base\Validator
             ]
         );
     }
-
 }
