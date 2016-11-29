@@ -167,7 +167,7 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
             null,
             [
-                'merchant_id' => $merchant->getPublicId(),
+                'merchant_id' => $merchant->getId(),
             ]);
     }
 
@@ -208,14 +208,15 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Invoice issue:
-     * - Invoice should have amount set to a non-zero value
-     * - Either description(minimal invoice) or non-zero line items should exist
+     * Validates if an invoice can be issued or not
      *
      */
     public function validateInvoiceIssue(Entity $invoice)
     {
-        // TODO: Revisit these conditions
+
+        // Checks:
+        // - Invoice should have amount set to a non-zero value
+        // - Either description(minimal invoice) or non-zero line items should exist
 
         if (($invoice->getAmount() > 0) and
             ($invoice->getDescription() or $invoice->lineItems()->count()))
@@ -227,7 +228,7 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
             null,
             [
-                'invoice_id' => $invoice->getPublicId(),
+                'invoice_id' => $invoice->getId(),
             ]
         );
     }
