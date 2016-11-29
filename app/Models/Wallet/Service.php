@@ -3,6 +3,7 @@
 namespace RZP\Models\Wallet;
 
 use RZP\Models\Base;
+use RZP\Models\Customer;
 
 class Service extends Base\Service
 {
@@ -37,9 +38,11 @@ class Service extends Base\Service
 
     }
 
-    public function debit($customerId, array $input)
+    public function debit(Customer\Entity $customer, int $amount)
     {
+        $wallet = $this->repo->wallets->findByCustomerIdAndMerchant($customer->getPublicId(), $this->merchant);
 
+        return $this->core->debit($wallet, $amount);
     }
 
     public function refund($customerId, array $input)

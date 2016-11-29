@@ -36,9 +36,15 @@ class Core extends Base\Core
         return $wallet;
     }
 
-    public function debit()
+    public function debit(Entity $wallet, int $amount)
     {
-        ;
+        $wallet->getValidator()->validateBalanceForDebit($wallet, $amount);
+
+        $wallet->deductBalance($amount);
+
+        $this->repo->saveOrFail($wallet);
+
+        return $wallet;
     }
 
     public function credit(Entity $wallet, int $amount) : Entity

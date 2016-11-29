@@ -7,4 +7,11 @@ use RZP\Gateway\Wallet\Base;
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'wallet_flashwallet';
+
+    protected $topup = true;
+
+    public function authorize(array $input)
+    {
+        parent::authorize($input);
+    }
 }

@@ -36,7 +36,7 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment)
+    public function createFromPaymentAuthorized(Payment\Entity $payment, $isFlashWalletTxn = false)
     {
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
@@ -46,9 +46,18 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateNodalBalance($txn);
+        if ($isFlashWalletTxn === false)
+        {
+            $this->updateNodalBalance($txn);
 
-        $this->repo->balance->updateBalance($this->merchantBalance);
+            $this->repo->balance->updateBalance($this->merchantBalance);
+        }
+        else
+        {
+            $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
+
+            $txn->setEscrowBalance($nodalBalance->getBalance());
+        }
 
         return [$txn, $feesSplit];
     }

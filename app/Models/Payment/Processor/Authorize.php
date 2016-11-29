@@ -26,6 +26,7 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Models\Wallet as CustomerBalance;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
@@ -678,6 +679,11 @@ trait Authorize
                                                          array & $gatewayInput)
     {
         $this->payment->customer()->associate($customer);
+
+        if ($payment->isWallet())
+        {
+            return;
+        }
 
         //
         // if token is set, payment is either from a saved card or is second recurring
@@ -1684,6 +1690,8 @@ trait Authorize
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
 
+            $isFlashWalletPayment = $payment->getWallet() === Wallet::FLASHWALLET;
+
             $this->trace->info(
                 TraceCode::PAYMENT_STATUS_AUTHORIZED,
                 [
@@ -1699,7 +1707,7 @@ trait Authorize
             {
                 // Also sets the transaction association with the payment.
 
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment, $isFlashWalletPayment);
 
                 $this->repo->saveOrFail($txn);
 
@@ -1707,7 +1715,13 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+
             $this->repo->saveOrFail($payment->terminal);
+
+            if ($isFlashWalletPayment)
+            {
+                $this->processFlashWalletPayment($payment);
+            }
 
             $this->updateTokenOnAuthorized();
 
@@ -1721,6 +1735,12 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
+    }
+
+    protected function processFlashWalletPayment(Payment\Entity $payment)
+    {
+        // todo: move to CustomerBalanceTransactions entity + record the transaction there
+        (new CustomerBalance\Service)->debit($payment->customer, $payment->getAmount());
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)
