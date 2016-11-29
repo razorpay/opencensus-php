@@ -73,11 +73,6 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
     }
 
-    public function isDeleted()
-    {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
-    }
-
     /**
      * Returns organisation for role
      *

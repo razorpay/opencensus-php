@@ -129,9 +129,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Token\Entity');
     }
 
-    public function setPublicOrgIdAttribute(array & $array)
+    public function setPublicOrgIdAttribute(array & $attributes)
     {
-        $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+        $attributes[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
     }
 
     public function getPermissionsList()
@@ -150,11 +150,6 @@ class Entity extends Base\PublicEntity
         $permissions = array_unique($permissions);
 
         return $permissions;
-    }
-
-    public function isDeleted()
-    {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     public function saveOrFailMerchant(Merchant\Entity $merchant)

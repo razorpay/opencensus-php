@@ -252,7 +252,7 @@ class BasicAuth
 
     public function adminAuth()
     {
-        $this->settype(Type::ADMIN_AUTH);
+        $this->setType(Type::ADMIN_AUTH);
 
         $res = $this->setCredentials();
 
@@ -264,7 +264,7 @@ class BasicAuth
 
         if ($this->getKey() !== 'admin')
         {
-            return $res;
+            return $this->invalidApiKey();
         }
 
         $this->setAdminTrue();
@@ -273,7 +273,7 @@ class BasicAuth
 
         $admin = $this->fetchAdminOfToken($token);
 
-        if ($admin)
+        if ($admin !== null)
         {
             return;
         }
@@ -898,7 +898,7 @@ class BasicAuth
 
     protected function fetchAdminOfToken($token)
     {
-        $this->admin = $this->repo->admin_token->findValidToken($token)->admin;
+        $this->admin = $this->repo->admin_token->findOrFailToken($token)->admin;
 
         return $this->admin;
     }

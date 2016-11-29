@@ -2,6 +2,7 @@
 
 $factory(\RZP\Models\Merchant\Entity::class, [
     'id' => $faker->uniqueid,
+    'org_id' => 'RazorpayOrgnId',
     'name' => $faker->word,
     'email' => $faker->email,
     'activated' => 0,
@@ -357,13 +358,12 @@ $factory(\RZP\Models\Feature\Entity::class, [
     'entity_type'   => 'merchant'
 ]);
 
-
 // Admin Roles related fixtures
 $factory(\RZP\Models\Admin\Org\Entity::class, [
     'id'            => $faker->uniqueid,
     'hostname'      => 'dashboard.razorpay.com',
     'email_domains' => 'razorpay.com,rzp.io',
-    'email'         => 'test@razorpay.com',
+    'email'         => $faker->email,
     'display_name'  => 'Razorpay',
     'business_name' => 'Razorpay Software Pvt Ltd',
     'auth_type'     => 'password',
@@ -389,10 +389,11 @@ $factory(\RZP\Models\Admin\Group\Entity::class, [
 
 $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'id'                 => $faker->uniqueid,
+    'org_id'             => 'RazorpayOrgnId',
     'name'               => 'test admin',
-    'email'              => 'xyz@abc.com',
+    'email'              => 'admin@razorpay.com',
     'username'           => 'harshil',
-    'password'           => 'test123456',
+    'password'           => bcrypt('test123456'),
     'remember_token'     => 'yes',
     'oauth_access_token' => 'oauth123',
     'oauth_provider_id'  => 'google',
@@ -404,8 +405,8 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
 ]);
 
 $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-    'admin_id'      => '6dLbNSpv5bbbbb',
-    'token'         => 'd986ee4a08c10b610c2e1afd10fea7c9a99c2084182f27749bc853e06c57d970',
+    'admin_id'      => 'factory:Models\Admin\Admin\Entity,',
+    'token'         => 'SecretTokenForRazorpayAdminAuthentication',
     'created_at'    => $faker->timestamp,
-    'expires_at'    => $faker->timestamp,
+    'expires_at'    => $faker->timestamp
 ]);

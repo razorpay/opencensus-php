@@ -1,8 +1,8 @@
 <?php
 
-use Carbon\Carbon;
-
 namespace RZP\Tests\Functional\Fixtures\Entity;
+
+use Carbon\Carbon;
 
 class Org extends Base
 {
@@ -11,10 +11,13 @@ class Org extends Base
     const DEFAULT_GRP  = '1RazorpayGrpId';
     const ADMIN_ROLE   = 'RzpAdminRoleId';
     const MANAGER_ROLE = 'RzpMngerRoleId';
+    const RZP_USER     = 'RazorpayUserId';
+
+    const DEFAULT_TOKEN = 'SecretTokenForRazorpayAdminAuthentication';
 
     public function setUp()
     {
-        $this->fixtures->create('merchant:razorpay_organisation');
+        $this->fixtures->create('org:razorpay_organisation');
     }
 
     public function createDefaultTestOrganisation()
@@ -41,26 +44,32 @@ class Org extends Base
             'org_id' => self::RZP_ORG,
         ]);
 
-        $this->fixtures->create('roles', [
-            'id'            => self::ADMIN_ROLE,
-            'org_id'        => self::RZP_ORG,
-            'name'          => 'admin',
-            'created_at'    => $now,
-            'last_login_at' => $now,
+        $adminRole = $this->fixtures->create('role', [
+            'id'     => self::ADMIN_ROLE,
+            'org_id' => self::RZP_ORG,
+            'name'   => 'admin'
         ]);
 
-        $this->fixtures->create('roles', [
-            'id'            => self::MANAGER_ROLE,
-            'org_id'        => self::RZP_ORG,
-            'name'          => 'manager',
-            'created_at'    => $now,
-            'last_login_at' => $now,
+        $this->fixtures->create('role', [
+            'id'     => self::MANAGER_ROLE,
+            'org_id' => self::RZP_ORG,
         ]);
+
+        $permissions = $this->fixtures->create('permission:default_permissions');
+
+        $adminRole->permissions()->attach($permissions);
+
+        $admin = $this->fixtures->create('admin', [
+            'id'     => self::RZP_USER,
+            'org_id' => self::RZP_ORG,
+            'email'  => 'admin@rzp.io'
+        ]);
+
+        $admin->roles()->attach($adminRole);
 
         $this->fixtures->create('admin_token', [
-            'id'         => '1RzpAdminToken',
-            'admin_id'   => self::ADMIN_ROLE,
-            'token'      => 'TheKeySecretForTests',
+            'admin_id'   => self::RZP_USER,
+            'token'      => 'SecretTokenForRazorpayAdminAuthentication',
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);

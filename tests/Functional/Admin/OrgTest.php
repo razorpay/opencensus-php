@@ -14,20 +14,17 @@ class OrgTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/OrgData.php';
 
         parent::setUp();
+
+        $this->ba->adminAuth('test');
     }
 
     public function testCreateOrg()
     {
-        // Organization creation has to be done through rzp auth
-        $this->ba->appAuth();
-
         $this->startTest();
     }
 
     public function testEditOrg()
     {
-        $this->ba->appAuth();
-
         $org = $this->fixtures->create('org');
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
@@ -37,8 +34,6 @@ class OrgTest extends TestCase
 
     public function testDeleteOrg()
     {
-        $this->ba->appAuth();
-
         $org = $this->fixtures->create('org');
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
@@ -48,8 +43,6 @@ class OrgTest extends TestCase
 
     public function testOrgMultiple()
     {
-        $this->ba->appAuth();
-
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
         $org = $this->fixtures->create('org', ['email' => 'sreeram@gmail.com']);
 

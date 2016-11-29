@@ -13,9 +13,11 @@ class Core extends Base\Core
 {
     public function create(array $input, Org\Entity $org)
     {
-        $admin = (new Entity)->build($input);
+        $admin = (new Entity);
 
         $admin->org()->associate($org);
+
+        $admin->build($input);
 
         if (isset($input['password']) === true)
         {

@@ -59,19 +59,45 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,
+        self::HOSTNAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::AUTH_TYPE,
-        self::DELETED_AT,
+        self::CREATED_AT,
     ];
 
     protected $defaults = [
         self::HOSTNAME => 'razorpay.com'
     ];
 
-    protected $guarded = [self::ID];
+    protected $guarded = [
+        self::ID
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($org)
+        {
+            $org->roles()->delete();
+            // $org->policy()->delete();
+            $org->admins()->delete();
+            $org->groups()->delete();
+            $org->permissions()->delete();
+        });
+
+        static::restored(function ($org)
+        {
+            $org->roles()->withTrashed()->restore();
+            // $org->policy()->withTrashed()->restore();
+            $org->admins()->withTrashed()->restore();
+            $org->groups()->withTrashed()->restore();
+            $org->permissions()->withTrashed()->restore();
+        });
+    }
 
     public function owners()
     {
@@ -80,12 +106,7 @@ class Entity extends Base\PublicEntity
 
     public function policy()
     {
-        return $this->hasOne('RZP\Models\Org\AuthPolicy\Entity');
-    }
-
-    public function merchants()
-    {
-        return $this->hasMany('RZP\Models\Merchant\Entity');
+        return $this->hasOne('RZP\Models\Admin\Org\AuthPolicy\Entity');
     }
 
     public function admins()
@@ -105,7 +126,7 @@ class Entity extends Base\PublicEntity
 
     public function permissions()
     {
-        return $this->morphedToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSON_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
     }
 
     public function getEmailDomains()
@@ -122,7 +143,6 @@ class Entity extends Base\PublicEntity
     {
         $emailDomains = $this->attributes[self::EMAIL_DOMAINS];
 
-        return $emailDomains;
-        // return explode($emailDomains);
+        return explode(',', $emailDomains);
     }
 }

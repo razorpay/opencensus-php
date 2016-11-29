@@ -18,6 +18,8 @@ class Authorization
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
 
+    protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
+
     public function __construct($test)
     {
         $this->test = $test;
@@ -132,18 +134,15 @@ class Authorization
 
         if ($secret === null)
         {
-            $this->setSecret($this->defaultSecret);
             $secret = $this->defaultSecret;
         }
-        else
-        {
-            $this->setSecret($secret);
-        }
+
+        $this->setSecret($secret);
 
         $this->basicAuth($key, $secret);
     }
 
-    public function adminAuth($mode = 'live', $token = null)
+    public function adminAuth($mode = 'test', $token = null)
     {
         $this->type = 'admin';
 
@@ -151,13 +150,10 @@ class Authorization
 
         if ($token === null)
         {
-            $this->setSecret($this->defaultSecret);
-            $token = $this->defaultSecret;
+            $token = $this->defaultToken;
         }
-        else
-        {
-            $this->setSecret($token);
-        }
+
+        $this->setSecret($token);
 
         $this->basicAuth($this->key, $token);
     }

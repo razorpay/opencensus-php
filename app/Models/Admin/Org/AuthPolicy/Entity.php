@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const MAX_FAILED_ATTEMPTS               = 'max_failed_attempts';
     const ENFORCE_INITIAL_PASSWORD_CHANGE   = 'enforce_initial_password_change';
     const MAX_PASSWORD_RETAIN               = 'max_password_retain';
+    const INACTIVITY_LOCK                   = 'inactivity_lock';
     const EXPIRES_IN                        = 'expires_in';
 
     protected $entity = 'auth_policy';
