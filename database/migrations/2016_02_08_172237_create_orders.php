@@ -11,21 +11,19 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateOrders extends Migration {
 
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		//
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
         Schema::create(Table::ORDER, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Order::ID, 14)
                   ->primary();
-
 
             $table->char(Order::MERCHANT_ID, 14);
 
@@ -101,15 +99,15 @@ class CreateOrders extends Migration {
                   ->on(Table::ORDER)
                   ->on_delete('restrict');
         });
-	}
+    }
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
@@ -123,6 +121,6 @@ class CreateOrders extends Migration {
         });
 
         Schema::drop(Table::ORDER);
-	}
+    }
 
 }
