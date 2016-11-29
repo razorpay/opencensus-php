@@ -261,7 +261,7 @@ final class Route
         'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
         'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
         'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
-        'customer_get_wallet_balance'             => ['get',      'customers/{id}/wallet/balance',                  'CustomerController@getCustomerWalletBalance'                       ],
+        'customer_get_wallet_balance'             => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
         'invoice_create'                          => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
