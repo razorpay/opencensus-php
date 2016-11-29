@@ -160,6 +160,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the Entity of File Store
+     * @return Creator object
+     */
+    public function entity(Base\Entity $entity)
+    {
+        $this->file->entity()->associate($entity);
+
+        return $this;
+    }
+
+    /**
      * Set the delimiter used for creation of file
      *
      * @param string $delimiter Delimiter value
