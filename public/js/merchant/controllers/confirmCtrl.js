@@ -5,7 +5,8 @@ app.controller('ConfirmCtrl', [
   '$state',
   '$stateParams',
   'alertsFactory',
-  function ($scope, $http, $state, $stateParams, alertsFactory) {
+  'organization',
+  function ($scope, $http, $state, $stateParams, alertsFactory, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.success = false;
@@ -13,6 +14,7 @@ app.controller('ConfirmCtrl', [
     if (!token) {
       $state.go('access.signin');
     }
+
     $scope.alerts.resetAlerts();
     var request = $http({
       method: 'get',
@@ -29,6 +31,15 @@ app.controller('ConfirmCtrl', [
       }
     }).error(function () {
       $scope.alerts.addAlert('danger', null, true);
+    });
+
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.main_logo_url) {
+        $scope.confirm_logo = data.main_logo_url
+      }
+      else {
+        $scope.confirm_logo = 'img/logo_black.png';
+      }
     });
   }
 ]);
