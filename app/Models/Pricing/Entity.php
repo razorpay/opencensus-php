@@ -90,7 +90,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function build(array $input = array(), string $operation = 'create')
+    public function build(array $input = array())
     {
         $this->modify($input);
 
