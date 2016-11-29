@@ -294,16 +294,18 @@ class Service extends Base\Service
 
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
         $adminGroups = $admin->groups;
+        $adminGroups = json_decode(json_encode($adminGroups), true);
         $adminMerchants = $admin->merchants;
+        $adminMerchants = json_decode(json_encode($adminMerchants), true);
+        $admin = json_decode(json_encode($admin), true);
 
         $merchants = [];
-        $visibleGroups = [];
+        $visibleGroups = $adminGroups;
         $admin = new Entity($admin);
 
         foreach ($adminGroups as $group)
         {
-            $groupId = Group\Entity::verifyIdAndStripSign($group['id']);
-            (new Group\Service)->getRejectChildren($orgId, $groupId, $visibleGroups);
+            (new Group\Service)->getRejectChildren($orgId, $group['id'], $visibleGroups);
         }
 
         $visibleGroups = array_unique($visibleGroups, SORT_REGULAR);
