@@ -7,6 +7,7 @@ use Razorpay\Api\Errors\BadRequestError;
 use Config;
 use App\RZP\Api;
 use Slack;
+use Auth;
 
 class Service
 {
@@ -14,7 +15,7 @@ class Service
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
 
-        $token = session('api_admin.token');
+        $token = Auth::guard('api')->user()->token;
 
         $this->api = new Api("rzp_{$mode}_admin", $token);
     }

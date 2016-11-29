@@ -277,15 +277,24 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
-        $adminId = Auth::guard('api')->id();
-        $orgId = Auth::guard('api')->user()->org_id;
+        $user = Auth::guard('api')->user();
+
+        $adminId = $user->id;
+
+        $orgId = $user->org_id;
+
         $merchantIds = $this->getMerchantIdsToList($orgId, $adminId);
+
         $merchantIdsToList = [];
-        foreach($merchantIds as $value) //Need to understand how it can be passed better and change. This is temp
+
+        // Need to understand how it can be passed better and change. This is temp
+        foreach($merchantIds as $value)
         {
             $merchantIdsToList[] = $value;
         }
+
         $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
+
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select([
                 'id',
@@ -306,7 +315,6 @@ class Service extends Base\Service
         {
             $data = $data->withAllTags($input['tags']);
         }
-
 
         if (isset($input['archived']))
         {
@@ -371,12 +379,16 @@ class Service extends Base\Service
 
         $response = $response->toArray();
 
-        return ['count'=>count($response), 'data'=>$response];
+        return [
+            'count' => count($response),
+            'data'  => $response
+        ];
     }
 
     public function getMerchantIdsToList(string $orgId, string $adminId)
     {
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
+
         return $this->api->admin->fetchMerchantIds($orgId, $adminId);
     }
 

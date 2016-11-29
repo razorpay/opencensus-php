@@ -38,9 +38,7 @@ class Admin extends Entity
 
     public function fetchMerchantIds($orgId, $adminId)
     {
-        $relativeUrl = $this->getEntityUrl();
-        $relativeUrl = str_replace('admin/', '', $relativeUrl);
-        $relativeUrl = $relativeUrl. 'orgs/' .$orgId. '/admins/' .$adminId. '/merchant_ids';
+        $relativeUrl = "orgs/$orgId/admins/$adminId/merchant_ids";
 
         return $this->request('GET', $relativeUrl);
     }
