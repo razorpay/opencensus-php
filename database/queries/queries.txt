@@ -1286,6 +1286,13 @@ ALTER TABLE payments
 
 --- Pre code deployment / Branch: invoices_rename_column
 
-ALTER TABLE invoices CHANGE ref_num receipt VARCHAR(40);
+ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
+ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
+--- UPDATE invoices SET receipt = ref_num LIMIT 1000;
+
+--- Post code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
+ALTER TABLE invoices DROP COLUMN ref_num;
 
 ---
