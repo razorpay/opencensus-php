@@ -52,43 +52,9 @@ class UpiController extends Controller
 
     public function getBankList()
     {
-        $xml = Cache::get('RespListAccPvd');
+        $json = json_decode(Cache::get('UPI.RespListAccPvd'));
 
-        // return response($xml)->header('Content-Type', 'text/xml');
-
-        $list = simplexml_load_string($xml)->xpath('//AccPvd');
-
-        $res = [];
-
-        foreach ($list as $e)
-        {
-            $e = dom_import_simplexml($e);
-
-            $ifsc = $e->getAttribute('ifsc');
-
-            try
-            {
-                $bankName = \RZP\Models\Bank\Name::getName($ifsc);
-            }
-            catch(\Exception $ex)
-            {
-                $bankName = "Unknown Name";
-            }
-            $prods = $e->getAttribute('prods');
-
-            if ($prods === 'UPI')
-            {
-                $res['banks'][] = [
-                    'ifsc'          =>  $ifsc,
-                    'iin'           =>  $e->getAttribute('iin'),
-                    'name'          =>  $e->getAttribute('name'),
-                    'products'      =>  $prods,
-                    'bankname'      => $bankName,
-                ];
-            }
-        }
-
-        return ApiResponse::json($res);
+        return ApiResponse::json($json);
     }
 
     public function isValidVpa($vpa)
