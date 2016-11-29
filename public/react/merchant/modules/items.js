@@ -4,6 +4,8 @@ import { fromJS } from 'immutable'
 const ITEMS_FETCH = 'ITEMS_FETCH'
 const ITEMS_ADDED = 'ITEMS_ADDED'
 const ITEMS_EDITED = 'ITEMS_EDITED'
+const ITEM_CREATE = 'ITEM_CREATE'
+const ITEM_EDIT = 'ITEM_EDIT'
 
 export const fetchItems = () => {
   return (dispatch) => {
@@ -16,36 +18,27 @@ export const fetchItems = () => {
 
 export const createItem = (data) => {
   return (dispatch) => {
-    return ajax({
-      url: '/item',
-      method: 'post',
-      data
+    return dispatch({
+      type: ITEM_CREATE,
+      payload: ajax({
+        url: '/item',
+        method: 'post',
+        data
+      })
     })
   }
 }
 
 export const editItem = (id, data) => {
   return (dispatch) => {
-    return ajax({
-      url: `/item/${id}`,
-      method: 'put',
-      data
+    return dispatch({
+      type: ITEM_EDIT,
+      payload: ajax({
+        url: `/item/${id}`,
+        method: 'put',
+        data
+      })
     })
-  }
-}
-
-
-export const itemAdded = (item) => {
-  return {
-    type: ITEMS_ADDED,
-    payload: item
-  }
-}
-
-export const itemEdited = (item) => {
-  return {
-    type: ITEMS_EDITED,
-    payload: item
   }
 }
 
@@ -74,13 +67,13 @@ export default function (state = fromJS(initialState), action) {
         error: action.error
       })
 
-    case ITEMS_ADDED:
-      return state.set('items', state.get('items').unshift(action.payload))
+    case `${ITEM_CREATE}::SUCCESS`:
+      return state.set('items', state.get('items').unshift(action.payload.data))
 
-    case ITEMS_EDITED:
+    case `${ITEM_EDIT}::SUCCESS`:
       let items = state.get('items')
       return state.set('items', items.update(
-        items.findIndex((item) => item.get('id') === action.payload.id),
+        items.findIndex((item) => item.get('id') === action.payload.data.id),
         (item) => item.merge(action.payload)
       ))
 

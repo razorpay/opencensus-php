@@ -480,4 +480,26 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getItems(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'item');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postItem(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->createItem($mode, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

@@ -2,6 +2,9 @@ import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
+import Modal from 'rzp/ui/Modal'
+import ModalContainer from 'merchant/containers/ModalContainer'
+import ItemCreation from 'merchant/containers/Items/New'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -15,31 +18,60 @@ const selector = formValueSelector('newInvoice')
   form: 'newInvoice',
   destroyOnUnmount: false
 })
-export default class InvoiceLineItem extends Component {
+export default class InvoiceLineItem extends ModalContainer {
+  constructor() {
+    super(...arguments)
+    this.quickCreateItem = ::this.quickCreateItem
+    this.selectItemAndCloseModal = ::this.selectItemAndCloseModal
+  }
+
+  quickCreateItem() {
+    this.openModal()
+  }
+
+  selectItemAndCloseModal(item) {
+    this.props.change(`${this.props.fieldName}.item`, item.id)
+    this.closeModal()
+  }
+
   calculateLineItemTotal() {
     let fieldItem = this.props.invoice_line_items[this.props.index]
-    return (Number(fieldItem.rate) * Number(fieldItem.quantity)).toFixed(2)
+    return (Number(fieldItem.amount) * Number(fieldItem.quantity)).toFixed(2)
   }
 
   render() {
     let { fieldName, fieldItem, index, items, onRemove } = this.props
+    let selectedItemId = fieldItem.item ? fieldItem.item.id : null
 
     return (
       <tr>
         <td>
+
+        <Modal
+          isOpen={this.state.isModalOpen}
+          onRequestClose={this.closeModal}
+          closeTimeoutMS={300}
+        >
+          <ItemCreation
+            onSave={this.selectItemAndCloseModal}
+            closeModal={this.closeModal}
+          />
+        </Modal>
+
           <Field
             name={`${fieldName}.item`}
             component={TypeAhead}
             options={items}
-            selected={fieldItem.item}
+            selected={selectedItemId}
             optionLabelPath='name'
             placeholder='Select an item'
             onChange={(selectedItem) => {
-              this.props.change(`${fieldName}.rate`, selectedItem.rate || '0.00')
+              this.props.change(`${fieldName}.amount`, selectedItem.amount || '0.00')
               setTimeout(() => {
                 this.calculateLineItemTotal()
               }, 0)
             }}
+            onQuickAdd={this.quickCreateItem}
           />
         </td>
 
@@ -55,7 +87,7 @@ export default class InvoiceLineItem extends Component {
 
         <td>
           <Field
-            name={`${fieldName}.rate`}
+            name={`${fieldName}.amount`}
             component='input'
             class='form-control text-right'
             type='number'

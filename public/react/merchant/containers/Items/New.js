@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
+import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import validator from 'rzp/utils/validator'
 import * as ItemActions from 'merchant/modules/items'
@@ -19,11 +20,14 @@ const selector = formValueSelector('newItem')
 )
 @reduxForm({
   form: 'newItem',
+  initialValues: {
+    currency: 'INR'
+  },
   validate: validator({
     name: {
       presence: true
     },
-    rate: {
+    amount: {
       presence: true
     }
   })
@@ -31,24 +35,34 @@ const selector = formValueSelector('newItem')
 export default class AddItem extends Component {
   constructor() {
     super(...arguments)
+    this.state = {
+      errors: null
+    }
+
     this.create = ::this.create
     this.edit = ::this.edit
   }
 
   create(fieldProps) {
     return this.props.createItem(fieldProps).then((response) => {
-      let item = response.data.item
-      this.props.itemAdded(item)
+      let item = response.data
       this.props.onSave(item)
+    }).catch((err) => {
+      this.setState({
+        errors: err.errors
+      })
     })
   }
 
   edit(fieldProps) {
     let { id, ...params } = fieldProps
     return this.props.editItem(id, params).then((response) => {
-      let item = response.data.item
-      this.props.itemEdited(item)
+      let item = response.data
       this.props.onSave(item)
+    }).catch((err) => {
+      this.setState({
+        errors: err.errors
+      })
     })
   }
 
@@ -61,6 +75,11 @@ export default class AddItem extends Component {
         <ModalHeader
           title={isNew ? 'New Item' : 'Edit Item'}
           onCloseClick={this.props.closeModal}
+        />
+
+        <Alert
+          type='error'
+          message={this.state.errors}
         />
 
         <form class='form-horizontal'>
@@ -83,7 +102,7 @@ export default class AddItem extends Component {
                 <div class='input-group'>
                   <span class='input-group-addon'>INR</span>
                   <Field
-                    name='rate'
+                    name='amount'
                     component={InputField}
                     class='form-control'
                   />
@@ -106,7 +125,7 @@ export default class AddItem extends Component {
           <div class='modal-footer'>
             <button
               type='button'
-              class='btn btn-default'
+              class='btn btn-default btn-rounded'
               onClick={this.props.closeModal}
             >
               Cancel
@@ -114,8 +133,9 @@ export default class AddItem extends Component {
 
             <AsyncButton
               type='button'
-              class='btn btn-primary'
+              class='btn btn-primary btn-rounded'
               text='Save'
+              pendingText='Saving...'
               onClick={handleSubmit(action)}
             />
           </div>

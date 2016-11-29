@@ -1,4 +1,4 @@
-import { Component, PropTypes } from 'react'
+import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
@@ -47,7 +47,6 @@ export default class AddCustomer extends Component {
   create(fieldProps) {
     return this.props.createCustomer(fieldProps).then((response) => {
       let customer = response.data
-      this.props.customerAdded(customer)
       this.props.onSave(customer)
     }).catch((err) => {
       this.setState({
@@ -59,9 +58,12 @@ export default class AddCustomer extends Component {
   edit(fieldProps) {
     let { id, ...params } = fieldProps
     return this.props.editCustomer(id, params).then((response) => {
-      let customer = response.data.customer
-      this.props.customerEdited(customer)
+      let customer = response.data
       this.props.onSave(customer)
+    }).catch((err) => {
+      this.setState({
+        errors: err.errors
+      })
     })
   }
 
@@ -152,4 +154,8 @@ export default class AddCustomer extends Component {
       </div>
     )
   }
+}
+
+AddCustomer.defaultProps = {
+  onSave: () => {}
 }

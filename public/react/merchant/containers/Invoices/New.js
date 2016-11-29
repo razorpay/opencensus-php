@@ -38,7 +38,7 @@ const selector = formValueSelector('newInvoice')
     line_items: [
       {
         quantity: 1,
-        rate: '0.00'
+        amount: '0.00'
       }
     ]
   }

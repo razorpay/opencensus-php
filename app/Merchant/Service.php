@@ -960,4 +960,23 @@ class Service extends Base\Service
 
         return [$errors, $data];
     }
+
+    public function createItem($mode, $input)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->item->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
 }

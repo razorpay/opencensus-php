@@ -145,13 +145,11 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoices_create');
     Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
 
-    Route::group(['prefix' => '{mode}'], function() {
-        Route::get('/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
-        Route::post('/customer', 'MerchantController@postCustomer')->name('customer_create');
-    });
+    Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
+    Route::post('/{mode}/customer', 'MerchantController@postCustomer')->name('customer_create');
 
-    // Route::get('/${mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
-    // Route::post('/${mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
+    Route::get('/{mode}/items', 'MerchantController@getItems')->name('items_fetch_all');
+    Route::post('/{mode}/item', 'MerchantController@postItem')->name('item_create');
 
 
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
