@@ -582,13 +582,14 @@ final class Route
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
-        'admin_get_app_auth',
-        'password_login',
-        'oauth_login',
         'upi_fill_provider',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
         'adj_add_reverse',
+        'admin_get_app_auth',
+        'password_login',
+        'oauth_login',
+        'org_get',
     );
 
     public static $proxy = array(
@@ -647,7 +648,6 @@ final class Route
         'org_get_multiple',
         'org_edit',
         'org_delete',
-        'org_get',
         'role_create',
         'role_get_multiple',
         'role_get',
