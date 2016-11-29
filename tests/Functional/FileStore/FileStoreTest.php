@@ -26,7 +26,7 @@ class FileStoreTest extends TestCase
 
     public function testRefundFile()
     {
-        $this->mockMail();
+        $this->mockMail(500);
 
         // Make 3 test payments
         $this->createTestPayment();
@@ -45,6 +45,74 @@ class FileStoreTest extends TestCase
         $this->validateRefundFile($content);
 
         $this->assertFileStoreItems();
+    }
+
+    public function testInvalidStoreRefundFile()
+    {
+        $data = $this->testData['testInvalidStoreRefundFile'];
+
+        $this->createPayments(4);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
+        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
+        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
+
+        $this->editPaymentsAndRefunds();
+
+        $this->runRequestResponseFlow($data, function() {
+            $content = $this->generateRefundsExcelForKkbkNB();
+        });
+    }
+
+    public function testInvalidExtensionRefundFile()
+    {
+        $data = $this->testData['testInvalidExtensionRefundFile'];
+
+        $this->createPayments(5);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
+        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
+        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
+        $refundPayment = $this->refundPayment($payments['items'][4]['id'], 100);
+        $refundPayment = $this->refundPayment($payments['items'][4]['id']);
+
+        $this->editPaymentsAndRefunds();
+
+        $this->runRequestResponseFlow($data, function() {
+            $content = $this->generateRefundsExcelForKkbkNB();
+        });
+    }
+
+    public function testInvalidTypeRefundFile()
+    {
+        $data = $this->testData['testInvalidTypeRefundFile'];
+
+        $this->createPayments(5);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
+        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
+        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
+        $refundPayment = $this->refundPayment($payments['items'][4]['id']);
+
+        $this->editPaymentsAndRefunds();
+
+        $this->runRequestResponseFlow($data, function() {
+            $content = $this->generateRefundsExcelForKkbkNB();
+        });
+    }
+
+    protected function createPayments($count)
+    {
+        foreach (range(0, $count) as $number)
+        {
+            $this->createTestPayment();
+        }
     }
 
     protected function assertFileStoreItems()
@@ -130,25 +198,25 @@ class FileStoreTest extends TestCase
         }
     }
 
-    protected function mockMail()
+    protected function mockMail($amount)
     {
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+        $testData = [
+            'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+            'amount' => [
+                'claims' => 0,
+                'refunds' => $amount,
+                'total' => ($amount * -1),
+            ]
+        ];
+
         Mail::shouldReceive('queue')
               ->once()
               ->with(
                     Mockery::any(),
-                    Mockery::on(function ($data)
+                    Mockery::on(function ($data) use ($testData)
                         {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
-                            $testData = [
-                                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims' => 0,
-                                    'refunds' => 500,
-                                    'total' => -500,
-                                ]
-                            ];
-
                             $this->assertArraySelectiveEquals($testData, $data);
 
                             return true;
