@@ -185,10 +185,16 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Invoice issue:
+     * - Invoice should have amount set to a non-zero value
+     * - Either description(minimal invoice) or non-zero line items should exist
+     *
+     */
     public function validateInvoiceIssue(Entity $invoice)
     {
-        if ($invoice->customer and
-            $invoice->lineItems()->count())
+        if (($invoice->getAmount() > 0) and
+            ($invoice->getDescription() or $invoice->lineItems()->count()))
         {
             return;
         }

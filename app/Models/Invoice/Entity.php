@@ -293,6 +293,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     public function getViewLess()
     {
         return $this->getAttribute(self::VIEW_LESS);

@@ -32,13 +32,6 @@ class Generator extends Base\Core
     protected $merchant;
 
     /**
-     * @var Customer\Entity
-     */
-    protected $customer;
-
-    protected $lineItems = [];
-
-    /**
      * @var LineItem\Core
      */
     protected $lineItemCore;
@@ -99,6 +92,19 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
+    /**
+     * Updates associations of existing invoice
+     *
+     */
+    public function update(array $input)
+    {
+        $this->associateCustomerWithInvoice($input);
+
+        $this->createAndAssociateOrderForInvoice($input);
+
+        $this->setShortUrl();
+    }
+
     protected function generateInvoiceSkeleton(array $input)
     {
         $invoice = new Entity;
@@ -129,11 +135,11 @@ class Generator extends Base\Core
 
     protected function buildAndSaveInvoice(array $input)
     {
-        $this->customer = $this->associateCustomerWithInvoice($input);
+        $this->associateCustomerWithInvoice($input);
 
         $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
 
-        $this->createOrderForInvoice();
+        $this->createAndAssociateOrderForInvoice();
 
         $this->setShortUrl();
 
@@ -142,6 +148,10 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
+        if ($this->invoice->isDraft()) {
+            return;
+        }
+
         $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
 
         $shortenedUrl = $this->bitly->shortenUrl($longUrl);
@@ -190,16 +200,6 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function associateLineItemsToInvoice()
-    {
-        foreach ($this->lineItems as $lineItem)
-        {
-            $lineItem->entity()->associate($this->invoice);
-
-            $this->repo->saveOrFail($lineItem);
-        }
-    }
-
     protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $input)
     {
         $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
@@ -227,8 +227,16 @@ class Generator extends Base\Core
         $this->invoice->setAmount($totalAmount);
     }
 
-    protected function createOrderForInvoice()
+    protected function createAndAssociateOrderForInvoice()
     {
+        if ($this->invoice->isDraft())
+        {
+            return;
+        }
+
+        $this->invoice->getValidator()
+                      ->validateInvoiceIssue($this->invoice);
+
         $orderAmount = $this->invoice->getAmount();
 
         $orderCurrency = $this->invoice->getCurrency();
@@ -246,8 +254,6 @@ class Generator extends Base\Core
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         $this->invoice->order()->associate($order);
-
-        return $order;
     }
 
     /**
@@ -293,7 +299,5 @@ class Generator extends Base\Core
             $this->invoice->customer()->associate($customer);
             $this->invoice->setCustomerDetails($customer);
         }
-
-        return $customer;
     }
 }
