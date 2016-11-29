@@ -20,7 +20,7 @@ class Service extends Base\Service
 
     public function getRole($orgId, $roleId)
     {
-        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+        $role = $this->repo->role->findByPublicIdAndOrgIdWithRelations($roleId, $orgId);
 
         return $role->toArrayPublic();
     }

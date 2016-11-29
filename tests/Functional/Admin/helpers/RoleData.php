@@ -26,9 +26,7 @@ return [
         ],
         'response' => [
             'content' => [
-                // 'entity'      => 'role',
-                'name'        => 'manager',
-                'description' => 'Manager of roles',
+                'name'        => 'admin',
             ],
             'status_code' => 200,
         ],

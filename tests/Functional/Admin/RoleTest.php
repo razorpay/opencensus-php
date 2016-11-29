@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Admin;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+
 use Mockery;
 
 class RoleTest extends TestCase
@@ -35,11 +37,7 @@ class RoleTest extends TestCase
 
     public function testCreateRoleWithPermissions()
     {
-        $perms = [];
-
-        $perms[] = $this->fixtures->create('permission');
-
-        $perms[] = $this->fixtures->create('permission', ['name' => 'lol']);
+        $perms = $this->fixtures->times(3)->create('permission');
 
         $permIds = [];
 
@@ -56,20 +54,24 @@ class RoleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $result = $this->startTest();
     }
 
     public function testGetRole()
     {
-        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+        $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, 'org_' . Org::RZP_ORG, $role['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->ba->adminAuth();
+
         $result = $this->startTest();
+
+        $this->assertEquals(count($result['permissions']), 105);
     }
 
     public function testDeleteRole()
