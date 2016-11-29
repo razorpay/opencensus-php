@@ -34,8 +34,8 @@ class Core extends Base\Core
 
         $operation = Validator::CREATE_ISSUED;
 
-        if (isset($input[Entity::DRAFT]) and
-            boolval($input[Entity::DRAFT]))
+        if ((isset($input[Entity::DRAFT])) and
+            ($input[Entity::DRAFT]) === '1')
         {
             $operation = Validator::CREATE_DRAFT;
         }
@@ -63,7 +63,7 @@ class Core extends Base\Core
 
         $updateFunction = 'update' . studly_case($status) . 'Invoice';
 
-        $this->$updateFunction($invoice, $input, $merchant);
+        $this->$updateFunction($merchant, $invoice, $input);
 
         $this->repo->saveOrFail($invoice);
 
@@ -289,14 +289,14 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
-
-    public function updateDraftInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
+    protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
-        try {
+        try
+        {
             $this->repo->transaction(
                 function() use ($invoice, $merchant, $input)
                 {
-                    $this->consumeExtraInputKeys($invoice, $input);
+                    $this->generateKeysOnUpdate($invoice, $input);
 
                     (new Generator($merchant, $invoice))->update($input);
 
@@ -307,14 +307,14 @@ class Core extends Base\Core
         catch (\Exception $e)
         {
             // Check if is Mysql duplicate on unique index error
-            if ($e instanceof \Illuminate\Database\QueryException
-                and $e->errorInfo[1] == 1062)
+            if (($e instanceof \Illuminate\Database\QueryException) and
+                ($e->errorInfo[1] === 1062))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
                     null,
                     [
-                        'invoice_id'    => $this->invoice->getId(),
+                        'invoice_id'    => $invoice->getId(),
                         'input'         => $input,
                     ]);
             }
@@ -323,7 +323,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateIssuedInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
+    protected function updateIssuedInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
     }
 
@@ -331,13 +331,14 @@ class Core extends Base\Core
      * Whenever invoice gets updated via add/update/delete of it's line items,
      * The invoice amount is calculated and set again.
      *
+     * @param Entity $invoice
      */
     protected function recomputeInvoiceAmount(Entity $invoice)
     {
         $totalAmount = 0;
 
-        foreach ($invoice->lineItems()->get() as $lineItem) {
-
+        foreach ($invoice->lineItems()->get() as $lineItem)
+        {
             $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
         }
 
@@ -348,8 +349,10 @@ class Core extends Base\Core
      * Invoice/Entity has few generators which are dependent on extra request
      *     input keys. Those need to be run again in case of put request.
      *
+     * @param Entity $invoice
+     * @param array  $input
      */
-    protected function consumeExtraInputKeys(Entity $invoice, array $input)
+    protected function generateKeysOnUpdate(Entity $invoice, array $input)
     {
         if (isset($input[Entity::EMAIL_NOTIFY]))
         {
