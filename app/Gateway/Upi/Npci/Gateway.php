@@ -655,18 +655,8 @@ EOT;
             ],
             'content'   =>  $signedXml,
             'options'   =>  [
-                /**
-                 * TODO: Verify the cert properly. The issue
-                 * here is that setting verify to the cert
-                 * doesn't work because their hostname
-                 * on the cert is npci.org.in, and they
-                 * want us to make requests directly
-                 * to the IP address.
-                 *
-                 * storage_path('certs/npci.pem')
-                 */
-
-                'verify'    =>  false
+                'verify'        =>  storage_path('certs/npci.pem'),
+                'verifyname'    =>  false,
             ]
         ];
 
