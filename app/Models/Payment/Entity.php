@@ -1340,7 +1340,9 @@ class Entity extends Base\PublicEntity
         $this->setOtpAttempts(null);
     }
 
-    // List of all features based on various conditions
+    /**
+     * List of all features based on various conditions
+     */
     public function getPricingFeatures()
     {
         $features = [];

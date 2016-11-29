@@ -30,7 +30,7 @@ class FeeCalculator
     ];
 
     /**
-     * For which fees needs to be calculate.
+     * For which fees needs to be calculated.
      *
      * @var RZP\Models\Payment\Entity
      */
@@ -121,10 +121,10 @@ class FeeCalculator
 
         $this->getBasicPricingRule($pricing, $entityName);
 
-        $this->getAdOnPricingRule($pricing, $features, $entityName);
+        $this->getAddOnPricingRule($pricing, $features, $entityName);
     }
 
-    protected function getAdOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
+    protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
         $method = $this->entity->getMethod();
 
