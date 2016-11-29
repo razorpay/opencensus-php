@@ -74,6 +74,15 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findMany($ids, $columns);
     }
 
+    public function findManyByPublicIds($ids)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSignMultiple($ids);
+
+        return $this->findMany($ids);
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         // Gets the attributes which are being newly inserted or updated.

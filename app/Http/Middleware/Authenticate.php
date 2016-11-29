@@ -65,13 +65,13 @@ class Authenticate
         {
             $ret = $ba->proxyAuth();
         }
-        else if (in_array($route, Route::$direct))
-        {
-            ; // $ret = $ba->proxyAuth();
-        }
         else if (in_array($route, Route::$admin))
         {
             $ret = $ba->adminAuth();
+        }
+        else if (in_array($route, Route::$direct))
+        {
+            ; // $ret = $ba->proxyAuth();
         }
         else
         {

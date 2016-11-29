@@ -15,28 +15,29 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const NAME                      = 'name';
-    const USERNAME                  = 'username';
-    const PASSWORD                  = 'password';
-    const EMAIL                     = 'email';
-    const REMEMBER_TOKEN            = 'remember_token';
-    const OAUTH_ACCESS_TOKEN        = 'oauth_access_token';
-    const OAUTH_PROVIDER_ID         = 'oauth_provider_id';
-    const ORG_ID                    = 'org_id';
-    const USER_TYPE                 = 'user_type';
-    const EMPLOYEE_CODE             = 'employee_code';
-    const BRANCH_CODE               = 'branch_code';
-    const DEPARTMENT_CODE           = 'department_code';
-    const SUPERVISOR_CODE           = 'supervisor_code';
-    const LOCATION_CODE             = 'location_code';
-    const DISABLED                  = 'disabled';
-    const LOCKED                    = 'locked';
-    const LAST_LOGIN_AT             = 'last_login_at';
-    const FAILED_ATTEMPTS           = 'failed_attempts';
-    const OLD_PASSWORDS             = 'old_passwords';
-    const PASSWORD_EXPIRY           = 'password_expiry';
-    const EXPIRY_AT                 = 'expiry_at';
-    const DELETED_AT                = 'deleted_at';
+    const ORG_ID                = 'org_id';
+    const NAME                  = 'name';
+    const USERNAME              = 'username';
+    const EMAIL                 = 'email';
+    const PASSWORD              = 'password';
+    const REMEMBER_TOKEN        = 'remember_token';
+    const OAUTH_ACCESS_TOKEN    = 'oauth_access_token';
+    const OAUTH_PROVIDER_ID     = 'oauth_provider_id';
+    const USER_TYPE             = 'user_type';
+    const EMPLOYEE_CODE         = 'employee_code';
+    const BRANCH_CODE           = 'branch_code';
+    const DEPARTMENT_CODE       = 'department_code';
+    const SUPERVISOR_CODE       = 'supervisor_code';
+    const LOCATION_CODE         = 'location_code';
+    const DISABLED              = 'disabled';
+    const LOCKED                = 'locked';
+    const LAST_LOGIN_AT         = 'last_login_at';
+    const FAILED_ATTEMPTS       = 'failed_attempts';
+    const OLD_PASSWORDS         = 'old_passwords';
+    const PASSWORD_EXPIRY       = 'password_expiry';
+    const PASSWORD_CHANGED_AT   = 'password_changed_at';
+    const EXPIRED_AT            = 'expired_at';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign = 'admin';
 
@@ -128,9 +129,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Token\Entity');
     }
 
-    public function setPublicOrgIdAttribute(array & $array)
+    public function setPublicOrgIdAttribute(array & $attributes)
     {
-        $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+        $attributes[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
     }
 
     public function getPermissionsList()
@@ -149,11 +150,6 @@ class Entity extends Base\PublicEntity
         $permissions = array_unique($permissions);
 
         return $permissions;
-    }
-
-    public function isDeleted()
-    {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     public function saveOrFailMerchant(Merchant\Entity $merchant)
@@ -207,7 +203,7 @@ class Entity extends Base\PublicEntity
 
     public function getFailedAttempts()
     {
-        return (int) $this->getAttribute(self::FAILED_ATTEMPTS);
+        return $this->getAttribute(self::FAILED_ATTEMPTS);
     }
 
     public function incrementFailedAttempts()
@@ -274,13 +270,11 @@ class Entity extends Base\PublicEntity
 
     protected function getOldPasswordsAttribute()
     {
+        $oldPasswords = null;
+
         if (isset($this->attributes[self::OLD_PASSWORDS]) === true)
         {
             $oldPasswords = $this->attributes[self::OLD_PASSWORDS];
-        }
-        else
-        {
-            $oldPasswords = null;
         }
 
         if ($oldPasswords === null)

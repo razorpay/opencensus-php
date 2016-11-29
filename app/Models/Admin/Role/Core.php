@@ -2,19 +2,17 @@
 
 namespace RZP\Models\Admin\Role;
 
-use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function create($orgId, array $input)
+    public function create(array $input, Org\Entity $org)
     {
         $role = (new Entity)->build($input);
 
-        $role->getValidator()->validateCreateInput($orgId, $input);
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $this->repo->role->validateOrgHasNoSuchRole($role, $org);
 
         $role->org()->associate($org);
 
@@ -22,6 +20,8 @@ class Core extends Base\Core
 
         if (isset($input['permissions']) === true)
         {
+            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+
             $perms = $this->repo->permission->retrieveByIds($input['permissions']);
 
             foreach ($perms as $perm)
@@ -32,26 +32,25 @@ class Core extends Base\Core
             $this->repo->saveOrFail($role);
         }
 
-        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $role->getId());
+        // $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $role->getId());
 
         return $role;
     }
 
-    public function edit(string $orgId, string $roleId, array $input)
+    public function edit(Entity $role, array $input)
     {
-        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
-
         $role->edit($input);
 
         if (isset($input['permissions']) === true)
         {
-            $role->permissions()->sync($input['permissions']);
+            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
 
+            $role->permissions()->sync($input['permissions']);
         }
 
         $this->repo->saveOrFail($role);
 
-        $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
+        // $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $roleId);
 
         return $role;
     }

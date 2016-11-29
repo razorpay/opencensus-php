@@ -18,11 +18,11 @@ class CreateMerchantMap extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('merchant_id');
+            $table->char('merchant_id', 14);
 
-            $table->char('entity_id');
+            $table->char('entity_id', 14);
 
-            $table->char('entity_type'); // admin or group
+            $table->string('entity_type', 5); // admin or group
 
             $table->unique(['merchant_id', 'entity_id']);
 

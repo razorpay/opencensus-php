@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 
@@ -21,7 +21,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findOrFailByEmail($email)
+    public function findByEmail($email)
     {
         $email = strtolower($email);
 
@@ -30,11 +30,11 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findOrFailByAttr($orgId, $attr, $attrVal)
+    public function findOrFailByAttr($orgId, $attr, $value)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where($attr, '=', $attrVal)
+                    ->orgId($orgId)
+                    ->where($attr, '=', $value)
                     ->firstOrFail();
     }
 
@@ -130,5 +130,24 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->whereIn(Entity::ID, $adminIds)
                     ->get();
+    }
+
+    public function lockUnactivatedAccounts($timestamp)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::LAST_LOGIN)
+                    ->where(Entity::CREATED_AT, '<=', $timestamp)
+                    ->update([
+                        Entity::LOCKED => true,
+                    ]);
+    }
+
+    public function lockUnusedAccounts($timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LAST_LOGIN, '<=', $timestamp)
+                    ->update([
+                        Entity::LOCKED => true,
+                    ]);
     }
 }

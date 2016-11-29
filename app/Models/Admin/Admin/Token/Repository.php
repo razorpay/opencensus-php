@@ -9,11 +9,12 @@ class Repository extends Base\Repository
 {
     protected $entity = 'admin_token';
 
-    public function findValidToken($token)
+    public function findOrFailToken($token)
     {
         return $this->newQuery()
+                    ->with(['admin'])
                     ->where(Entity::TOKEN, '=', $token)
-                    ->first();
+                    ->firstOrFail();
     }
 
     public function retrieveByToken(string $token)

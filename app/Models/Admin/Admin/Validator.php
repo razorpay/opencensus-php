@@ -3,13 +3,15 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         // One problem with this uniqueness if what if an admin
         // wants to belong to 2 org or is moved from 1 to another
-        Entity::EMAIL               => 'required|email|max:250|unique:admins',
+        Entity::EMAIL               => 'required|max:255|email|custom',
         Entity::NAME                => 'required|alpha_space|between:3,100',
         Entity::USERNAME            => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD            => 'sometimes|string|between:6,50',
@@ -38,7 +40,7 @@ class Validator extends Base\Validator
         Entity::LOCATION_CODE       => 'sometimes|string',
         Entity::EMPLOYEE_CODE       => 'sometimes|string',
         Entity::DISABLED            => 'sometimes|in:0,1',
-        Entity::EMAIL               => 'sometimes|email',
+        Entity::EMAIL               => 'sometimes|max:255|email|custom',
         'roles'                     => 'sometimes|array',
         'merchants'                 => 'sometimes|array',
         'groups'                    => 'sometimes|array',
@@ -52,5 +54,18 @@ class Validator extends Base\Validator
     public function validateCredentials(array $input)
     {
         $this->validateInput('login', $input);
+    }
+
+    protected function validateEmail($parameter, $email)
+    {
+        $emailDomains = $this->entity->org->getEmailDomains();
+
+        $domain = explode('@', $email, 2)[1];
+
+        if (in_array($domain, $emailDomains) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID, 'email', $email);
+        }
     }
 }

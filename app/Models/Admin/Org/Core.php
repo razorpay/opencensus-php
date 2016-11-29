@@ -15,30 +15,52 @@ class Core extends Base\Core
         return $org;
     }
 
+    public function fetch(string $orgId)
+    {
+        $orgId = Entity::verifyIdAndStripSign($orgId);
+
+        return $this->repo->org->findOrFailPublic($orgId);
+    }
+
+    public function edit(string $orgId, array $input)
+    {
+        $orgId = Entity::verifyIdAndStripSign($orgId);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $org->edit($input);
+
+        $this->repo->saveOrFail($org);
+
+        return $org;
+    }
+
     public function delete($id)
     {
+        $id = Entity::verifyIdAndStripSign($id);
+
         $org = $this->repo->org->findOrFail($id);
 
-        $groups = $this->repo->group->fetchGroupsForOrg($id);
+        // $groups = $this->repo->group->fetchGroupsForOrg($id);
 
-        $admins = $this->repo->admin->fetchAdminsForOrg($id);
+        // $admins = $this->repo->admin->fetchAdminsForOrg($id);
 
-        $roles = $this->repo->role->fetchRolesForOrg($id);
+        // $roles = $this->repo->role->fetchRolesForOrg($id);
 
-        foreach ($groups as $entity)
-        {
-            $this->repo->deleteOrFail($entity);
-        }
+        // foreach ($groups as $entity)
+        // {
+        //     $this->repo->deleteOrFail($entity);
+        // }
 
-        foreach ($admins as $entity)
-        {
-            $this->repo->deleteOrFail($entity);
-        }
+        // foreach ($admins as $entity)
+        // {
+        //     $this->repo->deleteOrFail($entity);
+        // }
 
-        foreach ($roles as $entity)
-        {
-            $this->repo->deleteOrFail($entity);
-        }
+        // foreach ($roles as $entity)
+        // {
+        //     $this->repo->deleteOrFail($entity);
+        // }
 
         $this->repo->deleteOrFail($org);
 

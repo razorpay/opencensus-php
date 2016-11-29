@@ -14,26 +14,14 @@ use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
+use Mail;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-
-        $this->validator = new Validator;
-
-        $this->authPolicy = new AuthPolicy\Service;
-    }
-
     public function login($input)
     {
-        $this->validator->validateCredentials($input);
-
         // Get the admin record
-        $admin = $this->repo->admin->findOrFailByEmail($input['username']);
+        $admin = $this->repo->admin->findByEmail($input['username']);
 
         if ($admin === null)
         {
@@ -41,14 +29,17 @@ class Service extends Base\Service
                 Error\ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
-        $this->authPolicy->validateLogin($admin, $input['password']);
+        $admin->getValidator()->validateCredentials($input);
+
+        $authPolicy = new AuthPolicy\Service;
+        $authPolicy->validateLogin($admin, $input['password']);
 
         // Valid password ?
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
 
-            $validate = $this->authPolicy->validateLogin($admin, $input['password'], 'after');
+            $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
 
             // Send admin, description, entity object
             $this->fireAdminAction($admin, Action::LOGIN);
@@ -89,7 +80,7 @@ class Service extends Base\Service
         // TODO: error validation
 
         // Get the admin record
-        $admin = $this->repo->admin->findOrFailByEmail($input['email']);
+        $admin = $this->repo->admin->findByEmail($input['email']);
 
         // Valid token ?
         if (($admin->oauth_access_token === $input['oauth_access_token']) and
@@ -125,7 +116,7 @@ class Service extends Base\Service
         ];
 
         // Create a token for the user
-        $token = $this->core->createAuthToken($admin, $tokenAttributes);
+        $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
         $admin = $admin->toArrayPublic();
 
@@ -138,71 +129,68 @@ class Service extends Base\Service
 
     public function createAdmin(string $orgId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $org = $this->repo->org->findByPublicId($orgId);
 
-        if (isset($input['roles']) === true)
-        {
-            $roleIds = [];
-
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-            }
-
-            $input['roles'] = $roleIds;
-        }
-
-        if (isset($input['groups']) === true)
-        {
-            $groupIds = [];
-
-            foreach ($input['groups'] as $id)
-            {
-                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
-            }
-
-            $input['groups'] = $groupIds;
-        }
-
-        if (isset($input['merchants']) === true)
-        {
-            $merchantIds = [];
-
-            foreach ($input['merchants'] as $id)
-            {
-                $merchantIds[] = Merchant\Entity::verifyIdAndStripSign($id);
-            }
-
-            $input['merchants'] = $merchantIds;
-        }
-
-        $admin = $this->core->create($orgId, $input);
+        $admin = $this->core()->create($input, $org);
 
         $this->fireAdminAction($admin, Action::CREATE_ADMIN);
 
         return $admin->toArrayPublic();
     }
 
+    public function sendAdminCreateEmail($data, $input)
+    {
+        $org = (new Org\Service)->fetch($data['org_id']);
+
+        $from       = 'support@razorpay.com';
+        $replyTo    = 'support@razorpay.com';
+        $fromHeader = 'Team Razorpay';
+        $to         = $data['email'];
+        $subject    = 'Your admin account details for '. $org['display_name'].' dashboard';
+
+        $view = [
+            'html' => 'emails.admin.user',
+            'text' => 'emails.admin.user_text'
+        ];
+
+        $template = [
+            'user' => [
+                'email' => $data['email'],
+                'password' => $input['password'],
+                'org' => $org['display_name'],
+                'url' => $_ENV['APP_DASHBOARD_URL'],
+            ]
+        ];
+
+        Mail::queue(
+            $view,
+            $template,
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
+            {
+                $message->to($to);
+                $message->from($from, $fromHeader);
+                $message->subject($subject);
+                $message->replyTo($replyTo);
+            }
+        );
+    }
+
     public function getAdmin(string $orgId, string $adminId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $adminId = Entity::verifyIdAndStripSign($adminId);
-
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         return $admin->toArrayPublic();
     }
 
     public function getAdminByAppAuth(string $orgId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
         $token = $input['token'];
 
         $adminToken = $this->repo->admin_token->retrieveByToken($token);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminToken->getAdminId());
+        $adminId = $adminToken->getAdminId();
+
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         $roles = $admin->roles;
         $permissions = [];
@@ -251,26 +239,16 @@ class Service extends Base\Service
 
     public function getAdminById(string &$adminId)
     {
-        $adminId = Entity::verifyIdAndStripSign($adminId);
-
-        $admin = $this->repo->admin->retrieveByIdOrFail($adminId);
+        $admin = $this->repo->org->findByPublicId($adminId);
 
         return $admin->toArrayPublic();
     }
 
     public function deleteAdmin(string $orgId, string $adminId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $adminId = Entity::verifyIdAndStripSign($adminId);
-
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
-
-        $this->fireAdminAction($admin, Action::DELETE_ADMIN);
-
-        $data = $this->core->delete($orgId, $adminId);
-
-        return $data;
+        return $this->core()->delete($admin);
     }
 
     public function updateRolesForAdmin(
@@ -278,25 +256,16 @@ class Service extends Base\Service
         string $adminId,
         array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $adminId = Entity::verifyIdAndStripSign($adminId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         $roleIds = [];
 
-        foreach ($input['roles'] as $roleId)
-        {
-            $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-        }
+        Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
+        $admin->roles()->sync($input['roles']);
 
-        $admin->roles()->sync($roleIds);
-
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
-        $this->fireAdminAction($admin, Action::UPDATE_ADMIN_ROLES, ['roles' => $input['roles']]);
+        // Check if this is required here?
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
 
         return $admin->toArrayPublic();
     }
@@ -306,14 +275,9 @@ class Service extends Base\Service
         string $adminId,
         string $merchantId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $adminId = Entity::verifyIdAndStripSign($adminId);
-        $merchantId = Merchant::verifyIdAndStripSign($merchantId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
-
-        $this->fireAdminAction($admin, Action::ADD_MERCHANT_TO_ADMIN, ['merchant' => $merchant->toArrayPublic()]);
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
         $this->repo->admin->addMerchantOrFail($admin, $merchant);
     }
@@ -323,22 +287,15 @@ class Service extends Base\Service
         string $adminId,
         string $roleId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $adminId = Entity::verifyIdAndStripSign($adminId);
-        $roleId = Role\Entity::verifyIdAndStripSign($roleId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
-        $role = $this->repo->role->findOrFail($roleId);
+        $role = $this->repo->role->findByPublicId($roleId);
 
         if ($role->getOrgId() != $orgId)
         {
             throw new Exception\LogicException(
                 'The role does not belong to the organization');
         }
-
-        $this->fireAdminAction($admin, Action::REVOKE_ADMIN_ROLE, ['role' => $role->toArrayPublic()]);
 
         $this->repo->admin->revokeRoleOrFail($admin, $role);
     }
@@ -354,63 +311,58 @@ class Service extends Base\Service
 
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $adminId = Entity::verifyIdAndStripSign($adminId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        if (isset($input['roles']) === true)
-        {
-            $roleIds = [];
-
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-            }
-
-            $input['roles'] = $roleIds;
-        }
-
-        if (isset($input['groups']) === true)
-        {
-            $groupIds = [];
-
-            foreach ($input['groups'] as $id)
-            {
-                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
-            }
-
-            $input['groups'] = $groupIds;
-        }
-
-        $admin = $this->core->edit($orgId, $adminId, $input);
+        $admin = $this->core()->edit($orgId, $adminId, $input);
 
         return $admin->toArrayPublic();
     }
 
     public function getMerchantIds($orgId, $adminId)
     {
-        $admin = $this->getAdmin($orgId, $adminId);
-        $adminGroups = $admin['groups'];
-        $adminMerchants = $admin['merchants'];
+        // @todo: Add coments explaining the flow.
+
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $adminGroups = $admin->groups;
+        $adminGroups = json_decode(json_encode($adminGroups), true);
+        $adminMerchants = $admin->merchants;
+        $adminMerchants = json_decode(json_encode($adminMerchants), true);
+        $admin = json_decode(json_encode($admin), true);
 
         $merchants = [];
-        $visibleGroups = [];
+        $visibleGroups = $adminGroups;
         $admin = new Entity($admin);
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        foreach ($adminGroups as $group) {
-            $groupId = Group\Entity::verifyIdAndStripSign($group['id']);
-            (new Group\Service)->getRejectChildren($orgId, $groupId, $visibleGroups);
+        foreach ($adminGroups as $group)
+        {
+            (new Group\Service)->getRejectChildren($orgId, $group['id'], $visibleGroups);
         }
+
         $visibleGroups = array_unique($visibleGroups, SORT_REGULAR);
 
-        foreach ($visibleGroups as $group) {
+        foreach ($visibleGroups as $group)
+        {
             $group = new Group\Entity($group);
             $merchants = array_merge($merchants, $group->merchants->all());
         }
+
         $merchants = array_merge($merchants, $adminMerchants);
 
         $merchantIds = array_column($merchants, 'id');
 
         return $merchantIds;
+    }
+
+    public function lockUnusedAccounts()
+    {
+        $timestamp = Carbon::now()->subDays(30)->timestamp;
+
+        $unactivatedAccounts = $this->repo->admin->lockUnactivatedAccounts($timestamp);
+
+        $timestamp = Carbon::now()->subDays(90)->timestamp;
+
+        $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
+
+        return ['count' => $unactivatedAccounts + $unusedAccounts];
     }
 }

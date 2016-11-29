@@ -7,6 +7,7 @@ return [
             'url' => '/orgs',
             'method' => 'post',
             'content' => [
+                'hostname'  => 'hdfc.com',
                 'email_domains' => 'hdfc.com,fbapi.com',
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
@@ -16,7 +17,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'email_domains' => 'hdfc.com,fbapi.com',
+                'email_domains' => [
+                    'hdfc.com',
+                    'fbapi.com'
+                ],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -40,7 +44,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'email_domains' => 'fbapi.com',
+                'email_domains' => [
+                    'fbapi.com'
+                ],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',

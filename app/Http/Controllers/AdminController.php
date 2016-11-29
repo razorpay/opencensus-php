@@ -74,53 +74,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    /**
-     * Organization related functions
-     */
-
-// --------------------- CRUD for ORG  -----------------------------------------
-    public function getOrg($id)
-    {
-        $data = (new Admin\Org\Service)->getOrg($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function createOrg()
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Org\Service)->createOrg($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function deleteOrg(string $id)
-    {
-        $data = (new Admin\Org\Service)->deleteOrg($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function fetchOrgMultiple()
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Org\Service)->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function putOrg(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Org\Service)->editOrg($id, $input);
-
-        return ApiResponse::json($data);
-    }
-// --------------------- END CRUD for ORG  ---------------------------------------
-
 // --------------------- CRUD for Admins   ---------------------------------------
 
     public function getAdmin($id, $adminId)
@@ -163,6 +116,11 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = (new Admin\Admin\Service)->createAdmin($id, $input);
+
+        if (isset($data) === true)
+        {
+            (new Admin\Admin\Service)->sendAdminCreateEmail($data, $input);
+        }
 
         return ApiResponse::json($data);
     }
@@ -442,5 +400,12 @@ class AdminController extends Controller
         $merchantIds = (new Admin\Admin\Service)->getMerchantIds($orgId, $adminId);
 
         return ApiResponse::json($merchantIds);
+    }
+
+    public function postLockBulkAccounts(Admin\Admin\Service $adminService)
+    {
+        $response = $adminService->lockUnusedAccounts();
+
+        return ApiResponse::json($response);
     }
 }

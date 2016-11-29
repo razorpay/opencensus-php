@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Admin\Token;
 
 use App;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -36,6 +37,16 @@ class Entity extends Base\PublicEntity
         self::EXPIRES_AT
     ];
 
+    protected $publicSetters = array(
+        self::ADMIN_ID,
+    );
+
+    public function setPublicAdminIdAttribute(array & $array)
+    {
+        $array[self::ADMIN_ID] = Admin\Entity::getSignedId(
+            $this->getAttribute(self::ADMIN_ID));
+    }
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -43,7 +54,10 @@ class Entity extends Base\PublicEntity
 
     public function getAdminId()
     {
-        return $this->getAttribute(self::ADMIN_ID);
+        $adminId = Admin\Entity::getSignedId(
+            $this->getAttribute(self::ADMIN_ID));
+
+        return $adminId;
     }
 
     public function getToken()

@@ -11,6 +11,7 @@ use RZP\Trace;
 class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
+    const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
     const ACTIVATED                 = 'activated';
@@ -34,7 +35,6 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
-    const ORG_ID                    = 'org_id';
 
     /**
      * Category for particular methods or gateways
@@ -46,8 +46,6 @@ class Entity extends Base\PublicEntity
      */
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
-
-    protected $table = Table::MERCHANT;
 
     protected $entity = 'merchant';
 
@@ -370,7 +368,7 @@ class Entity extends Base\PublicEntity
 
     protected function getFeeBearerAttribute()
     {
-        return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+        return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
     protected function getInternationalAttribute()
@@ -655,7 +653,7 @@ class Entity extends Base\PublicEntity
             // divide by 4 to get number of such segments
             // and take ceil so we have a whole number of these
 
-            $repeat = ceil((strlen($ac) - 4)/4);
+            $repeat = ceil((strlen($ac) - 4) / 4);
 
             // repeat this section $repeat times
             // and then just append the original last 4 digits

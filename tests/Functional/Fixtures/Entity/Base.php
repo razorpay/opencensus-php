@@ -64,6 +64,12 @@ class Base
     );
 
     protected static $liveAndTest = array(
+        'org',
+        'group',
+        'role',
+        'permission',
+        'admin',
+        'admin_token',
         'merchant',
         'pricing',
         'methods',

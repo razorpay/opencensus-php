@@ -40,7 +40,7 @@ class AdminAccess
 
             $authorized = $this->policyChecker($routeName, $admin, $merchant);
 
-            if (! $authorized)
+            if ($authorized === false)
             {
                 return ApiResponse::routeNotFound();
             }
@@ -57,11 +57,11 @@ class AdminAccess
 
         if (isset($params['mid']))
         {
-          $mid = $params['mid'];
+            $mid = $params['mid'];
 
-          $merchant = $repo->merchant->findOrFailPublic($mid);
+            $merchant = $repo->merchant->findOrFailPublic($mid);
 
-          return $merchant;
+            return $merchant;
         }
 
         return null;
@@ -71,7 +71,7 @@ class AdminAccess
     {
         $adminAuthRoutes = Route::$adminPermission;
 
-        if (! isset($adminAuthRoutes[$routeName]))
+        if (isset($adminAuthRoutes[$routeName]) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
         }
@@ -88,8 +88,6 @@ class AdminAccess
         // === Do a Role check
 
         // 1. Get all the permissions by all the roles first
-
-        $roles = $admin->roles->toArray();
 
         $adminPermissions = $admin->getPermissionsList();
 

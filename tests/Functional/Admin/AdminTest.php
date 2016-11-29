@@ -17,11 +17,14 @@ class AdminTest extends TestCase
 
         parent::setUp();
 
-        $this->org = $this->fixtures->create('org');
+        $this->org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+        ]);
 
         $this->orgId = $this->org->getId();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth('test');
     }
 
     public function testCreateAdmin()
@@ -38,7 +41,8 @@ class AdminTest extends TestCase
     public function testGetAdmin()
     {
         $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID => $this->orgId
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];

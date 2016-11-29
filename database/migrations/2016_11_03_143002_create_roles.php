@@ -20,13 +20,13 @@ class CreateRoles extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Role::ID, 14)
+            $table->char(Role::ID, Role::ID_LENGTH)
                   ->primary();
 
-            $table->string(Role::NAME, 250);
-            $table->string(Role::DESCRIPTION, 250);
+            $table->string(Role::NAME);
+            $table->string(Role::DESCRIPTION);
 
-            $table->char(Role::ORG_ID, 14);
+            $table->char(Role::ORG_ID, Role::ID_LENGTH);
 
             $table->integer(Role::CREATED_AT);
             $table->integer(Role::UPDATED_AT);

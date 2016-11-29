@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
      **/
     public function roles()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSON_MAP);
+        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSION_MAP);
     }
 
     /**
@@ -56,6 +56,6 @@ class Entity extends Base\PublicEntity
      **/
     public function org()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSON_MAP);
+        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSION_MAP);
     }
 }

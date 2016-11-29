@@ -11,118 +11,43 @@ use RZP\Exception;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
     public function createGroup(string $orgId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        Org\Entity::verifyIdAndStripSign($orgId);
 
-        if (isset($input['admins']) === true)
-        {
-            $adminIds = [];
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
-            foreach ($input['admins'] as $adminId)
-            {
-                $adminIds[] = Admin\Entity::verifyIdAndStripSign($adminId);
-            }
-
-            $input['admins'] = $adminIds;
-        }
-
-        if (isset($input['sub_groups']) === true)
-        {
-            $groupIds = [];
-
-            foreach ($input['sub_groups'] as $groupId)
-            {
-                $groupIds[] = Entity::verifyIdAndStripSign($groupId);
-            }
-
-            $input['sub_groups'] = $groupIds;
-        }
-
-        if (isset($input['roles']) === true)
-        {
-            $roleIds = [];
-
-            foreach ($input['roles'] as $roleId)
-            {
-                $roleIds[] = Role\Entity::verifyIdAndStripSign($roleId);
-            }
-
-            $input['roles'] = $roleIds;
-        }
-
-        if (isset($input['parents']) === true)
-        {
-            $parentGroupIds = [];
-
-            foreach ($input['parents'] as $parentGroupId)
-            {
-                $parentGroupIds[] = Entity::verifyIdAndStripSign($parentGroupId);
-            }
-
-            $input['parents'] = $parentGroupIds;
-        }
-
-        $group = $this->core->create($orgId, $input);
-
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $group->getId());
+        $group = $this->core()->create($input, $org);
 
         return $group->toArrayPublic();
     }
 
     public function getGroup(string $orgId, string $groupId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
         return $group->toArrayPublic();
     }
 
     public function editGroup(string $orgId, string $groupId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
-        if (isset($input['parents']) === true)
-        {
-            $groupIds = [];
-
-            foreach ($input['parents'] as $parentId)
-            {
-                $groupIds[] = Entity::verifyIdAndStripSign($parentId);
-            }
-
-            $input['parents'] = $groupIds;
-        }
-        else
-        {
-            $input['parents'] = [];
-        }
-
-        $group = $this->core->edit($orgId, $groupId, $input);
+        $this->core()->edit($group, $input);
 
         return $group->toArrayPublic();
     }
 
     public function deleteGroup(string $orgId, string $groupId)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
-        $data = $this->core->delete($orgId, $groupId);
+        $this->repo->deleteOrFail($group);
 
-        return ['success' => true];
+        // @todo: To maintain bc. Remove first two lines later.
+        $ret = $group->toArrayDeleted();
+        $ret = array_merge($ret, ['success' => true]);
+        return $ret;
     }
 
     public function fetchMultiple(string $orgId, array $input)
@@ -139,20 +64,17 @@ class Service extends Base\Service
         string $groupId,
         array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
         $roleIds = $input['role_ids'];
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
 
-        // Not using sync with Ids and roles
-        foreach ($roleIds as $roleId)
-        {
-            $role = $this->repo->role->findOrFail($roleId);
+        // @todo: Check issue of sign and return value here?
+        $roles = $this->repo->role->findManyByPublicIds($roleIds);
+        assert ($roles->count() === count($roleIds));
 
-            $this->repo->group->addRoleToGroup($group, $role);
-        }
+        $this->repo->group->addRolesToGroup($roles, $group);
+
+        return $group->toArrayPublic();
     }
 
     public function addMerchantsToGroup(
@@ -160,21 +82,18 @@ class Service extends Base\Service
         string $groupId,
         array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
         $merchantIds = $input['merchant_ids'];
 
         // TODO Wrap it in a transaction or sync the m2m field
         // Check for merchantIds
-        foreach ($merchantIds as $merchantId)
-        {
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchants = $this->repo->merchant->findMany($merchantIds);
+        assert ($merchants->count() === count($merchantIds));
 
-            $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        $this->repo->group->addMerchantsToGroup($merchant, $group);
 
-            $this->repo->group->addMerchantToGroup($group, $merchant);
-        }
+        return $group->toArrayPublic();
     }
 
     public function addAdminsToGroup(
@@ -182,73 +101,58 @@ class Service extends Base\Service
         string $groupId,
         array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        Validator::validateInputKeyExists($input, 'admins');
 
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
+        $adminIds = $input['admins'];
 
-        $adminIds = [];
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
-        if (isset($input['admins']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Admins not given in the input');
-        }
+        $admins = $this->repo->admin->findManyByPublicIds($adminIds);
+        assert ($admins->count() === count($adminIds));
 
-        foreach ($input['admins'] as $adminId)
-        {
-            $adminId = Admin\Entity::verifyIdAndStripSign($adminId);
-
-            $admin = $this->repo->admin->findOrFail($adminId);
-
-            $this->repo->group->addAdminToGroup($group, $admin);
-        }
+        $this->repo->group->addAdminsToGroup($admins, $group);
 
         return $group->toArrayPublic();
     }
 
+    /**
+     * @todo : Correct this function. $roleId not defined
+     * in arguments.
+     */
     public function revokeRoleFromGroup(
         string $orgId,
         string $groupId,
         array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
-        $roleId = Merchant\Entity::verifyIdAndStripSign($roleId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail(
-            $orgId, $groupId);
-
-        $role = $this->repo->role->findOrFail($roleId);
+        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         $this->repo->group->revokeRoleOrFail($group, $role);
     }
 
     /**
-    * This function gets all org groups and then calls filter on it to
-    * filter out the ones not allowed
-    *
-    * Logic: Imagine a graph (feel free to draw a tree for better
-    * visualization though). For a selected node (group in our case)
-    * remove:
-    *
-    * - Its **siblings**.
-    * - Its **direct** parent-linked chain.
-    * - Its **siblings** and its **own** child hierarchy.
-    */
-
+     * This function gets all org groups and then calls filter on it to
+     * filter out the ones not allowed
+     *
+     * Logic: Imagine a graph (feel free to draw a tree for better
+     * visualization though). For a selected node (group in our case)
+     * remove:
+     *
+     * - Its **siblings**.
+     * - Its **direct** parent-linked chain.
+     * - Its **siblings** and its **own** child hierarchy.
+     */
     public function fetchEligibleParents(string $orgId, string $groupId, array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-        $groupId = Entity::verifyIdAndStripSign($groupId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
         // Get all groups of the current organization
         $allGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
 
         $allGroups = $allGroups->toArray();
 
-        $filteredGroups = $this->filterEligibleParents($orgId, $groupId, $allGroups);
+        $filteredGroups = $this->filterEligibleParents($orgId, $group, $allGroups);
 
         return $filteredGroups;
     }
@@ -258,11 +162,10 @@ class Service extends Base\Service
     * and all the siblings and removes these from the array of all org groups and returns
     * the difference.
     */
-    protected function filterEligibleParents(string $orgId, string $groupId, $allGroups)
+    protected function filterEligibleParents(string $orgId, Entity $group, $allGroups)
     {
-        $currentGroup = [
-            $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId)
-        ];
+        $currentGroup = [$group];
+        $groupId = $group->getId();
 
         // Get entire parent lineage (recursively)
         $rejectParents = $this->getRejectParents($orgId, $groupId);

@@ -18,6 +18,8 @@ class RoleTest extends TestCase
         parent::setUp();
 
         $this->org = $this->fixtures->create('org');
+
+        $this->ba->adminAuth('test');
     }
 
     public function testCreateRole()
@@ -27,8 +29,6 @@ class RoleTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
 
         return $this->startTest();
     }
@@ -56,8 +56,6 @@ class RoleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->appAuth();
-
         $this->startTest();
     }
 
@@ -70,8 +68,6 @@ class RoleTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
 
         $result = $this->startTest();
     }
@@ -86,8 +82,6 @@ class RoleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->appAuth();
-
         $result = $this->startTest();
     }
 
@@ -100,8 +94,6 @@ class RoleTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
 
         $result = $this->startTest();
     }

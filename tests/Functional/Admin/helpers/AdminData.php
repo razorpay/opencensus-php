@@ -12,7 +12,7 @@ return [
             'method' => 'post',
             'content' => [
                 'name'               => 'test admin',
-                'email'              => 'xyz@abc.com',
+                'email'              => 'xyz@rzp.com',
                 'username'           => 'harshil',
                 'password'           => 'random!12#',
                 'remember_token'     => 'yes',
@@ -28,7 +28,7 @@ return [
         'response' => [
             'content' => [
                 'name'               => 'test admin',
-                'email'              => 'xyz@abc.com',
+                'email'              => 'xyz@rzp.com',
                 'username'           => 'harshil',
                 'remember_token'     => 'yes',
                 'employee_code'      => 'rzp_1',
@@ -39,6 +39,21 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testGetAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test admin',
+                'email' => 'testadmin@rzp.com',
+                'username' => 'harshil',
+            ],
+            'status_code' => 200,
+        ],
     ],
 
     'testEditAdmin' => [
@@ -52,21 +67,6 @@ return [
         'response' => [
             'content' => [
                 'name' => 'test',
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testGetAdmin' => [
-        'request' => [
-            'url' => '/orgs/%s/admins/%s',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'name' => 'test admin',
-                'email' => 'xyz@abc.com',
-                'username' => 'harshil',
             ],
             'status_code' => 200,
         ],
@@ -91,7 +91,7 @@ return [
             'method' => 'post',
             'content' => [
                 'name'               => 'testadmin',
-                'email'              => 'xyz@abc.com',
+                'email'              => 'xyz@rzp.com',
                 'username'           => 'harshil',
                 'password'           => 'helloworld',
                 'remember_token'     => 'yes',

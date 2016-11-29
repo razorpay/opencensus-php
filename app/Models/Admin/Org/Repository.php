@@ -3,12 +3,10 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
-use RZP\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'org';
 
     // These are proxy allowed params to search on.
@@ -33,7 +31,16 @@ class Repository extends Base\Repository
     public function retrieveByEmail(string $email)
     {
         return $this->newQuery()
-                    ->where(Org\Entity::EMAIL, '=', $email)
+                    ->where(Entity::EMAIL, '=', $email)
                     ->get();
+    }
+
+    public function findOrFailByHostname(string $hostname)
+    {
+        $hostname = mb_strtolower($hostname);
+
+        return $this->newQuery()
+                    ->where(Entity::HOSTNAME, '=', $hostname)
+                    ->firstOrFailPublic();
     }
 }
