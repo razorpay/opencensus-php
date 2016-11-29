@@ -97,7 +97,7 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->foreign(Payment::ORDER_ID)
-                  ->references(ORDER::ID)
+                  ->references(Order::ID)
                   ->on(Table::ORDER)
                   ->on_delete('restrict');
         });
@@ -113,13 +113,13 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
-                Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+                Table::PAYMENT . '_' . Payment::ORDER_ID.'_foreign');
         });
 
         Schema::table(Table::ORDER, function($table)
         {
             $table->dropForeign(
-                Table::ORDER.'_'.Order::MERCHANT_ID.'_foreign');
+                Table::ORDER . '_' . Order::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::ORDER);

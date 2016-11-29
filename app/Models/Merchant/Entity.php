@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use RZP\Models\Base;
+use RZP\Models\Terminal;
 use RZP\Trace;
 
 class Entity extends Base\PublicEntity
@@ -656,23 +657,16 @@ class Entity extends Base\PublicEntity
      */
     public function isTPVRequired()
     {
-        // 9999 - Test MCC requiring TPV
-        // 6211 - Live MCC requiring TPV
         $tpvCategories = $this->getTPVCategories();
 
-        $category = $this->getCategory();
+        $category = $this->getCategory2();
 
-        if (isset($tpvCategories[$category]))
-        {
-            return true;
-        }
-
-        return false;
+        return in_array($category, $tpvCategories);
     }
 
     public function getTPVCategories()
     {
-        return array(9999 => 9999, 6211 => 6211);
+        return Terminal\Category::INCOMPATIBLE;
     }
 
     public function isShared()
