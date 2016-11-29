@@ -83,7 +83,7 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callabck again. This could be due to
+     * we are hitting callback again. This could be due to
      * browser refresh by the customer or s2s callback notification being
      * delivered by the gateway before browser hits the callback route etc.
      */
@@ -94,9 +94,7 @@ trait Callback
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if ((($payment->isAuthorized() === true) or
-             (($payment->isCaptured() === true) and
-              ($payment->getAutoCaptured() === true))) and
+        if (($payment->hasBeenAuthorized() === true) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);

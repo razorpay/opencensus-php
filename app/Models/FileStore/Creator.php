@@ -145,6 +145,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the Entity of File Store
+     * @return Creator object
+     */
+    public function entity(Base\Entity $entity)
+    {
+        $this->file->entity()->associate($entity);
+
+        return $this;
+    }
+
+    /**
      * Set the delimiter used for creation of file
      * @return Creator object
      */
@@ -240,7 +251,7 @@ class Creator extends Base\Core
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileDetails = [
-            'name'      => $fileName,
+            'key'       => $fileName,
             'path'      => $this->filePath,
             'mime'      => $this->file->getMime(),
             'metadata'  => [],
@@ -248,7 +259,7 @@ class Creator extends Base\Core
 
         $location = $this->storageHandler->save($bucket, $fileDetails);
 
-        $this->file->setLocation($location);
+        $this->file->setLocation($fileDetails['key']);
     }
 
     /**

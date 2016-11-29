@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $requestContent = $this->getRequestArray($input, TxnType::CAPTURE);
+        $requestContent = $this->getCaptureRequestArray($input, TxnType::CAPTURE);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
@@ -97,10 +97,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
-                'capture_response' => $response
-            ]);
+                'response' => $response
+            ]
+        );
 
-        $captureFields = $this->getCaptureOrRefundFields($response, $input['payment']);
+        $captureFields = $this->getCaptureFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
 
@@ -111,7 +112,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::REFUND);
+        $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
 
@@ -120,14 +121,39 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'refund_response' => $response
-            ]);
+                'response' => $response
+            ]
+        );
 
-        $refundFields = $this->getCaptureOrRefundFields($response, $input['refund']);
+        $refundFields = $this->getRefundFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
         $this->checkApprovalCode($refundEntity);
+    }
+
+    public function reverse(array $input)
+    {
+        parent::reverse($input);
+
+        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
+
+        $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
+
+        $response = $this->getSoapResponse($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_RESPONSE,
+            [
+                'response' => $response
+            ]
+        );
+
+        $reverseFields = $this->getReverseFields($response, $input['refund']);
+
+        $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
+
+        $this->checkApprovalCode($reverseEntity);
     }
 
     public function verify(array $input)
@@ -243,7 +269,7 @@ class Gateway extends Base\Gateway
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
             Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
             Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
-            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID],
+            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID] ?? null,
         ];
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
@@ -259,7 +285,36 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCaptureOrRefundFields($response, $input)
+    protected function getCaptureFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+
+        return $attributes;
+    }
+
+    protected function getRefundFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getReverseFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getCommonResponseFields($response, $input)
     {
         $attributes = [
             Entity::RECEIVED               => true,
@@ -270,11 +325,8 @@ class Gateway extends Base\Gateway
             Entity::TRANSACTION_RESULT     => $response[ApiResponseFields::TRANSACTION_RESULT],
             Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
             Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
-            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
-            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
+            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID] ?? null,
         ];
-
-        $this->setRefundIdIfNeeded($attributes, $input);
 
         $this->setErrorMessageIfNeeded($attributes);
 
@@ -298,12 +350,9 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function setRefundIdIfNeeded(& $attributes, $input)
+    protected function setRefundId(& $attributes, $input)
     {
-        if ($this->action == Base\Action::REFUND)
-        {
-            $attributes[Entity::REFUND_ID] = $input['id'];
-        }
+        $attributes[Entity::REFUND_ID] = $input['id'];
     }
 
     protected function setErrorMessageIfNeeded(& $attributes)
@@ -486,7 +535,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RESPONSE,
             [$response->body]);
 
-        $xml = simplexml_load_string($response->body);
+        $xml = simplexml_load_string(trim($response->body));
 
         return $xml;
     }
@@ -502,7 +551,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RESPONSE,
             [
                 'raw_xml_response' => $xml->asXml()
-            ]);
+            ]
+        );
 
         $soapEnvBody = $xml->children('SOAP-ENV', true)->Body;
 
@@ -543,17 +593,18 @@ class Gateway extends Base\Gateway
                     'payment_id' => $payment['id'],
                     'message'    => 'Payment verification failed.',
                     'gateway'    => $this->gateway,
-                ]);
+                ]
+            );
 
             return null;
         }
 
         $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-                [
-                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
-                ]
-            );
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $ipgApiActionResponse->asXML()
+            ]
+        );
 
         return $ipgApiActionResponse;
     }
@@ -575,7 +626,8 @@ class Gateway extends Base\Gateway
         $servicesApiActionList = [
             Action::CAPTURE,
             Action::REFUND,
-            Action::VERIFY
+            Action::VERIFY,
+            Action::REVERSE,
         ];
 
         if (in_array($this->action, $servicesApiActionList))
@@ -687,7 +739,7 @@ class Gateway extends Base\Gateway
             // Card Entity type field is not reliable, and not mandatory
             // ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
             ConnectRequestFields::COMMENTS                  => '',
-            // ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
+            ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => $this->getDynamicMerchantName($input['merchant']),
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
             ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],
@@ -733,38 +785,71 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
-
         $request[ApiRequestFields::A1_ACTION]
                     [ApiRequestFields::A1_INQUIRY_ORDER]
-                        [ApiRequestFields::A1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+                        [ApiRequestFields::A1_ORDER_ID] = $input['payment']['id'];
 
         return $request;
     }
 
-    protected function getRequestArray($input, $txnType)
+    protected function getCaptureRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
 
-        $currency     = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
-        $amountEntity = TxnType::$amountEntity[$txnType];
+        $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
 
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL]         = $input[$amountEntity]['amount'] / 100;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]             = $currencyCode;
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
     }
 
-    protected function arrayToXml($array, $wrap=null)
+    protected function getRefundRequestArray($input)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
+
+        $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function getReverseRequestArray($input)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                            $input['payment'][Payment\Entity::ID],
+                                            Base\Action::AUTHORIZE);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
+            ApiRequestFields::V1_TDATE    => $gatewayPayment[Entity::TDATE],
+        ];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function setPaymentRequestArray(& $body, $input, $txnType)
+    {
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amountEntity = TxnType::$amountEntity[$txnType];
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function arrayToXml($array, $wrap = null)
     {
         // set initial value for XML string
         $xml = '';
@@ -811,7 +896,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $gatewayCallback);
+            $gatewayCallback
+        );
     }
 
     protected function scrubCardInfo(& $content)
