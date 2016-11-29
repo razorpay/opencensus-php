@@ -31,7 +31,7 @@ class FactoriesLoader extends Base\FactoriesLoader
 
         FactoryData::defineEntityFactories($factory, $faker);
         // sd($basePath);
-
+        // sd($factory);
         return $designer->definitions();
     }
 

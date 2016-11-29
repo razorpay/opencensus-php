@@ -100,7 +100,7 @@ class Base
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -117,7 +117,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -141,7 +141,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -168,7 +168,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -181,7 +181,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entityClass = self::$map[$entity];
+        $entityClass = E::getEntityClass($entity);
 
         $entity = Factory::create($entityClass, $attributes);
 
