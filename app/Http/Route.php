@@ -689,6 +689,7 @@ final class Route
         // 'item_fetch_multiple'           => 'invoice',
         // 'item_update'                   => 'invoice',
         // 'item_delete'                   => 'invoice',
+        'customer_get_wallet_balance'   => 'b2bwallet',
     );
 
     const RAZORPAYJS_ROUTES = array(
