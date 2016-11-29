@@ -12,7 +12,8 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID  => 'sometimes|string|size:18'
+        Entity::PAYMENT_ID => 'sometimes|string|size:18',
+        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
     protected $appFetchParamRules = [
