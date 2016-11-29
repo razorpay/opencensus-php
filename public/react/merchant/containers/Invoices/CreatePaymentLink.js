@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { createInvoice, appendInvoiceToList } from 'merchant/modules/invoices/list'
+import { createInvoice } from 'merchant/modules/invoices/list'
 
 function validate(values) {
   let errors = {}
@@ -34,7 +34,7 @@ function validate(values) {
 
 @connect(
   null,
-  { createInvoice, appendInvoiceToList }
+  { createInvoice }
 )
 @reduxForm({
   form: 'newPaymentLink',
@@ -72,7 +72,6 @@ export default class CreatePaymentLink extends Component {
     })
     props.type = 'link'
     return this.props.createInvoice(props).then((response) => {
-      this.props.appendInvoiceToList(response.data)
       this.props.onSave(response.data)
       this.props.closeModal()
     }).catch(({ errors }) => {

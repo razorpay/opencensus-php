@@ -20,7 +20,7 @@ const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
 
 QuickAdd.defaultProps = {
   label: 'Add New',
-  appendSearchTerm: true,
+  appendSearchTerm: false,
   onClick: () => {}
 }
 

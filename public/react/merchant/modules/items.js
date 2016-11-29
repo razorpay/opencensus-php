@@ -2,8 +2,6 @@ import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const ITEMS_FETCH = 'ITEMS_FETCH'
-const ITEMS_ADDED = 'ITEMS_ADDED'
-const ITEMS_EDITED = 'ITEMS_EDITED'
 const ITEM_CREATE = 'ITEM_CREATE'
 const ITEM_EDIT = 'ITEM_EDIT'
 
@@ -49,15 +47,22 @@ let initialState = {
   count: 0
 }
 
+const getFixedINRAmount = (amount) => (amount/100).toFixed(2)
+
 export default function (state = fromJS(initialState), action) {
   switch(action.type) {
     case `${ITEMS_FETCH}::PENDING`:
       return state.set('loading', true)
 
     case `${ITEMS_FETCH}::SUCCESS`:
+      let itemsList = action.payload.data.items.map((item) => {
+        item.amount_in_inr = getFixedINRAmount(item.amount)
+        return item
+      })
+
       return state.merge({
         loading: false,
-        items: action.payload.data.items,
+        items: itemsList,
         count: action.payload.data.count
       })
 
@@ -68,13 +73,17 @@ export default function (state = fromJS(initialState), action) {
       })
 
     case `${ITEM_CREATE}::SUCCESS`:
-      return state.set('items', state.get('items').unshift(action.payload.data))
+      let newlyAddedItem = action.payload.data
+      newlyAddedItem.amount_in_inr = getFixedINRAmount(item.amount)
+      return state.set('items', state.get('items').unshift(newlyAddedItem))
 
     case `${ITEM_EDIT}::SUCCESS`:
       let items = state.get('items')
+      let updatedItem = action.payload.data
+      updatedItem.amount_in_inr = getFixedINRAmount(item.amount)
       return state.set('items', items.update(
-        items.findIndex((item) => item.get('id') === action.payload.data.id),
-        (item) => item.merge(action.payload)
+        items.findIndex((item) => item.get('id') === updatedItem.id),
+        (item) => item.merge(updatedItem)
       ))
 
     default:

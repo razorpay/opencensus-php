@@ -2,6 +2,7 @@ import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const INVOICES_FETCH = 'INVOICES_FETCH'
+const INVOICE_CREATE = 'INVOICE_CREATE'
 const APPEND_INVOICE_TO_LIST = 'APPEND_INVOICE_TO_LIST'
 
 export const appendInvoiceToList = (invoice) => {
@@ -25,10 +26,13 @@ export const fetchInvoices = (params) => {
 
 export const createInvoice = (invoice) => {
   return (dispatch) => {
-    return ajax({
-      url: '/invoices',
-      method: 'post',
-      data: invoice
+    return dispatch({
+      type: INVOICE_CREATE,
+      payload: ajax({
+        url: '/invoices',
+        method: 'post',
+        data: invoice
+      })
     })
   }
 }
@@ -57,8 +61,8 @@ export default function (state = fromJS(initialState), action) {
         error: action.error
       })
 
-    case APPEND_INVOICE_TO_LIST:
-      return state.set('invoices', state.get('invoices').unshift(action.payload))
+    case `${INVOICE_CREATE}::SUCCESS`:
+      return state.set('invoices', state.get('invoices').unshift(action.payload.data))
 
     default:
       return state

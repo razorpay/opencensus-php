@@ -30,13 +30,13 @@ export default class InvoiceLineItem extends ModalContainer {
   }
 
   selectItemAndCloseModal(item) {
-    this.props.change(`${this.props.fieldName}.item`, item.id)
+    this.props.change(`${this.props.fieldName}.id`, item.id)
     this.closeModal()
   }
 
   calculateLineItemTotal() {
     let fieldItem = this.props.invoice_line_items[this.props.index]
-    return (Number(fieldItem.amount) * Number(fieldItem.quantity)).toFixed(2)
+    return (Number(fieldItem.amount_in_inr) * Number(fieldItem.quantity)).toFixed(2)
   }
 
   render() {
@@ -59,14 +59,14 @@ export default class InvoiceLineItem extends ModalContainer {
         </Modal>
 
           <Field
-            name={`${fieldName}.item`}
+            name={`${fieldName}.id`}
             component={TypeAhead}
             options={items}
             selected={selectedItemId}
             optionLabelPath='name'
             placeholder='Select an item'
             onChange={(selectedItem) => {
-              this.props.change(`${fieldName}.amount`, selectedItem.amount || '0.00')
+              this.props.change(`${fieldName}.amount_in_inr`, selectedItem.amount_in_inr || '0.00')
               setTimeout(() => {
                 this.calculateLineItemTotal()
               }, 0)
@@ -87,10 +87,11 @@ export default class InvoiceLineItem extends ModalContainer {
 
         <td>
           <Field
-            name={`${fieldName}.amount`}
+            name={`${fieldName}.amount_in_inr`}
             component='input'
             class='form-control text-right'
             type='number'
+            disabled={true}
           />
         </td>
 

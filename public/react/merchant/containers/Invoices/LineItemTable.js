@@ -19,7 +19,7 @@ const selector = formValueSelector('newInvoice')
 export default class InvoiceLineItemTable extends Component {
   calculateItemsSubTotal() {
     return this.props.invoice_line_items.reduce((total, line_item) => {
-      return total + (Number(line_item.quantity) * Number(line_item.amount))
+      return total + (Number(line_item.quantity) * Number(line_item.amount_in_inr))
     }, 0).toFixed(2)
   }
 
@@ -56,7 +56,7 @@ export default class InvoiceLineItemTable extends Component {
                       fields.push({
                         item: null,
                         quantity: 1,
-                        amount: '0.00',
+                        amount_in_inr: '0.00',
                       })
                     }
                   }}
@@ -86,7 +86,7 @@ export default class InvoiceLineItemTable extends Component {
             onClick={() => fields.push({
               item: null,
               quantity: 1,
-              amount: '0.00'
+              amount_in_inr: '0.00'
             })}
           >
             ADD ITEM

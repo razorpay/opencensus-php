@@ -44,7 +44,10 @@ export default class AddItem extends Component {
   }
 
   create(fieldProps) {
-    return this.props.createItem(fieldProps).then((response) => {
+    let { amount, ...itemParams } = fieldProps
+    itemParams.amount = amount*100
+
+    return this.props.createItem(itemParams).then((response) => {
       let item = response.data
       this.props.onSave(item)
     }).catch((err) => {
