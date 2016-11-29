@@ -20,6 +20,7 @@ class Constants
     const INVOICE       = 'invoice';
     const NOZEROPRICING = 'nozeropricing';
     const REVERSE       = 'reverse';
+    const B2BWALLET     = 'b2bwallet';
 
     public static $allFeatures = [
         self::DUMMY,
@@ -35,5 +36,6 @@ class Constants
         self::INVOICE,
         self::NOZEROPRICING,
         self::REVERSE,
+        self::B2BWALLET,
     ];
 }
