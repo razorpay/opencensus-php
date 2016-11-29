@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -10,6 +11,7 @@ use RZP\Models\Admin\Group;
 class GroupTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use EntityActionTrait;
 
     public function setUp()
     {
@@ -18,6 +20,55 @@ class GroupTest extends TestCase
         parent::setUp();
 
         $this->org = $this->fixtures->create('org');
+    }
+
+    public function testAddGroupsOnMerchant()
+    {
+        $this->ba->appAuth();
+
+        // create merchant
+        $merchant = $this->fixtures->create('merchant');
+
+        // assign pricing plan to merchant
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant->getId());
+
+        $orgId = $this->org->getId();
+
+        // create two groups for the org
+        $groups = $this->fixtures->times(2)->create('group', ['org_id' => $orgId]);
+
+        foreach ($groups as $group)
+        {
+            $groupIds[] = $group->getPublicId();
+        }
+
+        // create request to add groups to merchant
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $merchant->getPublicId());
+
+        $request['content']['groups'] = $groupIds;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest();
+
+        // get response content
+        $content = $this->response->getContent();
+        $content = json_decode($content, true);
+
+        // list of created group ids
+        $createdGroupIds = array_column($content['groups'], 'id');
+
+        // check total created groups against request groups
+        $this->assertEquals(count($groupIds), count($createdGroupIds));
+
+        // check if group ids in request match as those in respose
+        foreach ($groupIds as $groupId)
+        {
+            $this->assertContains($groupId, $createdGroupIds);
+        }
+
     }
 
     public function testAdminGroupPolymorphicRelationship()
@@ -74,34 +125,5 @@ class GroupTest extends TestCase
         $admin->roles()->save($role);
 
         $this->assertEquals($admin->getId(), $role->admins()->getRelatedIds()[0]);
-    }
-
-    public function testMerchantsInGroup()
-    {
-        $this->ba->appAuth();
-
-        $orgId = $this->org->getId();
-
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
-
-        $roles = [];
-
-        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId]);
-
-        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId, 'name' => 'asd']);
-
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
-
-        $merchant = $this->fixtures->create('merchant');
-
-        $group->roles()->saveMany($roles);
-
-        $group->admins()->save($admin);
-
-        $group->merchants()->save($merchant);
-
-        $admin->saveOrFailMerchant($merchant);
-
-        $this->assertEquals($merchant->getId(), $admin->merchants()->getRelatedIds()[0]);
     }
 }

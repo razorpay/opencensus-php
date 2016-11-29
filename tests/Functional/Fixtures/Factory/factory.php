@@ -383,7 +383,7 @@ $factory(\RZP\Models\Admin\Role\Entity::class, [
 
 $factory(\RZP\Models\Admin\Group\Entity::class, [
     'id'          => $faker->uniqueid,
-    'name'        => 'test_group',
+    'name'        => $faker->word,
     'description' => 'This is a test group',
 ]);
 
