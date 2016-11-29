@@ -59,7 +59,6 @@ class Generator extends Base\Core
     {
         $this->generateInvoiceSkeleton($input, $operation);
 
-
         try
         {
             if ($operation === Validator::CREATE_DRAFT)
@@ -176,7 +175,8 @@ class Generator extends Base\Core
 
                 $this->repo->saveOrFail($this->invoice);
             }
-        );    }
+        );
+    }
 
     protected function generateIssued(array $input)
     {
@@ -230,7 +230,7 @@ class Generator extends Base\Core
             return;
         }
 
-        $totalAmount      = 0;
+        $totalAmount = 0;
 
         foreach ($lineItemsDetails as $lineItemDetails)
         {
