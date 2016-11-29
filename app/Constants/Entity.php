@@ -83,6 +83,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
+    const WALLET_FLASHWALLET    = 'wallet_flashwallet';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
@@ -131,6 +132,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
         self::TRANSFER              => \RZP\Models\Transaction::class,
         self::WALLETS               => \RZP\Models\Wallet::class,
     );

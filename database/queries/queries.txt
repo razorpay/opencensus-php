@@ -1271,3 +1271,13 @@ ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 -- Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
+
+-----
+
+
+----- B2B wallet
+
+ALTER TABLE merchant_banks
+    ADD COLUMN flashwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
+
+----- -end- B2B Wallet
