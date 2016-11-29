@@ -7,10 +7,11 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
-    const FROM              = 'from';
-    const FROM_ID           = 'from_id';
-    const TO                = 'to';
+    const MERCHANT_ID       = 'merchant_id';
     const TO_ID             = 'to_id';
+    const TO_TYPE           = 'to_type';
+    const SOURCE_ID         = 'source_id';
+    const SOURCE_TYPE       = 'source_type';
     const AMOUNT            = 'amount';
     const TRANSACTION_ID    = 'transaction_id';
 
@@ -21,19 +22,21 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::FROM,
-        self::FROM_ID,
-        self::TO,
+        self::MERCHANT_ID,
         self::TO_ID,
-        self::AMOUNT
+        self::TO_TYPE,
+        self::AMOUNT,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE
     ];
 
     protected $visible = [
         self::ID,
-        self::FROM,
-        self::FROM_ID,
-        self::TO,
+        self::MERCHANT_ID,
         self::TO_ID,
+        self::TO_TYPE,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE,
         self::AMOUNT,
         self::TRANSACTION_ID,
         self::CREATED_AT,
@@ -42,10 +45,11 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::FROM,
-        self::FROM_ID,
-        self::TO,
+        self::MERCHANT_ID,
         self::TO_ID,
+        self::TO_TYPE,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE,
         self::AMOUNT,
         self::TRANSACTION_ID,
         self::CREATED_AT,
@@ -57,6 +61,11 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // -------------------- End Relations -----------------------

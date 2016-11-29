@@ -398,6 +398,43 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromTransfer($transfer)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $transfer->getAmount();
+
+        $settledAt = time();
+
+        $values = [
+            Transaction\Entity::DEBIT         => $amount,
+            Transaction\Entity::CREDIT        => 0,
+            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::GATEWAY_FEE   => 0,
+            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::RECONCILED_AT => time(),
+            Transaction\Entity::SETTLED       => 0,
+            Transaction\Entity::SETTLED_AT    => $settledAt,
+            Transaction\Entity::FEE           => 0,
+            Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::AMOUNT        => $amount,
+            Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
+            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($transfer->merchant);
+
+        $txn->sourceAssociate($transfer);
+
+        $transfer->transaction()->associate($txn);
+
+        $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
     protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);

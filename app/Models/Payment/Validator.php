@@ -42,7 +42,8 @@ class Validator extends Base\Validator
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
-        'currency'      => 'sometimes|in:INR');
+        'currency'      => 'sometimes|in:INR',
+        'transfers'     => 'sometimes|array');
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|integer',

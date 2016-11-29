@@ -8,6 +8,7 @@ class Type
 {
     const REFUND        = 'refund';
     const PAYMENT       = 'payment';
+    const TRANSFER      = 'transfer';
     const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
 
