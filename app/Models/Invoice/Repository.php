@@ -16,15 +16,14 @@ class Repository extends Base\Repository
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
-    protected $appFetchParamRules = [
-        Entity::STATUS              => 'sometimes|string',
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-    ];
-
     protected $proxyFetchParamRules = [
         Entity::USER_ID => 'sometimes|alpha_num',
         Entity::STATUS  => 'sometimes|string',
         Entity::TYPE    => 'sometimes|string|max:16',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
     public function getInvoicesForNotification($medium)
