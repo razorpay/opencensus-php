@@ -91,7 +91,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
-    public function build(array $input = array())
+    public function build(array $input = array(), string $operation = 'create')
     {
         $payment = func_get_arg(1);
 

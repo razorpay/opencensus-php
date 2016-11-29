@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    public function build(array $input = array())
+    public function build(array $input = array(), string $operation = 'create')
     {
         (new Validator)->validateInput('addBankAccount', $input);
 

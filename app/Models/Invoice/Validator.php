@@ -10,7 +10,12 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = [
+
+    const CREATE_DRAFT  = 'create_draft';
+    const CREATE_ISSUED = 'create_issued';
+
+    protected static $createDraftRules = [
+
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
         // Entity::ADJUSTMENT          => 'sometimes|integer',
@@ -18,6 +23,27 @@ class Validator extends Base\Validator
 
         // Entity::DUE_BY              => 'sometimes|integer',
         // Entity::SCHEDULED_AT        => 'sometimes|integer',
+
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
+        Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|boolean',
+    ];
+
+    protected static $createIssuedRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
@@ -49,24 +75,24 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $editIssuedRules  = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
     ];
-    
-    // protected static $editIssuedValidators = [
-    //     'email_notify_issued',
-    //     'sms_notify_issued',
-    // ];
 
-    protected static $createValidators = [
+    // TODO: Need to give a fix in spine for this
+    protected static $create_draftValidators = [
+        // Entity::LINE_ITEMS,
+    ];
+
+    protected static $create_issuedValidators = [
         Entity::LINE_ITEMS,
     ];
 
@@ -167,28 +193,17 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateOperation(string $status, array $input = [])
+    public function validateOperation(string $status, array $in = [Status::DRAFT])
     {
-        switch ($status) {
-
-            case Status::DRAFT:
-                $this->validateInput('edit', $input);
-                break;
-
-            case Status::ISSUED:
-                $this->validateInput('edit_issued', $input);
-                break;
-
-            default:
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
-                    null,
-                    [
-                        'invoice_id' => $invoice->getId(),
-                        'status'     => $status
-                    ]
-                );
-                break;
+        if (in_array($status, $in, true) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
+                null,
+                [
+                    'status'     => $status
+                ]
+            );
         }
     }
 
@@ -200,6 +215,8 @@ class Validator extends Base\Validator
      */
     public function validateInvoiceIssue(Entity $invoice)
     {
+        // TODO: Revisit these conditions
+
         if (($invoice->getAmount() > 0) and
             ($invoice->getDescription() or $invoice->lineItems()->count()))
         {

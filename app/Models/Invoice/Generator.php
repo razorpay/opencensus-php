@@ -55,83 +55,27 @@ class Generator extends Base\Core
         $this->lineItemCore = new LineItem\Core;
     }
 
-    public function generate(array $input)
+    public function generate(array $input, string $operation)
     {
-        $this->generateInvoiceSkeleton($input);
+        $this->generateInvoiceSkeleton($input, $operation);
 
-        if ((empty($input[Entity::DRAFT]) === false) and
-            ($input[Entity::DRAFT] === '1'))
-        {
-            $this->generateDraft($input);
-        }
-        else
-        {
-            $this->generateIssued($input);
-        }
 
-        return $this->invoice;
-    }
-
-    /**
-     * Updates associations of existing invoice
-     *
-     * @param array $input
-     */
-    public function update(array $input)
-    {
-        $this->associateCustomerWithInvoice($input);
-
-        $this->createAndAssociateOrderForInvoice($input);
-
-        $this->setShortUrl();
-    }
-
-    protected function generateInvoiceSkeleton(array $input)
-    {
-        $invoice = new Entity;
-
-        $invoice->build($input);
-        $invoice->merchant()->associate($this->merchant);
-
-        //
-        // This is being done because dashboard can create an invoice
-        // for the merchant even if the merchant has not generated
-        // any keys at all.
-        //
-
-        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
-
-        //
-        // This is being done so that we can do associations
-        // without saving the invoice. Also, to generate a shortUrl,
-        // we need the invoice ID.
-        //
-
-        $invoice->generateId();
-
-        $this->invoice = $invoice;
-    }
-
-    protected function generateDraft(array $input)
-    {
-        // TODO: Do draft specific things here.
-    }
-
-    protected function generateIssued(array $input)
-    {
         try
         {
-            $this->repo->transaction(
-                function() use ($input)
-                {
-                    $this->buildAndSaveInvoice($input);
-                }
-            );
+            if ($operation === Validator::CREATE_DRAFT)
+            {
+                $this->generateDraft($input);
+            }
+            else
+            {
+                $this->generateIssued($input);
+            }
         }
         catch (\Exception $e)
         {
             // Check if is Mysql duplicate on unique index error
-            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
+            if ($e instanceof \Illuminate\Database\QueryException
+                and $e->errorInfo[1] == 1062)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
@@ -145,43 +89,17 @@ class Generator extends Base\Core
             throw $e;
         }
 
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
+        return $this->invoice;
     }
 
-    protected function buildAndSaveInvoice(array $input)
+    /**
+     * Updates associations of existing invoice
+     *
+     * @param array $input
+     */
+    public function update(array $input)
     {
         $this->associateCustomerWithInvoice($input);
-
-        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
-
-        $this->createAndAssociateOrderForInvoice();
-
-        $this->setShortUrl();
-
-        $this->repo->saveOrFail($this->invoice);
-    }
-
-    protected function setShortUrl()
-    {
-        if ($this->invoice->isDraft())
-        {
-            return;
-        }
-
-        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
-
-        $shortenedUrl = $this->bitly->shortenUrl($longUrl);
-
-        $this->trace->info(
-            TraceCode::INVOICE_LINKS,
-            [
-                'invoice_id' => $this->invoice->getId(),
-                'short_url' => $shortenedUrl,
-                'long_url' => $longUrl,
-            ]
-        );
-
-        $this->invoice->setShortUrl($shortenedUrl);
     }
 
     public static function getInvoiceLink(string $invoiceId, string $mode)
@@ -216,6 +134,90 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
+    protected function generateInvoiceSkeleton(array $input, string $operation)
+    {
+        $invoice = new Entity;
+
+        $invoice->build($input, $operation);
+        $invoice->merchant()->associate($this->merchant);
+
+        //
+        // This is being done because dashboard can create an invoice
+        // for the merchant even if the merchant has not generated
+        // any keys at all.
+        //
+
+        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+
+        //
+        // This is being done so that we can do associations
+        // without saving the invoice. Also, to generate a shortUrl,
+        // we need the invoice ID.
+        //
+
+        $invoice->generateId();
+
+        $this->invoice = $invoice;
+    }
+
+    protected function generateDraft(array $input)
+    {
+        $this->repo->transaction(
+            function() use ($input)
+            {
+                $this->associateCustomerWithInvoice($input);
+
+                $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+
+                // In draft, we don't create short url and order
+
+                $this->repo->saveOrFail($this->invoice);
+            }
+        );    }
+
+    protected function generateIssued(array $input)
+    {
+        $this->repo->transaction(
+            function() use ($input)
+            {
+                $this->buildAndSaveInvoice($input);
+            }
+        );
+
+        (new Notifier($this->invoice))->sendNotificationToCustomer();
+    }
+
+    protected function buildAndSaveInvoice(array $input)
+    {
+        $this->associateCustomerWithInvoice($input);
+
+        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+
+        $this->createAndAssociateOrderForInvoice();
+
+        $this->setShortUrl();
+
+        $this->repo->saveOrFail($this->invoice);
+    }
+
+    protected function setShortUrl()
+    {
+        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
+
+        $shortenedUrl = $this->bitly->shortenUrl($longUrl);
+
+        $this->trace->info(
+            TraceCode::INVOICE_LINKS,
+            [
+                'invoice_id' => $this->invoice->getId(),
+                'short_url' => $shortenedUrl,
+                'long_url' => $longUrl,
+            ]
+        );
+
+        $this->invoice->setShortUrl($shortenedUrl);
+    }
+
     protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $input)
     {
         $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
@@ -245,14 +247,6 @@ class Generator extends Base\Core
 
     protected function createAndAssociateOrderForInvoice()
     {
-        if ($this->invoice->isDraft())
-        {
-            return;
-        }
-
-        $this->invoice->getValidator()
-                      ->validateInvoiceIssue($this->invoice);
-
         $orderAmount = $this->invoice->getAmount();
 
         $orderCurrency = $this->invoice->getCurrency();

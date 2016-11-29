@@ -11,6 +11,8 @@ use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
@@ -30,15 +32,15 @@ class Core extends Base\Core
             $input
         );
 
-        if ((empty($input[Entity::DRAFT]) === false) and
-            ($input[Entity::DRAFT] === '1'))
+        $operation = Validator::CREATE_ISSUED;
+
+        if (isset($input[Entity::DRAFT]) and
+            boolval($input[Entity::DRAFT]))
         {
-            $invoice = (new Generator($merchant))->generateDraft($input);
+            $operation = Validator::CREATE_DRAFT;
         }
-        else
-        {
-            $invoice = (new Generator($merchant))->generate($input);
-        }
+
+        $invoice = (new Generator($merchant))->generate($input, $operation);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -52,45 +54,32 @@ class Core extends Base\Core
     {
         $status = $invoice->getStatus();
 
-        $ruleValidator = 'edit_' . $status;
+        $invoice->getValidator()
+                ->validateOperation($status, [Status::DRAFT, Status::ISSUED]);
 
-        $invoice->edit($input, $ruleValidator);
+        $operation = 'edit_' . $status;
 
-        $updateFunction = 'update_' . studly_case($status) . 'Invoice';
+        $invoice->edit($input, $operation);
 
-        $this->$updateFunction($invoice, $input);
+        $updateFunction = 'update' . studly_case($status) . 'Invoice';
+
+        $this->$updateFunction($invoice, $input, $merchant);
 
         $this->repo->saveOrFail($invoice);
-
-        // $this->repo->transaction(
-        //     function() use ($invoice, $merchant, $input)
-        //     {
-        //         $invoice->edit($input);
-        //
-        //         $this->consumeExtraInputKeys($invoice, $input);
-        //
-        //         (new Generator($merchant, $invoice))->update($input);
-        //
-        //         $this->repo->saveOrFail($invoice);
-        //     }
-        // );
 
         return $invoice;
     }
 
-    public function updateDraftInvoice(Entity $invoice, array $input)
+    public function issue(Entity $invoice, Merchant\Entity $merchant)
     {
-        // TODO: email and sms status should be generated based on the update input received
-        // ref_num uniques check and proper error to be thrown
-        // handle customer edits in draft here
-        // ensure this whole thing is in transaction since customer may also get created here
-    }
+        $invoice->getValidator()
+                ->validateInvoiceIssue($invoice);
 
-    public function updateIssuedInvoice(Entity $invoice, array $input)
-    {
-        // TODO: ref_num unique check
+        $invoice->setStatus(Status::ISSUED);
 
-        // $invoice->getValidator()->validateOperation();
+        $this->repo->saveOrFail($invoice);
+
+        return $invoice;
     }
 
     public function delete(Entity $invoice)
@@ -300,6 +289,44 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
+
+    public function updateDraftInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
+    {
+        try {
+            $this->repo->transaction(
+                function() use ($invoice, $merchant, $input)
+                {
+                    $this->consumeExtraInputKeys($invoice, $input);
+
+                    (new Generator($merchant, $invoice))->update($input);
+
+                    $this->repo->saveOrFail($invoice);
+                }
+            );
+        }
+        catch (\Exception $e)
+        {
+            // Check if is Mysql duplicate on unique index error
+            if ($e instanceof \Illuminate\Database\QueryException
+                and $e->errorInfo[1] == 1062)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $this->invoice->getId(),
+                        'input'         => $input,
+                    ]);
+            }
+
+            throw $e;
+        }
+    }
+
+    public function updateIssuedInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
+    {
+    }
+
     /**
      * Whenever invoice gets updated via add/update/delete of it's line items,
      * The invoice amount is calculated and set again.
@@ -324,8 +351,14 @@ class Core extends Base\Core
      */
     protected function consumeExtraInputKeys(Entity $invoice, array $input)
     {
-        $invoice->generateStatus($input);
-        $invoice->generateEmailStatus($input);
-        $invoice->generateSmsStatus($input);
+        if (isset($input[Entity::EMAIL_NOTIFY]))
+        {
+            $invoice->generateEmailStatus($input);
+        }
+
+        if (isset($input[Entity::SMS_NOTIFY]))
+        {
+            $invoice->generateSmsStatus($input);
+        }
     }
 }
