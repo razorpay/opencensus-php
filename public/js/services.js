@@ -300,6 +300,8 @@ angular.module('app.services', [])
       addOrEditRole: function (role) {
         var deferred = $q.defer();
         var _this = this;
+        var roleId = role.id;
+        delete role.id;
 
         // Request for creating
         var request_data = {
@@ -313,13 +315,13 @@ angular.module('app.services', [])
           }
         }
 
-        if (role.role_id) {
+        if (roleId) {
           request_data = $.extend(request_data, {
             method: 'PUT',
             params: {
               route_name: 'role_edit',
               url_params: {
-                '{roleId}': role.role_id
+                '{roleId}': roleId
               }
             },
 

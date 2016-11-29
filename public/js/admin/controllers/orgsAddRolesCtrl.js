@@ -38,6 +38,7 @@ app.controller('OrgsAddRolesCtrl', [
           $scope.role = {
             name: data.data.name,
             description: data.data.description,
+            id: data.data.id,
           };
 
           data.data.permissions.forEach(function (permission) {
