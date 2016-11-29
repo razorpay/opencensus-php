@@ -101,6 +101,8 @@ app.controller('AddGroupCtrl', [
     $scope.save = function (group) {
       var body = angular.extend({}, group);
 
+      delete body.sub_groups;
+
       // Reset body parents, we'll fill in values basis the selected ones from UI
       body.parents = [];
 
