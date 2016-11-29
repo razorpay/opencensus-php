@@ -9,7 +9,6 @@ use RZP\Models\Base\EsDao;
 use RZP\Constants\Mode;
 USE RZP\Trace\TraceCode;
 
-
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -58,7 +57,7 @@ class AuditLogListener
 
         $config = $this->app['config'];
 
-        $mode = (empty($this->app['rzp.mode'] === true)) ? Mode::TEST : $this->app['rzp.mode'];
+        $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
         $this->baseIndex = $config->get('database.es_heimdall')[$mode];
     }
@@ -72,22 +71,83 @@ class AuditLogListener
      */
     public function handle(AuditLogEntry $event)
     {
-        // Get event data as $event->data
-        // Access data as $event->data;
-        // Get dirty data and details from event data
-        // save to es
-        // $event = $this->event->firing();
+        // strtolower since index names must be lowercase
+        $index = strtolower($this->baseIndex);
 
-        // steps for adding to ES
-        // 1. Create an index against the org id (we want different organizations to have different org ids)
-        // 2. Store the event data
-        // Note: elastic search index names are always in lower case. Hence, to search
-        // always convert the index name to lower case and search
+        $type = 'audit_log';
 
-        $indexName  = strtolower($this->baseIndex . '_' . $event->admin->org->getId());
-sd($indexName);
-        $this->esDao->storeAdminEvent($indexName, $event->admin, $event->action,
-                                        $event->customProperties,$this->event->firing());
+        $fields = [];
+
+        $admin = $event->admin;
+
+        // Whitelisting admin props we need to log
+        $fields['admin'] = [
+            'id'        => $admin['id'],
+            'username'  => $admin['username'],
+            'email'     => $admin['email'],
+            'name'      => $admin['name'],
+
+            'org_id'    => $admin['org_id'],
+
+            'employee_code'     => $admin['employee_code'],
+            'branch_code'       => $admin['branch_code'],
+            'department_code'   => $admin['department_code'],
+            'supervisor_code'   => $admin['supervisor_code'],
+            'location_code'     => $admin['location_code'],
+
+            'roles'     => [],
+            'groups'    => [],
+        ];
+
+        // Roles
+        if (isset($admin['roles']))
+        {
+            $fields['admin']['roles'] = array_map(function ($role)
+            {
+                return $role['name'];
+            }, $admin['roles']);
+        }
+
+        if (isset($admin['groups']))
+        {
+            $fields['admin']['groups'] = array_map(function ($role)
+            {
+                return $role['name'];
+            }, $admin['groups']);
+        }
+
+        // Event specific
+        $fields['category']     = $event->action['category'] ?? null;
+        $fields['label']        = $event->action['label'] ?? null;
+        $fields['action']       = $event->action['action'] ?? null;
+        $fields['description']  = $event->description ?? null;
+
+        // Entity specific
+        $fields['entity']       = $event->entity ?? null;
+
+        // Meta
+        $fields['user_agent']   = \Request::header('User-Agent') ?? null;
+        $fields['ip_address']   = \Request::ip() ?? null;
+        $fields['created_at']   = time();
+
+        // org_id, mode, etc.
+        $fields['extra'] = [
+            'org_id' => $event->admin['org_id']
+        ];
+
+        $fields['internal'] = [
+            // firing() - Gets the event that is currently firing
+            'event' => $this->event->firing(),
+
+            // We can add more info like caller class/function/line,
+            // environment, etc.
+        ];
+
+        // $fields['extra'] = ...;
+
+        $this->esDao->storeAdminEvent(
+            $index, $type, $fields
+        );
 
         $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, [$event]);
     }

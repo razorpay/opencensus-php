@@ -50,6 +50,7 @@ class Service extends Base\Service
 
             $validate = $this->authPolicy->validateLogin($admin, $input['password'], 'after');
 
+            // Send admin, description, entity object
             $this->fireAdminAction($admin, Action::LOGIN);
 
             if ($validate !== null)
@@ -74,6 +75,12 @@ class Service extends Base\Service
     protected function fireAdminAction($admin, $action, $customProperties = null)
     {
         \App::getFacadeRoot()['trace']->info("MISC_TRACE_CODE", ["admin" => $admin, "action" => $action]);
+
+        if (!is_array($admin))
+        {
+            $admin = $admin->toArrayPublic();
+        }
+
         $this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
@@ -97,7 +104,7 @@ class Service extends Base\Service
         else
         {
             $admin->incrementFailedAttempts();
-            
+
             $this->fireAdminAction($admin, Action::LOGIN_FAIL_OUATH, ['failed_attempts' => $admin->getFailedAttempts()]);
 
             $this->repo->saveOrFail($admin);

@@ -53,7 +53,7 @@ class EsDao
         $this->es->setEsClient($params);
 
         $params['hosts'] = [$heimdallHost];
-        
+
         $this->esHeimdall->setEsClient($params);*/
     }
 
@@ -68,7 +68,7 @@ class EsDao
         ];
 
         $es->setEsClient($params);
-        
+
         return $es;
     }
 
@@ -297,38 +297,19 @@ class EsDao
         return $this->es->changeIndexSettings($params);
     }
 
-    public function storeAdminEvent($indexName, $admin, $action, $customProperties, $caller)
+    // $admin, $action, $customProperties, $caller
+    public function storeAdminEvent($index, $type, $fields)
     {
-
-        $created = time();
-
-        // Note: createIndex has been implemented in the wrong way in EsClient.php
-        // Documentation says $this->client->index($params)
-        // [Source: https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_quickstart.html].
-        // However Esclient implements something like $this->client->indices()->create which
-        // does not allow the default params. Hence, using the getClient function from EsClient
-        // and using it to create the necessary documents/indexes
-
-
         $params = [
-            'index' => $indexName,
-            'type'  => 'admin',
-            'body'  => [
-                'created' => $created,
-                'admin' => (object) $admin->toArrayPublic(),
-                'action' => $action,
-                'caller' => $caller
-                ]
+            'index' => $index,
+            'type'  => $type,
+            'body'  => $fields
         ];
 
-        if ((empty($customProperties) === false) and (is_array($customProperties) === true))
-        {
-            $params['body']['extra'] = (object) $customProperties;
-        }
-
         $updateReponse = $this->esHeimdall->createIndex($params);
+
         // TODO: log this if need arises
 
-        sd($updateReponse);
+        // sd($updateReponse);
     }
 }
