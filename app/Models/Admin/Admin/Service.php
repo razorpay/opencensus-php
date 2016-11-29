@@ -105,7 +105,14 @@ class Service extends Base\Service
 
         $admin = $this->core()->create($input, $org);
 
-        return $admin->toArrayPublic();
+        $admin = $admin->toArrayPublic();
+
+        if (isset($admin) === true)
+        {
+            $this->sendAdminCreateEmail($admin, $input);
+        }
+
+        return $admin;
     }
 
     public function sendAdminCreateEmail($data, $input)
