@@ -69,7 +69,7 @@ class Org extends Base
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::RZP_USER,
-            'token'      => 'SecretTokenForRazorpayAdminAuthentication',
+            'token'      => self::DEFAULT_TOKEN,
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);

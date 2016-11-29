@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 
