@@ -28,6 +28,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function retrieveIdsByNames(array $permNames)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::NAME, $permNames)
+                    ->get(['id']);
+    }
+
     public function fetchAll($input)
     {
         return $this->newQuery()
