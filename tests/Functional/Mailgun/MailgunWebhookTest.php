@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Mailgun;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Constants\MailTags;
+use RZP\Constants\HashAlgo;
+use Config;
 
 class MailgunWebhookTest extends TestCase
 {
@@ -21,12 +23,16 @@ class MailgunWebhookTest extends TestCase
 
     public function testValidEmailTag()
     {
-        $this->startTest();
+        $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
+
+        $this->startTest($testDataReplace);
     }
 
     public function testNoEmailTag()
     {
-        $this->startTest();
+        $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
+
+        $this->startTest($testDataReplace);
     }
 
     public function testEmailTagOutOfWebhookScope()
@@ -35,13 +41,34 @@ class MailgunWebhookTest extends TestCase
 
         $this->assertNotContains($testData['request']['content']['X-Mailgun-Tag'], MailTags::$notifyTags);
 
-        $this->startTest();
+        $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
+
+        $this->startTest($testDataReplace);
     }
 
     public function testInvalidSignature()
     {
         $testData = $this->testData[__FUNCTION__];
 
+        $testDataReplace = $this->getRequestVariableData('random_invalid_mailgun_key');
+
+        $this->replaceValuesRecursively($testData, $testDataReplace);
+
         $this->runRequestResponseFlow($testData);
+    }
+
+    protected function getRequestVariableData($apiKey)
+    {
+        $timestamp = time();
+
+        $token = '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105';
+
+        $testData['request']['content'] = [
+            'token'     => $token,
+            'timestamp' => $timestamp,
+            'signature' => hash_hmac(HashAlgo::SHA256, $timestamp . $token, $apiKey)
+        ];
+
+        return $testData;
     }
 }
