@@ -226,4 +226,14 @@ class Core extends Base\Core
 
         $this->callUpiGateway('makeRequest', $input);
     }
+
+    protected function RespAuthDetails($arr)
+    {
+        $input = [
+            'method'    =>  'RespAuthDetails',
+            'params'    =>  $arr,
+        ];
+
+        $this->callUpiGateway('makeRequest', $input);
+    }
 }

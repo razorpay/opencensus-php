@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
         'RespListAccPvd',
         // Someone wants to reset MPIN
         'ReqSetCre',
+        // Translate some addresses
+        'ReqAuthDetails',
     ];
 
     protected $gateway = 'upi_npci';
@@ -157,6 +159,51 @@ EOT;
         ];
 
         return $creds;
+    }
+
+
+    protected function preProcessReqAuthDetails($msgId, $request)
+    {
+        $payee = $request->getPayees()[0];
+        $payer = $request->getPayer();
+        $identity = new \Razorpay\UPI\IdentityType;
+
+        $identity->setType('ACCOUNT');
+        $identity->setVerifiedName('Hari Ram');
+
+        $info = new \Razorpay\UPI\InfoType;
+        $info->setIdentity($identity);
+
+        $ac = new \Razorpay\UPI\AccountType;
+
+        $ac->setAddrType('ACCOUNT');
+
+        $detail = new \Razorpay\UPI\AccountType\DetailAType;
+        $detail->setName('IFSC');
+        $detail->setValue('RAZR0000001');
+        $ac->addToDetail($detail);
+
+        $detail = new \Razorpay\UPI\AccountType\DetailAType;
+        $detail->setName('ACTYPE');
+        $detail->setValue('SAVINGS');
+        $ac->addToDetail($detail);
+
+        $detail = new \Razorpay\UPI\AccountType\DetailAType;
+        $detail->setName('ACNUM');
+        // TODO: Set this in core somehow later
+        // in the post processing
+        $detail->setValue('12345');
+        $ac->addToDetail($detail);
+
+        $payee->setAc($ac);
+
+        $request->setPayees([$payee]);
+
+        return [
+            'payee' =>  $payee,
+            'payer' =>  $payer,
+            'txn'   =>  $request->getTxn()
+        ];
     }
 
     protected function preProcessReqSetCre($msgId, $request)
@@ -303,7 +350,8 @@ EOT;
             'ReqListAccount'    =>  'RespListAccount',
             'ReqRegMob'         =>  'RespRegMob',
             'RespListKeys'      =>  'UpdateKeyStore',
-            'RespListAccPvd'    =>  null
+            'RespListAccPvd'    =>  null,
+            'ReqAuthDetails'    =>  'RespAuthDetails'
         ];
 
         return $jobs[$api];
@@ -355,6 +403,44 @@ EOT;
 
         switch ($method) {
 
+            case 'RespAuthDetails':
+                $payee = $params['payee'];
+                $payer = $params['payer'];
+                $txn = $params['txn'];
+
+                $reqMsgId = $params['reqMsgId'];
+                $str = <<<EOT
+<upi:RespAuthDetails xmlns:upi="http://npci.org/upi/schema/">
+<Txn id="{$txn->getId()}" note="{$txn->getNote()}" refId="{$txn->getRefId()}" custRef="{$txn->getCustRef()}" refUrl="{$txn->getRefUrl()}" ts="{$txn->getTs()}" type="{$txn->getType()}" />
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<Resp reqMsgId="$reqMsgId" result="SUCCESS" />
+<Payer addr="nemo@razor" code="0000" name="Hari Ram" seqNum="1" type="PERSON">
+    <Info>
+        <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
+    </Info>
+    <Ac addrType="ACCOUNT">
+        <Detail name="IFSC" value="RAZR0000001"/>
+        <Detail name="ACTYPE" value="SAVINGS"/>
+        <Detail name="ACNUM" value="1234"/>
+    </Ac>
+    <Amount curr="INR" value="500.00"/>
+</Payer>
+<Payees>
+<Payee addr="{$payee->getAddr()}" name="Hari Ram" seqNum="2" type="PERSON">
+    <Ac addrType="{$payee->getAc()->getAddrType()}" name="Hari Ram">
+        <Detail name="IFSC" value="RAZR0000001"/>
+        <Detail name="ACTYPE" value="SAVINGS"/>
+        <Detail name="ACCNUM" value="12345"/>
+    </Ac>
+    <Amount value="500.00" curr="INR"/>
+</Payee>
+</Payees>
+</upi:RespAuthDetails>
+EOT;
+
+// sd($str);
+            break;
+
             case 'RespRegMob':
             $result = $params['success'];
             $reqMsgId = $params['reqMsgId'];
@@ -378,58 +464,46 @@ $str = <<<EOT
 EOT;
     break;
         case 'ReqPay':
+            $txnId = "RAZEAF93A1939E3458BA71F03F57D25242F";
             $str = <<<EOT
-<upi:ReqPay
-    xmlns:upi="http://npci.org/upi/schema/">
-    <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">
+    <Head msgId="$msgId" orgId="$orgId" ts="$ts" ver="1.0"/>
     <Meta>
         <Tag name="PAYREQSTART" value="$ts"/>
-        <Tag name="PAYREQEND" value="2017-01-01T20:23:02+05:30"/>
     </Meta>
-    <Txn custRef="111111114423" id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="COLLECT">
-        <RiskScores>
-            <Score provider="sp" type="TXNRISK" value="0"/>
-        </RiskScores>
-        <Rules>
-            <Rule name="EXPIREAFTER" value="50"/>
-            <Rule name="MINAMOUNT" value="0.00"/>
-        </Rules>
+    <Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="PAY" custRef="111222233334">
+    <RiskScores/>
     </Txn>
-    <Payer addr="yv@razor" name="Some Person" seqNum="1" type="PERSON" code="0000">
+    <Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON">
         <Info>
-            <Identity type="ACCOUNT" verifiedName="Some Person" />
-            <Rating verifiedAddress="FALSE"/>
+            <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
         </Info>
-        <Amount value="100.00" curr="INR">
-        <Split name="PURCHASE" value="100.00"/>
-        </Amount>
+        <Ac addrType="ACCOUNT">
+            <Detail name="IFSC" value="RAZR0000001"/>
+            <Detail name="ACTYPE" value="SAVINGS"/>
+            <Detail name="ACNUM" value="1234"/>
+        </Ac>
+        <Device>
+            <Tag name="MOBILE" value="919639516176"/>
+            <Tag name="GEOCODE" value="12.9667,77.5667"/>
+            <Tag name="LOCATION" value="Sarjapur Road, Bangalore, KA, IN"/>
+            <Tag name="IP" value="1.2.3.4"/>
+            <Tag name="ID" value="358960060336586"/>
+            <Tag name="OS" value="Android 5.3"/>
+            <Tag name="APP" value="com.razorpay.upi.sampleapp"/>
+            <Tag name="CAPABILITY" value="011001"/>
+        </Device>
+        <Creds>
+            <Cred subType="MPIN" type="PIN">
+                <Data code="NPCI" ki="20150822">2.0|uWbL88708ieqD5VyfOY4IPuYZFzZlga3WXEk9BebWH9jHMojS85bjYyM88TCcQC4Wq/Q1ISb59Gw3B3UKj6GfKp4lCRPwEKsvhmkoQwJn/OdSy0QiU6w0Hb8LBQuVrBgIJ0EpvjNqjntS72ecI3F9RfnZMYzEPMbJXmTxV5G13mthllhOKZ13Qy5ovswsnS0uy1JLPxYz/p6S2c6qfFgqLMXF/x1/UqOVKEa0e9AzAc2P/Cz9JP/0FgfOARQvI2QE5DYFUwQXQgdvrZ068iFe/pLHZOmSr3xwa0stlT8Js6QmgWraELYJ5Ki1huUGALPU1ZAcGTJP9xuD1xJ+gPU1w==</Data>
+            </Cred>
+        </Creds>
+        <Amount curr="INR" value="500.00"/>
     </Payer>
     <Payees>
-        <Payee addr="test@razor" name="Test Account" seqNum="1" type="PERSON" code="0000">
-            <Info>
-                <Identity type="ACCOUNT" verifiedName="Test Account Razorpay" />
-                <Rating verifiedAddress="FALSE"/>
-            </Info>
-            <Amount value="100.00" curr="INR">
-                <Split name="PURCHASE" value="100.00"/>
-            </Amount>
-            <Device>
-                <Tag name="MOBILE" value="918861670264"/>
-                <Tag name="GEOCODE" value="12.9667,77.5667"/>
-                <Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
-                <Tag name="IP" value="182.74.201.50"/>
-                <Tag name="TYPE" value="MOB"/>
-                <Tag name="ID" value="869649022152494"/>
-                <Tag name="OS" value="Android"/>
-                <Tag name="APP" value="com.razorpay.sampleapp"/>
-                <Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
-            </Device>
-            <Ac addrType="ACCOUNT">
-            <Detail name="IFSC" value="RAZR0123456"/>
-            <Detail name="ACTYPE" value="SAVINGS"/>
-            <Detail name="ACNUM" value="12312312312"/>
-            </Ac>
-        </Payee>
+        <Payee name="Hari" seqNum="2" type="PERSON" addr="hari@razor">
+        <Amount curr="INR" value="500.00"/>
+    </Payee>
     </Payees>
 </upi:ReqPay>
 EOT;
