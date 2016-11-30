@@ -12,14 +12,15 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
-        $adminInput = $input['admin'];
-        $adminInput['email'] = $input['email'];
-
         $org = $this->core()->create($input);
 
         $role = $this->createDefaultRole($org);
 
+        $adminInput = $input['admin'];
+
         $adminInput['roles'] = (array) $role->getPublicId();
+
+        $adminInput['email'] = $input['email'];
 
         (new Admin\Core)->create($org, $adminInput);
 
