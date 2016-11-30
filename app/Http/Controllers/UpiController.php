@@ -45,14 +45,19 @@ class UpiController extends Controller
 
     public function getStatus($originalMsgId)
     {
-        $response =  Cache::get("UPI.$originalMsgId.response");
+        $json =  Cache::get("UPI.$originalMsgId.response");
 
-        return ApiResponse::json($response);
+        if (isset($json['success']))
+        {
+            $json['success'] = ($json['success'] === 'SUCCESS');
+        }
+
+        return ApiResponse::json($json);
     }
 
     public function getBankList()
     {
-        $json = json_decode(Cache::get('UPI.RespListAccPvd'));
+        $json = json_decode(Cache::get('UPI.RespListAccPvd'), true);
 
         return ApiResponse::json($json);
     }
