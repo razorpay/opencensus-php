@@ -452,20 +452,49 @@ class Service extends Base\Service
         return $success;
     }
 
-    public function setMpin($customerId, $input)
+    public function setMpin($customerId, $bankAccountId, $input)
     {
-        $accountNumber = $input['bank_account_number'];
         $deviceId = $input['device_id'];
         Device\Entity::stripSignWithoutValidation($deviceId);
         Entity::stripSignWithoutValidation($customerId);
+        Entity::stripSignWithoutValidation($bankAccountId);
 
         $customer = $this->repo->customer->findOrFail($customerId);
 
-        $bankAccount = $this->repo->bank_account->findFirstBankAccountByAccountNumber($accountNumber);
+        $bankAccount = $this->repo->bank_account->find($bankAccountId);
 
         $device = $this->repo->device->findOrFail($deviceId);
 
+        // Confirm ownership of device and bank account
+        // TODO: move to repo
+        assertTrue($bankAccount->getEntityId() === $customerId);
+        assertTrue($device->getCustomerId() === $customerId);
+
         $response = (new Customer\Core)->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+
+        return $response;
+    }
+
+    public function resetMpin($customerId, $bankAccountId, $input)
+    {
+        $deviceId = $input['device_id'];
+
+        Entity::stripSignWithoutValidation($customerId);
+        Device\Entity::stripSignWithoutValidation($deviceId);
+        Entity::stripSignWithoutValidation($bankAccountId);
+
+        $customer = $this->repo->customer->findOrFail($customerId);
+
+        $bankAccount = $this->repo->bank_account->find($bankAccountId);
+
+        $device = $this->repo->device->findOrFail($deviceId);
+
+        // Confirm ownership of device and bank account
+        // TODO: move to repo
+        assertTrue($bankAccount->getEntityId() === $customerId);
+        assertTrue($device->getCustomerId() === $customerId);
+
+        $response = (new Customer\Core)->sendResetMpinRequestToGateway($device, $customer, $bankAccount, $input);
 
         return $response;
     }

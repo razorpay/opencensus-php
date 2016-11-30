@@ -26,6 +26,8 @@ class Gateway extends Base\Gateway
         'ReqRegMob',
         // We got a list
         'RespListAccPvd',
+        // Someone wants to reset MPIN
+        'ReqSetCre',
     ];
 
     protected $gateway = 'upi_npci';
@@ -73,77 +75,6 @@ class Gateway extends Base\Gateway
 EOT;
 
         $this->fireRequest($method, $txnId, $str);
-
-        return ['txn_id' => $txnId, 'msg_id' => $msgId];
-    }
-
-    /**
-     * Inputs:
-     *     $device = device entity array
-     *     $customer = customer entity array
-     *     bank_account = bank account entity array
-     *     input =
-     *         last6
-     *         expiry (MMYY)
-     *         otpcredblock
-     *         mpincredblock
-     *         vpa (something@razor)
-     * @param
-     */
-    public function ReqRegMob($params)
-    {
-        $device = $params['device'];
-        $input = $params['input'];
-        $customer = $params['customer'];
-        $bankAccount = $params['bank_account'];
-
-        extract($this->getCommonVariables());
-
-        $this->trace->info('MISC_TRACE_CODE', $params);
-
-        if (isset($input['txnId']))
-        {
-            $txnId = $input['txnId'];
-        }
-
-        $str = <<<EOT
-<upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
-<Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
-<Payer addr="{$input['vpa']}" name="Razorpay Customer" seqNum="1" type="PERSON" code="0000">
-<Device>
-<Tag name="MOBILE" value="{$customer['contact']}"/>
-<Tag name="GEOCODE" value="12.9667,77.5667"/>
-<Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
-<Tag name="IP" value="182.74.201.50"/>
-<Tag name="TYPE" value="MOB"/>
-<Tag name="ID" value="{$device['imei']}"/>
-<Tag name="OS" value="Android"/>
-<Tag name="APP" value="{$device['package_name']}"/>
-<Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
-</Device>
-<Ac addrType="ACCOUNT">
-<Detail name="IFSC" value="RAZR0000001"/>
-<Detail name="ACTYPE" value="SAVINGS"/>
-<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
-</Ac>
-</Payer>
-<RegDetails type="FORMAT1">
-<Detail name="MOBILE" value="{$customer['contact']}"/>
-<Detail name="CARDDIGITS" value="{$input['last6']}"/>
-<Detail name="EXPDATE" value="{$input['expiry']}"/>
-<Creds>
-<Cred type="OTP" subType="SMS">
-<Data code="NPCI" ki="20150822">{$input['otpcredblock']}</Data>
-</Cred>
-<Cred type="PIN" subType="MPIN">
-<Data code="NPCI" ki="20150822">{$input['mpincredblock']}</Data>
-</Cred>
-</Creds>
-</RegDetails>
-</upi:ReqRegMob>
-EOT;
-        $this->fireRequest('ReqRegMob', $txnId, $str);
 
         return ['txn_id' => $txnId, 'msg_id' => $msgId];
     }
@@ -204,6 +135,31 @@ EOT;
     }
 
     protected function preProcessReqRegMob($msgId, $request)
+    {
+        $creds = [];
+
+        $account = $request->getPayer()->getAc();
+
+
+        $details = $request->getRegDetails();
+        $creds['last6'] = $details->getDetailByName('CARDDIGITS');
+        $creds['expiry'] = $details->getDetailByName('EXPDATE');
+
+        $creds['otp'] = $this->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
+        $creds['mpin'] = $this->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
+
+        // $creds['otp'] = $details->getCredByTypeAndSubType('OTP', 'SMS');
+        // $creds['mpin'] = $details->getCredByTypeAndSubType('PIN', 'MPIN');
+
+        $creds['account'] = [
+            'IFSC'  =>  $account->getDetailByName('IFSC'),
+            'NUM'   =>  $account->getDetailByName('ACNUM')
+        ];
+
+        return $creds;
+    }
+
+    protected function preProcessReqSetCre($msgId, $request)
     {
         $creds = [];
 
@@ -546,24 +502,35 @@ EOT;
                 break;
 
             case 'ReqSetCre':
+                $input          = $params['input'];
+                $customer       = $params['customer'];
+                $device         = $params['device'];
+                $bankAccount    = $params['bank_account'];
+
+                // The txnId must be provided by the sdk in this case
+                if (isset($input['txnId']))
+                {
+                    $txnId = $input['txnId'];
+                }
+
                 $str = <<<EOT
 <upi:ReqSetCre xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="SetCre"/>
-<Payer addr="hari@razor" name="Hari Ram" seqNum="1" type="PERSON" code="0000">
+<Payer addr="{$customer['id']}@razor" name="Unknown" seqNum="1" type="PERSON" code="0000">
 <Ac addrType="ACCOUNT">
 <Detail name="IFSC" value="RAZR"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
-<Detail name="ACNUM" value="8861670264"/>
+<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
 </Ac>
 <Creds>
-    <Cred type="OTP" subType="SMS">
-        <Data>2.0|wjUDl1U9zVyzXuE8uW3B3H8ldTatFxTXRsS6fmCtOkHUHaVsPBv9PxWgM0cs9c5Z2Vnbr6ByUzRuF0s3/vXre9WHripeygg7/FS8aXfWRf68LEYuy1biNuR4d8TTLjJb7SUqg8nDp856sZpWgex51FqG6VHQ3OSyb0AQHQ/REJcm0KMWXAcaCTllf32yKrgYVnU0rVS9HerTq5nv9ar7ERLU1OovK4PVRZ2imLY261d46fQn/iFOjyM6Mb3HrecxzNo/CY0Jat2N1LIJ9dx5TFfBBmi0eiCiq+foz/5gGcv67Bj2sWb6zhmvD97zTAFx/mf94d2eLPpk8FOFdV7UBQ==</Data>
+    <Cred type="PIN" subType="MPIN">
+        <Data>{$input['mpincredblock']}</Data>
     </Cred>
 </Creds>
 <NewCred>
     <Cred type="PIN" subType="MPIN">
-        <Data>2.0|rWTunhgMF8IojvDkoEM4UnG6B9z9WqC9sxDwKh+Km4m8A1z9ZqfeGLt9NY8Tq/CZ073fpvbx5eXZMp+B3rhzIqm/QhjDcpNeDsuW745KIo//eM5aY+bDsqJUrl4TM0tS3vt9DV+kLuvcrCkQCgeVeKRAB5QpHEtKybyI9gOPlb3U5OhwZ8Uxqe4VkRAzWBtKchmyL8f5Vky3BAsXejIcV70LRwdLhq0XNqSYj8ROEOacHekBfAw6ohP0+KOJpituloB/y82KHExYE56WO67tblYcci2/g3ZkyZNSCREGGE8HyHZNexvYKcjkHcbnRILZbQfq+dlp1/0QxjWFT6ngEQ==</Data>
+        <Data>{$input['nmpincredblock']}</Data>
     </Cred>
 </NewCred>
 </Payer>
@@ -572,41 +539,48 @@ EOT;
             break;
 
             case 'ReqRegMob':
+                $input          = $params['input'];
+                $customer       = $params['customer'];
+                $device         = $params['device'];
+                $bankAccount    = $params['bank_account'];
+
+                // The txnId must be provided by the sdk in this case
+                if (isset($input['txnId']))
+                {
+                    $txnId = $input['txnId'];
+                }
             $str = <<<EOT
 <upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
-<Payer addr="hari@razor" name="Hari Ram" seqNum="1" type="PERSON" code="0000">
+<Payer addr="{$customer['id']}@razor" name="Razorpay Customer" seqNum="1" type="PERSON" code="0000">
 <Device>
-<Tag name="MOBILE" value="918861670264"/>
+<Tag name="MOBILE" value="{$customer['contact']}"/>
 <Tag name="GEOCODE" value="12.9667,77.5667"/>
 <Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
 <Tag name="IP" value="182.74.201.50"/>
 <Tag name="TYPE" value="MOB"/>
-<Tag name="ID" value="869649022152494"/>
+<Tag name="ID" value="{$device['imei']}"/>
 <Tag name="OS" value="Android"/>
-<Tag name="APP" value="com.razorpay.sampleapp"/>
+<Tag name="APP" value="{$device['package_name']}"/>
 <Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
 </Device>
 <Ac addrType="ACCOUNT">
-<Detail name="IFSC" value="RAZR"/>
+<Detail name="IFSC" value="RAZR0000001"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
-<Detail name="ACNUM" value="8861670264"/>
-</Ac>
-<Ac addrType="MOBILE">
-<Detail name="MOBNUM" value="918861670264"/>
+<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
 </Ac>
 </Payer>
 <RegDetails type="FORMAT1">
-<Detail name="MOBILE" value="918861670264"/>
-<Detail name="CARDDIGITS" value="123456"/>
-<Detail name="EXPDATE" value="1224"/>
+<Detail name="MOBILE" value="{$customer['contact']}"/>
+<Detail name="CARDDIGITS" value="{$input['last6']}"/>
+<Detail name="EXPDATE" value="{$input['expiry']}"/>
 <Creds>
 <Cred type="OTP" subType="SMS">
-<Data code="NPCI" ki="20150822">2.0|wjUDl1U9zVyzXuE8uW3B3H8ldTatFxTXRsS6fmCtOkHUHaVsPBv9PxWgM0cs9c5Z2Vnbr6ByUzRuF0s3/vXre9WHripeygg7/FS8aXfWRf68LEYuy1biNuR4d8TTLjJb7SUqg8nDp856sZpWgex51FqG6VHQ3OSyb0AQHQ/REJcm0KMWXAcaCTllf32yKrgYVnU0rVS9HerTq5nv9ar7ERLU1OovK4PVRZ2imLY261d46fQn/iFOjyM6Mb3HrecxzNo/CY0Jat2N1LIJ9dx5TFfBBmi0eiCiq+foz/5gGcv67Bj2sWb6zhmvD97zTAFx/mf94d2eLPpk8FOFdV7UBQ==</Data>
+<Data code="NPCI" ki="20150822">{$input['otpcredblock']}</Data>
 </Cred>
 <Cred type="PIN" subType="MPIN">
-<Data code="NPCI" ki="20150822">2.0|rWTunhgMF8IojvDkoEM4UnG6B9z9WqC9sxDwKh+Km4m8A1z9ZqfeGLt9NY8Tq/CZ073fpvbx5eXZMp+B3rhzIqm/QhjDcpNeDsuW745KIo//eM5aY+bDsqJUrl4TM0tS3vt9DV+kLuvcrCkQCgeVeKRAB5QpHEtKybyI9gOPlb3U5OhwZ8Uxqe4VkRAzWBtKchmyL8f5Vky3BAsXejIcV70LRwdLhq0XNqSYj8ROEOacHekBfAw6ohP0+KOJpituloB/y82KHExYE56WO67tblYcci2/g3ZkyZNSCREGGE8HyHZNexvYKcjkHcbnRILZbQfq+dlp1/0QxjWFT6ngEQ==</Data>
+<Data code="NPCI" ki="20150822">{$input['mpincredblock']}</Data>
 </Cred>
 </Creds>
 </RegDetails>
