@@ -16,33 +16,30 @@ class Service extends Base\Service
 
     public function getBalance(string $customerId) : array
     {
-        $wallet = $this->repo->wallets->findByCustomerIdAndMerchant($customerId, $this->merchant);
+        $wallet = $this->repo->wallets
+                       ->findByCustomerIdAndMerchant($customerId, $this->merchant);
 
         return $wallet->toArrayPublic();
     }
 
-    public function getTransactionStatement($customerId)
+    public function credit(Customer\Entity $customer, int $amount)
     {
-
-    }
-
-    public function loadMoney($customerId, int $amount) : array
-    {
-        $wallet = $this->core->fetchOrCreate($customerId);
+        $wallet = $this->core->fetchOrCreate($customer->getPublicId());
 
         return $this->core->credit($wallet, $amount)->toArrayPublic();
+    }
+
+    public function debit(Customer\Entity $customer, int $amount)
+    {
+        $wallet = $this->repo->wallets
+                       ->findByCustomerIdAndMerchant($customer->getPublicId(), $this->merchant);
+
+        return $this->core->debit($wallet, $amount);
     }
 
     public function sendMoney($customerId, array $input)
     {
 
-    }
-
-    public function debit(Customer\Entity $customer, int $amount)
-    {
-        $wallet = $this->repo->wallets->findByCustomerIdAndMerchant($customer->getPublicId(), $this->merchant);
-
-        return $this->core->debit($wallet, $amount);
     }
 
     public function refund($customerId, array $input)
