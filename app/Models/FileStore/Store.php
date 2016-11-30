@@ -29,7 +29,7 @@ class Store
         if (defined(__CLASS__.'::'.strtoupper($store)) === false)
         {
             throw new Exception\LogicException(
-                'Not a valid store: ' . $store);
+                'Not a valid Store: ' . $store);
         }
     }
 

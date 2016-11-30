@@ -69,7 +69,7 @@ class Type
             }
         }
 
-        throw new Exception\LogicException('Not A Valid Type: '. $type);
+        throw new Exception\LogicException('Not a valid Type: '. $type);
     }
 
     /**
@@ -87,6 +87,6 @@ class Type
             return true;
         }
 
-        throw new Exception\LogicException('Not A Valid Type For Shared Merchant Account: '. $type);
+        throw new Exception\LogicException('Not a valid Type For Shared Merchant Account: '. $type);
     }
 }
