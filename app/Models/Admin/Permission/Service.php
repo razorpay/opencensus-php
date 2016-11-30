@@ -30,6 +30,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
+    public function getMultiplePermissionIdsByNames(array $names)
+    {
+        $permissions = $this->repo->permission->retrieveIdsByNames($names);
+
+        return $permissions->toArrayPublic();
+    }
+
     public function createPermissionsFromJson(array $input)
     {
         $permission = (new Core)->create($input);

@@ -28,14 +28,9 @@ class Core extends Base\Core
     {
         $group->edit($input);
 
-        if (isset($input['parents']) === true)
-        {
-            Entity::verifyIdAndStripSignMultiple($input['parents']);
-
-            $group->parents()->sync($input['parents']);
-        }
-
         $this->repo->saveOrFail($group);
+
+        $this->associateRelevantEntitiesToGroup($input, $group);
 
         return $group;
     }

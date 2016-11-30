@@ -48,4 +48,15 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetOrg()
+    {
+        $this->ba->appAuth();
+
+        $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
 }

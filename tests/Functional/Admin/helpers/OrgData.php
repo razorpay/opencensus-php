@@ -79,4 +79,17 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'sreeram12@gmail.com'
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

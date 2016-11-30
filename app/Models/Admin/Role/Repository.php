@@ -19,8 +19,14 @@ class Repository extends Base\Repository
         Entity::NAME    => 'sometimes|string',
     ];
 
-    public function fetchRoleForOrg($roleId, $orgId)
+    public function findByPublicIdAndOrgIdWithRelations(
+        string $roleId,
+        string $orgId)
     {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        Entity::verifyIdAndStripSign($roleId);
+
         return $this->newQuery()
                     ->orgId($orgId)
                     ->with('permissions')
@@ -33,16 +39,6 @@ class Repository extends Base\Repository
                     ->orgId($orgId)
                     ->with('permissions')
                     ->get();
-    }
-
-    public function retrieveByOrgIdAndIdOrFail(
-        string $orgId,
-        string $roleId)
-    {
-        return $this->newQuery()
-                    ->orgId($orgId)
-                    ->with('permissions')
-                    ->findOrFailPublic($roleId);
     }
 
     public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)

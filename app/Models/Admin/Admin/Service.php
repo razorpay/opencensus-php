@@ -151,7 +151,14 @@ class Service extends Base\Service
 
         $this->fireAdminAction($admin, Action::CREATE_ADMIN);
 
-        return $admin->toArrayPublic();
+        $admin = $admin->toArrayPublic();
+
+        if (isset($admin) === true)
+        {
+            $this->sendAdminCreateEmail($admin, $input);
+        }
+
+        return $admin;
     }
 
     public function sendAdminCreateEmail($data, $input)

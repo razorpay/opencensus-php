@@ -8,7 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::NAME        => 'required|string|max:100',
+        Entity::NAME        => 'required|string|max:250',
         Entity::DESCRIPTION => 'required|string|max:250',
         'sub_groups'        => 'sometimes|array',
         'admins'            => 'sometimes|array',
@@ -18,7 +18,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME        => 'sometimes|string|max:100',
+        Entity::NAME        => 'sometimes|string|max:250',
         Entity::DESCRIPTION => 'sometimes|string|max:250',
         'sub_groups'        => 'sometimes|array',
         'admins'            => 'sometimes|array',
