@@ -15,6 +15,7 @@ class Entity extends Base\Entity
         'CustomerID',
         'TxnAmount',
         'BankID',
+        'AccountNumber',
         'CurrencyType',
         'ItemCode',
         'TypeField1',
@@ -48,6 +49,7 @@ class Entity extends Base\Entity
         'CustomerID',
         'TxnAmount',
         'BankID',
+        'AccountNumber',
         'CurrencyType',
         'ItemCode',
         'TypeField1',
@@ -100,5 +102,12 @@ class Entity extends Base\Entity
         }
 
         return RefundStatus::$statusMap[$code];
+    }
+
+    public function isTpv()
+    {
+        $accountNumber = $this->getAttribute('AccountNumber');
+
+        return ($accountNumber !== null);
     }
 }

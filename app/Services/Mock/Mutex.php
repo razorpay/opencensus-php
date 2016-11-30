@@ -10,7 +10,7 @@ class Mutex extends BaseLock
 
     public function __construct($app)
     {
-        $this->requestId = $app['request']->getId();
+        parent::__construct($app);
 
         $this->cache = $app['cache'];
     }
