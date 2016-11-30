@@ -108,7 +108,7 @@ class Entity extends Base\Entity
     {
         $accountNumber = $this->getAttribute('AccountNumber');
 
-        if (($accountNumber === null) or (empty($accountNumber) === true) or ($accountNumber === 'NA'))
+        if ((empty($accountNumber) === true) or ($accountNumber === 'NA'))
         {
             return false;
         }
