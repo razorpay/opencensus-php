@@ -451,6 +451,29 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function resetMpin($customerId, $bankAccountId, $input)
+    {
+        $deviceId = $input['device_id'];
+
+        Entity::stripSignWithoutValidation($customerId);
+        Device\Entity::stripSignWithoutValidation($deviceId);
+
+        $customer = $this->repo->customer->findOrFail($customerId);
+
+        $bankAccount = $this->repo->bank_account->find($bankAccountId);
+
+        $device = $this->repo->device->findOrFail($deviceId);
+
+        // Confirm ownership of device and bank account
+        // TODO: move to repo
+        assertTrue($bankAccount->getEntityId() === $customerId);
+        assertTrue($device->getCustomerId() === $customerId);
+
+        $response = (new Customer\Core)->sendResetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+
+        return $response;
+    }
+
     public function fetchUpiBankAccounts($id, $ifsc = 'RAZR')
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());

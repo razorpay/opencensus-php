@@ -315,7 +315,25 @@ class Core extends Base\Core
         $gatewayInput['bank_account'] = $bankAccount->toArray();
         $gatewayInput['input'] = $input;
 
-        $response = (new Upi\Core)->callUpiGateway('ReqRegMob', $gatewayInput);
+        $params = [
+            'method'    =>  'ReqRegMob',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
+    }
+
+    public function sendSetMpinRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $response = (new Upi\Core)->callUpiGateway('ReqSetCre', $gatewayInput);
 
         return $response;
     }

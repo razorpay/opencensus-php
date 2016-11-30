@@ -313,6 +313,7 @@ final class Route
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
         'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
+        'reset_mpin'                              => ['post',     'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
     );
 
@@ -372,6 +373,7 @@ final class Route
         'vpa_create',
         'vpa_fetch_multiple',
         'vpa_available',
+        'reset_mpin',
     );
 
     public static $publicCallback = array(

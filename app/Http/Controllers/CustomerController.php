@@ -174,6 +174,15 @@ class CustomerController extends Controller
         return $data;
     }
 
+    public function resetMpin($customerId, $bankAccountId)
+    {
+        $input = Request::all();
+
+        $data = $this->customer->resetMpin($customerId, $bankAccountId, $input);
+
+        return $data;
+    }
+
     public function postOtp()
     {
         $input = Request::all();
