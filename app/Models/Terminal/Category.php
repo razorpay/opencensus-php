@@ -122,6 +122,23 @@ class Category
         'NETWORK_AMEX'          => 100,
     ];
 
+    const BANK_CATEGORY_MIN_AMOUNT_MAP = [
+        'KKBK'      => [
+            'default'       => 1000,
+            'ecommerce'     => 1000,
+        ],
+        'ICICI'     => [
+            'default'       => 1000,
+            'ecommerce'     => 1000,
+        ],
+        'HDFC'      => [
+            'default'       => 1000,
+        ],
+        'YESB'      => [
+            'default'       => 1000,
+        ],
+    ];
+
     public static function getDefaultForMethod($method)
     {
         return self::getDefaultForType('method', $method);
@@ -309,12 +326,31 @@ class Category
         return null;
     }
 
-    public static function getMinAmount($method, $network, $category)
+    /**
+    * Accepts array of key-val pair
+    * with keys : category, method, network, bank
+    * All keys should be present
+    * Corresponding values can be null
+    *
+    * @param $filterParams array
+    * @return $minAmount from various maps
+    */
+    public static function getMinAmount($filterParams)
     {
         $minAmount = 0;
 
         $constantName = null;
 
+        // unwrap filterParams
+        $category = $filterParams['category'];
+
+        $method = $filterParams['method'];
+
+        $network = $filterParams['network'];
+
+        $bank = $filterParams['bank'];
+
+        // set category
         if (empty($category) === true)
         {
             $category = self::getDefaultForMethodAndNetwork($method, $network);
@@ -331,18 +367,83 @@ class Category
             $constantName = self::getConstantName('method', $method);
         }
 
-        // min_amount from respective array
+        // minAmount from respective array
         if (empty($constantName) === false)
         {
-            if (array_key_exists($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+            $minAmount = $this->minAmountValue($category, $constantName, $bank);
+        }
+
+        return $minAmount;
+    }
+
+    /**
+    * @param $constantName, $category are never null
+    * @return $ma (minimum amount)
+    */
+    protected function minAmountValue($category, $constantName, $bank=null)
+    {
+        $ma = 0;
+
+        // Holds for all netbanking transactions
+        if (empty($bank) === false)
+        {
+            // check if bank name exists in map
+            if (array_key_exists($bank, constant('self::BANK_CATEGORY_MIN_AMOUNT_MAP')) === true)
             {
-                $minAmount = constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
+                $ma = $this->getMinAmountForBank($bank, $category);
             }
 
-            else
+            // if bank_filter gives no min_amount
+            // and constant name is METHOD_NETBANKING
+            if ($ma === 0)
             {
-                $minAmount = constant('self::MIN_AMOUNT_'.$constantName)[$category];
+                $ma = $this->getMinAmountConstant($category, $constantName);
             }
+        }
+        // method-card, amex, emi
+        else
+        {
+            $ma = $this->getMinAmountConstant($category, $constantName);
+        }
+
+        return $ma;
+    }
+
+    protected function getMinAmountConstant($category, $constantName)
+    {
+        if (array_key_exists($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
+        {
+            return constant('self::DEFAULT_MIN_AMOUNT')[$constantName];
+        }
+
+        else
+        {
+            return constant('self::MIN_AMOUNT_'.$constantName)[$category];
+        }
+    }
+
+    /**
+    * This function assumes that the given bank name
+    * exists in BANK_CATEGORY_MIN_AMOUNT_MAP
+    *
+    * @param $bank string
+    * @param $category string (optional)
+    * @return $minAmount from BANK_CATEGORY_MIN_AMOUNT_MAP
+    */
+    protected function getMinAmountForBank($bank, $category)
+    {
+        $minAmount = 0;
+
+        $bankMinAmounts = constant('self::BANK_CATEGORY_MIN_AMOUNT_MAP')[$bank];
+
+        // if category it exists in bankMinAmounts map
+        if (array_key_exists($category, $bankMinAmounts) === true)
+        {
+            $minAmount = $bankMinAmounts[$category];
+        }
+        else
+        {
+            $minAmount = $bankMinAmounts['default'];
         }
 
         return $minAmount;
