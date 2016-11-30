@@ -174,7 +174,7 @@ class Service extends Base\Service
         if ($invoice->isDraft())
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invoice with id ' . $invoice->getPublicId() . 'is not issued yet'
+                'Invoice with id ' . $invoice->getPublicId() . ' is not issued yet'
             );
         }
 

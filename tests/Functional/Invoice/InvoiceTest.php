@@ -139,6 +139,192 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDraftInvoiceWithNoData()
+    {
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertNull($order);
+    }
+
+    public function testCreateDraftInvoiceWithSomeData()
+    {
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['customer_id']);
+        $this->assertNotEmpty($response['line_items'][0]['id']);
+        $this->assertNotEmpty($response['line_items'][0]['item_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertNull($order);
+    }
+
+    public function testCreateDraftInvoiceAndView()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoice()
+    {
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['customer_id']);
+        $this->assertNotEmpty($response['line_items'][0]['id']);
+        $this->assertNotEmpty($response['line_items'][0]['item_id']);
+        $this->assertNotEmpty($response['order_id']);
+        $this->assertNotEmpty($response['short_url']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertNotNull($order);
+    }
+
+    public function testUpdateDraftInvoiceWithBasicFields()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
+    {
+        $this->createDraftInvoice();
+
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithLineItems()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerId()
+    {
+        $this->createDraftInvoice();
+
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'test 2',
+                'email'   => 'test2@razorpay.com',
+                'contact' => null,
+            ]
+        );
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerDetails()
+    {
+        $this->createDraftInvoice();
+
+        $response = $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+        $this->assertEquals($customer['id'], $response['customer_id']);
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerIdAndDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    /**
+     * Tests updates of issued invoices
+     * Asserts:
+     * - Doesn't let edit extra fields
+     * - ** Test notify
+     */
+
+    public function testUpdateIssuedInvoice1()
+    {
+    }
+
+    public function testUpdateIssuedInvoice2()
+    {
+    }
+
+    /**
+     * Tests issue invoice
+     * Asserts:
+     * - Validations
+     * - Short url is set, Order is created only when issued
+     * - Notification is sent
+     */
+    
+    public function testIssueInvoice1()
+    {
+    }
+
+    public function testIssueInvoice2()
+    {
+    }
+
+    /**
+     * Tests delete invoice
+     * Delete only in draft state
+     */
+    
+    public function testDeleteInvoice()
+    {
+    }
+
+    /**
+     * Test line item operations: Add, Update, Remove from a invoice
+     * Asserts:
+     * - Validations
+     * - Amount is getting updated
+     * - Line item related validations
+     * - Usage of existing items
+     */
+    
+    public function testAddLineItemToInvoice1()
+    {
+    }
+
+    public function testAddLineItemToInvoice2()
+    {
+    }
+
+    public function testAddLineItemToInvoice3()
+    {
+    }
+
+    public function testUpdateLineItemOfInvoice1()
+    {
+    }
+
+    public function testUpdateLineItemOfInvoice2()
+    {
+    }
+
+    public function testUpdateLineItemOfInvoice3()
+    {
+    }
+
+    public function testRemoveLineItemToInvoice1()
+    {
+    }
+
+    public function testRemoveLineItemToInvoice2()
+    {
+    }
+
+    public function testRemoveLineItemToInvoice3()
+    {
+    }
+
     public function testCreateInvoiceWithDuplicateMerchantRefId()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
@@ -380,6 +566,8 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    // -------------------- Protected methods --------------------
+
     protected function assertInvoiceCreateResponse(array $response)
     {
         $order = $this->getLastEntity('order', true);
@@ -392,5 +580,17 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
         $this->assertContains('http://bitly.dev/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
+    }
+
+    protected function createDraftInvoice()
+    {
+        $this->fixtures->create(
+            'invoice',
+            [
+                'status'    => 'draft',
+                'order_id'  => null,
+                'short_url' => null,
+            ]
+        );
     }
 }

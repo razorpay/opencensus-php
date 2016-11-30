@@ -63,7 +63,7 @@ class Core extends Base\Core
 
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $operation = 'edit_' . $status;
+        $operation = camel_case('edit_' . $status);
 
         try
         {

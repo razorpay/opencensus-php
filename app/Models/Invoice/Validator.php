@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:14',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:14',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -100,7 +100,7 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:14',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -115,12 +115,33 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:14',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+    ];
+
+    protected static $editDraftValidators = [
+        Entity::AMOUNT,
     ];
 
     protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
     ];
+
+    public function validateAmount(array $input)
+    {
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $invoice = $this->entity;
+
+        if ($invoice->lineItems()->count())
+        {
+            throw new BadRequestValidationFailureException(
+                'Amount cannot be updated if line_items present'
+            );
+        }
+    }
 
     /**
      * Validates: - Either line_items or amount, description should exists in input

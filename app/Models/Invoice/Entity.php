@@ -239,6 +239,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::VIEW_LESS => 'bool',
         self::AMOUNT    => 'int',
+        self::DATE      => 'int',
     ];
 
     // -------------------------------------- Getters --------------------------------------
