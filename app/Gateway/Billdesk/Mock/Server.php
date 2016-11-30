@@ -21,6 +21,8 @@ class Server extends Base\Mock\Server
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
             $input['CustomerID'], Action::AUTHORIZE);
 
+        $payment = $this->repo->payment->findOrFailPublic($gatewayPayment->getPaymentId());
+
         $accountNo = $input['AccountNumber'];
 
         $requestTpv = true;
@@ -67,7 +69,7 @@ class Server extends Base\Mock\Server
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);
 
-        $gatewayTpv = $this->getGatewayInstance()->getTpv($gatewayPayment);
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment->merchant);
 
         assertTrue($gatewayTpv === $requestTpv);
 
