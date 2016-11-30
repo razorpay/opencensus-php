@@ -143,19 +143,18 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
 
         $this->startTest();
     }
 
     public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
     {
-        // Usage one existing item with different currency
-        $this->fixtures->create('item', ['currency' => 'USD']);
-
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice');
+        $this->fixtures->create('item', ['currency' => 'USD']);
+
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
 
         $this->startTest();
     }
@@ -189,6 +188,29 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('item');
 
         $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testGetInvoiceByReceipt()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+        $this->fixtures->create(
+            'invoice',
+            [
+                'id'      => '1000001invoice',
+                'receipt' => '00000000000001',
+            ]
+        );
+        $this->fixtures->create(
+            'invoice',
+            [
+                'id'      => '1000002invoice',
+                'receipt' => '00000000000002',
+            ]
+        );
 
         $this->startTest();
     }

@@ -80,7 +80,7 @@ class Core extends Base\Core
                 ($e->errorInfo[1] === 1062))
             {
                 throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
                     null,
                     [
                         'invoice_id'    => $invoice->getId(),

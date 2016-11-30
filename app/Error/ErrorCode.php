@@ -380,7 +380,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
-    const BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM';
+    const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
     const BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED                                 = 'BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED';

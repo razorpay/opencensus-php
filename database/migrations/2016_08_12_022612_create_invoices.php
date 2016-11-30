@@ -27,7 +27,7 @@ class CreateInvoices extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->char(Entity::REF_NUM, Entity::ID_LENGTH)
+            $table->string(Entity::RECEIPT, 40)
                   ->nullable();
 
             $table->char(Entity::ORDER_ID, Entity::ID_LENGTH)
@@ -116,7 +116,9 @@ class CreateInvoices extends Migration
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::REF_NUM]);
+            // In production and beta environments, the key would be
+            // `invoices_merchant_id_ref_num_unique`.
+            $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 
             $table->foreign(Entity::ORDER_ID)
                   ->references(Order\Entity::ID)
@@ -139,6 +141,8 @@ class CreateInvoices extends Migration
                   ->on_delete('restrict');
         });
 
+        // This should be here and not in payments table because
+        // invoice table is created after payments.
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->foreign(Payment\Entity::INVOICE_ID)
