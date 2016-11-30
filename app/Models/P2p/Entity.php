@@ -47,6 +47,27 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
     );
 
+    protected $public = array(
+        self::ID,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE,
+        self::SINK_ID,
+        self::SINK_TYPE,
+        self::STATUS,
+        self::MERCHANT_ID,
+        self::AMOUNT,
+        self::DESCRIPTION,
+        self::TYPE,
+        self::GATEWAY,
+        self::NOTES,
+        self::CURRENCY,
+        self::INTERNAL_ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::ERROR_CODE,
+    );
+
+    protected static $sign = 'p2p';
+
     protected $entity = 'p2p';
 
     protected static $generators = [
@@ -55,6 +76,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
+        self::ID,
         self::SOURCE_ID,
         self::SINK_ID,
     ];
