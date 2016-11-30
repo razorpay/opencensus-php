@@ -35,4 +35,20 @@ class Repository extends BaseRepository
                     ->orgId($org->getId())
                     ->findOrFailPublic($id);
     }
+
+    public function findByIdAndOrgId($id, $orgId)
+    {
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->findOrFailPublic($id);
+    }
+
+    public function fetchByOrgId(string & $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->get();
+    }
 }

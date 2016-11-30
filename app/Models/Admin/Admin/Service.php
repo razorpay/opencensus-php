@@ -205,22 +205,6 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function getAdminByAttr($orgId, $attr, $attrVal)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admin = $this->repo->admin->findOrFailByAttr($orgId, $attr, $attrVal);
-
-        return $admin->toArrayPublic();
-    }
-
-    public function getAdminById(string &$adminId)
-    {
-        $admin = $this->repo->org->findByPublicId($adminId);
-
-        return $admin->toArrayPublic();
-    }
-
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
@@ -228,60 +212,11 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function updateRolesForAdmin(
-        string $orgId,
-        string $adminId,
-        array $input)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $roleIds = [];
-
-        Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-
-        $admin->roles()->sync($input['roles']);
-
-        // Check if this is required here?
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
-
-        return $admin->toArrayPublic();
-    }
-
-    public function addMerchantToAdmin(
-        string $orgId,
-        string $adminId,
-        string $merchantId)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
-
-        $this->repo->admin->addMerchantOrFail($admin, $merchant);
-    }
-
-    public function revokeRoleFromAdmin(
-        string $orgId,
-        string $adminId,
-        string $roleId)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $role = $this->repo->role->findByPublicId($roleId);
-
-        if ($role->getOrgId() != $orgId)
-        {
-            throw new Exception\LogicException(
-                'The role does not belong to the organization');
-        }
-
-        $this->repo->admin->revokeRoleOrFail($admin, $role);
-    }
-
     public function fetchMultiple(string $orgId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admins = $this->repo->admin->fetchAdminsForOrg($orgId, $input);
+        $admins = $this->repo->admin->fetchByOrgId($orgId);
 
         return $admins->toArrayPublic();
     }
@@ -290,7 +225,7 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $admin = $this->core()->edit($orgId, $adminId, $input);
+        $admin = $this->core()->edit($admin, $input);
 
         return $admin->toArrayPublic();
     }
@@ -343,7 +278,7 @@ class Service extends Base\Service
         {
             $groupId = $group['id'];
 
-            $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+            $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
             $merchants = array_merge($merchants, $group->merchants->toArray());
         }

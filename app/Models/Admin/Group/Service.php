@@ -52,83 +52,9 @@ class Service extends Base\Service
 
     public function fetchMultiple(string $orgId, array $input = [])
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $groups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
+        $groups = $this->repo->group->fetchByOrgId($orgId);
 
         return $groups->toArrayPublic();
-    }
-
-    public function addRoleToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-        $roleIds = $input['role_ids'];
-
-        // @todo: Check issue of sign and return value here?
-        $roles = $this->repo->role->findManyByPublicIds($roleIds);
-        assert ($roles->count() === count($roleIds));
-
-        $this->repo->group->addRolesToGroup($roles, $group);
-
-        return $group->toArrayPublic();
-    }
-
-    public function addMerchantsToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-        $merchantIds = $input['merchant_ids'];
-
-        // TODO Wrap it in a transaction or sync the m2m field
-        // Check for merchantIds
-        $merchants = $this->repo->merchant->findMany($merchantIds);
-        assert ($merchants->count() === count($merchantIds));
-
-        $this->repo->group->addMerchantsToGroup($merchant, $group);
-
-        return $group->toArrayPublic();
-    }
-
-    public function addAdminsToGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        Validator::validateInputKeyExists($input, 'admins');
-
-        $adminIds = $input['admins'];
-
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-        $admins = $this->repo->admin->findManyByPublicIds($adminIds);
-        assert ($admins->count() === count($adminIds));
-
-        $this->repo->group->addAdminsToGroup($admins, $group);
-
-        return $group->toArrayPublic();
-    }
-
-    /**
-     * @todo : Correct this function. $roleId not defined
-     * in arguments.
-     */
-    public function revokeRoleFromGroup(
-        string $orgId,
-        string $groupId,
-        array $input)
-    {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
-
-        $this->repo->group->revokeRoleOrFail($group, $role);
     }
 
     /**
@@ -148,7 +74,7 @@ class Service extends Base\Service
         $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
         // Get all groups of the current organization
-        $allGroups = $this->repo->group->fetchGroupsForOrg($orgId, $input);
+        $allGroups = $this->repo->group->fetchByOrgId($orgId);
 
         $allGroups = $allGroups->toArray();
 
@@ -284,7 +210,7 @@ class Service extends Base\Service
     protected function getParentGroups(string $orgId, string $groupId)
     {
         // Get the group from current org
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        $group = $this->repo->group->findByIdAndOrgId($groupId, $orgId);
 
         // Get all the direct parents to which the group has been linked
         return $group->parents;
@@ -293,7 +219,7 @@ class Service extends Base\Service
     protected function getChildrenGroups(string $orgId, string $groupId)
     {
         // Get the group from current org
-        $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
+        $group = $this->repo->group->findByIdAndOrgId($groupId, $orgId);
 
         // Get all the direct children to which the group has been linked
         return $group->subGroups;

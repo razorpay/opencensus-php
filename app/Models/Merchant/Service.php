@@ -57,9 +57,9 @@ class Service extends Base\Service
     protected function attachAdmin($merchantId, $adminId)
     {
         // Check if $adminId is valid
-        $data = (new Admin\Admin\Service)->getAdminById($adminId);
+        $admin = $this->repo->admin->findByPublicId($adminId);
 
-        if ($data)
+        if ($admin)
         {
             DB::table('merchant_map')->insert(
                 [

@@ -73,11 +73,8 @@ class Core extends Base\Core
         return $ret;
     }
 
-    public function edit(string $orgId, string $adminId, array $input)
+    public function edit(Entity $admin, array $input)
     {
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
         $admin->edit($input);
 
         if (isset($input['password']) === true)
@@ -98,7 +95,7 @@ class Core extends Base\Core
         $this->associateRelevantEntitiesToAdmin($admin, $input);
 
         $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
+            $admin['org_id'], $admin->getId());
 
         return $admin;
     }
