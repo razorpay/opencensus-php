@@ -43,16 +43,21 @@ class UpiController extends Controller
         return $this->generateXmlResponse($xml);
     }
 
-    public function readFromCache($msgId)
+    public function getStatus($originalMsgId)
     {
-        $xml = Cache::get("UPI.$msgId");
+        $json =  Cache::get("UPI.$originalMsgId.response");
 
-        return $this->generateXmlResponse($xml);
+        if (isset($json['success']))
+        {
+            $json['success'] = ($json['success'] === 'SUCCESS');
+        }
+
+        return ApiResponse::json($json);
     }
 
     public function getBankList()
     {
-        $json = json_decode(Cache::get('UPI.RespListAccPvd'));
+        $json = json_decode(Cache::get('UPI.RespListAccPvd'), true);
 
         return ApiResponse::json($json);
     }
@@ -85,7 +90,7 @@ class UpiController extends Controller
     }
 
     // TODO: Start supporting these in the new flow
-    // ['RespListAccPvd', 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
+    // 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
     protected function generateXmlResponse(string $xml)
     {
         return response($xml)->header('Content-Type', 'application/xml');

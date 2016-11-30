@@ -217,6 +217,9 @@ EOT;
         $creds['otp'] = $this->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
         $creds['mpin'] = $this->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
 
+        // $creds['otp'] = $details->getCredByTypeAndSubType('OTP', 'SMS');
+        // $creds['mpin'] = $details->getCredByTypeAndSubType('PIN', 'MPIN');
+
         $creds['account'] = [
             'IFSC'  =>  $account->getDetailByName('IFSC'),
             'NUM'   =>  $account->getDetailByName('ACNUM')
@@ -372,12 +375,27 @@ EOT;
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
 
+    protected function cacheRequestOrResponse(array $input)
+    {
+        if (isset($input['params']['reqMsgId']))
+        {
+            $reqMsgId = $input['params']['reqMsgId'];
+            Cache::forever("UPI.$reqMsgId.response", $input['params']);
+        }
+        else
+        {
+            Cache::forever("UPI.$msgId.request", $input);
+        }
+    }
+
     public function makeRequest(array $input)
     {
         $method = $input['method'];
         $params = $input['params'];
 
         extract($this->getCommonVariables());
+
+        $this->cacheRequestOrResponse($input);
 
         switch ($method) {
 

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ac9ba5a1229f1b095eb1dcdd96c24768",
-    "content-hash": "7c2bfdf18051b4662c10fba184ec6f59",
+    "hash": "73c4ab717ba88bbe9f12bc2b9597c854",
+    "content-hash": "900798511f4250bb8b5586d8682ba10d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -635,6 +635,56 @@
                 "search"
             ],
             "time": "2016-10-17 19:43:19"
+        },
+        {
+            "name": "fr3d/xmldsig",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Maks3w/xmldsig.git",
+                "reference": "1edfaca132a0db0edbef41cae189bce316490854"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Maks3w/xmldsig/zipball/1edfaca132a0db0edbef41cae189bce316490854",
+                "reference": "1edfaca132a0db0edbef41cae189bce316490854",
+                "shasum": ""
+            },
+            "require": {
+                "robrichards/xmlseclibs": "^2.0"
+            },
+            "require-dev": {
+                "fabpot/php-cs-fixer": "1.10.*",
+                "phpunit/phpunit": "^4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "FR3D\\XmlDSig\\": [
+                        "src"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Maks3w",
+                    "email": "github.maks3w@virtualplanets.net"
+                }
+            ],
+            "description": "Tool for easy management of XML Signatures (http://www.w3.org/TR/xmldsig-core/)",
+            "homepage": "https://github.com/Maks3w/xmldsig/",
+            "keywords": [
+                "security",
+                "signature",
+                "soap",
+                "xml",
+                "xmldsig"
+            ],
+            "time": "2016-02-01 11:18:40"
         },
         {
             "name": "giggsey/libphonenumber-for-php",
@@ -3375,17 +3425,17 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/upi-clients.git",
-                "reference": "cb7bc8fbacdcc29549222172e8b580362d61a6d5"
+                "reference": "8ac33689f1d5750664b5a8c70fe20c1b87006e45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/upi-clients/zipball/cb7bc8fbacdcc29549222172e8b580362d61a6d5",
-                "reference": "cb7bc8fbacdcc29549222172e8b580362d61a6d5",
+                "url": "https://api.github.com/repos/razorpay/upi-clients/zipball/8ac33689f1d5750664b5a8c70fe20c1b87006e45",
+                "reference": "8ac33689f1d5750664b5a8c70fe20c1b87006e45",
                 "shasum": ""
             },
             "archive": {
                 "exclude": [
-                    "/src/xsd/"
+                    "/xsd/"
                 ]
             },
             "require": {
@@ -3397,7 +3447,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Razorpay\\UPI\\": "src/generated"
+                    "Razorpay\\UPI\\": "src"
                 }
             },
             "authors": [
@@ -3410,7 +3460,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2016-11-29 19:54:44"
+            "time": "2016-11-30 07:22:29"
         },
         {
             "name": "react/promise",
@@ -3504,6 +3554,47 @@
                 "sockets"
             ],
             "time": "2014-05-18 04:59:02"
+        },
+        {
+            "name": "robrichards/xmlseclibs",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/robrichards/xmlseclibs.git",
+                "reference": "53bb1e9cae490a8f93af41bd9df6ea897161ca05"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/53bb1e9cae490a8f93af41bd9df6ea897161ca05",
+                "reference": "53bb1e9cae490a8f93af41bd9df6ea897161ca05",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.3"
+            },
+            "suggest": {
+                "ext/mcrypt": "MCrypt extension",
+                "ext/openssl": "OpenSSL extension"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "RobRichards\\XMLSecLibs\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "A PHP library for XML Security",
+            "homepage": "https://github.com/robrichards/xmlseclibs",
+            "keywords": [
+                "security",
+                "signature",
+                "xml",
+                "xmldsig"
+            ],
+            "time": "2016-09-08 13:15:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
