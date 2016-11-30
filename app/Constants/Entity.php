@@ -16,6 +16,7 @@ class Entity
     // Core entities
     //
 
+    const P2P                   = 'p2p';
     const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
@@ -86,6 +87,8 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
+        self::P2P                   => \RZP\Models\P2p::class,
+        self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,

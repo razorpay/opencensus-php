@@ -64,12 +64,18 @@ class UpiController extends Controller
 
     public function getVpas()
     {
+        $input = Request::all();
 
+        $data = $this->core->getVpas($input);
+
+        return ApiResponse::json($data);
     }
 
     public function vpaAvailable($vpaId)
     {
+        $data = $this->core->getVpa($vpaId);
 
+        return ApiResponse::json($data);
     }
 
     public function createVpa()

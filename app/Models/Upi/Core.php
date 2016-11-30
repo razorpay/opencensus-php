@@ -166,7 +166,17 @@ class Core extends Base\Core
                 $input);
         }
 
-        $this->vpaService->createVpa($input, $customer);
+        return $this->vpaService->createVpa($input, $customer);
+    }
+
+    public function getVpa($vpaId)
+    {
+        return $this->vpaService->getVpaById($vpaId);
+    }
+
+    public function getVpas($input)
+    {
+        return $this->vpaService->getAllVpas($vpaId);
     }
 
     protected function getSharedAccount()

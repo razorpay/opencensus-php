@@ -370,6 +370,8 @@ final class Route
         'upi_customer_bank_accounts_fetch',
         'vpa_register',
         'vpa_create',
+        'vpa_fetch_multiple',
+        'vpa_available',
     );
 
     public static $publicCallback = array(
