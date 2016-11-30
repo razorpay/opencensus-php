@@ -7,7 +7,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
@@ -24,14 +23,6 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        $this->trace->info(
-            TraceCode::LINE_ITEM_CREATE_REQUEST,
-            [
-                'input'         => $input,
-                'invoice_id'    => $invoice->getId(),
-                'input'         => $input,
-            ]);
-
         list($input, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         $item = $this->createItemIfNotExists($input, $itemDetails, $merchant, $invoice);

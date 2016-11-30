@@ -73,8 +73,8 @@ class Generator extends Base\Core
         catch (\Exception $e)
         {
             // Check if is Mysql duplicate on unique index error
-            if ($e instanceof \Illuminate\Database\QueryException
-                and $e->errorInfo[1] === 1062)
+            if (($e instanceof \Illuminate\Database\QueryException) and
+                ($e->errorInfo[1] === 1062))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,

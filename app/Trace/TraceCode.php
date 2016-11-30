@@ -118,12 +118,17 @@ class TraceCode
     const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
-    const CUSTOMER_ID_ABSENT                        = 'CUSTOMER_ID_ABSENT';
-    const INVOICE_ID_ABSENT                         = 'INVOICE_ID_ABSENT';
+
     const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
     const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                           = 'INVOICE_CREATED';
+    const INVOICE_UPDATE_REQUEST                    = 'INVOICE_UPDATE_REQUEST';
+    const INVOICE_ISSUE_REQUEST                     = 'INVOICE_ISSUE_REQUEST';
+    const INVOICE_DELETE_REQUEST                    = 'INVOICE_DELETE_REQUEST';
+    const INVOICE_ADD_LINE_ITEM_REQUEST             = 'INVOICE_ADD_LINE_ITEM_REQUEST';
+    const INVOICE_UPDATE_LINE_ITEM_REQUEST          = 'INVOICE_UPDATE_LINE_ITEM_REQUEST';
+    const INVOICE_REMOVE_LINE_ITEM_REQUEST          = 'INVOICE_REMOVE_LINE_ITEM_REQUEST';
     const INVOICE_EXISTING_CUSTOMER                 = 'INVOICE_EXISTING_CUSTOMER';
     const INVOICE_LINKS                             = 'INVOICE_LINKS';
     const INVOICE_EMAIL_REQUEST                     = 'INVOICE_EMAIL_REQUEST';
@@ -134,6 +139,10 @@ class TraceCode
     const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
     const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+
+    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
+    const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
+    const ITEM_DELETE_REQUEST                       = 'ITEM_DELETE_REQUEST';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
@@ -396,10 +405,6 @@ class TraceCode
     const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
-
-    // Trace code for item/line_items
-    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
-    const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

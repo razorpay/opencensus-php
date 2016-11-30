@@ -52,6 +52,13 @@ class Core extends Base\Core
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
+        $traceData = [
+            'invoice_id' => $invoice->getId(),
+            'input'      => $input,
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST, $traceData);
+
         $status = $invoice->getStatus();
 
         $invoice->getValidator()->validateOperation(__FUNCTION__);
@@ -89,6 +96,12 @@ class Core extends Base\Core
 
     public function issue(Entity $invoice, Merchant\Entity $merchant)
     {
+        $traceData = [
+            'invoice_id' => $invoice->getId(),
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_ISSUE_REQUEST, $traceData);
+
         $this->repo->transaction(
             function() use ($input)
             {
@@ -105,6 +118,12 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
+        $traceData = [
+            'invoice_id' => $invoice->getId(),
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_DELETE_REQUEST, $traceData);
+
         return $this->repo->invoice->deleteOrFail($invoice);
     }
 
@@ -114,6 +133,13 @@ class Core extends Base\Core
         Merchant\Entity $merchant)
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $traceData = [
+            'invoice_id' => $invoice->getId(),
+            'input'      => $input,
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST, $traceData);
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
@@ -135,6 +161,14 @@ class Core extends Base\Core
         Merchant\Entity $merchant)
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $traceData = [
+            'invoice_id'   => $invoice->getId(),
+            'line_item_id' => $lineItem->getId(),
+            'input'        => $input,
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_UPDATE_LINE_ITEM_REQUEST, $traceData);
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -159,6 +193,13 @@ class Core extends Base\Core
         LineItem\Entity $lineItem)
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $traceData = [
+            'invoice_id'   => $invoice->getId(),
+            'line_item_id' => $lineItem->getId(),
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST, $traceData);
 
         $this->repo->transaction(
             function() use ($lineItem, $invoice)
