@@ -370,7 +370,7 @@ class Category
         // minAmount from respective array
         if (empty($constantName) === false)
         {
-            $minAmount = $this->minAmountValue($category, $constantName, $bank);
+            $minAmount = self::minAmountValue($category, $constantName, $bank);
         }
 
         return $minAmount;
@@ -380,7 +380,7 @@ class Category
     * @param $constantName, $category are never null
     * @return $ma (minimum amount)
     */
-    protected function minAmountValue($category, $constantName, $bank=null)
+    protected static function minAmountValue($category, $constantName, $bank=null)
     {
         $ma = 0;
 
@@ -390,26 +390,26 @@ class Category
             // check if bank name exists in map
             if (array_key_exists($bank, constant('self::BANK_CATEGORY_MIN_AMOUNT_MAP')) === true)
             {
-                $ma = $this->getMinAmountForBank($bank, $category);
+                $ma = self::getMinAmountForBank($bank, $category);
             }
 
             // if bank_filter gives no min_amount
             // and constant name is METHOD_NETBANKING
             if ($ma === 0)
             {
-                $ma = $this->getMinAmountConstant($category, $constantName);
+                $ma = self::getMinAmountConstant($category, $constantName);
             }
         }
         // method-card, amex, emi
         else
         {
-            $ma = $this->getMinAmountConstant($category, $constantName);
+            $ma = self::getMinAmountConstant($category, $constantName);
         }
 
         return $ma;
     }
 
-    protected function getMinAmountConstant($category, $constantName)
+    protected static function getMinAmountConstant($category, $constantName)
     {
         if (array_key_exists($category, constant('self::MIN_AMOUNT_'.$constantName)) === false)
         {
@@ -430,7 +430,7 @@ class Category
     * @param $category string (optional)
     * @return $minAmount from BANK_CATEGORY_MIN_AMOUNT_MAP
     */
-    protected function getMinAmountForBank($bank, $category)
+    protected static function getMinAmountForBank($bank, $category)
     {
         $minAmount = 0;
 

@@ -245,7 +245,6 @@ class TransactionFilter extends Terminal\Filter
 
         $filterParams['network'] = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        // $minAmount = Terminal\Category::getMinAmount($method, $network, $category);
         $minAmount = Terminal\Category::getMinAmount($filterParams);
 
         $amount = $input['payment']->getAmount();
