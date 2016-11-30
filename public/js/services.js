@@ -376,7 +376,10 @@ angular.module('app.services', [])
         return deferred.promise;
       },
       fetchGroups: function () {
+        var deferred = $q.defer();
+
         var groups = [];
+
         $http.get('/admin/generic', {
           params: {
             route_name: 'group_get_multiple',
@@ -385,21 +388,26 @@ angular.module('app.services', [])
           if (data.success === true) {
             if (data.data.items.length > 0) {
               angular.forEach(data.data.items, function (group) {
-                var groupObj = {};
-                groupObj['name'] = group.name;
-                groupObj['id'] = group.id;
-                groupObj['description'] = group.description;
+                var groupObj = {
+                  id: group.id,
+                  name: group.name,
+                  description: group.description
+                };
+
                 groups.push(groupObj);
               });
+
+              deferred.resolve(groups);
             }
           }
           else {
-            groups = {};
+            groups = [];
           }
         }).error(function () {
           return data.errors
         });
-        return groups;
+
+        return deferred.promise;
       },
       fetchAllowedGroups: function (groupId) {
         var deferred = $q.defer();
@@ -430,7 +438,7 @@ angular.module('app.services', [])
             }
           }
           else {
-            groups = {};
+            allowed_groups = [];
           }
         }).error(function () {
 

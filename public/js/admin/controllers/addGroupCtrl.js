@@ -40,7 +40,15 @@ app.controller('AddGroupCtrl', [
       $scope.fillParentList();
     }
     else {
-      $scope.groups = organization.fetchGroups();
+      organization.fetchGroups().then(function (groups) {
+        $scope.groups = groups;
+
+        setTimeout(function () {
+          $('.select2').select2({
+            placeholder: 'Select a Parent Group'
+          });
+        }, 100);
+      });
     }
 
     if (group_id) {
