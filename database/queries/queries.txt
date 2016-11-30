@@ -1283,3 +1283,16 @@ ALTER TABLE payments
     ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
 ALTER TABLE payments
     ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
+
+--- Pre code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
+ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
+--- UPDATE invoices SET receipt = ref_num LIMIT 1000;
+
+--- Post code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
+ALTER TABLE invoices DROP COLUMN ref_num;
+
+---
