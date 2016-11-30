@@ -1314,17 +1314,16 @@ SET
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource
-    ADD COLUMN avsCode CHAR(2) DEFAULT NULL,
-    ADD COLUMN cardCategory CHAR(2) DEFAULT NULL,
-    ADD COLUMN cardGroup CHAR(2) DEFAULT NULL,
-    ADD COLUMN cvCode CHAR(2) DEFAULT NULL,
-    ADD COLUMN veresEnrolled CHAR(2) DEFAULT NULL,
-    ADD COLUMN authorizationCode CHAR(6) DEFAULT NULL,
-    ADD COLUMN receiptNumber CHAR(6) DEFAULT NULL,
-    ADD COLUMN merchantAdviceCode CHAR(30) DEFAULT NULL,
-    ADD COLUMN gatewayTransactionId CHAR(30) DEFAULT NULL,
-    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL
-AFTER status;
+    ADD COLUMN avsCode CHAR(2) DEFAULT NULL AFTER xid,
+    ADD COLUMN cardCategory CHAR(2) DEFAULT NULL AFTER avsCode,
+    ADD COLUMN cardGroup CHAR(2) DEFAULT NULL AFTER cardCategory,
+    ADD COLUMN cvCode CHAR(2) DEFAULT NULL AFTER cardGroup,
+    ADD COLUMN veresEnrolled CHAR(2) DEFAULT NULL AFTER cvCode,
+    ADD COLUMN authorizationCode CHAR(6) DEFAULT NULL AFTER cavv,
+    ADD COLUMN receiptNumber CHAR(6) DEFAULT NULL AFTER authorizationCode,
+    ADD COLUMN merchantAdviceCode CHAR(30) DEFAULT NULL AFTER capture_ref,
+    ADD COLUMN gatewayTransactionId CHAR(30) DEFAULT NULL AFTER merchantAdviceCode,
+    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL AFTER gatewayTransactionId;
 
 ALTER TABLE cybersource
     MODIFY COLUMN pares_status CHAR(2) DEFAULT NULL,
@@ -1333,3 +1332,7 @@ ALTER TABLE cybersource
 
 ALTER TABLE cybersource
     ADD COLUMN acquirer CHAR(10) DEFAULT NULL AFTER payment_id;
+
+
+ALTER TABLE cybersource
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
