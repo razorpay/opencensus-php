@@ -93,6 +93,25 @@ return [
         ],
     ],
 
+    'testGroupOrgMismatchOnGet' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testParentGroupAssignment' => [
         'request' => [
             'url' => '/orgs/%s/groups/%s',
@@ -128,6 +147,17 @@ return [
     ],
 
     'testSiblingsNotAllowedAsParents' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUnconnectedGroupsAsEligibleParentsForEachOther' => [
         'request' => [
             'url' => '/orgs/%s/groups/%s/allowed_groups',
             'method' => 'get',

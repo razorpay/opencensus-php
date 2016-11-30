@@ -92,11 +92,28 @@ class GroupTest extends TestCase
         $this->startTest();
     }
 
+    public function testGroupOrgMismatchOnGet()
+    {
+        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        $org2 = $this->fixtures->create('org');
+
+        // modify request
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org2->getPublicId(), $group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testParentGroupAssignment()
     {
-        list($l0Group, $allGroups) = $this->buildGroupHierarchy(1);
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
 
-        $l1Groups = array_diff($allGroups, [$l0Group]);
+        // create parent groups
+        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
         $l1GroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $l1Groups);
 
         // modify request
@@ -136,7 +153,6 @@ class GroupTest extends TestCase
 
         // create another hierarchy of groups
         $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
-        $loneGroupIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
 
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -153,8 +169,10 @@ class GroupTest extends TestCase
 
         $filteredParentIds = array_column($content, 'id');
 
-        $this->assertEquals(count(array_intersect($filteredParentIds, $loneGroupIds)),
-                            count(array_intersect($loneGroupIds, $filteredParentIds)));
+        $expectedParentIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
+
+        $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
+                            count(array_intersect($expectedParentIds, $filteredParentIds)));
     }
 
     public function testDescendantsNotAllowedAsParents()
@@ -198,12 +216,12 @@ class GroupTest extends TestCase
         $allGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $allGroups);
 
         // get allowed parent-groups' ids
-        $allowedParentIds = array_diff($allGroupIds,
+        $expectedParentIds = array_diff($allGroupIds,
                                        $selectedGroupsDescendantsIds,
                                        [$selectedGroup->getPublicId()]);
 
-        $this->assertEquals(count(array_intersect($filteredParentIds, $allowedParentIds)),
-                            count(array_intersect($allowedParentIds, $filteredParentIds)));
+        $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
+                            count(array_intersect($expectedParentIds, $filteredParentIds)));
     }
 
     public function testSiblingsNotAllowedAsParents()
@@ -229,16 +247,48 @@ class GroupTest extends TestCase
         $filteredParentIds = array_column($content, 'id');
 
         // Fetching children of siblings of $selectedGroup
-        $allowedParents = $allGroups[2]->subGroups->all();
-        $allowedParents = array_merge($allowedParents, $allGroups[3]->subGroups->all());
-        $allowedParentIds = array_map(create_function('$g', 'return $g->getId();'), $allowedParents);
+        $expectedParents = $allGroups[2]->subGroups->all();
+        $expectedParents = array_merge($expectedParents, $allGroups[3]->subGroups->all());
+        $expectedParentIds = array_map(create_function('$g', 'return $g->getId();'), $expectedParents);
 
-        $this->assertEquals(count(array_intersect($filteredParentIds, $allowedParentIds)),
-                            count(array_intersect($allowedParentIds, $filteredParentIds)));
+        $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
+                            count(array_intersect($expectedParentIds, $filteredParentIds)));
+    }
+
+    public function testUnconnectedGroupsAsEligibleParentsForEachOther()
+    {
+        $groups = $this->fixtures->times(3)->create('group',
+                    ['org_id' => $this->org->getId()]);
+
+        $selectedGroup = $groups[0];
+
+        // modify request
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        // read response content
+        $content = $this->response->getContent();
+        $content = json_decode($content, true);
+
+        $filteredParentIds = array_column($content, 'id');
+
+        $expectedParentIds = [$groups[1], $groups[2]];
+
+        $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
+                            count(array_intersect($expectedParentIds, $filteredParentIds)));
     }
 
     /*
      * Builds an n-ary tree group hierarchy structure
+     * For example, for n=1 total_groups = 2
+     *                  n=2 total_groups = 7
+     *                  n=3 total_groups = 40
+     *
      * @param integer $level => n
      * @return Group\Entity Starting group node of the n-ary tree, which doesn't have any children
      * @return Collection A collection of all group nodes in the tree
