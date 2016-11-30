@@ -11,7 +11,6 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::SOURCE_ID           => 'required',
         Entity::SINK_ID             => 'required',
-        Entity::MERCHANT_ID         => 'required',
         Entity::AMOUNT              => 'required',
         Entity::DESCRIPTION         => 'sometimes',
         Entity::TYPE                => 'required|in:collect,send',

@@ -631,7 +631,6 @@ final class Route
         'mock_cybersource_acs',
         'transparent_redirect_get',
         'upi_sms_webhook',
-        'is_valid_vpa',
         'register_device',
         'is_device_verified',
         'zero_upi_call',

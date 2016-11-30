@@ -13,6 +13,10 @@ class Core extends Base\Core
 
         $p2p->generateId();
 
+        $p2p->setStatus(Status::CREATED);
+
+        $p2p->merchant()->associate($this->merchant);
+
         $this->repo->saveOrFail($p2p);
 
         return $p2p;

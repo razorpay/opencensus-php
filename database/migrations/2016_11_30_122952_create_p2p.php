@@ -45,9 +45,11 @@ class CreateP2p  extends Migration
             $table->char(P2p::TYPE)
                   ->nullable();
 
-            $table->string(P2p::GATEWAY);
+            $table->string(P2p::GATEWAY)
+                  ->nullable();
 
-            $table->text(P2p::NOTES);
+            $table->text(P2p::NOTES)
+                  ->nullable();
 
             $table->char(P2p::CURRENCY, 3);
 

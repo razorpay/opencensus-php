@@ -59,16 +59,25 @@ class Entity extends Base\PublicEntity
         self::SINK_ID,
     ];
 
+    // ----------------------- Relations ------------------
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    // ----------------------- Generators ------------------
+
     protected function generateSourceType($input)
     {
-        $sourceId = $this->getAttribute(self::SOURCE_ID);
+        $sourceId = $input[self::SOURCE_ID];
 
         $this->setAttribute(self::SOURCE_TYPE, SourceType::VPA);
     }
 
     protected function generateSinkType($input)
     {
-        $sinkId = $this->getAttribute(self::SINK_ID);
+        $sinkId = $input[self::SINK_ID];
 
         if (strpos($sinkId, 'vpa_') === false)
         {
@@ -79,7 +88,14 @@ class Entity extends Base\PublicEntity
             $sinkType = SinkType::VPA;
         }
 
-        $this->setAttribute(self::SOURCE_TYPE, $sinkType);
+        $this->setAttribute(self::SINK_TYPE, $sinkType);
+    }
+
+    // ----------------------- Setters ------------------------
+
+    public function setStatus($status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
     }
 
     // ----------------------- Public Setters ------------------
@@ -109,28 +125,24 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Mutators ------------------
 
-    protected function setSourceIdAttribute(array & $array)
+    protected function setSourceIdAttribute($sourceId)
     {
-        $sourceId = $this->getAttribute(self::SOURCE_ID);
-
         $this->attributes[self::SOURCE_ID] = Vpa\Entity::stripSignWithoutValidation($sourceId);
     }
 
-    protected function setSinkIdAttribute(array & $array)
+    protected function setSinkIdAttribute($sinkId)
     {
-        $sinkId = $this->getAttribute(self::SINK_ID);
-
         if ($this->getAttribute(self::SINK_TYPE) === SinkType::BANK_ACCOUNT)
         {
-            $ix = strpos($id, '_');
+            $ix = strpos($sinkId, '_');
 
-            $sinkId = substr($id, $ix + 1);
+            $sinkId = substr($sinkId, $ix + 1);
         }
         else
         {
             $sinkId = Vpa\Entity::stripSignWithoutValidation($sinkId);
         }
 
-        $array[self::SINK_ID] = $sinkId;
+        $this->attributes[self::SINK_ID] = $sinkId;
     }
 }
