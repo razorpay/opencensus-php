@@ -40,6 +40,20 @@ class RefundFile extends Base\Core
                 ->store($store)
                 ->type($type)
                 ->save();
+        $creator = new FileStore\Creator;
+
+        $creator->extension($extension)
+                ->content($content)
+                ->name($fileName)
+                ->store($store)
+                ->type($type)
+                ->save();
+
+        $a = new FileStore\Accessor;
+        //$a->type('kotak_netbanking_refund');
+        $a->id(explode('_',$creator->get()['id'])[1]);
+
+        sd($a->get());
 
         return $creator;
     }

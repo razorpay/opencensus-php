@@ -92,7 +92,7 @@ class Accessor extends Base\Core
 
         if ($this->id !== null)
         {
-            $data = new PublicCollection;
+            $data = new Base\PublicCollection;
 
             $data->push($this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId));
         }
