@@ -8,8 +8,8 @@ class Repository extends Base\Repository
 {
 
     protected $appFetchParamRules = [
-        Entity::ID                  => 'sometimes',
-        Entity::MERCHANT_ID         => 'required|alpha_num',
+        Entity::ID                  => 'sometimes|size:14',
+        Entity::MERCHANT_ID         => 'required|alpha_num|size:14',
         Entity::TYPE                => 'sometimes|alpha_num',
         Entity::ENTITY_ID           => 'sometimes|alpha_num',
     ];
