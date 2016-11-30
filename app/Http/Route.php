@@ -579,7 +579,6 @@ final class Route
         'password_login',
         'oauth_login',
         'org_get',
-        'org_get_multiple',
     );
 
     public static $proxy = array(
@@ -626,6 +625,7 @@ final class Route
     );
 
     public static $admin = [
+        'org_get_multiple',
         'admin_fetch_merchant_ids',
         'hello_world',
         'admin_create',
