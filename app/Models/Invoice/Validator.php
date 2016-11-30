@@ -118,10 +118,6 @@ class Validator extends Base\Validator
         Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
     ];
 
-    protected static $createDraftValidators = [
-        // Entity::LINE_ITEMS,
-    ];
-
     protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
     ];
@@ -181,8 +177,10 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
-    public function validateMerchantHasKeys(Merchant\Entity $merchant)
+    public function validateMerchantHasKeys()
     {
+        $merchant = $this->entity->merchant;
+
         $keys = $merchant->keys;
 
         foreach ($keys as $key)
@@ -201,8 +199,10 @@ class Validator extends Base\Validator
             ]);
     }
 
-    public function validateSendNotificationRequest(Entity $invoice, string $medium)
+    public function validateSendNotificationRequest(string $medium)
     {
+        $invoice = $this->entity;
+
         if (NotifyMedium::isMediumValid($medium) === false)
         {
             throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium');
@@ -258,12 +258,14 @@ class Validator extends Base\Validator
      * Validates if an invoice can be issued or not
      *
      */
-    public function validateInvoiceIssue(Entity $invoice)
+    public function validateInvoiceIssue()
     {
 
         // Checks:
         // - Invoice should have amount set to a non-zero value
         // - Either description(minimal invoice) or non-zero line items should exist
+
+        $invoice = $this->entity;
 
         if (($invoice->getAmount() > 0) and
             ($invoice->getDescription() or $invoice->lineItems()->count()))

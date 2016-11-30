@@ -149,7 +149,7 @@ class Generator extends Base\Core
         // any keys at all.
         //
 
-        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
+        $invoice->getValidator()->validateMerchantHasKeys();
 
         //
         // This is being done so that we can do associations
@@ -183,18 +183,29 @@ class Generator extends Base\Core
         $this->repo->transaction(
             function() use ($input)
             {
-                $this->buildAndSaveInvoice($input);
+                $this->associateCustomerWithInvoice($input);
+
+                $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+
+                $this->issueInvoiceAndSave();
             }
         );
 
         (new Notifier($this->invoice))->sendNotificationToCustomer();
     }
 
-    protected function buildAndSaveInvoice(array $input)
+    /**
+     * At the time when invoice is to be issued:
+     * - validate if it can be issued
+     * - create it's order and set the short URL
+     * - save the invoice
+     */
+    public function issueInvoiceAndSave()
     {
-        $this->associateCustomerWithInvoice($input);
+        $this->invoice->getValidator()
+                      ->validateInvoiceIssue();
 
-        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+        $this->invoice->setStatus(Status::ISSUED);
 
         $this->createAndAssociateOrderForInvoice();
 

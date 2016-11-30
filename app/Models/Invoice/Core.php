@@ -89,12 +89,14 @@ class Core extends Base\Core
 
     public function issue(Entity $invoice, Merchant\Entity $merchant)
     {
-        $invoice->getValidator()
-                ->validateInvoiceIssue($invoice);
+        $this->repo->transaction(
+            function() use ($input)
+            {
+                (new Generator($merchant, $invoice))->issueInvoiceAndSave();
+            }
+        );
 
-        $invoice->setStatus(Status::ISSUED);
-
-        $this->repo->saveOrFail($invoice);
+        (new Notifier($this->invoice))->sendNotificationToCustomer();
 
         return $invoice;
     }
@@ -182,8 +184,7 @@ class Core extends Base\Core
                 'medium'     => $medium,
             ]);
 
-        $invoice->getValidator()
-                ->validateSendNotificationRequest($invoice, $medium);
+        $invoice->getValidator()->validateSendNotificationRequest($medium);
 
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
