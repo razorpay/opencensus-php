@@ -15,7 +15,6 @@ final class Route
     protected static $apiRoutes = array(
         'upi_get_key_list'                        => ['get',      'upi_npci/keyList',                               'UpiController@getPublicKeyList'                                    ],
         'upi_sms_webhook'                         => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                        ],
-        'is_valid_vpa'                            => ['get',      'upi_npci/validate_vpa/{vpa}',                    'UpiController@isValidVpa'                                          ],
         'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
         'is_device_verified'                      => ['get',      'upi_npci/devices/{id}',                          'UpiController@isDeviceVerified'                                    ],
@@ -317,7 +316,6 @@ final class Route
         'vpa_available'                           => ['get',      'vpa/available/{vpa}',                            'UpiController@isAvailableVpa'                                      ],
         'vpa_valid'                               => ['get',      'vpa/valid/{vpa}',                                'UpiController@isValidVpa'                                          ],
         'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
-        'vpa_available'                           => ['get',      'vpa/{vpa}',                                      'UpiController@isAvailableVpa'                                      ],
         'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                       'UpiController@deleteVpa'                                           ],

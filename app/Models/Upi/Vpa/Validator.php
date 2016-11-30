@@ -16,6 +16,10 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID     => 'sometimes|string',
     );
 
+    protected static $editRules = array(
+        Entity::BANK_ACCOUNT_ID => 'sometimes|string',
+    );
+
     protected static $createValidators = array(
     );
 }
