@@ -105,9 +105,7 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $this->repo->invoice->deleteOrFail($invoice);
-
-        return [];
+        return $this->repo->invoice->deleteOrFail($invoice);
     }
 
     public function addLineItem(

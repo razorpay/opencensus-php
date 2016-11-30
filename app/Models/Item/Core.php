@@ -41,8 +41,6 @@ class Core extends Base\Core
     {
         $item->getValidator()->validateDeleteOperation($item);
 
-        $this->repo->item->deleteOrFail($item);
-
-        return [];
+        return $this->repo->item->deleteOrFail($item);
     }
 }

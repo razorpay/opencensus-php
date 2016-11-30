@@ -74,9 +74,7 @@ class Core extends Base\Core
 
     public function delete(Entity $lineItem)
     {
-        $this->repo->line_item->deleteOrFail($lineItem);
-
-        return [];
+        return $this->repo->line_item->deleteOrFail($lineItem);
     }
 
     public function getInvoiceAmountForLineItems(Base\PublicCollection $lineItems)

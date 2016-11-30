@@ -49,6 +49,13 @@ class Service extends Base\Service
     {
         $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->delete($item);
+        $item = $this->core->delete($item);
+
+        if ($item === null)
+        {
+            return [];
+        }
+
+        return $item->toArrayPublic();
     }
 }

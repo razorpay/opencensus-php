@@ -66,7 +66,14 @@ class Service extends Base\Service
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->core->delete($invoice);
+        $invoice = $this->core->delete($invoice);
+
+        if ($invoice === null)
+        {
+            return [];
+        }
+
+        return $invoice->toArrayPublic();
     }
 
     public function addLineItem(string $id, array $input)
