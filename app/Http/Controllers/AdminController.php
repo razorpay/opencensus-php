@@ -108,16 +108,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addMerchantToAdmin($id, $adminId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->addMerchantToAdmin(
-            $id, $adminId, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function fetchAdminMultiple(string $id)
     {
         $input = Request::all();
