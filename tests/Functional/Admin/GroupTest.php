@@ -94,11 +94,9 @@ class GroupTest extends TestCase
 
     public function testParentGroupAssignment()
     {
-        // create child group
-        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+        list($l0Group, $allGroups) = $this->buildGroupHierarchy(1);
 
-        // create parent groups
-        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+        $l1Groups = array_diff($allGroups, [$l0Group]);
         $l1GroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $l1Groups);
 
         // modify request
@@ -132,32 +130,7 @@ class GroupTest extends TestCase
 
     public function testAncestorsNotAllowedAsParents()
     {
-        // create child group
-        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
-
-        $childGroups = [$l0Group];
-
-        // create parent groups
-        for ($i=0; $i<2; $i++)
-        {
-            $newChildGroups = [];
-
-            foreach ($childGroups as $childGroup)
-            {
-                $parentsGroups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
-                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
-
-                $childGroup->parents()->sync($parentGroupIds);
-
-                // use below to check data creation
-                // s($childGroup['id'],
-                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
-
-                $newChildGroups = array_merge($newChildGroups, $parentsGroups);
-            }
-
-            $childGroups = $newChildGroups;
-        }
+        list($l0Group, $allGroups) = $this->buildGroupHierarchy(2);
 
         $groupWithoutChild = $l0Group;
 
@@ -186,40 +159,13 @@ class GroupTest extends TestCase
 
     public function testDescendantsNotAllowedAsParents()
     {
-        // create child group
-        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
-
-        $childGroups = $allGroups = [$l0Group];
-
-        // create parent groups
-        for ($i=0; $i<2; $i++)
-        {
-            $newChildGroups = [];
-
-            foreach ($childGroups as $childGroup)
-            {
-                $parentsGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
-                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
-
-                $childGroup->parents()->sync($parentGroupIds);
-
-                // // use below to check data creation
-                // s($childGroup['id'],
-                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
-
-                $newChildGroups = array_merge($newChildGroups, $parentsGroups);
-            }
-
-            $childGroups = $newChildGroups;
-
-            $allGroups = array_merge($allGroups, $childGroups);
-        }
+        list($l0Group, $allGroups) = $this->buildGroupHierarchy(2);
 
         // select a group without a parent
-        $selectedGroup = end($childGroups);
+        $selectedGroup = end($allGroups);
 
         // reset internal pointer of array to first element
-        reset($childGroups);
+        reset($allGroups);
 
         // create another hierarchy of groups
         $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
@@ -258,5 +204,52 @@ class GroupTest extends TestCase
 
         $this->assertEquals(count(array_intersect($filteredParentIds, $allowedParentIds)),
                             count(array_intersect($allowedParentIds, $filteredParentIds)));
+    }
+
+    /*
+     * Builds an n-ary tree group hierarchy structure
+     * @param integer $level => n
+     * @return Group\Entity Starting group node of the n-ary tree, which doesn't have any children
+     * @return Collection A collection of all group nodes in the tree
+     */
+    protected function buildGroupHierarchy($level)
+    {
+        // create child group
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        $childGroups = $allGroups = [$l0Group];
+
+        // create parent groups
+        for ($i=0; $i<$level; $i++)
+        {
+            $newChildGroups = [];
+
+            foreach ($childGroups as $childGroup)
+            {
+                $parentsGroups = $this->fixtures->times($level)->create('group', ['org_id' => $this->org->getId()]);
+
+                // When $level=1, $this->fixtures->times($level) returns an object of the entity but not an array
+                if ($level === 1 )
+                {
+                    $parentsGroups = [$parentsGroups];
+                }
+
+                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
+
+                $childGroup->parents()->sync($parentGroupIds);
+
+                // use below to check data creation
+                // s($childGroup['id'],
+                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
+
+                $newChildGroups = array_merge($newChildGroups, $parentsGroups);
+            }
+
+            $childGroups = $newChildGroups;
+
+            $allGroups = array_merge($allGroups, $childGroups);
+        }
+
+        return [$l0Group, $allGroups];
     }
 }
