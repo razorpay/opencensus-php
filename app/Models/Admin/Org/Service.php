@@ -17,16 +17,18 @@ class Service extends Base\Service
         $orgInput['email'] = $input['email'];
 
         $org = $this->core()->create($orgInput);
+        $orgId = $org->id;
+        $orgId = Entity::getSignedId($orgId);
 
-        $role = $this->createDefaultRole($org);
+        $role = $this->createDefaultRole($orgId);
         $adminInput['roles'] = [$role['id']];
 
-        $admin = $this->createDefaultAdmin($org, $adminInput);
+        $admin = $this->createDefaultAdmin($orgId, $adminInput);
 
         return $org->toArrayPublic();
     }
 
-    protected function createDefaultRole($org)
+    protected function createDefaultRole($orgId)
     {
         $permissions = Config::get('heimdall.permissions');
         $permissions = (new Permission\Service)->getMultiplePermissionIdsByNames($permissions);
@@ -34,15 +36,15 @@ class Service extends Base\Service
         {
             $input['permissions'][] = $value['id'];
         }
-        $input['name'] = 'default';
-        $input['description'] = 'desc';
+        $input['name'] = 'superadmin';
+        $input['description'] = 'This role has all permissions possible';
 
-        return (new Role\Service)->createRole('org_'.$org->id, $input);
+        return (new Role\Service)->createRole($orgId, $input);
     }
 
-    protected function createDefaultAdmin($org, $input)
+    protected function createDefaultAdmin($orgId, $input)
     {
-        return (new Admin\Service)->createAdmin('org_'.$org['id'], $input);
+        return (new Admin\Service)->createAdmin($orgId, $input);
     }
 
     protected function getAdminInput($input)
