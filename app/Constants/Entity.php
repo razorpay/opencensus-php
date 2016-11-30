@@ -55,6 +55,7 @@ class Entity
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const WALLETS               = 'wallets'; // WALLET used already, below
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
 
     //
     // Gateway entities
@@ -135,6 +136,7 @@ class Entity
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
         self::TRANSFER              => \RZP\Models\Transaction::class,
         self::WALLETS               => \RZP\Models\Wallet::class,
+        self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transactions::class,
     );
 
     protected static $repository = array(

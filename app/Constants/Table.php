@@ -38,6 +38,7 @@ class Table
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const WALLETS               = 'wallets'; // WALLET used already, below.
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
 
     // Gateway related
     const EBS                   = 'ebs';
