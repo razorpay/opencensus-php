@@ -75,18 +75,11 @@ class Accessor extends Base\Core
     }
 
     /**
-     * Returns Array of File Store Values
+     * Returns Collection/Entity of File Store Values
      *
-     * @return array
+     * @return Collection/File store Entity
      */
-    public function get()
-    {
-        $files = $this->getEntity();
-
-        return $files->toArrayPublic();
-    }
-
-    protected function getEntity()
+    protected function get()
     {
         $this->updateMerchantId();
 
