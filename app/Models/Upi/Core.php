@@ -166,7 +166,12 @@ class Core extends Base\Core
                 $input);
         }
 
-        return $this->vpaService->createVpa($input, $customer);
+        return $this->vpaService->create($input, $customer);
+    }
+
+    public function deleteVpa($id)
+    {
+        return $this->vpaService->delete($id);
     }
 
     public function getVpa($vpaId)

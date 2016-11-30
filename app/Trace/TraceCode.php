@@ -261,6 +261,8 @@ class TraceCode
 
     const VPA_CREATE_REQUEST                        = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                               = 'VPA_CREATED';
+    const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
+    const VPA_DELETED                               = 'VPA_DELETED';
 
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';

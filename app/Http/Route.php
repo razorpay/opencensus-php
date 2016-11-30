@@ -314,9 +314,10 @@ final class Route
         'vpa_available'                           => ['get',      'vpa/available/{vpa}',                            'UpiController@isAvailableVpa'                                      ],
         'vpa_valid'                               => ['get',      'vpa/valid/{vpa}',                                'UpiController@isValidVpa'                                          ],
         'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
-        'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
+        'vpa_available'                           => ['get',      'vpa/{vpa}',                                      'UpiController@isAvailableVpa'                                      ],
         'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
+        'vpa_delete'                              => ['delete',   'vpa/{id}',                                       'UpiController@deleteVpa'                                           ],
         'customer_balance_fetch'                  => ['get',      'customers/{customer_id}/balance/{account_id}',   'CustomerController@fetchBalance'                                   ],
     );
 
@@ -374,6 +375,7 @@ final class Route
         'upi_customer_bank_accounts_fetch',
         'vpa_register',
         'vpa_create',
+        'vpa_delete',
         'vpa_fetch_multiple',
         'vpa_available',
         'customer_balance_fetch',

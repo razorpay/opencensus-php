@@ -80,6 +80,13 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteVpa($id)
+    {
+        $data = $this->core->deleteVpa($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function isValidVpa($vpa)
     {
         return ApiResponse::json([

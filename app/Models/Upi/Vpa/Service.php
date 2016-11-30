@@ -10,7 +10,7 @@ use RZP\Models\Customer;
 
 class Service extends Base\Service
 {
-    public function createVpa($input, $customer)
+    public function create($input, $customer)
     {
         $this->trace->info(TraceCode::VPA_CREATE_REQUEST, $input);
 
@@ -35,5 +35,16 @@ class Service extends Base\Service
         $vpas = $this->repo->vpa->fetch($input);
 
         return $vpas->toArrayPublic();
+    }
+
+    public function delete($vpaId)
+    {
+        $this->trace->info(TraceCode::VPA_DELETE_REQUEST, $vpaId);
+
+        $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
+
+        $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
+
+        $this->repo->vpa->deleteOrFail($vpa);
     }
 }
