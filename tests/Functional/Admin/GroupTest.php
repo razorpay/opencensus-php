@@ -91,4 +91,40 @@ class GroupTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testParentGroupAssignment()
+    {
+        // create child group
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        // create parent groups
+        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+
+        $l1GroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $l1Groups);
+
+        // modify request
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $this->org->getPublicId(), $l0Group->getPublicId());
+
+        $request['content']['parents'] = $l1GroupIds;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest();
+
+        // check parents
+        $createdParents = $l0Group->parents->all();
+        $createdParentIds = array_map(create_function('$g', 'return $g->getPublicId();'), $createdParents);
+        $this->assertEquals(count(array_intersect($l1GroupIds, $createdParentIds)),
+                            count(array_intersect($createdParentIds, $l1GroupIds)));
+
+        // check sub groups
+        foreach ($createdParents as $createdParent) {
+            $subGroups = $createdParent->subgroups->all();
+            $subGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $subGroups);
+            $this->assertEquals(1, count($subGroupIds));
+            $this->assertEquals($l0Group->getPublicId(), $subGroupIds[0]);
+        }
+}
 }

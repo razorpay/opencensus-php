@@ -91,6 +91,18 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testParentGroupAssignment' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s',
+            'method' => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
     ]
 
 ];
