@@ -25,13 +25,15 @@ class FactoriesLoader extends Base\FactoriesLoader
             return $designer->define($name, $shortName, $attributes);
         };
 
+        // In case we loaded data directly from an included file in the
+        // $basePath directory
+        //
         // foreach ((new Base\FactoriesFinder($basePath))->find() as $file) {
         //     include($file);
         // }
 
         FactoryData::defineEntityFactories($factory, $faker);
-        // sd($basePath);
-        // sd($factory);
+
         return $designer->definitions();
     }
 
