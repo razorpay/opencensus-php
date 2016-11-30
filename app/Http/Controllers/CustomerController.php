@@ -165,13 +165,11 @@ class CustomerController extends Controller
         return $data;
     }
 
-    public function setMpin($customerId)
+    public function setMpin($customerId, $bankAccountId)
     {
         $input = Request::all();
 
-        $data = $this->customer->setMpin($customerId, $input);
-
-        return $data;
+        return $this->customer->setMpin($customerId, $bankAccountId, $input);
     }
 
     public function resetMpin($customerId, $bankAccountId)

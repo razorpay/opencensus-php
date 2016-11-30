@@ -312,8 +312,8 @@ final class Route
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi_npci/customers/{id}/bank_accounts/{ifsc}',   'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
-        'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
-        'reset_mpin'                              => ['post',     'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
+        'vpa_register'                            => ['post',     'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@setMpin'                                        ],
+        'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
     );
 
