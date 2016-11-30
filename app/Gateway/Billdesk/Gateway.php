@@ -626,4 +626,14 @@ class Gateway extends Base\Gateway
     {
         $this->tpv = $gatewayPayment->isTpv();
     }
+
+    public function isPaymentTpvEnabled($gatewayPayment, $merchant)
+    {
+        if (($gatewayPayment->isTpv()) or ($merchant->isTPVRequired()))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
