@@ -98,6 +98,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setGateway($gateway)
+    {
+        return $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
     // ----------------------- Public Setters ------------------
 
     protected function setPublicSourceIdAttribute(array & $array)

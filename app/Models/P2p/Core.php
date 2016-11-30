@@ -15,6 +15,8 @@ class Core extends Base\Core
 
         $p2p->setStatus(Status::CREATED);
 
+        $p2p->setGateway(Gateway::UPI_NPCI);
+
         $p2p->merchant()->associate($this->merchant);
 
         $this->repo->saveOrFail($p2p);
