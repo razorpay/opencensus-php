@@ -3,6 +3,7 @@
 namespace RZP\Tests\TestDummy;
 
 use Faker\Provider\Base;
+use Illuminate\Support\Str;
 
 class FakerProviderFrequent extends Base
 {
@@ -19,5 +20,10 @@ class FakerProviderFrequent extends Base
     public function timestamp()
     {
         return time();
+    }
+
+    public function groupName()
+    {
+        return Str::random(5);
     }
 }

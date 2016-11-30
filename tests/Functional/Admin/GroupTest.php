@@ -206,6 +206,37 @@ class GroupTest extends TestCase
                             count(array_intersect($allowedParentIds, $filteredParentIds)));
     }
 
+    public function testSiblingsNotAllowedAsParents()
+    {
+        list($l0Group, $allGroups) = $this->buildGroupHierarchy(3);
+
+        // select a group without a parent
+        $selectedGroup = $allGroups[1];
+
+        // modify request
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        // read response content
+        $content = $this->response->getContent();
+        $content = json_decode($content, true);
+
+        $filteredParentIds = array_column($content, 'id');
+
+        // Fetching children of siblings of $selectedGroup
+        $allowedParents = $allGroups[2]->subGroups->all();
+        $allowedParents = array_merge($allowedParents, $allGroups[3]->subGroups->all());
+        $allowedParentIds = array_map(create_function('$g', 'return $g->getId();'), $allowedParents);
+
+        $this->assertEquals(count(array_intersect($filteredParentIds, $allowedParentIds)),
+                            count(array_intersect($allowedParentIds, $filteredParentIds)));
+    }
+
     /*
      * Builds an n-ary tree group hierarchy structure
      * @param integer $level => n
@@ -226,7 +257,8 @@ class GroupTest extends TestCase
 
             foreach ($childGroups as $childGroup)
             {
-                $parentsGroups = $this->fixtures->times($level)->create('group', ['org_id' => $this->org->getId()]);
+                $parentsGroups = $this->fixtures->times($level)->create('group',
+                    ['org_id' => $this->org->getId()]);
 
                 // When $level=1, $this->fixtures->times($level) returns an object of the entity but not an array
                 if ($level === 1 )

@@ -126,4 +126,15 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testSiblingsNotAllowedAsParents' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];
