@@ -13,16 +13,19 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    use AesTrait;
+
     protected $gateway = 'netbanking_icici';
 
     protected $bank = 'icici';
 
-    protected $openssl_algorithm = 'aes-128-ecb';
+    const MODE_ECB = 1;
 
     protected $map = array(
         RequestFields::AMOUNT  => 'amount'
@@ -44,6 +47,8 @@ class Gateway extends Base\Gateway
         $payment = $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getRequestArray($content);
+
+        // sd($request);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -69,7 +74,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         // Use maps - Response Fields
-        $attrs = $this->getPaymentAttributes($content);
+        $attrs = $this->getAuthorizeResponseAttributes($content);
 
         $payment->fill($attrs);
 
@@ -111,20 +116,18 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentVerifyData($input);
 
-        $payment_date = $this->getPaymentDate($payment);
+        $paymentDate = $this->getPaymentDate($payment);
 
         // Getting payment date in the specified format
-        $content[ResponseFields::PAYMENT_DATE] = $payment_date;
+        $content[ResponseFields::PAYMENT_DATE] = $paymentDate;
 
-        $request = $this->getResponseArray($content);
+        $request = $this->getRequestArray($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $request);
 
-        $response = parent::sendGatewayRequest($request);
-
-        sd($response->body);
+        $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponse = $response;
         // Why is this body empty?? It definitely shouldn't be empty
@@ -137,77 +140,110 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment($verify)
     {
-        $verify_body = explode(' ', $verify->verifyResponseBody);
+        $content = $verify->verifyResponseBody;  // Body gets the XML string
 
-        $this->trace->info(
+        $status = VerifyResult::STATUS_MATCH;
+
+        // Converting response string to XML format. ----- Make sure you verify this with ICICI once again
+        $xml = $this->getResponseXml($content);
+
+        // Should probably trace this
+        /*$this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $verify_body);
+            $xml);*/
 
-        // sd($verify->verifyResponseBody);
+        $verify->apiSuccess = true;
+        $verify->gatewaySuccess = false;
+
+        // Verify this with ICICI
+        if ($xml['STATUS'] === 'SUCCESS')
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        // we want the status to match - in either authorize or failure
+        return $status;
     }
 
-    public function getPaymentRequestData($input)
+    protected function getPaymentRequestData($input)
     {
-        $encrypted_string = $this->getEncryptedString($input);
+        $encryptedString = $this->getEncryptedString($input);
 
-        $pid = $this->config['pid'];
+        $pid = $this->getPid();
 
         $data = array(
-            RequestFields::MODE_OF_OPERATION  => ModeFields::AUTHORIZE,
+            RequestFields::MODE               => ModeFields::AUTHORIZE,
             RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
-            RequestFields::ENCRYPTED_STRING   => $encrypted_string,
-            RequestFields::AMOUNT             => $input['payment']['amount'] / 100 , // Setting it in paise. Is that correct?
+            RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100 ,
+            RequestFields::ENCRYPTED_STRING   => $encryptedString,
         );
 
         return $data;
     }
 
-    public function getPaymentVerifyData($input)
+    protected function getPaymentVerifyData($input)
     {
-        $pid = $this->config['pid'];
+        $pid = $this->getPid();
 
         $data = array(
-            RequestFields::MODE_OF_OPERATION        => ModeFields::VERIFY,
+            RequestFields::MODE                     => ModeFields::VERIFY,
             RequestFields::PAYEE_ID                 => $pid,
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
-            RequestFields::ITEM_CODE                => $input['payment']['id'],
             RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 ,
+            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
+            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']),
             RequestFields::CURRENCY_CODE            => 'INR',
         );
 
         return $data;
     }
 
-    public function getEncryptedString($input)
+    protected function getEncryptedString($input)
     {
         // Adding & so that URL creation is simple
-        $data = $this->getPostData($input);
+        $data = $this->getAuthorizeRequestData($input);
 
-        $query_string = $this->createUrl($data);
+        $queryString = $this->createUrl($data);
 
-        $master_key = $this->config['master_key'];
+        $masterKey = $this->getMasterKey();
 
-        // returning Encrypted String
-        return openssl_encrypt($query_string, $this->openssl_algorithm, $master_key, 0);
+        return $this->encryptString($queryString, $masterKey);
     }
 
-    public function getPostData($input)
+    protected function getAuthorizeRequestData($input)
     {
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22'; // ICICI integration docs
 
         $data = array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'] . '&', // payment_id
-            RequestFields::ITEM_CODE                => $input['payment']['id'] . '&',
+            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id'] . '&'), // upper case
             RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 . '&',
             RequestFields::CURRENCY_CODE            => 'INR' . '&',
             RequestFields::RETURN_URL               => $callbackUrl . '&',
-            RequestFields::ONLINE_CONFIRMATION      => Confirmation::YES,
+            RequestFields::CONFIRMATION             => Confirmation::YES,
         );
 
         return $data;
     }
 
-    public function createUrl($data)
+    protected function createUrl($data)
     {
         $url = '';
 
@@ -219,11 +255,13 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    // redundant... could use better logic to solve this
-    public function getRequestArray($content)
+    protected function getRequestArray($content)
     {
-        // Amount unnecessary for ICICI, ES contains AMT, but encrypted
-        unset($content[RequestFields::AMOUNT]);
+        // Amount not needed for the Purchase Request, but needed for verify
+        if ($content['MD'] === 'P')
+        {
+            unset($content[RequestFields::AMOUNT]);
+        }
 
         return array(
             'url' => Url::LIVE_DOMAIN,
@@ -232,23 +270,14 @@ class Gateway extends Base\Gateway
         );
     }
 
-    public function getResponseArray($content)
-    {
-        return array(
-            'url' => Url::LIVE_DOMAIN,
-            'method' => 'post',
-            'content' => $content
-        );
-    }
-
-    public function createPaymentEntity($content)
+    protected function createPaymentEntity($content)
     {
         return array(
             RequestFields::AMOUNT => $content[RequestFields::AMOUNT]
         );
     }
 
-    public function getPaymentDate($payment)
+    protected function getPaymentDate($payment)
     {
         $timestamp = $payment['original']['created_at'];
 
@@ -256,24 +285,40 @@ class Gateway extends Base\Gateway
     }
 
 
-    public function getDataFromResponse($data)
+    protected function getDataFromResponse($data)
     {
-        // Decrypting message from ICICI gateway --- get on a call - This is failing sometimes
-        $master_key = $this->config['master_key'];
+        $masterKey = $this->getMasterKey();
 
-        $decrypted_string = openssl_decrypt($data['ES'], $this->openssl_algorithm, $master_key, 0);
+        $decryptedString = $this->decryptString($data['ES'], $masterKey);
 
-        parse_str($decrypted_string, $content);
+        parse_str($decryptedString, $content);
 
         return $content;
     }
 
-    public function getPaymentAttributes($content)
+    protected function getAuthorizeResponseAttributes($content)
     {
         return array(
             'received' => true,
             'status'   => $content[ResponseFields::STATUS],
             'bank_payment_id' => $content[ResponseFields::BANK_PAYMENT_ID]
         );
+    }
+
+    protected function getResponseXml($content)
+    {
+        $xml = (array) simplexml_load_string($content);
+
+        return $xml['@attributes'];
+    }
+
+    public function getMasterKey()
+    {
+        return $this->config['test_master_key'];
+    }
+
+    public function getPid()
+    {
+        return $this->config['test_pid'];
     }
 }

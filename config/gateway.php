@@ -179,6 +179,7 @@ return array(
 
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'  => '123456'
     ),
 
     'netbanking_kotak' => array(
@@ -187,8 +188,8 @@ return array(
     ),
 
     'netbanking_icici' => array(
-        'master_key'   => env('ICICI_GATEWAY_MASTER_KEY'),
-        'pid'          => env('ICICI_GATEWAY_PID'),
+        'test_master_key'   => env('ICICI_GATEWAY_TEST_MASTER_KEY'),
+        'test_pid'          => env('ICICI_GATEWAY_TEST_PID'),
     ),
 
     'sharp' => array(

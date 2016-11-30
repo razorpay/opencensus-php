@@ -9,6 +9,7 @@ class Terminal extends Base
 {
     public function createAllSharedTerminals()
     {
+        $this->createSharedIciciTerminal(); // change
         $this->createSharedHdfcTerminal();
         $this->createSharedAtomTerminal();
         $this->createSharedAxisTerminal();
@@ -648,6 +649,40 @@ class Terminal extends Base
             'id'                        => Shared::NETBANKING_KOTAK_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_kotak',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'netbanking'                => 1,
+            'shared'                    => 1);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createNetbankingIciciTerminal(array $attributes = array())
+    {
+        $defaultValues = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 0,
+            'netbanking'                => 1,);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingIciciTerminal(array $attributes = array())
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = array(
+            'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_icici',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'netbanking'                => 1,
