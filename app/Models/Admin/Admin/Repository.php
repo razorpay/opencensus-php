@@ -114,6 +114,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $adminId)
                     ->with('groups')
+                    ->with('roles')
                     ->firstOrFail();
     }
 

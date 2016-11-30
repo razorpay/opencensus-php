@@ -4,8 +4,11 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Group;
 
 class AdminTest extends TestCase
 {
@@ -35,7 +38,19 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $superAdminRole = Role\Entity::getSignedId(Org::ADMIN_ROLE);
+
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $superAdminRole;
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['roles'][0]['id'], $superAdminRole);
+
+        $this->assertEquals($result['groups'][0]['id'], $group);
     }
 
     public function testGetAdmin()
@@ -57,10 +72,15 @@ class AdminTest extends TestCase
     public function testEditAdmin()
     {
         $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID => $this->orgId
+            Admin\Entity::ORG_ID => $this->orgId,
         ]);
 
-        $adminId = $admin->getId();
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -68,7 +88,19 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $managerRole = Role\Entity::getSignedId(Org::MANAGER_ROLE);
+
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $managerRole;
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['roles'][0]['id'], $managerRole);
+
+        $this->assertEquals($result['groups'][0]['id'], $group);
     }
 
     public function testDeleteAdmin()
