@@ -16,24 +16,24 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new P2p\Core;
+        $this->core = new Core;
     }
 
-    public function createP2p($input)
+    public function create($input)
     {
-        $p2p = (new Core)->create($input);
+        $p2p = $this->core->create($input);
 
         return $p2p->toArrayPublic();
     }
 
-    public function getP2pById($id)
+    public function getById($id)
     {
         $p2p = $this->repo->p2p->findOrFail($id);
 
         return $p2p->toArrayPublic();
     }
 
-    public function getAllP2ps($input)
+    public function getMultiple($input)
     {
         $p2ps = $this->repo->p2p->fetch($input);
 

@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'vpa';
 
+    protected static $sign = 'vpa';
+
     protected $fillable = [
         self::USERNAME,
         self::HANDLE,

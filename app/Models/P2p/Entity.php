@@ -4,7 +4,9 @@ namespace RZP\Models\P2p;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Upi\Vpa;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
@@ -47,4 +49,88 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'p2p';
 
+    protected static $generators = [
+        self::SOURCE_TYPE,
+        self::SINK_TYPE,
+    ];
+
+    protected $publicSetters = [
+        self::SOURCE_ID,
+        self::SINK_ID,
+    ];
+
+    protected function generateSourceType($input)
+    {
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
+
+        $this->setAttribute(self::SOURCE_TYPE, SourceType::VPA);
+    }
+
+    protected function generateSinkType($input)
+    {
+        $sinkId = $this->getAttribute(self::SINK_ID);
+
+        if (strpos($sinkId, 'vpa_') === false)
+        {
+            $sinkType = SinkType::BANK_ACCOUNT;
+        }
+        else
+        {
+            $sinkType = SinkType::VPA;
+        }
+
+        $this->setAttribute(self::SOURCE_TYPE, $sinkType);
+    }
+
+    // ----------------------- Public Setters ------------------
+
+    protected function setPublicSourceIdAttribute(array & $array)
+    {
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
+
+        $array[self::SOURCE_ID] = Vpa\Entity::getSignedId($sourceId);
+    }
+
+    protected function setPublicSinkIdAttribute(array & $array)
+    {
+        $sinkId = $this->getAttribute(self::SINK_ID);
+
+        if ($this->getAttribute(self::SINK_TYPE) === SinkType::BANK_ACCOUNT)
+        {
+            $sinkId = 'ba_' . $sinkId;
+        }
+        else
+        {
+            $sinkId = Vpa\Entity::getSignedId($sinkId);
+        }
+
+        $array[self::SINK_ID] = $sinkId;
+    }
+
+    // ----------------------- Mutators ------------------
+
+    protected function setSourceIdAttribute(array & $array)
+    {
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
+
+        $this->attributes[self::SOURCE_ID] = Vpa\Entity::stripSignWithoutValidation($sourceId);
+    }
+
+    protected function setSinkIdAttribute(array & $array)
+    {
+        $sinkId = $this->getAttribute(self::SINK_ID);
+
+        if ($this->getAttribute(self::SINK_TYPE) === SinkType::BANK_ACCOUNT)
+        {
+            $ix = strpos($id, '_');
+
+            $sinkId = substr($id, $ix + 1);
+        }
+        else
+        {
+            $sinkId = Vpa\Entity::stripSignWithoutValidation($sinkId);
+        }
+
+        $array[self::SINK_ID] = $sinkId;
+    }
 }
