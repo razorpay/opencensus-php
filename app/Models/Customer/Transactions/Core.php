@@ -65,6 +65,10 @@ class Core extends Base\Core
             $customerTxn->setCredit($amount);
         }
 
+        $customerTxn->customer()->associate($customer);
+
+        $customerTxn->merchant()->associate($payment->merchant);
+
         $customerTxn->fillAndGenerateId($txnData);
 
         return $customerTxn;

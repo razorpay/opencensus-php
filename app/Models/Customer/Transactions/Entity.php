@@ -9,6 +9,8 @@ class Entity extends Base\PublicEntity
     const ID                = 'id';
     const ENTITY_ID         = 'entity_id';
     const ENTITY_TYPE       = 'entity_type';
+    const MERCHANT_ID       = 'merchant_id';
+    const CUSTOMER_ID       = 'customer_id';
     const STATUS            = 'status';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
@@ -20,8 +22,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'ctxn';
 
     protected $entity = 'customer_transactions';
-
-    public $incrementing = true;
 
     protected $fillable = [
         self::ENTITY_ID,
@@ -45,19 +45,22 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
-        self::DESCRIPTION
+        self::DESCRIPTION,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $public = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
+        self::ID,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
-        self::DESCRIPTION
+        self::DESCRIPTION,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     // -------------------- Relations ---------------------------

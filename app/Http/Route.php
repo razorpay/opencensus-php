@@ -262,6 +262,7 @@ final class Route
         'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
         'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
         'customer_get_wallet_balance'             => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
+        'customer_get_wallet_statement'           => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'invoice_create'                          => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
@@ -398,7 +399,8 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
-        'customer_get_wallet_balance'
+        'customer_get_wallet_balance',
+        'customer_get_wallet_statement',
     );
 
     public static $internal = array(
@@ -690,6 +692,7 @@ final class Route
         // 'item_update'                   => 'invoice',
         // 'item_delete'                   => 'invoice',
         'customer_get_wallet_balance'   => 'b2bwallet',
+        'customer_get_wallet_statement' => 'b2bwallet'
     );
 
     const RAZORPAYJS_ROUTES = array(

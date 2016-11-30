@@ -14,8 +14,11 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function getStatement()
+    public function getStatement($customerId, $input)
     {
-        ;
+        $entities = $this->repo->customer_transactions
+                    ->fetchCustomerStatement($input, $customerId, $this->merchant->getId());
+
+        return $entities->toArrayPublic();
     }
 }

@@ -6,6 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\Customer\Transactions\Entity;
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
 
 class CreateCustomerTransactions extends Migration
 {
@@ -26,6 +28,10 @@ class CreateCustomerTransactions extends Migration
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::ENTITY_TYPE, 50);
+
+            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
+            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::STATUS, 50);
 
@@ -55,6 +61,16 @@ class CreateCustomerTransactions extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::ENTITY_ID);
+
+            $table->foreign(Entity::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::CUSTOMER_ID)
+                  ->references(CUSTOMER\Entity::ID)
+                  ->on(Table::CUSTOMER)
+                  ->on_delete('restrict');
         });
     }
 
@@ -65,6 +81,18 @@ class CreateCustomerTransactions extends Migration
      */
     public function down()
     {
+        Schema::table(Table::CUSTOMER_TRANSACTIONS, function($table)
+        {
+            $table->dropForeign(
+                Table::CUSTOMER_TRANSACTIONS . '_' . Entity::MERCHANT_ID . '_foreign');
+        });
+
+        Schema::table(Table::CUSTOMER_TRANSACTIONS, function($table)
+        {
+            $table->dropForeign(
+                Table::CUSTOMER_TRANSACTIONS . '_' . Entity::CUSTOMER_ID . '_foreign');
+        });
+
         Schema::drop(Table::CUSTOMER_TRANSACTIONS);
     }
 }

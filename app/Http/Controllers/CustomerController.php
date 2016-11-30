@@ -232,4 +232,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($wallet);
     }
+
+    public function getCustomerWalletStatement($id)
+    {
+        $input = Request::all();
+
+        $statement = (new Customer\Transactions\Service)->getStatement($id, $input);
+
+        return ApiResponse::json($statement);
+    }
 }
