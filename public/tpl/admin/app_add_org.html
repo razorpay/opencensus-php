@@ -47,12 +47,19 @@
               </div>
             </div>
             <div class="form-group">
+             <label for="hostname" class="col-lg-3 control-label">Hostname</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="hostname"
+                  ng-model="organization.hostname">
+              </div>
+            </div>
+            <!-- <div class="form-group">
              <label for="logo" class="col-lg-3 control-label">Logo URL</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="logo_url"
                   ng-model="organization.logo_url">
               </div>
-            </div>
+            </div> -->
             <div class="form-group">
              <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
               <div class="col-lg-8" >
@@ -61,6 +68,55 @@
                   <option value="password">Password</option>
                   <option value="google_auth">Google Auth</option>
                 </select>
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="full_name" class="col-lg-3 control-label">Full Name</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.name" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="username" class="col-lg-3 control-label">Username</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="username" ng-model="organization.username" />
+                <span class="help-block">Required to login to user panel.</span>
+              </div>
+            </div>
+            <div class="form-group" ng-show="!user.id && !organization.id">
+              <label for="password" class="col-lg-3 control-label">Password</label>
+              <div class="col-lg-8" >
+                <input type="password" class="form-control m-b" name="password" ng-model="organization.password" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="employee_code" class="col-lg-3 control-label">Employee Code</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.employee_code" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="department_code" class="col-lg-3 control-label">Department Code</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.department_code" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="branch_code" class="col-lg-3 control-label">Branch Code</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.branch_code" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="location_code" class="col-lg-3 control-label">Location Code</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.location_code" />
+              </div>
+            </div>
+            <div class="form-group" ng-show=!organization.id>
+              <label for="supervisor_code" class="col-lg-3 control-label">Supervisor Code</label>
+              <div class="col-lg-8" >
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.supervisor_code" />
               </div>
             </div>
 
