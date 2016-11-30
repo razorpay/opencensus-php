@@ -14,6 +14,11 @@ class Accessor extends Base\Core
     protected $params = [];
 
     /**
+     * Id for which entity has to be fetched
+     */
+    protected $id = null;
+
+    /**
      * Set the Id in Query Param
      *
      * @param string $id ID of object to fetch
@@ -22,7 +27,7 @@ class Accessor extends Base\Core
      */
     public function id(string $id)
     {
-        $this->params[Entity::ID] = $id;
+        $this->id = $id;
 
         return $this;
     }
@@ -36,7 +41,7 @@ class Accessor extends Base\Core
      */
     public function merchantId(string $merchantId)
     {
-        $this->params[Entity::MERCHANT_ID] = $merchantId;
+        $this->merchantId = $merchantId;
 
         return $this;
     }
@@ -85,7 +90,16 @@ class Accessor extends Base\Core
     {
         $this->updateMerchantId();
 
-        $data = $this->repo->file_store->fetch($this->params);
+        if ($this->id !== null)
+        {
+            $data = new PublicCollection;
+
+            $data->push($this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId));
+        }
+        else
+        {
+            $data = $this->repo->file_store->fetch($this->params, $this->merchantId);
+        }
 
         return $data;
     }
