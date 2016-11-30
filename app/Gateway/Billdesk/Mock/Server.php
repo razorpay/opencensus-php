@@ -51,7 +51,9 @@ class Server extends Base\Mock\Server
             'ErrorDescription'  => 'NA',
         );
 
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+        $msg = $this->getGatewayInstance()
+                    // ->setInput($gatewayInput)
+                    ->getMessageStringWithHash($content);
 
         // // Uncomment below to mock s2s callback
         // $headers = array(
