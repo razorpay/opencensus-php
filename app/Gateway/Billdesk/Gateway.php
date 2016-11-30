@@ -626,4 +626,9 @@ class Gateway extends Base\Gateway
     {
         $this->tpv = $gatewayPayment->isTpv();
     }
+
+    public function getTpv($gatewayPayment)
+    {
+        return $gatewayPayment->isTpv();
+    }
 }
