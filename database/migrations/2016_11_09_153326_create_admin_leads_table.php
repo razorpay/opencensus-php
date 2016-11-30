@@ -13,11 +13,11 @@ class CreateAdminLeadsTable extends Migration
     public function up()
     {
         Schema::create('admin_leads', function (Blueprint $table) {
-            $table->char('id', 14);
+            $table->char('id', 14)->primary();
 
             $table->string('admin_id', 250);
 
-            $table->string('token', 250);
+            $table->string('token', 250)->unique();
 
             $table->string('email', 250);
 
