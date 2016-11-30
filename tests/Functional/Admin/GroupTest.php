@@ -99,7 +99,6 @@ class GroupTest extends TestCase
 
         // create parent groups
         $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
-
         $l1GroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $l1Groups);
 
         // modify request
@@ -116,6 +115,7 @@ class GroupTest extends TestCase
         // check parents
         $createdParents = $l0Group->parents->all();
         $createdParentIds = array_map(create_function('$g', 'return $g->getPublicId();'), $createdParents);
+
         $this->assertEquals(count(array_intersect($l1GroupIds, $createdParentIds)),
                             count(array_intersect($createdParentIds, $l1GroupIds)));
 
@@ -123,8 +123,44 @@ class GroupTest extends TestCase
         foreach ($createdParents as $createdParent) {
             $subGroups = $createdParent->subgroups->all();
             $subGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $subGroups);
+
             $this->assertEquals(1, count($subGroupIds));
+
             $this->assertEquals($l0Group->getPublicId(), $subGroupIds[0]);
         }
-}
+    }
+
+    public function testAncestorsNotAllowedAsParents()
+    {
+        // create child group
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        // create parent groups
+        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+        $l1GroupIds = array_map(create_function('$g', 'return $g->getId();'), $l1Groups);
+
+        // create another hierarchy of groups
+        $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
+        $loneGroupIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
+
+        $l0Group->parents()->sync($l1GroupIds);
+
+        // modify request
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $l0Group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        // read response content
+        $content = $this->response->getContent();
+        $content = json_decode($content, true);
+
+        $filteredParentIds = array_column($content, 'id');
+
+        $this->assertEquals(count(array_intersect($filteredParentIds, $loneGroupIds)),
+                            count(array_intersect($loneGroupIds, $filteredParentIds)));
+    }
 }

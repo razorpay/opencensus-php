@@ -103,6 +103,17 @@ return [
             'content' => [],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testAncestorsNotAllowedAsParents' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 
 ];
