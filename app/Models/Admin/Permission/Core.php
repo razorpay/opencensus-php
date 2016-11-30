@@ -14,4 +14,18 @@ class Core extends Base\Core
 
         return $permission;
     }
+
+    public function getMultiplePermissionIdsByNames(array $names)
+    {
+        $permissions = $this->repo->permission->retrieveIdsByNames($names);
+
+        $permIds = [];
+
+        foreach($permissions as $perm)
+        {
+            $permIds[] = $perm->getPublicId();
+        }
+
+        return $permIds;
+    }
 }

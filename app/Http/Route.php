@@ -589,6 +589,7 @@ final class Route
         'password_login',
         'oauth_login',
         'org_get',
+        'org_get_multiple',
     );
 
     public static $proxy = array(
@@ -644,7 +645,6 @@ final class Route
         'admin_get',
         'admin_roles_create',
         'org_create',
-        'org_get_multiple',
         'org_edit',
         'org_delete',
         'role_create',

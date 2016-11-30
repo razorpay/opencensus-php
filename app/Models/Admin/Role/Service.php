@@ -13,7 +13,7 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $role = $this->core()->create($input, $org);
+        $role = $this->core()->create($org, $input);
 
         return $role->toArrayPublic();
     }

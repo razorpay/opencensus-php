@@ -103,7 +103,7 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $admin = $this->core()->create($input, $org);
+        $admin = $this->core()->create($org, $input);
 
         $admin = $admin->toArrayPublic();
 

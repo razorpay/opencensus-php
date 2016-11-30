@@ -11,7 +11,7 @@ use RZP\Models\Admin\Role;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Org\Entity $org)
+    public function create(Org\Entity $org, array $input)
     {
         $admin = (new Entity);
 
