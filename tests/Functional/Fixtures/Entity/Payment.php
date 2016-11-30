@@ -41,11 +41,15 @@ class Payment extends Base
     {
         $time = time();
 
-        $defaultValues = array(
-            'authorized_at' => $time - 10,
-            'captured_at'   => $time + 10,
-            'created_at'    => $time - 10,
-            'updated_at'    => $time - 5);
+        $createdAt = $time - 10;
+        $updatedAt = $time + 10;
+
+        $defaultValues = [
+            'authorized_at' => $createdAt + 1,
+            'captured_at'   => $updatedAt,
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -207,9 +211,9 @@ class Payment extends Base
     public function createPurchased(array $attributes = array())
     {
         $cardAttributes = [
-            'iin'               =>  '502165',
-            'last4'             =>  '1111',
-            'network'           =>  'Maestro'
+            'iin'       => '502165',
+            'last4'     => '1111',
+            'network'   => 'Maestro'
         ];
 
         $card = $this->fixtures->create('card', $cardAttributes);
