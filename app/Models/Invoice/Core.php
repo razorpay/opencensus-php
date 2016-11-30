@@ -103,13 +103,13 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::INVOICE_ISSUE_REQUEST, $traceData);
 
         $this->repo->transaction(
-            function() use ($input)
+            function() use ($invoice, $merchant)
             {
                 (new Generator($merchant, $invoice))->issueInvoiceAndSave();
             }
         );
 
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
+        (new Notifier($invoice))->sendNotificationToCustomer();
 
         return $invoice;
     }
@@ -368,7 +368,7 @@ class Core extends Base\Core
      */
     protected function recomputeInvoiceAmount(Entity $invoice)
     {
-        $totalAmount = $lineItemCore->getInvoiceAmountForLineItems($invoice->lineItems()->get());
+        $totalAmount = $this->lineItemCore->getInvoiceAmountForLineItems($invoice->lineItems()->get());
 
         $invoice->setAmount($totalAmount);
     }
