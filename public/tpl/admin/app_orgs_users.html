@@ -19,7 +19,7 @@
             class="form-control input-sm w-sm inline m-r">
         </div>
         <div class="col-md-6">
-          <a ui-sref='app.adduser' id='addAdminBtn' class='btn btn-default pull-right'>
+          <a ui-sref='app.users.add' id='addAdminBtn' class='btn btn-default pull-right'>
             <i class="fa fa-user-plus"></i>
             Add new User
           </a>
@@ -58,7 +58,7 @@
             <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
             <td>
               <div class="btn-group">
-                <a class="btn btn-default btn-xs" ui-sref="app.edituser({ id: row.id })">
+                <a class="btn btn-default btn-xs" ui-sref="app.users.edit({ id: row.id })">
                   <i class="fa fa-pencil-square"></i>
                   edit
                 </a>

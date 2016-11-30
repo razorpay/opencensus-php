@@ -375,6 +375,7 @@ angular.module('app.services', [])
 
         return deferred.promise;
       },
+      // No caching implemented
       fetchGroups: function () {
         var deferred = $q.defer();
 

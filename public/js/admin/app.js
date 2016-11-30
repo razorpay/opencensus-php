@@ -146,11 +146,14 @@ var app = angular.module('app', [
       templateUrl: 'tpl/admin/app_add_org.html'
     }).state('app.users', {
       url: '/users',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.users.list', {
+      url: '/list',
       templateUrl: 'tpl/admin/app_orgs_users.html',
-    }).state('app.adduser', {
-      url: '/adduser',
+    }).state('app.users.add', {
+      url: '/add',
       templateUrl: 'tpl/admin/app_orgs_user_add.html',
-    }).state('app.edituser', {
+    }).state('app.users.edit', {
       url: '/:id/edit',
       templateUrl: 'tpl/admin/app_orgs_user_add.html'
     }).state('app.roles', {

@@ -49,7 +49,10 @@ app.controller('OrgsAddUsersCtrl', [
         $scope.roles[role.id] = role.name;
       });
     });
-    $scope.groups = organization.fetchGroups();
+
+    organization.fetchGroups().then(function (groups) {
+      $scope.groups = groups;
+    });
 
     if ($stateParams.id) {
       $scope.fetchUser($stateParams.id)
