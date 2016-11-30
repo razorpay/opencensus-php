@@ -11,8 +11,9 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::USERNAME        => 'required|string',
-        Entity::HANDLE          => 'required|string',
         Entity::FREQUENCY       => 'sometimes|string',
+        Entity::BANK_ACCOUNT_ID => 'sometimes|string',
+        Entity::CUSTOMER_ID     => 'sometimes|string',
     );
 
     protected static $createValidators = array(

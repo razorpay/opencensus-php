@@ -157,7 +157,7 @@ class Core extends Base\Core
     {
         if (isset($input['customer_id']) === true)
         {
-            $customer = $this->customerService->fetch($input['customer_id']);
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->getSharedAccount());
         }
         else
         {
@@ -167,6 +167,11 @@ class Core extends Base\Core
         }
 
         $this->vpaService->createVpa($input, $customer);
+    }
+
+    protected function getSharedAccount()
+    {
+        return $this->repo->merchant->getSharedAccount();
     }
 
     /**

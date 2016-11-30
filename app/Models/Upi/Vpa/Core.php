@@ -19,7 +19,7 @@ class Core extends Base\Core
 
         $vpa->bankAccount()->associate($bankAccount);
 
-        $this->repo->saveOrFail($vpa);
+        $vpa->saveOrFail();
 
         return $vpa;
     }

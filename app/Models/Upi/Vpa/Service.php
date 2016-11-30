@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Customer;
 
 class Service extends Base\Service
 {
@@ -13,16 +14,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VPA_CREATE_REQUEST, $input);
 
-        if (isset($input['bank_account_id']) === true)
-        {
-            $bankAccount = $customer->fetchUpiBankAccounts($bankAccountId);
-        }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BANK_ACCOUNT_ID_MISSING,
-                $input);
-        }
+        $bankAccount = (new Customer\Service)->fetchUpiBankAccounts($customer->getPublicId());
 
         $vpa = (new Core)->createVpa($input, $customer, $bankAccount);
 
