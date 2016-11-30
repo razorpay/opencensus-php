@@ -331,7 +331,7 @@ EOT;
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
 
-    protected function cacheRequestOrResponse(array $input)
+    protected function cacheRequestOrResponse(array $input, $msgId)
     {
         if (isset($input['params']['reqMsgId']))
         {
@@ -351,7 +351,7 @@ EOT;
 
         extract($this->getCommonVariables());
 
-        $this->cacheRequestOrResponse($input);
+        $this->cacheRequestOrResponse($input, $msgId);
 
         switch ($method) {
 
@@ -473,6 +473,16 @@ EOT;
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ListPsp"/>
 </upi:ReqListPsp>
+EOT;
+                break;
+
+            case 'ReqPendingMsg':
+                $str = <<<EOT
+<upi:ReqPendingMsg xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
+<Txn id="$txnId" note="" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="PendingMsg" />
+<ReqMsg type="MOBILE" value="919458113956" addr="nemo@razor" />
+</upi:ReqPendingMsg>
 EOT;
                 break;
 
