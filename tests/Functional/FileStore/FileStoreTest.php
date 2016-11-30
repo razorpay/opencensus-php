@@ -57,12 +57,8 @@ class FileStoreTest extends TestCase
 
     protected function assertFileStoreItems()
     {
-        $fileStoreItems = $this->getEntities(
-            'file_store',
-            [
-                'merchant_id'=>'100000Razorpay'
-            ],
-            true);
+        $fileStoreItems = $this->getEntities('file_store', [], true);
+
         $fileStoreData = $fileStoreItems['items'][0];
         $expectedOutput = [
             'merchant_id'   => '100000Razorpay',
