@@ -401,6 +401,8 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
 
+        $this->verifyPayment($payment1['id']);
+
         $this->fixtures->terminal->edit('DrctNbBdkTmnl3',['enabled' => false]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);

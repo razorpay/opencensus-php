@@ -257,6 +257,13 @@ class Gateway
         $this->mock = $mock;
     }
 
+    public function setInput(array $input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     protected function getHashValueFromContent(array $content)
     {
         return $content[static::CHECKSUM_ATTRIBUTE];
