@@ -605,7 +605,7 @@ class Gateway extends Base\Gateway
         return $this->config['live_access_code'];
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->tpv === true)
         {
