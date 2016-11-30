@@ -91,6 +91,16 @@ class UpiController extends Controller
         return ApiResponse::json($res);
     }
 
+    public function getVpas()
+    {
+
+    }
+
+    public function vpaAvailable($vpaId)
+    {
+
+    }
+
     public function isValidVpa($vpa)
     {
         return ApiResponse::json([

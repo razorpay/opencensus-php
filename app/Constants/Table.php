@@ -5,6 +5,7 @@ namespace RZP\Constants;
 class Table
 {
     // Core entities
+    const VPA                   = 'vpa';
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';

@@ -16,6 +16,7 @@ class Entity
     // Core entities
     //
 
+    const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';

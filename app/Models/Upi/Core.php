@@ -30,11 +30,11 @@ class Core extends Base\Core
         {
             $response = $this->app['gateway']->call($gateway, $method, $gatewayData, $this->mode);
 
-            return ['success'=>true, 'txnId'=>$response['txn_id'], 'msgId' => $response['msg_id']];
+            return ['success' => true, 'txnId' => $response['txn_id'], 'msgId' => $response['msg_id']];
         }
         catch (\Exception $ex)
         {
-            return ['success'=>false, 'msg' => $ex->getMessage()];
+            return ['success' => false, 'msg' => $ex->getMessage()];
         }
     }
 

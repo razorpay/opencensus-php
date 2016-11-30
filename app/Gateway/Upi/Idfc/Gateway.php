@@ -34,11 +34,11 @@ class Gateway
         // TODO: Sign it if $hmac===true
 
         return $this->createSoapRequestBody($type, $req);
-    }I
+    }
 
     protected function setMerchantCreds(array &$params)
     {
-        if (array_key_exists('MerchantCredentials', $params['UPI'])
+        if (array_key_exists('MerchantCredentials', $params['UPI']))
         {
             $params['UPI']['MerchantCredentials'] = $this->generateMerchantCredentials($params['UPI']['MsgId']);
         }

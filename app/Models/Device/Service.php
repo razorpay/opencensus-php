@@ -43,9 +43,11 @@ class Service extends Base\Service
         list($verificationToken, $contact) = $this->getRelevantFieldsForVerify($input);
 
         $device = $this->repo->device->findByVerificationToken($verificationToken);
+
         $customer = (new Customer\Core)->createGlobalCustomer([Customer\Entity::CONTACT => $contact], false);
 
         $device = $this->core->verify($device, $customer);
+
         $response = [];
 
         if ($device->hasBeenRegistered() === false)

@@ -441,7 +441,9 @@ class Service extends Base\Service
         Entity::stripSignWithoutValidation($customerId);
 
         $customer = $this->repo->customer->findOrFail($customerId);
+
         $bankAccount = $this->repo->bank_account->findFirstBankAccountByAccountNumber($accountNumber);
+
         $device = $this->repo->device->findOrFail($deviceId);
 
         $response = (new Customer\Core)->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
