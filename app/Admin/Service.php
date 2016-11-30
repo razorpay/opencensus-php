@@ -283,32 +283,42 @@ class Service extends Base\Service
 
         $orgId = $user->org_id;
 
-        $merchantIds = $this->getMerchantIdsToList($orgId, $adminId);
-
-        $merchantIdsToList = [];
-
-        // Need to understand how it can be passed better and change. This is temp
-        foreach($merchantIds as $value)
+        try
         {
-            $merchantIdsToList[] = $value;
+            $merchantIds = $this->getMerchantIdsToList($orgId, $adminId)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            // something went wrong
         }
 
-        $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
+        // $merchantIdsToList = [];
+        //
+        // // Need to understand how it can be passed better and change. This is temp
+        // foreach($merchantIds as $value)
+        // {
+        //     $merchantIdsToList[] = $value;
+        // }
+
+        // $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
+
+        $selectFields = [
+            'merchants.id',
+            'merchants.name',
+            'merchants.email',
+            'merchants.confirm_token',
+            'merchants.activated',
+            'merchant_details.steps_finished',
+            'merchants.created_at',
+            'merchants.updated_at',
+            'merchant_details.submitted_at',
+            'merchants.archived_at'
+        ];
 
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-            ->select([
-                'id',
-                'name',
-                'email',
-                'confirm_token',
-                'activated',
-                'steps_finished',
-                'merchants.created_at',
-                'merchant_details.updated_at',
-                'submitted_at',
-                'archived_at'
-        ])->with('tagged')
-          ->whereIn('merchants.id', $merchantIdsToList);
+            ->select($selectFields)
+            ->with('tagged')
+            ->whereIn('merchants.id', $merchantIds);
 
 
         if (isset($input['tags']))
@@ -318,12 +328,14 @@ class Service extends Base\Service
 
         if (isset($input['archived']))
         {
-            $data = $data->whereNotNull('archived_at')->get();
+            $data = $data->whereNotNull('archived_at');
         }
         else
         {
-            $data = $data->whereNull('archived_at')->get();
+            $data = $data->whereNull('archived_at');
         }
+
+        $data = $data->get();
 
         // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
