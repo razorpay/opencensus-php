@@ -17,4 +17,14 @@ class Validator extends Base\Validator
         Entity::BALANCE             => 'required',
         Entity::DESCRIPTION         => 'required',
     ];
+
+
+    public static function validateType($type)
+    {
+        if (defined(__CLASS__ . '::' . strtoupper($type)) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid Transaction type: ' . $type);
+        }
+    }
 }

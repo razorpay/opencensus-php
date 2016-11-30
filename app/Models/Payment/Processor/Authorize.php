@@ -27,6 +27,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Wallet as CustomerBalance;
+use RZP\Models\Customer\Transactions as CustomerTransactions;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
@@ -1712,16 +1713,16 @@ trait Authorize
                 $this->repo->saveOrFail($txn);
 
                 $this->saveFeeDetails($txn, $feesSplit);
+
+                if ($isFlashWalletPayment)
+                {
+                    $this->processFlashWalletPayment($payment, $txn);
+                }
             }
 
             $this->repo->saveOrFail($payment);
 
             $this->repo->saveOrFail($payment->terminal);
-
-            if ($isFlashWalletPayment)
-            {
-                $this->processFlashWalletPayment($payment);
-            }
 
             $this->updateTokenOnAuthorized();
 
@@ -1737,10 +1738,11 @@ trait Authorize
         });
     }
 
-    protected function processFlashWalletPayment(Payment\Entity $payment)
+    protected function processFlashWalletPayment(Payment\Entity $payment, Transaction\Entity $txn)
     {
-        // todo: move to CustomerBalanceTransactions entity + record the transaction there
-        (new CustomerBalance\Service)->debit($payment->customer, $payment->getAmount());
+        $customerTxn = (new CustomerTransactions\Core)->createFromCustomerDebit($payment, $txn);
+
+        $this->repo->saveOrFail($customerTxn);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)

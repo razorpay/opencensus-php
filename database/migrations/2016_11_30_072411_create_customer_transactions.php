@@ -16,7 +16,7 @@ class CreateCustomerTransactions extends Migration
      */
     public function up()
     {
-        Schema::create(Table::CUSTOMER_TRANSACTION, function(Blueprint $table)
+        Schema::create(Table::CUSTOMER_TRANSACTIONS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -65,6 +65,6 @@ class CreateCustomerTransactions extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::CUSTOMER_TRANSACTION);
+        Schema::drop(Table::CUSTOMER_TRANSACTIONS);
     }
 }

@@ -74,4 +74,9 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
+    public function setBalance($amount)
+    {
+        $this->setAttribute(self::BALANCE, $amount);
+    }
+
 }
