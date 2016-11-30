@@ -276,7 +276,7 @@ class Service extends Base\Service
 
         foreach ($childrenGroups as $group)
         {
-            $groupId = $group['id'];
+            $groupId = Group\Entity::getSignedId($group['id']);
 
             $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
