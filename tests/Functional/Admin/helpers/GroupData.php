@@ -1,5 +1,9 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
 
     'testCreateGroup' => [
@@ -66,5 +70,27 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testDuplicateGroup' => [
+        'request' => [
+            'url' => '/orgs/%s/groups',
+            'method' => 'post',
+            'content' => [
+                'description' => 'Some description',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 
 ];

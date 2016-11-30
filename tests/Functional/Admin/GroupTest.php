@@ -74,59 +74,21 @@ class GroupTest extends TestCase
         $result = $this->startTest();
     }
 
-    public function testAdminGroupPolymorphicRelationship()
+    public function testDuplicateGroup()
     {
-        // Organization creation has to be done through rzp auth
-        $this->ba->appAuth();
+        $name = 'hello';
 
-        $orgId = $this->org->getId();
+        $group = $this->fixtures->create('group',
+            ['org_id' => $this->org->getId(), 'name' => $name]);
 
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $subGroup = $this->fixtures->create('group', ['org_id' => $orgId, 'name' => 'asd']);
+        $url = sprintf($url, $this->org->getPublicId());
 
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $group->admins()->save($admin);
+        $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
 
-        $group->subGroups()->save($subGroup);
-
-        $group->saveOrFail();
-
-        $subGroup->saveOrFail();
-
-        $parentGroup = $subGroup->parents()->findOrFail($group->getId());
-
-        $this->assertEquals($group->getId(), $parentGroup->getId());
-    }
-
-    public function testRolesForGroup()
-    {
-        $this->ba->appAuth();
-
-        $orgId = $this->org->getId();
-
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
-
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
-
-        $role = $this->fixtures->create('role', ['org_id' => $orgId]);
-
-        $group->roles()->save($role);
-
-        $group->saveOrFail();
-
-        $roleIds = $group->roles()->getRelatedIds();
-
-        // Check if both the roles are saved
-        $this->assertEquals(count($roleIds), 1);
-
-        $groupId = $role->groups()->getRelatedIds()[0];
-
-        $this->assertEquals($groupId, $group->getId());
-
-        $admin->roles()->save($role);
-
-        $this->assertEquals($admin->getId(), $role->admins()->getRelatedIds()[0]);
+        $this->startTest();
     }
 }
