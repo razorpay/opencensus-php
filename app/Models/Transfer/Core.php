@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Transactions as CustomerTransactions;
 
 class Core extends Base\Core
 {
@@ -65,6 +67,8 @@ class Core extends Base\Core
                 $to = $payment->localCustomer;
 
                 $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
+
+                (new CustomerTransactions\Core)->createFromCustomerCredit($payment, $transfer->transaction);
             }
 
 

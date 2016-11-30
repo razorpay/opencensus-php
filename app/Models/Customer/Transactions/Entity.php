@@ -79,4 +79,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $amount);
     }
 
+    public function setDebit($amount)
+    {
+        $this->setAttribute(self::DEBIT, $amount);
+    }
+
+    public function setCredit($amount)
+    {
+        $this->setAttribute(self::CREDIT, $amount);
+    }
+
 }
