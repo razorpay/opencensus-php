@@ -81,9 +81,14 @@ class Accessor extends Base\Core
      */
     public function get()
     {
-        $data = $this->getEntity();
+        $files = $this->getEntity();
 
-        return $data->toArrayPublic();
+        if ($this->id !== null)
+        {
+            $files = $files->first();
+        }
+
+        return $files->toArrayPublic();
     }
 
     protected function getEntity()
@@ -92,16 +97,16 @@ class Accessor extends Base\Core
 
         if ($this->id !== null)
         {
-            $data = new Base\PublicCollection;
+            $files = new Base\PublicCollection;
 
-            $data->push($this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId));
+            $files->push($this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId));
         }
         else
         {
-            $data = $this->repo->file_store->fetch($this->params, $this->merchantId);
+            $files = $this->repo->file_store->fetch($this->params, $this->merchantId);
         }
 
-        return $data;
+        return $files;
     }
 
     /**
@@ -112,17 +117,17 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $data = $this->getEntity();
+        $files = $this->getEntity();
 
-        $this->validateFileCount($data);
+        $this->validateFileCount($files);
 
-        $data = $data->first();
+        $file = $files->first();
 
-        $storageHandler = Store::getHandler($data->store);
+        $storageHandler = Store::getHandler($file->store);
 
-        $filePath = $this->createFullFilePath($data->location);
+        $filePath = $this->createFullFilePath($file->location);
 
-        $storageHandler->saveAs($data->bucket, $data->location, $filePath);
+        $storageHandler->saveAs($file->bucket, $file->location, $filePath);
 
         return $filePath;
     }
@@ -145,15 +150,15 @@ class Accessor extends Base\Core
      * @return void
      * @throws Exception\LogicException
      */
-    protected function validateFileCount(Base\PublicCollection $data)
+    protected function validateFileCount(Base\PublicCollection $files)
     {
         // TODO : Make it more meaningful
-        if ($data->count() === 0)
+        if ($files->count() === 0)
         {
             throw new Exception\LogicException('No file found');
         }
 
-        if ($data->count() > 1)
+        if ($files->count() > 1)
         {
             throw new Exception\LogicException('Multi file fetch not supported');
         }
