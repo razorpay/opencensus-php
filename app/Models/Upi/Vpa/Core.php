@@ -23,4 +23,13 @@ class Core extends Base\Core
 
         return $vpa;
     }
+
+    public function editVpa($vpa, $input)
+    {
+        $vpa->edit($input);
+
+        $this->repo->saveOrFail($vpa);
+
+        return $vpa;
+    }
 }

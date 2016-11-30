@@ -87,6 +87,15 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editVpa($id)
+    {
+        $input = Request::all();
+
+        $data = $this->core->editVpa($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function isValidVpa($vpa)
     {
         return ApiResponse::json([

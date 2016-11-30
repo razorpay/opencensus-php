@@ -174,14 +174,19 @@ class Core extends Base\Core
         return $this->vpaService->delete($id);
     }
 
+    public function editVpa($id, $input)
+    {
+        return $this->vpaService->edit($id, $input);
+    }
+
     public function getVpa($vpaId)
     {
-        return $this->vpaService->getVpaById($vpaId);
+        return $this->vpaService->getById($vpaId);
     }
 
     public function getVpas($input)
     {
-        return $this->vpaService->getAllVpas($vpaId);
+        return $this->vpaService->getAll($vpaId);
     }
 
     protected function getSharedAccount()

@@ -318,6 +318,7 @@ final class Route
         'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                       'UpiController@deleteVpa'                                           ],
+        'vpa_edit'                                => ['put',      'vpa/{id}',                                       'UpiController@editVpa'                                             ],
         'customer_balance_fetch'                  => ['get',      'customers/{customer_id}/balance/{account_id}',   'CustomerController@fetchBalance'                                   ],
     );
 
@@ -378,6 +379,7 @@ final class Route
         'vpa_delete',
         'vpa_fetch_multiple',
         'vpa_available',
+        'vpa_edit',
         'customer_balance_fetch',
         'reset_mpin',
     );

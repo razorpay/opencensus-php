@@ -23,14 +23,14 @@ class Service extends Base\Service
         return $vpa->toArrayPublic();
     }
 
-    public function getVpaById($vpaId)
+    public function getById($vpaId)
     {
         $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
 
         return $vpa->toArrayPublic();
     }
 
-    public function getAllVpas($input)
+    public function getAll($input)
     {
         $vpas = $this->repo->vpa->fetch($input);
 
@@ -46,5 +46,14 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
 
         $this->repo->vpa->deleteOrFail($vpa);
+    }
+
+    public function edit($vpaId, $input)
+    {
+        $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
+
+        $vpa = (new Core)->editVpa($vpa, $input);
+
+        return $vpa->toArrayPublic();
     }
 }
