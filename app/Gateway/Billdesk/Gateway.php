@@ -83,7 +83,7 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $gatewayPayment->fill($content);
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
@@ -203,7 +203,7 @@ class Gateway extends Base\Gateway
                 $content['ItemCode']);
 
             $payment->fill($content);
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
         }
 
         return $status;
@@ -528,7 +528,7 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attributes);
         $payment->setAction($this->action);
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->setTpv($payment);
 
