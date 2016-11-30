@@ -43,7 +43,7 @@
               <td>{{row.business_name}}</td>
               <td>{{row.display_name}}</td>
               <td>{{row.email}}</td>
-              <td>{{row.email_domains}}</td>
+              <td>{{row.email_domains.join(', ')}}</td>
               <td>
                 <div class="btn-group">
                   <a class="btn btn-default btn-xs" ui-sref="app.orgs.edit({ id: row.id })">
