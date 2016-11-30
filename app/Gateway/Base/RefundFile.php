@@ -34,28 +34,6 @@ class RefundFile extends Base\Core
     {
         $creator = new FileStore\Creator;
 
-        // TODO : move this to Mock class
-
-        if (($this->mode === Mode::TEST) and (gettype($content) === 'string'))
-        {
-            $lines = substr_count($content, "\n");
-
-            switch($lines)
-            {
-                case 3:
-                    $store = 'invalid';
-                    break;
-
-                case 4:
-                    $type = 'invalid';
-                    break;
-
-                case 5:
-                    $extension = 'invalid';
-                    break;
-            }
-        }
-
         $creator->extension($extension)
                 ->content($content)
                 ->name($fileName)

@@ -47,66 +47,6 @@ class FileStoreTest extends TestCase
         $this->assertFileStoreItems();
     }
 
-    public function testInvalidStoreRefundFile()
-    {
-        $data = $this->testData['testInvalidStoreRefundFile'];
-
-        $this->createPayments(4);
-
-        $payments = $this->getEntities('payment', [], true);
-
-        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
-        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
-        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
-
-        $this->editPaymentsAndRefunds();
-
-        $this->runRequestResponseFlow($data, function() {
-            $content = $this->generateRefundsExcelForKkbkNB();
-        });
-    }
-
-    public function testInvalidExtensionRefundFile()
-    {
-        $data = $this->testData['testInvalidExtensionRefundFile'];
-
-        $this->createPayments(5);
-
-        $payments = $this->getEntities('payment', [], true);
-
-        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
-        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
-        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
-        $refundPayment = $this->refundPayment($payments['items'][4]['id'], 100);
-        $refundPayment = $this->refundPayment($payments['items'][4]['id']);
-
-        $this->editPaymentsAndRefunds();
-
-        $this->runRequestResponseFlow($data, function() {
-            $content = $this->generateRefundsExcelForKkbkNB();
-        });
-    }
-
-    public function testInvalidTypeRefundFile()
-    {
-        $data = $this->testData['testInvalidTypeRefundFile'];
-
-        $this->createPayments(5);
-
-        $payments = $this->getEntities('payment', [], true);
-
-        $refundPayment = $this->refundPayment($payments['items'][2]['id'], 100);
-        $refundPayment = $this->refundPayment($payments['items'][2]['id']);
-        $refundPayment = $this->refundPayment($payments['items'][3]['id']);
-        $refundPayment = $this->refundPayment($payments['items'][4]['id']);
-
-        $this->editPaymentsAndRefunds();
-
-        $this->runRequestResponseFlow($data, function() {
-            $content = $this->generateRefundsExcelForKkbkNB();
-        });
-    }
-
     protected function createPayments($count)
     {
         foreach (range(0, $count) as $number)
