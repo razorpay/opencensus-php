@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Address;
+use RZP\Models\Payment;
 
 class CreateInvoices extends Migration
 {
@@ -26,15 +27,31 @@ class CreateInvoices extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            $table->string(Entity::RECEIPT, 40)
+                  ->nullable();
+
             $table->char(Entity::ORDER_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
+            $table->integer(Entity::DATE)
+                  ->nullable();
 
             $table->integer(Entity::DUE_BY);
 
             $table->integer(Entity::SCHEDULED_AT);
+
+            $table->integer(Entity::ISSUED_AT)
+                  ->nullable();
+
+            $table->integer(Entity::PAID_AT)
+                  ->nullable();
+
+            $table->integer(Entity::EXPIRED_AT)
+                  ->nullable();
 
             $table->string(Entity::STATUS, 32);
 
@@ -60,10 +77,10 @@ class CreateInvoices extends Migration
             $table->string(Entity::CUSTOMER_CONTACT)
                   ->nullable();
 
-            $table->text(Entity::TERMS)
+            $table->text(Entity::DESCRIPTION)
                   ->nullable();
 
-            $table->integer(Entity::DATE)
+            $table->text(Entity::TERMS)
                   ->nullable();
 
             $table->text(Entity::NOTES);
@@ -94,6 +111,10 @@ class CreateInvoices extends Migration
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
 
+            // In production and beta environments, the key would be
+            // `invoices_merchant_id_ref_num_unique`.
+            $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
+
             $table->foreign(Entity::ORDER_ID)
                   ->references(Order\Entity::ID)
                   ->on(Table::ORDER)
@@ -113,6 +134,16 @@ class CreateInvoices extends Migration
                   ->references(Address\Entity::ID)
                   ->on(Table::ADDRESS)
                   ->on_delete('restrict');
+        });
+
+        // This should be here and not in payments table because
+        // invoice table is created after payments.
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment\Entity::INVOICE_ID)
+                ->references(Entity::ID)
+                ->on(Table::INVOICE)
+                ->on_delete('restrict');
         });
     }
 
@@ -144,6 +175,12 @@ class CreateInvoices extends Migration
             (
                 Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
             );
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(
+                Table::PAYMENT . '_' . Payment\Entity::INVOICE_ID . '_foreign');
         });
 
         Schema::drop(Table::INVOICE);

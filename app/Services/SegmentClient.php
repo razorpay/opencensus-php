@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use RZP\Constants\Mode;
 use GuzzleHttp\Client;
 use RZP\Models\Base;
 use RZP\Models\Payment;

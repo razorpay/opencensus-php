@@ -4,29 +4,26 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Order;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'invoice';
 
-    // These are merchant allowed params to search on. These also act as default params.
-    // protected $entityFetchParamRules = [
-    //     Entity::STATUS              => 'sometimes|string',
-    //     Entity::SMS_STATUS          => 'sometimes|string',
-    //     Entity::EMAIL_STATUS        => 'sometimes|string',
-    //     Entity::CUSTOMER_EMAIL      => 'sometimes|email',
-    //     Entity::CUSTOMER_CONTACT    => 'sometimes|string',
-    //     Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
-    // ];
-
-    protected $appFetchParamRules = [
-        Entity::STATUS              => 'sometimes|string',
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+    protected $entityFetchParamRules = [
+        Entity::PAYMENT_ID => 'sometimes|string|size:18',
+        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
     protected $proxyFetchParamRules = [
         Entity::USER_ID => 'sometimes|alpha_num',
         Entity::STATUS  => 'sometimes|string',
+        Entity::TYPE    => 'sometimes|string|max:16',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
     public function getInvoicesForNotification($medium)
@@ -48,5 +45,38 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::DUE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $this->joinQueryPayment($query);
+
+        $paymentId = $params[Entity::PAYMENT_ID];
+        Entity::stripSignWithoutValidation($paymentId);
+
+        $paymentIdAttribute = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $query->where($paymentIdAttribute, '=', $paymentId);
+
+        $query->select($query->getModel()->getTable() . '.*');
+    }
+
+    protected function joinQueryPayment($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ?? [];
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $this->manager->payment->getTableName())
+            {
+                return;
+            }
+        }
+
+        $invoiceOrderId = $this->getAttributeWithTableName(Entity::ORDER_ID);
+        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+
+        $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
     }
 }

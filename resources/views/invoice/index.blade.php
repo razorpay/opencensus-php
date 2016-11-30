@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     @if ($data['environment'] !== 'production')
     <script>
       var Razorpay = {
@@ -106,7 +107,12 @@
             confirm_close: true,
             escape: false
           }
-        }
+        };
+        @if ($data['merchant_details'])
+          @if ($data['merchant_details']['id'] === '6lGF5wNtCS8UA0')
+        options.theme.branding = 'payzapp';
+          @endif
+        @endif
         var merchant_details = data.merchant_details;
         if (merchant_details) {
           if (merchant_details.name) {
