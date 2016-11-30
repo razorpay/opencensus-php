@@ -8,7 +8,7 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Org\Entity $org)
+    public function create(Org\Entity $org, array $input)
     {
         $role = (new Entity)->build($input);
 
@@ -22,17 +22,10 @@ class Core extends Base\Core
         {
             Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
 
-            $perms = $this->repo->permission->retrieveByIds($input['permissions']);
-
-            foreach ($perms as $perm)
-            {
-                $role->permissions()->attach($perm);
-            }
+            $role->permissions()->sync($input['permissions']);
 
             $this->repo->saveOrFail($role);
         }
-
-        // $role = $this->repo->role->retrieveByOrgIdAndIdOrFail($orgId, $role->getId());
 
         return $role;
     }

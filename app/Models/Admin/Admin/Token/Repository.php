@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Admin\Token;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 use Carbon\Carbon;
 
 class Repository extends Base\Repository
@@ -12,16 +12,16 @@ class Repository extends Base\Repository
     public function findOrFailToken($token)
     {
         return $this->newQuery()
-                    ->with(['admin'])
+                    ->with('admin')
                     ->where(Entity::TOKEN, '=', $token)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 
     public function retrieveByToken(string $token)
     {
         return $this->newQuery()
                     ->where(Entity::TOKEN, '=', $token)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 
     public function fetchTokensByAdminId(string $adminId)

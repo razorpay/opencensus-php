@@ -330,7 +330,6 @@ final class Route
         'group_edit'                              => ['put',      'orgs/{id}/groups/{groupId}',                     'AdminController@putGroup'                                          ],
         'group_delete'                            => ['delete',   'orgs/{id}/groups/{groupId}',                     'AdminController@deleteGroup'                                       ],
         'group_merchants_create'                  => ['put',      'orgs/{id}/groups/{groupId}/merchants',           'AdminController@addMerchantsToGroup'                               ],
-        'group_merchants_delete'                  => ['delete',   'orgs/{id}/groups/{groupId}/merchants',           'AdminController@deleteMerchantsFromGroup'                          ],
         'group_admins_get'                        => ['get',      'orgs/{id}/groups/{groupId}/admins',              'AdminController@getAdminsForGroup'                                 ],
         'group_admins_create'                     => ['post',     'orgs/{id}/groups/{groupId}/admins',              'AdminController@addAdminsToGroup'                                  ],
         'group_roles_create'                      => ['post',     'orgs/{id}/groups/{groupId}/roles',               'AdminController@addRolesToGroup'                                   ],
@@ -590,6 +589,7 @@ final class Route
         'password_login',
         'oauth_login',
         'org_get',
+        'org_get_multiple',
     );
 
     public static $proxy = array(
@@ -645,7 +645,6 @@ final class Route
         'admin_get',
         'admin_roles_create',
         'org_create',
-        'org_get_multiple',
         'org_edit',
         'org_delete',
         'role_create',
@@ -666,7 +665,6 @@ final class Route
         'group_edit',
         'group_delete',
         'group_merchants_create',
-        'group_merchants_delete',
         'group_admins_get',
         'group_admins_create',
         'group_roles_create',
@@ -704,7 +702,6 @@ final class Route
         'group_edit'                 => ['edit_group'],
         'group_delete'               => ['delete_group'],
         'group_merchants_create'     => ['create_group', 'create_merchants'],
-        'group_merchants_delete'     => ['delete_group', 'delete_merchants'],
         'group_admins_get'           => ['view_group', 'view_admins'],
         'group_admins_create'        => ['create_group', 'create_admins'],
         'group_roles_create'         => ['create_group', 'create_role'],

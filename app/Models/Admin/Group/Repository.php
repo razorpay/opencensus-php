@@ -59,11 +59,11 @@ class Repository extends Base\Repository
         $group->roles()->attach($roles);
     }
 
-    public function revokeRoleOrFail(Admin\Entity $admin, Role\Entity $role)
+    public function revokeRoleOrFail(Entity $group, Role\Entity $role)
     {
-        if ($this->hasRole($admin, $role) === true)
+        if ($this->hasRole($group, $role) === true)
         {
-            $admin->roles()->detach($role);
+            $group->roles()->detach($role);
         }
         else
         {

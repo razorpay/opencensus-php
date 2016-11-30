@@ -50,7 +50,7 @@ class Service extends Base\Service
         return $ret;
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple(string $orgId, array $input = [])
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 

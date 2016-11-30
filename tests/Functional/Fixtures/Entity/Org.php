@@ -20,7 +20,7 @@ class Org extends Base
         $this->fixtures->create('org:razorpay_organisation');
     }
 
-    public function createDefaultTestOrganisation()
+    public function createDefaultTestOrganization()
     {
         // Default organisation to be used for tests
         $this->fixtures->create('org', [

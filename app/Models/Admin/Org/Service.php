@@ -3,6 +3,10 @@
 namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Admin;
+use Config;
 
 class Service extends Base\Service
 {
@@ -10,8 +14,35 @@ class Service extends Base\Service
     {
         $org = $this->core()->create($input);
 
+        $role = $this->createDefaultRole($org);
+
+        $adminInput = [
+            'roles' => (array) $role->getPublicId(),
+            'name'  => 'Default SuperAdmin',
+            'email' => $input['email'],
+        ];
+
+        $adminInput = array_merge($adminInput, (new Admin\Entity)->getDefaults());
+
+        (new Admin\Core)->create($org, $adminInput);
+
         return $org->toArrayPublic();
     }
+
+    protected function createDefaultRole(Entity $org)
+    {
+        $permissions = Config::get('heimdall.permissions') ?: [];
+        $permissions = (new Permission\Service)->getMultiplePermissionIdsByNames($permissions);
+
+        $input = [
+            'name' => 'superadmin',
+            'description' => 'This role has all permissions possible',
+            'permissions' => $permissions,
+        ];
+
+        return (new Role\Core)->create($org, $input);
+    }
+
 
     public function fetch(string $id)
     {

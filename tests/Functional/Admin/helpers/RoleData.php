@@ -1,5 +1,9 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
     'testCreateRole' => [
         'request' => [
@@ -26,9 +30,7 @@ return [
         ],
         'response' => [
             'content' => [
-                // 'entity'      => 'role',
-                'name'        => 'manager',
-                'description' => 'Manager of roles',
+                'name'        => 'admin',
             ],
             'status_code' => 200,
         ],
@@ -83,4 +85,39 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetMultipleRoles' => [
+        'request' => [
+            'url' => '/orgs/%s/roles',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDuplicateRole' => [
+        'request' => [
+            'url' => '/orgs/%s/roles',
+            'method' => 'post',
+            'content' => [
+                'description' => 'Manager of roles',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'error_description' => 'The role with the name already exists',
+        ],
+    ]
 ];

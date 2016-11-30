@@ -11,28 +11,23 @@ class Repository extends Base\Repository
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
-        Entity::EMAIL                 => 'sometimes',
-        Entity::AUTH_TYPE             => 'sometimes|string|max:500',
+        Entity::EMAIL                 => 'sometimes|email',
+        Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
+        Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::EMAIL                 => 'sometimes',
-        Entity::AUTH_TYPE             => 'sometimes|string|max:500',
+        Entity::EMAIL                 => 'sometimes|email',
+        Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
+        Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     public function isMerchantIdRequiredForFetch()
     {
         return false;
-    }
-
-    public function retrieveByEmail(string $email)
-    {
-        return $this->newQuery()
-                    ->where(Entity::EMAIL, '=', $email)
-                    ->get();
     }
 
     public function findOrFailByHostname(string $hostname)

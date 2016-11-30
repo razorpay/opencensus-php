@@ -103,9 +103,16 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $admin = $this->core()->create($input, $org);
+        $admin = $this->core()->create($org, $input);
 
-        return $admin->toArrayPublic();
+        $admin = $admin->toArrayPublic();
+
+        if (isset($admin) === true)
+        {
+            $this->sendAdminCreateEmail($admin, $input);
+        }
+
+        return $admin;
     }
 
     public function sendAdminCreateEmail($data, $input)

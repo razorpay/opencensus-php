@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -10,6 +11,7 @@ use RZP\Models\Admin\Group;
 class GroupTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use EntityActionTrait;
 
     public function setUp()
     {
@@ -18,90 +20,75 @@ class GroupTest extends TestCase
         parent::setUp();
 
         $this->org = $this->fixtures->create('org');
+
+        $this->ba->adminAuth('test');
     }
 
-    public function testAdminGroupPolymorphicRelationship()
+    public function testCreateGroup()
     {
-        // Organization creation has to be done through rzp auth
-        $this->ba->appAuth();
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $orgId = $this->org->getId();
+        $url = sprintf($url, $this->org->getPublicId());
 
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $subGroup = $this->fixtures->create('group', ['org_id' => $orgId, 'name' => 'asd']);
-
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
-
-        $group->admins()->save($admin);
-
-        $group->subGroups()->save($subGroup);
-
-        $group->saveOrFail();
-
-        $subGroup->saveOrFail();
-
-        $parentGroup = $subGroup->parents()->findOrFail($group->getId());
-
-        $this->assertEquals($group->getId(), $parentGroup->getId());
+        return $this->startTest();
     }
 
-    public function testRolesForGroup()
+    public function testDeleteGroup()
     {
-        $this->ba->appAuth();
+        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
 
-        $orgId = $this->org->getId();
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
+        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
 
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $role = $this->fixtures->create('role', ['org_id' => $orgId]);
-
-        $group->roles()->save($role);
-
-        $group->saveOrFail();
-
-        $roleIds = $group->roles()->getRelatedIds();
-
-        // Check if both the roles are saved
-        $this->assertEquals(count($roleIds), 1);
-
-        $groupId = $role->groups()->getRelatedIds()[0];
-
-        $this->assertEquals($groupId, $group->getId());
-
-        $admin->roles()->save($role);
-
-        $this->assertEquals($admin->getId(), $role->admins()->getRelatedIds()[0]);
+        $this->startTest();
     }
 
-    public function testMerchantsInGroup()
+    public function testEditGroup()
     {
-        $this->ba->appAuth();
+        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
 
-        $orgId = $this->org->getId();
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $group = $this->fixtures->create('group', ['org_id' => $orgId]);
+        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
 
-        $roles = [];
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId]);
+        $this->startTest();
+    }
 
-        $roles[] = $this->fixtures->create('role', ['org_id' => $orgId, 'name' => 'asd']);
+    public function testGetMultipleGroups()
+    {
+        $groups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
 
-        $admin = $this->fixtures->create('admin', ['org_id' => $orgId]);
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $merchant = $this->fixtures->create('merchant');
+        $url = sprintf($url, $this->org->getPublicId());
 
-        $group->roles()->saveMany($roles);
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $group->admins()->save($admin);
+        $result = $this->startTest();
+    }
 
-        $group->merchants()->save($merchant);
+    public function testDuplicateGroup()
+    {
+        $name = 'hello';
 
-        $admin->saveOrFailMerchant($merchant);
+        $group = $this->fixtures->create('group',
+            ['org_id' => $this->org->getId(), 'name' => $name]);
 
-        $this->assertEquals($merchant->getId(), $admin->merchants()->getRelatedIds()[0]);
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
+
+        $this->startTest();
     }
 }
