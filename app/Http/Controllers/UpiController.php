@@ -71,13 +71,6 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function vpaAvailable($vpaId)
-    {
-        $data = $this->core->getVpa($vpaId);
-
-        return ApiResponse::json($data);
-    }
-
     public function createVpa()
     {
         $input = Request::all();
@@ -88,6 +81,13 @@ class UpiController extends Controller
     }
 
     public function isValidVpa($vpa)
+    {
+        return ApiResponse::json([
+            'valid'         =>  true
+        ]);
+    }
+
+    public function isAvailableVpa($vpa)
     {
         return ApiResponse::json([
             'valid'         =>  true,

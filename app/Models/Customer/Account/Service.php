@@ -289,6 +289,25 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchBalance($customerId, $accountId)
+    {
+        $customer = $this->repo->customer->findOrFailPublic($customerId);
+
+        $bankAccount = $this->repo->bank_account->findOrFail($accountId);
+
+        if ($bankAccount->getEntityId() !== $customerId)
+        {
+            return;
+        }
+
+        $balance = [
+            'id'     => $accountId,
+            'amount' => '10000',
+        ];
+
+        return $balance;
+    }
+
     public function fetchPaymentsForGlobalCustomer($input)
     {
         Customer\Validator::validateFetchCustomerPaymentsInput($input);

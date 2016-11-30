@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                  = 'id';
     const SOURCE_ID           = 'source_id';
     const SOURCE_TYPE         = 'source_type';
