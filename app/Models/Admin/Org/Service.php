@@ -52,6 +52,7 @@ class Service extends Base\Service
         unset($input['auth_type']);
         unset($input['display_name']);
         unset($input['business_name']);
+        unset($input['hostname']);
 
         return $input;
     }
