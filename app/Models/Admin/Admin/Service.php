@@ -297,8 +297,6 @@ class Service extends Base\Service
 
     public function getMerchantIds($orgId, $adminId)
     {
-        // @todo: Add coments explaining the flow.
-
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         $adminGroups = $admin->groups->toArray();
@@ -337,7 +335,7 @@ class Service extends Base\Service
         }, ARRAY_FILTER_USE_BOTH);
 
         // Loop over all the groups and get their merchants
-        // @todo: this can be placed in the previous inner foreach as well
+        // TODO: this can be placed in the previous inner foreach as well
 
         $merchants = [];
 
@@ -372,7 +370,20 @@ class Service extends Base\Service
         // ... and we'll return all the merchant IDs to the dashboard client
         $merchantIds = array_column($merchants, 'id');
 
-        return $merchantIds;
+        // Get all the admins of the merchant IDs
+        // TODO: This can be moved in one of the foreach blocks above
+        // for better performance (less computation)
+
+        $responseHash = [];
+
+        $merchants = Merchant\Entity::whereIn('id', $merchantIds)->get();
+
+        foreach ($merchants as $merchant)
+        {
+            $responseHash[$merchant->id] = $merchant->admins->first()->name;
+        }
+
+        return $responseHash;
     }
 
     public function lockUnusedAccounts()
