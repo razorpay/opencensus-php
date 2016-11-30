@@ -212,7 +212,7 @@ final class Route
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
-        'admin_fetch_merchant_ids'                => ['get',      'orgs/{id}/admins/{adminId}/merchant_ids',          'AdminController@getMerchantIds'                                    ],
+        'admin_fetch_merchant_ids'                => ['get',      'orgs/{id}/admins/{adminId}/merchant_ids',        'AdminController@getMerchantIds'                                    ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
@@ -725,9 +725,7 @@ final class Route
         'schedule_update'            => ['schedule_update'],
         'schedule_assign'            => ['schedule_assign'],
         'schedule_migration'         => ['schedule_migration'],
-
-
-
+        'admin_fetch_merchant_ids'   => ['view_all_merchants'],
     ];
 
     public static $direct = array(

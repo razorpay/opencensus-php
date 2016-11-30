@@ -164,15 +164,15 @@ class Service extends Base\Service
     */
     protected function filterEligibleParents(string $orgId, Entity $group, $allGroups)
     {
-        $currentGroup = [$group];
+        $currentGroup = [ $group ];
+
         $groupId = $group->getId();
 
         // Get entire parent lineage (recursively)
         $rejectParents = $this->getRejectParents($orgId, $groupId);
 
         // Get entire children tree/hierarchy (recursively)
-        $children = [];
-        $rejectChildren = $this->getRejectChildren($orgId, $groupId, $children);
+        $rejectChildren = $this->getChildrenHierarchy($orgId, $groupId);
 
         // Get sublings **and** its tree/hierarchy (recursively)
         $rejectSiblings = $this->getRejectSiblings($orgId, $groupId);
@@ -230,29 +230,27 @@ class Service extends Base\Service
         return $rejectNodes;
     }
 
-    // @new
-    public function getRejectChildren($orgId, $groupId, &$rejectNodes)
+    public function getChildrenHierarchy($orgId, $groupId)
     {
-        // $rejectNodes = [];
+        $nodes = [];
 
         // Get all direct children of incoming groupId
         $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
 
         // Throw all direct children in the rejected node list
-        $rejectNodes = array_merge($rejectNodes, $childrenGroups);
+        $nodes = $childrenGroups;
 
         foreach ($childrenGroups as $group)
         {
             // For every child group, check its further direct children
-            $rejects = $this->getRejectChildren($orgId, $group['id'], $rejectNodes);
+            $rejects = $this->getChildrenHierarchy($orgId, $group['id']);
 
-            $rejectNodes = array_merge($rejectNodes, $rejects);
+            $nodes = array_merge($nodes, $rejects);
         }
 
-        return $rejectNodes;
+        return $nodes;
     }
 
-    // @new
     protected function getRejectSiblings($orgId, $groupId)
     {
         $rejectNodes = [];
@@ -272,8 +270,7 @@ class Service extends Base\Service
                 }
 
                 // Get tree/hierarchy of sibling
-                $children = [];
-                $siblingChildren = $this->getRejectChildren($orgId, $sibling['id'], $children);
+                $siblingChildren = $this->getChildrenHierarchy($orgId, $sibling['id']);
 
                 // Merge previous reject nodes with sibling hierarchy/tree
                 // and the current sibling in context
