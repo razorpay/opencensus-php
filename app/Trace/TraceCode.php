@@ -398,6 +398,7 @@ class TraceCode
 
     /* Additional Tracecode for HeimDall */
     const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
+    const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
 
     // Trace code for item/line_items
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';

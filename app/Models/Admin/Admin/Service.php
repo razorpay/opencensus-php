@@ -15,9 +15,24 @@ use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
 use Mail;
+use RZP\Events\AuditLogEntry;
+use RZP\Trace\TraceCode;
+use Lib\TreeWalker;
 
 class Service extends Base\Service
 {
+    protected $treeWalker;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->treeWalker = new TreeWalker([
+            'debug' => true,
+            'returntype' => 'array'
+        ]);
+    }
+
     public function login($input)
     {
         // Get the admin record
@@ -32,6 +47,7 @@ class Service extends Base\Service
         $admin->getValidator()->validateCredentials($input);
 
         $authPolicy = new AuthPolicy\Service;
+
         $authPolicy->validateLogin($admin, $input['password']);
 
         // Valid password ?
@@ -63,16 +79,16 @@ class Service extends Base\Service
         return null;
     }
 
-    protected function fireAdminAction($admin, $action, $customProperties = null)
+    protected function fireAdminAction(Entity $admin, array $action, array $customProperties = null)
     {
-        \App::getFacadeRoot()['trace']->info("MISC_TRACE_CODE", ["admin" => $admin, "action" => $action]);
+        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
 
         if (!is_array($admin))
         {
             $admin = $admin->toArrayPublic();
         }
-
-        $this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
+        event(new AuditLogEntry($admin, $action, $customProperties));
+        //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function loginWithOAuth($input)
@@ -141,6 +157,11 @@ class Service extends Base\Service
     public function sendAdminCreateEmail($data, $input)
     {
         $org = (new Org\Service)->fetch($data['org_id']);
+
+        if ($org['auth_type'] !== 'password')
+        {
+            return;
+        }
 
         $from       = 'support@razorpay.com';
         $replyTo    = 'support@razorpay.com';
@@ -313,7 +334,19 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
+        $pre = $admin->toArray();
+
         $admin = $this->core()->edit($orgId, $adminId, $input);
+
+        $post = $admin->toArray();
+
+        $diff = $this->treeWalker->getdiff($pre, $post);
+
+        s($pre);
+
+        s($post);
+
+        sd($diff);
 
         return $admin->toArrayPublic();
     }

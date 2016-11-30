@@ -83,7 +83,7 @@ class AuditLogListener
         // Whitelisting admin props we need to log
         $fields['admin'] = [
             'id'        => $admin['id'],
-            'username'  => $admin['username'],
+            'username'  => $admin['username'] ?? 'NA',
             'email'     => $admin['email'],
             'name'      => $admin['name'],
 
@@ -129,6 +129,10 @@ class AuditLogListener
         $fields['user_agent']   = \Request::header('User-Agent') ?? null;
         $fields['ip_address']   = \Request::ip() ?? null;
         $fields['created_at']   = time();
+
+        // add action specific properties. e.g. failed_payment_attempt in case of
+        // login failure
+        $fields['action_properties'] = $event->action->customProperties ?? null;
 
         // org_id, mode, etc.
         $fields['extra'] = [
