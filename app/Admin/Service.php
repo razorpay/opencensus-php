@@ -318,7 +318,7 @@ class Service extends Base\Service
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
             ->select($selectFields)
             ->with('tagged')
-            ->whereIn('merchants.id', $merchantIds);
+            ->whereIn('merchants.id', array_keys($merchantIds));
 
 
         if (isset($input['tags']))
@@ -390,6 +390,11 @@ class Service extends Base\Service
         }
 
         $response = $response->toArray();
+
+        foreach ($response as $key => $res)
+        {
+            $response[$key]['referrer'] = $merchantIds[$res['id']];
+        }
 
         return [
             'count' => count($response),
