@@ -179,7 +179,7 @@
           </div>
           <div href class="list-group-item">
             <span class="pull-right" tooltip="{{getVerifiedStatus()}}">
-              <i class="fa" ng-class="{'fa-check text-success': entity.verified === 1, ' fa-times text-danger':entity.verified === 0, 'fa-meh-o': entity.verified===null}"></i>
+              <i class="fa" ng-class="{'fa-check text-success': entity.verified === 1, 'fa-times text-danger':entity.verified === 0, 'fa-meh-o': entity.verified===null, 'fa-ban': entity.verified === 2}"></i>
             </span>
             Verified
           </div>
