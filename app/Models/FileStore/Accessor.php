@@ -83,11 +83,6 @@ class Accessor extends Base\Core
     {
         $files = $this->getEntity();
 
-        if ($this->id !== null)
-        {
-            $files = $files->first();
-        }
-
         return $files->toArrayPublic();
     }
 
@@ -97,16 +92,12 @@ class Accessor extends Base\Core
 
         if ($this->id !== null)
         {
-            $files = new Base\PublicCollection;
-
-            $files->push($this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId));
+            return $this->repo->file_store->findByIdAndMerchantId($this->id, $this->merchantId);
         }
         else
         {
-            $files = $this->repo->file_store->fetch($this->params, $this->merchantId);
+            return $this->repo->file_store->fetch($this->params, $this->merchantId);
         }
-
-        return $files;
     }
 
     /**
@@ -117,11 +108,14 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $files = $this->getEntity();
+        $file = $this->getEntity();
 
-        $this->validateFileCount($files);
+        if ($file instanceof Base\PublicCollection)
+        {
+            $this->validateFileCount($file);
 
-        $file = $files->first();
+            $file = $file->first();
+        }
 
         $storageHandler = Store::getHandler($file->store);
 
