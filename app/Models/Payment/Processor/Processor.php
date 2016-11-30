@@ -596,6 +596,8 @@ class Processor
 
         $this->setOrderDetails($payment, $input);
 
+        $this->setInvoiceDetails($payment);
+
         $metadata = isset($input['_']) ? $input['_'] : null;
 
         $payment->setMetadata($metadata);
@@ -717,8 +719,7 @@ class Processor
 
         $validator->validateOrderNotPaid($this->order);
 
-        $validator->validateMerchantSpecificData($this->order,
-                                                 $payment);
+        $validator->validateMerchantSpecificData($this->order, $payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -731,9 +732,26 @@ class Processor
                 'attempts'      => $this->order->getAttempts(),
             ]);
 
-        $this->order->saveOrFail();
+        $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function setInvoiceDetails(Payment\Entity $payment)
+    {
+        if ($this->order === null)
+        {
+            return;
+        }
+
+        if ($this->order->invoice === null)
+        {
+            return;
+        }
+
+        $invoice = $this->order->invoice;
+
+        $payment->invoice()->associate($invoice);
     }
 
     protected function tracePaymentFailed($error, $traceCode)

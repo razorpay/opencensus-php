@@ -4,7 +4,6 @@ namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Invoice;
 use RZP\Models\Item;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -12,34 +11,30 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     /**
-     * @param array           $input
-     * @param Merchant\Entity $merchant
-     * @param Invoice\Entity  $invoice
-     * @param Item\Entity     $item
+     * @param array             $input
+     * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $entity
+     * @param Item\Entity       $item
      *
      * @return Entity
      */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        Invoice\Entity $invoice,
+        Base\PublicEntity $entity,
         Item\Entity $item)
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_REQUEST,
             [
                 'input'         => $input,
-                'invoice_id'    => $invoice->getId(),
+                'entity_id'    => $entity->getId(),
                 'item_id'       => $item->getId(),
             ]);
 
         $lineItem = (new Entity)->build($input);
 
-        $lineItem->entity()->associate($invoice);
-
-        $lineItem->item()->associate($item);
-
-        $lineItem->merchant()->associate($merchant);
+        $this->setLineItemAssociations($lineItem, $merchant, $entity, $item);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -59,5 +54,15 @@ class Core extends Base\Core
         }, $lineItems);
 
         return $totalAmount;
+    }
+
+    protected function setLineItemAssociations(
+        Entity $lineItem, Merchant\Entity $merchant, Base\PublicEntity $entity, Item\Entity $item)
+    {
+        $lineItem->entity()->associate($entity);
+
+        $lineItem->item()->associate($item);
+
+        $lineItem->merchant()->associate($merchant);
     }
 }

@@ -269,6 +269,13 @@ class Gateway
         return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
     }
 
+    public function setInput(array $input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     protected function getHashValueFromContent(array $content)
     {
         return $content[static::CHECKSUM_ATTRIBUTE];

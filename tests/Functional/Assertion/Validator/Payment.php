@@ -32,5 +32,6 @@ class Payment extends Validator
         Entity::FEE                 => 'required_if:status,captured,refunded|integer',
         Entity::SERVICE_TAX         => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
+        Entity::INVOICE_ID          => 'sometimes|string|size:18',
     );
 }
