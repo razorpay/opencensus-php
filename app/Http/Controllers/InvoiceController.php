@@ -96,7 +96,6 @@ class InvoiceController extends Controller
 
     // ------------------------------------------------------------
 
-
     public function sendNotifications()
     {
         $summary = $this->service->sendNotificationsInBulk();

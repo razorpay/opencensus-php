@@ -28,12 +28,12 @@ class Core extends Base\Core
 
     public function update(Entity $item, array $input)
     {
-        $traceData = [
-            'item_id' => $item->getId(),
-            'input'   => $input,
-        ];
-
-        $this->trace->info(TraceCode::ITEM_UPDATE_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::ITEM_UPDATE_REQUEST,
+            [
+                'item_id' => $item->getId(),
+                'input'   => $input,
+            ]);
 
         $item->getValidator()->validateEditOperation($item, $input);
 
@@ -48,11 +48,11 @@ class Core extends Base\Core
     {
         $item->getValidator()->validateDeleteOperation($item);
 
-        $traceData = [
-            'item_id' => $item->getId(),
-        ];
-
-        $this->trace->info(TraceCode::ITEM_DELETE_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::ITEM_DELETE_REQUEST,
+            [
+                'item_id' => $item->getId(),
+            ]);
 
         return $this->repo->item->deleteOrFail($item);
     }

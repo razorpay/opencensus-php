@@ -288,6 +288,7 @@ class Generator extends Base\Core
      * @param array $input
      *
      * @return null|Customer\Entity
+     * @throws BadRequestValidationFailureException
      */
     protected function associateCustomerWithInvoice(array $input)
     {

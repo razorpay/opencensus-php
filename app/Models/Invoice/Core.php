@@ -52,12 +52,11 @@ class Core extends Base\Core
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
     {
-        $traceData = [
-            'invoice_id' => $invoice->getId(),
-            'input'      => $input,
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST, $traceData);
+        $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
+            [
+                'invoice_id' => $invoice->getId(),
+                'input'      => $input,
+            ]);
 
         $status = $invoice->getStatus();
 
@@ -96,11 +95,11 @@ class Core extends Base\Core
 
     public function issue(Entity $invoice, Merchant\Entity $merchant)
     {
-        $traceData = [
-            'invoice_id' => $invoice->getId(),
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_ISSUE_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::INVOICE_ISSUE_REQUEST,
+            [
+                'invoice_id' => $invoice->getId(),
+            ]);
 
         $this->repo->transaction(
             function() use ($invoice, $merchant)
@@ -118,11 +117,11 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $traceData = [
-            'invoice_id' => $invoice->getId(),
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_DELETE_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::INVOICE_DELETE_REQUEST,
+            [
+                'invoice_id' => $invoice->getId(),
+            ]);
 
         return $this->repo->invoice->deleteOrFail($invoice);
     }
@@ -134,12 +133,12 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $traceData = [
-            'invoice_id' => $invoice->getId(),
-            'input'      => $input,
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
+            [
+                'invoice_id' => $invoice->getId(),
+                'input'      => $input,
+            ]);
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)

@@ -15,7 +15,6 @@ class Validator extends Base\Validator
     const CREATE_ISSUED = 'createIssued';
 
     protected static $createRules = [
-
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
         // Entity::ADJUSTMENT          => 'sometimes|integer',
@@ -46,7 +45,6 @@ class Validator extends Base\Validator
     // This is redundant and same as $createRules but keeping it as it keeps code
     // at other places clean
     protected static $createDraftRules = [
-
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
         // Entity::ADJUSTMENT          => 'sometimes|integer',
