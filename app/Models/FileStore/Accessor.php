@@ -13,10 +13,6 @@ class Accessor extends Base\Core
      */
     protected $params = [];
 
-    const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
-
-    const STORAGE_DIRECTORY = 'files/filestore/';
-
     /**
      * Set the Id in Query Param
      *
@@ -124,7 +120,7 @@ class Accessor extends Base\Core
 
     protected function getStorageDir()
     {
-        return storage_path(self::STORAGE_DIRECTORY);
+        return storage_path(Store::STORAGE_DIRECTORY);
     }
 
     /**
@@ -150,26 +146,21 @@ class Accessor extends Base\Core
     }
 
     /**
-     * Updates Merchant Id for non-admin calls
+     * Updates Merchant Id
      *
      * @return void
      */
     protected function updateMerchantId()
     {
-        if (isset($this->app['basicauth']) === true)
+        if ($this->merchant !== null)
         {
-            $merchant = $this->app['basicauth']->getMerchant();
+            $merchant = $this->merchant;
+        }
+        else
+        {
+            $merchant = $this->repo->merchant->getSharedAccount();
         }
 
-        // Update Merchant ID, if request is done by non-admin
-        if ($merchant !== null)
-        {
-            $this->merchantId($merchant->getId());
-        }
-
-        if (isset($this->params[Entity::MERCHANT_ID]) === false)
-        {
-            $this->merchantId(self::DEFAULT_MERCHANT_ID);
-        }
+        $this->merchantId($merchant->getId());
     }
 }

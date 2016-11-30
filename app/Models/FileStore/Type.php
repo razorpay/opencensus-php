@@ -51,7 +51,15 @@ class Type
         self::ICICI_UPI_REFUND,
     ];
 
-    public static function validateType($type)
+    /**
+     * Check if Filestore Type is valid
+     *
+     * @param string $type Filestore type value
+     *
+     * @return boolean
+     * @throws Exception\LogicException
+     */
+    public static function validateType(string $type)
     {
         foreach(self::TYPE_MAP as $entity => $typeArray)
         {
@@ -67,11 +75,18 @@ class Type
     /**
      * Check if Filestore Type is valid for shared account
      *
-     * @param $type    Filestore type value
+     * @param string $type Filestore type value
+     *
      * @return boolean
+     * @throws Exception\LogicException
      */
-    public static function isTypeForSharedAccount($type)
+    public static function isTypeForSharedAccount(string $type)
     {
-        return (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true);
+        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException('Not A Valid Type For Shared Merchant Account: '. $type);
     }
 }

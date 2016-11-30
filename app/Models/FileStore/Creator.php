@@ -44,13 +44,6 @@ class Creator extends Base\Core
 
     const DEFAULT_STORE = 's3';
 
-    /**
-     * Default Merchant ID, for File Type which are not part of any merchant
-     */
-    const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
-
-    const STORAGE_DIRECTORY = 'files/filestore/';
-
     public function __construct()
     {
         parent::__construct();
@@ -357,40 +350,20 @@ class Creator extends Base\Core
 
     protected function associateMerchantWithFile()
     {
-        if (isset($this->app['basicauth']) === true)
+        if ($this->merchant !== null)
         {
-            $merchant = $this->app['basicauth']->getMerchant();
-        }
-
-        if ($merchant !== null)
-        {
-            $this->file->merchant()->associate($merchant);
+            $merchant = $this->merchant;
         }
         else
         {
-            $this->setDefaultMerchantId();
+            $type = $this->file->getType();
+
+            Type::isTypeForSharedAccount($type);
+
+            $merchant = $this->repo->merchant->getSharedAccount();
         }
-    }
 
-    /**
-     * Sets the Merchant id for file store to shared account's merchant id
-     *
-     * @return void
-     */
-    protected function setDefaultMerchantId()
-    {
-        // TODO : Add logs
-        $type = $this->file->getType();
-
-        if (Type::isTypeForSharedAccount($type))
-        {
-            $this->file->setMerchantId(self::DEFAULT_MERCHANT_ID);
-        }
-    }
-
-    protected function getRelativePath()
-    {
-        return self::STORAGE_DIRECTORY . $this->file->getName() . '.' .$this->file->getExtension();
+        $this->file->merchant()->associate($merchant);
     }
 
     protected function getFullFilePath()
@@ -400,6 +373,6 @@ class Creator extends Base\Core
 
     protected function getStorageDir()
     {
-        return storage_path(self::STORAGE_DIRECTORY);
+        return storage_path(Store::STORAGE_DIRECTORY);
     }
 }
