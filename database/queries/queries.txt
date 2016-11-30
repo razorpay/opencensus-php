@@ -1296,3 +1296,12 @@ ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
 ALTER TABLE invoices DROP COLUMN ref_num;
 
 ---
+
+ALTER TABLE billdesk
+    ADD COLUMN AccountNumber VARCHAR(50) AFTER BankID;
+
+UPDATE billdesk
+    JOIN payments ON payments.id = billdesk.payment_id
+    JOIN orders ON orders.id = payments.order_id
+SET
+    billdesk.AccountNumber = orders.account_number;
