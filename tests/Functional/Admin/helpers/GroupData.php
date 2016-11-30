@@ -116,4 +116,14 @@ return [
         ],
     ],
 
+    'testDescendantsNotAllowedAsParents' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

@@ -135,20 +135,40 @@ class GroupTest extends TestCase
         // create child group
         $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
 
+        $childGroups = [$l0Group];
+
         // create parent groups
-        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
-        $l1GroupIds = array_map(create_function('$g', 'return $g->getId();'), $l1Groups);
+        for ($i=0; $i<2; $i++)
+        {
+            $newChildGroups = [];
+
+            foreach ($childGroups as $childGroup)
+            {
+                $parentsGroups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
+
+                $childGroup->parents()->sync($parentGroupIds);
+
+                // use below to check data creation
+                // s($childGroup['id'],
+                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
+
+                $newChildGroups = array_merge($newChildGroups, $parentsGroups);
+            }
+
+            $childGroups = $newChildGroups;
+        }
+
+        $groupWithoutChild = $l0Group;
 
         // create another hierarchy of groups
         $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
         $loneGroupIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
 
-        $l0Group->parents()->sync($l1GroupIds);
-
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $l0Group->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId(), $groupWithoutChild->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -162,5 +182,81 @@ class GroupTest extends TestCase
 
         $this->assertEquals(count(array_intersect($filteredParentIds, $loneGroupIds)),
                             count(array_intersect($loneGroupIds, $filteredParentIds)));
+    }
+
+    public function testDescendantsNotAllowedAsParents()
+    {
+        // create child group
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        $childGroups = $allGroups = [$l0Group];
+
+        // create parent groups
+        for ($i=0; $i<2; $i++)
+        {
+            $newChildGroups = [];
+
+            foreach ($childGroups as $childGroup)
+            {
+                $parentsGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
+                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
+
+                $childGroup->parents()->sync($parentGroupIds);
+
+                // // use below to check data creation
+                // s($childGroup['id'],
+                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
+
+                $newChildGroups = array_merge($newChildGroups, $parentsGroups);
+            }
+
+            $childGroups = $newChildGroups;
+
+            $allGroups = array_merge($allGroups, $childGroups);
+        }
+
+        // select a group without a parent
+        $selectedGroup = end($childGroups);
+
+        // reset internal pointer of array to first element
+        reset($childGroups);
+
+        // create another hierarchy of groups
+        $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
+
+        // add lone groups to allGroups
+        $allGroups = array_merge($allGroups, $loneGroups);
+
+        // modify request
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        // read response content
+        $content = $this->response->getContent();
+        $content = json_decode($content, true);
+
+        $filteredParentIds = array_column($content, 'id');
+
+        // get descendants of selectGroup
+        $selectedGroupsDescendantsIds = [
+                                            ($selectedGroup->subGroups->all()[0])->getPublicId(),
+                                            $l0Group->getPublicId()
+                                        ];
+
+
+        $allGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $allGroups);
+
+        // get allowed parent-groups' ids
+        $allowedParentIds = array_diff($allGroupIds,
+                                       $selectedGroupsDescendantsIds,
+                                       [$selectedGroup->getPublicId()]);
+
+        $this->assertEquals(count(array_intersect($filteredParentIds, $allowedParentIds)),
+                            count(array_intersect($allowedParentIds, $filteredParentIds)));
     }
 }
