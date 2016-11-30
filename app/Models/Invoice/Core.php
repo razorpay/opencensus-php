@@ -54,18 +54,35 @@ class Core extends Base\Core
     {
         $status = $invoice->getStatus();
 
-        $invoice->getValidator()
-                ->validateOperation($status, [Status::DRAFT, Status::ISSUED]);
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $operation = 'edit_' . $status;
 
-        $invoice->edit($input, $operation);
+        try
+        {
+            $invoice->edit($input, $operation);
 
-        $updateFunction = 'update' . studly_case($status) . 'Invoice';
+            $updateFunction = 'update' . studly_case($status) . 'Invoice';
 
-        $this->$updateFunction($merchant, $invoice, $input);
+            $this->$updateFunction($merchant, $invoice, $input);
+        }
+        catch (\Exception $e)
+        {
+            // Check if is Mysql duplicate on unique index error
+            if (($e instanceof \Illuminate\Database\QueryException) and
+                ($e->errorInfo[1] === 1062))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+                    null,
+                    [
+                        'invoice_id'    => $invoice->getId(),
+                        'input'         => $input,
+                    ]);
+            }
 
-        $this->repo->saveOrFail($invoice);
+            throw $e;
+        }
 
         return $invoice;
     }
@@ -84,8 +101,7 @@ class Core extends Base\Core
 
     public function delete(Entity $invoice)
     {
-        $invoice->getValidator()
-                ->validateOperation($invoice->getStatus());
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $this->repo->invoice->deleteOrFail($invoice);
 
@@ -97,8 +113,7 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $invoice->getValidator()
-                ->validateOperation($invoice->getStatus());
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
@@ -119,8 +134,7 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $invoice->getValidator()
-                ->validateOperation($invoice->getStatus());
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -144,8 +158,7 @@ class Core extends Base\Core
         Entity $invoice,
         LineItem\Entity $lineItem)
     {
-        $invoice->getValidator()
-                ->validateOperation($invoice->getStatus());
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function() use ($lineItem, $invoice)
@@ -291,39 +304,19 @@ class Core extends Base\Core
 
     protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
-        try
-        {
-            $this->repo->transaction(
-                function() use ($invoice, $merchant, $input)
-                {
-                    $this->generateKeysOnUpdate($invoice, $input);
-
-                    (new Generator($merchant, $invoice))->update($input);
-
-                    $this->repo->saveOrFail($invoice);
-                }
-            );
-        }
-        catch (\Exception $e)
-        {
-            // Check if is Mysql duplicate on unique index error
-            if (($e instanceof \Illuminate\Database\QueryException) and
-                ($e->errorInfo[1] === 1062))
+        $this->repo->transaction(
+            function() use ($invoice, $merchant, $input)
             {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
-                    null,
-                    [
-                        'invoice_id'    => $invoice->getId(),
-                        'input'         => $input,
-                    ]);
-            }
+                $this->generateKeysOnUpdate($invoice, $input);
 
-            throw $e;
-        }
+                (new Generator($merchant, $invoice))->update($input);
+
+                $this->repo->saveOrFail($invoice);
+            }
+        );
     }
 
-    protected function updateIssuedInvoice(Entity $invoice, array $input, Merchant\Entity $merchant)
+    protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
     }
 
@@ -335,12 +328,7 @@ class Core extends Base\Core
      */
     protected function recomputeInvoiceAmount(Entity $invoice)
     {
-        $totalAmount = 0;
-
-        foreach ($invoice->lineItems()->get() as $lineItem)
-        {
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
-        }
+        $totalAmount = $lineItemCore->getInvoiceAmountForLineItems($invoice->lineItems()->get());
 
         $invoice->setAmount($totalAmount);
     }

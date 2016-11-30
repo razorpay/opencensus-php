@@ -539,9 +539,10 @@ class Entity extends Base\PublicEntity
     {
         $status = Status::ISSUED;
 
-        if (empty($input[self::DRAFT]) === false)
+        if (isset($input[self::DRAFT]) and
+            ($input[self::DRAFT] === '1'))
         {
-            $status = boolval($input[self::DRAFT]) ? Status::DRAFT : Status::ISSUED;
+            $status = Status::DRAFT;
         }
 
         $this->setAttribute(self::STATUS, $status);

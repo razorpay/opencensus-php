@@ -74,7 +74,7 @@ class Generator extends Base\Core
         {
             // Check if is Mysql duplicate on unique index error
             if ($e instanceof \Illuminate\Database\QueryException
-                and $e->errorInfo[1] == 1062)
+                and $e->errorInfo[1] === 1062)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
@@ -230,8 +230,6 @@ class Generator extends Base\Core
             return;
         }
 
-        $totalAmount = 0;
-
         foreach ($lineItemsDetails as $lineItemDetails)
         {
             $lineItem = $this->lineItemCore->create(
@@ -240,10 +238,10 @@ class Generator extends Base\Core
                 $this->invoice
             );
 
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
-
             $this->invoice->lineItems()->save($lineItem);
         }
+
+        $totalAmount = $this->lineItemCore->getInvoiceAmountForLineItems($this->invoice->lineItems()->get());
 
         $this->invoice->setAmount($totalAmount);
     }
@@ -284,12 +282,19 @@ class Generator extends Base\Core
     {
         $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
 
+        $customerId = ($input[Entity::CUSTOMER_ID]) ?? null;
+
+        if ($customerId and $customerDetails)
+        {
+            throw new BadRequestValidationFailureException(
+                'Expecting either customer_id or customer details'
+            );
+        }
+
         $customer = null;
 
-        if (isset($input[Entity::CUSTOMER_ID]) === true)
+        if ($customerId)
         {
-            $customerId = $input[Entity::CUSTOMER_ID];
-
             $customer = $this->repo->customer->findByPublicIdAndMerchant(
                                                 $customerId, $this->merchant);
 

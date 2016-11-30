@@ -120,13 +120,6 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::AUTHORIZED, $authorized);
     }
 
-    public function setAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-
-        return $this;
-    }
-
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

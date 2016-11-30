@@ -223,15 +223,32 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateOperation(string $status, array $in = [Status::DRAFT])
+    public function validateOperation(string $operation)
     {
-        if (in_array($status, $in, true) === false)
+        switch ($operation) {
+            case 'update':
+                $allowedStatuses = [
+                    Status::DRAFT,
+                    Status::ISSUED,
+                ];
+                break;
+
+            default:
+                $allowedStatuses = [
+                    Status::DRAFT,
+                ];
+                break;
+        }
+
+        $invoiceStatus = $this->entity->getStatus();
+
+        if (in_array($invoiceStatus, $allowedStatuses, true) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
                 null,
                 [
-                    'status'     => $status
+                    'status'     => $invoiceStatus
                 ]
             );
         }

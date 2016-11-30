@@ -79,6 +79,18 @@ class Core extends Base\Core
         return [];
     }
 
+    public function getInvoiceAmountForLineItems(Base\PublicCollection $lineItems)
+    {
+        $totalAmount = 0;
+
+        foreach ($lineItems as $lineItem)
+        {
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+        }
+
+        return $totalAmount;
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createItemIfNotExists(
