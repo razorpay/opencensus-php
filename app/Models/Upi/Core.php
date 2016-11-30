@@ -9,6 +9,8 @@ use RZP\Models\Customer;
 use RZP\Models\Device;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 class Core extends Base\Core
 {
@@ -19,6 +21,8 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->customerService = new Customer\Service;
+
+        $this->vpaService = new Vpa\Service;
     }
 
     public function callUpiGateway($method, array $gatewayData = [])
@@ -147,6 +151,22 @@ class Core extends Base\Core
         $input['method'] = 'RespListAccount';
 
         $this->callUpiGateway('makeRequest', $params);
+    }
+
+    public function createVpa($input)
+    {
+        if (isset($input['customer_id']) === true)
+        {
+            $customer = $this->customerService->fetch($input['customer_id']);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_ID_MISSING,
+                $input);
+        }
+
+        $this->vpaService->createVpa($input, $customer);
     }
 
     /**

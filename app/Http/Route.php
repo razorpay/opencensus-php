@@ -312,7 +312,8 @@ final class Route
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi_npci/customers/{id}/bank_accounts/{ifsc}',   'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/{id}',                                       'UpiController@vpaAvailable'                                        ],
-        'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ]
+        'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
+        'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
     );
 
     public static $public = array(
@@ -368,6 +369,7 @@ final class Route
         'device_fetch',
         'upi_customer_bank_accounts_fetch',
         'vpa_register',
+        'vpa_create',
     );
 
     public static $publicCallback = array(

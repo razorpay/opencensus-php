@@ -38,6 +38,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USERNAME);
     }
 
+    // ----------------------- Setters -----------------------
+
+    public function setHandle($handle)
+    {
+        return $this->setAttribute(self::HANDLE, $handle);
+    }
+
     // ----------------------- Relations -----------------------
 
     public function bankAccount()
