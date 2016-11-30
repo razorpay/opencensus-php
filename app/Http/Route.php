@@ -20,7 +20,7 @@ final class Route
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
         'is_device_verified'                      => ['get',      'upi_npci/devices/{id}',                          'UpiController@isDeviceVerified'                                    ],
         'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
-        'upi_read_async'                          => ['get',      'upi_npci/read/{id}',                             'UpiController@readFromCache'                                       ],
+        'upi_read_async'                          => ['get',      'upi_npci/status/{id}',                           'UpiController@getStatus'                                           ],
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],

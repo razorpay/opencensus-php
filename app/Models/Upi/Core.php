@@ -199,6 +199,6 @@ class Core extends Base\Core
             ]
         ];
 
-        sd($this->callUpiGateway('makeRequest', $input));
+        $this->callUpiGateway('makeRequest', $input);
     }
 }
