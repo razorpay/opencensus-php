@@ -605,24 +605,7 @@ class Gateway extends Base\Gateway
         return $this->config['live_access_code'];
     }
 
-    protected function getLiveSecret()
-    {
-        if ($this->tpv)
-        {
-            return $this->config['live_hash_secret_sec'];
-        }
-        else if (isset($this->input['merchant']))
-        {
-            if ($this->input['merchant']->isTPVRequired())
-            {
-                return $this->config['live_hash_secret_sec'];
-            }
-        }
-
-        return $this->config['live_hash_secret'];
-    }
-
-    protected function getTestSecret()
+    protected function getSecret()
     {
         if ($this->tpv === true)
         {
