@@ -83,6 +83,13 @@ class Core extends Base\Core
     {
         $customer = $device->customer;
 
+        $currentAccounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
+
+        if (empty($currentAccounts) === false)
+        {
+            return;
+        }
+
         $inputs = $this->getTestBankAccountDetails($customer);
 
         (new BankAccount\Core)->addOrUpdateBankAccountForCustomer($inputs[0], $customer);

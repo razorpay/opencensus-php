@@ -70,7 +70,7 @@ class Core extends Base\Core
         $response = $this->app['gateway']->call('upi_npci', 'handle_request', $requestData, 'test');
 
         $this->trace->info(
-            'GATEWAY_RESPONSE',
+            'PAYMENT_TOPUP_REQUEST',
             $response);
 
         $this->cacheResponse($response);
@@ -112,7 +112,10 @@ class Core extends Base\Core
 
     protected function pushToQueue($job, array $params)
     {
-        $this->{$job}($params);
+        if ($job)
+        {
+            $this->{$job}($params);
+        }
     }
 
     /**

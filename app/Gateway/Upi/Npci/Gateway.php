@@ -24,6 +24,8 @@ class Gateway extends Base\Gateway
         'RespListKeys',
         // Someone is trying to set MPIN!
         'ReqRegMob',
+        // We got a list
+        'RespListAccPvd',
     ];
 
     protected $gateway = 'upi_npci';
@@ -178,6 +180,14 @@ EOT;
         }
     }
 
+    protected function preProcessRespListAccPvd($msgId, $request)
+    {
+        return [
+            'cacheKey'      =>  'UPI.RespListAccPvd',
+            'cacheValue'    =>  json_encode($request->getAccPvdList()),
+        ];
+    }
+
     /**
      * Someone is asking us for bank accounts!
      *
@@ -288,7 +298,6 @@ EOT;
 
         if ($this->needsProcessing($api))
         {
-            // TODO: read/write from cache
             $params['original_request_params'] = [];
             $params['msgId'] = $msgId;
             $params['api'] = $api;
@@ -319,7 +328,7 @@ EOT;
 
         $method = "preProcess$api";
 
-        $data = $this->$method($params['msg_id'], $params['parsedRequest']);
+        $data = $this->$method($params['msg_id'], $params['parsed_request']);
 
         // The reply message will use reqMsgId
         $data['reqMsgId'] = $params['msg_id'];
@@ -334,7 +343,8 @@ EOT;
         $jobs = [
             'ReqListAccount'    =>  'RespListAccount',
             'ReqRegMob'         =>  'RespRegMob',
-            'RespListKeys'      =>  'UpdateKeyStore'
+            'RespListKeys'      =>  'UpdateKeyStore',
+            'RespListAccPvd'    =>  null
         ];
 
         return $jobs[$api];
@@ -655,18 +665,8 @@ EOT;
             ],
             'content'   =>  $signedXml,
             'options'   =>  [
-                /**
-                 * TODO: Verify the cert properly. The issue
-                 * here is that setting verify to the cert
-                 * doesn't work because their hostname
-                 * on the cert is npci.org.in, and they
-                 * want us to make requests directly
-                 * to the IP address.
-                 *
-                 * storage_path('certs/npci.pem')
-                 */
-
-                'verify'    =>  false
+                'verify'        =>  storage_path('certs/npci.pem'),
+                'verifyname'    =>  false,
             ]
         ];
 
