@@ -150,26 +150,23 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
-    public function authReversal(array $input)
+    public function reverse(array $input)
     {
-        parent::action($input, Action::AUTH_REVERSAL);
+        parent::action($input, Action::REVERSE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
         $request = $this->getAuthReversalRequestArray($input, $gatewayPayment);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTH_REVERSAL_REQUEST, $request, $input);
+        $this->traceGatewayRequest(TraceCode::GATEWAY_REVERSE_REQUEST, $request, $input);
 
         try
         {
             $response = $this->postRequest($request);
 
             $this->traceGatewayResponse(
-                TraceCode::GATEWAY_AUTH_REVERSAL_RESPONSE, $response, $input);
+                TraceCode::GATEWAY_REVERSE_RESPONSE, $response, $input);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -182,7 +179,7 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $exception)
         {
-            $this->handleSoapFault($exception, 'Void failed');
+            $this->handleSoapFault($exception, 'Reverse failed');
         }
     }
 
@@ -841,9 +838,6 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     protected function getAttributeFromAuthReversalResponse(array $input, array $response)
     {
         $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
@@ -851,8 +845,7 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                => $response[F::REQUEST_ID],
             E::REASON_CODE        => $response[F::REASON_CODE],
-            E::PROCESSOR_RESPONSE => $ccAuthReversalReply[F::PROCESSOR_RESPONSE] ?? null,
-            E::STATUS             => Status::AUTH_REVERSED,
+            E::STATUS             => Status::REVERSED,
             E::RECEIVED           => true
         ];
 
@@ -1020,9 +1013,6 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     protected function getAuthReversalRequestArray(array $input, Entity $gatewayPayment)
     {
         $content = [];

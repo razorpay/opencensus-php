@@ -20,6 +20,8 @@ class Status
     const CREATED          = 'created';
     const REFUNDED         = 'refunded';
     const REFUND_FAILED    = 'refund_failed';
+    const REVERSED         = 'reversed';
+    const REVERSED_FAILED  = 'reversed_failed';
     const VOIDED           = 'voided';
     const VOID_FAILED      = 'void_failed';
 }

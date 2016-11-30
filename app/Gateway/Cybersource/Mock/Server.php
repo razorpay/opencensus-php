@@ -212,7 +212,7 @@ class Server extends Base\Mock\Server
 
     protected function authReversal($input)
     {
-        parent::action($input, 'auth_reversal');
+        parent::reverse($input);
 
         $this->validateActionInput($input);
 

@@ -108,7 +108,7 @@ class Validator extends Base\Validator
         'purchaseTotals.grandTotalAmount'      => 'required|numeric',
     ];
 
-    protected static $authReversalRules = [
+    protected static $reverseRules = [
         'merchantID'                           => 'required|string|max:30',
         'merchantReferenceCode'                => 'required|string|size:14',
         'ccAuthReversalService'                => 'required|array',

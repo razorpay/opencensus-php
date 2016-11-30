@@ -165,6 +165,8 @@ class CybersourceGatewayTest extends TestCase
 
     public function testAuthorizedPaymentRefund()
     {
+        $this->fixtures->merchant->addFeatures('reverse');
+
         $payment = $this->getDefaultPaymentArray();
 
         $response = $this->doAuthPayment($payment);
@@ -178,6 +180,10 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertSame($paymentId, $refund['payment_id']);
         $this->assertTestResponse($refund);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('reverse', $cybersource['action']);
     }
 
     public function testGatewayPaymentMatchVerify()
