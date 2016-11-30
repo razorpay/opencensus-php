@@ -7,13 +7,15 @@ use RZP\Models\Customer;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const CUSTOMER_ID       = 'customer_id';
-    const MERCHANT_ID       = 'merchant_id';
-    const NAME              = 'name';
-    const BALANCE           = 'balance';
-    const MIN_BALANCE       = 'min_balance';
-    const MAX_BALANCE       = 'max_balance';
+    const ID            = 'id';
+    const CUSTOMER_ID   = 'customer_id';
+    const MERCHANT_ID   = 'merchant_id';
+    const NAME          = 'name';
+    const BALANCE       = 'balance';
+    const DAILY_USAGE   = 'daily_usage';
+    const WEEKLY_USAGE  = 'weekly_usage';
+    const MONTHLY_USAGE = 'monthly_usage';
+    const MAX_BALANCE   = 'max_balance';
 
     protected static $sign = 'cust';
 
@@ -22,31 +24,29 @@ class Entity extends Base\PublicEntity
     public $incrementing = true;
 
     protected $fillable = [
-        self::CUSTOMER_ID,
         self::NAME,
         self::BALANCE,
-        self::MIN_BALANCE,
-        self::MAX_BALANCE,
-        self::CREATED_AT,
-        self::UPDATED_AT
+        self::DAILY_USAGE,
+        self::WEEKLY_USAGE,
+        self::MONTHLY_USAGE,
+        self::MAX_BALANCE
     ];
 
     protected $visible = [
         self::CUSTOMER_ID,
+        self::MERCHANT_ID,
         self::NAME,
         self::BALANCE,
-        self::MIN_BALANCE,
+        self::DAILY_USAGE,
+        self::WEEKLY_USAGE,
+        self::MONTHLY_USAGE,
         self::MAX_BALANCE,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $public = [
-        self::CUSTOMER_ID,
-        self::NAME,
         self::BALANCE,
-        self::MIN_BALANCE,
-        self::MAX_BALANCE,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -79,11 +79,6 @@ class Entity extends Base\PublicEntity
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);
-    }
-
-    public function getMinBalance()
-    {
-        return $this->getAttribute(self::MIN_BALANCE);
     }
 
     public function getMaxbalance()
@@ -119,6 +114,4 @@ class Entity extends Base\PublicEntity
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
-
-
 }

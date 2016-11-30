@@ -7,10 +7,10 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
-    const ENTITY_ID         = 'entity_id';
-    const ENTITY_TYPE       = 'entity_type';
     const MERCHANT_ID       = 'merchant_id';
     const CUSTOMER_ID       = 'customer_id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
     const STATUS            = 'status';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'ctxn';
 
     protected $entity = 'customer_transactions';
+
+    protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::ENTITY_ID,
@@ -37,6 +39,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::MERCHANT_ID,
+        self::CUSTOMER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::STATUS,
