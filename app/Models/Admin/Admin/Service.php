@@ -343,7 +343,9 @@ class Service extends Base\Service
 
         foreach ($childrenGroups as $group)
         {
-            $group = new Group\Entity($group);
+            $groupId = $group['id'];
+
+            $group = $this->repo->group->retrieveByOrgIdAndIdOrFail($orgId, $groupId);
 
             $merchants = array_merge($merchants, $group->merchants->toArray());
         }
@@ -356,7 +358,7 @@ class Service extends Base\Service
 
         foreach ($childrenAdmins as $admin)
         {
-            $adminId = 'admin_'.$admin['id'];
+            $adminId = Entity::getSignedId($admin['id']);
 
             $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
