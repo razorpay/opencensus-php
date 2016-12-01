@@ -62,7 +62,7 @@ class Core extends Base\Core
 
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $operation = camel_case('edit_' . $status);
+        $operation = 'edit' . studly_case($status);
 
         try
         {
@@ -104,7 +104,9 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($invoice, $merchant)
             {
-                (new Generator($merchant, $invoice))->issueInvoiceAndSave();
+                (new Generator($merchant, $invoice))->issueInvoice();
+                
+                $this->repo->saveOrFail($invoice);
             }
         );
 
@@ -350,7 +352,7 @@ class Core extends Base\Core
             {
                 $this->generateKeysOnUpdate($invoice, $input);
 
-                (new Generator($merchant, $invoice))->update($input);
+                (new Generator($merchant, $invoice))->updateDraftInvoice($input);
 
                 $this->repo->saveOrFail($invoice);
             }
@@ -359,6 +361,7 @@ class Core extends Base\Core
 
     protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
+        ;
     }
 
     /**

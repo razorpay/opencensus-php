@@ -61,14 +61,21 @@ class Generator extends Base\Core
 
         try
         {
-            if ($operation === Validator::CREATE_DRAFT)
-            {
-                $this->generateDraft($input);
-            }
-            else
-            {
-                $this->generateIssued($input);
-            }
+            $this->repo->transaction(
+                function() use ($input, $operation)
+                {
+                    $this->preProcessGeneration($input);
+
+                    if ($operation === Validator::CREATE_ISSUED)
+                    {
+                        $this->issueInvoice();
+                    }
+
+                    $this->repo->saveOrFail($this->invoice);
+                }
+            );
+
+            (new Notifier($this->invoice))->sendNotificationToCustomer();
         }
         catch (\Exception $e)
         {
@@ -91,12 +98,19 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
+    protected function preProcessGeneration(array $input)
+    {
+        $this->associateCustomerWithInvoice($input);
+
+        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+    }
+
     /**
      * Updates associations of existing invoice
      *
      * @param array $input
      */
-    public function update(array $input)
+    public function updateDraftInvoice(array $input)
     {
         $this->associateCustomerWithInvoice($input);
     }
@@ -162,45 +176,13 @@ class Generator extends Base\Core
         $this->invoice = $invoice;
     }
 
-    protected function generateDraft(array $input)
-    {
-        $this->repo->transaction(
-            function() use ($input)
-            {
-                $this->associateCustomerWithInvoice($input);
-
-                $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
-
-                // In draft, we don't create short url and order
-
-                $this->repo->saveOrFail($this->invoice);
-            }
-        );
-    }
-
-    protected function generateIssued(array $input)
-    {
-        $this->repo->transaction(
-            function() use ($input)
-            {
-                $this->associateCustomerWithInvoice($input);
-
-                $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
-
-                $this->issueInvoiceAndSave();
-            }
-        );
-
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
-    }
-
     /**
      * At the time when invoice is to be issued:
      * - validate if it can be issued
      * - create it's order and set the short URL
      * - save the invoice
      */
-    public function issueInvoiceAndSave()
+    public function issueInvoice()
     {
         $this->invoice->getValidator()
                       ->validateInvoiceIssue();
@@ -210,8 +192,6 @@ class Generator extends Base\Core
         $this->createAndAssociateOrderForInvoice();
 
         $this->setShortUrl();
-
-        $this->repo->saveOrFail($this->invoice);
     }
 
     protected function setShortUrl()

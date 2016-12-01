@@ -89,7 +89,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'required_with:amount|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::DRAFT               => 'sometimes|boolean',
+        Entity::DRAFT               => 'sometimes|in:0',
     ];
 
     protected static $editDraftRules  = [
@@ -275,19 +275,18 @@ class Validator extends Base\Validator
 
     /**
      * Validates if an invoice can be issued or not
-     *
      */
     public function validateInvoiceIssue()
     {
-
         // Checks:
         // - Invoice should have amount set to a non-zero value
-        // - Either description(minimal invoice) or non-zero line items should exist
+        // - Either description (minimal invoice) or non-zero line items should exist
 
         $invoice = $this->entity;
 
         if (($invoice->getAmount() > 0) and
-            ($invoice->getDescription() or $invoice->lineItems()->count()))
+            (($invoice->getDescription() !== null) or
+             ($invoice->lineItems()->count() > 0)))
         {
             return;
         }
@@ -296,7 +295,10 @@ class Validator extends Base\Validator
             ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
             null,
             [
-                'invoice_id' => $invoice->getId(),
+                'invoice_id'        => $invoice->getId(),
+                'amount'            => $invoice->getAmount(),
+                'description'       => $invoice->getDescription(),
+                'line_items_count'  => $invoice->lineItems()->count(),
             ]
         );
     }
