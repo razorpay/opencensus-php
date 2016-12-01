@@ -63,6 +63,7 @@ class Service extends Base\Service
 
     public function edit(string $id, array $input)
     {
+        $input['email_domains'] = implode(',', $input['email_domains']);
         $org = $this->core()->edit($id, $input);
 
         return $org->toArrayPublic();
