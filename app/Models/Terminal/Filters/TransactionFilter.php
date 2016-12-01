@@ -241,7 +241,7 @@ class TransactionFilter extends Terminal\Filter
 
         $filterParams['method'] = $input['payment']->getMethod();
 
-        $filterParams['bank'] = $input['payment']->getMethod();
+        $filterParams['bank'] = $input['payment']->getBank();
 
         $filterParams['network'] = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
