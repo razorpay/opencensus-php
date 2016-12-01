@@ -2,15 +2,27 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Exception;
 use Lib\PhoneBook;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use libphonenumber\NumberParseException;
-use Symfony\Component\Translation\TranslatorInterface;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
+    protected function validatePublicId($attribute, $id)
+    {
+        $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+
+        if ($match === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $attribute . ' is not valid.');
+        }
+
+        return true;
+    }
+
     /**
      * Create basic contact validate
      *

@@ -3,12 +3,19 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create($input, $merchant)
+    /**
+     * @param $input
+     * @param $merchant
+     *
+     * @return Entity
+     */
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,

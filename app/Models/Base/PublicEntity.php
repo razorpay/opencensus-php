@@ -190,7 +190,7 @@ class PublicEntity extends UniqueIdEntity
     {
         static::stripSignOrFail($id);
 
-        UniqueIdEntity::verifyUniqueId($id, true);
+        static::verifyUniqueId($id, true);
 
         return $id;
     }
@@ -199,7 +199,7 @@ class PublicEntity extends UniqueIdEntity
     {
         static::stripSign($id);
 
-        UniqueIdEntity::verifyUniqueId($id, true);
+        static::verifyUniqueId($id, true);
 
         return $id;
     }
@@ -267,9 +267,21 @@ class PublicEntity extends UniqueIdEntity
         return static::$delimiter;
     }
 
+    /**
+     * Returns id with the sign prefix attached.
+     */
     public static function getSignedId($id)
     {
         return static::getIdPrefix() . $id;
+    }
+
+    /**
+     * Returns id with the sign prefix attached.
+     * However, if the value is null, then simply return null.
+     */
+    public static function getSignedIdOrNull($id)
+    {
+        return $id ? static::getSignedId($id) : null;
     }
 
     public function getEntity()
@@ -304,5 +316,15 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return date('d/m/y h:i:s', $value);
+    }
+
+    /**
+     * After Deleting Entity Contents are irrelevant
+     * returning entity id and deleted key with value as true
+     * @return array
+     */
+    public function toArrayDeleted()
+    {
+        return [static::ID => $this->getPublicId(), 'deleted' => true];
     }
 }

@@ -40,7 +40,7 @@ class Error extends Support\Fluent
 
         $this->setClass($code);
 
-        $this->setPublicErrorDetails($code);
+        $this->setPublicErrorDetails();
 
         $this->setDesc($desc);
 
@@ -151,7 +151,6 @@ class Error extends Support\Fluent
     protected function setPublicErrorDetails()
     {
         $class = $this->getAttribute(self::ERROR_CLASS);
-        $internalCode = $this->getInternalErrorCode();
 
         switch ($class)
         {

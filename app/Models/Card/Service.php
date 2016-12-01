@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Card;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class Service extends Base\Service
 {

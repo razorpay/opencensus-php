@@ -32,11 +32,12 @@ return [
 
     'testDataForUserAgentAnomaly' => [
         'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'browser' => 'safari',
+        'browser' => 'chrome',
         'platform_version' => '537.36',
         'os' => 'ios',
         'os_version' => '11.0',
         'device' => 'mobile',
+        'referer' => 'http://a.com',
     ],
 
     'testHttpRequestDataForInvalidData' => [

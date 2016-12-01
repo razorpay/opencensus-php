@@ -125,7 +125,7 @@ class CreateTerminals extends Migration
         Schema::table(Table::TERMINAL, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMINAL.'_'.Terminal::MERCHANT_ID.'_foreign');
+                Table::TERMINAL.'_'.Terminal::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TERMINAL);

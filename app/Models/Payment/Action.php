@@ -15,6 +15,8 @@ class Action
     const CALLBACK              = 'callback';
     const CAPTURE               = 'capture';
     const REFUND                = 'refund';
+    const VOID                  = 'void';
+    const REVERSE               = 'reverse';
     const TOPUP                 = 'topup';
     const DEBIT                 = 'debit';
     const VERIFY                = 'verify';

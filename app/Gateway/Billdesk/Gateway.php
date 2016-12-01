@@ -12,6 +12,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
@@ -24,15 +25,17 @@ class Gateway extends Base\Gateway
     protected $response;
     const CHECKSUM_ATTRIBUTE = 'Checksum';
 
+    protected $tpv;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getRequestArrayForAuthorize($content, $input);
+        $request = $this->getRequestArrayForAuthorize($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -51,14 +54,14 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
         // We should ensure once that AuthStatus is 0300 and
         // RefundStatus is null.
 
         // assert ($payment['RefStatus'] === null);
-        assert ($payment['AuthStatus'] === AuthStatus::SUCCESS);
+        assert ($gatewayPayment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
     public function callback(array $input)
@@ -83,12 +86,12 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
         $content['received'] = 1;
-        $payment->fill($content);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($content);
+        $this->repo->saveOrFail($gatewayPayment);
 
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
@@ -108,6 +111,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->setTpv($gatewayPayment);
 
         $request = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
 
@@ -286,7 +291,7 @@ class Gateway extends Base\Gateway
                 $content['ItemCode']);
 
             $payment->fill($content);
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
         }
 
         return $status;
@@ -314,7 +319,7 @@ class Gateway extends Base\Gateway
             ($input['payment']['status'] === 'failed') or
             ($input['payment']['status'] === 'created'))
         {
-            $refAmount = (int) $content['RefAmount'] * 100;
+            $refAmount = (int) ($content['RefAmount'] * 100);
 
             if (($content['RefStatus'] === RefundStatus::CANCELLED) and
                 ($refAmount === $input['payment']['amount']))
@@ -419,6 +424,8 @@ class Gateway extends Base\Gateway
         {
             $content['Merchant ID'] = $this->getTestMerchantId();
         }
+
+        $this->setTpv($verify->payment);
 
         return $content;
     }
@@ -584,7 +591,9 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attributes);
         $payment->setAction($this->action);
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
+
+        $this->setTpv($payment);
 
         return $payment;
     }
@@ -622,9 +631,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArrayForAuthorize($content, $input)
+    protected function getRequestArrayForAuthorize($content)
     {
-        $request = $this->getRequestArray($content, $input);
+        $request = $this->getRequestArray($content);
 
         $request['content']['hidRequestId'] = 'PGIME1000';
         $request['content']['hidOperation'] = 'ME100';
@@ -632,7 +641,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content, $input = null)
+    protected function getRequestArray($content)
     {
         $msg = $this->getMessageStringWithHash($content);
 
@@ -659,13 +668,35 @@ class Gateway extends Base\Gateway
         return $this->config['live_access_code'];
     }
 
-    protected function getLiveSecret()
+    public function getSecret()
     {
-        if ($this->input['merchant']->isTPVRequired())
+        if ($this->tpv === true)
         {
             return $this->config['live_hash_secret_sec'];
         }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_sec'];
+            }
+        }
 
         return $this->config['live_hash_secret'];
+    }
+
+    protected function setTpv($gatewayPayment)
+    {
+        $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function isPaymentTpvEnabled(Entity $gatewayPayment, Merchant\Entity $merchant)
+    {
+        if (($gatewayPayment->isTpv()) or ($merchant->isTPVRequired()))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

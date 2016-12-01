@@ -10,8 +10,6 @@ class Entity extends Base\Entity
     const BANK_PAYMENT_ID   = 'bank_payment_id';
     const INT_PAYMENT_ID    = 'int_payment_id';
 
-    protected $table = 'netbanking';
-
     protected $entity = 'netbanking';
 
     protected $fields = array(

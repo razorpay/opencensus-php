@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Amex\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Amex;
 use RZP\Gateway\Base;
 

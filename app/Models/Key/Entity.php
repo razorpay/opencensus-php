@@ -18,8 +18,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'key';
 
-    protected $table  = \RZP\Constants\Table::KEY;
-
     protected $generateIdOnCreate = true;
 
     protected $public = array(
@@ -138,8 +136,6 @@ class Entity extends Base\PublicEntity
      */
     public function generateSecret()
     {
-        $len = self::ID_LENGTH;
-
         $secret = '';
         $x = range(1,8);
         foreach ($x as $n)

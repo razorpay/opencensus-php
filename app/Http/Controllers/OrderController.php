@@ -12,7 +12,7 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        $this->order = new Order\Service();
+        $this->order = new Order\Service;
     }
 
     public function createOrder()

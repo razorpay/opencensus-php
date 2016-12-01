@@ -6,7 +6,7 @@ use RZP\Gateway\AxisMigs;
 
 class Repository extends AxisMigs\Repository
 {
-    protected $entity = 'Amex';
+    protected $entity = 'amex';
 
     protected function buildFetchQueryAdditional($params, $query)
     {

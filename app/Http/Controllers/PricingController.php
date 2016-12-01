@@ -77,11 +77,6 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deletePricingPlan($id)
-    {
-        ;
-    }
-
     public function getSupportedNetworks()
     {
         $data = (new Pricing\Service)->getSupportedNetworks();

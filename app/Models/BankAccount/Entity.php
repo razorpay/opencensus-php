@@ -38,8 +38,6 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::ID;
 
-    protected $table = \RZP\Constants\Table::BANK_ACCOUNT;
-
     protected $entity = 'bank_account';
 
     protected $fillable = array(
@@ -132,9 +130,9 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->getAttribute(self::TYPE);
 
-        BankAccount\Type::validateType($type);
+        Type::validateType($type);
 
-        $class = BankAccount\Type::getEntityClass($type);
+        $class = Type::getEntityClass($type);
 
         return $this->belongsTo($class, self::ENTITY_ID);
     }

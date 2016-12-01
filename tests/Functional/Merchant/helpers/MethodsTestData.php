@@ -42,5 +42,23 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testBulkMethodUpdate' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'card' => true,
+                    'netbanking' => true
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

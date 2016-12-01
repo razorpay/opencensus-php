@@ -5,18 +5,16 @@ namespace RZP\Models\Payment\Processor;
 use BasicAuth;
 use Mail;
 use Request;
-use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Batch;
+use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
@@ -43,10 +41,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC and PayTm. In case when other gateways start
+        // Currently doing it for only HDFC. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        if (($payment->getGateway() !== Payment\Gateway::HDFC) and
-            ($payment->getGateway() !== Payment\Gateway::PAYTM))
+        if ($payment->getGateway() !== Payment\Gateway::HDFC)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
@@ -249,8 +246,6 @@ trait Refund
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
     {
-        $merchant = $batch->merchant;
-
         //
         // Check if a refund already exists.
         // If one exists, then we should not fire a new one else two refunds will happen.
@@ -343,9 +338,29 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REFUND_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function reverseOnGateway($data)
+    {
+        try
+        {
+            $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REVERSE_FAILURE);
 
             throw $e;
         }
@@ -375,7 +390,8 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]);
+            ]
+        );
 
         $this->setPayment($payment);
 
@@ -416,6 +432,11 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
+            else if (($this->gatewaySupportsReverse($payment) === true) and
+                     ($payment->merchant->isFeatureEnabled(Feature::REVERSE) === true))
+            {
+                $this->reverseOnGateway($data);
+            }
 
             $this->recordRefund();
 
@@ -423,6 +444,13 @@ trait Refund
         });
 
         return $refund;
+    }
+
+    protected function gatewaySupportsReverse($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        return Payment\Gateway::supportsReverse($gateway);
     }
 
     protected function updatePaymentRefunded()
@@ -438,6 +466,8 @@ trait Refund
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
+
+        $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
     protected function validateMerchantBalance($refund)
@@ -448,13 +478,15 @@ trait Refund
 
         if ($balance->getBalance() < $refund->getAmount())
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [
-                    'message' => 'Not enough balance',
-                    'merchant_balance' => $balance->getBalance(),
-                    'refund_amount' => $refund->getAmount()
-                ]);
+            $traceMessage = [
+                'message' => 'Not enough balance',
+                'merchant_balance' => $balance->getBalance(),
+                'refund_amount' => $refund->getAmount()
+            ];
+
+            $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
+
+            $this->app['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
@@ -512,6 +544,17 @@ trait Refund
 
             $this->repo->saveOrFail($txn);
 
+            $this->trace->info(
+                TraceCode::REFUND_TRANSACTION_CREATED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'refund_id'         => $refund->getId(),
+                    'transaction_id'    => $txn->getId(),
+                    'auth_capture'      => $supportsAuthAndCapture,
+                    'force_refund_txn'  => $forceRefundTransaction,
+                ]
+            );
+
             return $txn;
         }
 
@@ -533,7 +576,8 @@ trait Refund
                     'message' => 'Batch entry already processed',
                     'batch'   => $batch->getId(),
                     'refunds' => $refunds->toArrayPublic()
-                ]);
+                ]
+            );
 
             assert($count === 1);
 

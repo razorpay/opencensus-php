@@ -9,8 +9,6 @@ use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'customer';
 
     protected $appFetchParamRules = array(

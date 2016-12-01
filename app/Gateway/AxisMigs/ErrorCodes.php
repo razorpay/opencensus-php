@@ -4,7 +4,7 @@ namespace RZP\Gateway\AxisMigs;
 
 class ErrorCodes
 {
-    protected static $map = array(
+    protected static $map = [
         '5000' => 'Undefined error',
         '5001' => 'Invalid Digital Order',
         '5002' => 'Invalid Digital Order: not enough fields',
@@ -287,9 +287,9 @@ class ErrorCodes
         '8020' => 'Invalid Digital Order: Invalid POSEntryMode field',
         '8021' => 'Invalid Digital Order: Invalid AdditionalAmount field',
         '9000' => 'Acquirer did not respond',
-    );
+    ];
 
-    protected static $errorCode5009 = array(
+    protected static $errorCode5009 = [
         'Invalid Digital Order: Invalid PAN Entry Mode',
         'Invalid Digital Order: Invalid PIN Entry Capability',
         'Bad Credit Payment Type',
@@ -305,4 +305,5 @@ class ErrorCodes
         'PIN Entry Capability Terminal PIN pad down',
         'Authorisation Code must be provided',
         'Authorisation Code must be numeric and 1 to 6 characters in length',
-    );
+    ];
+}

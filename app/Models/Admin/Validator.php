@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin;
 
-use RZP\Models\Base;
+use RZP\Base;
 
 class Validator extends Base\Validator
 {
@@ -18,5 +18,16 @@ class Validator extends Base\Validator
         'subject' => 'required|max:200',
         'lists'   => 'required|max:100',
         'template'=> 'required|max:255'
+    ];
+
+    protected static $mailgunWebhookRules = [
+        'token'             => 'required|string|size:50',
+        'signature'         => 'required|string',
+        'timestamp'         => 'required|integer',
+        'recipient'         => 'required|email',
+        'event'             => 'sometimes|string',
+        'domain'            => 'sometimes|string',
+        'message-headers'   => 'sometimes|string',
+        'reason'            => 'sometimes|string',
     ];
 }

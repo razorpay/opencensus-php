@@ -2,29 +2,6 @@
 
 use RZP\Exception;
 
-if (! function_exists('validate'))
-{
-    function validate($rules, $data, $strict = true)
-    {
-        $invalid_keys = array_keys(array_diff_key($data, $rules));
-
-        if ((count($invalid_keys) !== 0) and
-            ($strict === true))
-        {
-            throw new Exception\ExtraFieldsException($invalid_keys);
-        }
-
-        $validation = Validator::make($data, $rules);
-
-        if ($validation->fails())
-        {
-            $messages = implode('\n', $validation->messages()->all());
-
-            throw new Exception\BadRequestValidationFailureException($messages);
-        }
-    }
-}
-
 if (! function_exists('validate_keys'))
 {
     function validate_keys($data, $rules)

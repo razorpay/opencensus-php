@@ -6,9 +6,7 @@ use RZP\Exception\ReconciliationException;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Bank\Name;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {

@@ -23,7 +23,8 @@ class Category
      * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        // 'broking',
+        'securities',
+        'commodities',
         'grocery',
         'ecommerce',
         'govt_education',
@@ -31,6 +32,22 @@ class Category
         'utilities',
         'corporate',
         'insurance',
+        'housing',
+        'mutual_funds',
+        'travel_agency',
+    ];
+
+
+    /**
+     * INCOMPATIBLE categories will not allow terminals, that
+     * do not match the corresponding categories.
+     * The list below is of the category2 on merchant entity.
+     * The terminals marked null or default will be filtered
+     * out.
+     **/
+    const INCOMPATIBLE = [
+        'securities',
+        'commodities',
     ];
 
     /**
@@ -38,14 +55,18 @@ class Category
      * be mapped to the category on the right.
      * */
     const METHOD_NETBANKING = [
-        // 'broking'       => 'broking',
-        'grocery'       => 'grocery',
-        'ecommerce'     => 'ecommerce',
-        'govt_education'=> 'govt_education',
-        'pvt_education' => 'pvt_education',
-        'utilities'     => 'utilities',
-        'corporate'     => 'corporate',
-        'insurance'     => 'insurance',
+        'securities'     => 'securities',
+        'commodities'    => 'commodities',
+        'grocery'        => 'grocery',
+        'ecommerce'      => 'ecommerce',
+        'govt_education' => 'govt_education',
+        'pvt_education'  => 'pvt_education',
+        'utilities'      => 'utilities',
+        'corporate'      => 'corporate',
+        'insurance'      => 'insurance',
+        'housing'        => 'housing',
+        'mutual_funds'   => 'mutual_funds',
+        'travel_agency'  => 'travel_agency',
     ];
 
     /**
@@ -56,14 +77,18 @@ class Category
      * then it shoould be left empty
      * */
     const NETWORK_AMEX = [
-        // 'broking'       => 'incompatible',
-        'grocery'       => 'sup_hypermrkt_deptstore',
-        'ecommerce'     => 'retail_services',
-        'govt_education'=> 'education',
-        'pvt_education' => 'education', //confirm this is not education services
-        'utilities'     => 'utilities',
-        'corporate'     => '',
-        'insurance'     => 'insurance',
+        'securities'     => 'incompatible',
+        'commodities'    => 'incompatible',
+        'grocery'        => 'sup_hypermrkt_deptstore',
+        'ecommerce'      => 'retail_services',
+        'govt_education' => 'education',
+        'pvt_education'  => 'education', //confirm this is not education services
+        'utilities'      => 'utilities',
+        'corporate'      => '',
+        'insurance'      => 'insurance',
+        'housing'        => 'housing',
+        'mutual_funds'   => 'mutual_funds',
+        'travel_agency'  => 'travel_agency',
     ];
 
     public static function getDefaultForMethod($method)
@@ -166,6 +191,11 @@ class Category
         }
 
         return $returnCategory;
+    }
+
+    public static function isMerchantCategoryIncompatible($category)
+    {
+        return in_array($category, self::INCOMPATIBLE);
     }
 
     protected static function isConstantDefined($type, $name)
