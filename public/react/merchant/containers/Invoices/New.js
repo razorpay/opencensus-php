@@ -34,7 +34,7 @@ const selector = formValueSelector('newInvoice')
   form: 'newInvoice',
   initialValues: {
     date: Math.ceil(new Date().getTime()/1000),
-    // due_on: 30,
+    draft: 1,
     description: '',
     terms: '',
     line_items: [

@@ -30,17 +30,29 @@ export default class DatePickerField extends Component {
     let date = (input.value && moment.unix(input.value, this.props.displayFormat)) || null
 
     return (
-      <SingleDatePicker
-        id={name}
-        date={date}
-        focused={focused}
-        isOutsideRange={isOutsideRange}
-        onDateChange={(date) => {
-          input.onChange(date.unix())
-        }}
-        onFocusChange={this.handleFocusChange}
-        {...otherProps}
-      />
+      <div class='datepicker-container'>
+        <SingleDatePicker
+          id={name}
+          date={date}
+          focused={focused}
+          isOutsideRange={isOutsideRange}
+          onDateChange={(date) => {
+            input.onChange(date.unix())
+          }}
+          onFocusChange={this.handleFocusChange}
+          {...otherProps}
+        />
+        <span
+          class='picker-icon'
+          onClick={() => {
+            this.setState({
+              focused: true
+            })
+          }}
+        >
+          <i class='fa fa-calendar'></i>
+        </span>
+      </div>
     )
   }
 }
