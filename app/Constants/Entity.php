@@ -44,7 +44,6 @@ class Entity
     const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
-    const TRANSFER              = 'transfer';
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
@@ -54,7 +53,8 @@ class Entity
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const WALLETS               = 'wallets'; // WALLET used already, below
+    const TRANSFER              = 'transfer';
+    const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTIONS = 'customer_transactions';
 
     //
@@ -135,7 +135,7 @@ class Entity
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
         self::TRANSFER              => \RZP\Models\Transaction::class,
-        self::WALLETS               => \RZP\Models\Wallet::class,
+        self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTIONS => \RZP\Models\Customer\Transactions::class,
     );
 

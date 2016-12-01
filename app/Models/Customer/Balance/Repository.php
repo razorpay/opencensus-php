@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Models\Wallet;
+namespace RZP\Models\Customer\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'wallets';
+    protected $entity = 'customer_balance';
 
     public function findByCustomerIdAndMerchantSilent(string $customerId, Merchant\Entity $merchant)
     {

@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use RZP\Models\Customer;
-use RZP\Models\Wallet;
 use Request;
 
 class CustomerController extends Controller
@@ -228,7 +227,7 @@ class CustomerController extends Controller
 
     public function getCustomerWalletBalance($customerId)
     {
-        $wallet = (new Wallet\Service)->getBalance($customerId);
+        $wallet = (new Customer\Balance\Service)->getBalance($customerId);
 
         return ApiResponse::json($wallet);
     }

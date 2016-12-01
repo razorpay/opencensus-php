@@ -33,11 +33,11 @@ class Table
     const SETTLEMENT            = 'settlements';
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
-    const TRANSFER              = 'transfers';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const WALLETS               = 'wallets'; // WALLET used already, below.
+    const TRANSFER              = 'transfers';
+    const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTIONS = 'customer_transactions';
 
     // Gateway related

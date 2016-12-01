@@ -26,8 +26,6 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TerminalAnalytics;
-use RZP\Models\Wallet as CustomerBalance;
-use RZP\Models\Customer\Transactions as CustomerTransactions;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
@@ -1740,7 +1738,7 @@ trait Authorize
 
     protected function processFlashWalletPayment(Payment\Entity $payment, Transaction\Entity $txn)
     {
-        $customerTxn = (new CustomerTransactions\Core)->createFromCustomerDebit($payment, $txn);
+        $customerTxn = (new Customer\Transactions\Core)->createFromCustomerDebit($payment, $txn);
 
         $this->repo->saveOrFail($customerTxn);
     }

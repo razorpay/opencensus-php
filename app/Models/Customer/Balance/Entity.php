@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Wallet;
+namespace RZP\Models\Customer\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'cust';
 
-    protected $entity = 'wallets';
+    protected $entity = 'customer_balance';
 
     public $incrementing = true;
 

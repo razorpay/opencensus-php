@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Wallet;
+namespace RZP\Models\Customer\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -16,25 +16,25 @@ class Service extends Base\Service
 
     public function getBalance(string $customerId) : array
     {
-        $wallet = $this->repo->wallets
+        $balance = $this->repo->customer_balance
                        ->findByCustomerIdAndMerchant($customerId, $this->merchant);
 
-        return $wallet->toArrayPublic();
+        return $balance->toArrayPublic();
     }
 
     public function credit(Customer\Entity $customer, int $amount)
     {
-        $wallet = $this->core->fetchOrCreate($customer->getPublicId());
+        $balance = $this->core->fetchOrCreate($customer->getPublicId());
 
-        return $this->core->credit($wallet, $amount)->toArrayPublic();
+        return $this->core->credit($balance, $amount)->toArrayPublic();
     }
 
     public function debit(Customer\Entity $customer, int $amount)
     {
-        $wallet = $this->repo->wallets
+        $balance = $this->repo->customer_balance
                        ->findByCustomerIdAndMerchant($customer->getPublicId(), $this->merchant);
 
-        return $this->core->debit($wallet, $amount);
+        return $this->core->debit($balance, $amount);
     }
 
     public function sendMoney($customerId, array $input)

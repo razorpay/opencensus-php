@@ -3,7 +3,7 @@
 namespace RZP\Models\Customer\Transactions;
 
 use RZP\Models\Base;
-use RZP\Models\Wallet as CustomerBalance;
+use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
@@ -12,7 +12,7 @@ class Core extends Base\Core
     {
         $customerTxn = $this->createEntityForType('debit', $payment, $txn);
 
-        $balance = (new CustomerBalance\Service)->debit($payment->customer, $txn->getAmount());
+        $balance = (new Customer\Balance\Service)->debit($payment->customer, $txn->getAmount());
 
         // Lock for get balance
 
@@ -25,7 +25,7 @@ class Core extends Base\Core
     {
         $customerTxn = $this->createEntityForType('credit', $payment, $txn);
 
-        $balance = (new CustomerBalance\Service)->credit($payment->customer, $txn->getAmount());
+        $balance = (new Customer\Balance\Service)->credit($payment->customer, $txn->getAmount());
 
         // Lock for get balance
 
@@ -42,7 +42,7 @@ class Core extends Base\Core
 
         $customer = $payment->customer;
 
-        $balance = $this->repo->wallets
+        $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant)
                         ->getBalance();
 

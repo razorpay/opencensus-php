@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Wallet;
+namespace RZP\Models\Customer\Balance;
 
 use RZP\Base;
 
@@ -9,7 +9,6 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                    => 'required|string|max:50',
         Entity::BALANCE                 => 'required|integer',
-        Entity::MIN_BALANCE             => 'required|integer',
         Entity::MAX_BALANCE             => 'required|integer',
     ];
 
@@ -29,12 +28,9 @@ class Validator extends Base\Validator
     {
         $balance = $wallet->getBalance() - $amount;
 
-        $minBalance = $wallet->getMinBalance();
-
-        if ($balance < 0 or
-            $balance < $minBalance)
+        if ($balance < 0)
         {
-            throw new \Exception('Will go below min_balance or 0', 400);
+            throw new \Exception('Balance will go below 0', 400);
         }
     }
 }
