@@ -579,7 +579,7 @@ class BasicAuth
         $device = $this->repo->device->findByAuthToken($deviceToken);
 
         if (($device === null) or
-            ($keyEntity->merchant->getId() !== $device->customer->merchant->getId()))
+            ($keyEntity->merchant->getId() !== $device->merchant->getId()))
         {
             $this->trace->info(
                 TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);

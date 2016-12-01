@@ -30,7 +30,8 @@ class CreateVpa extends Migration
 
             $table->char(Entity::FREQUENCY, 10);
 
-            $table->char(Entity::BANK_ACCOUNT_ID, Entity::ID_LENGTH);
+            $table->char(Entity::BANK_ACCOUNT_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 

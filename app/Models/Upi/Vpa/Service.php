@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 
 class Service extends Base\Service
 {
@@ -14,11 +15,18 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VPA_CREATE_REQUEST, $input);
 
-        $bankAccount = (new Customer\Service)->fetchUpiBankAccounts($customer->getPublicId());
+        $bankAccount = null;
+
+        if (isset($input[Entity::BANK_ACCOUNT_ID]) === true)
+        {
+            $bankAccountId = $input[Entity::BANK_ACCOUNT_ID];
+
+            $bankAccount = (new BankAccount\Repository)->findOrFailPublic($bankAccountId);
+        }
 
         $vpa = (new Core)->createVpa($input, $customer, $bankAccount);
 
-        $this->trace->info(TraceCode::VPA_CREATED, $Vpa->toArray());
+        $this->trace->info(TraceCode::VPA_CREATED, $vpa->toArray());
 
         return $vpa->toArrayPublic();
     }

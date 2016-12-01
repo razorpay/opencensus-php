@@ -26,7 +26,7 @@ class Validator extends Base\Validator
 
     protected function validateAddress($input)
     {
-        if (strpos($input['address'], self::AROBASE) === false)
+        if (strpos($input['address'], Entity::AROBASE) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Address: '. $input['address']);

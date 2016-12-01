@@ -391,6 +391,8 @@ final class Route
         'vpa_fetch_multiple',
         'upi_customer_bank_accounts_fetch',
         'device_fetch',
+        'p2p_fetch_multiple',
+        'p2p_fetch',
     );
 
     public static $publicCallback = array(

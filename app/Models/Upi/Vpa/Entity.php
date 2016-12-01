@@ -45,6 +45,10 @@ class Entity extends Base\PublicEntity
         self::ADDRESS,
     ];
 
+    protected $defaults = array(
+        self::FREQUENCY => Frequency::MULTIPLE,
+    );
+
     // ----------------------- Generators ------------------
 
     protected function generateUserNameAndHandle($input)
