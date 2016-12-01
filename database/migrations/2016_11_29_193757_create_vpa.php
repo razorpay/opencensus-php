@@ -51,6 +51,8 @@ class CreateVpa extends Migration
                   ->references(Customer::ID)
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
+
+            $table->unique( [Entity::USERNAME, Entity::HANDLE] );
         });
     }
 
@@ -63,9 +65,9 @@ class CreateVpa extends Migration
     {
         Schema::table(Table::VPA, function($table)
         {
-            $table->dropForeign(Table::DEVICE . '_' . Entity::CUSTOMER_ID . '_foreign');
+            $table->dropForeign(Table::VPA . '_' . Entity::CUSTOMER_ID . '_foreign');
 
-            $table->dropForeign(Table::DEVICE . '_' . Entity::BANK_ACCOUNT_ID . '_foreign');
+            $table->dropForeign(Table::VPA . '_' . Entity::BANK_ACCOUNT_ID . '_foreign');
         });
 
         Schema::drop(Table::VPA);

@@ -30,16 +30,23 @@ class Service extends Base\Service
         {
             $bankAccountId = $input[Entity::BANK_ACCOUNT_ID];
 
+            Entity::stripSignWithoutValidation($bankAccountId);
+
             $bankAccount = (new BankAccount\Repository)->findOrFailPublic($bankAccountId);
         }
 
         $vpa = (new Core)->createVpa($input, $this->device->customer, $bankAccount);
+
+        // TODO: Make sure customer owns this bank account
+        // Put an assert here?
 
         $this->trace->info(TraceCode::VPA_CREATED, $vpa->toArray());
 
         return $vpa->toArrayPublic();
     }
 
+    // TODO: Fix authorization here
+    // Make sure customer owns the VPA before returning it
     public function getById($vpaId)
     {
         $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
@@ -56,6 +63,8 @@ class Service extends Base\Service
 
     public function delete($vpaId)
     {
+        // TODO: Fix authorization here
+        // Make sure customer owns the VPA before deleting it
         $this->trace->info(TraceCode::VPA_DELETE_REQUEST, $vpaId);
 
         $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
@@ -65,6 +74,8 @@ class Service extends Base\Service
         $this->repo->vpa->deleteOrFail($vpa);
     }
 
+    // TODO: Fix authorization here
+    // Make sure customer owns the VPA before editing it
     public function edit($vpaId, $input)
     {
         $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
