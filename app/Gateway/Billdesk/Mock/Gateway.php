@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Billdesk\Mock;
 
+use Requests_Response;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Billdesk;
-use Requests_Response;
 
 class Gateway extends Billdesk\Gateway
 {

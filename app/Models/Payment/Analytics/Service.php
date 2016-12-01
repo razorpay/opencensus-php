@@ -2,15 +2,20 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use RZP\Http\RequestHeader;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\Analytics\Metadata;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
+
+    public function createLog(Payment\Entity $payment)
+    {
+        $paymentAnalytics = (new Core)->create($payment);
+
+        return $paymentAnalytics->toArrayPublic();
+    }
+
     public function getAuditsForPayment($id)
     {
         $audits = $this->repo->payment_analytics->findForPayment($id);
@@ -19,7 +24,7 @@ class Service extends Base\Service
     }
 
     // set the payment request as s2s for analytics
-    public function setMetadataForS2SPayment($input)
+    public function setMetadataForS2SPayment(array $input)
     {
         $input['_'] = isset($input['_']) ? $input['_'] : [];
 

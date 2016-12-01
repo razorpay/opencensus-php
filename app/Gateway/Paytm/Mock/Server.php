@@ -71,10 +71,8 @@ class Server extends Base\Mock\Server
         parent::verify($input);
 
         $id = $input['ORDERID'];
-        $merchantId = $input['MID'];
 
-        $payment = (new Paytm\Repository)->findByPaymentIdAndAction(
-                                                    $id, Action::AUTHORIZE);
+        $payment = (new Paytm\Repository)->findByPaymentIdAndAction($id, Action::AUTHORIZE);
 
         $fields = array(
             'txnid',

@@ -18,7 +18,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures('tokens,cardsaving');
+        $this->fixtures->merchant->addFeatures(['tokens', 'cardsaving']);
     }
 
     public function testCreateCustomer()
@@ -86,6 +86,13 @@ class CustomerTest extends TestCase
     }
 
     public function testCreateCustomerDuplicate()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateCustomerDuplicateDontFail()
     {
         $this->ba->privateAuth();
 

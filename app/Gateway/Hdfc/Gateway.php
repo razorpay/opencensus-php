@@ -24,6 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
@@ -32,6 +33,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action as BaseAction;
 use App;
 
 class Gateway extends Base\Gateway
@@ -74,6 +76,8 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT = 30;
 
+    const VERIFY_TIMEOUT = 60;
+
     /**
      * Parameters required to construct request
      * for enrolling a card
@@ -85,7 +89,7 @@ class Gateway extends Base\Gateway
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
-        'headers' => array('Content-Type'=>'text/xml'),
+        'headers' => array('Content-Type' => 'text/xml'),
         'data' => array());
 
     /**
@@ -145,7 +149,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authNotEnrolledResponse = array(
-        'fields' =>  array(
+        'fields' => array(
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
             'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
         'type' => 'auth_not_enrolled',
@@ -248,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         parent::__construct();
 
-        $this->repo = new Hdfc\Repository();
+        $this->repo = new Hdfc\Repository;
     }
 
 // ---------------------------Gateway operations -------------------------------
@@ -366,7 +370,7 @@ class Gateway extends Base\Gateway
     /**
      * HDFC gateway does not provide void
      */
-    public function void()
+    public function void(array $input)
     {
         throw new Exception\LogicException(
             'Hdfc gateway does not support voids');
@@ -426,7 +430,10 @@ class Gateway extends Base\Gateway
 
         try
         {
-            validate($this->bankAcsResponseRules, $input['gateway'], false);
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
         }
         catch (Exception\RecoverableException $e)
         {
@@ -469,7 +476,7 @@ class Gateway extends Base\Gateway
         catch (Exception\GatewayTimeoutException $e)
         {
             // For verify we should throw exception as is.
-            if ($this->action === 'verify')
+            if ($this->action === BaseAction::VERIFY)
             {
                 throw $e;
             }
@@ -602,6 +609,12 @@ class Gateway extends Base\Gateway
 
     protected function getTimeout()
     {
+        // Increasing timeout for verify Request
+        if ($this->action === BaseAction::VERIFY)
+        {
+            return static::VERIFY_TIMEOUT;
+        }
+
         return static::TIMEOUT;
     }
 

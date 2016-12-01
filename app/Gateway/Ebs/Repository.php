@@ -20,9 +20,8 @@ class Repository extends Base\Repository
 
     public function findByEbsPaymentIdAndActionOrFail($ebsPaymentId, $action)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::GATEWAY_PAYMENT_ID, '=', $ebsPaymentId)
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_PAYMENT_ID, '=', $ebsPaymentId)
                     ->where(Entity::ACTION, '=', $action)
                     ->firstOrFail();
     }

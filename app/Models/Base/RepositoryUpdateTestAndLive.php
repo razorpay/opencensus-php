@@ -13,7 +13,8 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        $this->dualUpdateVerifyEntityClass($entity);
+        $this->validateInstanceIsOfCurrentEntity($entity);
+        $this->validateIdGenerated($entity);
 
         $exists = $entity->exists;
 
@@ -75,11 +76,13 @@ trait RepositoryUpdateTestAndLive
             $testEntity = clone $entity;
             $liveEntity = clone $entity;
 
-            $res1 = $liveEntity->delete();
-            $res2 = $testEntity->delete();
+            $res1 = $liveEntity->setConnection('live')->delete();
+            $res2 = $testEntity->setConnection('test')->delete();
 
             if ($res1 !== $res2)
             {
+                $this->db->connection('live')->rollBack();
+                $this->db->connection('test')->rollBack();
                 throw new Exception\RuntimeException(
                     'Delete query on live and test did not give same results. ' .
                     'Live: ' . $res1 . ' Test: ' . $res2);
@@ -110,23 +113,12 @@ trait RepositoryUpdateTestAndLive
         });
     }
 
-    protected function dualUpdateVerifyEntityClass($entity)
-    {
-        if (get_class($entity) !== $this->repo)
-        {
-            throw new Exception\LogicException(
-                'Can only handle ' . $this->repo . ' entities here. Provided: ' . get_class($entity));
-        }
-    }
-
     protected function dualUpdateFetchEntities($entity)
     {
-        $repo = $this->repo;
-
         $id = $entity->getKey();
 
-        $testEntity = $repo::on('test')->lockForUpdate()->findOrFail($id);
-        $liveEntity = $repo::on('live')->lockForUpdate()->findOrFail($id);
+        $testEntity = $this->newQueryWithConnection('test')->lockForUpdate()->findOrFail($id);
+        $liveEntity = $this->newQueryWithConnection('live')->lockForUpdate()->findOrFail($id);
 
         $testAttributes = $testEntity->getAttributes();
         $liveAttributes = $liveEntity->getAttributes();

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Payment;
 
+use Lib\PhoneBook;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Lib\PhoneBook;
-use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -87,11 +87,7 @@ class Validator extends Base\Validator
 
     protected function validateWallet($attribute, $value)
     {
-        if (Wallet::exists($value) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
-        }
+        Wallet::validateExists($value);
     }
 
     protected function validateCardKey($input)
@@ -156,11 +152,11 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount');
+                'amount', $amount);
         }
     }
 
-    public function validateCardAndCvv($input)
+    public function validateCardAndCvv(array $input)
     {
         if (isset($input['card']) === false)
         {

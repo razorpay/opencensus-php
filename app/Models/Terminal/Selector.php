@@ -4,13 +4,11 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment;
-
-use RZP\Trace;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Selector
 {
@@ -31,9 +29,9 @@ class Selector
      * @var array
      */
     protected static $sorters = [
-        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
+        Sorters\ExclusivitySorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
         Sorters\TerminalLoadSorter::class,
@@ -77,6 +75,7 @@ class Selector
 
     public function select(Options $options = null, $verbose = false)
     {
+        $verbose = true;
         $terminals = $this->getTerminals();
 
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);

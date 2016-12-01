@@ -7,9 +7,7 @@ use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Settlement';
+    protected $entity = 'settlement';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -35,11 +33,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSettlementsBetweenTimestamp($from, $to)
+    public function getSettlementsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->select(Entity::MERCHANT_ID, Entity::AMOUNT)
+                    ->get();
+    }
+
+    public function fetchSettlementSummaryBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 

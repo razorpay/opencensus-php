@@ -18,18 +18,16 @@ class ExtraFieldsException extends RecoverableException
     {
         $this->fields = $fields;
 
-        $extrafields = $fields;
-
-        $count = 1;
-
+        $extraFields = $fields;
+        
         if (is_array($fields))
         {
             $this->count = count($fields);
 
-            $extrafields = implode(', ', $fields);
+            $extraFields = implode(', ', $fields);
         }
 
-        $message = $extrafields . ' is/are not required and should not be sent';
+        $message = $extraFields . ' is/are not required and should not be sent';
 
         $this->error = new Error($code, $message);
 

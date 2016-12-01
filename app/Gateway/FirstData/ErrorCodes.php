@@ -90,6 +90,12 @@ class ErrorCodes
         'N:T2'     => 'Invalid transaction date',
         'N:T5'     => 'CAF status = 0 or 9',
         'N:T8'     => 'Invalid account',
+
+        // Not part of originally provided list of error codes
+        // Added by us to handle unexpected behaviour
+
+        'N:100'    => 'Internal Error',
+        'N:5003'   => 'The order already exists in the database.',
         'N:tmout'  => 'Gateway timed out',
     ];
 
@@ -121,10 +127,10 @@ class ErrorCodes
         'N:-5014'  => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         'N:-5100'  => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'N:-5101'  => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-        'N:-5102'  => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:-5102'  => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'N:-5103'  => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'N:-5110'  => ErrorCode::GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY,
-        'N:-5111'  => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:-5111'  => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'N:-5993'  => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
         'N:-5996'  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,
         'N:-5997'  => ErrorCode::BAD_REQUEST_PAYMENT_MAX_TRANSACTIONS_PER_ORDER_EXCEEDED,
@@ -177,6 +183,12 @@ class ErrorCodes
         'N:T2'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE,
         'N:T5'     => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+
+        // Not part of originally provided list of error codes
+        // Added by us to handle unexpected behaviour
+
+        'N:100'    => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:5003'   => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 

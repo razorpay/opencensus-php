@@ -57,14 +57,14 @@ class TraceWriter extends Logger
 
         if ($this->debugOption('browser'))
         {
-            $browserHandle = new Handler\BrowserConsoleHandler();
+            $browserHandle = new Handler\BrowserConsoleHandler;
 
             $this->pushHandler($browserHandle);
         }
 
         if ($this->debugOption('chrome'))
         {
-            $chromePHPHandle = new Handler\ChromePHPHandler();
+            $chromePHPHandle = new Handler\ChromePHPHandler;
 
             $this->pushHandler($chromePHPHandle);
         }
@@ -101,9 +101,9 @@ class TraceWriter extends Logger
 
     protected function pushTestHandler()
     {
-        $scalarFormatter = new Formatter\ScalarFormatter();
+        $scalarFormatter = new Formatter\ScalarFormatter;
 
-        $testHandler = new Handler\TestHandler();
+        $testHandler = new Handler\TestHandler;
 
         $testHandler->setFormatter($scalarFormatter);
 

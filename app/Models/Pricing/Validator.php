@@ -2,15 +2,15 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Models\Base;
+use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
@@ -65,7 +65,7 @@ class Validator extends Base\Validator
             Payment\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
         }
 
-        if ($feature === Pricing\FEATURE::PAYOUT)
+        if ($feature === Pricing\Feature::PAYOUT)
         {
             //add payout validator
         }

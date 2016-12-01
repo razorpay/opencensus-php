@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
 use RZP\Trace;
@@ -11,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
@@ -32,6 +34,16 @@ class Reconciler3
         'DateTime',
         'Int.ref no.',
         'Dummy');
+
+    const SUCCESS_STATUS = [
+        'Beneficiary Account Credited',
+        'Account Debited',
+        'Presented and Paid',
+    ];
+
+    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 300;
 
     /**
      * All payments in the current mpr
@@ -55,9 +67,25 @@ class Reconciler3
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process($input)
+    {
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input)
+            {
+                return $this->processReconciliation($input);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        return $data;
+    }
+
+    public function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
@@ -140,7 +168,6 @@ class Reconciler3
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
-
         return $response;
     }
 
@@ -155,22 +182,50 @@ class Reconciler3
 
     protected function processSettlementStatus($setl, $row)
     {
+        // get reconciliation data
         $utr = null;
-        $failureReason = null;
 
-        // get status
         $status = $row['Status Of transaction'];
+
+        $failureReason = $row['Reject Reason'];
+
+        $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $tenPm = $recordDate->hour(22)->timestamp;
+
         if ($status === 'P')
         {
-            $status = Settlement\Status::PROCESSED;
-
             $utr = $row['UTR number'];
+
+            // If current time is before 10 pm, dont mark the settlement as
+            // processed and update only the utr
+            if ($now < $tenPm)
+            {
+                $status = Settlement\Status::CREATED;
+
+                $failureReason = null;
+            }
+            else if ((empty($failureReason) === true) or
+                (in_array($failureReason, self::SUCCESS_STATUS) === true))
+            {
+                $status = Settlement\Status::PROCESSED;
+
+                $failureReason = null;
+            }
+            else
+            {
+                $status = Settlement\Status::FAILED;
+
+                $failureReason = 'Reconciliation';
+            }
         }
         else
         {
             $status = Settlement\Status::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation';
         }
 
         // if already processed
@@ -189,13 +244,21 @@ class Reconciler3
         else
         {
             $setl->setUtr($utr);
+
             $setl->setStatus($status);
+
             $setl->setFailureReason($failureReason);
 
-            $this->repo->settlement->save($setl);
+            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
+
+            $setlHandler = (new Settlement\Handler($setl));
+
+            $setlHandler->process($holdMerchantFunds);
+
+            $this->repo->saveOrFail($setl);
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->transaction->save($setl->transaction);
+            $this->repo->saveOrFail($setl->transaction);
         }
 
         return $setl;
@@ -260,7 +323,7 @@ class Reconciler3
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

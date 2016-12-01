@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal;
 
 class NetbankingSorter extends Terminal\Sorter
 {

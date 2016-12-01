@@ -2,8 +2,6 @@
 
 namespace RZP\Constants;
 
-use RZP\Exception\BadRequestValidationFailureException;
-
 class Country
 {
     const BD = "bd";

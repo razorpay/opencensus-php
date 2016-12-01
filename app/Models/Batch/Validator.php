@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Models\Base;
-use RZP\Exception;
+use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Batch\Header;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {

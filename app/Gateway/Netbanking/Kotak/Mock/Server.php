@@ -2,13 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Kotak\Mock;
 
-use Carbon\Carbon;
-use RZP\Gateway\Paytm;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Response;
-use RZP\Models\Payment\Processor\Processor;
+use RZP\Gateway\Paytm;
 
 class Server extends Base\Mock\Server
 {
@@ -17,7 +13,6 @@ class Server extends Base\Mock\Server
         //fot test only
         $content = explode('|',$input['msg']);
 
-        $callbackUrl = $content[7];
         unset($content[7]);
 
         $input['msg'] = implode('|',$content);

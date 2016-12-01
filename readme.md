@@ -18,25 +18,27 @@
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
-### ( Ubuntu / OSX - System )
+### ( Ubuntu )
 
 * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
 * `sudo a2ensite api.razorpay.com.conf`
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
-#### OSX - Extra steps
-
+### ( OSX )
+*  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
+*  In `/etc/hosts`, add `api.razorpay.dev` to the list of domains that loopback to your own machine.
+* Follow Common Instructions
+* Follow Common Test Setup Instructions
 * Install coreutils `brew install coreutils --with-default-names`
-* Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`
+* ~~Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`~~
 
 ### Common Instruction
 
 * `chmod -R o+wx storage/`
 * `php composer.phar install` to install project dependencies
 * Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)
-* Copy over `environment/.env.vault.sample` to `environment/.env.vault` and provide both database usernames and password
-* Copy over `environment/.env.dev.sample` to `environment/.env.dev`
+* Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
 
@@ -59,6 +61,10 @@ TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testin
 * Install `php70-xdebug`
 * Run `phpunit --coverage-html [Directory to save coverage]`
 * You can also generate coverage in other formats. Visit [PHPUnit CodeCoverage](https://phpunit.de/manual/current/en/code-coverage-analysis.html) for more info.
+
+### Setup git hooks
+
+* Run `cp scripts/git-hooks/pre-commit .git/hooks/`
 
 # Docs
 

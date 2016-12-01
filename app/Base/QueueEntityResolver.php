@@ -2,7 +2,6 @@
 
 namespace RZP\Base;
 
-use Illuminate\Contracts\Queue\EntityNotFoundException;
 use Illuminate\Contracts\Queue\EntityResolver as EntityResolverContract;
 use RZP\Exception;
 

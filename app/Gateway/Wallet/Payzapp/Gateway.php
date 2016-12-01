@@ -11,12 +11,9 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Core;
 use Carbon\Carbon;
 use View;
-use Lib\PhoneBook;
 use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
@@ -44,13 +41,14 @@ class Gateway extends Base\Gateway
     protected $performMap = array(
         'void'              => 'processMerchantAPI#DirectVoid',
         'refund'            => 'processMerchantAPI#DirectRefund',
+        'voidOrRefund'      => 'processMerchantAPI#DirectVoidORRefund',
         'verify'            => 'getPaymentResult',
     );
 
     protected $perform;
 
     protected $acosaActions = array(
-        ACTION::VERIFY, ACTION::REFUND
+        Action::VERIFY, Action::REFUND
     );
 
     public function authorize(array $input)
@@ -172,10 +170,21 @@ class Gateway extends Base\Gateway
 
         parse_str($response, $content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [$request, $content]);
+
         $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse(
                                     $input, $content);
 
         $refund = $this->createGatewayRefundEntity($refundAttributes);
+
+        if ((isset($content['new_merchant_reference_no'])) and
+            ($input['refund']['id'] !== $content['new_merchant_reference_no']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
 
         if (ResponseCode::$statusCodes[$content['status']] !== 'Success')
         {
@@ -207,10 +216,10 @@ class Gateway extends Base\Gateway
     protected function pickupData($input)
     {
         $content = array(
-            'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
-            'dataPickupCode'    =>      $input['gateway']['dataPickUpCode'],
-            'merTxnId'          =>      $input['gateway']['merTxnId'],
-            'merchantInfo'      =>      array(
+            'wibmoTxnId'        => $input['gateway']['wibmoTxnId'],
+            'dataPickupCode'    => $input['gateway']['dataPickUpCode'],
+            'merTxnId'          => $input['gateway']['merTxnId'],
+            'merchantInfo'      => array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
                 'merAppId'              => $input['terminal']['gateway_terminal_id'],
                 'merCountryCode'        => 'IN',
@@ -240,8 +249,10 @@ class Gateway extends Base\Gateway
             'perform'                           => $perform,
             'orginal_transaction_id'            => $originalTransactionId,
             'original_merchant_reference_no'    => $input['payment']['id'],
+            'new_merchant_reference_no'         => $input['refund']['id'],
             'login_id'                          => $this->config['pg_merchant_login_id'],
             'pgName'                            => $this->pgname,
+            'amount'                            => $input['refund']['amount']
         );
 
         $this->addMerchantDetailsInTest($content);
@@ -323,10 +334,10 @@ class Gateway extends Base\Gateway
         $responseDescription = $this->getResponseDescription($txnStatus);
 
         $postVerifyAttributes = array(
-            'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $responseDescription,
-            'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $responseDescription,
+            'response_code'         => $txnStatus['pg_error_code'],
+            'response_description'  => $responseDescription,
+            'status_code'           => $txnStatus['status'],
+            'error_message'         => $responseDescription,
         );
 
         // If the wallet entity does not have an acosa transaction id, fill it.
@@ -352,25 +363,30 @@ class Gateway extends Base\Gateway
     protected function getRefundEntityAttributesFromRefundResponse($input, $content)
     {
         $refundAttributes = array(
-            'payment_id'            =>    $input['payment']['id'],
-            'action'                =>    $this->action,
-            'amount'                =>    $input['payment']['amount'],
-            'wallet'                =>    $input['payment']['wallet'],
-            'email'                 =>    $input['payment']['email'],
-            'received'              =>    0,
-            'contact'               =>    $input['payment']['contact'],
-            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
-            'refund_id'             =>    $input['refund']['id'],
-            'response_code'         =>    $content['pg_error_code'],
-            'response_description'  =>    $content['pg_error_detail'],
-            'status_code'           =>    $content['status'],
-            'error_message'         =>    $content['pg_error_detail'],
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['refund']['amount'],
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'received'              => 1,
+            'contact'               => $input['payment']['contact'],
+            'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
+            'refund_id'             => $input['refund']['id'],
+            'response_code'         => $content['pg_error_code'],
+            'response_description'  => $content['pg_error_detail'],
+            'status_code'           => $content['status'],
+            'error_message'         => $content['pg_error_detail'],
         );
 
         if (isset($content['new_transaction_id']))
         {
             $refundAttributes['gateway_payment_id_2'] =  $content['new_transaction_id'];
             $refundAttributes['gateway_refund_id']    =  $content['new_transaction_id'];
+        }
+
+        if (isset($content['rrn']))
+        {
+            $refundAttributes['reference1'] =  $content['rrn'];
         }
 
         return $refundAttributes;
@@ -425,8 +441,6 @@ class Gateway extends Base\Gateway
 
         $this->perform  = 'verify';
 
-        $latestTransactionType = 0;
-
         $responseContent = '';
 
         $response = '';
@@ -474,11 +488,9 @@ class Gateway extends Base\Gateway
             {
                 $responseContent = $content;
 
-                $verify->transactionType = $txnType ;
+                $verify->transactionType = $txnType;
 
                 $response = $requestResponse['response'];
-
-                $latestTransactionType = $txnTypeCode;
             }
         }
 
@@ -615,20 +627,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPerformForPayment($payment, $forceRefund = false)
     {
-        $now                = Carbon::now('Asia/Kolkata');
-        $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-
-        if (($forceRefund  === false) and
-            ($paymentCreatedDate->isSameDay($now)))
-        {
-            $this->perform = 'void';
-        }
-        else
-        {
-            $this->perform = 'refund';
-        }
-
-        return $this->performMap[$this->perform];
+        return $this->performMap['voidOrRefund'];
     }
 
     protected function getHashForDataPickupRequest($content)

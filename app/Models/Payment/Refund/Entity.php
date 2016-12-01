@@ -20,8 +20,6 @@ class Entity extends Base\PublicEntity
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
 
-    protected $table = \RZP\Constants\Table::REFUND;
-
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';

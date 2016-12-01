@@ -2,10 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
-use RZP\Http\Route;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Payumoney;
 
 class Gateway extends Payumoney\Gateway

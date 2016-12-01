@@ -47,11 +47,14 @@ class Service
      */
     protected $slack;
 
-	public function __construct()
-	{
-		$this->app = App::getFacadeRoot();
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->merchant = $this->app['basicauth']->getMerchant();
 
@@ -60,7 +63,7 @@ class Service
         $this->repo = $this->app['repo'];
 
         $this->slack = $this->app['slack'];
-	}
+    }
 
     public static function getNewInstance()
     {

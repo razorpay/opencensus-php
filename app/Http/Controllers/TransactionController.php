@@ -3,9 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Transaction;
 use Request;
+use RZP\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -30,6 +29,29 @@ class TransactionController extends Controller
         $input = Request::all();
 
         $data = (new Transaction\Service)->getReport($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMigrateOlderTransactions()
+    {
+        $data = (new Transaction\Service)->migrateOlderTransactions();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettleOlderTransactions()
+    {
+        $input = Request::all();
+
+        $data = (new Transaction\Service)->settleOlderTransactions($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAddPricingRuleForOlderTransactions()
+    {
+        $data = (new Transaction\Service)->addPricingRuleForeOlderTransactions();
 
         return ApiResponse::json($data);
     }

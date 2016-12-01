@@ -11,21 +11,19 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateOrders extends Migration {
 
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		//
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
         Schema::create(Table::ORDER, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Order::ID, 14)
                   ->primary();
-
 
             $table->char(Order::MERCHANT_ID, 14);
 
@@ -97,32 +95,32 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->foreign(Payment::ORDER_ID)
-                  ->references(ORDER::ID)
+                  ->references(Order::ID)
                   ->on(Table::ORDER)
                   ->on_delete('restrict');
         });
-	}
+    }
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
-                Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+                Table::PAYMENT . '_' . Payment::ORDER_ID.'_foreign');
         });
 
         Schema::table(Table::ORDER, function($table)
         {
             $table->dropForeign(
-                TABLE::ORDER.'_'.Order::MERCHANT_ID.'_foreign');
+                Table::ORDER . '_' . Order::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::ORDER);
-	}
+    }
 
 }
