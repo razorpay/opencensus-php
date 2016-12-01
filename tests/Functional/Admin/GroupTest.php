@@ -123,7 +123,7 @@ class GroupTest extends TestCase
 
         $this->startTest();
 
-        $this->assertNull($l0Group->parents->all());
+        $this->assertEquals(0, count($l0Group->parents->all()));
     }
 
     public function testParentGroupAssignment()
