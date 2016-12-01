@@ -8,4 +8,5 @@ class Type
     const PRIVATE_AUTH      = 'private';
     const PRIVILEGE_AUTH    = 'privilege';
     const DIRECT_AUTH       = 'direct';
+    const DEVICE_AUTH       = 'device';
 }

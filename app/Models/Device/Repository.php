@@ -15,4 +15,11 @@ class Repository extends Base\Repository
                     ->where(Entity::VERIFICATION_TOKEN, '=', $verificationToken)
                     ->firstOrFail();
     }
+
+    public function findByAuthToken(string $authToken)
+    {
+        return $this->newQuery()
+                    ->where(Entity::AUTH_TOKEN, '=', $authToken)
+                    ->first();
+    }
 }

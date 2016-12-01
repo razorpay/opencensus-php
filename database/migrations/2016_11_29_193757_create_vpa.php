@@ -36,6 +36,8 @@ class CreateVpa extends Migration
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable();
 
             $table->index(Entity::CUSTOMER_ID);
 

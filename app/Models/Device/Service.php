@@ -26,6 +26,8 @@ class Service extends Base\Service
 
         $arr[Entity::VERIFICATION_TOKEN] = $device->getVerificationToken();
 
+        $arr[Entity::AUTH_TOKEN] = $device->getAuthToken();
+
         return $arr;
     }
 

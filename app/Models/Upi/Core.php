@@ -186,7 +186,7 @@ class Core extends Base\Core
 
     public function getVpas($input)
     {
-        return $this->vpaService->getAll($vpaId);
+        return $this->vpaService->getAll($input);
     }
 
     protected function getSharedAccount()

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const VERIFICATION_TOKEN    = 'verification_token';
     const UPI_TOKEN             = 'upi_token';
+    const AUTH_TOKEN            = 'auth_token';
     const VERIFIED_AT           = 'verified_at';
     const REGISTERED_AT         = 'registered_at';
     const CUSTOMER_DETAILS      = 'customer_details';
@@ -74,6 +75,11 @@ class Entity extends Base\PublicEntity
     public function getVerificationToken()
     {
         return $this->getAttribute(self::VERIFICATION_TOKEN);
+    }
+
+    public function getAuthToken()
+    {
+        return $this->getAttribute(self::AUTH_TOKEN);
     }
 
     public function getCustomerId()
@@ -140,6 +146,13 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::VERIFICATION_TOKEN, $verificationToken);
+    }
+
+    protected function generateAuthToken()
+    {
+        $authToken = bin2hex(openssl_random_pseudo_bytes(20));
+
+        $this->setAttribute(self::AUTH_TOKEN, $authToken);
     }
 
     // ----------------------- Relations -----------------------

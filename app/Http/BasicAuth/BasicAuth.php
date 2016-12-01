@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Device -
+     * rzp_mode_keyId:device_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -140,9 +143,9 @@ class BasicAuth
 
     /**
      * Contains valid lengths of key.
-     * rzp_mode - 3 + 1 + 4
-     * 3 + 1 + 4 + 1 + 24
-     * 3 + 1 + 4 + 1 + 14
+     * rzp_mode            = 3 + 1 + 4
+     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
+     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
      * @var array
      */
     protected static $validKeyLengths = array(
@@ -351,6 +354,32 @@ class BasicAuth
         return ApiResponse::routeNotFound();
     }
 
+    public function deviceAuth()
+    {
+        $this->setType(Type::DEVICE_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->verifyKeyExistence() === true)
+        {
+            $response = $this->verifyDeviceToken();
+
+            if ($response == true)
+            {
+                return;
+            }
+
+            return $response;
+        }
+
+        return $this->invalidApiKey();
+    }
+
     /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
@@ -524,6 +553,40 @@ class BasicAuth
         $this->fetchMerchantOfKey($keyEntity);
 
         return true;
+    }
+
+    /**
+     * Used for device verification. Checks
+     * that the device exists and belongs
+     * to the calling merchant
+     * @return boolean/Response
+     */
+    protected function verifyDeviceToken()
+    {
+        $keyEntity = $this->key;
+
+        $deviceToken = $this->getSecret();
+
+        if ($deviceToken === '')
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+        }
+
+        $device = $this->repo->device->findByAuthToken($deviceToken);
+
+        if (($device === null) or
+            ($keyEntity->merchant->getId() !== $device->customer->merchant->getId()))
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+        }
     }
 
     /**
@@ -786,6 +849,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isDeviceAuth()
+    {
+        return ($this->type === Type::DEVICE_AUTH);
     }
 
     public function isProxyOrPrivilegeAuth()

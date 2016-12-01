@@ -60,6 +60,10 @@ class CreateDevices extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->string(Entity::AUTH_TOKEN, 100)
+                  ->nullable()
+                  ->unique();
+
             $table->string(Entity::UPI_TOKEN, 250)
                   ->nullable();
 

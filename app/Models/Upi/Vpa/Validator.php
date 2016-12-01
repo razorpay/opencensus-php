@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::USERNAME        => 'required|string',
+        Entity::ADDRESS         => 'required|string',
         Entity::FREQUENCY       => 'sometimes|string',
         Entity::BANK_ACCOUNT_ID => 'sometimes|string',
         Entity::CUSTOMER_ID     => 'sometimes|string',
@@ -21,5 +21,15 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
+        Entity::ADDRESS,
     );
+
+    protected function validateAddress($input)
+    {
+        if (strpos($input['address'], self::AROBASE) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Address: '. $input['address']);
+        }
+    }
 }

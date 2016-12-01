@@ -376,16 +376,20 @@ final class Route
         'otp_verify',
         'p2p_create',
         'device_create',
-        'device_fetch',
-        'upi_customer_bank_accounts_fetch',
+    );
+
+    public static $device = array(
         'vpa_register',
+        'reset_mpin',
         'vpa_create',
         'vpa_delete',
-        'vpa_fetch_multiple',
-        'vpa_available',
         'vpa_edit',
         'customer_balance_fetch',
-        'reset_mpin',
+        'vpa_available',
+        'vpa_valid',
+        'vpa_fetch_multiple',
+        'upi_customer_bank_accounts_fetch',
+        'device_fetch',
     );
 
     public static $publicCallback = array(

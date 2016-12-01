@@ -13,8 +13,6 @@ class Core extends Base\Core
 
         $vpa->generateId();
 
-        $vpa->setHandle('razor');
-
         $vpa->customer()->associate($customer);
 
         $vpa->bankAccount()->associate($bankAccount);

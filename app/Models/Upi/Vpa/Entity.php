@@ -19,6 +19,10 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT            = 'deleted_at';
 
+    const ADDRESS               = 'address';
+
+    const AROBASE               = '@';
+
     protected $generateIdOnCreate = true;
 
     protected $entity = 'vpa';
@@ -32,6 +36,24 @@ class Entity extends Base\PublicEntity
         self::BANK_ACCOUNT_ID,
         self::CUSTOMER_ID,
     ];
+
+    protected static $generators = [
+        'user_name_and_handle',
+    ];
+
+    protected static $unsetCreateInput = [
+        self::ADDRESS,
+    ];
+
+    // ----------------------- Generators ------------------
+
+    protected function generateUserNameAndHandle($input)
+    {
+        $addressArray = explode(self::AROBASE, $input[self::ADDRESS]);
+
+        $this->setAttribute(self::USERNAME, $addressArray[0]);
+        $this->setAttribute(self::HANDLE, $addressArray[1]);
+    }
 
     // ----------------------- Getters -----------------------
 
