@@ -134,7 +134,7 @@ class Gateway
      */
     public static $authAndCapture = [
         self::HDFC => [
-          self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
         self::AXIS_MIGS => [],
         self::AMEX => [],
@@ -143,10 +143,10 @@ class Gateway
     ];
 
     /**
-    * Card gateways which support full auth reversal
-    *
-    * @var array
-    */
+     * Card gateways which support full auth reversal
+     *
+     * @var array
+     */
     public static $reverse = [
         // self::CYBERSOURCE
         self::FIRST_DATA
@@ -428,12 +428,17 @@ class Gateway
 
     public static function isNetbankingBankDirectlySupported($bank)
     {
-        return in_array($bank, self::$directNetbankingBankList);
+        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
+    }
+
+    public static function supportsReverse($gateway)
+    {
+        return in_array($gateway, self::$reverse, true);
     }
 
     public static function isValidGateway($gateway)
