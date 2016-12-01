@@ -412,7 +412,7 @@ EOT;
                 $reqMsgId = $params['reqMsgId'];
                 $str = <<<EOT
 <upi:RespAuthDetails xmlns:upi="http://npci.org/upi/schema/">
-<Txn id="{$txn->getId()}" note="{$txn->getNote()}" refId="{$txn->getRefId()}" custRef="{$txn->getCustRef()}" refUrl="{$txn->getRefUrl()}" ts="{$txn->getTs()}" type="{$txn->getType()}" />
+<Txn id="$txnId" note="{$txn->getNote()}" refId="{$txn->getRefId()}" custRef="{$txn->getCustRef()}" refUrl="{$txn->getRefUrl()}" ts="{$txn->getTs()}" type="{$txn->getType()}" />
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
 <Resp reqMsgId="$reqMsgId" result="SUCCESS" />
 <Payer addr="nemo@razor" code="0000" name="Hari Ram" seqNum="1" type="PERSON">
@@ -424,17 +424,32 @@ EOT;
         <Detail name="ACTYPE" value="SAVINGS"/>
         <Detail name="ACNUM" value="1234"/>
     </Ac>
+    <Device>
+        <Tag name="MOBILE" value="919639516176"/>
+        <Tag name="GEOCODE" value="12.9667,77.5667"/>
+        <Tag name="LOCATION" value="Sarjapur Road, Bangalore, KA, IN"/>
+        <Tag name="IP" value="1.2.3.4"/>
+        <Tag name="ID" value="358960060336586"/>
+        <Tag name="OS" value="Android 5.3"/>
+        <Tag name="APP" value="com.razorpay.upi.sampleapp"/>
+        <Tag name="CAPABILITY" value="011001"/>
+    </Device>
     <Amount curr="INR" value="500.00"/>
+    <Creds>
+        <Cred subType="MPIN" type="PIN">
+            <Data code="NPCI" ki="20150822">2.0|pckK/mhE5zQsim0TYpKZVnAV6Ixxfz7L/zX9GfmhVLI2Lg09OFAFov4SBIVxnmOCBblqVfJi7hMPNzEvgc3mIOM8SnEaB30iKIj1oTGfFFyINE0g5ZNwLkRY96o54Qnt8hgYpfOrJ26wQnaFk95K0UThTmXP9AjqSUTf26bx9FndU8msRLpZBjJxTKt6MGw7o05qKSkb1cDwTlzG9eJwLnLBHS3B5rCgp1JM1jZ2BPqSiZZYd+gDQ9UEueh7A+OALJWMwgM1JhLqSUfz89E6SueQVLsa1zv2tubKSUdSvHZieenc1k6V0g9342h70G44idySm76jF5laHYTcFfokOQ==</Data>
+        </Cred>
+    </Creds>
 </Payer>
 <Payees>
-<Payee addr="{$payee->getAddr()}" name="Hari Ram" seqNum="2" type="PERSON">
-    <Ac addrType="{$payee->getAc()->getAddrType()}" Name="Hari Ram">
-        <Detail name="IFSC" value="RAZR0000001"/>
-        <Detail name="ACTYPE" value="SAVINGS"/>
-        <Detail name="ACCNUM" value="12345"/>
-    </Ac>
-    <Amount value="500.00" curr="INR"/>
-</Payee>
+    <Payee addr="{$payee->getAddr()}" name="Hari Ram" seqNum="1" type="PERSON">
+        <Ac addrType="{$payee->getAc()->getAddrType()}">
+            <Detail name="IFSC" value="RAZR0000001"/>
+            <Detail name="ACTYPE" value="SAVINGS"/>
+            <Detail name="ACNUM" value="12345"/>
+        </Ac>
+        <Amount value="500.00" curr="INR"/>
+    </Payee>
 </Payees>
 </upi:RespAuthDetails>
 EOT;
@@ -471,7 +486,7 @@ EOT;
             $sink = $input['params']['p2p']->sink;
             $customer = $input['params']['p2p']->customer;
 
-            $txnId = "RAZEAF93A1939E3458BA71F03F57D25242F";
+            $txnId = "RAZ0E2CF4065DD845E1B3223271A48E24F0";
             $str = <<<EOT
 <upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">
     <Head msgId="$msgId" orgId="$orgId" ts="$ts" ver="1.0"/>

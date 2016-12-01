@@ -26,9 +26,23 @@ class UpiController extends Controller
 
     public function newHandle(string $api, string $id)
     {
-        $xml = $this->core->handleUPIRequest($api, $id, Request::getContent());
+        $body = Request::getContent();
+        if (substr($id, 0, 3) == 'RAY')
+        {
+            $forwardUrl = 'http://api2.razorpay.dev/' . Request::path();
 
-        return $this->generateXmlResponse($xml);
+            $response = \Requests::post($forwardUrl, [
+                'Content-Type'  =>  'application/xml'
+            ], $body);
+
+            return $this->generateXmlResponse($response->body);
+        }
+        else
+        {
+            $xml = $this->core->handleUPIRequest($api, $id, $body);
+
+            return $this->generateXmlResponse($xml);
+        }
     }
 
     public function zeroCall($method)

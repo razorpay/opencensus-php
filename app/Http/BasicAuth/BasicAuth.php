@@ -368,6 +368,8 @@ class BasicAuth
 
         if ($this->verifyKeyExistence() === true)
         {
+            $this->fetchMerchantOfKey($this->key);
+
             $response = $this->verifyDeviceToken();
 
             if ($response == true)

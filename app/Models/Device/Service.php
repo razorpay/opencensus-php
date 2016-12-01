@@ -15,6 +15,8 @@ class Service extends Base\Service
     {
         parent::__construct();
 
+        $this->device = $this->app['basicauth']->getDevice();
+
         $this->core = new Core();
     }
 

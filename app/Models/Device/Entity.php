@@ -62,7 +62,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
-        self::VERIFICATION_TOKEN
+        self::AUTH_TOKEN,
+        self::VERIFICATION_TOKEN,
     ];
 
     protected $appends = [
