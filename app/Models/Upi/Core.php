@@ -156,22 +156,6 @@ class Core extends Base\Core
         $this->callUpiGateway('makeRequest', $params);
     }
 
-    public function createVpa($input)
-    {
-        if (isset($input['customer_id']) === true)
-        {
-            $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->getSharedAccount());
-        }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CUSTOMER_ID_MISSING,
-                $input);
-        }
-
-        return $this->vpaService->create($input, $customer);
-    }
-
     public function deleteVpa($id)
     {
         return $this->vpaService->delete($id);

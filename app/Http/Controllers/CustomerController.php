@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
+use RZP\Models\Upi\Vpa;
 use Request;
 
 class CustomerController extends Controller
@@ -154,6 +155,15 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = $this->customer->addBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createVpa()
+    {
+        $input = Request::all();
+
+        $data = (new Vpa\Service)->create($input);
 
         return ApiResponse::json($data);
     }

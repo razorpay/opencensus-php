@@ -37,6 +37,14 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
     ];
 
+    protected $public = [
+        self::ID,
+        self::ADDRESS,
+        self::HANDLE,
+        self::BANK_ACCOUNT_ID,
+        self::CUSTOMER_ID,
+    ];
+
     protected $appends = [
         self::ADDRESS
     ];

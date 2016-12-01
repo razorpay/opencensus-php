@@ -319,7 +319,7 @@ final class Route
         'vpa_valid'                               => ['get',      'vpa/valid/{vpa}',                                'UpiController@isValidVpa'                                          ],
         'vpa_register'                            => ['post',     'customers/{customer_id}/bank_accounts/{baId}/mpin','CustomerController@setMpin'                                        ],
         'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
-        'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
+        'vpa_create'                              => ['post',     'vpa/',                                           'CustomerController@createVpa'                                           ],
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                       'UpiController@deleteVpa'                                           ],
         'vpa_edit'                                => ['put',      'vpa/{id}',                                       'UpiController@editVpa'                                             ],
         'customer_balance_fetch'                  => ['get',      'customers/{customer_id}/balance/{account_id}',   'CustomerController@fetchBalance'                                   ],

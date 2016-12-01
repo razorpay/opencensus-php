@@ -11,7 +11,16 @@ use RZP\Models\BankAccount;
 
 class Service extends Base\Service
 {
-    public function create($input, $customer)
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->device = $this->app['basicauth']->getDevice();
+
+        $this->core = new Customer\Core;
+    }
+
+    public function create($input)
     {
         $this->trace->info(TraceCode::VPA_CREATE_REQUEST, $input);
 
@@ -24,7 +33,7 @@ class Service extends Base\Service
             $bankAccount = (new BankAccount\Repository)->findOrFailPublic($bankAccountId);
         }
 
-        $vpa = (new Core)->createVpa($input, $customer, $bankAccount);
+        $vpa = (new Core)->createVpa($input, $this->device->customer, $bankAccount);
 
         $this->trace->info(TraceCode::VPA_CREATED, $vpa->toArray());
 
