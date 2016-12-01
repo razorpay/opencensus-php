@@ -217,8 +217,10 @@ trait Capture
     {
         $this->repo->transaction(function () use ($payment, $transfers)
         {
-            $transfer = (new Transfer\Core)->createForPayment($payment, $transfers);
+            (new Transfer\Core)->createForPayment($payment, $transfers);
         });
+
+        return $payment;
     }
 
     /**

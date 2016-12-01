@@ -10,7 +10,7 @@ class Core extends Base\Core
 
     public function createFromCustomerDebit($payment, $txn)
     {
-        $customerTxn = $this->createEntityForType('debit', $payment, $txn);
+        $customerTxn = $this->createEntityForType('debit', $payment, $txn, $payment->customer);
 
         $balance = (new Customer\Balance\Service)->debit($payment->customer, $txn->getAmount());
 
@@ -21,11 +21,11 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    public function createFromCustomerCredit($payment, $txn)
+    public function createFromCustomerCredit($payment, $txn, $customer)
     {
-        $customerTxn = $this->createEntityForType('credit', $payment, $txn);
+        $customerTxn = $this->createEntityForType('credit', $payment, $txn, $customer);
 
-        $balance = (new Customer\Balance\Service)->credit($payment->customer, $txn->getAmount());
+        $balance = (new Customer\Balance\Service)->credit($customer, $txn->getAmount());
 
         // Lock for get balance
 
@@ -34,13 +34,11 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    protected function createEntityForType(string $type, $payment, $txn)
+    protected function createEntityForType(string $type, $payment, $txn, $customer)
     {
         $customerTxn = new Entity;
 
         $amount = $txn->getAmount();
-
-        $customer = $payment->customer;
 
         $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant)
@@ -52,17 +50,20 @@ class Core extends Base\Core
             Entity::STATUS              => 'transfered', // ? todo
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
-            Entity::CREDIT              => 0,
             Entity::DESCRIPTION         => 'NA', // ? todo
         ];
 
         if ($type === 'debit')
         {
             $customerTxn->setDebit($amount);
+
+            $customerTxn->setCredit(0);
         }
         else
         {
             $customerTxn->setCredit($amount);
+
+            $customerTxn->setDebit(0);
         }
 
         $customerTxn->customer()->associate($customer);

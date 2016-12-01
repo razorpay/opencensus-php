@@ -14,8 +14,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'required|integer',
     ];
 
-    protected static $paymentTransferValidators = [
-        'customer'             => 'sometimes|alpha_num|size:19',
+    protected static $paymentTransferRules = [
+        'customer'             => 'sometimes|string|size:19',
         'amount'               => 'required|integer',
     ];
 }

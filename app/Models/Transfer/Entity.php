@@ -70,4 +70,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+
 }

@@ -26,7 +26,7 @@ class Service extends Base\Service
     {
         $balance = $this->core->fetchOrCreate($customer->getPublicId());
 
-        return $this->core->credit($balance, $amount)->toArrayPublic();
+        return $this->core->credit($balance, $amount);
     }
 
     public function debit(Customer\Entity $customer, int $amount)

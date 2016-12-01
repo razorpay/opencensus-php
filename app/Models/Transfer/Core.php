@@ -36,40 +36,36 @@ class Core extends Base\Core
 
         $txn = (new Transaction\Core)->createFromTransfer($transfer);
 
+        $this->repo->saveOrFail($txn);
+
         $transfer->transaction()->associate($txn);
 
         $this->repo->saveOrFail($transfer);
-
-        $this->repo->saveOrFail($txn);
 
         return $transfer;
     }
 
     public function createForPayment($payment, $transfers)
     {
+        $validator = new Validator;
+
         foreach ($transfers as $transfer)
         {
-            $this->getValidator()->validateInput('payment_transfer', $transfer);
+            $validator->validateInput('payment_transfer', $transfer);
 
             $from = $payment->merchant;
 
             if (isset($transfer['customer']) === true)
             {
-                $customerId = Customer\Entity::verifyIdAndStripSign($transfer['customer']);
-
-                if ($customerId !== $payment->getCustomerId())
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'invalid customer id for payment');
-                }
-
-                $to = $payment->localCustomer;
+                $to = $this->repo->customer->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
 
                 $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
 
-                (new Customer\Transactions\Core)->createFromCustomerCredit($payment, $transfer->transaction);
-            }
+                $customerTxn = (new Customer\Transactions\Core)
+                                ->createFromCustomerCredit($payment, $transfer->transaction, $to);
 
+                $this->repo->saveOrFail($customerTxn);
+            }
 
         }
     }
