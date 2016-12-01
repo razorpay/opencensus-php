@@ -76,6 +76,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $balance);
     }
 
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);

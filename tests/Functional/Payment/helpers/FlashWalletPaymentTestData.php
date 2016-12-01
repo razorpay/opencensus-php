@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Terminal\Shared;
 
 return [
     'testCustomerIdNotSent' => [
@@ -34,6 +35,23 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
+    'testPayFromWallet' => [
+        'payment' => [
+            'amount'        => 2000,
+            'status'        => 'authorized',
+            'terminal_id'   => Shared::FLASHWALLET_RAZORPAY_TERMINAL
+        ],
+        'customerBalance' => [
+            'balance'       => 1000,
+        ],
+        'customerTransaction' => [
+            'amount'        => 2000,
+            'debit'         => 2000,
+            'credit'        => 0,
+            'balance'       => 1000
         ],
     ],
 

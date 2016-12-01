@@ -16,6 +16,10 @@ class Service extends Base\Service
 
     public function getStatement($customerId, $input)
     {
+        $input[Entity::CUSTOMER_ID] = $customerId;
+
+        (new Validator)->validateInput('get_statement', $input);
+
         $entities = $this->repo->customer_transactions
                     ->fetchCustomerStatement($input, $customerId, $this->merchant->getId());
 

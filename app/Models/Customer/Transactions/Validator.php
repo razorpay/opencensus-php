@@ -18,13 +18,20 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'required',
     ];
 
+    protected static $getStatementRules = [
+        Entity::CUSTOMER_ID         => 'required|string|size:19',
+        'from'                      => 'integer',
+        'to'                        => 'integer',
+        'count'                     => 'integer|min:1',
+        'skip'                      => 'integer'
+    ];
 
     public static function validateType($type)
     {
         if (defined(__CLASS__ . '::' . strtoupper($type)) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid Transaction type: ' . $type);
+                'Not a valid type: ' . $type);
         }
     }
 }

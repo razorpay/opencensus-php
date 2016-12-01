@@ -368,5 +368,16 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'entity_type'       => 'merchant'
         ]);
+
+        $factory(\RZP\Models\Customer\Balance\Entity::class, [
+            'merchant_id'   => '10000gcustomer',
+            'merchant_id'   => '10000000000000',
+            'name'          => 'NewWallet',
+            'balance'       => 0,
+            'daily_usage'   => 2000000,
+            'weekly_usage'  => 2000000,
+            'monthly_usage' => 2000000,
+            'max_balance'   => 2000000,
+        ]);
     }
 }

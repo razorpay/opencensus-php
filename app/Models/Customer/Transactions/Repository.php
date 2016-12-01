@@ -11,13 +11,21 @@ class Repository extends Base\Repository
     protected $entity = 'customer_transactions';
 
     protected $entityFetchParamRules = [
-        'customer_id'  => 'required|string|size:19'
+        'customer_id'  => 'sometimes|string|size:19'
     ];
 
+
+    /**
+     * Fetches transaction statement for a customer balance account
+     * Common pagination params apply (count, skip, from, to)
+     *
+     * @param  array    $input      Input Params
+     * @param  string   $customerId
+     * @param  string   $merchantId
+     * @return array
+     */
     public function fetchCustomerStatement($input, $customerId, $merchantId)
     {
-        $input[Entity::CUSTOMER_ID] = $customerId;
-
         $records = $this->fetch($input, $merchantId);
 
         return $records;

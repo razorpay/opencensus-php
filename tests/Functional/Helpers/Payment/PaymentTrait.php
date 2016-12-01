@@ -129,7 +129,7 @@ trait PaymentTrait
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $testData = $this->testData[$func];
+        $testData = $this->testData[$func] ?? [] ;
 
         if (isset($testData['request']) === false)
             $testData['request'] = [];
@@ -856,7 +856,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultFlashWalletPaymentArray($customerId = null)
+    protected function getDefaultFlashWalletPaymentArray($customerId = null, $amount = null)
     {
         $payment = $this->getDefaultWalletPaymentArray('flashwallet');
 
@@ -864,6 +864,8 @@ trait PaymentTrait
         {
             $payment['customer_id'] = $customerId;
         }
+
+        $payment['amount'] = $amount ?? $payment['amount'];
 
         unset($payment['bank'], $payment['card']);
 
