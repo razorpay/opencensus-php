@@ -124,6 +124,18 @@ return [
         ],
     ],
 
+    'testParentGroupDelete' => [
+        'request' => [
+            'url' => '/orgs/%s/groups/%s',
+            'method' => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testAncestorsNotAllowedAsParents' => [
         'request' => [
             'url' => '/orgs/%s/groups/%s/allowed_groups',

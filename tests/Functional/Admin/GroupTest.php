@@ -104,6 +104,28 @@ class GroupTest extends TestCase
         $this->startTest();
     }
 
+    public function testParentGroupDelete()
+    {
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        // create parent groups
+        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+        $l1GroupIds = array_map(create_function('$g', 'return $g->getId();'), $l1Groups);
+
+        $l0Group->parents()->sync($l1GroupIds);
+
+        // modify request
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $this->org->getPublicId(), $l0Group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest();
+
+        $this->assertNull($l0Group->parents->all());
+    }
+
     public function testParentGroupAssignment()
     {
         $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
