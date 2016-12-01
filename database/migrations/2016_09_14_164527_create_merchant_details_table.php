@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\MerchantDetail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class CreateMerchantDetailsTable extends Migration
 {
