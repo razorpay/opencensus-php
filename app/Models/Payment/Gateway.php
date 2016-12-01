@@ -347,16 +347,6 @@ class Gateway
         Network::DICL);
 
     /**
-     * Banks with which we have direct netbanking tie-ups.
-     * @var array
-     */
-    // add icici
-    public static $directNetbankingBankList = array(
-        IFSC::ICIC,
-        IFSC::HDFC,
-        IFSC::KKBK);
-
-    /**
      * For the banks we have direct tie-ups with,
      * here we list down the mapping from bank to netbanking gateway name.
      * There is no standardized bank gateway naming that we follow. IFSC

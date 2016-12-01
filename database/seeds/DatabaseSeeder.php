@@ -728,10 +728,10 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   =>  'netbanking_icici',
                 'card'                      =>  '0',
                 'netbanking'                =>  '1',
-                'gateway_merchant_id'       =>  'payee_id',
-                'gateway_merchant_id2'      =>  'SPID', // adding
+                'gateway_merchant_id'       =>  'test_pid',
+                'gateway_merchant_id2'      =>  'test_spid', // adding
                 'gateway_terminal_id'       =>  'test_terminal_netbanking_icici',
-                'gateway_terminal_password' =>  'master_key',//Crypt::encrypt('demo_account_netbanking_icici_terminal_pass'),
+                'gateway_terminal_password' =>  Crypt::encrypt('test_master_key'),
                 'recurring'                 =>  0,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),

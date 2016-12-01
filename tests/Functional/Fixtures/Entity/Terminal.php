@@ -9,7 +9,6 @@ class Terminal extends Base
 {
     public function createAllSharedTerminals()
     {
-        $this->createSharedIciciTerminal(); // change
         $this->createSharedHdfcTerminal();
         $this->createSharedAtomTerminal();
         $this->createSharedAxisTerminal();
