@@ -34,7 +34,14 @@ class Service extends Base\Service
     {
         $permissions = $this->repo->permission->retrieveIdsByNames($names);
 
-        return $permissions->toArrayPublic();
+        $permIds = [];
+
+        foreach($permissions as $perm)
+        {
+            $permIds[] = $perm->getPublicId();
+        }
+
+        return $permIds;
     }
 
     public function createPermissionsFromJson(array $input)

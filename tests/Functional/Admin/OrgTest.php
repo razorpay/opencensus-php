@@ -43,6 +43,8 @@ class OrgTest extends TestCase
 
     public function testOrgMultiple()
     {
+        $this->ba->adminAuth();
+
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
         $org = $this->fixtures->create('org', ['email' => 'sreeram@gmail.com']);
 
@@ -55,7 +57,7 @@ class OrgTest extends TestCase
 
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
-        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
 
         $this->startTest();
     }

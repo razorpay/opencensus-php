@@ -17,7 +17,7 @@ class Org extends Base
 
     public function setUp()
     {
-        $this->fixtures->create('org:razorpay_organisation');
+        $this->fixtures->create('org:razorpay_organization');
     }
 
     public function createDefaultTestOrganization()
@@ -31,7 +31,7 @@ class Org extends Base
         ]);
     }
 
-    public function createRazorpayOrganisation()
+    public function createRazorpayOrganization()
     {
         $now = Carbon::now()->timestamp;
 

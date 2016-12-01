@@ -212,7 +212,7 @@ final class Route
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
-        'admin_fetch_merchant_ids'                => ['get',      'orgs/{id}/admins/{adminId}/merchant_ids',          'AdminController@getMerchantIds'                                    ],
+        'admin_fetch_merchant_ids'                => ['get',      'orgs/{id}/admins/{adminId}/merchant_ids',        'AdminController@getMerchantIds'                                    ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
@@ -302,6 +302,7 @@ final class Route
 
 // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganisationController@postOrganisation'                           ],
+        'org_get_self'                            => ['get',      'orgs/{id}/self',                                      'OrganisationController@getOrganisation'                            ],
         'org_get'                                 => ['get',      'orgs/{id}',                                      'OrganisationController@getOrganisation'                            ],
         'org_get_by_hostname'                     => ['get',      'orgs/{hostname}',                                'OrganisationController@getOrganisationByHostname'                  ],
         'org_get_multiple'                        => ['get',      'orgs',                                           'OrganisationController@getOrganisations'                           ],
@@ -314,26 +315,16 @@ final class Route
         'role_delete'                             => ['delete',   'orgs/{id}/roles/{roleId}',                       'AdminController@deleteRole'                                        ],
         'admin_create'                            => ['post',     'orgs/{id}/admins',                               'AdminController@createAdmin'                                       ],
         'admin_get_multiple'                      => ['get',      'orgs/{id}/admins',                               'AdminController@fetchAdminMultiple'                                ],
-        'admin_get_by_attr'                       => ['get',      'orgs/{id}/admins/get_by_attr',                   'AdminController@getAdminByAttr'                                    ],
         'admin_get_app_auth'                      => ['post',     'orgs/{id}/current_admin',                        'AdminController@getAdminByAppAuth'                                 ],
         'admin_get'                               => ['get',      'orgs/{id}/admins/{adminId}',                     'AdminController@getAdmin'                                          ],
         'admin_edit'                              => ['put',      'orgs/{id}/admins/{adminId}',                     'AdminController@editAdmin'                                         ],
         'admin_delete'                            => ['delete',   'orgs/{id}/admins/{adminId}',                     'AdminController@deleteAdmin'                                       ],
-        'admin_roles_create'                      => ['post',     'orgs/{id}/admins/{adminId}/roles',               'AdminController@updateRolesForAdmin'                               ],
-        'admin_roles_revoke'                      => ['delete',   'orgs/{id}/admins/{adminId}/roles',               'AdminController@revokeRoleFromAdmin'                               ],
-        'admin_merchants_create'                  => ['post',     'orgs/{id}/admins/{adminId}/merchants',           'AdminController@addMerchantToAdmin'                                ],
-        'admin_merchants_delete'                  => ['delete',   'orgs/{id}/admins/{adminId}/merchants',           'AdminController@deleteMerchantFromAdmin'                           ],
         'group_create'                            => ['post',     'orgs/{id}/groups',                               'AdminController@createGroup'                                       ],
         'group_get_multiple'                      => ['get',      'orgs/{id}/groups',                               'AdminController@getGroupsMultiple'                                 ],
         'group_get_allowed_groups'                => ['get',      'orgs/{id}/groups/{groupId}/allowed_groups',      'AdminController@getAllowedGroups'                                  ],
         'group_get'                               => ['get',      'orgs/{id}/groups/{groupId}',                     'AdminController@getGroup'                                          ],
         'group_edit'                              => ['put',      'orgs/{id}/groups/{groupId}',                     'AdminController@putGroup'                                          ],
         'group_delete'                            => ['delete',   'orgs/{id}/groups/{groupId}',                     'AdminController@deleteGroup'                                       ],
-        'group_merchants_create'                  => ['put',      'orgs/{id}/groups/{groupId}/merchants',           'AdminController@addMerchantsToGroup'                               ],
-        'group_admins_get'                        => ['get',      'orgs/{id}/groups/{groupId}/admins',              'AdminController@getAdminsForGroup'                                 ],
-        'group_admins_create'                     => ['post',     'orgs/{id}/groups/{groupId}/admins',              'AdminController@addAdminsToGroup'                                  ],
-        'group_roles_create'                      => ['post',     'orgs/{id}/groups/{groupId}/roles',               'AdminController@addRolesToGroup'                                   ],
-        'group_admins_delete'                     => ['delete',   'orgs/{id}/groups/{groupId}/admins',              'AdminController@removeAdminsFromGroup'                             ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'AdminController@postLockBulkAccounts'                              ],
 
         // Permission can only be created by certain organisations.
@@ -588,7 +579,7 @@ final class Route
         'admin_get_app_auth',
         'password_login',
         'oauth_login',
-        'org_get',
+        'org_get_self',
     );
 
     public static $proxy = array(
@@ -635,6 +626,7 @@ final class Route
     );
 
     public static $admin = [
+        'org_get_multiple',
         'admin_fetch_merchant_ids',
         'hello_world',
         'admin_create',
@@ -642,9 +634,7 @@ final class Route
         'group_get_multiple',
         'group_get_allowed_groups',
         'admin_get',
-        'admin_roles_create',
         'org_create',
-        'org_get_multiple',
         'org_edit',
         'org_delete',
         'role_create',
@@ -653,23 +643,14 @@ final class Route
         'role_edit',
         'role_delete',
         'admin_get_multiple',
-        'admin_get_by_attr',
         'admin_get',
         'admin_edit',
         'admin_delete',
-        'admin_roles_create',
-        'admin_roles_revoke',
-        'admin_merchants_create',
-        'admin_merchants_delete',
         'group_create',
         'group_edit',
         'group_delete',
-        'group_merchants_create',
-        'group_admins_get',
-        'group_admins_create',
-        'group_roles_create',
-        'group_admins_delete',
         'permission_get_multiple',
+        'org_get',
     ];
 
     public static $adminPermission = [
@@ -722,9 +703,7 @@ final class Route
         'schedule_update'            => ['schedule_update'],
         'schedule_assign'            => ['schedule_assign'],
         'schedule_migration'         => ['schedule_migration'],
-
-
-
+        'admin_fetch_merchant_ids'   => ['view_all_merchants'],
     ];
 
     public static $direct = array(

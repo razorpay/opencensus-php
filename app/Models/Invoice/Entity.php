@@ -17,8 +17,8 @@ class Entity extends Base\PublicEntity
     // ------------------ Entity Keys --------------------------------
 
     const ORDER_ID              = 'order_id';
-    // Ref id provided by merchant for his own references
-    const REF_NUM               = 'ref_num';
+    // Invoice receipt provided by merchant for his own references
+    const RECEIPT               = 'receipt';
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
@@ -36,6 +36,8 @@ class Entity extends Base\PublicEntity
     // Email & SMS communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
+
+    const DESCRIPTION           = 'description';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
     const SHORT_URL             = 'short_url';
@@ -91,13 +93,19 @@ class Entity extends Base\PublicEntity
         self::ISSUED_AT         => null,
         self::PAID_AT           => null,
         self::EXPIRED_AT        => null,
-        self::REF_NUM           => null,
+        self::RECEIPT           => null,
+        self::DESCRIPTION       => null,
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::TYPE              => null,
         self::USER_ID           => null,
+        self::AMOUNT            => 0,
         self::CURRENCY          => 'INR',
+        self::CUSTOMER_NAME     => null,
+        self::CUSTOMER_EMAIL    => null,
+        self::CUSTOMER_CONTACT  => null,
+        self::CUSTOMER_ADDRESS  => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -119,8 +127,10 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::DATE,
         // self::TERMS,
+        self::AMOUNT,
+        self::DESCRIPTION,
         self::NOTES,
-        self::REF_NUM,
+        self::RECEIPT,
         self::VIEW_LESS,
         self::CURRENCY,
         self::SOURCE,
@@ -135,7 +145,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
-        self::REF_NUM,
+        self::RECEIPT,
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
@@ -155,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
         self::CURRENCY,
@@ -171,8 +182,8 @@ class Entity extends Base\PublicEntity
     // Fields to be exposed to the client
     protected $public = [
         self::ID,
-        self::REF_NUM,
         self::ENTITY,
+        self::RECEIPT,
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
@@ -188,6 +199,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         // self::TERMS,
         self::AMOUNT,
+        self::DESCRIPTION,
         self::NOTES,
         self::CURRENCY,
         self::SHORT_URL,
@@ -219,6 +231,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::VIEW_LESS => 'bool',
+        self::AMOUNT    => 'int',
     ];
 
     // -------------------------------------- Getters --------------------------------------
@@ -302,6 +315,19 @@ class Entity extends Base\PublicEntity
 
 
     // -------------------------------------- Setters --------------------------------------
+
+    public function setCustomerDetails(Customer\Entity $customer)
+    {
+        if (empty($customer))
+        {
+            return;
+        }
+
+        $this->setCustomerName($customer->getName());
+        $this->setCustomerContact($customer->getContact());
+        $this->setCustomerEmail($customer->getEmail());
+        $this->setCustomerAddress($customer->getCurrentShippingAddressId());
+    }
 
     public function setCustomerName($customerName)
     {
@@ -412,7 +438,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     protected function setPublicOrderIdAttribute(array & $array)

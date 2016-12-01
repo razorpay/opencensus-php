@@ -8,9 +8,7 @@ use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
@@ -136,7 +134,7 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $admin = $this->core()->create($input, $org);
+        $admin = $this->core()->create($org, $input);
 
         $admin = $admin->toArrayPublic();
 
@@ -243,22 +241,6 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function getAdminByAttr($orgId, $attr, $attrVal)
-    {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admin = $this->repo->admin->findOrFailByAttr($orgId, $attr, $attrVal);
-
-        return $admin->toArrayPublic();
-    }
-
-    public function getAdminById(string &$adminId)
-    {
-        $admin = $this->repo->org->findByPublicId($adminId);
-
-        return $admin->toArrayPublic();
-    }
-
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
@@ -266,104 +248,113 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function updateRolesForAdmin(
-        string $orgId,
-        string $adminId,
-        array $input)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $roleIds = [];
-
-        Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-
-        $admin->roles()->sync($input['roles']);
-
-        // Check if this is required here?
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail($orgId, $adminId);
-
-        return $admin->toArrayPublic();
-    }
-
-    public function addMerchantToAdmin(
-        string $orgId,
-        string $adminId,
-        string $merchantId)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
-
-        $this->repo->admin->addMerchantOrFail($admin, $merchant);
-    }
-
-    public function revokeRoleFromAdmin(
-        string $orgId,
-        string $adminId,
-        string $roleId)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $role = $this->repo->role->findByPublicId($roleId);
-
-        if ($role->getOrgId() != $orgId)
-        {
-            throw new Exception\LogicException(
-                'The role does not belong to the organization');
-        }
-
-        $this->repo->admin->revokeRoleOrFail($admin, $role);
-    }
-
     public function fetchMultiple(string $orgId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admins = $this->repo->admin->fetchAdminsForOrg($orgId, $input);
+        $admins = $this->repo->admin->fetchByOrgId($orgId);
 
         return $admins->toArrayPublic();
     }
 
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $admin = $this->core()->edit($orgId, $adminId, $input);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+        $admin = $this->core()->edit($admin, $input);
 
         return $admin->toArrayPublic();
     }
 
     public function getMerchantIds($orgId, $adminId)
     {
-        // @todo: Add coments explaining the flow.
-
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-        $adminGroups = $admin->groups;
-        $adminGroups = json_decode(json_encode($adminGroups), true);
-        $adminMerchants = $admin->merchants;
-        $adminMerchants = json_decode(json_encode($adminMerchants), true);
-        $admin = json_decode(json_encode($admin), true);
 
-        $merchants = [];
-        $visibleGroups = $adminGroups;
-        $admin = new Entity($admin);
+        $adminGroups = $admin->groups->toArray();
+
+        $adminMerchants = $admin->merchants->toArray();
+
+        // Get entire children hierarchy for each group
+        // that the admin belongs to
+
+        $childrenGroups = [];
+
+        $childrenAdmins = [];
 
         foreach ($adminGroups as $group)
         {
-            (new Group\Service)->getRejectChildren($orgId, $group['id'], $visibleGroups);
+            $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
+
+            $childrenGroups = array_merge($childrenGroups, $groupChildren);
+
+            foreach ($groupChildren as $group)
+            {
+                $group = new Group\Entity($group);
+
+                $childrenAdmins = array_merge($childrenAdmins, $group->admins->toArray());
+            }
         }
 
-        $visibleGroups = array_unique($visibleGroups, SORT_REGULAR);
+        // An admin could belong to multiple groups
+        // so we need to select unique admins from $childrenAdmins
 
-        foreach ($visibleGroups as $group)
+        $adminIds = array_unique( array_column($childrenAdmins, 'id') );
+
+        $childrenAdmins = array_filter($childrenAdmins, function ($value, $key) use ($adminIds)
         {
-            $group = new Group\Entity($group);
-            $merchants = array_merge($merchants, $group->merchants->all());
+            return in_array($key, array_keys($adminIds));
+        }, ARRAY_FILTER_USE_BOTH);
+
+        // Loop over all the groups and get their merchants
+        // TODO: this can be placed in the previous inner foreach as well
+
+        $merchants = [];
+
+        foreach ($childrenGroups as $group)
+        {
+            $groupId = Group\Entity::getSignedId($group['id']);
+
+            $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+
+            $merchants = array_merge($merchants, $group->merchants->toArray());
         }
 
+        // Loop over all the admins and get their merchants
+        //
+        // Note: currently a merchant can belong to only 1 admin
+        // not by DB design but by code constraints so we don't
+        // need to run the list of merchants through a uniqueness check
+
+        foreach ($childrenAdmins as $admin)
+        {
+            $adminId = Entity::getSignedId($admin['id']);
+
+            $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+            $merchants = array_merge($merchants, $admin->merchants->toArray());
+        }
+
+        // Finally merging the admin's merchants with the list
+        // of merchants resolved from his hierarchy
         $merchants = array_merge($merchants, $adminMerchants);
 
+        // ... and we'll return all the merchant IDs to the dashboard client
         $merchantIds = array_column($merchants, 'id');
 
-        return $merchantIds;
+        // Get all the admins of the merchant IDs
+        // TODO: This can be moved in one of the foreach blocks above
+        // for better performance (less computation)
+
+        $responseHash = [];
+
+        $merchants = Merchant\Entity::whereIn('id', $merchantIds)->get();
+
+        foreach ($merchants as $merchant)
+        {
+            $responseHash[$merchant->id] = $merchant->admins->first()->name;
+        }
+
+        return $responseHash;
     }
 
     public function lockUnusedAccounts()

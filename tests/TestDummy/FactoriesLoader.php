@@ -3,6 +3,7 @@
 namespace RZP\Tests\TestDummy;
 
 use Laracasts\TestDummy as Base;
+use RZP\Tests\Functional\Fixtures\Factory\FactoryData;
 
 class FactoriesLoader extends Base\FactoriesLoader
 {
@@ -24,9 +25,14 @@ class FactoriesLoader extends Base\FactoriesLoader
             return $designer->define($name, $shortName, $attributes);
         };
 
-        foreach ((new Base\FactoriesFinder($basePath))->find() as $file) {
-            include($file);
-        }
+        // In case we loaded data directly from an included file in the
+        // $basePath directory
+        //
+        // foreach ((new Base\FactoriesFinder($basePath))->find() as $file) {
+        //     include($file);
+        // }
+
+        FactoryData::defineEntityFactories($factory, $faker);
 
         return $designer->definitions();
     }

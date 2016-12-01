@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::AUTH_TYPE           => 'required|string|max:255',
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
+        'admin'                     => 'required|array',
     ];
 
     protected static $editRules = [

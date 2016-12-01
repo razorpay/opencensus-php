@@ -92,25 +92,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    // admin_get_by_attr
-    public function getAdminByAttr($orgId)
-    {
-        $data = null;
-
-        $input = Request::all();
-
-        $attr = key($input);
-
-        if (! empty($attr))
-        {
-            $attrVal = current($input);
-
-            $data = (new Admin\Admin\Service)->getAdminByAttr($orgId, $attr, $attrVal);
-        }
-
-        return ApiResponse::json($data);
-    }
-
     public function createAdmin($id)
     {
         $input = Request::all();
@@ -123,40 +104,6 @@ class AdminController extends Controller
     public function deleteAdmin($id, $adminId)
     {
         $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function addMerchantToAdmin($id, $adminId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->addMerchantToAdmin(
-            $id, $adminId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function updateRolesForAdmin(
-        string $id,
-        string $adminId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->updateRolesForAdmin(
-            $id, $adminId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function revokeRoleFromAdmin(
-        string $id,
-        string $adminId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->revokeRoleFromAdmin(
-            $id, $adminId, $input);
 
         return ApiResponse::json($data);
     }
@@ -278,35 +225,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addRolesToGroup(string $id, string $groupId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Group\Service)->addRolesToGroup(
-            $id, $groupId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function addMerchantsToGroup(string $id, string $groupId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Group\Service)->addMerchantsToGroup(
-            $id, $groupId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function addAdminsToGroup(string $id, string $groupId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Group\Service)->addAdminsToGroup(
-            $id, $groupId, $input);
-
-        return ApiResponse::json($data);
-    }
 // --------------------- END CRUD for Groups  -------------------------------------
 
 // --------------------- CRUD for Permissions ----------------------------------------

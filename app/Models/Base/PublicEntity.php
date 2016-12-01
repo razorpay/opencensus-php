@@ -319,9 +319,21 @@ class PublicEntity extends UniqueIdEntity
         return static::$delimiter;
     }
 
+    /**
+     * Returns id with the sign prefix attached.
+     */
     public static function getSignedId($id)
     {
         return static::getIdPrefix() . $id;
+    }
+
+    /**
+     * Returns id with the sign prefix attached.
+     * However, if the value is null, then simply return null.
+     */
+    public static function getSignedIdOrNull($id)
+    {
+        return $id ? static::getSignedId($id) : null;
     }
 
     public function getEntity()

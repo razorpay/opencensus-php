@@ -12,7 +12,7 @@ use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Org\Entity $org)
+    public function create(Org\Entity $org, array $input)
     {
         $admin = (new Entity);
 
@@ -31,23 +31,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($admin);
 
-        if (isset($input['roles']) === true)
-        {
-            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-            $admin->roles()->sync($input['roles']);
-        }
+        $this->associateRelevantEntitiesToAdmin($admin, $input);
 
-        if (isset($input['merchants']) === true)
-        {
-            Merchant\Entity::verifyIdAndStripSignMultiple($input['merchants']);
-            $admin->merchants()->sync($input['merchants']);
-        }
-
-        if (isset($input['groups']) === true)
-        {
-            Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
-            $admin->groups()->sync($input['groups']);
-        }
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $org->getId(), $admin->getId());
 
         return $admin;
     }
@@ -89,11 +76,8 @@ class Core extends Base\Core
         return $ret;
     }
 
-    public function edit(string $orgId, string $adminId, array $input)
+    public function edit(Entity $admin, array $input)
     {
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $orgId, $adminId);
-
         $admin->setAuditAction(Action::CREATE_ADMIN);
 
         $admin->edit($input);
@@ -113,6 +97,16 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($admin);
 
+        $this->associateRelevantEntitiesToAdmin($admin, $input);
+
+        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
+            $admin['org_id'], $admin->getId());
+
+        return $admin;
+    }
+
+    public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
+    {
         if (isset($input['roles']) === true)
         {
             Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
@@ -130,11 +124,6 @@ class Core extends Base\Core
             Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
             $admin->groups()->sync($input['groups']);
         }
-
-        // $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-        //     $orgId, $admin->getId());
-
-        return $admin;
     }
 }
 

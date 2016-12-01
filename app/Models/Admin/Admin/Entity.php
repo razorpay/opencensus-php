@@ -100,10 +100,18 @@ class Entity extends Base\PublicEntity
         self::FAILED_ATTEMPTS => 'int',
     ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ORG_ID,
-    );
+    ];
+
+    protected $defaults = [
+        self::BRANCH_CODE     => 'default_branch',
+        self::SUPERVISOR_CODE => 'default_supervisor',
+        self::DEPARTMENT_CODE => 'default_location',
+        self::LOCATION_CODE   => 'default_department',
+        self::EMPLOYEE_CODE   => 'default_employee',
+    ];
 
     public function getPassword()
     {
@@ -157,6 +165,11 @@ class Entity extends Base\PublicEntity
         $permissions = array_unique($permissions);
 
         return $permissions;
+    }
+
+    public function getDefaults()
+    {
+        return $this->defaults;
     }
 
     public function saveOrFailMerchant(Merchant\Entity $merchant)
@@ -290,24 +303,5 @@ class Entity extends Base\PublicEntity
         }
 
         return json_decode($oldPasswords, true);
-    }
-
-    public function toArrayPublic()
-    {
-         $admin = parent::toArrayPublic();
-
-         $roles = $this->roles;
-
-         $admin['roles'] = $roles->toArrayPublic()['items'];
-
-         $merchants = $this->merchants;
-
-         $admin['merchants'] = $merchants->toArrayPublic()['items'];
-
-         $groups = $this->groups;
-
-         $admin['groups'] = $groups->toArrayPublic()['items'];
-
-         return $admin;
     }
 }

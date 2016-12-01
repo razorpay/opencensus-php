@@ -13,6 +13,14 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'admin' => [
+                    'name' => 'superadmin',
+                    'branch_code' => 'a',
+                    'employee_code' => 'a',
+                    'location_code' => 'a',
+                    'department_code' => 'a',
+                    'supervisor_code' => 'a',
+                ],
             ],
         ],
         'response' => [
