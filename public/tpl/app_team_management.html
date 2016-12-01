@@ -46,8 +46,8 @@
             </select>
           </div>
           <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">
-            <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button>
-            <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">
+            <button class="btn btn-sm btn-success" tooltip="Updates the user's role" ng-click="updateTeamMember(user)">Update</button>
+            <button class="btn btn-sm btn-danger" tooltip="Removes user from your team" ng-click="removeTeamMember(user)">
               Remove
             </button>
           </div>
@@ -60,7 +60,7 @@
       </div>
       <div class="row wrapper">
         <div class="row" ng-repeat="invite in invitations" ng-show="invite.email !== merchant.email">
-          <div class="m-b col-sm-5">{{ invite.email }}</div>
+          <div class="m-b col-sm-6 b-w">{{ invite.email }}</div>
           <div class="m-b col-sm-3">
             <select class="form-control" name="role" required
               tooltip-placement="right" tooltip="User Role"
@@ -68,10 +68,11 @@
             >
             </select>
           </div>
-          <div class="m-b col-sm-4">
-            <button class="btn btn-sm btn-primary" ng-click="resendInvitation(invite)">Resend</button>
-            <button class="btn btn-sm btn-success" ng-click="updateInvitation(invite)">Update</button>
-            <button class="btn btn-sm btn-danger" ng-click="removeInvitation(invite)">Cancel</button></div>
+          <div class="m-b col-sm-3">
+            <button class="btn btn-sm btn-success" tooltip="Update role of the invited user" ng-click="updateInvitation(invite)">Update</button>
+            <button class="btn btn-sm btn-danger" tooltip="Cancels invitation" ng-click="removeInvitation(invite)">Cancel</button>
+            <button class="btn btn-sm btn-primary" tooltip="Resend invitation email" ng-click="resendInvitation(invite)">Resend</button>
+          </div>
         </div>
       </div>
     </div>
