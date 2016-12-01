@@ -5,8 +5,6 @@ namespace RZP\Tests\Functional\Admin;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-use Mockery;
-
 class PermissionTest extends TestCase
 {
     use RequestResponseFlowTrait;
@@ -16,29 +14,16 @@ class PermissionTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/PermissionData.php';
 
         parent::setUp();
-    }
 
-    public function testCreatePermission()
-    {
-        $this->markTestSkipped();
-
-        $this->ba->appAuth();
-
-        return $this->startTest();
+        $this->ba->adminAuth('test');
     }
 
     public function testGetPermission()
     {
         $this->markTestSkipped();
 
-        $permission = $this->testCreatePermission();
+        $permissions = $this->fixtures->times(2)->create('permission');
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] .= '/' . $permission['id'];
-
-        $this->ba->appAuth();
-
-        $result = $this->startTest($testData);
+        $this->startTest();
     }
 }

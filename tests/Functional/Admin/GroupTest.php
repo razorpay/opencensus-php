@@ -2,16 +2,12 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-
-use RZP\Models\Admin\Group;
 
 class GroupTest extends TestCase
 {
     use RequestResponseFlowTrait;
-    use EntityActionTrait;
 
     public function setUp()
     {
@@ -71,7 +67,7 @@ class GroupTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testDuplicateGroup()
@@ -106,6 +102,28 @@ class GroupTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testParentGroupDelete()
+    {
+        $l0Group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+
+        // create parent groups
+        $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
+        $l1GroupIds = array_map(create_function('$g', 'return $g->getId();'), $l1Groups);
+
+        $l0Group->parents()->sync($l1GroupIds);
+
+        // modify request
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $this->org->getPublicId(), $l0Group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest();
+
+        $this->assertEquals(0, count($l0Group->parents->all()));
     }
 
     public function testParentGroupAssignment()
