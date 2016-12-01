@@ -8,6 +8,7 @@ app.controller('AddGroupCtrl', [
   '$stateParams',
   '$state',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
+    $scope.alerts = alertsFactory.getHandler();
 
     // $scope.users = organization.fetchUsers();
     $scope.group = {};

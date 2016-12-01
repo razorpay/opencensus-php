@@ -4,7 +4,9 @@ app.controller('GroupsCtrl', [
   '$http',
   '$modal',
   'transformRequestAsFormPost',
-  function ($scope, $http, $modal, transformRequestAsFormPost) {
+  'alertsFactory',
+  function ($scope, $http, $modal, transformRequestAsFormPost, alertsFactory) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.groups = [];
     $scope.count = 0;
 

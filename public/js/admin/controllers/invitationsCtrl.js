@@ -6,6 +6,7 @@ app.controller('InvitationsCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.invitations = [];
     $scope.count = 0;
 

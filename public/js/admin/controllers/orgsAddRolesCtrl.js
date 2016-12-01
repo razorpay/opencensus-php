@@ -8,6 +8,7 @@ app.controller('OrgsAddRolesCtrl', [
   '$stateParams',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
 
+    $scope.alerts = alertsFactory.getHandler();
     $scope.permissions = organization.fetchPermissions();
     $scope.role = {};
     $scope.selected_permissions = {};

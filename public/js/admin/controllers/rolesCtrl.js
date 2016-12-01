@@ -5,7 +5,10 @@ app.controller('RolesCtrl', [
   '$modal',
   'transformRequestAsFormPost',
   'organization',
-  function ($scope, $http, $modal, transformRequestAsFormPost, organization) {
+  'alertsFactory',
+  function ($scope, $http, $modal, transformRequestAsFormPost, organization, alertsFactory) {
+    $scope.alerts = alertsFactory.getHandler();
+
     $scope.roles = [];
     $scope.count = 0;
     $scope.permissions = organization.fetchPermissions();

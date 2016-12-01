@@ -7,6 +7,7 @@ app.controller('MerchantInvitationCtrl', [
   '$modal',
   '$state',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, $state) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       promo_code: 'RP_StartUP'
     };

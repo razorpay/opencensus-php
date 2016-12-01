@@ -8,6 +8,7 @@ app.controller('OrgsAddUsersCtrl', [
   'organization',
   '$stateParams',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
+    $scope.alerts = alertsFactory.getHandler();
 
     $scope.fetchUser = function(id) {
       var request = $http({

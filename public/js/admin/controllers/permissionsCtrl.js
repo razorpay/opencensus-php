@@ -7,6 +7,7 @@ app.controller('PermissionsCtrl', [
   '$modal',
   'organization',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.permissions = [];
     $scope.count = 0;
 
