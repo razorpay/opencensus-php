@@ -53,7 +53,6 @@ class Gateway
         self::SHARP,
     );
 
-    // Do I need to add something here?
     public static $channels = array(
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -441,11 +440,6 @@ class Gateway
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
-    public static function supportsReverse($gateway)
-    {
-        return in_array($gateway, self::$reverse, true);
-    }
-
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];
@@ -497,6 +491,11 @@ class Gateway
                 return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
             }
         }
+    }
+
+    public static function supportsReverse($gateway)
+    {
+        return in_array($gateway, self::$reverse, true);
     }
 
     /**
