@@ -13,23 +13,40 @@ angular.module('app.controllers', [
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    var orgTheme = location.hostname.indexOf('wl') !== -1 ? 'hdfc' : localStorage.getItem('theme');
+    var orgName = location.hostname.match(/beta-(\w+)/) || []
+    var orgTheme = orgName[0] || localStorage.getItem('theme');
 
-    if (orgTheme === 'hdfc') {
-      theme.apply({
-        primary : '#084c8d',
-        transparent : 'rgba(0,0,0,0.2)',
-        transparentDark : 'rgba(0,0,0,0.4)',
-        textLight : 'rgba(255,255,255,0.9)',
-        primaryLight : '#e1f3ff',
-        primaryTransparent : 'rgba(225,243,252,0.3)',
-        errorBackground : 'rgba(234,33,45,0.1)',
-        secondary : '#ea212d',
-        tertiary : '#ffffff'
-      });
+    var baseTheme = {
+      transparent : 'rgba(0,0,0,0.2)',
+      transparentDark : 'rgba(0,0,0,0.4)',
+      textLight : 'rgba(255,255,255,0.9)',
+      primaryLight : '#e1f3ff',
+      primaryTransparent : 'rgba(225,243,252,0.3)',
+      errorBackground : 'rgba(234,33,45,0.1)',
+      secondary : '#ea212d',
+      tertiary : '#ffffff'
     }
-    else {
 
+    switch (orgTheme) {
+      case 'hdfc':
+      default: // For now, default theme will be `hdfc`
+        theme.apply(angular.extend(baseTheme, {
+          primary : '#084c8d',
+        }));
+        break;
+
+      case 'icici':
+        theme.apply(angular.extend(baseTheme, {
+          navBg: '#0A3D6B',
+          primary : '#F07937',
+        }));
+        break;
+
+      case 'baroda':
+        theme.apply(angular.extend(baseTheme, {
+          primary : '#F04E00',
+        }));
+        break;
     }
 
     // config
