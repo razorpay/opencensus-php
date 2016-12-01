@@ -688,8 +688,8 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '22nP3sEf2tQ123', // random
-                'merchant_id'           => Account::TEST_ACCOUNT, // demo
+                'id'                    => '22nP3sEf2tQ123',
+                'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => 'netbanking_kotak',
                 'card'                  => '0',
                 'netbanking'            => '1',

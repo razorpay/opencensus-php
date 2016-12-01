@@ -34,7 +34,6 @@ putenv("APP_ENV=$env");
 
 $file = $app->environmentFile();
 
-
 $cascadingEnvFile = '.env.' . $env;
 
 //
