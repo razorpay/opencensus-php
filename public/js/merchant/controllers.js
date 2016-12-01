@@ -13,8 +13,8 @@ angular.module('app.controllers', [
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    var orgName = location.hostname.match(/beta-(\w+)/) || []
-    var orgTheme = orgName[0] || localStorage.getItem('theme');
+    var orgName = (location.hostname.match(/^beta-(\w+)-/) || [])[1]
+    var orgTheme = orgName || localStorage.getItem('theme');
 
     var baseTheme = {
       transparent : 'rgba(0,0,0,0.2)',
@@ -29,7 +29,7 @@ angular.module('app.controllers', [
 
     switch (orgTheme) {
       case 'hdfc':
-      default: // For now, default theme will be `hdfc`
+      case 'wl':
         theme.apply(angular.extend(baseTheme, {
           primary : '#084c8d',
         }));
