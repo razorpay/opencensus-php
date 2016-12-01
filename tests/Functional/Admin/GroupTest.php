@@ -2,16 +2,12 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-
-use RZP\Models\Admin\Group;
 
 class GroupTest extends TestCase
 {
     use RequestResponseFlowTrait;
-    use EntityActionTrait;
 
     public function setUp()
     {
@@ -71,7 +67,7 @@ class GroupTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testDuplicateGroup()

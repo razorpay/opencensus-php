@@ -371,8 +371,8 @@ $factory(\RZP\Models\Admin\Org\Entity::class, [
 
 $factory(\RZP\Models\Admin\Permission\Entity::class, [
     'id'            => $faker->uniqueid,
-    'name'          => 'view_merchant_balance',
-    'description'   => 'permission to view balance',
+    'name'          => $faker->permissionName,
+    'description'   => $faker->sentence,
 ]);
 
 $factory(\RZP\Models\Admin\Role\Entity::class, [

@@ -26,4 +26,10 @@ class FakerProviderFrequent extends Base
     {
         return Str::random(5);
     }
+
+    public function permissionName()
+    {
+        return Str::random(5);
+    }
+
 }
