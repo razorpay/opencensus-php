@@ -3,15 +3,20 @@
 namespace RZP\Gateway\Base;
 
 use Mail;
+use Carbon\Carbon;
+use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\FileStore;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
-class RefundFile
+class RefundFile extends Base\Core
 {
     use FileHandlerTrait;
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->mail = Mail::getFacadeRoot();
     }
 
