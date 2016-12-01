@@ -18,4 +18,5 @@ class Type
     const ORDER_PAID         = 'order.paid';
     const INVOICE_PAID       = 'invoice.paid';
     const VPA_EDITED         = 'vpa.edited';
+    const P2P_CREATED        = 'p2p.created';
 }

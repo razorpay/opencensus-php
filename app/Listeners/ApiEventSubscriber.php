@@ -126,6 +126,34 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onP2pCollectCreate($p2p)
+    {
+        $payload = $this->getP2pPayload($vpa);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function getP2pPayload($vpa)
+    {
+        $source = $vpa->source;
+
+        $sink = $vpa->sink;
+
+        $partialPayload[Constants\Entity::VPA] = [
+            'entity' => $vpa->toArrayPublic()
+        ];
+
+        $partialPayload['source'] = [
+            'entity' => $source->toArrayPublic()
+        ];
+
+        $partialPayload['sink'] = [
+            'entity' => $sink->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getVpaPayload($vpa)
     {
         $customer = $vpa->customer;

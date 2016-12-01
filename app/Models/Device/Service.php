@@ -48,7 +48,7 @@ class Service extends Base\Service
 
         $device = $this->repo->device->findByVerificationToken($verificationToken);
 
-        $customer = (new Customer\Core)->createGlobalCustomer([Customer\Entity::CONTACT => $contact], false);
+        $customer = (new Customer\Core)->createLocalCustomer([Customer\Entity::CONTACT => $contact], $this->device->merchant, false);
 
         $device = $this->core->verify($device, $customer);
 

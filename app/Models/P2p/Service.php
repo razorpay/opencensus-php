@@ -23,6 +23,8 @@ class Service extends Base\Service
     {
         $p2p = $this->core->create($input);
 
+        $this->eventP2pCreated();
+
         return $p2p->toArrayPublic();
     }
 
@@ -45,5 +47,10 @@ class Service extends Base\Service
         $p2p = $this->core->authorize($id, $input);
 
         return $p2p;
+    }
+
+    protected function p2pCreated($p2p)
+    {
+        $this->app['events']->fire('api.p2p.created', array($p2p));
     }
 }
