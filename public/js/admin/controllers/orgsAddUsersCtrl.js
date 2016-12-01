@@ -151,7 +151,10 @@ app.controller('OrgsAddUsersCtrl', [
         if (data.success) {
           $scope.alerts.addAlert('success', 'Admin created successfully.', true);
         } else {
-          $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);

@@ -192,7 +192,6 @@ angular.module('app.services', [])
       return new handler();
     }
   };
-
 }).factory('dateFactory', function () {
   var handler = function($scope) {
     this.endDate = new Date();
