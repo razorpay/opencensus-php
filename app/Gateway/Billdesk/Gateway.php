@@ -123,17 +123,25 @@ class Gateway extends Base\Gateway
         $response['refund_id'] = $input['refund']['id'];
         $response['CurrencyType'] = 'INR';
         $response['received'] = 1;
-        $this->createGatewayPaymentEntity($response);
+        $refund = $this->createGatewayPaymentEntity($response);
 
         if ($response['ProcessStatus'] !== 'Y')
         {
-            $alreadyRefunded = $this->checkIfAlreadyRefunded($response, $gatewayPayment);
+            $alreadyRefunded = $this->checkIfAlreadyRefunded($response, $input);
 
             if ($alreadyRefunded === true)
             {
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ALREADY_REFUNDED,
+                    [
+                        'error_code'        => $response['ErrorCode'],
+                        'process_status'    => $response['ProcessStatus'],
+                        'response'          => $response,
+                        'input'             => $input,
+                    ]);
+
                 return;
             }
-
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
@@ -174,6 +182,7 @@ class Gateway extends Base\Gateway
         // NOTE: Billdesk is NOT going to throw this error if the attempted refund is less
         // than [transaction_amount - {refunds so far}]
         // It will, instead, do an actual refund.
+        // This error is thrown only when the total refund equals/exceeds the total payment.
         //
         if ($response['ErrorCode'] === 'ERR_REF010')
         {
@@ -235,11 +244,6 @@ class Gateway extends Base\Gateway
      */
     protected function validateAutoRefundedByBilldesk(array $response, array $input)
     {
-        // For very very few transactions, the payment status on billdesk changes
-        // after 1 whole day. These are automatically refunded by billdesk.
-        // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
-        // In that case, we need to let the refund go ahead.
-
         $refundAmount = (int) ($response['RefAmount'] * 100);
 
         if (($response['RefStatus'] === RefundStatus::CANCELLED) and
