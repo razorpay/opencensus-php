@@ -83,6 +83,7 @@ class PaytmGatewayTest extends TestCase
     public function testRefundPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);
