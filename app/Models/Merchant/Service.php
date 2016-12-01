@@ -48,7 +48,7 @@ class Service extends Base\Service
         // the admin referral
         if (isset($adminId) === true)
         {
-            $this->attachAdmin($merchant->id, $adminId);
+            $this->attachAdmin($merchant->getKey(), $adminId);
         }
 
         return $merchant->toArrayPublic();

@@ -10,7 +10,9 @@ class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
-        $role = (new Entity)->build($input);
+        $role = (new Entity)->generateId();
+
+        $role->build($input);
 
         $this->repo->role->validateOrgHasNoSuchRole($role, $org);
 

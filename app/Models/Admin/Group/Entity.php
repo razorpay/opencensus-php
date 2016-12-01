@@ -28,7 +28,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'grp';
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::ID,
@@ -54,11 +54,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ORG_ID,
     ];
-
-    public function isDeleted()
-    {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
-    }
 
     // Immediate higher groups which have access to this
     // group and its merchants

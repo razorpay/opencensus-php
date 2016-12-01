@@ -16,15 +16,26 @@ use Mail;
 
 class Service extends Base\Service
 {
-    public function login($input)
+    public function authenticate(string $orgId, array $input)
     {
+        \Database\DefaultConnection::set('live');
+
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        return $this->login($orgId, $input);
+    }
+
+    public function login(string $orgId, array $input)
+    {
+        $email = $input['username'];
+
         // Get the admin record
-        $admin = $this->repo->admin->findByEmail($input['username']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 
         if ($admin === null)
         {
             throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
 
         $admin->getValidator()->validateCredentials($input);
@@ -46,13 +57,12 @@ class Service extends Base\Service
 
             return $data;
         }
-        else
-        {
-            $admin->incrementFailedAttempts();
-            $this->repo->saveOrFail($admin);
-        }
 
-        return null;
+        $admin->incrementFailedAttempts();
+        $this->repo->saveOrFail($admin);
+
+        throw new Exception\BadRequestException(
+            Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
     }
 
     public function loginWithOAuth($input)

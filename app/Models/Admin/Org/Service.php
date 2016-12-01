@@ -41,7 +41,6 @@ class Service extends Base\Service
         return (new Role\Core)->create($org, $input);
     }
 
-
     public function fetch(string $id)
     {
         $org = $this->core()->fetch($id);

@@ -41,13 +41,23 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
-    public function testOrgMultiple()
+    public function testfetchMultipleOrg()
     {
-        $this->ba->adminAuth();
+        $this->startTest();
+    }
 
-        $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
-        $org = $this->fixtures->create('org', ['email' => 'sreeram@gmail.com']);
+    public function testCreateOrgInvalidAuthType()
+    {
+        $this->startTest();
+    }
 
+    public function testCreateOrgInvalidHostname()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOrgNotUniqueHostname()
+    {
         $this->startTest();
     }
 
@@ -58,6 +68,13 @@ class OrgTest extends TestCase
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
+
+        $this->startTest();
+    }
+
+    public function testGetOrgByHostname()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }

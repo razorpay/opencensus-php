@@ -27,7 +27,7 @@ class AdminTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
-        $this->ba->adminAuth('test');
+        $this->ba->adminAuth();
     }
 
     public function testCreateAdmin()
@@ -177,7 +177,6 @@ class AdminTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        $this->testData[__FUNCTION__]['request']['content'][Admin\Entity::PASSWORD] = 'helloworld';
 
         $this->startTest();
     }
