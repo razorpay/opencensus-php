@@ -161,13 +161,14 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $traceData = [
-            'invoice_id'   => $invoice->getId(),
-            'line_item_id' => $lineItem->getId(),
-            'input'        => $input,
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_UPDATE_LINE_ITEM_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::INVOICE_UPDATE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'   => $invoice->getId(),
+                'line_item_id' => $lineItem->getId(),
+                'input'        => $input,
+            ]
+        );
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -193,12 +194,13 @@ class Core extends Base\Core
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
-        $traceData = [
-            'invoice_id'   => $invoice->getId(),
-            'line_item_id' => $lineItem->getId(),
-        ];
-
-        $this->trace->info(TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST, $traceData);
+        $this->trace->info(
+            TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'   => $invoice->getId(),
+                'line_item_id' => $lineItem->getId(),
+            ]
+        );
 
         $this->repo->transaction(
             function() use ($lineItem, $invoice)

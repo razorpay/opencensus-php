@@ -358,7 +358,7 @@ return [
                 'email_status'         => 'pending',
                 'view_less'            => true,
                 'type'                 => null,
-                'amount'               => 0,
+                'amount'               => null,
                 'currency'             => 'INR',
                 'description'          => null,
                 'short_url'            => null,

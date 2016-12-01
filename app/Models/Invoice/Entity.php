@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS         => 1,
         self::TYPE              => null,
         self::USER_ID           => null,
-        self::AMOUNT            => 0,
+        self::AMOUNT            => null,
         self::CURRENCY          => 'INR',
         self::CUSTOMER_NAME     => null,
         self::CUSTOMER_EMAIL    => null,
