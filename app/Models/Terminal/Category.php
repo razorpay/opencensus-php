@@ -74,7 +74,7 @@ class Category
      * Anything defined on network, or otherwise is an override.
      * If for some category an override is not required,
      * i.e the category decided by the method is to be used,
-     * then it shoould be left empty
+     * then it should be left empty
      * */
     const NETWORK_AMEX = [
         'securities'     => 'incompatible',
@@ -191,7 +191,7 @@ class Category
     }
 
     /**
-     * Utitlity function that is used to get the category for a
+     * Utility function that is used to get the category for a
      * particular pair of (method, $method) or a (network, $network)
      * */
     protected static function getCategoryForType($type, $item, $category)
