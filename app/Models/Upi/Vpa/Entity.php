@@ -115,4 +115,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
+
+    public function merchant()
+    {
+        return $this->customer->merchant;
+    }
 }
