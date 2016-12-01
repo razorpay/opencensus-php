@@ -57,7 +57,7 @@ class OrgTest extends TestCase
 
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
-        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
 
         $this->startTest();
     }
