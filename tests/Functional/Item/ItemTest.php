@@ -20,7 +20,7 @@ class ItemTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['invoice']);
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
     }
 
     public function testCreateItem()
