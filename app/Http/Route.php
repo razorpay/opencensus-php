@@ -377,7 +377,6 @@ final class Route
         'otp_post',
         'otp_verify',
         'p2p_create',
-        'p2p_authorize',
         'device_create',
     );
 
@@ -395,6 +394,7 @@ final class Route
         'device_fetch',
         'p2p_fetch_multiple',
         'p2p_fetch',
+        'p2p_authorize',
     );
 
     public static $publicCallback = array(

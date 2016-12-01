@@ -168,6 +168,7 @@ class BasicAuth
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
         $this->merchant = null;
+        $this->device = null;
     }
 
     public function setCredentials()
@@ -577,6 +578,8 @@ class BasicAuth
         }
 
         $device = $this->repo->device->findByAuthToken($deviceToken);
+        $this->device = $device;
+
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
@@ -753,6 +756,11 @@ class BasicAuth
     public function getMerchant()
     {
         return $this->merchant;
+    }
+
+    public function getDevice()
+    {
+        return $this->device;
     }
 
     public function getMerchantId()

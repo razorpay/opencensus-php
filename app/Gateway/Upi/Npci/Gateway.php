@@ -464,6 +464,12 @@ EOT;
     break;
         case 'ReqPay':
             $mpinCredBlock = $input['params']['gateway']['mpincredblock'];
+            $imei = $input['params']['device']->getImei();
+            $packageName = $input['params']['device']->getPackageName();
+            $amount = number_format($input['params']['p2p']->getAmount(), 2, ',', '');
+            $source = $input['params']['p2p']->source;
+            $sink = $input['params']['p2p']->sink;
+            $customer = $input['params']['p2p']->customer;
 
             $txnId = "RAZEAF93A1939E3458BA71F03F57D25242F";
             $str = <<<EOT
@@ -475,23 +481,23 @@ EOT;
     <Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="PAY" custRef="111222233334">
     <RiskScores/>
     </Txn>
-    <Payer addr="{$input['params']['p2p']['source']}" name="Hari Ram" seqNum="1" type="PERSON">
+    <Payer addr="{$source->getAddress()}" name="Hari Ram" seqNum="1" type="PERSON">
         <Info>
             <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
         </Info>
         <Ac addrType="ACCOUNT" name="Hari Ram">
             <Detail name="IFSC" value="RAZR0000001"/>
             <Detail name="ACTYPE" value="SAVINGS"/>
-            <Detail name="ACNUM" value="1234"/>
+            <Detail name="ACNUM" value="{$source->bank_account->getAccountNumber()}"/>
         </Ac>
         <Device>
-            <Tag name="MOBILE" value="919639516176"/>
+            <Tag name="MOBILE" value="{$customer->getContact()}"/>
             <Tag name="GEOCODE" value="12.9667,77.5667"/>
             <Tag name="LOCATION" value="Sarjapur Road, Bangalore, KA, IN"/>
             <Tag name="IP" value="1.2.3.4"/>
-            <Tag name="ID" value="358960060336586"/>
+            <Tag name="ID" value="{$imei}"/>
             <Tag name="OS" value="Android 5.3"/>
-            <Tag name="APP" value="com.razorpay.upi.sampleapp"/>
+            <Tag name="APP" value="{$packageName}"/>
             <Tag name="CAPABILITY" value="011001"/>
         </Device>
         <Creds>
@@ -499,11 +505,11 @@ EOT;
                 <Data code="NPCI" ki="20150822">{$mpinCredBlock}</Data>
             </Cred>
         </Creds>
-        <Amount curr="INR" value="500.00"/>
+        <Amount curr="INR" value="{$amount}"/>
     </Payer>
     <Payees>
-        <Payee name="Hari" seqNum="2" type="PERSON" addr="hari@razor">
-        <Amount curr="INR" value="500.00"/>
+        <Payee name="Hari" seqNum="2" type="PERSON" addr="{$sink->getAddress()}">
+        <Amount curr="INR" value="{$amount}"/>
     </Payee>
     </Payees>
 </upi:ReqPay>

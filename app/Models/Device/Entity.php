@@ -82,6 +82,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AUTH_TOKEN);
     }
 
+    public function getImei()
+    {
+        return $this->getAttribute(self::IMEI);
+    }
+
+    public function getPackageName()
+    {
+        return $this->getAttribute(self::PACKAGE_NAME);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);

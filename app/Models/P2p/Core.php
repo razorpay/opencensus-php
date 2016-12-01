@@ -47,6 +47,7 @@ class Core extends Base\Core
             'p2p'      => $p2p->toArray(),
             'customer' => $p2p->customer(),
             'gateway'  => $input,
+            'device'   => $this->app['basicauth']->getDevice()
         ];
 
         return $gatewayInput;

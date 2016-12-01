@@ -37,6 +37,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
     ];
 
+    protected $appends = [
+        self::ADDRESS
+    ];
+
     protected static $generators = [
         'user_name_and_handle',
     ];
@@ -66,11 +70,28 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USERNAME);
     }
 
+    public function getHandle()
+    {
+        return $this->getAttribute(self::HANDLE);
+    }
+
+    public function getAddress()
+    {
+        return $this->getAttribute(self::ADDRESS);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setHandle($handle)
     {
         return $this->setAttribute(self::HANDLE, $handle);
+    }
+
+    // ----------------------- Accessor ----------------------
+
+    protected function getAddressAttribute()
+    {
+        return $this->getUsername() . self::AROBASE . $this->getHandle();
     }
 
     // ----------------------- Relations -----------------------
