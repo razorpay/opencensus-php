@@ -12,7 +12,7 @@ import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import LineItemTable from './LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
 import { fetchItems } from 'merchant/modules/items'
-import { createInvoice } from 'merchant/modules/invoices/list'
+import { createInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
 
@@ -28,7 +28,7 @@ const selector = formValueSelector('newInvoice')
       customer: selector(state, 'customer')
     }
   },
-  { fetchCustomers, fetchItems, createInvoice }
+  { fetchCustomers, fetchItems, createInvoice, highLightInvoice }
 )
 @reduxForm({
   form: 'newInvoice',
@@ -81,6 +81,9 @@ export default class InvoicesNewContainer extends ModalContainer {
     invoiceParams.type = 'invoice'
     return this.props.createInvoice(invoiceParams).then((reponse) => {
       this.context.ngRouter.transitionTo('app.invoices')
+      setTimeout(() => {
+        this.props.highLightInvoice(reponse.data.id)
+      }, 1500)
     }).catch(({ errors }) => {
       this.setState({
         errors
