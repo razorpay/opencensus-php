@@ -367,7 +367,8 @@ EOT;
         $ts = upi_ts();
 
         $ackResponse = <<<EOT
-<?xml version="1.0" encoding="UTF-8" standalone="yes"><upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
+<?xml version="1.0" encoding="UTF-8" standalone="yes">
+<upi:Ack xmlns:upi="http://npci.org/upi/schema/" api="$api" reqMsgId="$msgId" ts="$ts"/>
 EOT;
 
         return $ackResponse;
@@ -418,7 +419,7 @@ EOT;
     <Info>
         <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
     </Info>
-    <Ac addrType="ACCOUNT">
+    <Ac addrType="ACCOUNT" name="Hari Ram">
         <Detail name="IFSC" value="RAZR0000001"/>
         <Detail name="ACTYPE" value="SAVINGS"/>
         <Detail name="ACNUM" value="1234"/>
@@ -427,7 +428,7 @@ EOT;
 </Payer>
 <Payees>
 <Payee addr="{$payee->getAddr()}" name="Hari Ram" seqNum="2" type="PERSON">
-    <Ac addrType="{$payee->getAc()->getAddrType()}" name="Hari Ram">
+    <Ac addrType="{$payee->getAc()->getAddrType()}" Name="Hari Ram">
         <Detail name="IFSC" value="RAZR0000001"/>
         <Detail name="ACTYPE" value="SAVINGS"/>
         <Detail name="ACCNUM" value="12345"/>
@@ -437,8 +438,6 @@ EOT;
 </Payees>
 </upi:RespAuthDetails>
 EOT;
-
-// sd($str);
             break;
 
             case 'RespRegMob':
@@ -464,7 +463,8 @@ $str = <<<EOT
 EOT;
     break;
         case 'ReqPay':
-            $txnId = "RAZEAF93A1939E3458BA71F03F57D25242F";
+
+            $txnId = "RAZ4B63BF30D3454307A5718F1E9813A8B3";
             $str = <<<EOT
 <upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">
     <Head msgId="$msgId" orgId="$orgId" ts="$ts" ver="1.0"/>
@@ -478,7 +478,7 @@ EOT;
         <Info>
             <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
         </Info>
-        <Ac addrType="ACCOUNT">
+        <Ac addrType="ACCOUNT" name="Hari Ram">
             <Detail name="IFSC" value="RAZR0000001"/>
             <Detail name="ACTYPE" value="SAVINGS"/>
             <Detail name="ACNUM" value="1234"/>
@@ -495,7 +495,7 @@ EOT;
         </Device>
         <Creds>
             <Cred subType="MPIN" type="PIN">
-                <Data code="NPCI" ki="20150822">2.0|uWbL88708ieqD5VyfOY4IPuYZFzZlga3WXEk9BebWH9jHMojS85bjYyM88TCcQC4Wq/Q1ISb59Gw3B3UKj6GfKp4lCRPwEKsvhmkoQwJn/OdSy0QiU6w0Hb8LBQuVrBgIJ0EpvjNqjntS72ecI3F9RfnZMYzEPMbJXmTxV5G13mthllhOKZ13Qy5ovswsnS0uy1JLPxYz/p6S2c6qfFgqLMXF/x1/UqOVKEa0e9AzAc2P/Cz9JP/0FgfOARQvI2QE5DYFUwQXQgdvrZ068iFe/pLHZOmSr3xwa0stlT8Js6QmgWraELYJ5Ki1huUGALPU1ZAcGTJP9xuD1xJ+gPU1w==</Data>
+                <Data code="NPCI" ki="20150822">2.0|0tLL0K/aJ5ChZarr7idbXOJeNMQ8Hw7nnvlhGiuNMnYzRKqyq2JBWRo4Iir+TB0L/VmioBaz7FjBgjaWpRuvwHJCATtDSFIz8DgyAFrQ++vBhi6EtjImrP/IHBTN6FIdH0w2g5NI+QP+8vY2598nu+g3Sr5UOWuiVdlTaP1A4ZtxMjTWmk5NW7pBfzjv+rSehFPnsbgpr5ZMYBzYeGRsfwxdOtxj+Sd5NxvOyEsa3cBVXcwsmbVdFP8btgG1rSvW46tnwDHkgvcTMaryfE6fM8Zl2IKPMB7HqGMIwHoYm+kP6ZC1IZdpHU3/kQPf5HpM5zlgzSRMwskxizDIzuq6WA==</Data>
             </Cred>
         </Creds>
         <Amount curr="INR" value="500.00"/>
