@@ -856,6 +856,20 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultFlashWalletPaymentArray($customerId = null)
+    {
+        $payment = $this->getDefaultWalletPaymentArray('flashwallet');
+
+        if ($customerId !== null)
+        {
+            $payment['customer_id'] = $customerId;
+        }
+
+        unset($payment['bank'], $payment['card']);
+
+        return $payment;
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);

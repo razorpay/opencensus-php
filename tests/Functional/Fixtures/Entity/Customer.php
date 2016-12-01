@@ -134,4 +134,9 @@ class Customer extends Base
 
         return $bankAccounts;
     }
+
+    public function createCustomerBalance()
+    {
+
+    }
 }
