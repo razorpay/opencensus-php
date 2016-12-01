@@ -147,3 +147,7 @@ export default class AddItem extends Component {
     )
   }
 }
+
+AddItem.defaultProps = {
+  onSave: () => {}
+}

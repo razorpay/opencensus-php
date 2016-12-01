@@ -30,7 +30,9 @@ export default class InvoiceLineItem extends ModalContainer {
   }
 
   selectItemAndCloseModal(item) {
-    this.props.change(`${this.props.fieldName}.id`, item.id)
+    let fieldName = this.props.fieldName
+    this.props.change(`${fieldName}.id`, item.id)
+    this.props.change(`${fieldName}.amount_in_inr`, (item.amount/100).toFixed(2))
     this.closeModal()
   }
 

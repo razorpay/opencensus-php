@@ -74,13 +74,13 @@ export default function (state = fromJS(initialState), action) {
 
     case `${ITEM_CREATE}::SUCCESS`:
       let newlyAddedItem = action.payload.data
-      newlyAddedItem.amount_in_inr = getFixedINRAmount(item.amount)
+      newlyAddedItem.amount_in_inr = getFixedINRAmount(newlyAddedItem.amount)
       return state.set('items', state.get('items').unshift(newlyAddedItem))
 
     case `${ITEM_EDIT}::SUCCESS`:
       let items = state.get('items')
       let updatedItem = action.payload.data
-      updatedItem.amount_in_inr = getFixedINRAmount(item.amount)
+      updatedItem.amount_in_inr = getFixedINRAmount(updatedItem.amount)
       return state.set('items', items.update(
         items.findIndex((item) => item.get('id') === updatedItem.id),
         (item) => item.merge(updatedItem)

@@ -151,7 +151,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
                   <div class='col-md-5 pull-right'>
                     <div class='row'>
-                      <div class='col-md-7'>
+                      <div class='col-md-7 pull-right'>
                         <div class='form-group'>
                           <label>Invoice Date</label>
                           <Field
