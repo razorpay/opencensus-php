@@ -119,6 +119,34 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onVpaEdit($vpa)
+    {
+        $payload = $this->getVpaPayload($vpa);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function getVpaPayload($vpa)
+    {
+        $customer = $vpa->customer;
+
+        $bankAccount = $vpa->bankAccount;
+
+        $partialPayload[Constants\Entity::VPA] = [
+            'entity' => $vpa->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::CUSTOMER] = [
+            'entity' => $customer->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::BANK_ACCOUNT] = [
+            'entity' => $bankAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getOrderPayload($payment)
     {
         $order = $payment->order;

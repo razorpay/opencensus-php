@@ -246,7 +246,7 @@ return [
             ],
         ],
     ],
-    
+
     'testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice' => [
         'mode' => 'test',
         'event' => [

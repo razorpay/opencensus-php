@@ -12,6 +12,7 @@ class Contains
         Type::PAYMENT_FAILED     => [Constants\Entity::PAYMENT],
         Type::ORDER_PAID         => [Constants\Entity::PAYMENT, Constants\Entity::ORDER],
         Type::INVOICE_PAID       => [Constants\Entity::PAYMENT, Constants\Entity::ORDER, Constants\Entity::INVOICE],
+        Type::VPA_EDITED         => [Constants\Entity::VPA, Constants\Entity::CUSTOMER, Constants\Entity::BANK_ACCOUNT],
     );
 
     public static function getEntityNamesForEvent($event)

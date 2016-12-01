@@ -82,6 +82,13 @@ class Service extends Base\Service
 
         $vpa = (new Core)->editVpa($vpa, $input);
 
+        $this->eventVpaEdited($vpa);
+
         return $vpa->toArrayPublic();
+    }
+
+    protected function eventVpaEdited($vpa)
+    {
+        $this->app['events']->fire('api.vpa.edited', array($vpa));
     }
 }

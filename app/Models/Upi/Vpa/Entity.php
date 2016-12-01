@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ADDRESS,
         self::USERNAME,
         self::HANDLE,
         self::ADDRESS,
@@ -47,7 +48,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $appends = [
-        self::ADDRESS
+        self::ADDRESS,
     ];
 
     protected static $generators = [

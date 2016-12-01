@@ -17,4 +17,5 @@ class Type
     const PAYMENT_CAPTURED   = 'payment.captured';
     const ORDER_PAID         = 'order.paid';
     const INVOICE_PAID       = 'invoice.paid';
+    const VPA_EDITED         = 'vpa.edited';
 }
