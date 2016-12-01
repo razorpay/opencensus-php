@@ -436,11 +436,6 @@ class Gateway
         return self::$channels[$gateway];
     }
 
-    public static function supportsReverse($gateway)
-    {
-        return in_array($gateway, self::$reverse, true);
-    }
-
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
