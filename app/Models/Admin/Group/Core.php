@@ -37,28 +37,15 @@ class Core extends Base\Core
 
     protected function associateRelevantEntitiesToGroup($input, Entity $group)
     {
-        if (isset($input['admins']) === true)
-        {
-            Admin\Entity::verifyIdAndStripSignMultiple($input['admins']);
-            $group->admins()->sync($input['admins']);
-        }
-
-        if (isset($input['sub_groups']) === true)
-        {
-            Entity::verifyIdAndStripSignMultiple($input['sub_groups']);
-            $group->subGroups()->sync($input['sub_groups']);
-        }
-
         if (isset($input['parents']) === true)
         {
             Entity::verifyIdAndStripSignMultiple($input['parents']);
             $group->parents()->sync($input['parents']);
         }
-
-        if (isset($input['roles']) === true)
+        else
         {
-            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-            $group->roles()->sync($input['roles']);
+            // Deletion of all
+            $group->parents()->sync([]);
         }
     }
 }
