@@ -111,7 +111,7 @@ class Metadata
 
         $values = array_flip($map);
 
-        return array_key_exists($value, $values) ? $values[$value] : self::OTHERS;
+        return $values[$value] ?? self::OTHERS;
     }
 
     public static function isInvalid($value)
@@ -121,7 +121,7 @@ class Metadata
 
     public static function isValidIntegration($integration)
     {
-        return array_key_exists($integration, self::INTEGRATION_VALUES);
+        return isset(self::INTEGRATION_VALUES[$integration]);
     }
 
     public static function getValueForIntegration($integration)
@@ -138,7 +138,7 @@ class Metadata
 
     public static function isValidPlatform($platform)
     {
-        return array_key_exists($platform, self::PLATFORM_VALUES);
+        return isset(self::PLATFORM_VALUES[$platform]);
     }
 
     public static function getValueForPlatform($platform)
@@ -155,7 +155,7 @@ class Metadata
 
     public static function isValidOs($os)
     {
-        return array_key_exists($os, self::OS_VALUES);
+        return isset(self::OS_VALUES[$os]);
     }
 
     public static function getValueForOs($os)
@@ -172,7 +172,7 @@ class Metadata
 
     public static function isValidLibrary($library)
     {
-        return array_key_exists($library, self::LIBRARY_VALUES);
+        return isset(self::LIBRARY_VALUES[$library]);
     }
 
     public static function getValueForLibrary($library)
@@ -189,17 +189,7 @@ class Metadata
 
     public static function isValidBrowser($browser)
     {
-        return array_key_exists($browser, self::BROWSER_VALUES);
-    }
-
-    public static function validateBrowser($browser)
-    {
-        $browser = strtolower($browser);
-
-        if (self::isValidBrowser($browser) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_BROWSER);
-        }
+        return isset(self::BROWSER_VALUES[$browser]);
     }
 
     public static function getValueForBrowser($browser)
@@ -216,17 +206,7 @@ class Metadata
 
     public static function isValidDevice($device)
     {
-        return array_key_exists($device, self::DEVICE_VALUES);
-    }
-
-    public static function validateDevice($device)
-    {
-        $device = strtolower($device);
-
-        if (self::isValidDevice($device) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_DEVICE);
-        }
+        return isset(self::DEVICE_VALUES[$device]);
     }
 
     public static function getValueForDevice($device)
