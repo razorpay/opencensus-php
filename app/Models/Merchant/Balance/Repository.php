@@ -4,11 +4,10 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'balance';
 
     // protected $appFetchParamRules = array(
@@ -31,29 +30,64 @@ class Repository extends Base\Repository
 
     public function getMerchantBalance($merchant)
     {
-        return Entity::findOrFailPublic($merchant->getId());
+        $balance = $this->findOrFailPublic($merchant->getId());
+
+        $balance->merchant()->associate($merchant);
+
+        return $balance;
     }
 
-    public function editMerchantFreeCredits($merchant, $freeCredits)
+    public function editMerchantAmountCredits($merchant, $amountCredits)
     {
-        return $this->transaction(function () use ($merchant, $freeCredits)
+        $channel = Settlement\Channel::KOTAK;
+
+        return $this->transaction(function () use ($merchant, $amountCredits, $channel)
         {
-            return $this->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
+            return $this->editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel);
         });
     }
 
-    private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits)
+    private function editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel)
     {
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        $nodalBalance = $this->getNodalBalanceLockForUpdate('kotak');
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalCredits = $nodalBalance->getCredits();
-        $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
-        $nodalBalance->setCredits($nodalCredits);
+        $nodalCredits = $nodalBalance->getAmountCredits();
+        $nodalCredits = $nodalCredits - $balance->getAmountCredits() + $amountCredits;
+        $nodalBalance->setAmountCredits($nodalCredits);
 
-        $balance->setFreeCredits($freeCredits);
+        $balance->setAmountCredits($amountCredits);
+
+        $balance->saveOrFail();
+        $nodalBalance->saveOrFail();
+
+        return $balance;
+    }
+
+    public function editMerchantFeeCredits($merchant, $feeCredits)
+    {
+        $channel = Settlement\Channel::KOTAK;
+
+        return $this->transaction(function () use ($merchant, $feeCredits, $channel)
+        {
+            return $this->editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel);
+        });
+    }
+
+    private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
+
+        $nodalCredits = $nodalBalance->getFeeCredits();
+        $nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
+        $nodalBalance->setFeeCredits($nodalCredits);
+
+        $balance->setFeeCredits($feeCredits);
 
         $balance->saveOrFail();
         $nodalBalance->saveOrFail();

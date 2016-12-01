@@ -3,7 +3,6 @@
 namespace RZP\Models\Base;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class PublicCollection extends Collection
 {
@@ -41,6 +40,11 @@ class PublicCollection extends Collection
     public function toArrayReport()
     {
         return $this->itemsToArrayReport();
+    }
+
+    public function toArrayPublicEmbedded()
+    {
+        return $this->itemsToArrayPublic();
     }
 
     public function getIds()
@@ -118,6 +122,15 @@ class PublicCollection extends Collection
 
         // This is required to remove all null entries from the array
         return array_filter($filteredEntities);
+    }
+
+    public function callOnEveryItem($function)
+    {
+        return array_map(function($item) use ($function)
+        {
+            return $item->$function();
+
+        }, $this->items);
     }
 
     protected function itemsToArrayPublic()

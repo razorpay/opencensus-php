@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement\Details;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Settlement\Details;
 
 class Validator extends Base\Validator

@@ -3,14 +3,12 @@
 namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
+use Requests;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Billdesk;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Billdesk;
 use RZP\Models\Card;
-use Requests;
-use RZP\Models\Payment\Core;
 
 class Server extends Base\Mock\Server
 {
@@ -19,6 +17,20 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $input = $this->getContentFromInput($input);
+
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['CustomerID'], Action::AUTHORIZE);
+
+        $payment = $this->repo->payment->findOrFailPublic($gatewayPayment->getPaymentId());
+
+        $accountNo = $input['AccountNumber'];
+
+        $requestTpv = true;
+
+        if ($accountNo === 'NA')
+        {
+            $requestTpv = false;
+        }
 
         $this->validateAuthorizeInput($input);
 
@@ -53,7 +65,13 @@ class Server extends Base\Mock\Server
             'ErrorDescription'  => 'NA',
         );
 
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+        $msg = $this->getGatewayInstance()
+                    // ->setInput($gatewayInput)
+                    ->getMessageStringWithHash($content);
+
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment->merchant);
+
+        assertTrue($gatewayTpv === $requestTpv);
 
         // // Uncomment below to mock s2s callback
         // $headers = array(
@@ -139,10 +157,6 @@ class Server extends Base\Mock\Server
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
                         $input['CustomerID'], Action::AUTHORIZE);
-
-        $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
-
-        $content = array_combine($fields, array_fill(0, count($fields), 'NA'));
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
         // hh is in 24 hrs

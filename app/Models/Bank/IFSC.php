@@ -90,6 +90,7 @@ class IFSC
     const KKBK = 'KKBK';
     const KNSB = 'KNSB';
     const LAVB = 'LAVB';
+    const LKBL = 'LKBL';
     const MCBL = 'MCBL';
     const MSCI = 'MSCI';
     const MSHQ = 'MSHQ';

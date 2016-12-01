@@ -47,11 +47,10 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::FIXED_RATE);
 
-    protected $table = \RZP\Constants\Table::PRICING;
-
     protected $entity = 'pricing';
 
-    protected $generateIdOnCreate = true;
+    // We are explicitly generating Id so that same Id gets stored in live and test db
+    protected $generateIdOnCreate = false;
 
     /**
      * Fields which will be modified before

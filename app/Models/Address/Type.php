@@ -22,7 +22,7 @@ class Type
 
     public static function validateEntityType($entityType)
     {
-        if (in_array($entityType, self::$validEntityTypes) === false)
+        if (in_array($entityType, self::$validEntityTypes, true) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid entity type for address: ' . $entityType);
@@ -31,7 +31,7 @@ class Type
 
     public static function validateType($type, $entityType)
     {
-        if (in_array($type, self::$validTypes[$entityType]) === false)
+        if (in_array($type, self::$validTypes[$entityType], true) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid type for address: ' . $type);

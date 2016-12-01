@@ -42,9 +42,9 @@ trait AuthorizeFailed
             ($verify->gatewaySuccess === true))
         {
             // This is gateway entity of the payment
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
+            $gatewayPayment = $verify->payment;
+            $gatewayPayment->fill($verify->verifyResponseContent);
+            $gatewayPayment->saveOrFail();
         }
         else
         {

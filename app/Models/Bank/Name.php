@@ -91,6 +91,7 @@ class Name
         IFSC::KKBK => 'Kotak Mahindra Bank',
         IFSC::KNSB => 'Kurmanchal Nagar Sahkari Bank Ltd',
         IFSC::LAVB => 'Lakshmi Vilas Bank',
+        IFSC::LKBL => 'Lord Krishna Bank Ltd',
         IFSC::MCBL => 'Mahanagar Co-op Bank',
         IFSC::MSCI => 'Maharashtra State Co-operative Bank',
         IFSC::MSHQ => 'Mashreq Bank',

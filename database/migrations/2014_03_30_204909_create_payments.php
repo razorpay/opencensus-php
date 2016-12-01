@@ -40,6 +40,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
             $table->tinyInteger(Payment::INTERNATIONAL)
                   ->nullable();
 
@@ -81,6 +84,9 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->string(Payment::ERROR_DESCRIPTION, 255)
+                  ->nullable();
+
+            $table->string(Payment::CANCELLATION_REASON, 255)
                   ->nullable();
 
             $table->string(Payment::CUSTOMER_ID, 14)
@@ -133,6 +139,9 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::GATEWAY_CAPTURED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::VERIFY_BUCKET)
+                  ->nullable();
+
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
 
@@ -171,7 +180,10 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+
             $table->index(Payment::GATEWAY_CAPTURED);
+            $table->index(Payment::VERIFY_BUCKET);
+            $table->index(Payment::GATEWAY);
             $table->index(Payment::AUTHORIZED_AT);
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);

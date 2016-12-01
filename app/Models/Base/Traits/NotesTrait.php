@@ -8,11 +8,9 @@ use RZP\Models\Base\Notes;
 
 trait NotesTrait
 {
-	/**************************************************************
-	 * Setter
-	 **************************************************************
-	 */
-	protected function setNotesAttribute($notes)
+    // -------------------------------------- Setters --------------------------------------
+
+    protected function setNotesAttribute($notes)
     {
         if ($notes === '')
         {
@@ -25,6 +23,7 @@ trait NotesTrait
         {
             $notes = [];
         }
+
         $notesObj = new Notes($notes);
         $this->attributes[self::NOTES] = $notesObj->toJson();
     }
@@ -34,10 +33,9 @@ trait NotesTrait
         $this->setAttribute(self::NOTES, $notes);
     }
 
-    /**************************************************************
-     * Getters
-     **************************************************************
-     */
+    // -------------------------------------- End Setters --------------------------------------
+
+    // -------------------------------------- Getters --------------------------------------
 
     /**
      * Makes sure that getNotes always returns an object
@@ -73,4 +71,6 @@ trait NotesTrait
     {
         return $this->attributes[self::NOTES];
     }
+
+    // -------------------------------------- End Getters --------------------------------------
 }

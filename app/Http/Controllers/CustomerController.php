@@ -8,11 +8,23 @@ use Request;
 
 class CustomerController extends Controller
 {
+    protected $customer;
+    protected $token;
+    
+    public function __construct()
+    {
+        parent::__construct();
+        
+        $this->customer = new Customer\Service;
+        
+        $this->token = new Customer\Token\Service;
+    }
+
     public function createLocalCustomer()
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->createLocalCustomer($input);
+        $data = $this->customer->createLocalCustomer($input);
 
         return ApiResponse::json($data);
     }
@@ -21,21 +33,30 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->edit($id, $input);
+        $data = $this->customer->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getCustomer($id)
     {
-        $data = (new Customer\Service)->fetch($id);
+        $data = $this->customer->fetch($id);
 
         return ApiResponse::json($data);
+    }
+    
+    public function getCustomers()
+    {
+        $input = Request::all();
+        
+        $customers = $this->customer->fetchMultiple($input);
+
+        return ApiResponse::json($customers);
     }
 
     public function deleteCustomer($id)
     {
-        $data = (new Customer\Service)->delete($id);
+        $data = $this->customer->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -44,7 +65,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Token\Service)->add($id, $input);
+        $data = $this->token->add($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -53,35 +74,35 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Token\Service)->edit($id, $token, $input);
+        $data = $this->token->edit($id, $token, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->deleteTokenForLocalCustomer($id, $token);
+        $data = $this->token->deleteTokenForLocalCustomer($id, $token);
 
         return ApiResponse::json($data);
     }
 
     public function fetchToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->fetch($id, $token);
+        $data = $this->token->fetch($id, $token);
 
         return ApiResponse::json($data);
     }
 
     public function fetchTokens($id)
     {
-        $data = (new Customer\Token\Service)->fetchMultiple($id);
+        $data = $this->token->fetchMultiple($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchTokensForGlobalCustomer()
     {
-        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer();
+        $tokens = $this->token->fetchTokensForGlobalCustomer();
 
         return ApiResponse::json($tokens);
     }
@@ -90,7 +111,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $payments = (new Customer\Service)->fetchPaymentsForGlobalCustomer($input);
+        $payments = $this->customer->fetchPaymentsForGlobalCustomer($input);
 
         return ApiResponse::json($payments);
     }
@@ -99,14 +120,14 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, $input, true);
+        $status = $this->customer->fetchGlobalCustomerStatus($contact, $input, true);
 
         return ApiResponse::json($status);
     }
 
     public function deleteTokenForGlobalCustomer($token)
     {
-        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($token);
+        $data = $this->token->deleteTokenForGlobalCustomer($token);
 
         return ApiResponse::json($data);
     }
@@ -124,14 +145,14 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->addBankAccount($id, $input);
+        $data = $this->customer->addBankAccount($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getBankAccounts($id)
     {
-        $data = (new Customer\Service)->getBankAccounts($id);
+        $data = $this->customer->getBankAccounts($id);
 
         return ApiResponse::json($data);
     }
@@ -140,7 +161,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->sendOtp($input);
+        $data = $this->customer->sendOtp($input);
 
         return ApiResponse::json($data);
     }
@@ -149,7 +170,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->verifyOtp($input);
+        $data = $this->customer->verifyOtp($input);
 
         return ApiResponse::json($data);
     }
@@ -158,7 +179,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->validateDeviceToken($deviceToken, $input);
+        $data = $this->customer->validateDeviceToken($deviceToken, $input);
 
         return ApiResponse::json($data);
     }
@@ -167,7 +188,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\Service)->updateSmsStatus($id, $input);
+        $data = $this->customer->updateSmsStatus($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -176,7 +197,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $address = (new Customer\Service)->createAddress($customerId, $input);
+        $address = $this->customer->createAddress($customerId, $input);
 
         return ApiResponse::json($address);
     }
@@ -185,21 +206,21 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $addresses = (new Customer\Service)->fetchAddresses($customerId, $input);
+        $addresses = $this->customer->fetchAddresses($customerId, $input);
 
         return ApiResponse::json($addresses);
     }
 
     public function putPrimaryAddress($customerId, $addressId)
     {
-        $address = (new Customer\Service)->setPrimaryAddress($customerId, $addressId);
+        $address = $this->customer->setPrimaryAddress($customerId, $addressId);
 
         return ApiResponse::json($address);
     }
 
     public function deleteAddress($customerId, $addressId)
     {
-        $data = (new Customer\Service)->deleteAddress($customerId, $addressId);
+        $data = $this->customer->deleteAddress($customerId, $addressId);
 
         return ApiResponse::json($data);
     }

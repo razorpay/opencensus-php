@@ -6,7 +6,6 @@ use Excel;
 use Config;
 
 use RZP\Exception;
-use RZP\Models\Base\UniqueIdEntity;
 
 class Converter
 {

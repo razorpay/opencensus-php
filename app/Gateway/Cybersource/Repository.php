@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Cybersource';
+    protected $entity = 'cybersource';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID   => 'sometimes|string|min:14|max:18',
@@ -25,11 +25,11 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findCapturedPaymentById($paymentId)
+    public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Status::CAPTURED)
+                    ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
                     ->firstOrFail();
     }
 

@@ -20,7 +20,7 @@ class CardSorter extends Terminal\Sorter
         $methodsAllowed = [Method::CARD, Method::EMI];
 
         // No need to sort unless the method is either card or EMI.
-        if (in_array($method, $methodsAllowed) === false)
+        if (in_array($method, $methodsAllowed, true) === false)
         {
             return $terminals;
         }

@@ -15,6 +15,7 @@ return [
         'production' =>  env('CHECKOUT_URL'),
         'beta'       =>  env('BETA_CHECKOUT_URL'),
     ],
+
     'cdn' => [
         'production' => env('AWS_CF_CDN_URL'),
         'beta'       => env('BETA_AWS_CF_CDN_URL'),

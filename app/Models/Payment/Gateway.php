@@ -2,15 +2,14 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
-use RZP\Models\Settlement;
-use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Settlement;
 
 class Gateway
 {
@@ -129,14 +128,25 @@ class Gateway
      *
      * @var array
      */
-    public static $authAndCapture = array(
+    public static $authAndCapture = [
         self::HDFC => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
+        self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
         self::FIRST_DATA => [],
-    );
+    ];
+
+    /**
+     * Card gateways which support full auth reversal
+     *
+     * @var array
+     */
+    public static $reverse = [
+        // self::CYBERSOURCE
+        self::FIRST_DATA
+    ];
 
 
     /**
@@ -232,6 +242,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::UPI_ICICI,
     );
 
     /**
@@ -332,14 +343,6 @@ class Gateway
         Network::DICL);
 
     /**
-     * Banks with which we have direct netbanking tie-ups.
-     * @var array
-     */
-    public static $directNetbankingBankList = array(
-        IFSC::HDFC,
-        IFSC::KKBK);
-
-    /**
      * For the banks we have direct tie-ups with,
      * here we list down the mapping from bank to netbanking gateway name.
      * There is no standardized bank gateway naming that we follow. IFSC
@@ -409,7 +412,7 @@ class Gateway
 
     public static function isNetbankingBankDirectlySupported($bank)
     {
-        return in_array($bank, self::$directNetbankingBankList);
+        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
     public static function getChannel($gateway)
@@ -475,6 +478,11 @@ class Gateway
         }
     }
 
+    public static function supportsReverse($gateway)
+    {
+        return in_array($gateway, self::$reverse, true);
+    }
+
     /**
      * Whether the gateway supports async payments
      * @param  string $gateway
@@ -522,7 +530,7 @@ class Gateway
                 (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 
-    public static function getGatewaysForNetbankingBank($bank)
+    public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
     {
         $gateways = [];
 
@@ -535,7 +543,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
             {
                 $gateways[] = $netbankingGateway;
             }

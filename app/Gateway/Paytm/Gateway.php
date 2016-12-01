@@ -9,7 +9,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Paytm;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -118,11 +117,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function verifyRefund(array $input)
-    {
-        return false;
-    }
-
     public function verify(array $input)
     {
         parent::verify($input);
@@ -218,7 +212,7 @@ class Gateway extends Base\Gateway
             '309');
 
         if (($payment['received'] === false) and
-            (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
+            (in_array($content['RESPCODE'], $invalidOrderIdRespCode, true) === false))
         {
             $contentToStore = [];
 
@@ -308,7 +302,6 @@ class Gateway extends Base\Gateway
         }
 
         $mobileNo = $this->getMobileNumber($input['payment']['contact']);
-        $email = $this->getFormattedEmail($input['payment']['email']);
 
         $content = array(
             'REQUEST_TYPE'              => $type,

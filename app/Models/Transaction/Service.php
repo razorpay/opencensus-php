@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 
@@ -34,4 +33,20 @@ class Service extends Base\Service
 
         return $report->getReport($input, 'transaction');
     }
+
+    public function migrateOlderTransactions()
+    {
+        return (new Transaction\DataMigration())->migrateOlderTransactions();
+    }
+
+    public function settleOlderTransactions($input)
+    {
+        return (new Transaction\DataMigration())->settleOlderTransactions($input);
+    }
+
+    public function addPricingRuleForeOlderTransactions()
+    {
+        return (new Transaction\DataMigration())->addPricingRuleForeOlderTransactions();
+    }
+
 }

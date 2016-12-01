@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Kotak;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {

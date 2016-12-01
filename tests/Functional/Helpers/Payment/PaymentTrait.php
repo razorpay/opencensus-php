@@ -192,8 +192,7 @@ trait PaymentTrait
         $data = getTextBetweenStrings($content, $start, $end);
 
         // Remove ';\n' at the end to get proper json string
-        $l = strlen($data);
-        $data = substr($data, 0, $l-2);
+        $data = substr($data, 0, -2);
 
         return $data;
     }
@@ -518,11 +517,13 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function cancelPayment($id)
+    protected function cancelPayment($id, $content = [])
     {
         $request = array(
             'method' => 'GET',
-            'url' => '/payments/'.$id.'/cancel');
+            'url' => '/payments/'.$id.'/cancel',
+            'content' => $content
+        );
 
         $this->ba->publicAuth();
         return $this->makeRequestAndGetContent($request);
@@ -813,7 +814,7 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $payment['method'] = 'upi';
-        $payment['vpa'] = 'shk@hdfc';
+        $payment['vpa'] = 'shk@hdfcbank';
 
         return $payment;
     }

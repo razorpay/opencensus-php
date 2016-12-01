@@ -31,6 +31,17 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function removeApprovalCodeInAuth()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['approval_code'] = null;
+            $content['fail_rc']       = '5003';
+            $content['fail_reason']   = 'The order already exists in the database.';
+            $content['status']        = 'FAILED';
+        });
+    }
+
     protected function getUnknownErrorInAuth()
     {
         $this->mockServerContentFunction(function (& $content)

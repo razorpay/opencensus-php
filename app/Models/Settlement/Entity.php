@@ -22,8 +22,6 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON        = 'failure_reason';
     const RETURN_UTR            = 'return_utr';
 
-    protected $table = \RZP\Constants\Table::SETTLEMENT;
-
     protected static $sign = 'setl';
 
     protected $entity = 'settlement';
@@ -111,6 +109,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHANNEL);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
@@ -124,6 +127,11 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
     }
 
     public function setAmount($amount)
@@ -179,6 +187,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function adjustment()
+    {
+        return $this->hasOne('RZP\Models\Adjustment\Entity');
     }
 
     protected function getServiceTaxAttribute()

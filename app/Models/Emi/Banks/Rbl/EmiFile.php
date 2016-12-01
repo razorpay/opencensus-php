@@ -3,13 +3,9 @@
 namespace RZP\Models\Emi\Banks\Rbl;
 
 use Carbon\Carbon;
-
-use RZP\Services\TokenEx;
 use RZP\Models\Card;
-use RZP\Models\Emi\Entity;
-use RZP\Models\Emi\Service;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Models\Emi\Entity;
 
 class EmiFile extends Base\EmiFile
 {
@@ -61,17 +57,13 @@ class EmiFile extends Base\EmiFile
         'EMI Model',
     ];
 
-    public function generate($input)
+    protected function writeEmiFile($emiData)
     {
-        $txt = $this->getEmiData($input);
+        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
 
-        $urlExcel = $this->writeToExcelFile($txt, $this->getFileToWriteNameWithoutExt());
+        $path = $this->getExcelFullFilePath();
 
-        $fullPath = $this->getExcelFullFilePath();
-
-        $this->sendEmiFile($fullPath);
-
-        return $urlExcel;
+        return compact('url', 'path');
     }
 
     protected function getEmiData($input)

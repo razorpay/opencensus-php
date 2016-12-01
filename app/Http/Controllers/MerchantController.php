@@ -4,13 +4,12 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Terminal;
-use RZP\Models\Key;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class MerchantController extends Controller
 {
@@ -144,6 +143,24 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function assignSettlementSchedule($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->assignSettlementSchedule($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function migrateToSchedules()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);
@@ -156,6 +173,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = (new Terminal\Service)->createTerminal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCopyTerminal($mid, $tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->copyTerminal($mid, $tid, $input);
 
         return ApiResponse::json($data);
     }
@@ -274,13 +300,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putBanksForAllMerchants()
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->setBanksForAllMerchants($input);
-    }
-
     public function getBalance($id)
     {
         $data = (new Merchant\Service)->fetchBalance($id);
@@ -303,11 +322,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFreeCredits($id)
+    public function postAmountCredits($id)
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+        $data = (new Merchant\Service)->editAmountCredits($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -389,7 +408,7 @@ class MerchantController extends Controller
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $data = $this->getCheckoutCommon();
+        $data = $this->getCheckoutCommon($input);
 
         $data['preferences'] = $prefs;
 
@@ -398,16 +417,16 @@ class MerchantController extends Controller
 
     public function getCheckoutPublic()
     {
-        $data = $this->getCheckoutCommon();
+        $input = Request::all();
+
+        $data = $this->getCheckoutCommon($input);
 
         return \View::make('checkout.checkout')
                     ->with($data);
     }
 
-    protected function getCheckoutCommon()
+    protected function getCheckoutCommon(array $input)
     {
-        $input = Request::all();
-
         $context = $this->config->get('app.context');
 
         $url = $this->config->get('app.checkout');
@@ -455,6 +474,13 @@ class MerchantController extends Controller
         return (new \RZP\Models\Base\Report)->getInvoice($input);
     }
 
+    public function getInvoiceReportV2()
+    {
+        $input = Request::all();
+
+        return (new \RZP\Models\Base\Report)->getInvoiceV2($input);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday
@@ -466,39 +492,6 @@ class MerchantController extends Controller
         $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
 
         return ApiResponse::json($response);
-    }
-
-    /**
-    * Gets the list of beta fetures enabled for merchant
-    * @param  string $id merchant id
-    * @return array      array of feature names
-    */
-    public function getMerchantFeatures($id)
-    {
-        $data = (new Merchant\Service)->getMerchantFeatures($id);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Adds or updated the list of beta fetures for an merchant
-     * @param  string     $id     merchant id
-     * @return merchant           updated entity
-     */
-    public function postMerchantFeatures($id)
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getAllFeatures()
-    {
-        $data = Merchant\Features::$allowedFeatures;
-
-        return ApiResponse::json($data);
     }
 
     public function getDummyFeatures()
@@ -517,7 +510,16 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- Credits API Handlers -----------------------------------------
+    public function updateMethodsForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
     {

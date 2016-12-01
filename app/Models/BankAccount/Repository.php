@@ -2,16 +2,13 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'BankAccount';
+    protected $entity = 'bank_account';
 
     const WITH_TRASHED = 'deleted';
 

@@ -7,6 +7,7 @@ use BasicAuth;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Terminal;
@@ -19,6 +20,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Transaction;
+use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -76,6 +79,10 @@ class Processor
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
+    // Make sure that this is below 900 (seconds) because SQS doesn't support
+    // delay over 15 minutes.
+    const CAPTURE_QUEUE_DELAY = 180;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -90,6 +97,8 @@ class Processor
     protected $request;
     protected $methods;
     protected $refund;
+    protected $order;
+    protected $segment;
 
     protected $verifyRefundStatus;
 
@@ -122,6 +131,8 @@ class Processor
         $this->mutex = $this->app['api.mutex'];
 
         $this->route = $this->app['api.route'];
+
+        $this->segment = $this->app['segment'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -174,10 +185,20 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        $preCalculationOfFees = true;
-
-        list($fee, $serviceTax, $ruleKey) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
+        if (($this->app->runningUnitTests() === false) and
+            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+            ($payment->isCard() === true) and
+            ($payment->card->isInternational() === false) and
+            ($payment->card->isDebit() === true))
+        {
+            $fee = 0;
+            $serviceTax = 0;
+        }
+        else
+        {
+            list($fee, $serviceTax, $ruleKey, $feesSplit) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment);
+        }
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -296,6 +317,8 @@ class Processor
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
         {
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
@@ -342,6 +365,12 @@ class Processor
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
         }
 
+        if ((isset($input['_']['reason']) === true) and
+            (is_string($input['_']['reason']) === true))
+        {
+            $this->payment->setCancellationReason($input['_']['reason']);
+        }
+
         $e = new Exception\BadRequestException($errorCode);
 
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
@@ -354,6 +383,8 @@ class Processor
      * made by Checkout
      * @param  string $id payment id
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {
@@ -436,6 +467,16 @@ class Processor
 
         $status = $payment->getStatus();
 
+        $segmentCustomProperties = [
+            'error'                 => $error,
+            'code'                  => $code,
+            'description'           => $desc,
+            'internal_error_code'   => $internalCode,
+            'status'                => $status
+        ];
+
+        $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
+
         if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
         {
             throw new Exception\LogicException(
@@ -449,7 +490,20 @@ class Processor
 
         $payment->setStatus(Payment\Status::FAILED);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_FAILED,
+            [
+                'payment_id'    => $payment->getId(),
+                'old_status'    => $status,
+                'error'         => $error,
+                'segment_data'  => $segmentCustomProperties,
+            ]
+        );
+
         $payment->setError($code, $desc, $internalCode);
+
+        $payment->setVerified(null);
+        $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
 
@@ -502,18 +556,24 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
+
+        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)
     {
-        $this->tracePaymentNewRequest($input);
-
         $payment = new Payment\Entity;
 
         $payment->generateId();
 
+        $this->tracePaymentNewRequest($input);
+
         $payment->merchant()->associate($this->merchant);
+
+        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         $payment->build($input);
 
@@ -523,6 +583,8 @@ class Processor
         }
 
         $this->setOrderDetails($payment, $input);
+
+        $this->setInvoiceDetails($payment);
 
         $metadata = isset($input['_']) ? $input['_'] : null;
 
@@ -570,8 +632,9 @@ class Processor
      */
     protected function verifyProvidedFee($payment, $input)
     {
-        // Set the amount back to the base amount (without our fee and tax).
-        $input['amount'] = $payment->getAmount() - $payment->getFee();
+        // This is not needed because FeeCalculater:calculateFee()
+        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
         // Also sets re-calculated fee and amount value (in paise) in $input.
@@ -612,7 +675,7 @@ class Processor
         return $order;
     }
 
-    protected function setOrderDetails($payment, $input)
+    protected function setOrderDetails(Payment\Entity $payment, array $input)
     {
         if (empty($input['order_id']) === true)
         {
@@ -644,16 +707,39 @@ class Processor
 
         $validator->validateOrderNotPaid($this->order);
 
-        $validator->validateMerchantSpecificData($this->order,
-                                                 $payment);
+        $validator->validateMerchantSpecificData($this->order, $payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
         $this->order->incrementAttempts();
 
-        $this->order->saveOrFail();
+        $this->trace->info(
+            TraceCode::ORDER_STATUS_ATTEMPTED,
+            [
+                'order_id'      => $this->order->getId(),
+                'attempts'      => $this->order->getAttempts(),
+            ]);
+
+        $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function setInvoiceDetails(Payment\Entity $payment)
+    {
+        if ($this->order === null)
+        {
+            return;
+        }
+
+        if ($this->order->invoice === null)
+        {
+            return;
+        }
+
+        $invoice = $this->order->invoice;
+
+        $payment->invoice()->associate($invoice);
     }
 
     protected function tracePaymentFailed($error, $traceCode)
@@ -673,6 +759,8 @@ class Processor
         $this->trace->$level(
             $traceCode,
             $traceData);
+
+        $this->segment->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
     protected function retrieveToken($input)
@@ -687,10 +775,8 @@ class Processor
 
     protected function retrieve($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $this->payment = $this->repo->payment->findByIdAndMerchantId(
-                                                $id, $this->merchant->getId());
+        $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
+                                                $id, $this->merchant);
 
         return $this->payment;
     }
@@ -833,5 +919,34 @@ class Processor
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
+    {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
+        $this->repo->transaction(function() use ($txn, $feesSplit)
+        {
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
+            }
+
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_CREATED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
+        });
     }
 }

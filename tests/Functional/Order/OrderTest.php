@@ -20,11 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->gateway = 'billdesk';
+        $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->setMockGatewayTrue();
     }
@@ -39,6 +35,13 @@ class OrderTest extends TestCase
     }
 
     public function testCreateOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderWithNegativeAmount()
     {
         $order = $this->startTest();
 
@@ -106,8 +109,11 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+
         $payment = $this->getLastEntity('payment');
-        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');

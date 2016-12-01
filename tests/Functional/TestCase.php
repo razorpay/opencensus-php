@@ -16,6 +16,9 @@ class TestCase extends ParentTestCase
 
     protected $fixtures;
 
+    /**
+     * @var Authorization
+     */
     protected $ba;
 
     /**

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception;
 
