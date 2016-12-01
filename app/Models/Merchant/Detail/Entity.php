@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\MerchantDetail;
+namespace RZP\Models\Merchant\Detail;
 
 use Config;
 use RZP\Trace;

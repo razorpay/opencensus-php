@@ -130,7 +130,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
-        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\MerchantDetail::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
     protected static $repository = array(

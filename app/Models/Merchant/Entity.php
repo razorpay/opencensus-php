@@ -284,7 +284,7 @@ class Entity extends Base\PublicEntity
 
     public function merchantDetails()
     {
-        return $this->hasOne('RZP\Models\Merchant\MerchantDetail\Entity');
+        return $this->hasOne('RZP\Models\Merchant\Detail\Entity');
     }
 
     public function setPricingPlan($planId)

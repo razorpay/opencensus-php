@@ -9,7 +9,7 @@ use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\MerchantDetail;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal;
 
 class MerchantController extends Controller
@@ -569,7 +569,7 @@ class MerchantController extends Controller
     // == Activation Form Handlers ==
     public function getActivationDetails()
     {
-        $response = (new MerchantDetail\Service)->fetchMerchantDetails();
+        $response = (new Detail\Service)->fetchMerchantDetails();
 
         return ApiResponse::json($response);
     }
@@ -578,7 +578,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new MerchantDetail\Service)->uploadActivationFile($input);
+        $response = (new Detail\Service)->uploadActivationFile($input);
 
         return ApiResponse::json($response);
     }
@@ -587,7 +587,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new MerchantDetail\Service)->saveMerchantDetails($input);
+        $response = (new Detail\Service)->saveMerchantDetails($input);
 
         return ApiResponse::json($response);
     }

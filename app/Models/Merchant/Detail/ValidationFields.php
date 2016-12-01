@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\MerchantDetail;
+namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\MerchantDetail;
+use RZP\Models\Merchant\Detail;
 
 class ValidationFields
 {

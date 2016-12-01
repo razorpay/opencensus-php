@@ -1,14 +1,14 @@
 <?php
 
-namespace RZP\Models\Merchant\MerchantDetail;
+namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\MerchantDetail;
-use RZP\Models\Merchant\MerchantDetail\ValidationFields;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\ValidationFields;
 
 class Service extends Base\Service
 {
@@ -36,8 +36,8 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
-        if ((empty($input[MerchantDetail\Entity::SUBMIT]) === false) and
-            ($input[MerchantDetail\Entity::SUBMIT] === true) and
+        if ((empty($input[Detail\Entity::SUBMIT]) === false) and
+            ($input[Detail\Entity::SUBMIT] === true) and
             ($response['details_submitted'] === true))
         {
             $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
@@ -90,14 +90,14 @@ class Service extends Base\Service
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
-        $merchantDetail = (new MerchantDetail\Entity)->build($input);
+        $merchantDetail = (new Detail\Entity)->build($input);
 
         $merchantDetail->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($merchantDetail);
     }
 
-    protected function createFile(MerchantDetail\Entity $merchantDetail,
+    protected function createFile(Detail\Entity $merchantDetail,
                                     string $extension,
                                     $file,
                                     string $fileName,
@@ -124,7 +124,7 @@ class Service extends Base\Service
         return $error;
     }
 
-    protected function createResponse(MerchantDetail\Entity $merchantDetails)
+    protected function createResponse(Detail\Entity $merchantDetails)
     {
         $merchantDetailsArr = $merchantDetails->toArray();
 

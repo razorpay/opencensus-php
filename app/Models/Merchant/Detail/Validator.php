@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Models\Merchant\MerchantDetail;
+namespace RZP\Models\Merchant\Detail;
 
 use RZP\Base;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Razorpay\IFSC\IFSC;
 use RZP\Exception;
-use RZP\Models\Merchant\MerchantDetail;
+use Razorpay\IFSC\IFSC;
 use Validator as LaravelValidator;
+use RZP\Models\Merchant\Detail;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class Validator extends Base\Validator
 {
