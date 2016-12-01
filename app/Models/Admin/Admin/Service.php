@@ -17,22 +17,9 @@ use RZP\Models\Admin\Action;
 use Mail;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
-use Lib\TreeWalker;
 
 class Service extends Base\Service
 {
-    protected $treeWalker;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->treeWalker = new TreeWalker([
-            'debug' => true,
-            'returntype' => 'array'
-        ]);
-    }
-
     public function login($input)
     {
         // Get the admin record
@@ -134,11 +121,13 @@ class Service extends Base\Service
         // Create a token for the user
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
+        $adminObj = $admin;
+
         $admin = $admin->toArrayPublic();
 
         $admin['token'] = $token->getToken();
 
-        $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
+        $this->fireAdminAction($adminObj, Action::GENERATE_LOGIN_TOKEN);
 
         return $admin;
     }
@@ -148,8 +137,6 @@ class Service extends Base\Service
         $org = $this->repo->org->findByPublicId($orgId);
 
         $admin = $this->core()->create($input, $org);
-
-        $this->fireAdminAction($admin, Action::CREATE_ADMIN);
 
         $admin = $admin->toArrayPublic();
 
@@ -339,21 +326,7 @@ class Service extends Base\Service
 
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-        $pre = $admin->toArray();
-
         $admin = $this->core()->edit($orgId, $adminId, $input);
-
-        $post = $admin->toArray();
-
-        $diff = $this->treeWalker->getdiff($pre, $post);
-
-        s($pre);
-
-        s($post);
-
-        sd($diff);
 
         return $admin->toArrayPublic();
     }

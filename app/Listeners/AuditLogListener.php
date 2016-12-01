@@ -132,7 +132,7 @@ class AuditLogListener
 
         // add action specific properties. e.g. failed_payment_attempt in case of
         // login failure
-        $fields['action_properties'] = $event->action->customProperties ?? null;
+        $fields['action_properties'] = $event->customProperties ?? null;
 
         // org_id, mode, etc.
         $fields['extra'] = [
@@ -148,7 +148,6 @@ class AuditLogListener
         ];
 
         // $fields['extra'] = ...;
-
         $this->esDao->storeAdminEvent(
             $index, $type, $fields
         );
