@@ -48,8 +48,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
-        // sd($request);
-
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
@@ -189,9 +187,12 @@ class Gateway extends Base\Gateway
 
         $pid = $this->getPid();
 
+        $spid = $this->getSpid();
+
         $data = array(
             RequestFields::MODE               => ModeFields::AUTHORIZE,
             RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
+            RequestFields::SPID               => $spid,
             RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100 ,
             RequestFields::ENCRYPTED_STRING   => $encryptedString,
         );
@@ -203,9 +204,12 @@ class Gateway extends Base\Gateway
     {
         $pid = $this->getPid();
 
+        $spid = $this->getSpid();
+
         $data = array(
             RequestFields::MODE                     => ModeFields::VERIFY,
             RequestFields::PAYEE_ID                 => $pid,
+            RequestFields::SPID                     => $spid,
             RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 ,
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
             RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']),
@@ -320,5 +324,10 @@ class Gateway extends Base\Gateway
     public function getPid()
     {
         return $this->config['test_pid'];
+    }
+
+    public function getSpid()
+    {
+        return $this->config['test_spid'];
     }
 }

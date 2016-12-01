@@ -11,6 +11,7 @@ class Validator extends Base\Validator
     protected static $authRules = array(
         RequestFields::MODE               => 'required',
         RequestFields::PAYEE_ID           => 'required',
+        RequestFields::SPID               => 'required',
         RequestFields::ENCRYPTED_STRING   => 'required',
     );
 

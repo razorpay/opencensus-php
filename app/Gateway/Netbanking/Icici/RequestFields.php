@@ -6,6 +6,7 @@ class RequestFields
 {
     const MODE                      = 'MD';
     const PAYEE_ID                  = 'PID';
+    const SPID                      = 'SPID';
     const PAYMENT_REFERENCE_NUBER   = 'PRN';
     const ITEM_CODE                 = 'ITC';
     const AMOUNT                    = 'AMT';

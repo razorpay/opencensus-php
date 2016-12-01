@@ -190,6 +190,7 @@ return array(
     'netbanking_icici' => array(
         'test_master_key'   => env('ICICI_GATEWAY_TEST_MASTER_KEY'),
         'test_pid'          => env('ICICI_GATEWAY_TEST_PID'),
+        'test_spid'         => env('ICICI_GATEWAY_TEST_SPID'),
     ),
 
     'sharp' => array(
