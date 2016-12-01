@@ -201,6 +201,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $defaults = [
+        self::SUBMITTED_AT   => null,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

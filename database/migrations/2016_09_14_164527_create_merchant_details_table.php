@@ -200,7 +200,8 @@ class CreateMerchantDetailsTable extends Migration
             $table->boolean(MerchantDetail::SUBMITTED)
                   ->default(0);
 
-            $table->integer(MerchantDetail::SUBMITTED_AT);
+            $table->integer(MerchantDetail::SUBMITTED_AT)
+                  ->nullable();
 
             $table->integer(MerchantDetail::CREATED_AT);
 

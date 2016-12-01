@@ -282,6 +282,11 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Merchant\Webhook\Entity');
     }
 
+    public function merchantDetails()
+    {
+        return $this->hasOne('RZP\Models\Merchant\MerchantDetail\Entity');
+    }
+
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);

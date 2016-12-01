@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\MerchantDetail;
 use RZP\Models\Merchant\MerchantDetail\ValidationFields;
 
