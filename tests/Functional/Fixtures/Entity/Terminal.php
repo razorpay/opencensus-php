@@ -19,6 +19,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingIciciTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -665,6 +666,7 @@ class Terminal extends Base
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'netbanking_icici',
             'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'uvwx',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 0,
@@ -684,6 +686,7 @@ class Terminal extends Base
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_icici',
             'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'uvwx',
             'gateway_terminal_id'       => 'abcde',
             'netbanking'                => 1,
             'shared'                    => 1);

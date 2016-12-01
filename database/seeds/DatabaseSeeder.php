@@ -729,6 +729,7 @@ class DatabaseSeeder extends Seeder
                 'card'                      =>  '0',
                 'netbanking'                =>  '1',
                 'gateway_merchant_id'       =>  'payee_id',
+                'gateway_merchant_id2'      =>  'SPID', // adding
                 'gateway_terminal_id'       =>  'test_terminal_netbanking_icici',
                 'gateway_terminal_password' =>  'master_key',//Crypt::encrypt('demo_account_netbanking_icici_terminal_pass'),
                 'recurring'                 =>  0,

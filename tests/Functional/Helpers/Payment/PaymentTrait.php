@@ -834,6 +834,21 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function generateRefundsExcelForIciciNB()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank'   => 'ICIC'
+            ],
+        );
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultNetbankingPaymentArray($bank = null)
     {
         $payment = $this->getDefaultPaymentArray();

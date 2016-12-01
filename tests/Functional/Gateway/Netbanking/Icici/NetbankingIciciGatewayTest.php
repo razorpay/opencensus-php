@@ -22,7 +22,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->on('test')->create('terminal:shared_netbanking_icici_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
     public function testPayment()
@@ -59,51 +59,47 @@ class NetbankingIciciGatewayTest extends TestCase
         assert($content['payment']['verified'] === 1);
     }
 
-    public function testRefundFileGeneration()
+    public function testRefundExcelFile()
     {
-        // Make 3 test payments
-        $this->testPayment();
+        // Do an Auth and Capture of a payment
+        $paymentAction = 'AuthAndCapture';
 
-        $this->testPayment();
+        $payment = $this->doNetbankingIciciPayment($paymentAction);
 
-        $this->testPayment();
+        // Refund the payment above in full
+        $refund = $this->refundPayment($payment['id']);
 
-        $payments = $this->getEntities('payment', [], true);
+        // Create a new payment #2
+        $payment = $this->doNetbankingIciciPayment($paymentAction);
 
-        // We are saying that createdAt = yesterday at 10:30 AM
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+        // Do a partial refund of 10000 of payment #2
+        $refund = $this->refundPayment($payment['id'], 10000);
+        // Refund the remaining amount of the 2nd payment
+        $refund = $this->refundPayment($payment['id']);
 
-        // Set payment dates to yesterday
-        foreach ($payments['items'] as $payment)
+        // Get all pending refunds
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
         {
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $createdAt,
-                                                              'authorized_at' => $createdAt + 10,
-                                                              'captured_at' => $createdAt + 20]);
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 
-        // Set the transactions to be reconciled today
-        $transactions = $this->getEntities('transaction', [], true);
+        // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
+        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        // refunding it
+        $this->refundPayment($payment['id']);
 
-        // ReconciledAt = today @ 05:13 am
-        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+        // Hitting the refunds route on API - goes to RefundFile.php
+        $data = $this->generateRefundsExcelForIciciNB();
 
-        foreach ($transactions['items'] as $transaction)
-        {
-            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
-        }
+        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
 
-        // there are 3 test payments. Select the last one to refund. Index 2 = payment 3
-        $lastPayment = $payments['items'][2];
-
-        // Refund Re.1 first - partial
-        // $refundPayment = $this->refundPayment($lastPayment['id'], 100);
-
-        // Refund the remaining amount ---- fails here
-        $refundPayment = $this->refundPayment($lastPayment['id']);
-
-        // sd($refundPayment);
-
-        //sd('111');
+        $this->assertEquals($data['netbanking_icici']['count'], 3);
+        $this->assertTrue(file_exists($data['netbanking_icici']['file']));
     }
 
     protected function doNetbankingIciciPayment($paymentAction)
