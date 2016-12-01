@@ -6,6 +6,7 @@ class Org extends Entity
 {
     public function fetch($id)
     {
-        return parent::fetch($id);
+    	$relativeUrl = $this->getEntityUrl(). $id .'/self';
+        return $this->request('GET', $relativeUrl);
     }
 }
