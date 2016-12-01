@@ -68,7 +68,7 @@ class CreateCustomerTransactions extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Entity::CUSTOMER_ID)
-                  ->references(CUSTOMER\Entity::ID)
+                  ->references(Customer\Entity::ID)
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
         });
