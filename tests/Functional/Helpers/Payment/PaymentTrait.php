@@ -741,7 +741,7 @@ trait PaymentTrait
             'notes'             => array(
                 'merchant_order_id' => 'random order id'),
             'description'       => 'random description',
-            'bank'              => 'ICIC',
+            'bank'              => 'SBIN',
         ];
 
         return $payment;

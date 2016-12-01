@@ -31,10 +31,6 @@ class Server extends Base\Mock\Server
 
         parse_str($string, $decryptedData);
 
-        // unset($input['ES']);
-
-        // sd($input, $decryptedData);
-
         // $decrypted_data['RU'] now contains the callback URL
         $callbackUrl = $decryptedData['RU'];
 
