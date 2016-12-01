@@ -124,8 +124,8 @@ class Category
 
     const BANK_CATEGORY_MIN_AMOUNT_MAP = [
         'KKBK'      => [
-            'default'       => 1000,
-            'ecommerce'     => 1000,
+            'default'       => 100000,
+            'ecommerce'     => 10000,
         ],
         'ICICI'     => [
             'default'       => 1000,

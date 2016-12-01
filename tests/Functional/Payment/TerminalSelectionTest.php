@@ -368,14 +368,17 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
+        // ecomm KKBK terminal
         $this->assertEquals('DrctNbKtkTrmnl', $payment['terminal_id']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'KKBK';
-        $payment['amount'] = 300000;
+        $payment['amount'] = 200000;
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
+        // default KKBK terminal
+        // since corporate category isn't set
         $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 
