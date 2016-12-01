@@ -50,11 +50,6 @@ class Service extends Base\Service
 
             $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
 
-            if ($validate !== null)
-            {
-                return $validate;
-            }
-
             return $data;
         }
 

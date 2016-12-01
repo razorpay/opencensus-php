@@ -393,7 +393,7 @@ $factory(\RZP\Models\Admin\Admin\Entity::class, [
     'name'               => 'test admin',
     'email'              => $faker->rzpEmail,
     'username'           => 'harshil',
-    'password'           => Hash::make('test123456'),
+    'password'           => '$2y$10$oBTJuQJz0vprR5jNDD1qIOmHlkSUcFgow6TRWQNuzk2/.9pSdA72S',
     'remember_token'     => 'yes',
     'oauth_access_token' => 'oauth123',
     'oauth_provider_id'  => 'google',

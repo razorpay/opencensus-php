@@ -269,13 +269,13 @@ class AdminController extends Controller
     /**
     * Admin related functons
     */
-    public function postAuthenticate(Admin\Admin\Service $adminService)
+    public function postAuthenticate(string $orgId, Admin\Admin\Service $adminService)
     {
         $input = Request::all();
 
-        list($response, $httpStatusCode) = $adminService->authenticate($input);
+        $response = $adminService->authenticate($orgId, $input);
 
-        return ApiResponse::json($data, $httpStatusCode);
+        return ApiResponse::json($response);
     }
 
     public function oAuthLogin(Admin\Service $service)

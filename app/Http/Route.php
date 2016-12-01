@@ -333,7 +333,7 @@ final class Route
         // 'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
         // 'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermissions'                                    ],
         // 'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
-        'admin_authentication'                    => ['post',     'org/{orgId}/admin/authenticate',                 'AdminController@postAuthenticate'                                 ],
+        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                 ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                       ],
     );
 
