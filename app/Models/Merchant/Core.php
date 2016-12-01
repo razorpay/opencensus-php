@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\MerchantDetail;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
@@ -65,6 +66,8 @@ class Core extends Base\Core
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
         (new Methods\Core)->setDefaultMethods($merchant);
+
+        (new MerchantDetail\Service)->createMerchantDetails($merchant);
 
         $this->setDefaultFeatures($merchant);
     }

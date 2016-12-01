@@ -198,8 +198,9 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
-            'invoice' => Invoice\Entity::class,
-            'merchant'  => Merchant\Entity::class,
+            'invoice'           => Invoice\Entity::class,
+            'merchant'          => Merchant\Entity::class,
+            'merchant_detail'   => Merchant\MerchantDetail\Entity::class,
         ]);
     }
 }

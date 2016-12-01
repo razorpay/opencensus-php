@@ -138,6 +138,9 @@ final class Route
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
+        'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload_file',                'MerchantController@postUploadActivationFile'                       ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -578,6 +581,9 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'merchant_activation_details',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
     );
 
     public static $direct = array(
