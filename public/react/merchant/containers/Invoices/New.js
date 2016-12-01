@@ -35,7 +35,8 @@ const selector = formValueSelector('newInvoice')
   initialValues: {
     date: Math.ceil(new Date().getTime()/1000),
     // due_on: 30,
-    // notes: 'Thanks for your business',
+    description: '',
+    terms: '',
     line_items: [
       {
         quantity: 1,
@@ -123,21 +124,31 @@ export default class InvoicesNewContainer extends ModalContainer {
             <div class='panel-body'>
               <form onSubmit={handleSubmit(this.save)}>
                 <div class='row'>
-                  <div class='col-md-4'>
+                  <div class='col-md-5'>
                     <div class='form-group'>
-                      <label>Invoice No</label>
+                      <label>Invoice Summary</label>
                       <Field
-                        name='invoice_number'
+                        name='description'
+                        component='textarea'
+                        class='form-control'
+                      />
+                    </div>
+                  </div>
+
+                  <div class='col-md-3 pull-right'>
+                    <div class='form-group'>
+                      <label>Receipt No</label>
+                      <Field
+                        name='receipt'
                         component={InputField}
                         class='form-control'
-                        placeholder='Enter Invoice NO'
                       />
                     </div>
                   </div>
                 </div>
 
                 <div class='row'>
-                  <div class='col-md-4'>
+                  <div class='col-md-5'>
                     <div class='form-group'>
                       <label>Customer Name</label>
                       <Field
@@ -188,16 +199,18 @@ export default class InvoicesNewContainer extends ModalContainer {
                   component={LineItemTable}
                   items={this.props.items}
                 />
-{/*
+
                 <div class='form-group'>
-                  <label>Invoice Notes</label>
+                  <label>Terms & Conditions</label>
                   <Field
-                    name='notes'
+                    name='terms'
                     component='textarea'
                     class='form-control'
                   />
                 </div>
-*/}
+
+                <hr />
+
                 <div class='btn-toolbar'>
                   <AsyncButton
                     type='button'
