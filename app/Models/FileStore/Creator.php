@@ -202,7 +202,10 @@ class Creator extends Base\Core
         {
             $this->writeToLocalFile();
         }
-        // TODO : add else condition and add filePath
+        else
+        {
+            $this->filePath = $this->localFile->getPath();
+        }
 
         $this->mime($this->localFile->getMimeType());
 

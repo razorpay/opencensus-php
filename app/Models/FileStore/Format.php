@@ -44,13 +44,8 @@ class Format
 
     const VALID_LOCAL_EXTENSIONS = [
         self::CSV,
-        self::JPG,
-        self::JPEG,
-        self::PDF,
-        self::PNG,
         self::TXT,
         self::XLSX,
-        self::ZIP,
     ];
 
     /**
