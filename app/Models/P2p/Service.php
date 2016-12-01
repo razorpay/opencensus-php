@@ -30,6 +30,8 @@ class Service extends Base\Service
 
     public function getById($id)
     {
+        Entity::stripSignWithoutValidation($id);
+
         $p2p = $this->repo->p2p->findOrFail($id);
 
         return $p2p->toArrayPublic();
@@ -52,5 +54,13 @@ class Service extends Base\Service
     protected function p2pCreated($p2p)
     {
         $this->app['events']->fire('api.p2p.created', array($p2p));
+    }
+
+    public function completeAuthorization(string $id, array $input)
+    {
+        // Checks the MPIN and completes the payment
+        $p2p = $this->core->postAuthorize($id, $input);
+
+        return $p2p;
     }
 }

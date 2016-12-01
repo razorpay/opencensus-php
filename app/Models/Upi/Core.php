@@ -6,6 +6,7 @@ use Cache;
 use Database;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
+use RZP\Models\P2p;
 use RZP\Models\Device;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -222,5 +223,10 @@ class Core extends Base\Core
         ];
 
         $this->callUpiGateway('makeRequest', $input);
+    }
+
+    protected function AuthorizePayment($arr)
+    {
+        return (new P2p\Service)->completeAuthorization($arr['p2p_id'], $arr);
     }
 }

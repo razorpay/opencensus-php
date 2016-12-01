@@ -39,6 +39,42 @@ class Core extends Base\Core
         return $data;
     }
 
+    /**
+     * TODO: Set up UPI under application Auth
+     * The apache vhost configuration should forward
+     * the mode in the authorization header
+     *
+     * (We'll have different IPs for prod and live)
+     *
+     * @param string $mode
+     */
+    protected function setMode($mode = 'test')
+    {
+        \Database\DefaultConnection::set($mode);
+    }
+
+    public function postAuthorize(string $id, $input)
+    {
+        $this->setMode();
+        Entity::stripSignWithoutValidation($id);
+
+        $p2p = $this->repo->p2p->findOrFail($id);
+
+        // TODO: Do a constant time comparision
+        if ($p2p->source->bankAccount->getMpin() === $input['mpin'])
+        {
+            // Confirm the payment
+            $p2p->setStatus('transferred')->save();
+        }
+        else
+        {
+            // Fail the payment
+            $p2p->setStatus('failed')->save();
+        }
+
+        return $p2p;
+    }
+
     protected function preProcessGatewayInput($p2p, $input)
     {
         $gatewayInput = [];

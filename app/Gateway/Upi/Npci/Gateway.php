@@ -84,6 +84,24 @@ EOT;
         return ['txn_id' => $txnId, 'msg_id' => $msgId];
     }
 
+    /**
+     * Note: We are piggy banking this request as the authorization
+     * webhook for now
+     */
+    protected function preProcessReqBalEnq($msgId, $request)
+    {
+        $txn = $request->getTxn();
+        $p2pId = $txn->getNote();
+
+        $cred = $request->getPayer()->getCreds()[0];
+        $mpin = $this->decrypt($cred->getData()->value());
+
+        return [
+            'p2p_id'    =>  $txn->getNote(),
+            'mpin'      =>  $mpin
+        ];
+    }
+
     protected function preProcessRespListKeys($msgId, $request)
     {
         // TODO: Move this to constant inside Txn class?
@@ -354,7 +372,8 @@ EOT;
             'ReqRegMob'         => 'RespRegMob',
             'RespListKeys'      => 'UpdateKeyStore',
             'RespListAccPvd'    => null,
-            'ReqAuthDetails'    => 'RespAuthDetails'
+            'ReqAuthDetails'    => 'RespAuthDetails',
+            'ReqBalEnq'         => 'AuthorizePayment'
         ];
 
         return $jobs[$api];
@@ -557,9 +576,11 @@ EOT;
                 $imei = '358960060336586';
                 $packageName = 'com.razorpay.upi.sampleapp';
 
+                $method = 'ReqBalEnq';
+
                 $str = <<<EOT
 <upi:ReqBalEnq xmlns:upi="http://npci.org/upi/schema/">
-<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId" />
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
 <Txn id="$txnId" note="$p2pId" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="BalEnq">
 <RiskScores/>
 </Txn>
@@ -579,9 +600,9 @@ EOT;
 <Tag name="CAPABILITY" value="011001"/>
 </Device>
 <Ac addrType="ACCOUNT" name="Hari Ram">
-<Detail name="IFSC" value="{$bankAccount['ifsc_code']}"/>
+<Detail name="IFSC" value="RAZR0000001"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
-<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
+<Detail name="ACNUM" value="1234"/>
 </Ac>
 <Creds>
 <Cred type="PIN" subType="MPIN">

@@ -186,6 +186,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getMpin()
+    {
+        return $this->getAttribute(self::MPIN);
+    }
+
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
