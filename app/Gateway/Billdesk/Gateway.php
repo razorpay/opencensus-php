@@ -11,6 +11,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
@@ -627,5 +628,15 @@ class Gateway extends Base\Gateway
     protected function setTpv($gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function isPaymentTpvEnabled(Entity $gatewayPayment, Merchant\Entity $merchant)
+    {
+        if (($gatewayPayment->isTpv()) or ($merchant->isTPVRequired()))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
