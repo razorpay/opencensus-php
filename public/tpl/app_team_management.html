@@ -10,7 +10,7 @@
       Invite users to your Organization Team
       <small class="pull-right">
         <a href="https://docs.razorpay.com/v1/page/team-support" class="highlight" target="_blank">
-          TEAM DOCUMENTATION &nbsp;<i class="fa fa-external-link"></i>
+          Team &amp Roles Documentation &nbsp;<i class="fa fa-external-link"></i>
         </a>
       </small>
     </div>
@@ -25,11 +25,12 @@
         <div class="m-b col-sm-4">
           <select class="form-control" name="role" required
             tooltip-placement="right" tooltip="User Role"
-            ng-model="team.role" ng-options="role as (role | roletoname) for role in roleOptions track by role"
+            ng-model="team.role" ng-options="role as (role | roletoname) for role in roles track by role"
           >
           </select>
         </div>
       </div>
+      <alert type="info">{{team.role | roletoname: true}}</alert>
       <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
     </div>
     <div class="team-users" ng-show="users.length > 1">
@@ -41,7 +42,7 @@
           <div class="m-b col-sm-4 b-w">{{ user.email }}</div>
           <div class="m-b col-sm-2">{{ user.name }}</div>
           <div class="m-b col-sm-3" ng-show="rolesSupport">
-            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roleOptions track by role" class="form-control" required>
+            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roles track by role" class="form-control" required>
             </select>
           </div>
           <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">

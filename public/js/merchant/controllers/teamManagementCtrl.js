@@ -10,15 +10,12 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner', 'manager', 'operations', 'finance', 'admin', 'sellerapp'];
+    // This list does not include owner
+    $scope.roles = ['manager', 'operations', 'finance', 'admin', 'sellerapp'];
 
     $scope.team = {
       role: 'manager'
     };
-
-    $scope.roleOptions = [
-      'manager'
-    ];
 
     var errorHandler = function(data, msg) {
       if (typeof data !== 'undefined') {
@@ -44,19 +41,6 @@ app.controller('TeamManagementCtrl', [
 
     user.identity(true).then(function(data) {
       $scope.merchant = data;
-
-      $scope.rolesSupport = (data.tags.indexOf('Roles') > -1);
-
-      // Merchant has roles enabled, give them extra roles!
-      if ($scope.rolesSupport) {
-        $scope.roleOptions = $scope.roleOptions.concat([
-          'operations',
-          'finance',
-          'support',
-          'admin',
-          'sellerapp'
-        ]);
-      }
     });
 
     $scope.getTeamMembers = function(){
