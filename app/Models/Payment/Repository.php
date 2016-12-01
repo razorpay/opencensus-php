@@ -468,7 +468,7 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::CREATED_AT, '>', $ts)
                     ->get();
     }
-    
+
     public function getCapturedPaymentForOrder($orderId)
     {
         return $this->newQuery()
@@ -506,7 +506,7 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
@@ -559,7 +559,9 @@ class Repository extends Base\Repository
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
                     ->statusSuccess()
-                    ->sum(Entity::AMOUNT);
+                    ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
+                       'COUNT(*) AS count')
+                    ->first();
 
         return $vol;
     }

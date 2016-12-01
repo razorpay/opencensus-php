@@ -58,63 +58,7 @@ class Handler extends Base\Handler
         return $result['ObjectURL'];
     }
 
-    public function fetchAndSaveFile($bucket, $name, $filePath)
-    {
-        if ($this->config['mock'] === true)
-        {
-            return $filePath;
-        }
-
-        $s3 = self::getClient();
-
-        try
-        {
-            $s3Obj = $this->getS3FetchObj($bucket, $name);
-
-            $s3Obj['SaveAs'] = $filePath;
-
-            $result = $s3->getObject($s3Obj);
-
-            $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e);
-
-            throw $e;
-        }
-
-        return $filePath;
-    }
-
-    public function fetchContent($bucket, $name)
-    {
-        if ($this->config['mock'] === true)
-        {
-            return '';
-        }
-
-        $s3 = self::getClient();
-
-        try
-        {
-            $s3Obj = $this->getS3FetchObj($bucket, $name);
-
-            $result = $s3->getObject($s3Obj);
-
-            $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e);
-
-            throw $e;
-        }
-
-        return $result['Body'];
-    }
-
-    public function delete($bucket, $key)
+    public function saveAs($bucket, $key, $filePath)
     {
         $s3 = self::getClient();
 
@@ -122,18 +66,20 @@ class Handler extends Base\Handler
         {
             $s3Obj = $this->getS3FetchObj($bucket, $key);
 
-            $result = $s3->deleteObject($s3Obj);
+            $s3Obj['SaveAs'] = $filePath;
 
-            $this->trace->info(TraceCode::AWS_FILE_DELETE, $s3Obj);
+            $result = $s3->getObject($s3Obj);
+
+            $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }
-        catch(\Exception $e)
+
+        catch (\Exception $e)
         {
+
             $this->trace->traceException($e);
 
             throw $e;
         }
-
-        return $result['DeleteMarker'];
     }
 
     public function getSignedUrl($bucket, $key, $duration = '15')
@@ -170,12 +116,12 @@ class Handler extends Base\Handler
 
     public function getBucketName($type)
     {
+        $bucketType = Bucket::getBucketConfigName($type);
+
         if ($this->mode === Mode::TEST)
         {
             return 'rzp-test-bucket';
         }
-
-        $bucketType = Bucket::BUCKET_MAP[$type];
 
         return $this->config[$bucketType];
     }

@@ -11,9 +11,6 @@ return [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'kotak_beneficiary_mail',
-                'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
-                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],
@@ -28,10 +25,7 @@ return [
     'testNoEmailTag' => [
         'request' => [
             'content' => [
-                'timestamp' => time(),
                 'recipient' => 'random@email.com',
-                'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
                 'event' => 'dropped'
             ],
             'method' => 'POST',
@@ -46,9 +40,6 @@ return [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
-                'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', config('applications.mailgun.key')),
-                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],
@@ -64,9 +55,6 @@ return [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
-                'token' => '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105',
-                'signature' => hash_hmac(HashAlgo::SHA256, time() . '504f13d1b14cd999ca73f3019c4b0c938733768dc1011da105', 'random_mailgun_key'),
-                'timestamp' => time(),
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],

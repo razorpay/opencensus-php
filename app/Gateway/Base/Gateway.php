@@ -184,12 +184,12 @@ class Gateway
 
     public function debit(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function checkBalance(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function capture(array $input)
@@ -209,6 +209,18 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::REFUND;
+    }
+
+    public function reverse(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::REVERSE;
+    }
+
+    public function void(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::VOID;
     }
 
     public function verify(array $input)
@@ -245,6 +257,13 @@ class Gateway
         $this->mock = $mock;
     }
 
+    public function setInput(array $input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     protected function getHashValueFromContent(array $content)
     {
         return $content[static::CHECKSUM_ATTRIBUTE];
@@ -270,7 +289,8 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]);
+                ]
+            );
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -300,8 +320,8 @@ class Gateway
             return $row;
         }, $input['data']);
 
-
         $ns = $this->getGatewayNamespace();
+
         $class = $ns . '\\' . 'RefundFile';
 
         return (new $class)->generate($input);
@@ -381,7 +401,8 @@ class Gateway
                     'payment_id' => $verify->input['payment']['id'],
                     'message'    => 'payment id not found in the gateway database',
                     'gateway'    => $this->gateway
-                ]);
+                ]
+            );
 
             return null;
         }
@@ -683,6 +704,20 @@ class Gateway
                     'Failed to convert json to array',
                     ['json' => $json]);
         }
+    }
+
+    protected function getDynamicMerchantName($merchant)
+    {
+        $label = $merchant->getBillingLabel();
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        if (empty($label) === true)
+        {
+            $label = "Razorpay Payments";
+        }
+
+        return str_limit($label, 20);
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)
