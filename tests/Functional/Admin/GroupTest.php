@@ -152,8 +152,7 @@ class GroupTest extends TestCase
         $groupWithoutChild = $l0Group;
 
         // create another hierarchy of groups
-        $loneGroups[] = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
-        $loneGroups[] = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+        $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
 
         $loneGroupIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
 
@@ -189,9 +188,7 @@ class GroupTest extends TestCase
         reset($allGroups);
 
         // create another hierarchy of groups
-        $loneGroups[] = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
-
-        $loneGroups[] = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
+        $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
 
         // add lone groups to allGroups
         $allGroups = array_merge($allGroups, $loneGroups);
