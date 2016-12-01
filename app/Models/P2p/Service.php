@@ -39,4 +39,11 @@ class Service extends Base\Service
 
         return $p2ps->toArrayPublic();
     }
+
+    public function authorize(string $id, array $input)
+    {
+        $p2p = $this->core->authorize($id, $input);
+
+        return $p2p;
+    }
 }

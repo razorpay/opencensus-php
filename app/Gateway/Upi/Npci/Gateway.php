@@ -97,8 +97,8 @@ EOT;
                 $key = $keys[0];
 
                 return [
-                    'token'         =>  $key->getKeyValue(),
-                    'device_id'     =>  $deviceId,
+                    'token'         => $key->getKeyValue(),
+                    'device_id'     => $deviceId,
                 ];
             }
             // We return the token and other details
@@ -106,9 +106,9 @@ EOT;
         else if ($type === 'ListKeys')
         {
             return [
-                'cacheKey'      =>  'UPI.ListKeys',
+                'cacheKey'      => 'UPI.ListKeys',
                 // TODO
-                'cacheValue'    =>  'THIS SHOULD HOLD PARSED LISTKEYS RESPONSE'
+                'cacheValue'    => 'THIS SHOULD HOLD PARSED LISTKEYS RESPONSE'
             ];
         }
     }
@@ -116,8 +116,8 @@ EOT;
     protected function preProcessRespListAccPvd($msgId, $request)
     {
         return [
-            'cacheKey'      =>  'UPI.RespListAccPvd',
-            'cacheValue'    =>  json_encode($request->getAccPvdList()),
+            'cacheKey'      => 'UPI.RespListAccPvd',
+            'cacheValue'    => json_encode($request->getAccPvdList()),
         ];
     }
 
@@ -132,7 +132,7 @@ EOT;
     protected function preProcessReqListAccount($msgId, $request)
     {
         return [
-            'mobile'    =>  $request->getLink()->getValue()
+            'mobile'    => $request->getLink()->getValue()
         ];
     }
 
@@ -200,9 +200,9 @@ EOT;
         $request->setPayees([$payee]);
 
         return [
-            'payee' =>  $payee,
-            'payer' =>  $payer,
-            'txn'   =>  $request->getTxn()
+            'payee' => $payee,
+            'payer' => $payer,
+            'txn'   => $request->getTxn()
         ];
     }
 
@@ -224,8 +224,8 @@ EOT;
         // $creds['mpin'] = $details->getCredByTypeAndSubType('PIN', 'MPIN');
 
         $creds['account'] = [
-            'IFSC'  =>  $account->getDetailByName('IFSC'),
-            'NUM'   =>  $account->getDetailByName('ACNUM')
+            'IFSC'  => $account->getDetailByName('IFSC'),
+            'NUM'   => $account->getDetailByName('ACNUM')
         ];
 
         return $creds;
@@ -347,11 +347,11 @@ EOT;
     protected function getJobName($api)
     {
         $jobs = [
-            'ReqListAccount'    =>  'RespListAccount',
-            'ReqRegMob'         =>  'RespRegMob',
-            'RespListKeys'      =>  'UpdateKeyStore',
-            'RespListAccPvd'    =>  null,
-            'ReqAuthDetails'    =>  'RespAuthDetails'
+            'ReqListAccount'    => 'RespListAccount',
+            'ReqRegMob'         => 'RespRegMob',
+            'RespListKeys'      => 'UpdateKeyStore',
+            'RespListAccPvd'    => null,
+            'ReqAuthDetails'    => 'RespAuthDetails'
         ];
 
         return $jobs[$api];
@@ -463,8 +463,9 @@ $str = <<<EOT
 EOT;
     break;
         case 'ReqPay':
+            $mpinCredBlock = $input['params']['gateway']['mpincredblock'];
 
-            $txnId = "RAZ4B63BF30D3454307A5718F1E9813A8B3";
+            $txnId = "RAZEAF93A1939E3458BA71F03F57D25242F";
             $str = <<<EOT
 <upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">
     <Head msgId="$msgId" orgId="$orgId" ts="$ts" ver="1.0"/>
@@ -474,7 +475,7 @@ EOT;
     <Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="PAY" custRef="111222233334">
     <RiskScores/>
     </Txn>
-    <Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON">
+    <Payer addr="{$input['params']['p2p']['source']}" name="Hari Ram" seqNum="1" type="PERSON">
         <Info>
             <Identity type="ACCOUNT" verifiedName="Hari Ram"/>
         </Info>
@@ -495,7 +496,7 @@ EOT;
         </Device>
         <Creds>
             <Cred subType="MPIN" type="PIN">
-                <Data code="NPCI" ki="20150822">2.0|0tLL0K/aJ5ChZarr7idbXOJeNMQ8Hw7nnvlhGiuNMnYzRKqyq2JBWRo4Iir+TB0L/VmioBaz7FjBgjaWpRuvwHJCATtDSFIz8DgyAFrQ++vBhi6EtjImrP/IHBTN6FIdH0w2g5NI+QP+8vY2598nu+g3Sr5UOWuiVdlTaP1A4ZtxMjTWmk5NW7pBfzjv+rSehFPnsbgpr5ZMYBzYeGRsfwxdOtxj+Sd5NxvOyEsa3cBVXcwsmbVdFP8btgG1rSvW46tnwDHkgvcTMaryfE6fM8Zl2IKPMB7HqGMIwHoYm+kP6ZC1IZdpHU3/kQPf5HpM5zlgzSRMwskxizDIzuq6WA==</Data>
+                <Data code="NPCI" ki="20150822">{$mpinCredBlock}</Data>
             </Cred>
         </Creds>
         <Amount curr="INR" value="500.00"/>
@@ -733,16 +734,16 @@ EOT;
         $signedXml = $this->signXml($unsignedXml);
 
         $request = [
-            'url'       =>  $url,
-            'method'    =>  'POST',
+            'url'       => $url,
+            'method'    => 'POST',
             'headers'   => [
                 "Content-Type"  => 'application/xml',
                 "Accept"        => 'application/xml',
             ],
-            'content'   =>  $signedXml,
-            'options'   =>  [
-                'verify'        =>  storage_path('certs/npci.pem'),
-                'verifyname'    =>  false,
+            'content'   => $signedXml,
+            'options'   => [
+                'verify'        => storage_path('certs/npci.pem'),
+                'verifyname'    => false,
             ]
         ];
 

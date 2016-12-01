@@ -38,6 +38,7 @@ final class Route
         'p2p_create'                              => ['post',     'p2p/',                                           'P2pController@createP2p'                                           ],
         'p2p_fetch'                               => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'p2p_fetch_multiple'                      => ['get',      'p2p',                                            'P2pController@getP2ps'                                             ],
+        'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                             'P2pController@postAuthorize'                                       ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -376,6 +377,7 @@ final class Route
         'otp_post',
         'otp_verify',
         'p2p_create',
+        'p2p_authorize',
         'device_create',
     );
 

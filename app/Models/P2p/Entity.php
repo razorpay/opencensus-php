@@ -5,6 +5,7 @@ namespace RZP\Models\P2p;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Upi\Vpa;
+use RZP\Models\BankAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -88,6 +89,30 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function source()
+    {
+        return $this->belongsTo(Vpa\Entity::class);
+    }
+
+    public function sink()
+    {
+        $type = $this->getSinkType();
+
+        if ($type === SinkType::BANK_ACCOUNT)
+        {
+            return $this->belongsTo(BankAccount\Entity::class);
+        }
+        else if ($type === SinkType::VPA)
+        {
+            return $this->belongsTo(Vpa\Entity::class);
+        }
+    }
+
+    public function customer()
+    {
+        return $this->sink->customer;
+    }
+
     // ----------------------- Generators ------------------
 
     protected function generateSourceType($input)
@@ -123,6 +148,13 @@ class Entity extends Base\PublicEntity
     public function setGateway($gateway)
     {
         return $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
+    // ----------------------- Getters ------------------------
+
+    public function getSinkType()
+    {
+        return $this->getAttribute(self::SINK_TYPE);
     }
 
     // ----------------------- Public Setters ------------------
