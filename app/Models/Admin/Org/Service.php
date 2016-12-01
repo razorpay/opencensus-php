@@ -12,17 +12,20 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
-        $org = $this->core()->create($input);
+        $org = $this->repo->transactionOnLiveAndTest(function() use ($input)
+        {
+            $org = $this->core()->create($input);
 
-        $role = $this->createDefaultRole($org);
+            $role = $this->createDefaultRole($org);
 
-        $adminInput = $input['admin'];
+            $input['admin']['roles'] = (array) $role->getPublicId();
 
-        $adminInput['roles'] = (array) $role->getPublicId();
+            $input['admin']['email'] = $input['email'];
 
-        $adminInput['email'] = $input['email'];
+            (new Admin\Core)->create($org, $input['admin']);
 
-        (new Admin\Core)->create($org, $adminInput);
+            return $org;
+        });
 
         return $org->toArrayPublic();
     }
@@ -30,7 +33,8 @@ class Service extends Base\Service
     protected function createDefaultRole(Entity $org)
     {
         $permissions = Config::get('heimdall.permissions') ?: [];
-        $permissions = (new Permission\Service)->getMultiplePermissionIdsByNames($permissions);
+
+        $permissions = (new Permission\Core)->getMultiplePermissionIdsByNames($permissions);
 
         $input = [
             'name' => 'superadmin',

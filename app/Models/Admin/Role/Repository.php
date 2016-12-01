@@ -11,12 +11,19 @@ class Repository extends Base\Repository
 {
     protected $entity = 'role';
 
+    protected $merchantIdRequiredForMultipleFetch = false;
+
     protected $proxyFetchParamRules = [
         Entity::NAME    => 'sometimes|string',
     ];
 
     protected $appFetchParamRules = [
         Entity::NAME    => 'sometimes|string',
+    ];
+
+    protected $adminFetchParamRules = [
+        Entity::NAME    => 'sometimes|string',
+        Entity::ORG_ID  => 'sometimes',
     ];
 
     public function findByPublicIdAndOrgIdWithRelations(

@@ -29,8 +29,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $adminId)
-                    ->with('groups')
-                    ->with('roles')
+                    ->with(['groups', 'roles'])
                     ->firstOrFail();
     }
 

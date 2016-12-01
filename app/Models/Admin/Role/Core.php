@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Core extends Base\Core
 {
@@ -12,17 +13,38 @@ class Core extends Base\Core
     {
         $role = (new Entity)->generateId();
 
+        $role->org()->associate($org);
+
         $role->build($input);
 
-        $this->repo->role->validateOrgHasNoSuchRole($role, $org);
-
-        $role->org()->associate($org);
+        $this->validateExistingRole($role);
 
         $this->repo->saveOrFail($role);
 
+        $this->syncPermissions($role, $input);
+
+        return $role;
+    }
+
+    public function edit(Entity $role, array $input)
+    {
+        $role->edit($input);
+
+        $this->syncPermissions($role, $input);
+
+        $this->repo->saveOrFail($role);
+
+        return $role;
+    }
+
+    protected function syncPermissions($role, array $input)
+    {
         if (isset($input['permissions']) === true)
         {
-            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+            if (($input['permissions'] instanceof Base\PublicCollection) === false)
+            {
+                Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+            }
 
             $role->permissions()->sync($input['permissions']);
         }
@@ -35,22 +57,19 @@ class Core extends Base\Core
         return $role;
     }
 
-    public function edit(Entity $role, array $input)
+    protected function validateExistingRole(Entity $role)
     {
-        $role->edit($input);
+        $params = [
+            Entity::ORG_ID => $role->getOrgId(),
+            Entity::NAME   => $role->getName()
+        ];
 
-        if (isset($input['permissions']) === true)
+        $roles = $this->repo->role->fetch($params);
+
+        if ($roles->count() !== 0)
         {
-            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
-
-            $role->permissions()->sync($input['permissions']);
+            throw new Exception\BadRequestValidationFailureException(
+                'The role with the name already exists');
         }
-        else
-        {
-            // Deletion of all
-            $role->permissions()->sync([]);
-        }
-
-        return $role;
     }
 }

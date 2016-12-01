@@ -133,7 +133,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->createRole($id, $input);
+        $data = (new Admin\Role\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -269,18 +269,11 @@ class AdminController extends Controller
     /**
     * Admin related functons
     */
-    public function passwordLogin(Admin\Service $service)
+    public function postAuthenticate(Admin\Admin\Service $adminService)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->login($input);
-
-        $httpStatusCode = 200;
-
-        if (isset($data['action']) === true)
-        {
-            $httpStatusCode = 400;
-        }
+        list($response, $httpStatusCode) = $adminService->authenticate($input);
 
         return ApiResponse::json($data, $httpStatusCode);
     }

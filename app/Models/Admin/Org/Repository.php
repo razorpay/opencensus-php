@@ -9,6 +9,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'org';
 
+    protected $merchantIdRequiredForMultipleFetch = false;
+
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
         Entity::EMAIL                 => 'sometimes|email',
