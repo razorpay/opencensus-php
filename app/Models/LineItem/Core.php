@@ -82,6 +82,15 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
+    /**
+     * @param array           $input
+     * @param array           $itemDetails
+     * @param Merchant\Entity $merchant
+     * @param Invoice\Entity  $invoice
+     *
+     * @return Item\Entity
+     * @throws Exception\BadRequestException
+     */
     protected function createItemIfNotExists(
         array $input,
         array $itemDetails,
@@ -120,6 +129,12 @@ class Core extends Base\Core
         return $item;
     }
 
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Item\Entity
+     */
     protected function getItemIfIdExistsInInput(array $input, Merchant\Entity $merchant)
     {
         $item = null;

@@ -34,6 +34,9 @@ class Validator extends Base\Validator
      * - Editing fields which are editable always
      * - Editing fields when there is no invoice already generated using this item
      *
+     * @param Entity $item
+     * @param array  $input
+     *
      * @throws Exception\BadRequestException
      */
     public function validateEditOperation(Entity $item, array $input = [])
@@ -47,9 +50,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCurrency(
-        string $itemCurrency,
-        string $invoiceCurrency)
+    public function validateCurrency(string $itemCurrency, string $invoiceCurrency)
     {
         if ($itemCurrency !== $invoiceCurrency)
         {
