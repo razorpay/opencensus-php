@@ -13,6 +13,15 @@ use RZP\Models\Device;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->device = $this->app['basicauth']->getDevice();
+
+        $this->core = new Customer\Core;
+    }
+
     /**
      * Creates Local customer entity for merchant
      * @param  array $input
@@ -30,7 +39,7 @@ class Service extends Base\Service
 
         unset($input[Entity::FAIL_EXISTING]);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        $customer = $this->core->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
 
         return $customer->toArrayPublic();
     }
@@ -42,7 +51,7 @@ class Service extends Base\Service
      */
     public function createGlobalCustomer($input)
     {
-        $customer = (new Customer\Core)->createGlobalCustomer($input);
+        $customer = $this->core->createGlobalCustomer($input);
 
         return $customer->toArrayPublic();
     }
@@ -60,7 +69,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $customer = (new Customer\Core)->edit($customer, $input);
+        $customer = $this->core->edit($customer, $input);
 
         return $customer->toArrayPublic();
     }
@@ -137,7 +146,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
+        $data = $this->core->sendOtp($input, $this->merchant);
 
         return $data;
     }
@@ -148,7 +157,7 @@ class Service extends Base\Service
      */
     public function verifyOtp($input)
     {
-        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
+        $data = $this->core->verifyOtp($input, $this->merchant);
 
         return $data;
     }
@@ -268,7 +277,7 @@ class Service extends Base\Service
 
             $app = (new AppToken\Core)->create($custAppInput);
 
-            (new Customer\Core)->putAppTokenInSession($app);
+            $this->core->putAppTokenInSession($app);
 
             // Fetch existing tokens if exists
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -470,7 +479,7 @@ class Service extends Base\Service
         assertTrue($bankAccount->getEntityId() === $customerId);
         assertTrue($device->getCustomerId() === $customerId);
 
-        $response = (new Customer\Core)->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+        $response = $this->core->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
 
         return $response;
     }
@@ -494,16 +503,14 @@ class Service extends Base\Service
         assertTrue($bankAccount->getEntityId() === $customerId);
         assertTrue($device->getCustomerId() === $customerId);
 
-        $response = (new Customer\Core)->sendResetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+        $response = $this->core->sendResetMpinRequestToGateway($device, $customer, $bankAccount, $input);
 
         return $response;
     }
 
     public function fetchUpiBankAccounts($id, $ifsc = 'RAZR')
     {
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->repo->merchant->getSharedAccount());
-
-        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer, $ifsc);
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($this->device->customer, $ifsc);
 
         return $accounts->toArrayPublic();
     }

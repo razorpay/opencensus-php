@@ -167,9 +167,7 @@ class CustomerController extends Controller
 
     public function fetchUpiBankAccounts($ifsc = 'RAZR')
     {
-        $data = $this->customer->fetchUpiBankAccounts($id, $ifsc);
-
-        return $data;
+        return $this->customer->fetchUpiBankAccounts($ifsc);
     }
 
     public function setMpin($customerId, $bankAccountId)

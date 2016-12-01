@@ -372,7 +372,7 @@ class BasicAuth
 
             $response = $this->verifyDeviceToken();
 
-            if ($response == true)
+            if ($response === true)
             {
                 return;
             }
