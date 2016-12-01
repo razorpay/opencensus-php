@@ -302,6 +302,7 @@ final class Route
 
 // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganisationController@postOrganisation'                           ],
+        'org_get_self'                            => ['get',      'orgs/{id}/self',                                      'OrganisationController@getOrganisation'                            ],
         'org_get'                                 => ['get',      'orgs/{id}',                                      'OrganisationController@getOrganisation'                            ],
         'org_get_by_hostname'                     => ['get',      'orgs/{hostname}',                                'OrganisationController@getOrganisationByHostname'                  ],
         'org_get_multiple'                        => ['get',      'orgs',                                           'OrganisationController@getOrganisations'                           ],
@@ -578,7 +579,7 @@ final class Route
         'admin_get_app_auth',
         'password_login',
         'oauth_login',
-        'org_get',
+        'org_get_self',
     );
 
     public static $proxy = array(
@@ -649,6 +650,7 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'org_get',
     ];
 
     public static $adminPermission = [
