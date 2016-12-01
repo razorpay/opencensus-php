@@ -85,7 +85,7 @@ class Core extends Base\Core
 
         $currentAccounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
 
-        if (empty($currentAccounts) === false)
+        if ($currentAccounts->isEmpty() === false)
         {
             return;
         }

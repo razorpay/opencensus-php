@@ -14,12 +14,13 @@ final class Route
 
     protected static $apiRoutes = array(
         'upi_get_key_list'                        => ['get',      'upi_npci/keyList',                               'UpiController@getPublicKeyList'                                    ],
-        'upi_sms_webhook'                         => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                        ],
+        'upi_sms_webhook'                         => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                           ],
         'register_device'                         => ['post',     'upi_npci/register',                              'UpiController@registerDevice'                                      ],
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                 'UpiController@getBankList'                                         ],
         'is_device_verified'                      => ['get',      'upi_npci/devices/{id}',                          'UpiController@isDeviceVerified'                                    ],
         'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
         'upi_read_async'                          => ['get',      'upi_npci/status/{id}',                           'UpiController@getStatus'                                           ],
+
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -308,6 +309,7 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        // UPI
         'device_create'                           => ['post',     'devices',                                        'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                 'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'devices/{id}',                                   'DeviceController@getDevice'                                        ],
@@ -315,7 +317,7 @@ final class Route
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                           'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/available/{vpa}',                            'UpiController@isAvailableVpa'                                      ],
         'vpa_valid'                               => ['get',      'vpa/valid/{vpa}',                                'UpiController@isValidVpa'                                          ],
-        'vpa_register'                            => ['post',     'customers/{customer_id}/vpa',                    'CustomerController@setMpin'                                        ],
+        'vpa_register'                            => ['post',     'customers/{customer_id}/bank_accounts/{baId}/mpin','CustomerController@setMpin'                                        ],
         'reset_mpin'                              => ['put',      'customers/{customer_id}/bank_accounts/{id}/mpin','CustomerController@resetMpin'                                      ],
         'vpa_create'                              => ['post',     'vpa/',                                           'UpiController@createVpa'                                           ],
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                       'UpiController@deleteVpa'                                           ],
