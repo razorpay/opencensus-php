@@ -34,7 +34,10 @@ app.controller('AddOrgCtrl', [
 
     $scope.editOrg = function(organization) {
       var data = {};
-      data.body = organization;
+      data.body = jQuery.extend(true, {}, organization);
+      delete data.body.id;
+      delete data.body.created_at;
+      delete data.body.admin;
 
       var request = $http.put('/admin/generic', data, {
         params: {
@@ -44,7 +47,6 @@ app.controller('AddOrgCtrl', [
           }
         }
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization updated', true);
