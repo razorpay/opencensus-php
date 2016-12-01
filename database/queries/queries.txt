@@ -1305,3 +1305,7 @@ UPDATE billdesk
     JOIN orders ON orders.id = payments.order_id
 SET
     billdesk.AccountNumber = orders.account_number;
+
+ALTER TABLE payments
+    ADD COLUMN gateway_captured TINYINT AFTER auto_captured;
+    ADD INDEX payments_gateway_captured_index (gateway_captured);
