@@ -28,6 +28,7 @@ class CreateBilldesk extends Migration {
             $table->string('CustomerID');
             $table->string('TxnAmount');
             $table->string('BankID')->nullable();
+            $table->string('AccountNumber', 50)->nullable();
             $table->string('CurrencyType');
             $table->string('ItemCode')->nullable();
             $table->string('TypeField1')->nullable();

@@ -63,6 +63,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($payment['id'], $invoice['payment_id']);
         $this->assertEquals($order['status'], 'paid');
         $this->assertEquals($invoice['status'], 'paid');
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
     public function testCreateInvoiceWithMultipleLineItems()
@@ -142,7 +143,7 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
 
         $this->startTest();
     }
@@ -151,7 +152,7 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        $this->fixtures->create('invoice', ['ref_num' => '00000000000001']);
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
 
         $this->startTest();
     }
@@ -168,6 +169,26 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithoutLineItemsWithAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithoutLineItemsWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithoutLineItemsAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithLineItemsAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);
@@ -177,6 +198,29 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('item');
 
         $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testGetInvoiceByReceipt()
+    {
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $this->fixtures->create('invoice');
+        $this->fixtures->create(
+            'invoice',
+            [
+                'id'      => '1000001invoice',
+                'receipt' => '00000000000001',
+            ]
+        );
+        $this->fixtures->create(
+            'invoice',
+            [
+                'id'      => '1000002invoice',
+                'receipt' => '00000000000002',
+            ]
+        );
 
         $this->startTest();
     }
@@ -229,6 +273,7 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals(1, count($response['items']));
         $this->assertEquals($payment['id'], $response['items'][0]['payment_id']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()

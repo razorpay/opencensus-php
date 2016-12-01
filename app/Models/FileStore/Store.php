@@ -10,6 +10,8 @@ class Store
 
     const LOCAL = 'local';
 
+    const STORAGE_DIRECTORY = 'files/filestore/';
+
     const STORE_MAP = [
         self::S3    => Storage\AwsS3\Handler::class,
         self::LOCAL => Storage\Local\Handler::class,
@@ -27,7 +29,7 @@ class Store
         if (defined(__CLASS__.'::'.strtoupper($store)) === false)
         {
             throw new Exception\LogicException(
-                'Not a valid store: ' . $store);
+                'Not a valid Store: ' . $store);
         }
     }
 
