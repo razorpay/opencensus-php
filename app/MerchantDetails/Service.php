@@ -67,6 +67,10 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
+                //Save to API
+                $input = ['submit' => true];
+                $this->saveDetailsOnAPI($input);
+
                 $this->fireActivationTrigger($merchantDetails);
             }
             else
@@ -109,6 +113,9 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchantDetails->saveOrFail();
+
+            //Save to API
+            $this->saveDetailsOnAPI($input);
         }
 
         return $error;
@@ -153,6 +160,9 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchantDetails->saveOrFail();
+
+            $input = ['transaction_report_email' => $email];
+            $this->saveDetailsOnAPI($input);
         }
 
         return $error;
@@ -173,6 +183,8 @@ class Service extends Base\Service
         {
             $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
+
+            $this->uploadFileToAPI($input);
         }
 
         return $error;
@@ -295,5 +307,25 @@ class Service extends Base\Service
         $error[] = 'Form has been locked for editing by admin.';
 
         return $error;
+    }
+
+    protected function saveDetailsOnAPI(array $input)
+    {
+        $this->setApiCredentials($this->merchant['id']);
+
+        list($error, $merchantDetails) = $this->api
+                                              ->merchantDetail
+                                              ->submitDetails($input);
+
+        // return $merchantDetails;
+    }
+
+    protected function uploadFileToAPI(array $input)
+    {
+        $this->setApiCredentials($this->merchant['id']);
+
+        $response = $this->api
+                         ->merchantDetail
+                         ->uploadActivationFile($this->merchant['id'], $input);
     }
 }
