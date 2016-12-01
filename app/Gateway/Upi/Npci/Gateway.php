@@ -30,6 +30,9 @@ class Gateway extends Base\Gateway
         'ReqSetCre',
         // Translate some addresses
         'ReqAuthDetails',
+        // This would usually mean check the balance and return to the user
+        // but we are piggy-banking this for Payment Authorizations
+        'ReqBalEnq',
     ];
 
     protected $gateway = 'upi_npci';
@@ -477,7 +480,8 @@ $str = <<<EOT
 </upi:ReqManageVae>
 EOT;
     break;
-        case 'ReqPay':
+        // TODO: Switch to this when you want to try out real payments
+        case 'ReqPayReal':
             $mpinCredBlock = $input['params']['gateway']['mpincredblock'];
             $imei = $input['params']['device']->getImei();
             $packageName = $input['params']['device']->getPackageName();
@@ -487,6 +491,7 @@ EOT;
             $customer = $input['params']['p2p']->customer;
 
             $txnId = "RAZ0E2CF4065DD845E1B3223271A48E24F0";
+
             $str = <<<EOT
 <upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">
     <Head msgId="$msgId" orgId="$orgId" ts="$ts" ver="1.0"/>
@@ -530,6 +535,63 @@ EOT;
 </upi:ReqPay>
 EOT;
     break;
+            // We are currently sending a fake reqbalenq
+            // for a payment request
+            case 'ReqPay':
+            case 'ReqBalEnq':
+                $params = $input['params'];
+                $mpinCredBlock  = $params['gateway']['mpincredblock'];
+                $imei = $params['device']['imei'];
+                $packageName = $params['device']['package_name'];
+                $amount = number_format($params['p2p']['amount'], 2, ',', '');
+                $p2pId = $params['p2p']['id'];
+                $source = $params['source'];
+                $sink = $params['sink'];
+                $customer = $params['customer'];
+                $bankAccount = $params['bank_account'];
+
+                if (isset($params['gateway']['txnId']))
+                {
+                    $txnId = $params['gateway']['txnId'];
+                }
+                $imei = '358960060336586';
+                $packageName = 'com.razorpay.upi.sampleapp';
+
+                $str = <<<EOT
+<upi:ReqBalEnq xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId" />
+<Txn id="$txnId" note="$p2pId" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="BalEnq">
+<RiskScores/>
+</Txn>
+<Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON">
+<Info>
+<Identity type="ACCOUNT" verifiedName="Nemo" />
+<Rating verifiedAddress="TRUE"/>
+</Info>
+<Device>
+<Tag name="MOBILE" value="{$customer['contact']}"/>
+<Tag name="GEOCODE" value="12.9667,77.5667"/>
+<Tag name="LOCATION" value="Sarjapur Road, Bangalore, KA, IN"/>
+<Tag name="IP" value="1.2.3.4"/>
+<Tag name="ID" value="{$imei}"/>
+<Tag name="OS" value="Android 5.3"/>
+<Tag name="APP" value="{$packageName}"/>
+<Tag name="CAPABILITY" value="011001"/>
+</Device>
+<Ac addrType="ACCOUNT" name="Hari Ram">
+<Detail name="IFSC" value="{$bankAccount['ifsc_code']}"/>
+<Detail name="ACTYPE" value="SAVINGS"/>
+<Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
+</Ac>
+<Creds>
+<Cred type="PIN" subType="MPIN">
+<Data code="NPCI" ki="20150822">$mpinCredBlock</Data>
+</Cred>
+</Creds>
+</Payer>
+</upi:ReqBalEnq>
+EOT;
+                break;
             case 'ReqValAdd':
                 $str = <<<EOT
 <upi:ReqValAdd xmlns:upi="http://npci.org/upi/schema/">

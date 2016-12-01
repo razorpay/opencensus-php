@@ -375,7 +375,6 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
-        'p2p_create',
         'device_create',
     );
 
@@ -391,6 +390,7 @@ final class Route
         'vpa_fetch_multiple',
         'upi_customer_bank_accounts_fetch',
         'device_fetch',
+        'p2p_create',
         'p2p_fetch_multiple',
         'p2p_fetch',
         'p2p_authorize',

@@ -86,7 +86,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
     }
 
     public function source()

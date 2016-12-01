@@ -44,7 +44,7 @@ class P2pController extends Controller
     {
         $input = Request::all();
 
-        $data = $p2pService->authorize($input);
+        $data = $p2pService->authorize($id, $input);
 
         return ApiResponse::json($data);
     }
