@@ -257,10 +257,12 @@ final class Route
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
+        'customer_local_customer_device_auth'     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
         'customer_fetch_multiple'                 => ['get',      'customers',                                      'CustomerController@getCustomers'                                   ],
         'customer_delete'                         => ['delete',   'customers/{id}',                                 'CustomerController@deleteCustomer'                                 ],
         'customer_add_bank_account'               => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
         'customer_fetch_bank_account'             => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
+        'customer_fetch_bank_account_device_auth' => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
         'customer_create_token'                   => ['post',     'customers/{id}/tokens',                          'CustomerController@addToken'                                       ],
         'customer_update_token'                   => ['put',      'customers/{id}/tokens/{token}',                  'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                    => ['get',      'customers/{id}/tokens/{token}',                  'CustomerController@fetchToken'                                     ],
@@ -394,6 +396,8 @@ final class Route
         'p2p_fetch_multiple',
         'p2p_fetch',
         'p2p_authorize',
+        'customer_local_customer_device_auth',
+        'customer_fetch_bank_account_device_auth',
     );
 
     public static $publicCallback = array(

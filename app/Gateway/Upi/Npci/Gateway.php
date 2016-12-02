@@ -509,7 +509,7 @@ EOT;
             $sink = $input['params']['p2p']->sink;
             $customer = $input['params']['p2p']->customer;
 
-            $txnId = "RAZ0E2CF4065DD845E1B3223271A48E24F0";
+            $txnId = $input['params']['p2p']->getTxnId(true);
 
             $str = <<<EOT
 <upi:ReqPay xmlns:upi="http://npci.org/upi/schema/">

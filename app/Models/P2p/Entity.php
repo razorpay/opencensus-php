@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     const ID                  = 'id';
+    const TXN_ID              = 'txn_id';
     const SOURCE_ID           = 'source_id';
     const SOURCE_TYPE         = 'source_type';
     const SINK_ID             = 'sink_id';
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::TXN_ID,
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::SINK_ID,
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'p2p';
 
     protected static $generators = [
+        self::TXN_ID,
         self::SOURCE_TYPE,
         self::SINK_TYPE,
     ];
@@ -115,6 +118,13 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Generators ------------------
 
+    protected function generateTxnId($input)
+    {
+        $txnId = upi_uuid();
+
+        $this->setAttribute(self::TXN_ID, $txnId);
+    }
+
     protected function generateSourceType($input)
     {
         $sourceId = $input[self::SOURCE_ID];
@@ -155,6 +165,18 @@ class Entity extends Base\PublicEntity
     public function getSinkType()
     {
         return $this->getAttribute(self::SINK_TYPE);
+    }
+
+    public function getTxnId($prefix = true)
+    {
+        $txnId = $this->getAttribute(self::TXN_ID);
+
+        if ($prefix === true)
+        {
+            $txnId = 'RAZ' . $txnId;
+        }
+
+        return $txnId;
     }
 
     // ----------------------- Public Setters ------------------
