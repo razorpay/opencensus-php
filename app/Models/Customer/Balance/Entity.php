@@ -95,20 +95,65 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Helpers ----------------------------
 
-    public function addBalance($amount)
+    public function addBalance($amount) //change to protected
     {
+        $this->checkNumeric($amount);
+
         $balance = $this->getBalance() + $amount;
 
         $this->setAttribute(self::BALANCE, $balance);
     }
 
-    public function deductBalance($amount)
+    public function deductBalance($amount) //cahnge to protected
     {
+        $this->checkNumeric($amount);
+
         $balance = $this->getBalance() - $amount;
 
         assert($balance >= 0);
 
         $this->setAttribute(self::BALANCE, $balance);
+    }
+
+    /**
+     * Only this method should be public
+     * for updating balance.
+     * We need to check for balance going negative
+     * whenever we update balance
+     *
+     * @param  \RZP\Models\Transaction\Entity $txn
+     * @throws Exception\LogicException
+     */
+    public function updateBalance($txn)
+    {
+        $amount = $txn->getNetAmount();
+
+        // Negating the amount here because customer balance txn is a debit wrt merchants
+        // NetAmount for debits will be negative
+        $this->addBalance(-1 * $amount);
+
+        if ($this->getBalance() < 0)
+        {
+            $data = [
+                'balance' => $this->toArray(),
+                'transaction' => $txn->toArray(),
+                'amount' => $amount
+            ];
+
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative',
+                null,
+                $data);
+        }
+    }
+
+    protected function checkNumeric($arg)
+    {
+        if (is_int($arg) === false)
+        {
+            throw new Exception\InvalidArgumentException('
+                Unsigned integer required. Supplied: ' . $arg);
+        }
     }
 
     // -------------------- End Helpers -------------------------

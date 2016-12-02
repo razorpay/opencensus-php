@@ -25,12 +25,6 @@ class Core extends Base\Core
     {
         $customerTxn = $this->createEntityForType('credit', $payment, $txn, $customer);
 
-        $balance = (new Customer\Balance\Service)->credit($customer, $txn->getAmount());
-
-        // Lock for get balance
-
-        $customerTxn->setBalance($balance->getBalance());
-
         return $customerTxn;
     }
 

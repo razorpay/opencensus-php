@@ -34,7 +34,7 @@ class Core extends Base\Core
 
         $transfer->merchant()->associate($source->merchant);
 
-        $txn = (new Transaction\Core)->createFromTransfer($transfer);
+        $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
 
         $this->repo->saveOrFail($txn);
 

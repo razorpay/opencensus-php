@@ -17,6 +17,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
@@ -26,6 +27,8 @@ class Core extends Base\Core
     protected $merchantBalance = null;
 
     protected $nodalBalance = null;
+
+    protected $customerBalance = null;
 
     protected $merchant;
 
@@ -398,7 +401,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromTransfer($transfer)
+    public function createFromTransfer($transfer, $to)
     {
         $txn = new Transaction\Entity;
 
@@ -430,7 +433,7 @@ class Core extends Base\Core
 
         $transfer->transaction()->associate($txn);
 
-        $this->updateBalances($txn, false);
+        $this->updateBalancesForTransfer($to, $txn);
 
         return $txn;
     }
@@ -438,6 +441,16 @@ class Core extends Base\Core
     protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);
+    }
+
+    protected function updateBalancesForTransfer($to, $txn)
+    {
+        if ($to instanceof Customer\Entity)
+        {
+            $this->updateCustomerBalance($to, $txn);
+        }
+
+        $this->updateBalances($txn, false);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
@@ -480,6 +493,19 @@ class Core extends Base\Core
         $this->repo->balance->updateBalance($nodalBalance);
 
         $txn->setEscrowBalance($nodalBalance->getBalance());
+
+        return $txn;
+    }
+
+    public function updateCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
+    {
+        $balance = $this->getCustomerBalanceLockForUpdate($customer);
+
+        $balance->updateBalance($txn);
+
+        $this->repo->customer_balance->updateBalance($balance);
+
+        $txn->setBalance($balance->getBalance());
 
         return $txn;
     }
@@ -588,6 +614,21 @@ class Core extends Base\Core
         $this->merchantBalance = $merchantBalance;
 
         return $merchantBalance;
+    }
+
+    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer)
+    {
+        if ($this->customerBalance !== null)
+        {
+            return $this->customerBalance;
+        }
+
+        $balance = $this->repo->customer_balance
+                   ->getCustomerBalanceLockForUpdate($customer->getPublicId(), $this->merchant);
+
+        $this->customerBalance = $balance;
+
+        return $balance;
     }
 
     protected function getSettledAtTimestamp($payment)
