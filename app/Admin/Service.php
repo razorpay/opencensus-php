@@ -2385,7 +2385,7 @@ class Service extends Base\Service
     }
 
 
-    public function getOrg($orgId)
+    public function getOrg($domain)
     {
         $error = $data = null;
 
@@ -2393,7 +2393,7 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->org->fetch($orgId)->toArray();
+            $data = $this->api->org->fetchByDomain($domain)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

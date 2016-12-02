@@ -163,9 +163,7 @@ class AdminController extends Controller
     {
         $domain = request()->server->get('SERVER_NAME');
 
-        $org = self::ORG_CHART[$domain];
-
-        list($error, $org) = (new Admin\Service)->getOrg($org);
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
 
         return AppResponse::jsonResponse($error, $org);
     }
