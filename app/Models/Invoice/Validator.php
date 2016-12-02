@@ -13,6 +13,8 @@ class Validator extends Base\Validator
 
     const CREATE_DRAFT  = 'createDraft';
     const CREATE_ISSUED = 'createIssued';
+    const EDIT_DRAFT    = 'editDraft';
+    const EDIT_ISSUED   = 'editIssued';
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -86,7 +88,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
-        Entity::DESCRIPTION         => 'required_with:amount|string|max:2048',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
@@ -116,12 +118,16 @@ class Validator extends Base\Validator
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
     ];
 
-    protected static $editDraftValidators = [
+    protected static $createValidators =[
         Entity::AMOUNT,
     ];
 
     protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
+    ];
+
+    protected static $editDraftValidators = [
+        self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
     public function validateAmount(array $input)
@@ -131,39 +137,16 @@ class Validator extends Base\Validator
             return;
         }
 
-        $invoice = $this->entity;
-
-        if ($invoice->lineItems()->count())
+        if (isset($input[Entity::LINE_ITEMS]) === true)
         {
             throw new BadRequestValidationFailureException(
-                'Amount cannot be updated if line_items present'
+                'amount should not be sent with line_items'
             );
         }
     }
 
-    /**
-     * Validates: - Either line_items or amount, description should exists in input
-     *            - But not both
-     *            - If line_items exists then count should be between 1-10
-     *
-     * @param array $input
-     *
-     * @throws BadRequestValidationFailureException
-     */
     public function validateLineItems(array $input)
     {
-        $lineItemsExists = isset($input[Entity::LINE_ITEMS]);
-
-        $amountExists    = isset($input[Entity::AMOUNT]);
-        $descExists      = isset($input[Entity::DESCRIPTION]);
-
-        if (($lineItemsExists) ^ ($amountExists and $descExists) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Provide either line_items or amount, description.'
-            );
-        }
-
         if (isset($input[Entity::LINE_ITEMS]) === false)
         {
             return;
@@ -194,6 +177,23 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
+    }
+
+    public function validateEditDraftAmount(array $input)
+    {
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $invoice = $this->entity;
+
+        if ($invoice->lineItems()->count())
+        {
+            throw new BadRequestValidationFailureException(
+                'amount cannot be updated if invoice has line_items'
+            );
+        }
     }
 
     public function validateMerchantHasKeys()
@@ -289,23 +289,26 @@ class Validator extends Base\Validator
         $invoiceLineItemsCount = $invoice->lineItems()->count();
 
         if (
-            ($invoiceAmount > 0) and
-            (($invoiceDesc != null) or ($invoiceLineItemsCount > 0))
+            ($invoiceAmount !== null) and
+            (($invoiceDesc !== null) or ($invoiceLineItemsCount > 0))
         )
         {
             return;
         }
 
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
-            null,
-            [
-                'invoice_id'        => $invoice->getId(),
-                'amount'            => $invoiceAmount,
-                'description'       => $invoiceDesc,
-                'line_items_count'  => $invoiceLineItemsCount,
-            ]
-        );
+        if ($invoiceAmount === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount or line_items is required'
+            );
+        }
+
+        if ($invoiceDesc === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'description is required with amount'
+            );
+        }
     }
 
     // protected static $createValidators = [

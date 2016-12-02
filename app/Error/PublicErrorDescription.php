@@ -275,7 +275,6 @@ class PublicErrorDescription
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'You cannot edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED                             = 'Operation not allowed for the status invoice is in';
-    const BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED                                 = 'Invoice cannot be issued, Provide either line_items or amount, description';
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used in invoice as it is inactive';
     const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                             = 'Invoice cannot be issued without customer';
 }

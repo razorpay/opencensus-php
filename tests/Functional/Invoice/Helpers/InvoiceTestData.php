@@ -376,7 +376,6 @@ return [
             'method'    => 'post',
             'content'   => [
                 'description'    => 'Abc def',
-                'amount'         => 100,
                 'line_items'     => [
                     [
                         'name'   => 'Aweseome',
@@ -564,7 +563,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Amount cannot be updated if line_items present',
+                    'description' => 'amount cannot be updated if invoice has line_items',
                 ],
             ],
             'status_code' => 400,
@@ -814,14 +813,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice cannot be issued, Provide either line_items or amount, description',
+                    'description' => 'description is required with amount',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_ISSUE_NOT_ALLOWED,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1236,7 +1235,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The description field is required when amount is present.',
+                    'description' => 'description is required with amount',
                 ],
             ],
             'status_code' => 400,
@@ -1264,7 +1263,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Provide either line_items or amount, description.',
+                    'description' => 'amount or line_items is required',
                 ],
             ],
             'status_code' => 400,
@@ -1302,7 +1301,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Provide either line_items or amount, description.',
+                    'description' => 'amount should not be sent with line_items',
                 ],
             ],
             'status_code' => 400,
