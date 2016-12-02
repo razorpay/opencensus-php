@@ -1301,7 +1301,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount should not be sent with line_items',
+                    'description' => 'amount should not be sent if line_items are being sent in the input.',
                 ],
             ],
             'status_code' => 400,
@@ -1532,7 +1532,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'invalid is not a valid communication medium',
+                    'description' => 'invalid is not a valid communication medium.',
                 ],
             ],
             'status_code' => 400,

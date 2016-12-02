@@ -136,7 +136,7 @@ class Validator extends Base\Validator
         // If amount is set, input should not contain line_items.
         //
         if ((isset($input[Entity::AMOUNT]) === true) and
-            (isset($input[Entity::LINE_ITEMS]) === false))
+            (isset($input[Entity::LINE_ITEMS]) === true))
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
@@ -296,11 +296,9 @@ class Validator extends Base\Validator
         $invoiceDesc            = $invoice->getDescription();
         $invoiceLineItemsCount  = $invoice->lineItems()->count();
 
-        if (($invoiceAmount !== null) and
-            (($invoiceDesc !== null) or ($invoiceLineItemsCount > 0)))
-        {
-            return;
-        }
+        // Checks:
+        // - amount must be set (directly/ via line_items)
+        // - If directly then description must be set
 
         if ($invoiceAmount === null)
         {
@@ -309,7 +307,7 @@ class Validator extends Base\Validator
             );
         }
 
-        if ($invoiceDesc === null)
+        if (($invoiceLineItemsCount === 0) and ($invoiceDesc === null))
         {
             throw new BadRequestValidationFailureException(
                 'description is required with amount'
