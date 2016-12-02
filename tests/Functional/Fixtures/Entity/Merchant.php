@@ -177,12 +177,27 @@ class Merchant extends Base
 
     public function enableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => true]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true, 'credit_card' => true]);
     }
 
     public function disableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => false]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false]);
+    }
+
+    public function disableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => false]);
+    }
+
+    public function enableDebitCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true]);
+    }
+
+    public function enableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => true]);
     }
 
     public function enableNetbanking($id = '10000000000000')

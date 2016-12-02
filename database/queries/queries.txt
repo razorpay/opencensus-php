@@ -1272,6 +1272,10 @@ ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
 
+--Queries for updating credit_card, debit_card method
+UPDATE merchant_banks SET credit_card = 0 WHERE card = 0;
+UPDATE merchant_banks SET debit_card = 0 WHERE card = 0;
+
 --- Pre code deployment / https://github.com/razorpay/api/pull/1697
 
 ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
