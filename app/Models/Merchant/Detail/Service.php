@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
@@ -14,23 +15,22 @@ class Service extends Base\Service
 {
     public function fetchMerchantDetails()
     {
-        $merchantDetails = $this->merchant->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetail;
 
         return $this->createResponse($merchantDetails);
     }
 
     public function saveMerchantDetails(array $input)
     {
-        $merchantDetails = $this->merchant->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetail;
 
         if ($merchantDetails->isLocked())
         {
-            return $this->isLockedError();
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }
 
-        $merchantDetails->getValidator()->validateParams($input);
-
-        $merchantDetails->fill($input);
+        $merchantDetails->edit($input);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -61,10 +61,11 @@ class Service extends Base\Service
 
         if ($merchantDetails->isLocked())
         {
-            return $this->isLockedError();
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }
 
-        $merchantDetails->getValidator()->validateParams($input);
+        $merchantDetails->edit($input);
 
         $params = [];
 
@@ -76,7 +77,7 @@ class Service extends Base\Service
                                     $value->extension(),
                                     $value,
                                     $fileName,
-                                    FileStore\Type::MERCHANT_ACTIVATION_PROOF);
+                                    FileStore\Type::MERCHANT_ACTIVATION);
 
             $params[$key] = $ufh->get()['id'];
         }
@@ -91,6 +92,8 @@ class Service extends Base\Service
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
         $merchantDetail = (new Detail\Entity)->build($input);
+
+        $merchantDetail->setContactEmail($merchant->getEmail());
 
         $merchantDetail->merchant()->associate($merchant);
 
@@ -115,13 +118,6 @@ class Service extends Base\Service
                 ->save();
 
         return $creator;
-    }
-
-    protected function isLockedError()
-    {
-        $error[] = 'Form has been locked for editing by admin.';
-
-        return $error;
     }
 
     protected function createResponse(Detail\Entity $merchantDetails)

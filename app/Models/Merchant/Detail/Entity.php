@@ -205,13 +205,22 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT   => null,
     ];
 
+    protected $casts = [
+        self::LOCKED      => 'bool',
+    ];
+
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
     }
 
     public function isLocked()
     {
-        return $this->getAttribute('locked');
+        return $this->getAttribute(self::LOCKED);
+    }
+
+    public function setContactEmail($email)
+    {
+        $this->setAttribute(self::CONTACT_EMAIL, $email);
     }
 }

@@ -383,4 +383,6 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
+
+    const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
 }

@@ -18,7 +18,7 @@ return [
     */
 
     'region' => env('AWS_REGION', 'us-east-1'),
-    'bucket_region' => env('AWS_BUCKET_REGION', 'us-east-1'),
+    'bucket_region' => env('AWS_REGION', 'us-east-1'),
     'version' => 'latest',
     'ua_append' => [
         'L5MOD/' . AwsServiceProvider::VERSION,
@@ -27,11 +27,7 @@ return [
     'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
     'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),
     'h2h_bucket'            => env('AWS_H2H_BUCKET'),
-
-    // TODO: Change this for production after bucket is created
-    'activation_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
-
-    //'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
+    'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
 
     'mock' => env('AWS_S3_MOCK')
 ];

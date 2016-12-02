@@ -21,7 +21,7 @@ class Type
 
     const BATCH_OUTPUT                      = 'batch_output';
 
-    const MERCHANT_ACTIVATION_PROOF         = 'merchant_activation_proof';
+    const MERCHANT_ACTIVATION               = 'merchant_activation';
 
     const BLANK                             = 'blank';
 
@@ -44,7 +44,7 @@ class Type
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
-            self::MERCHANT_ACTIVATION_PROOF,
+            self::MERCHANT_ACTIVATION,
         ],
     ];
 

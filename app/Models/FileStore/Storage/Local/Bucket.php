@@ -15,6 +15,6 @@ class Bucket extends Base\Bucket
         Type::ICICI_UPI_REFUND              => 'upi',
         Type::BATCH_INPUT                   => 'batch',
         Type::BATCH_OUTPUT                  => 'batch',
-        Type::MERCHANT_ACTIVATION_PROOF     => 'activation_bucket',
+        Type::MERCHANT_ACTIVATION           => 'activation_bucket',
     ];
 }
