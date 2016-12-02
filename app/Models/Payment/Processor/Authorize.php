@@ -1325,7 +1325,7 @@ trait Authorize
     {
         try
         {
-            $analyticsEntity = (new Analytics\Core)->create($payment);
+            (new Analytics\Service)->createLog($payment);
         }
         catch (\Exception $e)
         {

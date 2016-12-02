@@ -10,6 +10,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
@@ -26,6 +27,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
+    const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -141,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
@@ -163,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
@@ -188,6 +192,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::CARD_ID,
         self::CUSTOMER_ID,
         self::TOKEN_ID
@@ -663,6 +668,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::ORDER_ID));
     }
 
+    public function hasInvoice()
+    {
+        return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
     public function isCaptured()
     {
         return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
@@ -1054,6 +1064,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
+    }
+
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
@@ -1075,6 +1090,14 @@ class Entity extends Base\PublicEntity
         if (isset($array[self::ORDER_ID]))
         {
             $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
+        }
+    }
+
+    public function setPublicInvoiceIdAttribute(array & $array)
+    {
+        if (isset($array[self::INVOICE_ID]))
+        {
+            $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($array[self::INVOICE_ID]);
         }
     }
 
@@ -1187,11 +1210,17 @@ class Entity extends Base\PublicEntity
 
         $data['card_type'] = null;
         $data['card_network'] = null;
+        $data['invoice_id'] = null;
 
         if ($this->isMethodCardOrEmi())
         {
             $data['card_type'] = $this->card->getType();
             $data['card_network'] = $this->card->getNetwork();
+        }
+
+        if ($this->getInvoiceId() !== null)
+        {
+            $data['invoice_id'] = $this->getInvoiceId();
         }
 
         return $data;
@@ -1232,6 +1261,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('RZP\Models\Order\Entity');
+    }
+
+    public function invoice()
+    {
+        return $this->belongsTo('RZP\Models\Invoice\Entity');
     }
 
     public function analytics()

@@ -40,6 +40,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
             $table->tinyInteger(Payment::INTERNATIONAL)
                   ->nullable();
 

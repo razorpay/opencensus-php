@@ -12,18 +12,18 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID  => 'sometimes|string|size:18'
-    ];
-
-    protected $appFetchParamRules = [
-        Entity::STATUS              => 'sometimes|string',
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::PAYMENT_ID => 'sometimes|string|size:18',
+        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
     protected $proxyFetchParamRules = [
         Entity::USER_ID => 'sometimes|alpha_num',
         Entity::STATUS  => 'sometimes|string',
         Entity::TYPE    => 'sometimes|string|max:16',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
     public function getInvoicesForNotification($medium)
