@@ -22,8 +22,6 @@ class Core extends Base\Core
                 $vpa->toArrayPublic());
         }
 
-        sd($duplicate);
-
         $vpa->generateId();
 
         $vpa->customer()->associate($customer);

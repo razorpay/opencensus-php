@@ -90,6 +90,13 @@ class BasicAuth
     private $type;
 
     /**
+     * Device being used in device auth routes
+     *
+     * @var  Device\Entity
+     */
+    private $device;
+
+    /**
      * Whether an internal app is doing an authentication
      * proxy to perform some action on merchant's
      * behalf
@@ -580,6 +587,7 @@ class BasicAuth
         }
 
         $device = $this->repo->device->findByAuthToken($deviceToken);
+
         $this->device = $device;
 
 

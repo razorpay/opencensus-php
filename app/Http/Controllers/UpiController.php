@@ -78,9 +78,7 @@ class UpiController extends Controller
 
     public function getVpas()
     {
-        $input = Request::all();
-
-        $data = $this->core->getVpas($input);
+        $data = $this->core->getVpas();
 
         return ApiResponse::json($data);
     }

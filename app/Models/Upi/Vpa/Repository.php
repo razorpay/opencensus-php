@@ -27,4 +27,11 @@ class Repository extends Base\Repository
                     ->where(Entity::HANDLE, '=', $handle)
                     ->first();
     }
+
+    public function fetchByCustomerId($customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->get();
+    }
 }

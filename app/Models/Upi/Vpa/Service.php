@@ -54,9 +54,11 @@ class Service extends Base\Service
         return $vpa->toArrayPublic();
     }
 
-    public function getAll($input)
+    public function getAll()
     {
-        $vpas = $this->repo->vpa->fetch($input);
+        $customerId = $this->device->customer->getId();
+
+        $vpas = $this->repo->vpa->fetchByCustomerId($customerId);
 
         return $vpas->toArrayPublic();
     }
