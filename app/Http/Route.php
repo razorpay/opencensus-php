@@ -315,6 +315,7 @@ final class Route
         'device_create'                           => ['post',     'devices',                                          'DeviceController@createDevice'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                   'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'devices/{id}',                                     'DeviceController@getDevice'                                        ],
+        'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                   'CustomerController@fetchBalance'                                   ],
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi/banks/{ifsc}',                                 'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                             'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/available/{vpa}',                              'UpiController@isAvailableVpa'                                      ],
@@ -325,7 +326,6 @@ final class Route
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                         'UpiController@deleteVpa'                                           ],
         'vpa_edit'                                => ['put',      'vpa/{id}',                                         'UpiController@editVpa'                                             ],
         'vpa_fetch'                               => ['get',      'vpa/{id}',                                         'UpiController@getVpa'                                              ],
-        'customer_balance_fetch'                  => ['get',      'customers/{customerId}/balance/{accountId}',       'CustomerController@fetchBalance'                                   ],
     );
 
     public static $public = array(

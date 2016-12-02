@@ -739,7 +739,7 @@ EOT;
 <upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ReqRegMob"/>
-<Payer addr="{$customer['id']}@razor" name="Razorpay Customer" seqNum="1" type="PERSON" code="0000">
+<Payer addr="reserved@razor" name="Razorpay Customer" seqNum="1" type="PERSON" code="0000">
 <Device>
 <Tag name="MOBILE" value="{$customer['contact']}"/>
 <Tag name="GEOCODE" value="12.9667,77.5667"/>

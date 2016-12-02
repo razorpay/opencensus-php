@@ -88,9 +88,9 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchBalance($customerId, $accountId)
+    public function fetchBalance($accountId)
     {
-        $data = $this->customer->fetchBalance($customerId, $accountId);
+        $data = $this->customer->fetchBalance($accountId);
 
         return ApiResponse::json($data);
     }

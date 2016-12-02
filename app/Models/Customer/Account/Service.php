@@ -298,13 +298,12 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function fetchBalance($customerId, $accountId)
+    public function fetchBalance($accountId)
     {
-        $customer = $this->repo->customer->findOrFailPublic($customerId);
-
+        Entity::stripSignWithoutValidation($accountId);
         $bankAccount = $this->repo->bank_account->findOrFail($accountId);
 
-        if ($bankAccount->getEntityId() !== $customerId)
+        if ($bankAccount->getEntityId() !== $this->device->customer->getId())
         {
             return;
         }
