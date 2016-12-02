@@ -1305,3 +1305,9 @@ UPDATE billdesk
     JOIN orders ON orders.id = payments.order_id
 SET
     billdesk.AccountNumber = orders.account_number;
+
+--- Post code deployment / https://github.com/razorpay/api/pull/1732
+
+UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
+
+---
