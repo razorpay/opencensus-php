@@ -247,7 +247,11 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
                 );
 
-                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
+                // Adding a delay here because some gateways return back an error if a capture request
+                // is sent within a few seconds of the first capture request.
+                // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
+                // previous capture request.
+                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
             }
 
             $this->recordCapture();

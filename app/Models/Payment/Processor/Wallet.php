@@ -45,4 +45,10 @@ class Wallet
     {
         return self::$fullName;
     }
+
+    public static function getName($wallet)
+    {
+        return self::$fullName[$wallet];
+    }
+
 }

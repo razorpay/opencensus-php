@@ -3,8 +3,9 @@
 namespace RZP\Models\FileStore\Storage\AwsS3;
 
 use RZP\Models\FileStore\Type;
+use RZP\Models\FileStore\Storage\Base;
 
-class Bucket
+class Bucket extends Base\Bucket
 {
     const BUCKET_MAP = [
         Type::KOTAK_NETBANKING_REFUND   => 'settlement_bucket',

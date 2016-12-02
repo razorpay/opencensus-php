@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => false,
         self::BANKS         => [],
         self::EMI           => false,
-        self::UPI           => false,
+        self::UPI           => true,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
