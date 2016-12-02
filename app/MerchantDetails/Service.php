@@ -184,10 +184,11 @@ class Service extends Base\Service
             $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
 
-            $params = [
-                    $data['field'] => $data['file'],
-            ];
-            $this->uploadFileToAPI($params);
+            if (env('S3_MOCK') === false)
+            {
+                $params = [ $data['field'] => $data['file'] ];
+                $this->uploadFileToAPI($params);
+            }
         }
 
         return $error;
