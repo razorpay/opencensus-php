@@ -71,7 +71,7 @@ function createNgDirective(directiveName, component, ...args) {
   ])
 }
 
-createNgDirective('invoicesNew', InvoicesNewContainer)
+createNgDirective('invoicesNew', InvoicesNewContainer, ['id'])
 createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)

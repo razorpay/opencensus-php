@@ -16,10 +16,10 @@ export default class Invoice extends BaseModel {
     'line_items',
     'type',
     'terms',
-    'description'
+    'description',
+    'receipt'
   ]
   currency = 'INR'
-  date = Math.ceil(new Date().getTime()/1000)
 
   static fetchAll(params = {}) {
     return ajax('/invoices', params).then((response) => {
@@ -67,7 +67,7 @@ export default class Invoice extends BaseModel {
       } else if (this.type === 'invoice') {
         return this.line_items.map((item) => {
           return {
-            item_id: item.id,
+            item_id: item.item_id,
             quantity: item.quantity
           }
         })

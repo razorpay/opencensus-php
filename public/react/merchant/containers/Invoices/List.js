@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 import Modal from 'rzp/ui/Modal'
@@ -14,6 +14,10 @@ import CreatePaymentLink from './CreatePaymentLink'
   { fetchInvoices, highLightInvoice }
 )
 export default class InvoicesListContainer extends ModalContainer {
+  static contextTypes = {
+    ngRouter: PropTypes.object
+  }
+
   constructor() {
     super(...arguments)
     this.state.skip = 0
@@ -50,6 +54,10 @@ export default class InvoicesListContainer extends ModalContainer {
   editInvoice(invoice) {
     if (invoice.type === 'link') {
       this.showPaymentLinkModal(invoice)
+    } else if (invoice.type === 'invoice') {
+      this.context.ngRouter.transitionTo('app.invoicesedit', {
+        id: invoice.id
+      })
     }
   }
 

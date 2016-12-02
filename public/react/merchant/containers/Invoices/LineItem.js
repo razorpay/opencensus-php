@@ -43,7 +43,8 @@ export default class InvoiceLineItem extends ModalContainer {
 
   render() {
     let { fieldName, fieldItem, index, items, onRemove } = this.props
-    let selectedItemId = fieldItem.item ? fieldItem.item.id : null
+    let selectedItemId = fieldItem.item ? fieldItem.item.id :
+                          fieldItem.item_id ? fieldItem.item_id : null
 
     return (
       <tr>
@@ -61,7 +62,7 @@ export default class InvoiceLineItem extends ModalContainer {
         </Modal>
 
           <Field
-            name={`${fieldName}.id`}
+            name={`${fieldName}.item_id`}
             component={TypeAhead}
             options={items}
             selected={selectedItemId}
