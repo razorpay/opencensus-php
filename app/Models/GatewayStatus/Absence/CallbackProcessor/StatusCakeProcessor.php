@@ -21,6 +21,13 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
     const STATUS_DOWN = 'DOWN';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->processor = new Processor();
+    }
+
     protected function fetchStatusCakeCredentials()
     {
         $uname = $this->app['config']->get('gateway.absence.statuscake.username');
