@@ -8,20 +8,32 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
+    const BANKADJREF            = 'bankadjref';
+    const FLAG                  = 'Flag';
+    const SHTDAT                = 'shtdat';
+    const ADJAMT                = 'adjamt';
+    const SHSER                 = 'shser';
+    const SHCRD                 = 'shcrd';
+    const FILENAME              = 'filename';
+    const REASON                = 'reason';
+    const SPECIFYOTHER          = 'specifyother';
+    const MERCHANTACCOUNT       = 'Merchantaccount';
+    const MERCHANT_IFSC_CODE    = 'MerchantIFSCCode';
+
     protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
     protected static $headers = array(
-        'bankadjref',
-        'Flag',
-        'shtdat',
-        'adjamt',
-        'shser',
-        'shcrd',
-        'filename',
-        'reason',
-        'specifyother',
-        'Merchantaccount',
-        'MerchantIFSCCode'
+        self::BANKADJREF,
+        self::FLAG,
+        self::SHTDAT,
+        self::ADJAMT,
+        self::SHSER,
+        self::SHCRD,
+        self::FILENAME,
+        self::REASON,
+        self::SPECIFYOTHER,
+        self::MERCHANTACCOUNT,
+        self::MERCHANT_IFSC_CODE,
     );
 
     public function generate($input)
@@ -76,17 +88,17 @@ class RefundFile extends Base\RefundFile
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 
             $data[] = [
-                'bankadjref'        => $row['refund']['id'],
-                'Flag'              => 'C',
-                'shtdat'            => $date,
-                'adjamt'            => ($row['refund']['amount'] / 100),
-                'shser'             => $row['gateway']['gateway_payment_id'],
-                'shcrd'             => $row['gateway']['vpa'],
-                'filename'          => $fileName,
-                'reason'            => 'NA',
-                'specifyother'      => $row['refund']['id'],
-                'Merchantaccount'   => '',
-                'MerchantIFSCCode'  => '',
+                self::BANKADJREF         => $row['refund']['id'],
+                self::FLAG               => 'C',
+                self::SHTDAT             => $date,
+                self::ADJAMT             => ($row['refund']['amount'] / 100),
+                self::SHSER              => $row['gateway']['gateway_payment_id'],
+                self::SHCRD              => $row['gateway']['vpa'],
+                self::FILENAME           => $fileName,
+                self::REASON             => 'NA',
+                self::SPECIFYOTHER       => $row['refund']['id'],
+                self::MERCHANTACCOUNT    => '',
+                self::MERCHANT_IFSC_CODE => '',
             ];
         }
 
