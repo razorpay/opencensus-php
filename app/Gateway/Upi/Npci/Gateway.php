@@ -564,15 +564,12 @@ EOT;
                 $packageName = $params['device']['package_name'];
                 $amount = number_format($params['p2p']['amount'], 2, ',', '');
                 $p2pId = $params['p2p']['id'];
+                $txnId = $params['p2p']['txn_id'];
                 $source = $params['source'];
                 $sink = $params['sink'];
                 $customer = $params['customer'];
                 $bankAccount = $params['bank_account'];
 
-                if (isset($params['gateway']['txnId']))
-                {
-                    $txnId = $params['gateway']['txnId'];
-                }
                 $imei = '358960060336586';
                 $packageName = 'com.razorpay.upi.sampleapp';
 
