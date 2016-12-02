@@ -51,9 +51,9 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        // Going to assume that tracking URL works and that response is in XML and status = 'SUCCESS'
-        // sd($this->action); // Why is this authorize??
-        // $this->validateActionInput($input);
+        parent::verify($input);
+
+        $this->validateActionInput($input);
 
         $response = $this->createXmlResponse($input);
 
