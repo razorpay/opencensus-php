@@ -327,7 +327,7 @@
           </span>
           Methods
         </div>
-        <div ng-init="isMethodsCollapsed = false" collapse="isMethodsCollapsed" class="panel-body">
+        <div ng-init="isMethodsCollapsed = true" collapse="isMethodsCollapsed" class="panel-body">
           <!-- TODO: Convert this to a ng-repeat. Make sure you maintain the labels and order -->
           <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
