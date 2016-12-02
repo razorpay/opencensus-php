@@ -32,7 +32,7 @@ class UpiController extends Controller
             $forwardUrl = 'http://api2.razorpay.dev/' . Request::path();
 
             $response = \Requests::post($forwardUrl, [
-                'Content-Type'  =>  'application/xml'
+                'Content-Type'  => 'application/xml'
             ], $body);
 
             return $this->generateXmlResponse($response->body);
@@ -85,6 +85,13 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getVpa(string $id)
+    {
+        $data = $this->core->getVpa($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteVpa($id)
     {
         $data = $this->core->deleteVpa($id);
@@ -104,15 +111,15 @@ class UpiController extends Controller
     public function isValidVpa($vpa)
     {
         return ApiResponse::json([
-            'valid'         =>  true
+            'valid'         => true
         ]);
     }
 
     public function isAvailableVpa($vpa)
     {
         return ApiResponse::json([
-            'valid'         =>  true,
-            'available'     =>  true
+            'valid'         => true,
+            'available'     => true
         ]);
     }
 
