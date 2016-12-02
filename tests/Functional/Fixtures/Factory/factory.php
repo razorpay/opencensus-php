@@ -208,7 +208,6 @@ $factory(\RZP\Models\Card\IIN\Entity::class, [
 
 $factory(\RZP\Models\Merchant\Methods\Entity::class, [
     'merchant_id'       => '10000000000000',
-    'card'              => '1',
     'credit_card'       => '1',
     'debit_card'        => '1',
     'banks'             => '[]',
