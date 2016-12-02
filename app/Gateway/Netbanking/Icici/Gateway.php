@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']);
+            $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -144,7 +144,7 @@ class Gateway extends Base\Gateway
 
         // Should probably trace this
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::VERIFY_CAPTURE_RESPONSE,
             (array)$xml);
 
         $verify->apiSuccess = true;
