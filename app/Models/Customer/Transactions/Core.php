@@ -22,16 +22,17 @@ class Core extends Base\Core
     {
         $customerTxn = $this->createEntityForType('credit', $payment, $amount, $customer);
 
+        $balance = $this->repo->customer_balance
+                        ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant);
+
+        $customerTxn->setBalance($balance->getBalance());
+
         return $customerTxn;
     }
 
     protected function createEntityForType(string $type, $payment, int $amount, $customer)
     {
         $customerTxn = new Entity;
-
-        $balance = $this->repo->customer_balance
-                        ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant)
-                        ->getBalance();
 
         $txnData = [
             Entity::ENTITY_ID           => $customer->getId(),
