@@ -687,6 +687,7 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_merchant_id2'      => 'uvwx',
             'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
             'netbanking'                => 1,
             'shared'                    => 1);
 

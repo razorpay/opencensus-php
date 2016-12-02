@@ -3,16 +3,16 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
 {
@@ -190,7 +190,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->createDefaultRequestData($input);
 
-        $data[RequestFields::MODE]  = ModeFields::VERIFY;
+        $data[RequestFields::MODE]  = Mode::VERIFY;
 
         $data += array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'],
@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
         $data = array(
             RequestFields::OBJ_NAME           => CompulsoryFields::LOGIN,
             RequestFields::BAY_BANKID         => CompulsoryFields::BANKID,
-            RequestFields::MODE               => ModeFields::PAY,
+            RequestFields::MODE               => Mode::PAY,
             RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
             RequestFields::SPID               => $spid,
             RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100
@@ -319,9 +319,9 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
-        $masterKey = $this->terminal['attributes'][TerminalEntities::MASTER_KEY];
+        $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === RZPMode::TEST)
         {
             $masterKey = $this->config['test_master_key'];
         }
@@ -331,9 +331,9 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        $pid = $this->terminal['attributes'][TerminalEntities::PAYEE_ID];
+        $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === RZPMode::TEST)
         {
             $pid = $this->config['test_pid'];
         }
@@ -343,13 +343,13 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        $pid = $this->terminal['attributes'][TerminalEntities::SPID];
+        $spid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
 
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === RZPMode::TEST)
         {
-            $pid = $this->config['test_spid'];
+            $spid = $this->config['test_spid'];
         }
 
-        return $pid;
+        return $spid;
     }
 }
