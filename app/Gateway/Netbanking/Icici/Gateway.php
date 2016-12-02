@@ -150,7 +150,6 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
-        // Verify this with ICICI
         if ($xml['STATUS'] === 'SUCCESS')
         {
             $verify->gatewaySuccess = true;
@@ -320,7 +319,7 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
-        $masterKey = $this->terminal[TerminalEntities::MASTER_KEY];
+        $masterKey = $this->terminal['attributes'][TerminalEntities::MASTER_KEY];
 
         if ($this->mode === Mode::TEST)
         {
@@ -332,7 +331,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        $pid = $this->terminal[TerminalEntities::PAYEE_ID];
+        $pid = $this->terminal['attributes'][TerminalEntities::PAYEE_ID];
 
         if ($this->mode === Mode::TEST)
         {
@@ -344,7 +343,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        $pid = $this->terminal[TerminalEntities::SPID];
+        $pid = $this->terminal['attributes'][TerminalEntities::SPID];
 
         if ($this->mode === Mode::TEST)
         {

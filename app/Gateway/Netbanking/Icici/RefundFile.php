@@ -44,7 +44,7 @@ class RefundFile extends Base\RefundFile
             $fileName,
             FileStore\Type::ICICI_NETBANKING_REFUND);
 
-        // Have to understand how this works exactly
+        // filepath and body
         $fileData = [
             'file_path' => $this->getExcelFullFilePath(),
             'body' => self::EMAIL_BODY,
@@ -59,25 +59,23 @@ class RefundFile extends Base\RefundFile
     {
         $i = 1; // Serial Number starts at 1
 
-        // for test cases we pick up data from Fixtures / Entity / Terminal.php
 
         foreach ($input['data'] as $row)
         {
-            // What should the date be
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
 
             $data[] = array(
                 'Sr No'                  => $i++, // assign then increment
                 'Payee id'               => $row['terminal']['gateway_merchant_id'],
-                'SPID'                   => $row['terminal']['gateway_merchant_id2'], // test ------------ for all sub merchants
+                'SPID'                   => $row['terminal']['gateway_merchant_id2'],
                 'Bank Reference No.'     => $row['gateway']['bank_payment_id'],
                 'Transaction Date'       => $date,
                 'Transaction Amount'     => $row['payment']['amount'] / 100,
                 'Refund Amount'          => $row['refund']['amount'] / 100,
                 'Transaction Id'         => $row['payment']['id'],
                 'Reversal/Cancellation'  => 'C', // R and C -- need a logic to get this - for now saying C
-                'Remarks'                => '', // empty for now
+                'Remarks'                => '', // empty
             );
         }
 
