@@ -119,14 +119,21 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onVpaEdit($vpa)
+    protected function onVpaEdited($vpa)
     {
         $payload = $this->getVpaPayload($vpa);
 
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onP2pCollectCreate($p2p)
+    protected function onP2pCreated($p2p)
+    {
+        $payload = $this->getP2pPayload($vpa);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pRejected($p2p)
     {
         $payload = $this->getP2pPayload($vpa);
 

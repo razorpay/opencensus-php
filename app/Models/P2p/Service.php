@@ -42,6 +42,15 @@ class Service extends Base\Service
         unset($input[$field]);
     }
 
+    public function reject($id)
+    {
+        $p2p = $this->core->reject($id);
+
+        $this->eventP2pRejected($p2p);
+
+        return $p2p->toArrayPublic();
+    }
+
     public function getById($id)
     {
         Entity::stripSignWithoutValidation($id);
@@ -62,12 +71,17 @@ class Service extends Base\Service
     {
         $p2p = $this->core->authorize($id, $input);
 
-        return $p2p;
+        return $p2p->toArrayPublic();
     }
 
     protected function eventP2pCreated($p2p)
     {
         $this->app['events']->fire('api.p2p.created', array($p2p));
+    }
+
+    protected function eventP2pRejected($p2p)
+    {
+        $this->app['events']->fire('api.p2p.rejected', array($p2p));
     }
 
     public function completeAuthorization(string $id, array $input)

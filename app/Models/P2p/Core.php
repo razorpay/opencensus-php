@@ -17,6 +17,7 @@ class Core extends Base\Core
         $p2p->setGateway(Gateway::UPI_NPCI);
 
         $p2p->merchant()->associate($this->merchant);
+
         $p2p->customer()->associate($this->device->customer);
 
         $this->repo->saveOrFail($p2p);
@@ -51,6 +52,19 @@ class Core extends Base\Core
     protected function setMode($mode = 'test')
     {
         \Database\DefaultConnection::set($mode);
+    }
+
+    public function reject($id)
+    {
+        Entity::stripSignWithoutValidation($id);
+
+        $p2p = $this->repo->p2p->findOrFail($id);
+
+        $p2p->setStatus(Status::REJECTED);
+
+        $this->repo->saveOrFail($p2p);
+
+        return $p2p;
     }
 
     public function postAuthorize(string $id, $input)

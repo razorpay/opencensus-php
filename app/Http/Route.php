@@ -27,10 +27,6 @@ final class Route
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                             'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                     => ['post',     'payments/create/fees',                             'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                           'PaymentCreateController@postCreateWalletPayment'                   ],
-        'p2p_create'                              => ['post',     'p2p',                                              'P2pController@createP2p'                                           ],
-        'p2p_fetch'                               => ['get',      'p2p/{id}',                                         'P2pController@getP2p'                                              ],
-        'p2p_fetch_multiple'                      => ['get',      'p2p',                                              'P2pController@getP2ps'                                             ],
-        'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                               'P2pController@postAuthorize'                                       ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                    'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                    'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',              'PaymentCreateController@postCallback'                              ],
@@ -327,6 +323,11 @@ final class Route
         'upi_get_bank_list'                       => ['get',      'upi_npci/banks',                                   'UpiController@getBankList'                                         ],
         'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                              'UpiController@zeroCall'                                            ],
         'upi_read_async'                          => ['get',      'upi_npci/status/{id}',                             'UpiController@getStatus'                                           ],
+        'p2p_create'                              => ['post',     'p2p',                                              'P2pController@createP2p'                                           ],
+        'p2p_fetch'                               => ['get',      'p2p/{id}',                                         'P2pController@getP2p'                                              ],
+        'p2p_fetch_multiple'                      => ['get',      'p2p',                                              'P2pController@getP2ps'                                             ],
+        'p2p_reject'                              => ['post',     'p2p/{id}/reject',                                  'P2pController@rejectP2p'                                           ],
+        'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                               'P2pController@postAuthorize'                                       ],
     );
 
     public static $public = array(
@@ -399,6 +400,7 @@ final class Route
         'p2p_fetch_multiple',
         'p2p_fetch',
         'p2p_authorize',
+        'p2p_reject',
         'customer_local_customer_device_auth',
         'customer_fetch_bank_account_device_auth',
         'customer_collect_request_fetch'

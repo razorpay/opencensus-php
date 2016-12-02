@@ -19,4 +19,5 @@ class Type
     const INVOICE_PAID       = 'invoice.paid';
     const VPA_EDITED         = 'vpa.edited';
     const P2P_CREATED        = 'p2p.created';
+    const P2P_REJECTED       = 'p2p.rejected';
 }

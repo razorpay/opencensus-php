@@ -19,6 +19,7 @@ class Event
     const INVOICE_PAID              = 'invoice.paid';
     const VPA_EDITED                = 'vpa.edited';
     const P2P_CREATED               = 'p2p.created';
+    const P2P_REJECTED              = 'p2p.rejected';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
@@ -28,6 +29,7 @@ class Event
         self::INVOICE_PAID,
         self::VPA_EDITED,
         self::P2P_CREATED,
+        self::P2P_REJECTED,
     );
 
     protected static $bitMap = array(
@@ -38,6 +40,7 @@ class Event
         self::INVOICE_PAID          => 0x5,
         self::VPA_EDITED            => 0x6,
         self::P2P_CREATED           => 0x7,
+        self::P2P_REJECTED          => 0x8,
     );
 
     /**
@@ -52,6 +55,7 @@ class Event
         self::INVOICE_PAID,
         self::VPA_EDITED,
         self::P2P_CREATED,
+        self::P2P_REJECTED,
     );
 
     protected static $bitPosition = array(
@@ -62,6 +66,7 @@ class Event
         self::INVOICE_PAID          => 5,
         self::VPA_EDITED            => 6,
         self::P2P_CREATED           => 7,
+        self::P2P_REJECTED          => 8,
     );
 
     /**
@@ -75,6 +80,7 @@ class Event
         self::INVOICE_PAID,
         self::VPA_EDITED,
         self::P2P_CREATED,
+        self::P2P_REJECTED,
     );
 
     /**

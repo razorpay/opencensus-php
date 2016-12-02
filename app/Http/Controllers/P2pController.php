@@ -40,6 +40,13 @@ class P2pController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function rejectP2p($id)
+    {
+        $data = $this->service->reject($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAuthorize(P2p\Service $p2pService, $id)
     {
         $input = Request::all();
