@@ -45,11 +45,11 @@ class Service extends Base\Service
         return $vpa->toArrayPublic();
     }
 
-    // TODO: Fix authorization here
-    // Make sure customer owns the VPA before returning it
     public function getById($vpaId)
     {
-        $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
+        $customerId = $this->device->customer->getId();
+
+        $vpa = $this->repo->vpa->findByIdAndCustomerIdOrFail($vpaId, $customerId);
 
         return $vpa->toArrayPublic();
     }

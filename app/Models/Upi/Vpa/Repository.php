@@ -34,4 +34,14 @@ class Repository extends Base\Repository
                     ->where(Entity::CUSTOMER_ID, '=', $customerId)
                     ->get();
     }
+
+    public function findByIdAndCustomerIdOrFail($vpaId, $customerId)
+    {
+        Entity::verifyIdAndStripSign($vpaId);
+
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $vpaId)
+                    ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->firstOrFail();
+    }
 }
