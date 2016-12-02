@@ -317,7 +317,7 @@ final class Route
         'device_fetch'                            => ['get',      'devices/{id}',                                     'DeviceController@getDevice'                                        ],
         'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                   'CustomerController@fetchBalance'                                   ],
         'reset_mpin'                              => ['put',      'upi/bank_accounts/{id}/mpin',                      'CustomerController@resetMpin'                                      ],
-        'vpa_register'                            => ['post',     'upi/bank_accounts/{id}/mpin',                      'CustomerController@setMpin'                                        ],
+        'set_mpin'                                => ['post',     'upi/bank_accounts/{id}/mpin',                      'CustomerController@setMpin'                                        ],
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi/banks/{ifsc}',                                 'CustomerController@fetchUpiBankAccounts'                           ],
         'vpa_fetch_multiple'                      => ['get',      'vpa/',                                             'UpiController@getVpas'                                             ],
         'vpa_available'                           => ['get',      'vpa/available/{vpa}',                              'UpiController@isAvailableVpa'                                      ],
@@ -382,7 +382,7 @@ final class Route
     );
 
     public static $device = array(
-        'vpa_register',
+        'set_mpin',
         'reset_mpin',
         'vpa_create',
         'vpa_delete',

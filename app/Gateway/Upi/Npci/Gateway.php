@@ -721,10 +721,8 @@ EOT;
                 $bankAccount    = $params['bank_account'];
 
                 // The txnId must be provided by the sdk in this case
-                if (isset($input['txnId']))
-                {
-                    $txnId = $input['txnId'];
-                }
+                $txnId = $input['txnId'];
+
             $str = <<<EOT
 <upi:ReqRegMob xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
