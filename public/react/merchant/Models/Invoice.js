@@ -1,5 +1,6 @@
 import BaseModel from './Base'
 import ajax from 'merchant/utils/ajax'
+import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 
 export default class Invoice extends BaseModel {
   resourceIdField = 'id'
@@ -85,6 +86,13 @@ export default class Invoice extends BaseModel {
         contact: value.customer_contact,
         address: value.customer_address
       }
+    }
+
+    if (prop === 'line_items') {
+      value = value.map((item) => {
+        item.amountInINR = getFixedINRAmount(item.amount)
+        return item
+      })
     }
 
     return super.deserializeProperty(prop, value)

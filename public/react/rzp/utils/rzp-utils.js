@@ -60,3 +60,5 @@ export const isValidPhone = (phone) => {
 }
 
 export const normalizeDate = date => (moment(date).format('D/M/Y'))
+
+export const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)

@@ -61,7 +61,6 @@ export default class InvoicesNewContainer extends ModalContainer {
   }
 
   componentWillMount() {
-    debugger
     this.props.fetchCustomers()
     this.props.fetchItems()
     if (this.props.id) {
@@ -69,7 +68,6 @@ export default class InvoicesNewContainer extends ModalContainer {
         isLoading: true
       })
       this.props.fetchInvoice(this.props.id).then((invoice) => {
-        debugger
         this.props.initialize(invoice)
         this.setState({
           isLoading: false
@@ -91,10 +89,11 @@ export default class InvoicesNewContainer extends ModalContainer {
     let { ...props } = fieldProps
     props.type = 'invoice'
     return this.props.saveInvoice(props).then((invoice) => {
-      this.context.ngRouter.transitionTo('app.invoices')
-      setTimeout(() => {
-        this.props.highLightInvoice(invoice.id)
-      }, 1500)
+      this.context.ngRouter.transitionTo('app.invoices').then(() => {
+        setTimeout(() => {
+          this.props.highLightInvoice(invoice.id)
+        }, 1500)
+      })
     }).catch(({ errors }) => {
       this.setState({
         errors

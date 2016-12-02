@@ -1,7 +1,6 @@
 import BaseModel from './Base'
 import ajax from 'merchant/utils/ajax'
-
-const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)
+import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 
 export default class Item extends BaseModel {
   resourceIdField = 'id'

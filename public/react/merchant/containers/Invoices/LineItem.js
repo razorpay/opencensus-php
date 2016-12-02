@@ -31,7 +31,7 @@ export default class InvoiceLineItem extends ModalContainer {
 
   selectItemAndCloseModal(item) {
     let fieldName = this.props.fieldName
-    this.props.change(`${fieldName}.id`, item.id)
+    this.props.change(`${fieldName}.item_id`, item.id)
     this.props.change(`${fieldName}.amountInINR`, (item.amount/100).toFixed(2))
     this.closeModal()
   }
@@ -49,17 +49,16 @@ export default class InvoiceLineItem extends ModalContainer {
     return (
       <tr>
         <td>
-
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <ItemCreation
-            onSave={this.selectItemAndCloseModal}
-            closeModal={this.closeModal}
-          />
-        </Modal>
+          <Modal
+            isOpen={this.state.isModalOpen}
+            onRequestClose={this.closeModal}
+            closeTimeoutMS={300}
+          >
+            <ItemCreation
+              onSave={this.selectItemAndCloseModal}
+              closeModal={this.closeModal}
+            />
+          </Modal>
 
           <Field
             name={`${fieldName}.item_id`}
