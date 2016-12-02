@@ -46,7 +46,7 @@ trait OtpResend
         return $this->callGatewayOtpGenerate($gatewayInput, $payment, true);
     }
 
-    protected function verifyPaymentStatus($payment)
+    protected function validatePaymentStatus($payment)
     {
         // If it failed recently, then throw relevant exception
         // directly for the failure.
