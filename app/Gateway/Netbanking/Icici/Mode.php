@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
-class ModeFields
+class Mode
 {
-    const AUTHORIZE = 'P'; // We use P
+    const PAY       = 'P'; // We use P
     const VERIFY    = 'V'; // We use V
 }

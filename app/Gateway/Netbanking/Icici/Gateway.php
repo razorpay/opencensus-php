@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;
@@ -185,32 +184,20 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $this->getEncryptedString($input);
 
-        $pid = $this->getPid();
+        $data = $this->createDefaultRequestData($input);
 
-        $spid = $this->getSpid();
-
-        $data = array(
-            RequestFields::MODE               => ModeFields::AUTHORIZE,
-            RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
-            RequestFields::SPID               => $spid,
-            RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100 ,
-            RequestFields::ENCRYPTED_STRING   => $encryptedString,
-        );
+        $data[RequestFields::ENCRYPTED_STRING] = $encryptedString;
 
         return $data;
     }
 
     protected function getPaymentVerifyData($input)
     {
-        $pid = $this->getPid();
+        $data = $this->createDefaultRequestData($input);
 
-        $spid = $this->getSpid();
+        $data[RequestFields::MODE]  = Mode::VERIFY;
 
-        $data = array(
-            RequestFields::MODE                     => ModeFields::VERIFY,
-            RequestFields::PAYEE_ID                 => $pid,
-            RequestFields::SPID                     => $spid,
-            RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 ,
+        $data += array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
             RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']),
             RequestFields::CURRENCY_CODE            => 'INR',
@@ -242,6 +229,24 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => 'INR' . '&',
             RequestFields::RETURN_URL               => $callbackUrl . '&',
             RequestFields::CONFIRMATION             => Confirmation::YES,
+        );
+
+        return $data;
+    }
+
+    protected function createDefaultRequestData($input)
+    {
+        $pid = $this->getPid();
+
+        $spid = $this->getSpid();
+
+        $data = array(
+            RequestFields::OBJ_NAME           => CompulsoryFields::LOGIN,
+            RequestFields::BAY_BANKID         => CompulsoryFields::BANKID,
+            RequestFields::MODE               => Mode::PAY,
+            RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
+            RequestFields::SPID               => $spid,
+            RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100
         );
 
         return $data;

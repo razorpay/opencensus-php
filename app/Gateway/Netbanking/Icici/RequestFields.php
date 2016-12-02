@@ -4,6 +4,8 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class RequestFields
 {
+    const OBJ_NAME                  = 'IWQRYTASKOBJNAME';
+    const BAY_BANKID                = 'BAY_BANKID';
     const MODE                      = 'MD';
     const PAYEE_ID                  = 'PID';
     const SPID                      = 'SPID';

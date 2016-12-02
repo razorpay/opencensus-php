@@ -44,12 +44,17 @@ class Server extends Base\Mock\Server
             'method' => 'post', // for debug only
         );
 
-        return $this->makePostResponse($request);
+        $callbackUrl .= '?' . http_build_query($content);
+
+        return $callbackUrl;
     }
 
     public function verify($input)
     {
         // Going to assume that tracking URL works and that response is in XML and status = 'SUCCESS'
+        // sd($this->action); // Why is this authorize??
+        // $this->validateActionInput($input);
+
         $response = $this->createXmlResponse($input);
 
         return $this->makeResponse($response);
