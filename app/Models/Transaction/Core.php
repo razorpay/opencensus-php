@@ -92,6 +92,8 @@ class Core extends Base\Core
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
+        $updateNodalBalance = true;
+
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
             [
@@ -105,7 +107,14 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $this->updateBalances($txn);
+        $isFlashWalletCapture = ($payment->getWallet() === Payment\Processor\Wallet::FLASHWALLET);
+
+        if ($isFlashWalletCapture)
+        {
+            $updateNodalBalance = false;
+        }
+
+        $this->updateBalances($txn, $updateNodalBalance);
 
         return [$txn, $feesSplit];
     }

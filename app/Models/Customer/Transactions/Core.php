@@ -7,32 +7,27 @@ use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
-
-    public function createFromCustomerDebit($payment, $txn)
+    public function createFromCustomerDebit($payment, int $amount)
     {
-        $customerTxn = $this->createEntityForType('debit', $payment, $txn, $payment->customer);
+        $customerTxn = $this->createEntityForType('debit', $payment, $amount, $payment->customer);
 
-        $balance = (new Customer\Balance\Service)->debit($payment->customer, $txn->getAmount());
-
-        // Lock for get balance
+        $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);
 
         $customerTxn->setBalance($balance->getBalance());
 
         return $customerTxn;
     }
 
-    public function createFromCustomerCredit($payment, $txn, $customer)
+    public function createFromCustomerCredit($payment, int $amount, $customer)
     {
-        $customerTxn = $this->createEntityForType('credit', $payment, $txn, $customer);
+        $customerTxn = $this->createEntityForType('credit', $payment, $amount, $customer);
 
         return $customerTxn;
     }
 
-    protected function createEntityForType(string $type, $payment, $txn, $customer)
+    protected function createEntityForType(string $type, $payment, int $amount, $customer)
     {
         $customerTxn = new Entity;
-
-        $amount = $txn->getAmount();
 
         $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant)
