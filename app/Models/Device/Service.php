@@ -24,13 +24,7 @@ class Service extends Base\Service
     {
         $device = $this->core->create($input, $this->merchant);
 
-        $arr = $device->toArrayPublic();
-
-        $arr[Entity::VERIFICATION_TOKEN] = $device->getVerificationToken();
-
-        $arr[Entity::AUTH_TOKEN] = $device->getAuthToken();
-
-        return $arr;
+        return $device->toArrayPublic();
     }
 
     public function fetch($deviceId)

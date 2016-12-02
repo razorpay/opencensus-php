@@ -17,6 +17,7 @@ class Authorization
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
+    protected $defaultDeviceToken = 'authentication_token';
 
     public function __construct($test)
     {
@@ -102,6 +103,27 @@ class Authorization
         $this->basicAuth($key, '');
     }
 
+    public function deviceAuth($key = null, $secret = null)
+    {
+        $this->type = 'device';
+
+        if ($key === null)
+        {
+            $key = $this->defaultKey;
+
+            $this->key = $key;
+        }
+
+        if ($secret === null)
+        {
+            $secret = $this->defaultDeviceToken;
+        }
+
+        $this->setSecret($secret);
+
+        $this->basicAuth($key, $secret);
+    }
+
     public function publicCallbackAuth()
     {
         $this->noAuth();
@@ -132,13 +154,10 @@ class Authorization
 
         if ($secret === null)
         {
-            $this->setSecret($this->defaultSecret);
             $secret = $this->defaultSecret;
         }
-        else
-        {
-            $this->setSecret($secret);
-        }
+
+        $this->setSecret($secret);
 
         $this->basicAuth($key, $secret);
     }

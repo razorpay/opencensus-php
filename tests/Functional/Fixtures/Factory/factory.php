@@ -336,7 +336,7 @@ $factory(\RZP\Models\Merchant\Credits\Entity::class, [
 
 
 $factory(\RZP\Models\Transaction\FeeBreakup\Entity::class, [
-    'id'            => $faker->uniqueid,
+    'id'            => $faker->uniqueid
 ]);
 
 $factory(\RZP\Models\Batch\Entity::class, [
@@ -355,4 +355,21 @@ $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
 $factory(\RZP\Models\Feature\Entity::class, [
     'id'                => $faker->uniqueid,
     'entity_type'       => 'merchant'
+]);
+
+$factory(\RZP\Models\Device\Entity::class, [
+    'id'                 => $faker->uniqueid,
+    'merchant_id'        => '10000000000000',
+    'type'               => 'android',
+    'os'                 => 'android',
+    'os_version'         => '5.2.3',
+    'imei'               => '98765432123456',
+    'challenge'          => 'challenge_value',
+    'package_name'       => 'com.razorpay.sample',
+    'status'             => 'created',
+    'verification_token' => $faker->sha256,
+    'upi_token'          => 'upi_auth_token',
+    'auth_token'         => $faker->sha256,
+    'verified_at'        => null,
+    'registered_at'      => $faker->timestamp,
 ]);

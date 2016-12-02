@@ -59,11 +59,19 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CUSTOMER_ID,
         self::TOKEN_ID,
+        self::AUTH_TOKEN,
+        self::VERIFICATION_TOKEN
     ];
 
     protected static $generators = [
         self::AUTH_TOKEN,
         self::VERIFICATION_TOKEN,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::AUTH_TOKEN,
+        self::VERIFICATION_TOKEN
     ];
 
     protected $appends = [
@@ -129,6 +137,32 @@ class Entity extends Base\PublicEntity
     public function setUpiToken($upiToken)
     {
         $this->setAttribute(self::UPI_TOKEN, $upiToken);
+    }
+
+    // --------------------- Public Setters --------------------
+
+    protected function setPublicAuthTokenAttribute(array &$attributes)
+    {
+        if ($this->hasBeenVerified() === false)
+        {
+            $attributes[self::AUTH_TOKEN] = $this->getAuthToken();
+        }
+        else
+        {
+            unset($attributes[self::AUTH_TOKEN]);
+        }
+    }
+
+    protected function setPublicVerificationTokenAttribute(array &$attributes)
+    {
+        if ($this->hasBeenVerified() === false)
+        {
+            $attributes[self::VERIFICATION_TOKEN] = $this->getVerificationToken();
+        }
+        else
+        {
+            unset($attributes[self::VERIFICATION_TOKEN]);
+        }
     }
 
     // ----------------------- Accessors -----------------------

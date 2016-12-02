@@ -54,6 +54,7 @@ class Base
         'item'          => \RZP\Models\Item\Entity::class,
         'invoice'       => \RZP\Models\Invoice\Entity::class,
         'line_item'     => \RZP\Models\LineItem\Entity::class,
+        'device'        => \RZP\Models\Device\Entity::class,
     );
 
     protected static $liveAndTest = array(
