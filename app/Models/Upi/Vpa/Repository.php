@@ -13,7 +13,7 @@ class Repository extends Base\Repository
         list($username, $handle) = explode(Entity::AROBASE, $address);
 
         return $this->newQuery()
-                    ->where(Entity::USERNAME, '=', $address)
+                    ->where(Entity::USERNAME, '=', $username)
                     ->where(Entity::HANDLE, '=', $handle)
                     ->firstOrFail();
     }

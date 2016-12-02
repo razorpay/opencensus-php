@@ -24,7 +24,7 @@ class CreateP2p  extends Migration
             $table->char(P2p::ID, P2p::ID_LENGTH)
                   ->primary();
 
-            $table->char(P2p::TXN_ID, 32);
+            $table->char(P2p::TXN_ID, 35);
 
             $table->char(P2p::SOURCE_ID, P2p::ID_LENGTH);
 
