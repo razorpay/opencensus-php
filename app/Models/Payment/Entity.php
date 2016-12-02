@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -1371,5 +1372,20 @@ class Entity extends Base\PublicEntity
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(null);
+    }
+
+    /**
+     * List of all features based on various conditions
+     */
+    public function getPricingFeatures()
+    {
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        return $features;
     }
 }
