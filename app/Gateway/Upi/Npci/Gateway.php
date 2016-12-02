@@ -233,16 +233,8 @@ EOT;
 
         $account = $request->getPayer()->getAc();
 
-
-        $details = $request->getRegDetails();
-        $creds['last6'] = $details->getDetailByName('CARDDIGITS');
-        $creds['expiry'] = $details->getDetailByName('EXPDATE');
-
-        $creds['otp'] = $this->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
-        $creds['mpin'] = $this->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
-
-        // $creds['otp'] = $details->getCredByTypeAndSubType('OTP', 'SMS');
-        // $creds['mpin'] = $details->getCredByTypeAndSubType('PIN', 'MPIN');
+        $creds['mpin'] = $this->decrypt($request->getPayer()->getCreds()[0]->getData()->value());
+        $creds['nmpin'] = $this->decrypt(($request->getPayer()->getNewCred()[0]->getData()->value()));
 
         $creds['account'] = [
             'IFSC'  => $account->getDetailByName('IFSC'),
@@ -373,7 +365,8 @@ EOT;
             'RespListKeys'      => 'UpdateKeyStore',
             'RespListAccPvd'    => null,
             'ReqAuthDetails'    => 'RespAuthDetails',
-            'ReqBalEnq'         => 'AuthorizePayment'
+            'ReqBalEnq'         => 'AuthorizePayment',
+            'ReqSetCre'         => 'RespSetCre'
         ];
 
         return $jobs[$api];
@@ -694,16 +687,13 @@ EOT;
                 $bankAccount    = $params['bank_account'];
 
                 // The txnId must be provided by the sdk in this case
-                if (isset($input['txnId']))
-                {
-                    $txnId = $input['txnId'];
-                }
+                $txnId = $input['txnId'];
 
                 $str = <<<EOT
 <upi:ReqSetCre xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="NOTE" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="SetCre"/>
-<Payer addr="{$customer['id']}@razor" name="Unknown" seqNum="1" type="PERSON" code="0000">
+<Payer addr="reserved@razor" name="Unknown" seqNum="1" type="PERSON" code="0000">
 <Ac addrType="ACCOUNT">
 <Detail name="IFSC" value="RAZR"/>
 <Detail name="ACTYPE" value="SAVINGS"/>
@@ -711,12 +701,12 @@ EOT;
 </Ac>
 <Creds>
     <Cred type="PIN" subType="MPIN">
-        <Data>{$input['mpincredblock']}</Data>
+        <Data code="NPCI" ki="20150822">{$input['mpincredblock']}</Data>
     </Cred>
 </Creds>
 <NewCred>
     <Cred type="PIN" subType="MPIN">
-        <Data>{$input['nmpincredblock']}</Data>
+        <Data code="NPCI" ki="20150822">{$input['nmpincredblock']}</Data>
     </Cred>
 </NewCred>
 </Payer>

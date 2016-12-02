@@ -180,18 +180,18 @@ class CustomerController extends Controller
         return $this->customer->fetchUpiBankAccounts($ifsc);
     }
 
-    public function setMpin($customerId, $bankAccountId)
+    public function setMpin($bankAccountId)
     {
         $input = Request::all();
 
-        return $this->customer->setMpin($customerId, $bankAccountId, $input);
+        return $this->customer->setMpin($bankAccountId, $input);
     }
 
-    public function resetMpin($customerId, $bankAccountId)
+    public function resetMpin($bankAccountId)
     {
         $input = Request::all();
 
-        $data = $this->customer->resetMpin($customerId, $bankAccountId, $input);
+        $data = $this->customer->resetMpin($bankAccountId, $input);
 
         return $data;
     }

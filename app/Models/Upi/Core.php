@@ -215,6 +215,28 @@ class Core extends Base\Core
         $this->callUpiGateway('makeRequest', $input);
     }
 
+
+    protected function RespSetCre(array $creds)
+    {
+        $this->setMode();
+
+        $success = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
+
+        // We need to respond to UPI with a success/failure response
+
+        $result = $success ? 'SUCCESS' : 'FAILURE';
+
+        $input = [
+            'method'    =>  'RespSetCre',
+            'params'    =>  [
+                'success'   =>  $result,
+                'reqMsgId'  =>  $creds['reqMsgId']
+            ]
+        ];
+
+        // $this->callUpiGateway('makeRequest', $input);
+    }
+
     protected function RespAuthDetails($arr)
     {
         $input = [

@@ -441,7 +441,7 @@ class Service extends Base\Service
 
         $success = false;
 
-        if ($creds['otp'] === '123456')
+        if (isset($creds['otp']) and $creds['otp'] === '123456')
         {
             foreach ($bankAccounts as $bankAccount)
             {
@@ -457,52 +457,46 @@ class Service extends Base\Service
             }
         }
 
+        else if (isset($creds['nmpin']))
+        {
+            foreach ($bankAccounts as $bankAccount)
+            {
+                if ($bankAccount->getMpin() === $creds['mpin'])
+                {
+                    $bankAccount->setMpin($creds['nmpin']);
+                    $this->repo->saveOrFail($bankAccount);
+
+                    $success = true;
+                }
+            }
+        }
+
         return $success;
     }
 
-    public function setMpin($customerId, $bankAccountId, $input)
+    public function setMpin($bankAccountId, $input)
     {
-        $deviceId = $input['device_id'];
-        Device\Entity::stripSignWithoutValidation($deviceId);
-        Entity::stripSignWithoutValidation($customerId);
         Entity::stripSignWithoutValidation($bankAccountId);
-
-        $customer = $this->repo->customer->findOrFail($customerId);
 
         $bankAccount = $this->repo->bank_account->find($bankAccountId);
 
-        $device = $this->repo->device->findOrFail($deviceId);
+        // Confirm ownership of bank account
+        assertTrue($bankAccount->getEntityId() === $this->device->customer->getId());
 
-        // Confirm ownership of device and bank account
-        // TODO: move to repo
-        assertTrue($bankAccount->getEntityId() === $customerId);
-        assertTrue($device->getCustomerId() === $customerId);
-
-        $response = $this->core->sendSetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+        $response = $this->core->sendSetMpinRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
 
         return $response;
     }
 
-    public function resetMpin($customerId, $bankAccountId, $input)
+    public function resetMpin($bankAccountId, $input)
     {
-        $deviceId = $input['device_id'];
-
-        Entity::stripSignWithoutValidation($customerId);
-        Device\Entity::stripSignWithoutValidation($deviceId);
         Entity::stripSignWithoutValidation($bankAccountId);
-
-        $customer = $this->repo->customer->findOrFail($customerId);
 
         $bankAccount = $this->repo->bank_account->find($bankAccountId);
 
-        $device = $this->repo->device->findOrFail($deviceId);
-
-        // Confirm ownership of device and bank account
-        // TODO: move to repo
-        assertTrue($bankAccount->getEntityId() === $customerId);
-        assertTrue($device->getCustomerId() === $customerId);
-
-        $response = $this->core->sendResetMpinRequestToGateway($device, $customer, $bankAccount, $input);
+        // Confirm ownership of bank account
+        assertTrue($bankAccount->getEntityId() === $this->device->customer->getId());
+        $response = $this->core->sendResetMpinRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
 
         return $response;
     }
