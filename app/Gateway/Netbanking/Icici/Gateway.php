@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;
@@ -12,7 +13,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
@@ -195,7 +195,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->createDefaultRequestData($input);
 
-        $data[RequestFields::MODE]  = Mode::VERIFY;
+        $data[RequestFields::MODE]  = ModeFields::VERIFY;
 
         $data += array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
@@ -243,7 +243,7 @@ class Gateway extends Base\Gateway
         $data = array(
             RequestFields::OBJ_NAME           => CompulsoryFields::LOGIN,
             RequestFields::BAY_BANKID         => CompulsoryFields::BANKID,
-            RequestFields::MODE               => Mode::PAY,
+            RequestFields::MODE               => ModeFields::PAY,
             RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
             RequestFields::SPID               => $spid,
             RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100
@@ -323,16 +323,31 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
-        return $this->config['test_master_key'];
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_master_key'];
+        }
+
+        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
     }
 
     public function getPid()
     {
-        return $this->config['test_pid'];
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_pid'];
+        }
+
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     public function getSpid()
     {
-        return $this->config['test_spid'];
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_spid'];
+        }
+
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
     }
 }
