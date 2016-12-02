@@ -85,6 +85,9 @@ class Entity extends Base\PublicEntity
         self::SINK_ID,
     ];
 
+    protected $generateIdOnCreate = true;
+
+
     // ----------------------- Relations ------------------
 
     public function merchant()
@@ -194,7 +197,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getAttribute(self::SINK_TYPE) === SinkType::BANK_ACCOUNT)
         {
-            $sinkId = 'ba_' . $sinkId;
+            $sinkId = BankAccount\Entity::getSignedId($sinkId);
         }
         else
         {
@@ -215,9 +218,7 @@ class Entity extends Base\PublicEntity
     {
         if ($this->getAttribute(self::SINK_TYPE) === SinkType::BANK_ACCOUNT)
         {
-            $ix = strpos($sinkId, '_');
-
-            $sinkId = substr($sinkId, $ix + 1);
+            $sinkId = BankAccount\Entity::stripSignWithoutValidation($sinkId);
         }
         else
         {

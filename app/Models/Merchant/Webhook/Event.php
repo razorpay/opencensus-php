@@ -37,7 +37,7 @@ class Event
         self::ORDER_PAID            => 0x4,
         self::INVOICE_PAID          => 0x5,
         self::VPA_EDITED            => 0x6,
-        self::P2P_CREATED           => 0x6,
+        self::P2P_CREATED           => 0x7,
     );
 
     /**

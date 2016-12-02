@@ -34,7 +34,7 @@ final class Route
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
-        'p2p_create'                              => ['post',     'p2p/',                                           'P2pController@createP2p'                                           ],
+        'p2p_create'                              => ['post',     'p2p',                                            'P2pController@createP2p'                                           ],
         'p2p_fetch'                               => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'p2p_fetch_multiple'                      => ['get',      'p2p',                                            'P2pController@getP2ps'                                             ],
         'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                             'P2pController@postAuthorize'                                       ],
@@ -821,7 +821,7 @@ final class Route
         return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public function getPublicCallbackUrlWithHash($pid , $key = '')
+    public function getPublicCallbackUrlWithHash($pid, $key = '')
     {
         if ($key === '')
         {

@@ -12,8 +12,6 @@ class Core extends Base\Core
     {
         $p2p = (new Entity)->build($input);
 
-        $p2p->generateId();
-
         $p2p->setStatus(Status::CREATED);
 
         $p2p->setGateway(Gateway::UPI_NPCI);
@@ -28,6 +26,7 @@ class Core extends Base\Core
     public function authorize($id, $input)
     {
         Entity::stripSignWithoutValidation($id);
+
         $p2p = $this->repo->p2p->findOrFail($id);
 
         $gatewayInput = $this->preProcessGatewayInput($p2p, $input);
@@ -81,13 +80,13 @@ class Core extends Base\Core
 
         $gatewayInput['method'] = 'ReqPay';
         $gatewayInput['params'] = [
-            'p2p'      => $p2p->toArray(),
-            'customer' => $p2p->customer()->toArray(),
-            'source'   => $p2p->source->toArray(),
-            'bank_account'   =>  $p2p->source->bankAccount->toArray(),
-            'sink'     => $p2p->sink->toArray(),
-            'gateway'  => $input,
-            'device'   => $this->app['basicauth']->getDevice()
+            'p2p'          => $p2p->toArray(),
+            'customer'     => $p2p->customer()->toArray(),
+            'source'       => $p2p->source->toArray(),
+            'bank_account' => $p2p->source->bankAccount->toArray(),
+            'sink'         => $p2p->sink->toArray(),
+            'gateway'      => $input,
+            'device'       => $this->app['basicauth']->getDevice()
         ];
 
         return $gatewayInput;
