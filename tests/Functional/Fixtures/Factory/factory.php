@@ -373,3 +373,23 @@ $factory(\RZP\Models\Device\Entity::class, [
     'verified_at'        => null,
     'registered_at'      => $faker->timestamp,
 ]);
+
+$factory(\RZP\Models\Vpa\Entity::class, [
+    'id'                 => $faker->uniqueid,
+    'username'           => $faker->word,
+    'handle'             => 'razorpay',
+    'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
+    'customer_id'        => '100000customer',
+    'created_at'         => $faker->timestamp,
+    'updated_at'         => $faker->timestamp,
+]);
+
+$factory(\RZP\Models\P2p\Entity::class, [
+    'id'                 => $faker->uniqueid,
+    'username'           => $faker->word,
+    'handle'             => 'razorpay',
+    'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
+    'customer_id'        => '100000customer',
+    'created_at'         => $faker->timestamp,
+    'updated_at'         => $faker->timestamp,
+]);

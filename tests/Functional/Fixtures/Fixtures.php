@@ -75,6 +75,8 @@ class Fixtures
             'auth_token' => 'authentication_token',
         ]);
 
+        $this->create('vpa:default');
+
         $this->customer->setUp();
 
         $this->entities = $entities;

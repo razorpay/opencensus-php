@@ -7,7 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\P2p\Entity as P2p;
 use RZP\Models\Merchant\Entity as Merchant;
 
-class CreateP2p  extends Migration
+class CreateP2p extends Migration
 {
 
     /**

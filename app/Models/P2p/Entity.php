@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateTxnId($input)
     {
-        $txnId = upi_uuid();
+        $txnId = upi_uuid(true);
 
         $this->setAttribute(self::TXN_ID, $txnId);
     }
@@ -170,16 +170,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SINK_TYPE);
     }
 
-    public function getTxnId($prefix = true)
+    public function getTxnId()
     {
-        $txnId = $this->getAttribute(self::TXN_ID);
-
-        if ($prefix === true)
-        {
-            $txnId = 'RAZ' . $txnId;
-        }
-
-        return $txnId;
+        return $this->getAttribute(self::TXN_ID);
     }
 
     // ----------------------- Public Setters ------------------

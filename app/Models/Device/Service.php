@@ -42,7 +42,7 @@ class Service extends Base\Service
 
         $device = $this->repo->device->findByVerificationToken($verificationToken);
 
-        $customer = (new Customer\Core)->createLocalCustomer([Customer\Entity::CONTACT => $contact], $this->device->merchant, false);
+        $customer = (new Customer\Core)->createLocalCustomer([Customer\Entity::CONTACT => $contact], $device->merchant, false);
 
         $device = $this->core->verify($device, $customer);
 
@@ -70,32 +70,14 @@ class Service extends Base\Service
     protected function getRelevantFieldsForVerify(array $input)
     {
         // Msg91 converts the keyword to lowercase
-        $keyword = trim(strtoupper($input['keyword']));
 
-        if ($keyword === 'VERIFY')
-        {
-            if ((isset($input['message']) === false) or
-                (isset($input['number']) === false))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_MISSING_FIELDS_MESSAGE,
-                    null,
-                    $input
-                );
-            }
+        $validator = new Validator;
+        $validator->setStrictFalse();
+        $validator->validateInput('verify', $input);
 
-            $verificationToken = $input['message'];
-            $contact = $input['number'];
+        $verificationToken = $input['message'];
+        $contact = $input['number'];
 
-            return [$verificationToken, $contact];
-        }
-        else
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_MESSAGE_KEYWORD,
-                null,
-                $input
-            );
-        }
+        return [$verificationToken, $contact];
     }
 }
