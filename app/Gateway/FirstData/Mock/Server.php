@@ -64,8 +64,6 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::ENDPOINT_TRANSACTION_ID => '',
             FirstData\ConnectResponseFields::EXP_MONTH               => $input[FirstData\ConnectRequestFields::EXP_MONTH],
             FirstData\ConnectResponseFields::EXP_YEAR                => $input[FirstData\ConnectRequestFields::EXP_YEAR],
-            FirstData\ConnectResponseFields::FAIL_RC                 => '',
-            FirstData\ConnectResponseFields::FAIL_REASON             => '',
             FirstData\ConnectResponseFields::HASH_ALGORITHM          => $input[FirstData\ConnectRequestFields::HASH_ALGORITHM],
             FirstData\ConnectResponseFields::INVOICE_NUMBER          => $input[FirstData\ConnectRequestFields::INVOICE_NUMBER],
             FirstData\ConnectResponseFields::IPG_TRANSACTION_ID      => $this->generateId(),

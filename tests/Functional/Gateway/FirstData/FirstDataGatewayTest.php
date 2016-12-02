@@ -127,6 +127,27 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($gatewayPayment['action'], 'reverse');
     }
 
+    public function testPaymentAuthAndAlreadyCaptured()
+    {
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->fixtures->create(
+            'first_data',
+            [
+                'payment_id' => $gatewayPayment['payment_id'],
+                'action'     => 'capture',
+                'received'   => true,
+                'amount'     => $gatewayPayment['amount'],
+            ]
+        );
+
+        // Capture entity already exists. This is unexpected,
+        // but capture should quietly succeed anyway.
+        $this->capturePayment($authResponse['razorpay_payment_id'], $gatewayPayment['amount']);
+    }
+
     public function testPaymentDoubleCapture()
     {
         $this->doAuthAndCapturePayment($this->payment);
@@ -160,6 +181,17 @@ class FirstDataGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() {
             $this->doAuthPayment($this->payment);
         });
+    }
+
+    public function testNoApprovalCodeInSuccessfulAuthResponse()
+    {
+        $this->removeApprovalCodeInSucessfulAuth();
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($gatewayPayment['approval_code'], "Y:mocked successful approval code");
     }
 
     public function testFailedAuthUnknownError()
@@ -229,6 +261,17 @@ class FirstDataGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($authResponse) {
             $this->verifyPayment($authResponse['razorpay_payment_id']);
         });
+    }
+
+    public function testVerifyGatewayPaymentFailed()
+    {
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->fixtures->edit('first_data', $gatewayPayment['id'], ['status' => 'failed']);
+
+        $this->verifyPayment($authResponse['razorpay_payment_id']);
     }
 
     public function testCaptureTimeout()

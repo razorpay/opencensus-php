@@ -311,6 +311,14 @@ final class FactoryData
             'quantity' => 1,
         ]);
 
+        $factory(\RZP\Gateway\FirstData\Entity::class, [
+            'id' => '0',
+            'action' => 'authorize',
+            'payment_id' => null,
+            'amount' => null,
+            'received' => true,
+        ]);
+
         $factory(\RZP\Models\Customer\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => '10000000000000',

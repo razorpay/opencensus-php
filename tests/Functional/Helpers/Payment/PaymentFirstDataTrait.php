@@ -42,6 +42,15 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function removeApprovalCodeInSucessfulAuth()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['approval_code'] = null;
+            $content['status']        = 'APPROVED';
+        });
+    }
+
     protected function getUnknownErrorInAuth()
     {
         $this->mockServerContentFunction(function (& $content)

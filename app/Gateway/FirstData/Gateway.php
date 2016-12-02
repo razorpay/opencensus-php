@@ -81,13 +81,11 @@ class Gateway extends Base\Gateway
 
         if ($gatewayPayment !== null)
         {
-            // @codeCoverageIgnoreStart
             $this->trace->info(
                 TraceCode::PAYMENT_ALREADY_CAPTURED,
                 $input['payment']);
 
             return;
-            // @codeCoverageIgnoreEnd
         }
 
         $requestContent = $this->getCaptureRequestArray($input, TxnType::CAPTURE);
@@ -189,9 +187,7 @@ class Gateway extends Base\Gateway
         // Really shouldn't be happening, but just in case
         else
         {
-            // @codeCoverageIgnoreStart
             $mockedApprovalCode = implode(':', ['Y', Codes::MOCK_SUCCESS_APPROVAL_CODE]);
-            // @codeCoverageIgnoreEnd
         }
 
         $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
@@ -495,7 +491,6 @@ class Gateway extends Base\Gateway
 
             if ($gatewayPayment['status'] !== Status::AUTHORIZED)
             {
-                // @codeCoverageIgnoreStart
                 $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
                     [
@@ -503,7 +498,6 @@ class Gateway extends Base\Gateway
                         'api_payment_status'        => $payment['status'],
                         'gateway_payment_status'    => $gatewayPayment['status'],
                     ]);
-                // @codeCoverageIgnoreEnd
             }
         }
 
