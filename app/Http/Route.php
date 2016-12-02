@@ -189,7 +189,7 @@ final class Route
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
         'mock_hdfc_3dsecure'                      => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
-        'mock_cybersource_acs'                    => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
+        'mock_acs'                                => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
         'mock_atom_init_payment'                  => ['post',     'gateway/mockanb',                                'MockGatewayController@postAtomInitPayment'                         ],
         'mock_atom_choose_org'                    => ['get',      'gateway/mockanb',                                'MockGatewayController@getAtomChooseOrg'                            ],
         'mock_atom_rzp_payment'                   => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomRzpPayment'                          ],
@@ -578,6 +578,7 @@ final class Route
 
     public static $direct = array(
         'account',
+        'mock_acs',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
@@ -585,7 +586,6 @@ final class Route
         'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
-        'mock_cybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_get',

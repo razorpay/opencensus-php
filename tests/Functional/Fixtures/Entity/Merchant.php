@@ -276,7 +276,7 @@ class Merchant extends Base
     {
         $features = collect();
 
-        foreach ($featureNames as $featureName) {
+        foreach ((array) $featureNames as $featureName) {
             $attributes = [
                 'name'      => $featureName,
                 'entity_id' => $id
