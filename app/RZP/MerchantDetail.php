@@ -62,7 +62,7 @@ class MerchantDetail extends Entity
 
         $filePath = $input[$fileType]->getRealPath();
 
-        $postFile = new PostFile('file', fopen($filePath, 'r'));
+        $postFile = new PostFile($fileType, fopen($filePath, 'r'));
 
         // Inserts file into the post body data
         $postBody->addFile($postFile);

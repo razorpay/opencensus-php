@@ -184,7 +184,10 @@ class Service extends Base\Service
             $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
 
-            $this->uploadFileToAPI($input);
+            $params = [
+                    $data['field'] => $data['file'],
+            ];
+            $this->uploadFileToAPI($params);
         }
 
         return $error;
