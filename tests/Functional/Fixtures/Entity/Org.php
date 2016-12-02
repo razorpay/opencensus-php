@@ -17,8 +17,7 @@ class Org extends Base
 
     public function setUp()
     {
-        $this->fixtures->on('test')->create('org:razorpay_organization');
-        $this->fixtures->on('live')->create('org:razorpay_organization');
+        $this->fixtures->create('org:razorpay_organization');
     }
 
     public function createDefaultTestOrganization()

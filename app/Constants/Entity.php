@@ -156,6 +156,12 @@ class Entity
     );
 
     protected static $syncedInLiveAndTest = array(
+        self::ORG,
+        self::ROLE,
+        self::PERMISSION,
+        self::GROUP,
+        self::ADMIN,
+        self::ADMIN_TOKEN,
         self::IIN,
         self::FEATURE,
         self::METHODS,

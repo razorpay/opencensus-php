@@ -646,7 +646,6 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
-        'org_get',
     ];
 
     public static $adminPermission = [
