@@ -17,4 +17,14 @@ class Repository extends Base\Repository
                     ->where(Entity::HANDLE, '=', $handle)
                     ->firstOrFail();
     }
+
+    public function findByAddress($address)
+    {
+        list($username, $handle) = explode(Entity::AROBASE, $address);
+
+        return $this->newQuery()
+                    ->where(Entity::USERNAME, '=', $username)
+                    ->where(Entity::HANDLE, '=', $handle)
+                    ->first();
+    }
 }
