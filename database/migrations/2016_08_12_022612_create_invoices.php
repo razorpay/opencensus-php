@@ -30,8 +30,8 @@ class CreateInvoices extends Migration
             $table->string(Entity::RECEIPT, 40)
                   ->nullable();
 
-            $table->char(Entity::ORDER_ID, Entity::ID_LENGTH)
-                  ->nullable();
+            $table->char(Entity::ORDER_ID, Entity::ID_LENGTH);
+                  // ->nullable();
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
@@ -62,8 +62,8 @@ class CreateInvoices extends Migration
             $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
-            $table->bigInteger(Entity::AMOUNT)
-                  ->nullable();
+            $table->bigInteger(Entity::AMOUNT);
+                  // ->nullable();
 
             $table->string(Entity::CURRENCY, 3);
 
@@ -104,11 +104,11 @@ class CreateInvoices extends Migration
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
-            $table->integer(Entity::DELETED_AT)
-                  ->nullable();
+            // $table->integer(Entity::DELETED_AT)
+            //       ->nullable();
 
             $table->index(Entity::CREATED_AT);
-            $table->index(Entity::DELETED_AT);
+            // $table->index(Entity::DELETED_AT);
             $table->index(Entity::STATUS);
             $table->index(Entity::DUE_BY);
             $table->index(Entity::SCHEDULED_AT);
