@@ -132,15 +132,14 @@ class Validator extends Base\Validator
 
     public function validateAmount(array $input)
     {
-        if (isset($input[Entity::AMOUNT]) === false)
-        {
-            return;
-        }
-
-        if (isset($input[Entity::LINE_ITEMS]) === true)
+        //
+        // If amount is set, input should not contain line_items.
+        //
+        if ((isset($input[Entity::AMOUNT]) === true) and
+            (isset($input[Entity::LINE_ITEMS]) === false))
         {
             throw new BadRequestValidationFailureException(
-                'amount should not be sent with line_items'
+                'amount should not be sent if line_items are being sent in the input.'
             );
         }
     }
@@ -161,6 +160,10 @@ class Validator extends Base\Validator
             );
         }
 
+        //
+        // We are currently not allowing more than 10 line items
+        // in the input. There's no concrete reason for this though.
+        //
         if ($lineItemsCount > 10)
         {
             throw new BadRequestValidationFailureException(
@@ -210,6 +213,10 @@ class Validator extends Base\Validator
             }
         }
 
+        //
+        // Note that this exception will be thrown even if a key is present
+        // but if it is going to be expired soon or is already expired.
+        //
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
             null,
@@ -224,20 +231,22 @@ class Validator extends Base\Validator
 
         if (NotifyMedium::isMediumValid($medium) === false)
         {
-            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium');
+            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium.');
         }
 
-        if (($medium === NotifyMedium::EMAIL) and empty($invoice->getCustomerEmail()))
+        if (($medium === NotifyMedium::EMAIL) and
+            (empty($invoice->getCustomerEmail())))
         {
             throw new BadRequestValidationFailureException(
-                'Email can not be sent since email address has not been provided'
+                'Email can not be sent since email address has not been provided.'
             );
         }
 
-        if (($medium === NotifyMedium::SMS) and empty($invoice->getCustomerContact()))
+        if (($medium === NotifyMedium::SMS) and
+            (empty($invoice->getCustomerContact())))
         {
             throw new BadRequestValidationFailureException(
-                'SMS can not be sent since contact number has not been provided'
+                'SMS can not be sent since contact number has not been provided.'
             );
         }
     }
@@ -274,24 +283,21 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validates if an invoice can be issued or not
+     * Validates if an invoice can be issued or not.
+     * It has the following checks:
+     *  - Invoice should have amount set to a non-zero value
+     *  - Either description (minimal invoice) or non-zero line items should exist
      */
     public function validateInvoiceIssue()
     {
-        // Checks:
-        // - Invoice should have amount set to a non-zero value
-        // - Either description (minimal invoice) or non-zero line items should exist
-
         $invoice = $this->entity;
 
-        $invoiceAmount         = $invoice->getAmount();
-        $invoiceDesc           = $invoice->getDescription();
-        $invoiceLineItemsCount = $invoice->lineItems()->count();
+        $invoiceAmount          = $invoice->getAmount();
+        $invoiceDesc            = $invoice->getDescription();
+        $invoiceLineItemsCount  = $invoice->lineItems()->count();
 
-        if (
-            ($invoiceAmount !== null) and
-            (($invoiceDesc !== null) or ($invoiceLineItemsCount > 0))
-        )
+        if (($invoiceAmount !== null) and
+            (($invoiceDesc !== null) or ($invoiceLineItemsCount > 0)))
         {
             return;
         }

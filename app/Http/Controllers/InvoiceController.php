@@ -15,7 +15,7 @@ class InvoiceController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Invoice\Service();
+        $this->service = new Invoice\Service;
     }
 
     public function createInvoice()
