@@ -86,7 +86,7 @@ return [
         ],
     ],
 
-    'testDeleteAllRolesAdmin' => [
+    'testDeleteAllGroupsAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
             'method' => 'put',
