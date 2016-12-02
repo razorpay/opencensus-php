@@ -189,6 +189,8 @@ class DatabaseSeeder extends Seeder
 
                 $this->createGlobalCustomer();
 
+                $this->createVpas();
+
                 $this->createDevice();
             }
 
@@ -296,6 +298,33 @@ class DatabaseSeeder extends Seeder
                 'email'                 => 'test4@razorpay.com',
                 'notes'                 => '{}',
                 'active'                => true,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createVpas()
+    {
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestSenderVpa',
+                'username'              => 'sender',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestReceivrVpa',
+                'username'              => 'receiver',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
                 'created_at'            => time(),
                 'updated_at'            => time(),
             )

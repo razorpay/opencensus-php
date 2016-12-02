@@ -21,11 +21,24 @@ class Service extends Base\Service
 
     public function create($input)
     {
+        $source = $this->setVpaFields($input, 'source');
+
+        $sink = $this->setVpaFields($input, 'sink');
+
         $p2p = $this->core->create($input);
 
         $this->eventP2pCreated();
 
         return $p2p->toArrayPublic();
+    }
+
+    protected function setVpaFields(& $input, $field)
+    {
+        $source = $this->repo->vpa->findByAddressOrFail($input[$field]);
+
+        $input[$field . '_id'] = $source->getPublicId();
+
+        unset($input[$field]);
     }
 
     public function getById($id)

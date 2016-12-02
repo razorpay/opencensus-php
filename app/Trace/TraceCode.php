@@ -9,7 +9,6 @@ class TraceCode
     /*
      * Payment component error messages
      */
-    const HERE_NOW = 'HERE_NOW';
 
     const PAYMENT_NEW_REQUEST                       = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                           = 'PAYMENT_CREATED';
