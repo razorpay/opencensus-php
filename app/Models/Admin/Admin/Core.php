@@ -13,7 +13,8 @@ class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
-        $admin = new Entity;
+        $admin = (new Entity);
+        $admin->generateId();
 
         $admin->org()->associate($org);
 

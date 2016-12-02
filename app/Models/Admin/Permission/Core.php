@@ -19,13 +19,6 @@ class Core extends Base\Core
     {
         $permissions = $this->repo->permission->retrieveIdsByNames($names);
 
-        $permIds = [];
-
-        foreach($permissions as $perm)
-        {
-            $permIds[] = $perm->getPublicId();
-        }
-
-        return $permIds;
+        return $permissions;
     }
 }

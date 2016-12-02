@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const USERNAME              = 'username';
     const EMAIL                 = 'email';
     const PASSWORD              = 'password';
+    const PASSWORD_CONFIRMATION = 'password_confirmation';
     const REMEMBER_TOKEN        = 'remember_token';
     const OAUTH_ACCESS_TOKEN    = 'oauth_access_token';
     const OAUTH_PROVIDER_ID     = 'oauth_provider_id';
@@ -45,7 +46,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = Table::ADMIN;
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::EMAIL,
@@ -104,6 +105,10 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT_CODE => 'default_location',
         self::LOCATION_CODE   => 'default_department',
         self::EMPLOYEE_CODE   => 'default_employee',
+    ];
+
+    protected static $unsetCreateInput = [
+        self::PASSWORD_CONFIRMATION
     ];
 
     public function getPassword()

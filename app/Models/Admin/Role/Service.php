@@ -9,7 +9,7 @@ use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
-    public function createRole($orgId, $input)
+    public function create($orgId, $input)
     {
         $org = $this->repo->org->findByPublicId($orgId);
 

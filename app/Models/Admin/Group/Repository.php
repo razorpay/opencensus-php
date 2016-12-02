@@ -14,6 +14,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'group';
 
+    protected $merchantIdRequiredForMultipleFetch = false;
+
     // TODO Define the proxyfetch and admin fetch params
 
     protected $proxyFetchParamRules = [

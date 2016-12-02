@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'org';
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::DISPLAY_NAME,
@@ -57,6 +57,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,
         self::HOSTNAME,
@@ -137,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function getHostname()
     {
         return $this->getAttribute(self::HOSTNAME);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
     }
 
     protected function getEmailDomainsAttribute()

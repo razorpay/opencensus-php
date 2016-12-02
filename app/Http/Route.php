@@ -300,11 +300,10 @@ final class Route
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
 
-// Routes for the admin roles project
+        // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganisationController@postOrganisation'                           ],
-        'org_get_self'                            => ['get',      'orgs/{id}/self',                                      'OrganisationController@getOrganisation'                            ],
-        'org_get'                                 => ['get',      'orgs/{id}',                                      'OrganisationController@getOrganisation'                            ],
-        'org_get_by_hostname'                     => ['get',      'orgs/{hostname}',                                'OrganisationController@getOrganisationByHostname'                  ],
+        'org_get_self'                            => ['get',      'orgs/{id}/self',                                 'OrganisationController@getOrganisation'                            ],
+        'org_get_by_hostname'                     => ['get',      'orgs/hostname/{hostname}',                       'OrganisationController@getOrganisationByHostname'                  ],
         'org_get_multiple'                        => ['get',      'orgs',                                           'OrganisationController@getOrganisations'                           ],
         'org_edit'                                => ['put',      'orgs/{id}',                                      'OrganisationController@putOrganisation'                            ],
         'org_delete'                              => ['delete',   'orgs/{id}',                                      'OrganisationController@deleteOrganisation'                         ],
@@ -334,11 +333,8 @@ final class Route
         // 'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
         // 'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermissions'                                    ],
         // 'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
-        'password_login'                          => ['post',     'admin/password_login',                           'AdminController@passwordLogin'                                     ],
-        'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
-
-        // Admin Auth
-        'hello_world'                             => ['get',      'world/{mid}',                                    'AdminController@helloWorld'                                        ],
+        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                 ],
+        'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                       ],
     );
 
     public static $public = array(
@@ -577,9 +573,10 @@ final class Route
         'payments_multiple_authorize_refund',
         'adj_add_reverse',
         'admin_get_app_auth',
-        'password_login',
+        'admin_authentication',
         'oauth_login',
         'org_get_self',
+        'org_get_by_hostname',
     );
 
     public static $proxy = array(
@@ -628,7 +625,6 @@ final class Route
     public static $admin = [
         'org_get_multiple',
         'admin_fetch_merchant_ids',
-        'hello_world',
         'admin_create',
         'group_get',
         'group_get_multiple',
@@ -650,12 +646,9 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
-        'org_get',
     ];
 
     public static $adminPermission = [
-        'hello_world'                => ['view_merchant_credits_log'],
-
         'group_create'               => ['create_group'],
         'admin_create'               => ['create_admin'],
         'group_get'                  => ['view_group'],
@@ -722,7 +715,7 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
-        'mailgun_webhook'
+        'mailgun_webhook',
     );
 
     public static $internalApps = array(

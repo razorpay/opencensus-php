@@ -22,6 +22,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByOrgIdAndEmail($orgId, $email)
+    {
+        $email = strtolower($email);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->where(Entity::EMAIL, '=', $email)
+                    ->first();
+    }
+
     public function retrieveByOrgIdAndIdOrFail(
         string $orgId,
         string $adminId)
@@ -29,8 +39,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ID, '=', $adminId)
-                    ->with('groups')
-                    ->with('roles')
+                    ->with(['groups', 'roles'])
                     ->firstOrFail();
     }
 

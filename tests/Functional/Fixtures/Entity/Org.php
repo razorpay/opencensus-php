@@ -17,8 +17,7 @@ class Org extends Base
 
     public function setUp()
     {
-        $this->fixtures->on('test')->create('org:razorpay_organization');
-        $this->fixtures->on('live')->create('org:razorpay_organization');
+        $this->fixtures->create('org:razorpay_organization');
     }
 
     public function createDefaultTestOrganization()
@@ -37,7 +36,11 @@ class Org extends Base
         $now = Carbon::now()->timestamp;
 
         // Default organisation to be used for tests
-        $org = $this->fixtures->create('org', ['id' => self::RZP_ORG]);
+        $org = $this->fixtures->create('org', [
+            'id' => self::RZP_ORG,
+            'email' => 'admin@razorpay.com',
+            'hostname' => 'dashboard.razorpay.com'
+        ]);
 
         $this->fixtures->create('group', [
             'id'     => self::DEFAULT_GRP,

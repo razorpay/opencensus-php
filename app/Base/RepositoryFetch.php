@@ -208,6 +208,13 @@ trait RepositoryFetch
                     $this->fetchParamRules, $this->appFetchParamRules);
         }
 
+        if (($this->auth->isAdminAuth()) and
+            (isset($this->adminFetchParamRules)))
+        {
+            $this->fetchParamRules = array_merge(
+                    $this->fetchParamRules, $this->adminFetchParamRules);
+        }
+
         (new JitValidator)->rules($this->fetchParamRules)
                           ->caller($this)
                           ->input($params)

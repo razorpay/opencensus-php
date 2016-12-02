@@ -8,7 +8,10 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $org = (new Entity)->build($input);
+        $org = new Entity;
+        $org->generateId();
+
+        $org->build($input);
 
         $this->repo->saveOrFail($org);
 

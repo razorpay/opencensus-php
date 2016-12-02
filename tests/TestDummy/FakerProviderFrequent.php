@@ -32,4 +32,13 @@ class FakerProviderFrequent extends Base
         return Str::random(5);
     }
 
+    public function rzpSubdomain()
+    {
+        return Str::random(5) . '.razorpay.com';
+    }
+
+    public function rzpEmail()
+    {
+        return Str::random(5) . '@razorpay.com';
+    }
 }

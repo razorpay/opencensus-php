@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'role';
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::ID,
