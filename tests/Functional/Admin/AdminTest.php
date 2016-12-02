@@ -103,6 +103,47 @@ class AdminTest extends TestCase
         $this->assertEquals($result['groups'][0]['id'], $group);
     }
 
+    public function testDeleteAllRolesAdmin()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals(0, count($admin->groups->all()));
+    }
+
+    public function testDeleteAllGroupsAdmin()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals(0, count($admin->roles->all()));
+    }
+
     public function testDeleteAdmin()
     {
         $admin = $this->fixtures->create('admin', [

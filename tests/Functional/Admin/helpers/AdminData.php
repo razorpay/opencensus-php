@@ -72,6 +72,34 @@ return [
         ],
     ],
 
+    'testDeleteAllRolesAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeleteAllRolesAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',

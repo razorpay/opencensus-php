@@ -23,8 +23,11 @@ class Core extends Base\Core
             Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
 
             $role->permissions()->sync($input['permissions']);
-
-            $this->repo->saveOrFail($role);
+        }
+        else
+        {
+            // Deletion of all
+            $role->permissions()->sync([]);
         }
 
         return $role;
@@ -40,8 +43,11 @@ class Core extends Base\Core
 
             $role->permissions()->sync($input['permissions']);
         }
-
-        $this->repo->saveOrFail($role);
+        else
+        {
+            // Deletion of all
+            $role->permissions()->sync([]);
+        }
 
         return $role;
     }

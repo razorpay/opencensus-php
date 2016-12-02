@@ -47,10 +47,33 @@ return [
         ],
         'response' => [
             'content' => [
-                // 'entity'      => 'role',
                 'name'        => 'manager',
                 'description' => 'Manager of roles',
             ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditRoleDeleteAllPermissions' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditRoleEditPermissions' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
             'status_code' => 200,
         ],
     ],
