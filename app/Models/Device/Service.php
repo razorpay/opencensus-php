@@ -52,8 +52,6 @@ class Service extends Base\Service
         {
             $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
         }
-
-        // return ['device' => $device->toArrayPublic(), 'getToken' => $response];
     }
 
     public function updateUpiToken(string $deviceId, string $upiToken)
