@@ -1,4 +1,4 @@
-import ajax from 'merchant/utils/ajax'
+import Invoice from 'merchant/models/Invoice'
 import { fromJS } from 'immutable'
 
 const INVOICE_FETCH = 'INVOICE_FETCH'
@@ -9,21 +9,16 @@ export const fetchInvoice = (id) => {
   return (dispatch) => {
     return dispatch({
       type: INVOICE_FETCH,
-      payload: ajax({
-        url: `/invoices/${id}`
-      })
+      payload: Invoice.fetch(id)
     })
   }
 }
 
-export const notifyCustomer = (id, type) => {
+export const notifyCustomer = (invoice, type) => {
   return (dispatch) => {
     return dispatch({
       type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
-      payload: ajax({
-        url: `/invoices/${id}/notify/${type}`,
-        method: 'post'
-      })
+      payload: invoice.notify(type)
     })
   }
 }
@@ -45,7 +40,7 @@ export default function (state = fromJS(initialState), action) {
     case `${INVOICE_FETCH}::SUCCESS`:
       return state.merge({
         loading: false,
-        invoice: action.payload.data.items[0],
+        invoice: action.payload,
         error: null
       })
 
@@ -57,10 +52,14 @@ export default function (state = fromJS(initialState), action) {
       })
 
     case `${SMS_SEND}::SUCCESS`:
-      return state.setIn(['invoice', 'sms_status'], 'sent')
+      var invoice = state.get('invoice')
+      invoice.sms_status = 'sent'
+      return state.set('invoice', invoice)
 
     case `${EMAIL_SEND}::SUCCESS`:
-      return state.setIn(['invoice', 'email_status'], 'sent')
+      var invoice = state.get('invoice')
+      invoice.email_status = 'sent'
+      return state.set('invoice', invoice)
 
     case `${SMS_SEND}::ERROR`:
     case `${EMAIL_SEND}::ERROR`:

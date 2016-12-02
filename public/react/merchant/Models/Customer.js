@@ -23,11 +23,7 @@ export default class Customer extends BaseModel {
     let { id, ...data } = params
     let [ url, method ] = this.getResourceUrlAndMethod()
 
-    return ajax({
-      url,
-      method,
-      data
-    }).then((response) => {
+    return ajax({ url, method, data }).then((response) => {
       return new Customer().deserialize(response.data)
     })
   }

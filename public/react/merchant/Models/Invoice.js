@@ -30,7 +30,7 @@ export default class Invoice extends BaseModel {
 
   static fetch(id, params = {}) {
     return ajax(`/invoices/${id}`, params).then((response) => {
-      return new Invoice().deserialize(response.data)
+      return new Invoice().deserialize(response.data.items[0])
     })
   }
 
@@ -39,12 +39,15 @@ export default class Invoice extends BaseModel {
     let { id, ...data } = params
     let [ url, method ] = this.getResourceUrlAndMethod()
 
-    return ajax({
-      url,
-      method,
-      data
-    }).then((response) => {
+    return ajax({ url, method, data }).then((response) => {
       return new Invoice().deserialize(response.data)
+    })
+  }
+
+  notify(type) {
+    return ajax({
+      url: `${this.getResourceUrl()}/notify/${type}`,
+      method: 'post'
     })
   }
 
@@ -54,14 +57,36 @@ export default class Invoice extends BaseModel {
     }
 
     if (prop === 'line_items') {
-      return this.line_items.map((item) => {
-        return {
-          name: item.name,
-          amount: Number(item.amount) * 100
-        }
-      })
+      if (this.type === 'link') {
+        return this.line_items.map((item) => {
+          return {
+            name: item.name,
+            amount: Number(item.amount) * 100
+          }
+        })
+      } else if (this.type === 'invoice') {
+        return this.line_items.map((item) => {
+          return {
+            item_id: item.id,
+            quantity: item.quantity
+          }
+        })
+      }
     }
 
     return super.serializeProperty(prop)
+  }
+
+  deserializeProperty(prop, value) {
+    if (prop === 'customer_details') {
+      this.customer = {
+        name: value.customer_name,
+        email: value.customer_email,
+        contact: value.customer_contact,
+        address: value.customer_address
+      }
+    }
+
+    return super.deserializeProperty(prop, value)
   }
 }

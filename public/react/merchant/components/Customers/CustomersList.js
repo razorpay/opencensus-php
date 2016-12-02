@@ -17,6 +17,12 @@ const CustomersListItem = (props) => {
             <i class='fa fa-edit'></i>
             <span>edit</span>
           </button>
+          <button
+            class='btn btn-xs btn-default'
+          >
+            <i class='fa fa-trash text-danger'></i>
+            <span>delete</span>
+          </button>
         </div>
       </td>
     </tr>
@@ -48,7 +54,7 @@ export default ({ customers, isLoading, onEdit }) => {
             <th>Customer Name</th>
             <th>Email</th>
             <th>Contact</th>
-            <th></th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

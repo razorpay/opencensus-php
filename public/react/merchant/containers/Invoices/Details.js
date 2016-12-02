@@ -22,7 +22,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   notifyCustomer(type) {
-    return this.props.notifyCustomer(this.props.id, type).then((response) => {
+    return this.props.notifyCustomer(this.props.invoice, type).then((response) => {
       this.setState({
         statusMsg: {
           type: 'success',

@@ -9,12 +9,19 @@ export default class BaseModel {
     return !this[this.resourceIdField]
   }
 
-  getResourceUrlAndMethod() {
+  getResourceUrl() {
     if (this[this.resourceIdField]) {
-      return [ `${this.resourceUrl}/${this.resourceIdField}`, 'put' ]
+      return `${this.resourceUrl}/${this[this.resourceIdField]}`
     }
+    return this.resourceUrl
+  }
 
-    return [ this.resourceUrl, 'post' ]
+  getResourceMethod() {
+    return this[this.resourceIdField] ? 'put' : 'post'
+  }
+
+  getResourceUrlAndMethod() {
+    return [ this.getResourceUrl() , this.getResourceMethod() ]
   }
 
   serialize() {

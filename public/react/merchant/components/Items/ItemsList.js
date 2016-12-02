@@ -15,12 +15,14 @@ const ItemsListItem = (props) => {
             onClick={props.onEdit}
           >
             <i class='fa fa-edit'></i>
+            <span>edit</span>
           </button>
           <button
-            class='btn btn-xs btn-danger'
+            class='btn btn-xs btn-default'
             onClick={props.onDelete}
           >
-            <i class='fa fa-trash'></i>
+            <i class='fa fa-trash text-danger'></i>
+            <span>delete</span>
           </button>
         </div>
       </td>
@@ -54,7 +56,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
             <th>Item Name</th>
             <th>Description</th>
             <th class='text-right'>Amount (INR)</th>
-            <th></th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

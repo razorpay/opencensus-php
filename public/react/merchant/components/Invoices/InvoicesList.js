@@ -30,20 +30,21 @@ const InvoiceListItem = (props) => {
       <td class='text-right'>
         <InvoiceStatus status={invoice.status} />
       </td>
-      <td class='text-right'>
+      <td>
         <div class='row-action'>
           <div class='btn-group'>
             <button
               class='btn btn-xs btn-default'
               onClick={props.onEditClick}
             >
-              edit
+              <i class='fa fa-edit'></i>
+              <span>edit</span>
             </button>
             <button
-              class='btn btn-xs btn-danger'
-              onClick={props.onEditClick}
+              class='btn btn-xs btn-default'
             >
-              delete
+              <i class='fa fa-trash text-danger'></i>
+              <span>delete</span>
             </button>
           </div>
         </div>
@@ -84,7 +85,7 @@ export default (props) => {
             <th>Type</th>
             <th class='text-right'>Amount (INR)</th>
             <th class='text-right'>Status</th>
-            <th class='text-right'>Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

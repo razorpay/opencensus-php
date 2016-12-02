@@ -4,6 +4,7 @@ import { fromJS } from 'immutable'
 
 const INVOICES_FETCH = 'INVOICES_FETCH'
 const INVOICE_CREATE = 'INVOICE_CREATE'
+const INVOICE_EDIT = 'INVOICE_EDIT'
 const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
 
 export const fetchInvoices = (params) => {
@@ -61,6 +62,13 @@ export default function (state = fromJS(initialState), action) {
 
     case `${INVOICE_CREATE}::SUCCESS`:
       return state.set('invoices', state.get('invoices').unshift(action.payload))
+
+    case `${INVOICE_EDIT}::SUCCESS`:
+      let invoices = state.get('invoices')
+      return state.set('invoices', invoices.update(
+        invoices.findIndex((invoice) => invoice.get('id') === action.payload.id),
+        (invoice) => invoice.merge(action.payload)
+      ))
 
     case HIGHLIGHT_INVOICE:
       return state.set('highLightInvoiceId', action.invoiceId)

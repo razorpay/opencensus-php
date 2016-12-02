@@ -12,7 +12,7 @@ import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import LineItemTable from './LineItemTable'
 import { fetchCustomers } from 'merchant/modules/customers'
 import { fetchItems } from 'merchant/modules/items'
-import { createInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
+import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
 
@@ -28,7 +28,7 @@ const selector = formValueSelector('newInvoice')
       customer: selector(state, 'customer')
     }
   },
-  { fetchCustomers, fetchItems, createInvoice, highLightInvoice }
+  { fetchCustomers, fetchItems, saveInvoice, highLightInvoice }
 )
 @reduxForm({
   form: 'newInvoice',
@@ -73,17 +73,12 @@ export default class InvoicesNewContainer extends ModalContainer {
   }
 
   save(fieldProps) {
-    let { line_items, ...invoiceParams } = fieldProps
-    invoiceParams.line_items = line_items.map((lineItem) => ({
-      item_id: lineItem.id,
-      quantity: lineItem.quantity
-    }))
-
-    invoiceParams.type = 'invoice'
-    return this.props.createInvoice(invoiceParams).then((reponse) => {
+    let { ...props } = fieldProps
+    props.type = 'invoice'
+    return this.props.saveInvoice(props).then((invoice) => {
       this.context.ngRouter.transitionTo('app.invoices')
       setTimeout(() => {
-        this.props.highLightInvoice(reponse.data.id)
+        this.props.highLightInvoice(invoice.id)
       }, 1500)
     }).catch(({ errors }) => {
       this.setState({

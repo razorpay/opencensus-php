@@ -18,7 +18,7 @@ export default class InvoicesListContainer extends ModalContainer {
     super(...arguments)
     this.state.skip = 0
     this.state.count = 25
-    this.state.invoice = null
+    this.state.invoiceToEdit = null
     this.fetchInvoices = ::this.fetchInvoices
     this.editInvoice = ::this.editInvoice
   }
@@ -40,12 +40,16 @@ export default class InvoicesListContainer extends ModalContainer {
     this.props.fetchInvoices(params)
   }
 
+  showPaymentLinkModal(invoice = null) {
+    this.setState({
+      invoiceToEdit: invoice
+    })
+    this.openModal()
+  }
+
   editInvoice(invoice) {
     if (invoice.type === 'link') {
-      this.setState({
-        invoice
-      })
-      this.openModal()
+      this.showPaymentLinkModal(invoice)
     }
   }
 
@@ -58,7 +62,7 @@ export default class InvoicesListContainer extends ModalContainer {
           <div class='btn-toolbar pull-right'>
             <button
               class='btn btn-primary btn-rounded'
-              onClick={this.openModal}
+              onClick={() => this.showPaymentLinkModal()}
             >
               <i class='fa fa-plus'></i>
               <span>Create Payment Link</span>
@@ -97,7 +101,7 @@ export default class InvoicesListContainer extends ModalContainer {
           closeTimeoutMS={300}
         >
           <CreatePaymentLink
-            invoice={this.state.invoice}
+            invoice={this.state.invoiceToEdit}
             onSave={(invoice) => {
               this.props.highLightInvoice(invoice.id)
             }}

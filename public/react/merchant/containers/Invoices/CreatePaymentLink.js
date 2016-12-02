@@ -64,7 +64,6 @@ export default class CreatePaymentLink extends Component {
   }
 
   create(fieldProps) {
-    debugger
     let { ...props } = fieldProps
     props.type = 'link'
 
@@ -84,7 +83,7 @@ export default class CreatePaymentLink extends Component {
     return (
       <div>
         <ModalHeader
-          title='Create Payment Link'
+          title={this.props.invoice ? 'Edit Payment Link' : 'Create Payment Link'}
           onCloseClick={this.props.closeModal}
         />
 

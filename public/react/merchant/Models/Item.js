@@ -27,11 +27,7 @@ export default class Item extends BaseModel {
     let { id, ...data } = params
     let [ url, method ] = this.getResourceUrlAndMethod()
 
-    return ajax({
-      url,
-      method,
-      data
-    }).then((response) => {
+    return ajax({ url, method, data }).then((response) => {
       return new Item().deserialize(response.data)
     })
   }
