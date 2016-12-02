@@ -724,12 +724,12 @@ class DatabaseSeeder extends Seeder
         DB::table(Table::TERMINAL)->insert(
             array(
                 'id'                        =>  Terminal\Shared::NETBANKING_ICICI_TERMINAL,
-                'merchant_id'               =>  Account::TEST_ACCOUNT, // createNetbankingIciciTerminals
+                'merchant_id'               =>  Account::TEST_ACCOUNT,
                 'gateway'                   =>  'netbanking_icici',
                 'card'                      =>  '0',
                 'netbanking'                =>  '1',
                 'gateway_merchant_id'       =>  'test_pid',
-                'gateway_merchant_id2'      =>  'test_spid', // adding
+                'gateway_merchant_id2'      =>  'test_spid',
                 'gateway_terminal_id'       =>  'test_terminal_netbanking_icici',
                 'gateway_terminal_password' =>  Crypt::encrypt('test_master_key'),
                 'recurring'                 =>  0,

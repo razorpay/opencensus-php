@@ -127,17 +127,15 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponse = $response;
-        // Why is this body empty?? It definitely shouldn't be empty
         $verify->verifyResponseBody = $response->body;
         $verify->verifyResponseContent = $content;
 
-        // Not sure how the response object is going to be passed in here
         return $response;
     }
 
     public function verifyPayment($verify)
     {
-        $content = $verify->verifyResponseBody;  // Body gets the XML string
+        $content = $verify->verifyResponseBody;
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -145,9 +143,9 @@ class Gateway extends Base\Gateway
         $xml = $this->getResponseXml($content);
 
         // Should probably trace this
-        /*$this->trace->info(
+        $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $xml);*/
+            (array)$xml);
 
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
@@ -168,7 +166,6 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        // If both don't match we have a status mis match
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $status = VerifyResult::STATUS_MISMATCH;
@@ -176,7 +173,6 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        // we want the status to match - in either authorize or failure
         return $status;
     }
 
@@ -198,8 +194,8 @@ class Gateway extends Base\Gateway
         $data[RequestFields::MODE]  = ModeFields::VERIFY;
 
         $data += array(
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'], // payment_id
-            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']),
+            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'],
+            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']), // ITC is in upper case
             RequestFields::CURRENCY_CODE            => 'INR',
         );
 
@@ -208,7 +204,6 @@ class Gateway extends Base\Gateway
 
     protected function getEncryptedString($input)
     {
-        // Adding & so that URL creation is simple
         $data = $this->getAuthorizeRequestData($input);
 
         $queryString = $this->createUrl($data);
@@ -220,8 +215,10 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData($input)
     {
-        $callbackUrl = '%22' . $input['callbackUrl'] . '%22'; // ICICI integration docs
+        // Formatted for ICICI
+        $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
+        // Adding & to make the URL creation simple. Cannot use http_build_query here - RU has special characters
         $data = array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'] . '&', // payment_id
             RequestFields::ITEM_CODE                => strtoupper($input['payment']['id'] . '&'), // upper case
@@ -323,31 +320,37 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
+        $masterKey = $this->terminal[TerminalEntities::MASTER_KEY];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_master_key'];
+            $masterKey = $this->config['test_master_key'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        return $masterKey;
     }
 
     public function getPid()
     {
+        $pid = $this->terminal[TerminalEntities::PAYEE_ID];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_pid'];
+            $pid = $this->config['test_pid'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        return $pid;
     }
 
     public function getSpid()
     {
+        $pid = $this->terminal[TerminalEntities::SPID];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_spid'];
+            $pid = $this->config['test_spid'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        return $pid;
     }
 }
