@@ -111,7 +111,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You can not edit/delete an item with which invoices have been created already',
+                    'description' => 'You cannot edit/delete an item with which invoices have been created already',
                 ],
             ],
             'status_code' => 400,
@@ -141,7 +141,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You can not edit/delete an item with which invoices have been created already',
+                    'description' => 'You cannot edit/delete an item with which invoices have been created already',
                 ],
             ],
             'status_code' => 400,

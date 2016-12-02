@@ -85,7 +85,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array',
-        Entity::AMOUNT              => 'required_with:description|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'required_with:amount|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -284,9 +284,14 @@ class Validator extends Base\Validator
 
         $invoice = $this->entity;
 
-        if (($invoice->getAmount() > 0) and
-            (($invoice->getDescription() !== null) or
-             ($invoice->lineItems()->count() > 0)))
+        $invoiceAmount         = $invoice->getAmount();
+        $invoiceDesc           = $invoice->getDescription();
+        $invoiceLineItemsCount = $invoice->lineItems()->count();
+
+        if (
+            ($invoiceAmount > 0) and
+            (($invoiceDesc != null) or ($invoiceLineItemsCount > 0))
+        )
         {
             return;
         }
@@ -296,9 +301,9 @@ class Validator extends Base\Validator
             null,
             [
                 'invoice_id'        => $invoice->getId(),
-                'amount'            => $invoice->getAmount(),
-                'description'       => $invoice->getDescription(),
-                'line_items_count'  => $invoice->lineItems()->count(),
+                'amount'            => $invoiceAmount,
+                'description'       => $invoiceDesc,
+                'line_items_count'  => $invoiceLineItemsCount,
             ]
         );
     }

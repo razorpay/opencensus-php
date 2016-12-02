@@ -814,7 +814,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice can not be issued, Provide either line_items or amount, description',
+                    'description' => 'Invoice cannot be issued, Provide either line_items or amount, description',
                 ],
             ],
             'status_code' => 400,
