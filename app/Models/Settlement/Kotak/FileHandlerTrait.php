@@ -469,9 +469,9 @@ trait FileHandlerTrait
         return storage_path($path);
     }
 
-    protected function getFileToWriteName()
+    protected function getFileToWriteName($ext = '.txt')
     {
-        return $this->getFileToWriteNameWithoutExt() . '.txt';
+        return $this->getFileToWriteNameWithoutExt() . $ext;
     }
 
     protected function getExcelFileToWriteName()

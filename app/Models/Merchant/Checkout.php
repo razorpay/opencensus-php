@@ -51,7 +51,8 @@ class Checkout
         return $data;
     }
 
-    protected function checkAndAddDetailsForInvoice(array $input, Entity $merchant, array & $data)
+    protected function checkAndAddDetailsForInvoice(
+        array $input, Merchant\Entity $merchant, array & $data)
     {
         if (empty($input['invoice_id']) === true)
         {
@@ -62,17 +63,21 @@ class Checkout
 
         $invoiceCore = new Invoice\Core;
 
-        $invoiceData = $invoiceCore->getFormattedInvoiceData($merchant, $invoiceId);
+        $invoiceData = $invoiceCore->getFormattedInvoiceData($invoiceId, $merchant);
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        if (isset($data['customer']) === true)
+        // If invoice's customer data is set, merge it to existing data
+        if (isset($invoiceData['customer']))
         {
-            $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
-        }
-        else
-        {
-            $data['customer'] = $invoiceData['customer'];
+            if (isset($data['customer']))
+            {
+                $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
+            }
+            else
+            {
+                $data['customer'] = $invoiceData['customer'];
+            }
         }
     }
 

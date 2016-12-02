@@ -1285,3 +1285,37 @@ ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 -- Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
+
+--- Pre code deployment / https://github.com/razorpay/api/pull/1697
+
+ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
+ALTER TABLE invoices MODIFY COLUMN customer_id CHAR(14) DEFAULT NULL;
+
+---
+
+ALTER TABLE payments
+    ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
+ALTER TABLE payments
+    ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
+
+--- Pre code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
+ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
+--- UPDATE invoices SET receipt = ref_num LIMIT 1000;
+
+--- Post code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
+ALTER TABLE invoices DROP COLUMN ref_num;
+
+---
+
+ALTER TABLE billdesk
+    ADD COLUMN AccountNumber VARCHAR(50) AFTER BankID;
+
+UPDATE billdesk
+    JOIN payments ON payments.id = billdesk.payment_id
+    JOIN orders ON orders.id = payments.order_id
+SET
+    billdesk.AccountNumber = orders.account_number;

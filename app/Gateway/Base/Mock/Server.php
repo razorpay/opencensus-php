@@ -3,22 +3,19 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Gateway\Base\Action;
 
-class Server
+class Server extends Base\Core
 {
     protected $request;
 
     protected $validator;
 
     protected $mockRequest;
-
-    protected $app;
-
-    protected $trace;
 
     /**
      * Api Route instance
@@ -35,13 +32,11 @@ class Server
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
 
         $this->request = $this->app['request'];
 
         $this->route = $this->app['api.route'];
-
-        $this->trace = $this->app['trace'];
     }
 
     protected function authorize($input)
