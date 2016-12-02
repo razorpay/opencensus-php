@@ -1,45 +1,27 @@
-import ajax from 'merchant/utils/ajax'
+import Customer from 'merchant/models/Customer'
 import { fromJS } from 'immutable'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
 
-export const fetchCustomers = () => {
+export const fetchCustomers = (params) => {
   return (dispatch) => {
     return dispatch({
       type: CUSTOMERS_FETCH,
-      payload: ajax('/customers')
+      payload: Customer.fetchAll(params)
     })
   }
 }
 
-export const createCustomer = (data) => {
+export const saveCustomer = (params) => {
   return (dispatch) => {
     return dispatch({
-      type: CUSTOMER_CREATE,
-      payload: ajax({
-        url: '/customer',
-        method: 'post',
-        data
-      })
+      type: params.id ? CUSTOMER_EDIT : CUSTOMER_CREATE,
+      payload: new Customer(params).save()
     })
   }
 }
-
-export const editCustomer = (id, data) => {
-  return (dispatch) => {
-    return dispatch({
-      type: CUSTOMER_EDIT,
-      payload: ajax({
-        url: `/customer/${id}`,
-        method: 'put',
-        data
-      })
-    })
-  }
-}
-
 
 let initialState = {
   loading: true,
@@ -66,12 +48,12 @@ export default function (state = fromJS(initialState), action) {
       })
 
     case `${CUSTOMER_CREATE}::SUCCESS`:
-      return state.set('customers', state.get('customers').unshift(action.payload.data))
+      return state.set('customers', state.get('customers').unshift(action.payload))
 
     case `${CUSTOMER_EDIT}::SUCCESS`:
       let customers = state.get('customers')
       return state.set('customers', customers.update(
-        customers.findIndex((item) => item.get('id') === action.payload.data.id),
+        customers.findIndex((item) => item.get('id') === action.payload.id),
         (item) => item.merge(action.payload)
       ))
 

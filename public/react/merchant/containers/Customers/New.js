@@ -8,14 +8,8 @@ import Alert from 'rzp/ui/Forms/Alert'
 import validator from 'rzp/utils/validator'
 import * as CustomerActions from 'merchant/modules/customers'
 
-const selector = formValueSelector('newCustomer')
 @connect(
-  (state) => {
-    let isNew = !selector(state, 'id')
-    return {
-      isNew
-    }
-  },
+  null,
   CustomerActions
 )
 @reduxForm({
@@ -39,26 +33,17 @@ export default class AddCustomer extends Component {
     this.state = {
       errors: null
     }
-
-    this.create = ::this.create
-    this.edit = ::this.edit
+    this.save = ::this.save
   }
 
-  create(fieldProps) {
-    return this.props.createCustomer(fieldProps).then((response) => {
-      let customer = response.data
-      this.props.onSave(customer)
-    }).catch((err) => {
-      this.setState({
-        errors: err.errors
-      })
-    })
+  componentWillMount() {
+    if (this.props.customer) {
+      this.props.initialize(this.props.customer)
+    }
   }
 
-  edit(fieldProps) {
-    let { id, ...params } = fieldProps
-    return this.props.editCustomer(id, params).then((response) => {
-      let customer = response.data
+  save(props) {
+    return this.props.saveCustomer(props).then((customer) => {
       this.props.onSave(customer)
     }).catch((err) => {
       this.setState({
@@ -68,13 +53,12 @@ export default class AddCustomer extends Component {
   }
 
   render() {
-    const { handleSubmit, isNew } = this.props
-    let action = isNew ? this.create : this.edit
+    const { handleSubmit } = this.props
 
     return (
       <div>
         <ModalHeader
-          title={isNew ? 'New Customer' : 'Edit Customer'}
+          title={this.props.customer ? 'Edit Customer' : 'New Customer'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -147,7 +131,7 @@ export default class AddCustomer extends Component {
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'
-              onClick={handleSubmit(action)}
+              onClick={handleSubmit(this.save)}
             />
           </div>
         </form>

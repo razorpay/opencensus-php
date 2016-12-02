@@ -18,7 +18,8 @@ import ModalContainer from 'merchant/containers/ModalContainer'
 export default class ItemsListContainer extends ModalContainer {
   constructor() {
     super(...arguments)
-    this.editItem = ::this.editItem
+    this.state.itemToEdit = null
+    this.showItemModal = ::this.showItemModal
     this.deleteItem = ::this.deleteItem
   }
 
@@ -26,8 +27,10 @@ export default class ItemsListContainer extends ModalContainer {
     this.props.fetchItems()
   }
 
-  editItem(item) {
-    this.props.initialize(item)
+  showItemModal(item = null) {
+    this.setState({
+      itemToEdit: item
+    })
     this.openModal()
   }
 
@@ -43,7 +46,7 @@ export default class ItemsListContainer extends ModalContainer {
         <Header title='Items'>
           <button
             class='pull-right btn btn-primary btn-rounded'
-            onClick={this.openModal}
+            onClick={() => this.showItemModal()}
           >
             <i class='fa fa-plus'></i>
             <span>New Item</span>
@@ -55,7 +58,7 @@ export default class ItemsListContainer extends ModalContainer {
             <ItemsList
               items={items}
               isLoading={loading}
-              onEdit={this.editItem}
+              onEdit={this.showItemModal}
               onDelete={this.deleteItem}
             />
           </div>
@@ -67,6 +70,7 @@ export default class ItemsListContainer extends ModalContainer {
           closeTimeoutMS={300}
         >
           <ItemCreation
+            item={this.state.itemToEdit}
             onSave={this.closeModal}
             closeModal={this.closeModal}
           />

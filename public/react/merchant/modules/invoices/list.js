@@ -1,39 +1,25 @@
+import Invoice from 'merchant/models/Invoice'
 import ajax from 'merchant/utils/ajax'
 import { fromJS } from 'immutable'
 
 const INVOICES_FETCH = 'INVOICES_FETCH'
 const INVOICE_CREATE = 'INVOICE_CREATE'
 const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
-const APPEND_INVOICE_TO_LIST = 'APPEND_INVOICE_TO_LIST'
-
-export const appendInvoiceToList = (invoice) => {
-  return {
-    type: APPEND_INVOICE_TO_LIST,
-    payload: invoice
-  }
-}
 
 export const fetchInvoices = (params) => {
   return (dispatch) => {
     return dispatch({
       type: INVOICES_FETCH,
-      payload: ajax({
-        url: '/invoices',
-        data: params
-      })
+      payload: Invoice.fetchAll(params)
     })
   }
 }
 
-export const createInvoice = (invoice) => {
+export const saveInvoice = (params) => {
   return (dispatch) => {
     return dispatch({
-      type: INVOICE_CREATE,
-      payload: ajax({
-        url: '/invoices',
-        method: 'post',
-        data: invoice
-      })
+      type: params.id ? INVOICE_EDIT : INVOICE_CREATE,
+      payload: new Invoice(params).save()
     })
   }
 }
@@ -74,7 +60,7 @@ export default function (state = fromJS(initialState), action) {
       })
 
     case `${INVOICE_CREATE}::SUCCESS`:
-      return state.set('invoices', state.get('invoices').unshift(action.payload.data))
+      return state.set('invoices', state.get('invoices').unshift(action.payload))
 
     case HIGHLIGHT_INVOICE:
       return state.set('highLightInvoiceId', action.invoiceId)

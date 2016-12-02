@@ -8,26 +8,17 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import validator from 'rzp/utils/validator'
 import * as ItemActions from 'merchant/modules/items'
 
-const selector = formValueSelector('newItem')
 @connect(
-  (state) => {
-    let isNew = !selector(state, 'id')
-    return {
-      isNew
-    }
-  },
+  null,
   ItemActions
 )
 @reduxForm({
   form: 'newItem',
-  initialValues: {
-    currency: 'INR'
-  },
   validate: validator({
     name: {
       presence: true
     },
-    amount: {
+    amountInINR: {
       presence: true
     }
   })
@@ -39,28 +30,17 @@ export default class AddItem extends Component {
       errors: null
     }
 
-    this.create = ::this.create
-    this.edit = ::this.edit
+    this.save = ::this.save
   }
 
-  create(fieldProps) {
-    let { amount, ...itemParams } = fieldProps
-    itemParams.amount = amount*100
-
-    return this.props.createItem(itemParams).then((response) => {
-      let item = response.data
-      this.props.onSave(item)
-    }).catch((err) => {
-      this.setState({
-        errors: err.errors
-      })
-    })
+  componentWillMount() {
+    if (this.props.item) {
+      this.props.initialize(this.props.item)
+    }
   }
 
-  edit(fieldProps) {
-    let { id, ...params } = fieldProps
-    return this.props.editItem(id, params).then((response) => {
-      let item = response.data
+  save(props) {
+    return this.props.saveItem(props).then((item) => {
       this.props.onSave(item)
     }).catch((err) => {
       this.setState({
@@ -70,13 +50,12 @@ export default class AddItem extends Component {
   }
 
   render() {
-    const { handleSubmit, isNew } = this.props
-    let action = isNew ? this.create : this.edit
+    const { handleSubmit } = this.props
 
     return (
       <div>
         <ModalHeader
-          title={isNew ? 'New Item' : 'Edit Item'}
+          title={this.props.item ? 'Edit Item' : 'New Item'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -105,7 +84,7 @@ export default class AddItem extends Component {
                 <div class='input-group'>
                   <span class='input-group-addon'>INR</span>
                   <Field
-                    name='amount'
+                    name='amountInINR'
                     component={InputField}
                     class='form-control'
                   />
@@ -139,7 +118,7 @@ export default class AddItem extends Component {
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'
-              onClick={handleSubmit(action)}
+              onClick={handleSubmit(this.save)}
             />
           </div>
         </form>

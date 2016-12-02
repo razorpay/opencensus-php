@@ -7,7 +7,7 @@ const ItemsListItem = (props) => {
     <tr>
       <td>{item.name}</td>
       <td>{item.description}</td>
-      <td class='text-right'>{item.rate}</td>
+      <td class='text-right'>{item.amountInINR}</td>
       <td class='row-action'>
         <div class='btn-group'>
           <button

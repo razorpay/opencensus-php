@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { reduxForm } from 'redux-form'
 import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
 import { fetchCustomers } from 'merchant/modules/customers'
@@ -12,21 +11,20 @@ import ModalContainer from 'merchant/containers/ModalContainer'
   (state) => state.customers.toJS(),
   { fetchCustomers }
 )
-@reduxForm({
-  form: 'newCustomer',
-})
 export default class CustomersListContainer extends ModalContainer {
   constructor() {
     super(...arguments)
-    this.editCustomer = ::this.editCustomer
+    this.showCustomerModal = ::this.showCustomerModal
   }
 
   componentWillMount() {
     this.props.fetchCustomers()
   }
 
-  editCustomer(customer) {
-    this.props.initialize(customer)
+  showCustomerModal(customer = null) {
+    this.setState({
+      customerToEdit: customer
+    })
     this.openModal()
   }
 
@@ -38,7 +36,7 @@ export default class CustomersListContainer extends ModalContainer {
         <Header title='Customers'>
           <button
             class='pull-right btn btn-primary btn-rounded'
-            onClick={this.openModal}
+            onClick={() => this.showCustomerModal()}
           >
             <i class='fa fa-plus'></i>
             <span>New Customer</span>
@@ -50,7 +48,7 @@ export default class CustomersListContainer extends ModalContainer {
             <CustomersList
               customers={customers}
               isLoading={loading}
-              onEdit={this.editCustomer}
+              onEdit={this.showCustomerModal}
             />
           </div>
         </div>
@@ -61,6 +59,7 @@ export default class CustomersListContainer extends ModalContainer {
           closeTimeoutMS={300}
         >
           <CustomerCreation
+            customer={this.state.customerToEdit}
             onSave={this.closeModal}
             closeModal={this.closeModal}
           />

@@ -4,7 +4,8 @@ import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
 
-const InvoiceListItem = ({ invoice, ...attrs }) => {
+const InvoiceListItem = (props) => {
+  let { invoice, ...attrs } = props
   return (
     <tr {...attrs}>
       <td>
@@ -29,11 +30,30 @@ const InvoiceListItem = ({ invoice, ...attrs }) => {
       <td class='text-right'>
         <InvoiceStatus status={invoice.status} />
       </td>
+      <td class='text-right'>
+        <div class='row-action'>
+          <div class='btn-group'>
+            <button
+              class='btn btn-xs btn-default'
+              onClick={props.onEditClick}
+            >
+              edit
+            </button>
+            <button
+              class='btn btn-xs btn-danger'
+              onClick={props.onEditClick}
+            >
+              delete
+            </button>
+          </div>
+        </div>
+      </td>
     </tr>
   )
 }
 
-export default ({ invoices, isLoading, highlightRow = () => {} }) => {
+export default (props) => {
+  let { invoices, isLoading, highlightRow = () => {} } = props
   let tableRowComponent
 
   if (isLoading) {
@@ -44,6 +64,7 @@ export default ({ invoices, isLoading, highlightRow = () => {} }) => {
         key={invoice.id}
         invoice={invoice}
         class={highlightRow(invoice) ? 'luminate' : ''}
+        onEditClick={() => props.onEdit(invoice)}
       />
     )
   } else {
@@ -63,6 +84,7 @@ export default ({ invoices, isLoading, highlightRow = () => {} }) => {
             <th>Type</th>
             <th class='text-right'>Amount (INR)</th>
             <th class='text-right'>Status</th>
+            <th class='text-right'>Actions</th>
           </tr>
         </thead>
         <tbody>

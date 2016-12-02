@@ -18,7 +18,9 @@ export default class InvoicesListContainer extends ModalContainer {
     super(...arguments)
     this.state.skip = 0
     this.state.count = 25
+    this.state.invoice = null
     this.fetchInvoices = ::this.fetchInvoices
+    this.editInvoice = ::this.editInvoice
   }
 
   componentWillMount() {
@@ -36,6 +38,15 @@ export default class InvoicesListContainer extends ModalContainer {
     }
 
     this.props.fetchInvoices(params)
+  }
+
+  editInvoice(invoice) {
+    if (invoice.type === 'link') {
+      this.setState({
+        invoice
+      })
+      this.openModal()
+    }
   }
 
   render() {
@@ -68,6 +79,7 @@ export default class InvoicesListContainer extends ModalContainer {
               invoices={invoices}
               isLoading={loading}
               highlightRow={(invoice) => invoice.id === this.props.highLightInvoiceId}
+              onEdit={this.editInvoice}
             />
 
             <Pager
@@ -85,6 +97,7 @@ export default class InvoicesListContainer extends ModalContainer {
           closeTimeoutMS={300}
         >
           <CreatePaymentLink
+            invoice={this.state.invoice}
             onSave={(invoice) => {
               this.props.highLightInvoice(invoice.id)
             }}

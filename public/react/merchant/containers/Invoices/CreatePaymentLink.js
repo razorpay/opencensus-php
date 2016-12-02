@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { createInvoice } from 'merchant/modules/invoices/list'
+import { saveInvoice } from 'merchant/modules/invoices/list'
 
 function validate(values) {
   let errors = {}
@@ -34,17 +34,15 @@ function validate(values) {
 
 @connect(
   null,
-  { createInvoice }
+  { saveInvoice }
 )
 @reduxForm({
   form: 'newPaymentLink',
-  validate,
   initialValues: {
-    currency: 'INR',
-    date: Math.ceil(new Date().getTime()/1000),
     sms_notify: true,
     email_notify: true
-  }
+  },
+  validate
 })
 export default class CreatePaymentLink extends Component {
   static contextTypes = {
@@ -59,20 +57,19 @@ export default class CreatePaymentLink extends Component {
     }
   }
 
-  create(fieldProps) {
-    let { line_items, ...props } = fieldProps
-    let item = line_items[0]
+  componentWillMount() {
+    if (this.props.invoice) {
+      this.props.initialize(this.props.invoice)
+    }
+  }
 
-    props.sms_notify = fieldProps.sms_notify ? 1 : 0
-    props.email_notify = fieldProps.email_notify ? 1 : 0
-    props.line_items = []
-    props.line_items.push({
-      name: item.name,
-      amount: item.amount * 100
-    })
+  create(fieldProps) {
+    debugger
+    let { ...props } = fieldProps
     props.type = 'link'
-    return this.props.createInvoice(props).then((response) => {
-      this.props.onSave(response.data)
+
+    return this.props.saveInvoice(props).then((invoice) => {
+      this.props.onSave(invoice)
       this.props.closeModal()
     }).catch(({ errors }) => {
       this.setState({
