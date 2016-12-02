@@ -12,7 +12,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
+use RZP\Models\Terminal\Entity;
 
 class Gateway extends Base\Gateway
 {
@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        // Ask ICICI about this -----> Could run into errors? Sometimes wrong ecrypted string returned.
+        // Ask ICICI about this ? Sometimes wrong ecrypted string returned.
         $content = $this->getDataFromResponse($input['gateway']);
 
         $this->trace->info(
@@ -139,7 +139,7 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        // Converting response string to XML format. ----- Make sure you verify this with ICICI once again
+        // Converting response string to XML format.
         $xml = $this->getResponseXml($content);
 
         // Should probably trace this
@@ -192,9 +192,11 @@ class Gateway extends Base\Gateway
 
         $data[RequestFields::MODE]  = Mode::VERIFY;
 
+        $prn = $input['payment']['id'];
+
         $data += array(
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'],
-            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id']), // ITC is in upper case
+            RequestFields::PAYMENT_REFERENCE_NUBER  => $prn,
+            RequestFields::ITEM_CODE                => strtoupper($prn),
             RequestFields::CURRENCY_CODE            => 'INR',
         );
 
@@ -217,14 +219,17 @@ class Gateway extends Base\Gateway
         // Formatted for ICICI
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
-        // Adding & to make the URL creation simple. Cannot use http_build_query here - RU has special characters
+        $prn = $input['payment']['id'];
+
+        $amount = $input['payment']['amount'] / 100;
+
         $data = array(
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input['payment']['id'] . '&', // payment_id
-            RequestFields::ITEM_CODE                => strtoupper($input['payment']['id'] . '&'), // upper case
-            RequestFields::AMOUNT                   => (float) $input['payment']['amount'] / 100 . '&',
-            RequestFields::CURRENCY_CODE            => 'INR' . '&',
-            RequestFields::RETURN_URL               => $callbackUrl . '&',
-            RequestFields::CONFIRMATION             => Confirmation::YES,
+            RequestFields::PAYMENT_REFERENCE_NUBER => $prn ,
+            RequestFields::ITEM_CODE               => strtoupper($prn),
+            RequestFields::AMOUNT                  => $amount,
+            RequestFields::CURRENCY_CODE           => 'INR',
+            RequestFields::RETURN_URL              => $callbackUrl,
+            RequestFields::CONFIRMATION            => Confirmation::YES,
         );
 
         return $data;
@@ -237,12 +242,12 @@ class Gateway extends Base\Gateway
         $spid = $this->getSpid();
 
         $data = array(
-            RequestFields::OBJ_NAME           => CompulsoryFields::LOGIN,
-            RequestFields::BAY_BANKID         => CompulsoryFields::BANKID,
-            RequestFields::MODE               => Mode::PAY,
-            RequestFields::PAYEE_ID           => $pid,  // Hardcoding it for now
-            RequestFields::SPID               => $spid,
-            RequestFields::AMOUNT             => (float) $input['payment']['amount'] / 100
+            RequestFields::OBJ_NAME   => CompulsoryFields::LOGIN,
+            RequestFields::BAY_BANKID => CompulsoryFields::BANKID,
+            RequestFields::MODE       => Mode::PAY,
+            RequestFields::PAYEE_ID   => $pid,  // Hardcoding it for now
+            RequestFields::SPID       => $spid,
+            RequestFields::AMOUNT     => $input['payment']['amount'] / 100
         );
 
         return $data;
@@ -254,10 +259,11 @@ class Gateway extends Base\Gateway
 
         foreach ($data as $key => $value)
         {
-            $url .= $key . '=' . $value;
+            $url .= $key . '=' . $value . '&';
         }
 
-        return $url;
+        // Removing the trailing &
+        return rtrim($url, '&');
     }
 
     protected function getRequestArray($content)
@@ -319,7 +325,8 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
-        $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        // Terminal Entitiy
+        $masterKey = $this->terminal[Entity::GATEWAY_TERMINAL_PASSWORD];
 
         if ($this->mode === RZPMode::TEST)
         {
@@ -331,7 +338,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        $pid = $this->terminal[Entity::GATEWAY_MERCHANT_ID];
 
         if ($this->mode === RZPMode::TEST)
         {
@@ -343,7 +350,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        $spid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        $spid = $this->terminal[Entity::GATEWAY_MERCHANT_ID2];
 
         if ($this->mode === RZPMode::TEST)
         {
