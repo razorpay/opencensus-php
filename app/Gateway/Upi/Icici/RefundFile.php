@@ -11,14 +11,17 @@ class RefundFile extends Base\RefundFile
     protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
     protected static $headers = array(
-        'Merchant reference Number',
         'bankadjref',
-        'refundRef',
         'Flag',
         'shtdat',
         'adjamt',
+        'shser',
         'shcrd',
+        'filename',
+        'reason',
         'specifyother',
+        'Merchantaccount',
+        'MerchantIFSCCode'
     );
 
     public function generate($input)
@@ -72,16 +75,19 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 
-            $data[] = array(
-                'Merchant reference Number' => $row['payment']['id'],
-                'bankadjref'                => $row['gateway']['gateway_payment_id'],
-                'refundRef'                 => $fileName,
-                'Flag'                      => 'C',
-                'shtdat'                    => $date,
-                'adjamt'                    => ($row['refund']['amount'] / 100),
-                'shcrd'                     => $row['gateway']['vpa'],
-                'specifyother'              => $row['refund']['id'],
-            );
+            $data[] = [
+                'bankadjref'        => $row['refund']['id'],
+                'Flag'              => 'C',
+                'shtdat'            => $date,
+                'adjamt'            => ($row['refund']['amount'] / 100),
+                'shser'             => $row['gateway']['gateway_payment_id'],
+                'shcrd'             => $row['gateway']['vpa'],
+                'filename'          => $fileName,
+                'reason'            => 'NA',
+                'specifyother'      => $row['refund']['id'],
+                'Merchantaccount'   => '',
+                'MerchantIFSCCode'  => '',
+            ];
         }
 
         return $data;
