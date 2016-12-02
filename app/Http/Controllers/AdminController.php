@@ -42,7 +42,9 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        // sd(Auth::guard('api')->user());
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
     }
 
     /**
@@ -58,6 +60,8 @@ class AdminController extends Controller
         }
 
         $org = $this->getOrg()->getData(true);
+
+        $this->app['session']->put('org_id', $org['data']['id']);
 
         if ($org['success'])
         {

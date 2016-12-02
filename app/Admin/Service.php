@@ -52,6 +52,9 @@ class Service extends Base\Service
     public function __construct()
     {
         $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
         $this->trace = $app['trace'];
     }
 
@@ -82,10 +85,12 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
+        $orgId = $this->app['session']->get('org_id');
+
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($input)->toArray();
+            $data = $this->api->admin->passwordLogin($orgId, $input)->toArray();
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
