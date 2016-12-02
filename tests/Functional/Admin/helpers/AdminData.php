@@ -41,6 +41,40 @@ return [
         ]
     ],
 
+    'testCreateAdminWithWrongEmailDomain' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@razorpay.com',
+                'username'           => 'harshil',
+                'password'           => 'random!12#',
+                'remember_token'     => 'yes',
+                'oauth_access_token' => 'oauth123',
+                'oauth_provider_id'  => 'google',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID
+        ],
+    ],
+
     'testGetAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
@@ -142,7 +176,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ]

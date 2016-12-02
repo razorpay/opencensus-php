@@ -417,7 +417,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-            'admin_id'      => 'factory:Models\Admin\Admin\Entity,',
+            'admin_id'      => 'factory:RZP\Models\Admin\Admin\Entity',
             'token'         => 'SecretTokenForRazorpayAdminAuthentication',
             'created_at'    => $faker->timestamp,
             'expires_at'    => $faker->timestamp

@@ -53,6 +53,17 @@ class AdminTest extends TestCase
         $this->assertEquals($result['groups'][0]['id'], $group);
     }
 
+    public function testCreateAdminWithWrongEmailDomain()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testGetAdmin()
     {
         $admin = $this->fixtures->create('admin', [
@@ -146,13 +157,13 @@ class AdminTest extends TestCase
 
     public function testDeleteAdmin()
     {
-        $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID => $this->orgId
-        ]);
+        $adminToken = $this->fixtures->create('admin_token', ['token' => 'secondToken']);
+
+        $admin = $adminToken['admin'];
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
