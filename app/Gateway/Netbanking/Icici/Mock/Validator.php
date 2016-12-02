@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Base;
 
 use RZP\Gateway\Netbanking\Icici\RequestFields;
-use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class Validator extends Base\Validator
 {
@@ -29,7 +28,7 @@ class Validator extends Base\Validator
         RequestFields::PAYMENT_REFERENCE_NUBER   => 'required',
         RequestFields::ITEM_CODE                 => 'required',
         RequestFields::CURRENCY_CODE             => 'required',
-        ResponseFields::PAYMENT_DATE             => 'required',
+        RequestFields::PAYMENT_DATE             => 'required',
     );
 
 }

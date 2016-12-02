@@ -15,5 +15,6 @@ class RequestFields
     const CURRENCY_CODE             = 'CRN';
     const RETURN_URL                = 'RU';
     const CONFIRMATION              = 'CG';
-    const ENCRYPTED_STRING          = 'ES'; // Encode all the data above apart from MD and PID
+    const ENCRYPTED_STRING          = 'ES';
+    const PAYMENT_DATE              = 'Pmt_Date';
 }

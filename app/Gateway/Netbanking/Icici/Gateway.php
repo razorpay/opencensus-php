@@ -116,7 +116,7 @@ class Gateway extends Base\Gateway
         $paymentDate = $this->getPaymentDate($payment);
 
         // Getting payment date in the specified format
-        $content[ResponseFields::PAYMENT_DATE] = $paymentDate;
+        $content[RequestFields::PAYMENT_DATE] = $paymentDate;
 
         $request = $this->getRequestArray($content);
 
@@ -242,8 +242,8 @@ class Gateway extends Base\Gateway
         $spid = $this->getSpid();
 
         $data = array(
-            RequestFields::OBJ_NAME   => CompulsoryFields::LOGIN,
-            RequestFields::BAY_BANKID => CompulsoryFields::BANKID,
+            RequestFields::OBJ_NAME   => Constants::LOGIN,
+            RequestFields::BAY_BANKID => Constants::BANKID,
             RequestFields::MODE       => Mode::PAY,
             RequestFields::PAYEE_ID   => $pid,  // Hardcoding it for now
             RequestFields::SPID       => $spid,
