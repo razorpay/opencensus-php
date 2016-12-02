@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const SINK_TYPE           = 'sink_type';
     const STATUS              = 'status';
     const MERCHANT_ID         = 'merchant_id';
+    const CUSTOMER_ID         = 'customer_id';
     const AMOUNT              = 'amount';
     const DESCRIPTION         = 'description';
     const TYPE                = 'type';
@@ -38,6 +39,7 @@ class Entity extends Base\PublicEntity
         self::SINK_TYPE,
         self::STATUS,
         self::MERCHANT_ID,
+        self::CUSTOMER_ID,
         self::AMOUNT,
         self::DESCRIPTION,
         self::TYPE,
@@ -116,7 +118,7 @@ class Entity extends Base\PublicEntity
 
     public function customer()
     {
-        return $this->sink->customer;
+        return $this->belongsTo(\RZP\Models\Customer\Entity::class);
     }
 
     // ----------------------- Generators ------------------

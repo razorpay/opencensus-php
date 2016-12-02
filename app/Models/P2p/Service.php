@@ -7,6 +7,7 @@ use RZP\Error;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
 
 class Service extends Base\Service
 {
@@ -75,5 +76,14 @@ class Service extends Base\Service
         $p2p = $this->core->postAuthorize($id, $input);
 
         return $p2p;
+    }
+
+    public function fetchCollectRequests($customerId)
+    {
+        $customerId = Customer\Entity::stripSignWithoutValidation($customerId);
+
+        $p2ps = $this->repo->p2p->fetchPendingCollectRequests($customerId);
+
+        return $p2ps->toArrayPublic();
     }
 }

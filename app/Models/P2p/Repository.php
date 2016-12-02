@@ -15,4 +15,13 @@ class Repository extends Base\Repository
                     ->with(['source', 'sink'])
                     ->find($id);
     }
+
+    public function fetchPendingCollectRequests($customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Entity::TYPE, '=', 'collect')
+                    ->where(Entity::STATUS, '=', 'created')
+                    ->get();
+    }
 }

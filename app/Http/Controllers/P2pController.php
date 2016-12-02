@@ -48,4 +48,9 @@ class P2pController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchCollectRequests($customerId)
+    {
+        return $this->service->fetchCollectRequests($customerId);
+    }
 }

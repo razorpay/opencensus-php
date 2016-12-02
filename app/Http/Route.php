@@ -326,6 +326,8 @@ final class Route
         'vpa_delete'                              => ['delete',   'vpa/{id}',                                         'UpiController@deleteVpa'                                           ],
         'vpa_edit'                                => ['put',      'vpa/{id}',                                         'UpiController@editVpa'                                             ],
         'vpa_fetch'                               => ['get',      'vpa/{id}',                                         'UpiController@getVpa'                                              ],
+        'customer_balance_fetch'                  => ['get',      'customers/{customerId}/balance/{accountId}',       'CustomerController@fetchBalance'                                   ],
+        'customer_collect_request_fetch'          => ['get',      'customers/{customerId}/collects',                  'P2pController@fetchCollectRequests'                                ],
     );
 
     public static $public = array(
@@ -400,6 +402,7 @@ final class Route
         'p2p_authorize',
         'customer_local_customer_device_auth',
         'customer_fetch_bank_account_device_auth',
+        'customer_collect_request_fetch'
     );
 
     public static $publicCallback = array(

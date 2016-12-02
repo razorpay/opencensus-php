@@ -34,7 +34,9 @@ class CreateP2p extends Migration
 
             $table->char(P2p::SINK_TYPE, 20);
 
-            $table->char(P2p::MERCHANT_ID, P2p::ID_LENGTH);
+            $table->char(P2p::MERCHANT_ID, 14);
+
+            $table->char(P2p::CUSTOMER_ID, 14);
 
             $table->integer(P2p::AMOUNT)
                   ->unsigned();
