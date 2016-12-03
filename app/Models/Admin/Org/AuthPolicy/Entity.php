@@ -3,12 +3,15 @@
 namespace RZP\Models\Admin\Org\AuthPolicy;
 
 use App;
+use Lib\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const ID                                = 'id';
     const ORG_ID                            = 'org_id';
     const NAME                              = 'name';
@@ -26,6 +29,17 @@ class Entity extends Base\PublicEntity
     protected $entity = 'auth_policy';
 
     public $incrementing = true;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
+    protected $dontKeepRevisionOf = [
+        self::SECOND_FACTOR,
+        self::STRONG_PASSWORD,
+        self::ENFORCE_INITIAL_PASSWORD_CHANGE,
+        self::MAX_PASSWORD_RETAIN
+    ];
 
     protected $fillable = [
         self::ORG_ID,

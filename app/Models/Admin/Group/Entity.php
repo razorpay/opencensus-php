@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Group;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
+use Lib\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
@@ -15,6 +16,7 @@ use RZP\Models\Admin\Org;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use RevisionableTrait;
 
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
@@ -29,6 +31,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'grp';
 
     protected $generateIdOnCreate = false;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::ID,

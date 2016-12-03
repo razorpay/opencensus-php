@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Role;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use Lib\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Admin\Permission;
@@ -12,6 +13,7 @@ use RZP\Constants\Table;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use RevisionableTrait;
 
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
@@ -31,6 +33,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'role';
 
     protected $generateIdOnCreate = false;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::ID,

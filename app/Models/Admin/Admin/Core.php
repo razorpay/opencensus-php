@@ -15,6 +15,7 @@ class Core extends Base\Core
     public function create(Org\Entity $org, array $input)
     {
         $admin = (new Entity);
+
         $admin->generateId();
 
         $admin->setAuditAction(Action::CREATE_ADMIN);
@@ -45,6 +46,7 @@ class Core extends Base\Core
         $token = new Token\Entity();
 
         $token->build($input);
+
         $token->admin()->associate($admin);
 
         $token->saveOrFail();
@@ -79,7 +81,7 @@ class Core extends Base\Core
 
     public function edit(Entity $admin, array $input)
     {
-        $admin->setAuditAction(Action::CREATE_ADMIN);
+        $admin->setAuditAction(Action::EDIT_ADMIN);
 
         $admin->edit($input);
 

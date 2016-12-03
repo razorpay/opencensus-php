@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Admin\Org;
 
+use RZP\Models\Admin\Action;
 use RZP\Models\Base;
 
 class Core extends Base\Core
@@ -9,7 +10,10 @@ class Core extends Base\Core
     public function create(array $input)
     {
         $org = new Entity;
+
         $org->generateId();
+
+        $org->setAuditAction(Action::CREATE_ORG);
 
         $org->build($input);
 
@@ -31,6 +35,8 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($orgId);
 
+        $org->setAuditAction(Action::EDIT_ORG);
+
         $org->edit($input);
 
         $this->repo->saveOrFail($org);
@@ -43,6 +49,8 @@ class Core extends Base\Core
         $id = Entity::verifyIdAndStripSign($id);
 
         $org = $this->repo->org->findOrFail($id);
+
+        $org->setAuditAction(Action::DELETE_ORG);
 
         $this->repo->deleteOrFail($org);
 

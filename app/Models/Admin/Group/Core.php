@@ -13,6 +13,8 @@ class Core extends Base\Core
     {
         $group = (new Entity)->generateId();
 
+        $group->setAuditAction(Action::CREATE_GROUP);
+
         $group->build($input);
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
@@ -28,6 +30,8 @@ class Core extends Base\Core
 
     public function edit(Entity $group, array $input)
     {
+        $group->setAuditAction(Action::EDIT_GROUP);
+
         $group->edit($input);
 
         $this->repo->saveOrFail($group);

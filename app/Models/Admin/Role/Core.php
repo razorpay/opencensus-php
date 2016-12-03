@@ -6,12 +6,15 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
         $role = (new Entity)->generateId();
+
+        $role->setAuditAction(Action::CREATE_ROLE);
 
         $role->org()->associate($org);
 
@@ -29,6 +32,8 @@ class Core extends Base\Core
     public function edit(Entity $role, array $input)
     {
         $role->edit($input);
+
+        $role->setAuditAction(Action::EDIT_ROLE);
 
         $this->syncPermissions($role, $input);
 

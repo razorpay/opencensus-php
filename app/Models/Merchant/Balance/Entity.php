@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use Lib\RevisionableTrait;
 use RZP\Exception;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const ID             = 'id';
     const BALANCE        = 'balance';
     const ON_HOLD        = 'on_hold';
@@ -25,6 +28,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'balance';
 
     protected $generateIdOnCreate = false;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $casts = [
         self::AMOUNT_CREDITS => 'integer',
