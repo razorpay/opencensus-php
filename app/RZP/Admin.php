@@ -212,7 +212,7 @@ class Admin extends Entity
 
     public function passwordLogin($orgId, array $params)
     {
-        $relativeUrl = 'orgs/' . $orgId . '/admin/authenticate';
+        $relativeUrl = "orgs/$orgId/admin/authenticate";
 
         return $this->request('POST', $relativeUrl, $params);
     }
