@@ -4,7 +4,12 @@ namespace RZP\Trace;
 
 use RZP\Exception\CardNumberTraceException;
 
-class Trace extends TraceWriter
+use Monolog\Logger;
+use Monolog\Processor;
+use Monolog\Handler;
+use Monolog\Formatter;
+
+class Trace extends Logger
 {
     // used as channel for Monolog\Logger
     const CHANNEL = "Razorpay API";
@@ -37,7 +42,10 @@ class Trace extends TraceWriter
         $this->env = $app->environment();
 
         $this->getConfig($this->app['config']);
+    }
 
+    public function init()
+    {
         $this->defineHandlers();
 
         $this->defineProcessors();
@@ -45,14 +53,14 @@ class Trace extends TraceWriter
 
     public function addRecord($level, $message, array $context = array())
     {
-        $traceCode = $message;
-
-        TraceCode::checkCode($traceCode);
-
-        $context = $this->getContext($traceCode, $context);
-
         try
         {
+            $traceCode = $message;
+
+            TraceCode::checkCode($traceCode);
+
+            $context = $this->getContext($traceCode, $context);
+
             return parent::addRecord($level, $traceCode, $context);
         }
         catch (CardNumberTraceException $exception)
@@ -105,9 +113,7 @@ class Trace extends TraceWriter
 
     protected function sendMailAboutTracingFailure($exception, $level, $message, $context)
     {
-        $env = $this->env;
-
-        if (in_array($env, ['production']))
+        if ($this->isEnvironmentProd())
         {
             $data = array(
                 'type'          => get_class($exception),
@@ -116,25 +122,37 @@ class Trace extends TraceWriter
                 'file'          => $exception->getFile(),
                 'line'          => $exception->getLine(),
                 'trace'         => $exception->getTraceAsString(),
-                'environment'   => $env,
+                'environment'   => $this->env,
                 'mode'          => $this->getMode(),
                 'level'         => $level,
                 'trace_message' => $message,
-                'instance'      => $app['instance']->getInstanceData(),
+                'instance'      => $this->app['instance']->getInstanceData(),
                 'context'       => $context
             );
 
-            $msg = json_encode($data, JSON_PRETTY_PRINT);
-
-            $subject = self::CHANNEL . ' - ' . $environment . ' - Critical error occurred';
+            $subject = self::CHANNEL . ' - ' . $this->env . ' - Critical error occurred';
 
             // No point checking it's return value at this point because have
             // already experienced a critical failure upstream and this is
             // just a mechanism for out-of-band notification.
             // Just pray that it's working actually _/\_
 
-            mail('developers@razorpay.com', $subject, $msg);
+            $this->sendMailWithData($subject, $data);
         }
+    }
+
+    protected function isEnvironmentProd()
+    {
+        $env = $this->env;
+
+        return (in_array($env, ['production']));
+    }
+
+    protected function sendMailWithData($subject, $data)
+    {
+        $msg = json_encode($data, JSON_PRETTY_PRINT);
+
+        mail('developers@razorpay.com', $subject, $msg);
     }
 
     protected function sendMailAboutFailureOnCriticalRoute($code, $traceData)
@@ -143,9 +161,10 @@ class Trace extends TraceWriter
 
         try
         {
-            Mail::queue(
+            $msg = json_encode($traceData, JSON_PRETTY_PRINT);
+            $this->app['mailer']->queue(
                 'email.message',
-                $msg = json_encode($traceData, JSON_PRETTY_PRINT),
+                $msg,
                 function ($message)
                 {
                     $subject = self::CHANNEL . ' - ' . $mode . ' - Critical error occurred';
@@ -177,5 +196,173 @@ class Trace extends TraceWriter
         }
 
         return $this->mode;
+    }
+
+    protected function getConfig($config)
+    {
+        $this->config = $config->get('trace');
+
+        $this->debug = $config->get('app.debug');
+
+        $this->contextEnv = $config->get('app.context');
+    }
+
+    protected function defineHandlers()
+    {
+        $this->pushStreamHandler();
+
+        if ($this->debug)
+        {
+            $this->pushTestHandler();
+        }
+
+        if ($this->debugOption('browser'))
+        {
+            $browserHandle = new Handler\BrowserConsoleHandler;
+
+            $this->pushHandler($browserHandle);
+        }
+
+        if ($this->debugOption('chrome'))
+        {
+            $chromePHPHandle = new Handler\ChromePHPHandler;
+
+            $this->pushHandler($chromePHPHandle);
+        }
+    }
+
+    protected function defineProcessors()
+    {
+        $this->pushProcessor(new SplunkTimestampProcessor);
+
+        $this->pushProcessor(new TraceCodeProcessor);
+
+        if (($this->debug) or
+            ($this->config['introspection']) or
+            ($this->contextEnv === 'beta'))
+        {
+            $this->pushIntrospectionProcessor();
+        }
+
+        $this->pushProcessor(new WebProcessor);
+
+        $this->pushProcessor(new CloudInstanceDataProcessor);
+
+        $this->pushProcessor(new EnvProcessor);
+    }
+
+    protected function pushIntrospectionProcessor()
+    {
+        $skipClassesPartials = array('Trace\\', 'Monolog\\');
+
+        $processor = new Processor\IntrospectionProcessor(static::DEBUG, $skipClassesPartials);
+
+        $this->pushProcessor($processor);
+    }
+
+    protected function pushTestHandler()
+    {
+        $scalarFormatter = new Formatter\ScalarFormatter;
+
+        $testHandler = new Handler\TestHandler;
+
+        $testHandler->setFormatter($scalarFormatter);
+
+        $this->pushHandler($testHandler);
+
+        $this->testHandler = $testHandler;
+    }
+
+    protected function pushStreamHandler()
+    {
+        $stream = new Handler\StreamHandler($this->config['logpath']);
+
+        $jsonFormatter = new JsonFormatter;
+
+        $stream->setFormatter($jsonFormatter);
+
+//        $minLevel = $this->debug ? static::DEBUG : static::INFO;
+        $minLevel = static::DEBUG;
+
+        $filter = new Handler\FilterHandler($stream, $minLevel);
+
+        $this->pushHandler($filter);
+    }
+
+    public function fire($job, $trace)
+    {
+        parent::addRecord($trace['level'], $trace['message'], $trace['context']);
+
+        $job->delete();
+    }
+
+    protected function debugOption($option)
+    {
+        if ($this->debug)
+        {
+            if (isset($this->config['debug_options'][$option]))
+            {
+                return $this->config['debug_options'][$option];
+            }
+            else
+            {
+                throw new Exception\InvalidArgumentException(
+                    $option . ' in debug not defined');
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * In debug mode, this function returns all
+     * the log records logged till now
+     *
+     * @return array Log records with context and extras
+     */
+    public function getRecords()
+    {
+        if ($this->testHandler !== null)
+        {
+            return $this->testHandler->getRecords();
+        }
+    }
+
+    /**
+     * In debug mode, this function returns all the
+     * log records logged till now.
+     * The array returned is only one level deep
+     * with sub-arrays keys combined with their parent
+     * ones
+     *
+     * @return array One level deep log records
+     */
+    public function getFlattenedRecordsForScreen()
+    {
+        $records = $this->getRecords();
+
+        $rec = array();
+
+        $i = 0;
+
+        foreach ($records as $record)
+        {
+            unset(
+                $record['formatted'],
+                $record['level']);
+
+            $record = array_assoc_flatten($record, $i);
+
+            //
+            // Add a null for better output
+            //
+            array_push($record, null);
+
+            $rec = array_merge($rec, $record);
+
+            $i++;
+        }
+
+        return $rec;
     }
 }
