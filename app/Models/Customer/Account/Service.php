@@ -138,6 +138,15 @@ class Service extends Base\Service
         return $accounts->toArrayPublic();
     }
 
+    public function getDeviceCustomer()
+    {
+        $customerId = $this->device->getCustomerId();
+
+        $customer = $this->repo->customer->fetchWithVpasBankAcnts($customerId);
+
+        return $customer->toArrayPublic();
+    }
+
     /**
      * Send Oto to customer
      *

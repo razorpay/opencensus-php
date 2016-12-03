@@ -327,8 +327,9 @@ final class Route
         'p2p_create'                              => ['post',     'p2p',                                              'P2pController@createP2p'                                           ],
         'p2p_fetch'                               => ['get',      'p2p/{id}',                                         'P2pController@getP2p'                                              ],
         'p2p_fetch_multiple'                      => ['get',      'p2p',                                              'P2pController@getP2ps'                                             ],
-        'p2p_reject'                              => ['post',     'p2p/{id}/reject',                                  'P2pController@rejectP2p'                                           ],
+        'p2p_reject'                              => ['put',      'p2p/{id}/reject',                                  'P2pController@rejectP2p'                                           ],
         'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                               'P2pController@postAuthorize'                                       ],
+        'device_customer_fetch'                   => ['get',      'customers',                                        'CustomerController@getDeviceCustomer'                              ],
     );
 
     public static $public = array(
@@ -405,7 +406,8 @@ final class Route
         'p2p_reject',
         'customer_local_customer_device_auth',
         'customer_fetch_bank_account_device_auth',
-        'customer_collect_request_fetch'
+        'customer_collect_request_fetch',
+        'device_customer_fetch',
     );
 
     public static $publicCallback = array(
