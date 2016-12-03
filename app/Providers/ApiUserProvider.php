@@ -65,8 +65,11 @@ class ApiUserProvider implements UserProvider
     {
         try
         {
+
+            $domain = request()->server->get('SERVER_NAME');
+
             // This is password based login
-            list($error, $user) = (new Admin\Service)->passwordLogin($credentials);
+            list($error, $user) = (new Admin\Service)->passwordLogin($domain, $credentials);
 
             $this->app['session']->put('api_admin', $user);
 

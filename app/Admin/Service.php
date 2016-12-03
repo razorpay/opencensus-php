@@ -21,6 +21,7 @@ use Requests;
 use Queue;
 use Session;
 use Crypt;
+use Cache;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -79,13 +80,13 @@ class Service extends Base\Service
     //     return [$error, null];
     // }
 
-    public function passwordLogin(array $input)
+    public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
 
         $this->setApiCredentials();
 
-        $orgId = $this->app['session']->get('org_id');
+        $orgId = $this->getOrgFromCache($domain);
 
         try
         {
@@ -2399,6 +2400,8 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->org->fetchByDomain($domain)->toArray();
+
+            $this->setOrgInCache($data);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -2406,6 +2409,23 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    protected function setOrgInCache($org)
+    {
+        $cacheKey = 'org_id_'.$org['hostname'];
+
+        if (Cache::has($cacheKey) === false)
+        {
+            Cache::put($cacheKey, $org['id'], 10);
+        }
+    }
+
+    protected function getOrgFromCache($domain)
+    {
+        $cacheKey = 'org_id_'.$domain;
+
+        return Cache::get($cacheKey);
     }
 
     /**
