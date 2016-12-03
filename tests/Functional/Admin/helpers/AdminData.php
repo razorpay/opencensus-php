@@ -161,4 +161,32 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetMultipleAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetCurrentAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/current_admin',
+            'method' => 'post',
+            'content' => [
+                'token' => 'secondToken',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

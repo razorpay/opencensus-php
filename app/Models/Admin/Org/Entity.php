@@ -100,11 +100,6 @@ class Entity extends Base\PublicEntity
         });
     }
 
-    public function owners()
-    {
-        // Returns the list of org's owners
-    }
-
     public function policy()
     {
         return $this->hasOne('RZP\Models\Admin\Org\AuthPolicy\Entity');
