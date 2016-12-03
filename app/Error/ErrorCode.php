@@ -72,6 +72,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND                              = 'GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_INVALID_MOBILE                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_MOBILE';
     const GATEWAY_ERROR_PAYMENT_INVALID_EMAIL                                       = 'GATEWAY_ERROR_PAYMENT_INVALID_EMAIL';
+    const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';

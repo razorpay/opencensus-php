@@ -36,7 +36,7 @@ return [
         'amount'                    => 50000,
         'fee'                       => 1438,
         'service_tax'               => 188,
-        'pricing_rule_id'           => '1zD0BXpeOyaqpB',
+        'pricing_rule_id'           => null,
         'debit'                     => 0,
         'credit'                    => 48562,
         'currency'                  => 'INR',
