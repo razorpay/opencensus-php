@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Icici;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Terminal\Options;
 
 class NetbankingIciciGatewayTest extends TestCase
 {
@@ -16,8 +17,6 @@ class NetbankingIciciGatewayTest extends TestCase
 
         parent::setUp();
 
-        // removed disable hdfc
-
         $this->gateway = 'netbanking_icici';
 
         $this->setMockGatewayTrue();
@@ -27,6 +26,38 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
+
+        $paymentAction = 'AuthAndCapture';
+        $payment = $this->doNetbankingIciciPayment($paymentAction);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Setting terminal manually
+        $payment['terminal_id'] = '100NbIciciTmnl';
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(
+            strtoupper($payment['payment_id']), $payment['caps_payment_id']);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'],
+            FILTER_VALIDATE_INT) !== false);
+    }
+
+    public function testTrialGatewayHighChancePayment()
+    {
+        $chance = 95; // testing a chance value of 95
+
+        Options::setTestChance($chance);
+
         $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
 
         $paymentAction = 'AuthAndCapture';
@@ -46,7 +77,42 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertTrue(filter_var($payment['bank_payment_id'],
+            FILTER_VALIDATE_INT) !== false);
+    }
+
+    public function testTrialGatewayLowChancePayment()
+    {
+        $chance = 87; // testing a chance value of 90
+
+        Options::setTestChance($chance);
+
+        $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
+
+        $paymentAction = 'AuthAndCapture';
+        $payment = $this->doNetbankingIciciPayment($paymentAction);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // 100NbiciciTmnl won't be picked for chance = 87
+        // Shared Terminal will be picked - so not asserting for terminal_id
+        $this->assertTestResponse($payment);
+
+        // Making sure that the shared terminal gets picked and not ICICI
+        $this->assertTrue($payment['terminal_id'] !== '100NbIciciTmnl');
+
+        $payment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(
+            strtoupper($payment['payment_id']), $payment['caps_payment_id']);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'],
+            FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPaymentVerify()

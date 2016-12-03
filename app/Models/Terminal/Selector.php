@@ -46,7 +46,7 @@ class Selector
 
         $this->payment = $payment;
 
-        $this->repo = $app['repo']->terminal;
+        $this->repo = $app['repo'];
 
         $this->trace = $app['trace'];
 
@@ -62,11 +62,11 @@ class Selector
     public function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
-            $this->merchant->getId());
+        $merchantTerminals = $this->repo->terminal->
+            getTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
 
         // Fetch Shared Terminals
-        $sharedTerminals = $this->repo->getAllSharedTerminals();
+        $sharedTerminals = $this->repo->terminal->getAllSharedTerminals();
 
         $merchantTerminals = $merchantTerminals->merge($sharedTerminals);
 
@@ -130,7 +130,7 @@ class Selector
             {
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.
-                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+                $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
                 $sortedTerminals = array($terminal);
             }

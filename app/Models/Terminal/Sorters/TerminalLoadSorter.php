@@ -9,7 +9,11 @@ use RZP\Exception;
 
 class TerminalLoadSorter extends Terminal\Sorter
 {
+    // New sorter for trial gateways
+    // add it here to the rules
+
     protected $properties = [
+        'trial_gateway',
         'gateway',
     ];
 
@@ -38,12 +42,59 @@ class TerminalLoadSorter extends Terminal\Sorter
         '1000CybrsTrmnl' => [
             'gateway'    => Gateway::CYBERSOURCE,
             'load'       => 10,
+        ],
+        '100NbIciciTmnl' => [
+            'gateway'    => Gateway::NETBANKING_ICICI,
+            'load'       => 10, // 20-30 it gets a boost
+        ]
+    ];
+
+    protected static $trialGatewayRules = [
+        '100NbIciciTmnl' => [
+            'gateway'    => Gateway::NETBANKING_ICICI,
         ]
     ];
 
     public function getRules()
     {
         return self::$rules;
+    }
+
+    public function getTrialRules()
+    {
+        return self::$trialGatewayRules;
+    }
+
+    /**
+     * Gateways on trial mode get pushed
+     * right to the bottom
+     *
+     * @param $terminals
+     * @param array $input
+     * @return array
+     */
+    public function trialGatewaySorter($terminals, array $input, $options)
+    {
+        $allRules = $this->getTrialRules();
+
+        $applicableRules = $this->getApplicableRules($terminals, $allRules);
+
+        $sortedTerminals = [];
+
+        foreach ($terminals as $key => $terminal)
+        {
+            if (array_key_exists($terminal->getId(), $applicableRules))
+            {
+                $sortedTerminals[] = $terminal;
+
+                // If on trial, remove key from terminals
+                unset($terminals[$key]);
+            }
+        }
+
+        $terminals = array_merge($terminals, $sortedTerminals);
+
+        return $terminals;
     }
 
     /**
@@ -59,11 +110,14 @@ class TerminalLoadSorter extends Terminal\Sorter
     {
         $sortedTerminals = $terminals;
 
+        $allRules = $this->getRules();
+
         if (is_null($options) === false)
         {
             $chancePercent = $options->getChance();
 
-            $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
+            $boostedTerminalId = $this->getBoostedTerminalId(
+                $terminals, $chancePercent, $allRules);
 
             if (is_null($boostedTerminalId) == false)
             {
@@ -84,11 +138,32 @@ class TerminalLoadSorter extends Terminal\Sorter
         return $sortedTerminals;
     }
 
-    protected function getBoostedTerminalId($terminals, $chancePercent)
+    /**
+     * Select terminals to be given preference
+     * and give them a boost according to the
+     * defined rules
+     *
+     * @param $terminals
+     * @param array $input
+     * @return array
+     */
+    /*public function trialGatewaySorter($terminals, array $input, $options)
+    {
+        $sortedTerminals = $terminals;
+
+        if (is_null($options) === false)
+        {
+            $chancePercent = $options->getChance();
+
+            $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
+        }
+    }*/
+
+    protected function getBoostedTerminalId($terminals, $chancePercent, $allRules)
     {
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
-        $applicableRules = $this->getApplicableRules($terminals);
+        $applicableRules = $this->getApplicableRules($terminals, $allRules);
 
         $cumulativeProbabity = 0;
 
@@ -100,7 +175,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             // Checking >100-p, rather than simply <p
             // because in test cases we're always setting
-            // p to zero, to avoid unexpected bheaviour.
+            // p to zero, to avoid unexpected behaviour.
             if ($chancePercent > (100 - $cumulativeProbabity))
             {
                 return $terminalId;
@@ -108,10 +183,9 @@ class TerminalLoadSorter extends Terminal\Sorter
         }
     }
 
-    protected function getApplicableRules($terminals)
+    // Made this more generic for all rules
+    protected function getApplicableRules($terminals, $allRules)
     {
-        $allRules = $this->getRules();
-
         $ruledTerminals = array_keys($allRules);
 
         $applicableRules = [];

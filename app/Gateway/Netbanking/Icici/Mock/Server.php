@@ -27,6 +27,7 @@ class Server extends Base\Mock\Server
 
         $decryptedString = $this->decryptString($input['ES'], $masterKey);
 
+        // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);
 
         parse_str($string, $decryptedData);
