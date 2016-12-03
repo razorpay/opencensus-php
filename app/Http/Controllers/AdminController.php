@@ -149,7 +149,7 @@ class AdminController extends Controller
         $domain = request()->server->get('SERVER_NAME');
 
         // This is password based login
-        list($error, $user) = (new Admin\Service)->passwordLogin($input);
+        list($error, $user) = (new Admin\Service)->passwordLogin($domain, $input);
 
         if (! empty($error))
         {
