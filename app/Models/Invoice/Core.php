@@ -54,8 +54,9 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
             [
-                'invoice_id' => $invoice->getId(),
-                'input'      => $input,
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'input'          => $input,
             ]);
 
         $status = $invoice->getStatus();
@@ -98,7 +99,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_ISSUE_REQUEST,
             [
-                'invoice_id' => $invoice->getId(),
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
             ]);
 
         $this->repo->transaction(
@@ -122,7 +124,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_DELETE_REQUEST,
             [
-                'invoice_id' => $invoice->getId(),
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
             ]);
 
         return $this->repo->invoice->deleteOrFail($invoice);
@@ -138,8 +141,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
             [
-                'invoice_id' => $invoice->getId(),
-                'input'      => $input,
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'input'          => $input,
             ]);
 
         $this->repo->transaction(
@@ -166,9 +170,10 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_UPDATE_LINE_ITEM_REQUEST,
             [
-                'invoice_id'   => $invoice->getId(),
-                'line_item_id' => $lineItem->getId(),
-                'input'        => $input,
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_id'   => $lineItem->getId(),
+                'input'          => $input,
             ]
         );
 
@@ -199,8 +204,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST,
             [
-                'invoice_id'   => $invoice->getId(),
-                'line_item_id' => $lineItem->getId(),
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_id'   => $lineItem->getId(),
             ]
         );
 
@@ -222,8 +228,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
             [
-                'invoice_id' => $invoice->getId(),
-                'medium'     => $medium,
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'medium'         => $medium,
             ]);
 
         $invoice->getValidator()->validateSendNotificationRequest($medium);
@@ -267,9 +274,7 @@ class Core extends Base\Core
     {
         $paymentId = $invoice->getPaymentId();
 
-        $invoiceStatus = $invoice->getStatus();
-
-        if ($invoiceStatus !== Status::PAID)
+        if ($invoice->hasBeenPaid() === false)
         {
             return [
                 Entity::STATUS => $invoice->getStatus()

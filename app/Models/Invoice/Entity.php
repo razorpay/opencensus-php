@@ -309,11 +309,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function isDraft()
-    {
-        return ($this->getStatus() === Status::DRAFT);
-    }
-
     public function getPaidAt()
     {
         return $this->getAttribute(self::PAID_AT);
@@ -327,6 +322,16 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function isDraft()
+    {
+        return ($this->getStatus() === Status::DRAFT);
+    }
+
+    public function hasBeenPaid()
+    {
+        return ($this->getPaidAt() !== null);
     }
 
     // -------------------------------------- End Getters --------------------------------------

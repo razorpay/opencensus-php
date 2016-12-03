@@ -47,23 +47,11 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceAndPay()
     {
-        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+        $order = $this->createOrder();
 
-        $this->fixtures->create('invoice');
+        $invoice = $this->fixtures->create('invoice');
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $order = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals($payment['id'], $invoice['payment_id']);
-        $this->assertEquals($order['status'], 'paid');
-        $this->assertEquals($invoice['status'], 'paid');
-        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
     }
 
     public function testCreateInvoiceWithMultipleLineItems()
@@ -182,6 +170,18 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($order);
     }
 
+    public function testCreateIssuedInvoiceAndPay()
+    {
+        $testData = $this->testData['testCreateIssuedInvoice'];
+        $response = $this->startTest($testData);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertNotNull($order);
+        $this->assertEquals($order['id'], $response['order_id']);
+
+        $this->makePaymentForInvoiceAndAssert($response);
+    }
+
     public function testUpdateDraftInvoiceWithBasicFields()
     {
         $this->createDraftInvoice();
@@ -242,7 +242,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateIssuedInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $this->startTest();
@@ -250,7 +250,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateIssuedInvoiceWithExtraFields()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $this->startTest();
@@ -323,7 +323,7 @@ class InvoiceTest extends TestCase
 
     public function testDeleteIssuedInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
 
@@ -379,11 +379,71 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemToIssuedInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
 
         $this->startTest();
+    }
+
+    public function testAddLineItemToInvoiceAndIssueAndPay()
+    {
+        // Steps:
+        // - Creates a draft invoice
+        // - Adds 2 line items to it
+        // - Issues the invoice
+        // - Makes the payment
+
+        // Re-using some existing test data
+
+        $this->createDraftInvoice();
+
+        $testData = $this->testData['testAddLineItemToInvoice'];
+
+        $response = $this->startTest($testData);
+
+        // Replaying the same request with new line item content
+
+        $this->fixtures->create('item');
+
+        $lineItem2 = [
+            'item_id'  => 'item_1000000000item',
+            'quantity' => 2,
+        ];
+
+        $testData['request']['content'] = $lineItem2;
+
+        $testData['response']['content']['line_items'][] = [
+            'quantity'         => 2,
+            'name'             => 'Some item name',
+            'description'      => 'Some item description',
+            'amount'           => 100000,
+            'currency'         => 'INR'
+        ];
+
+        $testData['response']['content']['amount'] += 200000;
+
+        $response = $this->startTest($testData);
+
+        // ---
+        // Issue the invoice
+
+        $testData = [
+            'request' => [
+                'url'       => '/invoices/' . $response['id'] . '/issue',
+                'method'    => 'post',
+                'content'   => [],
+            ],
+            'response' => [
+                'content' => [],
+            ]
+        ];
+
+        $response = $this->startTest($testData);
+
+        // Make payment to invoice now
+
+        $this->makePaymentForInvoiceAndAssert($response);
     }
 
     public function testUpdateLineItemOfInvoice()
@@ -457,7 +517,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfIssuedInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
         $this->fixtures->create('item');
@@ -481,7 +541,7 @@ class InvoiceTest extends TestCase
 
     public function testRemoveLineItemOfIssuedInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
         $this->fixtures->create('item');
@@ -492,7 +552,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithDuplicateMerchantRefId()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
 
@@ -501,7 +561,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('item', ['currency' => 'USD']);
 
@@ -510,29 +570,44 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsWithAmountAndDesc()
+    public function testCreateDraftInvoiceWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsWithAmount()
+    public function testCreateIssuedInvoiceWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsAmountAndDesc()
+    public function testCreateDraftInvoiceWithAmount()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithLineItemsAmountAndDesc()
+    public function testCreateIssuedInvoiceWithAmount()
     {
         $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithoutLineItemsAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDraftInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
     }
 
     public function testGetInvoice()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
 
@@ -545,7 +620,7 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceByReceipt()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
 
         $this->fixtures->create('invoice');
         $this->fixtures->create(
@@ -568,8 +643,8 @@ class InvoiceTest extends TestCase
 
     public function testGetMultipleInvoices()
     {
-        $this->fixtures->create('order', ['id' => '100000000order']);
-        $this->fixtures->create('order', ['id' => '10000000order2']);
+        $this->createOrder();
+        $this->createOrder(['id' => '10000000order2']);
 
         $invoice1 = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
         $invoice2 = $this->fixtures->create('invoice', ['id' => '100000invoice2', 'order_id' => '10000000order2']);
@@ -585,7 +660,7 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoicesOfCapturedPaymentId()
     {
-        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+        $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
 
@@ -593,18 +668,10 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
+        // Serializes invoice entity
+        $invoice = $invoice->toArrayPublic();
 
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $order = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals($payment['id'], $invoice['payment_id']);
-        $this->assertEquals($order['status'], 'paid');
-        $this->assertEquals($invoice['status'], 'paid');
+        $payment = $this->makePaymentForInvoiceAndAssert($invoice);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['content'] = ['payment_id' => $payment['id']];
@@ -619,23 +686,19 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()
     {
-        $order1 = $this->fixtures->create('order', ['id' => '100000000order']);
-        $order2 = $this->fixtures->create('order', ['id' => '10000000order2']);
+        $order1 = $this->createOrder();
 
         $invoice1 = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+
+        $payment1 = $this->makePaymentForInvoiceAndAssert($invoice1->toArrayPublic());
+
+        // -----
+
+        $order2 = $this->createOrder(['id' => '10000000order2']);
+
         $invoice2 = $this->fixtures->create('invoice', ['id' => '100000invoice2', 'order_id' => '10000000order2']);
 
-        $payment1 = $this->getDefaultPaymentArray();
-        $payment2 = $this->getDefaultPaymentArray();
-
-        $payment1['order_id'] = $order1->getPublicId();
-        $payment2['order_id'] = $order2->getPublicId();
-
-        $payment1['amount'] = $order1->getAmount();
-        $payment2['amount'] = $order2->getAmount();
-
-        $payment1 = $this->doAuthAndCapturePayment($payment1);
-        $payment2 = $this->doAuthAndCapturePayment($payment2);
+        $payment2 = $this->makePaymentForInvoiceAndAssert($invoice2->toArrayPublic());
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['content'] = ['payment_id' => $payment1['id']];
@@ -660,7 +723,7 @@ class InvoiceTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $this->startTest();
@@ -668,28 +731,17 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceStatusAfterPayment()
     {
-        $order = $this->fixtures->create('order', ['id' => '100000000order']);
+        $order = $this->createOrder();
 
-        $this->fixtures->create('invoice');
+        $invoice = $this->fixtures->create('invoice');
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
-
-        $capturedPayment = $this->doAuthAndCapturePayment($payment);
-
-        $order = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals($capturedPayment['id'], $invoice['payment_id']);
-        $this->assertEquals($order['status'], 'paid');
-        $this->assertEquals($invoice['status'], 'paid');
+        $payment = $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
         $this->ba->publicAuth();
 
         $response = $this->startTest();
 
-        $this->assertEquals($capturedPayment['id'], $response['razorpay_payment_id']);
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
     }
 
     public function testGetInvoiceStatusAfterOneWeek()
@@ -698,7 +750,7 @@ class InvoiceTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $currentTime = Carbon::now('Asia/Kolkata');
@@ -715,7 +767,7 @@ class InvoiceTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $this->startTest();
@@ -725,7 +777,7 @@ class InvoiceTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->create('order', ['id' => '100000000order']);
+        $this->createOrder();
         $this->fixtures->create('invoice');
 
         $this->startTest();
@@ -760,5 +812,53 @@ class InvoiceTest extends TestCase
                 'email_status' => 'pending',
             ]
         );
+    }
+
+    protected function createOrder(array $overrideWith = [])
+    {
+        $order = $this->fixtures
+                      ->create(
+                            'order',
+                            array_merge(
+                                [
+                                    'id'              => '100000000order',
+                                    'amount'          => 100000,
+                                    'payment_capture' => true,
+                                ],
+                                $overrideWith
+                            )
+                        );
+
+        return $order;
+    }
+
+    /**
+     * Helper method to make payment for given invoice and do the necessary
+     * assertions.
+     */
+    protected function makePaymentForInvoiceAndAssert(array $invoice)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $invoice['order_id'];
+        $payment['amount']   = $invoice['amount'];
+
+        $payment = $this->doAuthAndGetPayment(
+            $payment,
+            [
+                'status'   => 'captured',
+                'order_id' => $invoice['order_id'],
+            ]
+        );
+
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+
+        return $payment;
     }
 }

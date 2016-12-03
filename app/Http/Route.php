@@ -159,9 +159,7 @@ final class Route
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
-        'migrate_transactions'                    => ['post',     'transactions/migrate',                           'TransactionController@postMigrateOlderTransactions'                ],
-        'setl_transactions'                       => ['post',     'transactions/settle',                            'TransactionController@postSettleOlderTransactions'                 ],
-        'pricing_update_transactions'             => ['post',     'transactions/pricing_rule',                      'TransactionController@postAddPricingRuleForOlderTransactions'      ],
+        'transaction_create_fees_breakup'         => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -191,7 +189,7 @@ final class Route
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
         'mock_hdfc_3dsecure'                      => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
-        'mock_cybersource_acs'                    => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
+        'mock_acs'                                => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
         'mock_atom_init_payment'                  => ['post',     'gateway/mockanb',                                'MockGatewayController@postAtomInitPayment'                         ],
         'mock_atom_choose_org'                    => ['get',      'gateway/mockanb',                                'MockGatewayController@getAtomChooseOrg'                            ],
         'mock_atom_rzp_payment'                   => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomRzpPayment'                          ],
@@ -517,9 +515,6 @@ final class Route
         'order_refund_multiple_authorized',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'migrate_transactions',
-        'setl_transactions',
-        'pricing_update_transactions',
         'schedule_create',
         'schedule_fetch',
         'schedule_fetch_multiple',
@@ -535,6 +530,7 @@ final class Route
         'upi_fill_provider',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
+        'transaction_create_fees_breakup',
         'adj_add_reverse',
     );
 
@@ -594,6 +590,7 @@ final class Route
 
     public static $direct = array(
         'account',
+        'mock_acs',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
@@ -601,7 +598,6 @@ final class Route
         'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
-        'mock_cybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
@@ -644,7 +640,6 @@ final class Route
             'invoice_expire',
             'batch_process_file',
             'order_refund_multiple_authorized',
-            'migrate_transactions',
             'merchant_migrate_features',
         ),
 

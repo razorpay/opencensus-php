@@ -494,7 +494,7 @@ trait Capture
                 'order_id'      => $order->getId(),
             ]);
 
-        if ($invoice->getStatus() === Invoice\Status::PAID)
+        if ($invoice->hasBeenPaid() === true)
         {
             throw new Exception\LogicException(
                 'The invoice is already paid for.',

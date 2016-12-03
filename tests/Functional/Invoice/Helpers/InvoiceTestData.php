@@ -171,37 +171,39 @@ return [
                         'quantity'      => 2,
                     ]
                 ],
-                'currency' => 'INR',
+                'currency'    => 'INR',
+                'description' => 'Just an invoice summary',
             ],
         ],
         'response' => [
             'content' => [
                 'customer_details' => [
-                    'customer_email' => 'test@razorpay.com',
+                    'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'customer_name' => 'test',
+                    'customer_name'    => 'test',
                     'customer_address' => null,
                 ],
                 'line_items' => [
                     [
-                        'name' => 'Some item name',
+                        'name'        => 'Some item name',
                         'description' => 'Some item description',
-                        'amount' => 100000,
-                        'quantity' => 1,
+                        'amount'      => 100000,
+                        'quantity'    => 1,
                     ],
                     [
-                        'name'          => 'Another item',
-                        'description'   => 'Another description',
-                        'amount'        => 200000,
-                        'quantity'      => 2,
+                        'name'        => 'Another item',
+                        'description' => 'Another description',
+                        'amount'      => 200000,
+                        'quantity'    => 2,
                     ]
                 ],
-                'currency' => 'INR',
-                'status' => 'issued',
-                'sms_status' => 'sent',
+                'currency'     => 'INR',
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
                 'email_status' => 'sent',
-                'view_less' => true,
-                'amount' => 500000
+                'view_less'    => true,
+                'amount'       => 500000,
+                'description'  => 'Just an invoice summary',
             ],
         ],
     ],
@@ -1180,7 +1182,45 @@ return [
         ],
     ],
 
-    'testCreateInvoiceWithoutLineItemsWithAmountAndDesc' => [
+    'testCreateDraftInvoiceWithAmountAndDesc' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'amount'        => 1000,
+                'description'   => 'For special service',
+                'draft'         => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'       => '00000000000001',
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '9999999999',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items'   => [],
+                'status'       => 'draft',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 1000,
+                'description'  => 'For special service',
+                'currency'     => 'INR',
+                'payment_id'   => null,
+            ],
+        ],
+    ],
+
+    'testCreateIssuedInvoiceWithAmountAndDesc' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -1217,7 +1257,44 @@ return [
         ],
     ],
 
-    'testCreateInvoiceWithoutLineItemsWithAmount' => [
+    'testCreateDraftInvoiceWithAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'amount'        => 1000,
+                'draft'         => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'       => '00000000000001',
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '9999999999',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items'   => [],
+                'status'       => 'draft',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 1000,
+                'description'  => null,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+            ],
+        ],
+    ],
+
+    'testCreateIssuedInvoiceWithAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -1246,7 +1323,7 @@ return [
         ],
     ],
 
-    'testCreateInvoiceWithoutLineItemsAmountAndDesc' => [
+    'testCreateIssuedInvoiceWithoutLineItemsAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -1257,6 +1334,7 @@ return [
                     'contact'   => '9999999999',
                     'name'      => 'test',
                 ],
+                'description'   => 'Just an invoice summary',
             ],
         ],
         'response' => [
@@ -1274,7 +1352,7 @@ return [
         ],
     ],
 
-    'testCreateInvoiceWithLineItemsAmountAndDesc' => [
+    'testCreateDraftInvoiceWithLineItemsAndAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -1301,7 +1379,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount should not be sent with line_items',
+                    'description' => 'amount should not be sent if line_items are being sent in the input.',
                 ],
             ],
             'status_code' => 400,
@@ -1532,7 +1610,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'invalid is not a valid communication medium',
+                    'description' => 'invalid is not a valid communication medium.',
                 ],
             ],
             'status_code' => 400,
