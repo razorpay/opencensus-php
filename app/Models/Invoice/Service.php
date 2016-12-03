@@ -81,11 +81,7 @@ class Service extends Base\Service
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $invoice = $this->core->addLineItem(
-            $invoice,
-            $input,
-            $this->merchant
-        );
+        $invoice = $this->core->addLineItem($invoice, $input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }

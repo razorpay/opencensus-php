@@ -105,7 +105,7 @@ class Core extends Base\Core
             function() use ($invoice, $merchant)
             {
                 (new Generator($merchant, $invoice))->issueInvoice();
-                
+
                 $this->repo->saveOrFail($invoice);
             }
         );
@@ -348,7 +348,7 @@ class Core extends Base\Core
     protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
         $this->repo->transaction(
-            function() use ($invoice, $merchant, $input)
+            function() use ($merchant, $invoice, $input)
             {
                 $this->generateKeysOnUpdate($invoice, $input);
 
@@ -367,6 +367,9 @@ class Core extends Base\Core
     /**
      * Whenever invoice gets updated via add/update/delete of it's line items,
      * The invoice amount is calculated and set again.
+     *
+     * We don't need to set order amount here because order is created only in
+     * issued state and recomputing invoice amount happens in draft state.
      *
      * @param Entity $invoice
      */
