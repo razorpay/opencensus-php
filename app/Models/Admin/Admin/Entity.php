@@ -186,14 +186,6 @@ class Entity extends Base\PublicEntity
         return $this->defaults;
     }
 
-    public function saveOrFailMerchant(Merchant\Entity $merchant)
-    {
-        // TODO: Restrict No of merchants per admin to 1.
-        $this->merchants()->save($merchant);
-
-        return $merchant;
-    }
-
     public function lock()
     {
         $this->setAttribute(self::LOCKED, true);

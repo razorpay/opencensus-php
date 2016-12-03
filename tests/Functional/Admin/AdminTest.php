@@ -169,4 +169,17 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testDeleteAdminFailed()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $admin = $this->fixtures->create('admin', ['org_id' => $this->orgId]);
+
+        $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }
