@@ -160,10 +160,11 @@ EOT;
 
     protected function preProcessReqRegMob($msgId, $request)
     {
-        $creds = [];
+        $creds = [
+            'txnId' =>  $request->getTxn()->getId()
+        ];
 
         $account = $request->getPayer()->getAc();
-
 
         $details = $request->getRegDetails();
         $creds['last6'] = $details->getDetailByName('CARDDIGITS');
@@ -230,7 +231,9 @@ EOT;
 
     protected function preProcessReqSetCre($msgId, $request)
     {
-        $creds = [];
+        $creds = [
+            'txnId' =>  $request->getTxn()->getId()
+        ];
 
         $account = $request->getPayer()->getAc();
 
@@ -396,16 +399,19 @@ EOT;
         return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
     }
 
-    protected function cacheRequestOrResponse(array $input, $msgId)
+    protected function cacheRequestOrResponse(array $input, $msgId, string $txnId)
     {
         if (isset($input['params']['reqMsgId']))
         {
             $reqMsgId = $input['params']['reqMsgId'];
-            Cache::forever("UPI.$reqMsgId.response", $input['params']);
+
+            $key = "UPI.$reqMsgId.response";
+            Cache::forever($key, $input['params']);
         }
         else
         {
-            Cache::forever("UPI.$msgId.request", $input);
+            $key = "UPI.$txnId.request";
+            Cache::forever($key, $input);
         }
     }
 
@@ -416,7 +422,7 @@ EOT;
 
         extract($this->getCommonVariables());
 
-        $this->cacheRequestOrResponse($input, $msgId);
+        $this->cacheRequestOrResponse($input, $msgId, $txnId);
 
         switch ($method) {
 

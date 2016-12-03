@@ -57,13 +57,19 @@ class UpiController extends Controller
         return $this->generateXmlResponse($xml);
     }
 
-    public function getStatus($originalMsgId)
+    public function getStatus($Id)
     {
-        $json =  Cache::get("UPI.$originalMsgId.response");
+        $key = "UPI.$Id.response";
 
-        if (isset($json['success']))
+        $json =  Cache::get($key) ?? [
+            'success'   =>  false,
+            'error' =>  [],
+            'pending'   =>  true
+        ];
+
+        if (!isset($json['pending']))
         {
-            $json['success'] = ($json['success'] === 'SUCCESS');
+            $json['pending'] = false;
         }
 
         return ApiResponse::json($json);

@@ -449,23 +449,34 @@ class Service extends Base\Service
         $bankAccounts = $this->repo->bank_account->getBankAccountsFromAccountNumber($accountNumber);
 
         $success = false;
+        $error = [];
 
-        if (isset($creds['otp']) and $creds['otp'] === '123456')
+        if (isset($creds['otp']))
         {
-            foreach ($bankAccounts as $bankAccount)
+            if ($creds['otp'] === '123456')
             {
-                $last6 = substr($bankAccount->getAccountNumber(), -6);
-
-                if ($bankAccount->getMpinSetAttribute() === false and $creds['expiry'] === '1224');
+                foreach ($bankAccounts as $bankAccount)
                 {
-                    $bankAccount->setMpin($creds['mpin']);
-                    $this->repo->saveOrFail($bankAccount);
+                    $last6 = substr($bankAccount->getAccountNumber(), -6);
 
-                    $success = true;
+                    if ($creds['expiry'] === '1224')
+                    {
+                        $bankAccount->setMpin($creds['mpin']);
+                        $this->repo->saveOrFail($bankAccount);
+
+                        $success = true;
+                    }
+                    else
+                    {
+                        $error[] = 'Invalid Expiry';
+                    }
                 }
             }
+            else
+            {
+                $error[] = 'Invalid OTP';
+            }
         }
-
         else if (isset($creds['nmpin']))
         {
             foreach ($bankAccounts as $bankAccount)
@@ -480,7 +491,12 @@ class Service extends Base\Service
             }
         }
 
-        return $success;
+        if (!$success and empty($error))
+        {
+            $error[] = 'Invalid MPIN';
+        }
+
+        return [$success, $error];
     }
 
     public function setMpin($bankAccountId, $input)

@@ -122,7 +122,14 @@ class Core extends Base\Core
     {
         if ($job)
         {
-            $this->{$job}($params);
+            $data = $this->{$job}($params);
+
+            if (isset($params['txnId']))
+            {
+                $txnId = $params['txnId'];
+                $key = "UPI.$txnId.response";
+                Cache::forever($key, $data);
+            }
         }
     }
 
@@ -198,7 +205,7 @@ class Core extends Base\Core
     {
         $this->setMode();
 
-        $success = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
+        list($success, $error) = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
 
         // We need to respond to UPI with a success/failure response
 
@@ -213,6 +220,11 @@ class Core extends Base\Core
         ];
 
         $this->callUpiGateway('makeRequest', $input);
+
+        return [
+            'success' => $success,
+            'error' => $error
+        ];
     }
 
 
@@ -220,7 +232,7 @@ class Core extends Base\Core
     {
         $this->setMode();
 
-        $success = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
+        list($success, $error) = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
 
         // We need to respond to UPI with a success/failure response
 
@@ -235,6 +247,11 @@ class Core extends Base\Core
         ];
 
         // $this->callUpiGateway('makeRequest', $input);
+
+        return [
+            'success'   => $success,
+            'error'     => $error
+        ];
     }
 
     protected function RespAuthDetails($arr)
