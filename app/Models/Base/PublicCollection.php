@@ -159,4 +159,9 @@ class PublicCollection extends Collection
 
         }, $this->items);
     }
+
+    public static function isPublicCollection($object)
+    {
+        return (get_class($object) === static::class);
+    }
 }
