@@ -192,8 +192,7 @@ class Processor
         }
         else
         {
-            list($fee, $serviceTax, $ruleKey, $feesSplit) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
         }
 
         $data = array(
