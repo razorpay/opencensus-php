@@ -240,7 +240,30 @@ class MobikwikGatewayTest extends TestCase
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
         $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
+    }
 
+    public function testOtpResendOnFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'mobikwik',
+                            'gateway'       => 'mobikwik',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->getId()
+                        ]);
+
+        $url = $this->getOtpResendUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
     }
 
     public function testRefundPayment()

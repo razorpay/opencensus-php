@@ -192,8 +192,7 @@ class Processor
         }
         else
         {
-            list($fee, $serviceTax, $ruleKey, $feesSplit) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
         }
 
         $data = array(
@@ -420,15 +419,18 @@ class Processor
             ];
         }
 
-        // We don't want to reach this in case of captured|refunded payments
-        // However, the payment would be captured here IFF it was auto-captured
-        // So we make an exception for that.
-        $returnResponse = (($payment->isAuthorized()) or
-                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+        $diff = time() - $payment->getCreatedAt();
 
-        assertTrue($returnResponse);
+        if (($payment->hasBeenAuthorized() === true) and
+            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+        {
+            return $this->processAuthorizeResponse($payment);
+        }
 
-        return $this->processAuthorizeResponse($payment);
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)

@@ -15,6 +15,8 @@ trait OtpResend
 
         $payment = $this->retrieve($id);
 
+        $this->validatePaymentStatus($payment);
+
         $gatewayInput = [];
 
         $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
@@ -42,6 +44,19 @@ trait OtpResend
     protected function runOtpResendFlow($gatewayInput, $payment)
     {
         return $this->callGatewayOtpGenerate($gatewayInput, $payment, true);
+    }
+
+    protected function validatePaymentStatus($payment)
+    {
+        // If it failed recently, then throw relevant exception
+        // directly for the failure.
+        $this->checkForRecentFailedPayment($payment);
+
+        if ($payment->isCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        }
     }
 
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
