@@ -284,7 +284,8 @@ class DatabaseSeeder extends Seeder
                     'email'         => 'rzp@hdfcbank.in',
                     'name'          => 'Test HDFC Account',
                     'username'      => 'rzp',
-                    'password'      => \Hash::make('123456'),
+                    // Hash::make(123456)
+                    'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'employee_code' => '010',
                     'department_code'=> 'ADMIN',
@@ -300,7 +301,8 @@ class DatabaseSeeder extends Seeder
                     'email'         => 'test@hdfcbank.in',
                     'name'          => 'Test HDFC Account',
                     'username'      => 'test',
-                    'password'      => \Hash::make('123456'),
+                    // Hash::make(123456)
+                    'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
                     'org_id'        => '6dLbNSpv5XbCOG',
                     'employee_code' => '011',
                     'department_code'=> 'ADMIN',
