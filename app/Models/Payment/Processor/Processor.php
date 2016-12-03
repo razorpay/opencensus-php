@@ -419,15 +419,13 @@ class Processor
             ];
         }
 
+        $diff = time() - $payment->getUpdatedAt();
+
         if (($payment->hasBeenAuthorized() === true) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             return $this->processAuthorizeResponse($payment);
         }
-
-        // If it failed recently, then throw relevant exception
-        // directly for the failure.
-        $this->checkForRecentFailedPayment($payment);
 
         $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
 
