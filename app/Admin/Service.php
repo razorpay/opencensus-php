@@ -418,7 +418,7 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
-                $file = 'ERROR';
+                $file = 'ERROR: ' . $e->getMessage();
             }
         }
 

@@ -16,6 +16,7 @@ app.controller('PricingsCtrl', [
 
     var getDefaultRule = function() {
       return {
+        feature: "payment",
         payment_method: "card",
         payment_method_type: "",
         payment_network: "",

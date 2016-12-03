@@ -1047,9 +1047,10 @@ app.controller('MerchantDetailCtrl', [
       'airtelmoney',
       'freecharge',
       'emi',
-      'card',
       'amex',
-      'netbanking'
+      'netbanking',
+      'debit_card',
+      'credit_card'
     ];
     $scope.methods = {};
 
