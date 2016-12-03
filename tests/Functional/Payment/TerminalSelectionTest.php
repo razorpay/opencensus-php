@@ -131,6 +131,19 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    /*public function testTrialGatewaySelection()
+    {
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        sd($payment);
+    }*/
+
     public function testTerminalChoiceonChance()
     {
         $this->fixtures->create('terminal:all_shared_terminals');

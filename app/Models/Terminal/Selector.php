@@ -116,7 +116,7 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
+            $sortedTerminals = (new $sorter())->sort($sortedTerminals, $this->input, $verbose, $options);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 

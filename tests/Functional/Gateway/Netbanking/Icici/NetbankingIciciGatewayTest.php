@@ -103,6 +103,8 @@ class NetbankingIciciGatewayTest extends TestCase
     protected function doNetbankingIciciPayment($paymentAction)
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Setting it manually because default is IDIB
         $payment['bank'] = 'ICIC';
 
         // Switch case
