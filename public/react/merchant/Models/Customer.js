@@ -11,6 +11,18 @@ export default class Customer extends BaseModel {
     'contact'
   ]
 
+  get displayName() {
+    if (this.name) {
+      return this.name
+    }
+
+    if (this.contact) {
+      return `${this.contact} ${this.email ? `(${this.email})` : ''}`
+    }
+
+    return this.email
+  }
+
   static fetchAll(params = {}) {
     return ajax('/customers', params).then((response) => {
       response.data.items = response.data.items.map((item) => new Customer().deserialize(item))

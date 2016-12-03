@@ -42,6 +42,8 @@ const presenceValidator = (value, message) => {
 }
 
 const typeValidator = (value, message, type) => {
+  if (value === undefined) return null
+
   let errored = false
   switch (type) {
     case 'email':
@@ -79,11 +81,12 @@ export default (validators) => {
       let validator = validators[validatorKey]
 
       Object.keys(validator).forEach((key) => {
+        let error
         if (key === 'message' || key === 'messages' || errors[validatorKey]) {
           return
         }
 
-        let error = SUPPORTED_VALIDATORS[key](value, getValidatorMsg(validator, key), validator[key])
+        error = SUPPORTED_VALIDATORS[key](value, getValidatorMsg(validator, key), validator[key])
         if (error) {
           errors[validatorKey] = error
         }

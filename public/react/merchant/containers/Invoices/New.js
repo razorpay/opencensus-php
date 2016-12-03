@@ -37,12 +37,13 @@ const selector = formValueSelector('newInvoice')
   initialValues: {
     date: Math.ceil(new Date().getTime()/1000),
     draft: 1,
+    type: 'invoice',
     description: '',
     terms: '',
     line_items: [
       {
         quantity: 1,
-        amount_in_inr: '0.00'
+        amountInINR: '0.00'
       }
     ]
   }
@@ -85,9 +86,7 @@ export default class InvoicesNewContainer extends ModalContainer {
     this.openModal()
   }
 
-  save(fieldProps) {
-    let { ...props } = fieldProps
-    props.type = 'invoice'
+  save(props) {
     return this.props.saveInvoice(props).then((invoice) => {
       this.context.ngRouter.transitionTo('app.invoices').then(() => {
         setTimeout(() => {
@@ -170,7 +169,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                           component={PowerSelect}
                           options={this.props.customers}
                           selected={this.props.customer_id}
-                          optionLabelPath='name'
+                          optionLabelPath='displayName'
                           placeholder='Select a customer'
                           onQuickAdd={this.quickCreateCustomer}
                         />

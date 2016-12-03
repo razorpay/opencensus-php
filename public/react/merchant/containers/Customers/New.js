@@ -16,7 +16,6 @@ import * as CustomerActions from 'merchant/modules/customers'
   form: 'newCustomer',
   validate: validator({
     email: {
-      presence: true,
       type: 'email',
       messages: {
         type: 'Email is invalid'

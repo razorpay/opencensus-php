@@ -40,7 +40,8 @@ function validate(values) {
   form: 'newPaymentLink',
   initialValues: {
     sms_notify: true,
-    email_notify: true
+    email_notify: true,
+    type: 'link'
   },
   validate
 })
@@ -63,10 +64,7 @@ export default class CreatePaymentLink extends Component {
     }
   }
 
-  create(fieldProps) {
-    let { ...props } = fieldProps
-    props.type = 'link'
-
+  create(props) {
     return this.props.saveInvoice(props).then((invoice) => {
       this.props.onSave(invoice)
       this.props.closeModal()
