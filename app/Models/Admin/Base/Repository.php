@@ -23,22 +23,6 @@ class Repository extends BaseRepository
                     ->findOrFailPublic($id);
     }
 
-    public function findByPublicIdAndOrg(string & $id, Org\Entity $org)
-    {
-        $entity = $this->getEntityClass();
-
-        $entity::verifyIdAndStripSign($id);
-
-        return $this->findByIdAndOrg($id, $org);
-    }
-
-    public function findByIdAndOrg($id, Org\Entity $org)
-    {
-        return $this->newQuery()
-                    ->orgId($org->getId())
-                    ->findOrFailPublic($id);
-    }
-
     public function findByIdAndOrgId($id, $orgId)
     {
         return $this->newQuery()

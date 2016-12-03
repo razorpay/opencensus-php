@@ -16,11 +16,4 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::ORG_ID => 'sometimes'
     );
-
-    public function findByOrg($organisationId)
-    {
-        return $this->newQuery()
-                    ->where(Org\Entity::ORG_ID, '=', $organisationId)
-                    ->find();
-    }
 }

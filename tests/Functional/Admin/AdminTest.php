@@ -172,14 +172,57 @@ class AdminTest extends TestCase
 
     public function testDeleteAdminFailed()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
         $admin = $this->fixtures->create('admin', ['org_id' => $this->orgId]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testGetMultipleAdmin()
+    {
+        $admin = $this->fixtures->times(3)->create(
+            'admin', ['org_id' => $this->orgId]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+    }
+
+    public function testGetCurrentAdmin()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId]);
+
+        $admin->groups()->sync([Org::DEFAULT_GRP]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $adminToken = $this->fixtures->create(
+            'admin_token',
+            [
+                'token' => 'secondToken',
+                'admin_id' => $admin->getId(),
+            ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        $this->assertEquals($admin->getPublicId(), $result['id']);
     }
 }
