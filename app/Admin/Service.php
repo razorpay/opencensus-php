@@ -57,6 +57,8 @@ class Service extends Base\Service
         $this->app = $app;
 
         $this->trace = $app['trace'];
+
+        $this->cache = $app['cache'];
     }
 
     // public function login(array $input)
@@ -2413,19 +2415,19 @@ class Service extends Base\Service
 
     protected function setOrgInCache($org)
     {
-        $cacheKey = 'org_id_'.$org['hostname'];
+        $cacheKey = $org['hostname'];
 
-        if (Cache::has($cacheKey) === false)
+        if ($this->cache->has($cacheKey) === false)
         {
-            Cache::put($cacheKey, $org['id'], 10);
+            $this->cache->put($cacheKey, $org['id'], 10);
         }
     }
 
     protected function getOrgFromCache($domain)
     {
-        $cacheKey = 'org_id_'.$domain;
+        $cacheKey = $domain;
 
-        return Cache::get($cacheKey);
+        return $this->cache->get($cacheKey);
     }
 
     /**

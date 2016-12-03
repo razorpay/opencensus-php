@@ -46,8 +46,6 @@ class AdminController extends Controller
         $app = \App::getFacadeRoot();
 
         $this->app = $app;
-
-        $this->cacheKey = null;
     }
 
     /**
@@ -93,11 +91,6 @@ class AdminController extends Controller
 
         // Password login by default
         return redirect('/admin#/access/auth/password');
-    }
-
-    protected function getCacheKeyForOrg($org)
-    {
-        return 'org_id_'.$org['data']['hostname'];
     }
 
     /**
