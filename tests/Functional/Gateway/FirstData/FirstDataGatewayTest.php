@@ -298,4 +298,26 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($payment['status'], 'failed');
     }
+
+    public function testInvalidAuthFields()
+    {
+        $validatedFields = [
+            'mode',
+            'paymentMethod',
+            'language',
+            'currency',
+            'hash_algorithm'
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        foreach ($validatedFields as $field)
+        {
+            $this->setInvalidAuthField($field);
+
+            $this->runRequestResponseFlow($data, function() {
+                $this->doAuthPayment($this->payment);
+            });
+        }
+    }
 }

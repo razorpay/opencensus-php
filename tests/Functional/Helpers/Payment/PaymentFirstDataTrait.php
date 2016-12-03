@@ -93,4 +93,18 @@ trait PaymentFirstDataTrait
             throw new Exception\GatewayTimeoutException('Gateway request timed out');
         });
     }
+
+    protected function setInvalidAuthField($field)
+    {
+        $server = $this->mockServer()
+                       ->shouldReceive('request')
+                       ->andReturnUsing(
+                        function (& $request) use ($field)
+                        {
+                            $request[$field] = 'invld_' . $field;
+                        })
+                       ->mock();
+
+        $this->setMockServer($server);
+    }
 }

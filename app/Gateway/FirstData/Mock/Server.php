@@ -23,6 +23,8 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
+        $this->request($input);
+
         $this->validateAuthorizeInput($input);
 
         $dateTime = Carbon::now('Asia/Kolkata');
@@ -255,11 +257,9 @@ class Server extends Base\Mock\Server
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        if ($paymentMethod === null)
-        {
-            $networkCode = 'UNKNOWN';
-        }
-        else
+        $networkCode = 'UNKNOWN';
+
+        if (is_null($paymentMethod) === false)
         {
             $methodMap = FirstData\PaymentMethod::METHOD_MAP;
 
