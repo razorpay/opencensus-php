@@ -21,14 +21,15 @@ class OrgTest extends TestCase
     public function testCreateOrg()
     {
 
-        $org = $this->fixtures->create('org',[
-                                                'hostname'  => 'hello.com',
-                                                'email_domains' => 'hello.com,fbapi.com',
-                                                'email' => 'test@hello.com',
-                                                'display_name' => 'Hello Bank',
-                                                'business_name' => 'Hello Bank Public Limited',
-                                                'auth_type' => 'password'
-                                            ]);
+        $org = $this->fixtures->create('org',
+            [
+                'hostname'      => 'hello.com',
+                'email_domains' => 'hello.com,fbapi.com',
+                'email'         => 'test@hello.com',
+                'display_name'  => 'Hello Bank',
+                'business_name' => 'Hello Bank Public Limited',
+                'auth_type'     => 'password'
+            ]);
 
         $this->startTest();
 

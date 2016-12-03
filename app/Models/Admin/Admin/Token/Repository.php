@@ -17,13 +17,6 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    public function retrieveByToken(string $token)
-    {
-        return $this->newQuery()
-                    ->where(Entity::TOKEN, '=', $token)
-                    ->firstOrFailPublic();
-    }
-
     public function fetchTokensByAdminId(string $adminId)
     {
         $tokenExists = $this->newQuery()

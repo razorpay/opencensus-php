@@ -97,6 +97,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'password' => 'M123!#asd',
             ],
         ],
         'response' => [
@@ -146,5 +147,18 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testDeleteAdminFailed' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

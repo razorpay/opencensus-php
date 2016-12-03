@@ -168,7 +168,7 @@ class Service extends Base\Service
     {
         $token = $input['token'];
 
-        $adminToken = $this->repo->admin_token->retrieveByToken($token);
+        $adminToken = $this->repo->admin_token->findOrFailToken($token);
 
         $adminId = $adminToken->getAdminId();
 

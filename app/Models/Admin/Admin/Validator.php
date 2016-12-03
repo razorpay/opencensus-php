@@ -32,6 +32,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|alpha_space|between:3,100',
+        Entity::PASSWORD              => 'sometimes|string|between:6,50',
         Entity::BRANCH_CODE           => 'sometimes|string',
         Entity::DEPARTMENT_CODE       => 'sometimes|string',
         Entity::SUPERVISOR_CODE       => 'sometimes|string',
