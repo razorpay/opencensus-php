@@ -302,6 +302,7 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                          'AdminController@postMailgunCallback'                               ],
         // UPI
         'device_create'                           => ['post',     'devices',                                          'DeviceController@createDevice'                                     ],
+        'device_refresh_token'                    => ['put',      'device/upi_token',                                 'DeviceController@refreshUpiToken'                                     ],
         'device_verify'                           => ['post',     'devices/verify',                                   'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'devices/{id}',                                     'DeviceController@getDevice'                                        ],
         'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                   'CustomerController@fetchBalance'                                   ],
@@ -329,7 +330,7 @@ final class Route
         'p2p_fetch_multiple'                      => ['get',      'p2p',                                              'P2pController@getP2ps'                                             ],
         'p2p_reject'                              => ['put',      'p2p/{id}/reject',                                  'P2pController@rejectP2p'                                           ],
         'p2p_authorize'                           => ['post',     'p2p/{id}/authorize',                               'P2pController@postAuthorize'                                       ],
-        'device_customer_fetch'                   => ['get',      'customers',                                        'CustomerController@getDeviceCustomer'                              ],
+        'device_customer_fetch'                   => ['get',      'upi/profile',                                      'CustomerController@getDeviceCustomer'                              ],
     );
 
     public static $public = array(
@@ -398,6 +399,7 @@ final class Route
         'upi_customer_bank_accounts_fetch',
         'upi_customer_razor_accounts_fetch',
         'device_fetch',
+        'device_refresh_token',
         'vpa_fetch',
         'p2p_create',
         'p2p_fetch_multiple',

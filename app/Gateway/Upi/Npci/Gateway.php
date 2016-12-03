@@ -58,6 +58,7 @@ class Gateway extends Base\Gateway
     {
         $device = $params['device'];
         $customer = $params['customer'];
+        $subType = $params['challengeType'];
         $method = 'ReqListKeys';
 
         extract($this->getCommonVariables());
@@ -72,7 +73,7 @@ class Gateway extends Base\Gateway
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="{$msgId}"/>
 <Txn id="$txnId" note="{$device['id']}" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="GetToken"/>
 <Creds>
-<Cred type="challenge" subType="initial">
+<Cred type="challenge" subType="$subType">
 <Data code="NPCI" ki="20150822">$data</Data>
 </Cred>
 </Creds>

@@ -45,4 +45,13 @@ class DeviceController extends Controller
 
         return ApiResponse::json([], 200);
     }
+
+    public function refreshUpiToken()
+    {
+        $input = Request::all();
+
+        $this->service->refreshToken($input);
+
+        return ApiResponse::json([], 200);
+    }
 }

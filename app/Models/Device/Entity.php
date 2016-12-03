@@ -139,6 +139,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UPI_TOKEN, $upiToken);
     }
 
+    public function setChallenge($challenge)
+    {
+        $this->setAttribute(self::CHALLENGE, $challenge);
+    }
+
     // --------------------- Public Setters --------------------
 
     protected function setPublicAuthTokenAttribute(array &$attributes)

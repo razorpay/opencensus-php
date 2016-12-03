@@ -53,16 +53,33 @@ class Core extends Base\Core
         return $device;
     }
 
-    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer)
+    public function updateChallenge(Entity $device, string $challenge)
+    {
+        $device->setChallenge($challenge);
+
+        $this->repo->saveOrFail($device);
+
+        return $device;
+    }
+
+    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer, $challengeType='initial')
     {
         $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['challengeType'] = $challengeType;
 
         $response = $this->upiCore->callUpiGateway('GetToken', $gatewayInput);
 
         return $response;
     }
 
+    /**
+     * Note: This gets called for all token updates
+     * including initial/rotate/reset
+     * @param  Entity $device   [description]
+     * @param  string $upiToken [description]
+     * @return [type]           [description]
+     */
     public function updateUpiToken(Entity $device, string $upiToken)
     {
         $device->setUpiToken($upiToken);

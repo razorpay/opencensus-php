@@ -54,6 +54,17 @@ class Service extends Base\Service
         }
     }
 
+
+    public function refreshToken(array $input)
+    {
+        if ($this->device->hasBeenRegistered() === true)
+        {
+            $device = $this->core->updateChallenge($this->device, $input[Entity::CHALLENGE]);
+
+            $response = $this->core->sendGetTokenRequestToGateway($device, $device->customer, 'rotate');
+        }
+    }
+
     public function updateUpiToken(string $deviceId, string $upiToken)
     {
         // TODO: Fix this
