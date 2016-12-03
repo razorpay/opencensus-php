@@ -203,9 +203,10 @@ class Generator extends Base\Core
         $this->trace->info(
             TraceCode::INVOICE_LINKS,
             [
-                'invoice_id' => $this->invoice->getId(),
-                'short_url' => $shortenedUrl,
-                'long_url' => $longUrl,
+                'invoice_id'     => $this->invoice->getId(),
+                'invoice_status' => $this->invoice->getStatus(),
+                'short_url'      => $shortenedUrl,
+                'long_url'       => $longUrl,
             ]
         );
 
