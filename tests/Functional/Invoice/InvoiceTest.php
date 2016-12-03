@@ -570,24 +570,39 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsWithAmountAndDesc()
+    public function testCreateDraftInvoiceWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsWithAmount()
+    public function testCreateIssuedInvoiceWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithoutLineItemsAmountAndDesc()
+    public function testCreateDraftInvoiceWithAmount()
     {
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithLineItemsAmountAndDesc()
+    public function testCreateIssuedInvoiceWithAmount()
     {
         $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithoutLineItemsAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDraftInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
     }
 
     public function testGetInvoice()
