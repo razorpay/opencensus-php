@@ -204,7 +204,7 @@ class Creator extends Base\Core
         }
         else
         {
-            $this->filePath = $this->localFile->getPath();
+            $this->filePath = $this->localFile->getPathName();
         }
 
         $this->mime($this->localFile->getMimeType());
