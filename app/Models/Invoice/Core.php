@@ -267,9 +267,7 @@ class Core extends Base\Core
     {
         $paymentId = $invoice->getPaymentId();
 
-        $invoiceStatus = $invoice->getStatus();
-
-        if ($invoiceStatus !== Status::PAID)
+        if ($invoice->hasBeenPaid() === false)
         {
             return [
                 Entity::STATUS => $invoice->getStatus()

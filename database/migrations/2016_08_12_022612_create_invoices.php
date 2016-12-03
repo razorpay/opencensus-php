@@ -116,8 +116,6 @@ class CreateInvoices extends Migration
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
 
-            // In production and beta environments, the key would be
-            // `invoices_merchant_id_ref_num_unique`.
             $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 
             $table->foreign(Entity::ORDER_ID)
