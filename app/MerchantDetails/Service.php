@@ -184,7 +184,8 @@ class Service extends Base\Service
             $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
 
-            if (env('S3_MOCK') === false)
+            // If there is error while uploading, we dont send it to API
+            if (empty($error) and env('S3_MOCK') === false)
             {
                 $params = [ $data['field'] => $data['file'] ];
                 $this->uploadFileToAPI($params);
@@ -238,7 +239,7 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $error[] = 'An error occured in file upload.';
-            $error[] = $e->getMessage();
+            // $error[] = $e->getMessage();
         }
 
         return $error;
