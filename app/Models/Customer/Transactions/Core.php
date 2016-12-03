@@ -7,8 +7,17 @@ use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
-    public function createFromCustomerDebit($payment, int $amount)
+    /**
+     * Creates a customer_transaction record and a amount debit on the customer wallet balance
+     * Called at payment authorize, for a flashwallet payment.
+     *
+     * @param  Payment\Entity   $payment
+     * @return Customer\Transaction\Entity
+     */
+    public function createForCustomerDebit($payment)
     {
+        $amount = $payment->getAmount();
+
         $customerTxn = $this->createEntityForType('debit', $payment, $amount, $payment->customer);
 
         $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);

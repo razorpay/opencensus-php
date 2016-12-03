@@ -128,6 +128,7 @@ class Gateway
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
+     * (Now also includes our custom flashwallet gateway)
      *
      * @var array
      */
@@ -139,7 +140,7 @@ class Gateway
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
         self::FIRST_DATA            => [],
-        self::WALLET_FLASHWALLET    => []
+        self::WALLET_FLASHWALLET    => [],
     ];
 
     /**

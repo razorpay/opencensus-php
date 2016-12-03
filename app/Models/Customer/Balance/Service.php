@@ -32,7 +32,7 @@ class Service extends Base\Service
     public function debit(Customer\Entity $customer, int $amount)
     {
         $balance = $this->repo->customer_balance
-                       ->findByCustomerIdAndMerchant($customer->getPublicId(), $this->merchant);
+                        ->getCustomerBalanceLockForUpdate($customer->getPublicId(), $this->merchant);
 
         return $this->core->debit($balance, $amount);
     }

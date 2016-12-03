@@ -9,7 +9,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'customer_balance';
 
-    public function getCustomerBalanceLockForUpdate($customerId, Merchant\Entity $merchant)
+    public function getCustomerBalanceLockForUpdate(string $customerId, Merchant\Entity $merchant)
     {
         assert($this->isTransactionActive());
 
@@ -43,7 +43,7 @@ class Repository extends Base\Repository
 
         if ($lockForUpdate === true)
         {
-            $query->lock(true);
+            $query->lockForUpdate();
         }
 
         return $query->firstOrFail();
