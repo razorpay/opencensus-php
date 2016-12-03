@@ -13,8 +13,21 @@ angular.module('app.controllers', [
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    var orgName = (location.hostname.match(/^beta-(\w+)-/) || [])[1]
-    var orgTheme = orgName || localStorage.getItem('theme');
+    var orgTheme = '';
+    var themeKeys = {
+      hdfc : 'hdfc',
+      wl : 'hdfc',
+      icici :'icici',
+      baroda :'baroda',
+      bob : 'baroda'
+    };
+
+    for (var key in themeKeys) {
+      if (themeKeys.hasOwnProperty(key) && location.hostname.indexOf(key) > 0){
+        orgTheme = themeKeys[key];
+        break;
+      };
+    }
 
     var baseTheme = {
       transparent : 'rgba(0,0,0,0.2)',
@@ -29,7 +42,6 @@ angular.module('app.controllers', [
 
     switch (orgTheme) {
       case 'hdfc':
-      case 'wl':
         theme.apply(angular.extend(baseTheme, {
           primary : '#084c8d',
         }));

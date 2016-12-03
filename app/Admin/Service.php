@@ -21,6 +21,7 @@ use Requests;
 use Queue;
 use Session;
 use Crypt;
+use Cache;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -52,7 +53,12 @@ class Service extends Base\Service
     public function __construct()
     {
         $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
         $this->trace = $app['trace'];
+
+        $this->cache = $app['cache'];
     }
 
     // public function login(array $input)
@@ -76,16 +82,18 @@ class Service extends Base\Service
     //     return [$error, null];
     // }
 
-    public function passwordLogin(array $input)
+    public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
 
         $this->setApiCredentials();
 
+        $orgId = $this->getOrgFromCache($domain);
+
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($input)->toArray();
+            $data = $this->api->admin->passwordLogin($orgId, $input)->toArray();
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -2385,7 +2393,7 @@ class Service extends Base\Service
     }
 
 
-    public function getOrg($orgId)
+    public function getOrg($domain)
     {
         $error = $data = null;
 
@@ -2393,7 +2401,9 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->org->fetch($orgId)->toArray();
+            $data = $this->api->org->fetchByDomain($domain)->toArray();
+
+            $this->setOrgInCache($data);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -2401,6 +2411,23 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    protected function setOrgInCache($org)
+    {
+        $cacheKey = $org['hostname'];
+
+        if ($this->cache->has($cacheKey) === false)
+        {
+            $this->cache->put($cacheKey, $org['id'], 10);
+        }
+    }
+
+    protected function getOrgFromCache($domain)
+    {
+        $cacheKey = $domain;
+
+        return $this->cache->get($cacheKey);
     }
 
     /**

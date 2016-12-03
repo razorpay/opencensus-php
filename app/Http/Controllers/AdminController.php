@@ -14,6 +14,7 @@ use Input;
 use Config;
 use OAuthFacade;
 use Redirect;
+use Cache;
 use Session;
 
 class AdminController extends Controller
@@ -42,7 +43,9 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        // sd(Auth::guard('api')->user());
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
     }
 
     /**
@@ -143,6 +146,8 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
+        $domain = request()->server->get('SERVER_NAME');
+
         // This is password based login
         list($error, $user) = (new Admin\Service)->passwordLogin($input);
 
@@ -163,9 +168,7 @@ class AdminController extends Controller
     {
         $domain = request()->server->get('SERVER_NAME');
 
-        $org = self::ORG_CHART[$domain];
-
-        list($error, $org) = (new Admin\Service)->getOrg($org);
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
 
         return AppResponse::jsonResponse($error, $org);
     }
