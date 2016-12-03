@@ -36,7 +36,11 @@ class Org extends Base
         $now = Carbon::now()->timestamp;
 
         // Default organisation to be used for tests
-        $org = $this->fixtures->create('org', ['id' => self::RZP_ORG]);
+        $org = $this->fixtures->create('org', [
+            'id' => self::RZP_ORG,
+            'email' => 'admin@razorpay.com',
+            'hostname' => 'dashboard.razorpay.com'
+        ]);
 
         $this->fixtures->create('group', [
             'id'     => self::DEFAULT_GRP,

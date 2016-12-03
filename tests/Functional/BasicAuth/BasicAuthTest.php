@@ -56,13 +56,14 @@ class BasicAuthTest extends TestCase
 
     public function testAdminAuth()
     {
-        $this->markTestSkipped();
+        $this->ba->adminAuth('test');
 
-        $this->fixtures->create('org');
-        $this->fixtures->create('admin');
-        $this->fixtures->create('admin_token');
+        $this->startTest();
+    }
 
-        $this->ba->adminAuth('test', 'd986ee4a08c10b610c2e1afd10fea7c9a99c2084182f27749bc853e06c57d970');
+     public function testPrivateAuthOnAdminRoute()
+    {
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

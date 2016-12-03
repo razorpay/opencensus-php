@@ -133,7 +133,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->createRole($id, $input);
+        $data = (new Admin\Role\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -269,20 +269,13 @@ class AdminController extends Controller
     /**
     * Admin related functons
     */
-    public function passwordLogin(Admin\Service $service)
+    public function postAuthenticate(string $orgId, Admin\Admin\Service $adminService)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->login($input);
+        $response = $adminService->authenticate($orgId, $input);
 
-        $httpStatusCode = 200;
-
-        if (isset($data['action']) === true)
-        {
-            $httpStatusCode = 400;
-        }
-
-        return ApiResponse::json($data, $httpStatusCode);
+        return ApiResponse::json($response);
     }
 
     public function oAuthLogin(Admin\Service $service)
@@ -292,11 +285,6 @@ class AdminController extends Controller
         $data = (new Admin\Admin\Service)->loginWithOAuth($input);
 
         return ApiResponse::json($data);
-    }
-
-    public function helloWorld()
-    {
-        return ApiResponse::json(['hello_world']);
     }
 
     public function postMailgunCallback($type)

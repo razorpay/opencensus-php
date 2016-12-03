@@ -96,7 +96,7 @@ class AdminAccess
 
         $policyPassed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
 
-        if ($policyPassed)
+        if ($policyPassed === true)
         {
             if ($merchant)
             {
@@ -120,7 +120,7 @@ class AdminAccess
     {
         foreach ($toCheck as $permission)
         {
-            if (! in_array($permission, $haystack))
+            if (in_array($permission, $haystack) === false)
             {
                 return false;
             }

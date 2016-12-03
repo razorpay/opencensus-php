@@ -32,7 +32,7 @@ class Service extends Base\Service
 
     public function getMultiplePermissionIdsByNames(array $names)
     {
-        $permissions = $this->repo->permission->retrieveIdsByNames($names);
+        $permissions = $this->core()->getMultiplePermissionIdsByNames($names);
 
         $permIds = [];
 

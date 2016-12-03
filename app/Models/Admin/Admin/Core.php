@@ -15,6 +15,7 @@ class Core extends Base\Core
     public function create(Org\Entity $org, array $input)
     {
         $admin = (new Entity);
+        $admin->generateId();
 
         $admin->setAuditAction(Action::CREATE_ADMIN);
 
@@ -110,19 +111,23 @@ class Core extends Base\Core
         if (isset($input['roles']) === true)
         {
             Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
+
             $admin->roles()->sync($input['roles']);
         }
-
-        if (isset($input['merchants']) === true)
+        else
         {
-            Merchant\Entity::verifyIdAndStripSignMultiple($input['merchants']);
-            $admin->merchants()->sync($input['merchants']);
+            $admin->roles()->sync([]);
         }
 
         if (isset($input['groups']) === true)
         {
             Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
+
             $admin->groups()->sync($input['groups']);
+        }
+        else
+        {
+            $admin->groups()->sync([]);
         }
     }
 }

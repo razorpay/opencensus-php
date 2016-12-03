@@ -11,18 +11,19 @@ return [
             'url' => '/orgs/%s/admins',
             'method' => 'post',
             'content' => [
-                'name'               => 'test admin',
-                'email'              => 'xyz@rzp.com',
-                'username'           => 'harshil',
-                'password'           => 'random!12#',
-                'remember_token'     => 'yes',
-                'oauth_access_token' => 'oauth123',
-                'oauth_provider_id'  => 'google',
-                'employee_code'      => 'rzp_1',
-                'branch_code'        => 'krmgla',
-                'supervisor_code'    => 'shk',
-                'location_code'      => '560030',
-                'department_code'    => 'tech',
+                'name'                  => 'test admin',
+                'email'                 => 'xyz@rzp.com',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'oauth_access_token'    => 'oauth123',
+                'oauth_provider_id'     => 'google',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
             ],
         ],
         'response' => [
@@ -39,6 +40,40 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testCreateAdminWithWrongEmailDomain' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@razorpay.com',
+                'username'           => 'harshil',
+                'password'           => 'random!12#',
+                'remember_token'     => 'yes',
+                'oauth_access_token' => 'oauth123',
+                'oauth_provider_id'  => 'google',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID
+        ],
     ],
 
     'testGetAdmin' => [
@@ -72,6 +107,34 @@ return [
         ],
     ],
 
+    'testDeleteAllRolesAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeleteAllGroupsAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
@@ -82,40 +145,6 @@ return [
                 'success' => true,
             ],
             'status_code' => 200,
-        ],
-    ],
-
-    'testWeakPassword' => [
-        'request' => [
-            'url' => '/orgs/%s/admins',
-            'method' => 'post',
-            'content' => [
-                'name'               => 'testadmin',
-                'email'              => 'xyz@rzp.com',
-                'username'           => 'harshil',
-                'password'           => 'helloworld',
-                'remember_token'     => 'yes',
-                'oauth_access_token' => 'oauth123',
-                'oauth_provider_id'  => 'google',
-                'employee_code'      => 'rzp_1',
-                'branch_code'        => 'krmgla',
-                'supervisor_code'    => 'shk',
-                'location_code'      => '560030',
-                'department_code'    => 'tech',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Password is too weak. Please choose a new password.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ]
 ];

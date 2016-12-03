@@ -20,7 +20,21 @@ class OrgTest extends TestCase
 
     public function testCreateOrg()
     {
+
+        $org = $this->fixtures->create('org',[
+                                                'hostname'  => 'hello.com',
+                                                'email_domains' => 'hello.com,fbapi.com',
+                                                'email' => 'test@hello.com',
+                                                'display_name' => 'Hello Bank',
+                                                'business_name' => 'Hello Bank Public Limited',
+                                                'auth_type' => 'password'
+                                            ]);
+
         $this->startTest();
+
+        $admins = $org->admins();
+
+        $this->assertEquals(1, count($admins));
     }
 
     public function testEditOrg()
@@ -41,13 +55,23 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
-    public function testOrgMultiple()
+    public function testfetchMultipleOrg()
     {
-        $this->ba->adminAuth();
+        $this->startTest();
+    }
 
-        $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
-        $org = $this->fixtures->create('org', ['email' => 'sreeram@gmail.com']);
+    public function testCreateOrgInvalidAuthType()
+    {
+        $this->startTest();
+    }
 
+    public function testCreateOrgInvalidHostname()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOrgNotUniqueHostname()
+    {
         $this->startTest();
     }
 
@@ -58,6 +82,13 @@ class OrgTest extends TestCase
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
+
+        $this->startTest();
+    }
+
+    public function testGetOrgByHostname()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }

@@ -5,27 +5,23 @@ namespace RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
-        $role = (new Entity)->build($input);
-
-        $this->repo->role->validateOrgHasNoSuchRole($role, $org);
+        $role = (new Entity)->generateId();
 
         $role->org()->associate($org);
 
+        $role->build($input);
+
+        $this->validateExistingRole($role);
+
         $this->repo->saveOrFail($role);
 
-        if (isset($input['permissions']) === true)
-        {
-            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
-
-            $role->permissions()->sync($input['permissions']);
-
-            $this->repo->saveOrFail($role);
-        }
+        $this->syncPermissions($role, $input);
 
         return $role;
     }
@@ -34,15 +30,46 @@ class Core extends Base\Core
     {
         $role->edit($input);
 
-        if (isset($input['permissions']) === true)
-        {
-            Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
-
-            $role->permissions()->sync($input['permissions']);
-        }
+        $this->syncPermissions($role, $input);
 
         $this->repo->saveOrFail($role);
 
         return $role;
+    }
+
+    protected function syncPermissions($role, array $input)
+    {
+        if (isset($input['permissions']) === true)
+        {
+            if (($input['permissions'] instanceof Base\PublicCollection) === false)
+            {
+                Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+            }
+
+            $role->permissions()->sync($input['permissions']);
+        }
+        else
+        {
+            // Deletion of all
+            $role->permissions()->sync([]);
+        }
+
+        return $role;
+    }
+
+    protected function validateExistingRole(Entity $role)
+    {
+        $params = [
+            Entity::ORG_ID => $role->getOrgId(),
+            Entity::NAME   => $role->getName()
+        ];
+
+        $roles = $this->repo->role->fetch($params);
+
+        if ($roles->count() !== 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The role with the name already exists');
+        }
     }
 }

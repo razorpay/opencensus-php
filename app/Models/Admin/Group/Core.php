@@ -11,7 +11,9 @@ class Core extends Base\Core
 {
     public function create(array $input, Org\Entity $org)
     {
-        $group = (new Entity)->build($input);
+        $group = (new Entity)->generateId();
+
+        $group->build($input);
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
 
@@ -40,6 +42,7 @@ class Core extends Base\Core
         if (isset($input['parents']) === true)
         {
             Entity::verifyIdAndStripSignMultiple($input['parents']);
+
             $group->parents()->sync($input['parents']);
         }
         else

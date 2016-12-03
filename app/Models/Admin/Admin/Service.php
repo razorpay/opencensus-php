@@ -18,15 +18,26 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function login($input)
+    public function authenticate(string $orgId, array $input)
     {
+        \Database\DefaultConnection::set('live');
+
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        return $this->login($orgId, $input);
+    }
+
+    public function login(string $orgId, array $input)
+    {
+        $email = $input['username'];
+
         // Get the admin record
-        $admin = $this->repo->admin->findByEmail($input['username']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 
         if ($admin === null)
         {
             throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
 
         $admin->getValidator()->validateCredentials($input);
@@ -36,6 +47,10 @@ class Service extends Base\Service
         $authPolicy->validateLogin($admin, $input['password']);
 
         // Valid password ?
+        $isAuthenticated = true;
+
+        $errorCode = null;
+
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
@@ -43,25 +58,43 @@ class Service extends Base\Service
             $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
 
             // Send admin, description, entity object
-            $this->fireAdminAction($admin, Action::LOGIN);
 
             if ($validate !== null)
             {
-                return $validate;
+                $isAuthenticated = false;
+
+                $errorCode = Error\ErrorCode::BAD_REQUEST_AUTH_VALIDATION_FAILED;
+            }
+            else
+            {
+                $this->fireAdminAction($admin, Action::LOGIN);
             }
 
             return $data;
         }
         else
         {
+            $isAuthenticated = false;
+
+            $errorCode = Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED;
+        }
+
+        return $this->handleAuthFailure($isAuthenticated, $errorCode, $admin);
+    }
+
+    protected function handleAuthFailure(bool $isAuthenticated, string $errorCode, $admin)
+    {
+        if ($isAuthenticated === false)
+        {
             $admin->incrementFailedAttempts();
 
             $this->fireAdminAction($admin, Action::LOGIN_FAIL, ['failed_attempts' => $admin->getFailedAttempts]);
 
             $this->repo->saveOrFail($admin);
-        }
 
-        return null;
+            throw new Exception\BadRequestException($errorCode);
+
+        }
     }
 
     protected function fireAdminAction(Entity $admin, array $action, array $customProperties = null)

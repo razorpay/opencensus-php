@@ -27,7 +27,7 @@ class AdminTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
-        $this->ba->adminAuth('test');
+        $this->ba->adminAuth();
     }
 
     public function testCreateAdmin()
@@ -51,6 +51,17 @@ class AdminTest extends TestCase
         $this->assertEquals($result['roles'][0]['id'], $superAdminRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
+    }
+
+    public function testCreateAdminWithWrongEmailDomain()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 
     public function testGetAdmin()
@@ -103,11 +114,16 @@ class AdminTest extends TestCase
         $this->assertEquals($result['groups'][0]['id'], $group);
     }
 
-    public function testDeleteAdmin()
+    public function testDeleteAllRolesAdmin()
     {
         $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID => $this->orgId
+            Admin\Entity::ORG_ID => $this->orgId,
         ]);
+
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -115,17 +131,41 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertEquals(0, count($admin->groups->all()));
     }
 
-    public function testWeakPassword()
+    public function testDeleteAllGroupsAdmin()
     {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        $this->testData[__FUNCTION__]['request']['content'][Admin\Entity::PASSWORD] = 'helloworld';
+
+        $result = $this->startTest();
+
+        $this->assertEquals(0, count($admin->roles->all()));
+    }
+
+    public function testDeleteAdmin()
+    {
+        $adminToken = $this->fixtures->create('admin_token', ['token' => 'secondToken']);
+
+        $admin = $adminToken['admin'];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
