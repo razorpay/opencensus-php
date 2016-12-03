@@ -57,7 +57,7 @@ class Service extends Base\Service
 
     public function uploadActivationFile(array $input)
     {
-        $merchantDetails = $this->merchant->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetail;
 
         if ($merchantDetails->isLocked())
         {
