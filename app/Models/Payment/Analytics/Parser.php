@@ -287,7 +287,7 @@ class Parser extends Base\Core
         }
 
         $oldPayments = $this->repo
-                            ->payment_analytics
+                            ->payment
                             ->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
         $count = $oldPayments->count();

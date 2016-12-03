@@ -31,38 +31,30 @@ class TerminalProcessor extends Base\Core
 
         //TODO: should we do a join on these queries instead of multiple queries
 
+        $pastPayments = [];
+
         if ($orderId !== null)
         {
             $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
-
-            foreach($pastPayments as $pastPayment)
-            {
-                $pastPaymentIds[] = $pastPayment->getId();
-            }
         }
         else if (isset($metadata[AnalyticsEntity::CHECKOUT_ID]) === true)
         {
             $checkoutId = $metadata[AnalyticsEntity::CHECKOUT_ID];
 
-            $checkouts = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
-
-            foreach($checkouts as $checkout)
-            {
-                $pastPaymentIds[] = $checkout->getPaymentId();
-            }
+            $pastPayments = $this->repo->payment->getRecentMerchantPaymentsForCheckoutId($checkoutId);
         }
 
         $usedTerminals = [];
 
-        if (count($pastPaymentIds) > 0)
+        foreach ($pastPayments as $pastPayment)
         {
-            $usedTerminalAnalytics = $this->repo->terminal_analytics->fetchUsedTerminalsForPaymentIds($pastPaymentIds);
-
-            foreach ($usedTerminalAnalytics as $tAnalytics)
+            if ($pastPayment->hasNotBeenAuthorized())
             {
-                $usedTerminals[] = $tAnalytics->getTerminalId();
+                $usedTerminals[] = $pastPayment->getTerminalId();
             }
         }
+
+        // $usedTerminals = $this->repo->terminal->findMany($usedTerminals);
 
         return array_unique($usedTerminals);
     }
@@ -83,8 +75,8 @@ class TerminalProcessor extends Base\Core
         if (count($usedTerminals) > 0)
         {
             $traceData = array(
-                'used_terminals'       => $usedTerminals,
-                'payment_id'             => $payment->getId(),
+                'used_terminals'        => $usedTerminals,
+                'payment_id'            => $payment->getId(),
             );
 
             $this->trace->info(TraceCode::TERMINAL_USED_BEFORE, $traceData);

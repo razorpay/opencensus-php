@@ -58,6 +58,34 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
+
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - self::PAYMENT_WINDOW;
+
+        $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
+        $paPaymentId = $this->manager
+                            ->payment_analytics
+                            ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
+
+        $paymentColumns = $this->getAttributeWithTableName('*');
+
+        $paTable = $this->manager->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->manager
+                               ->payment_analytics
+                               ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join($paTable, $pid, '=', $paPaymentId)
+                    ->where($checkoutIdAttr, '=', $checkoutId)
+                    ->createdAtGreaterThan($timestamp)
+                    ->latest()
+                    ->get();
+    }
+
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         return $this->newQuery()
@@ -460,7 +488,7 @@ class Repository extends Base\Repository
 
     public function getCreatedPaymentsForOrder($orderId)
     {
-        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+        $ts = time() - self::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])

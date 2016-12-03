@@ -15,17 +15,6 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num'
     );
 
-    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
-    {
-        $timestamp = time() - Entity::PAYMENT_WINDOW;
-
-        return $this->newQuery()
-                    ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
-                    ->where(Entity::CREATED_AT, '>=', $timestamp)
-                    ->latest()
-                    ->get();
-    }
-
     public function findForPayment($paymentId)
     {
         $repo = $this->repo;
