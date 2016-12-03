@@ -419,7 +419,7 @@ class Processor
             ];
         }
 
-        $diff = time() - $payment->getUpdatedAt();
+        $diff = time() - $payment->getCreatedAt();
 
         if (($payment->hasBeenAuthorized() === true) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
