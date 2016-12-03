@@ -26,8 +26,6 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
-
         $paymentAction = 'AuthAndCapture';
         $payment = $this->doNetbankingIciciPayment($paymentAction);
 
@@ -58,6 +56,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         Options::setTestChance($chance);
 
+        // Adding it to the test case
         $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
 
         $paymentAction = 'AuthAndCapture';
@@ -87,6 +86,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         Options::setTestChance($chance);
 
+        // Adding it to the test case
         $terminal = $this->fixtures->create('terminal:netbanking_icici_terminal');
 
         $paymentAction = 'AuthAndCapture';
