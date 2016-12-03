@@ -24,4 +24,57 @@ class AuthPolicyTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWeakPassword()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->createOrg();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testShortPassword()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->createOrg();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testLongPassword()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->createOrg();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    protected function createOrg()
+    {
+        return $this->fixtures->create('org', [
+                    'email'         => 'random@rzp.com',
+                    'email_domains' => 'rzp.com',
+        ]);
+    }
 }

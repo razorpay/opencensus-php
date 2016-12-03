@@ -169,15 +169,4 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
-
-    public function testWeakPassword()
-    {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-    }
 }
