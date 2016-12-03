@@ -92,9 +92,9 @@ class Service extends Base\Service
         return $p2p;
     }
 
-    public function fetchCollectRequests($customerId)
+    public function fetchCollectRequests()
     {
-        $customerId = Customer\Entity::stripSignWithoutValidation($customerId);
+        $customerId = $this->app['basicauth']->getDevice()->getCustomerId();
 
         $p2ps = $this->repo->p2p->fetchPendingCollectRequests($customerId);
 

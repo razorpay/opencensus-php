@@ -317,7 +317,7 @@ final class Route
         'vpa_edit'                                => ['put',      'vpa/{id}',                                         'UpiController@editVpa'                                             ],
         'vpa_fetch'                               => ['get',      'vpa/{id}',                                         'UpiController@getVpa'                                              ],
         'customer_balance_fetch'                  => ['get',      'customers/{customerId}/balance/{accountId}',       'CustomerController@fetchBalance'                                   ],
-        'customer_collect_request_fetch'          => ['get',      'customers/{customerId}/collects',                  'P2pController@fetchCollectRequests'                                ],
+        'customer_collect_request_fetch'          => ['get',      'customers/requests/collect',                       'P2pController@fetchCollectRequests'                                ],
         'upi_get_key_list'                        => ['get',      'upi_npci/keyList',                                 'UpiController@getPublicKeyList'                                    ],
         'upi_sms_webhook'                         => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',                'UpiController@newHandle'                                           ],
         'register_device'                         => ['post',     'upi_npci/register',                                'UpiController@registerDevice'                                      ],
