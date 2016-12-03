@@ -43,6 +43,15 @@ class Entity extends Base\PublicEntity
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
 
+    protected $dontKeepRevisionOf = [
+        self::PASSWORD,
+        self::PASSWORD_CONFIRMATION,
+        self::REMEMBER_TOKEN,
+        self::OAUTH_ACCESS_TOKEN,
+        self::OAUTH_PROVIDER_ID,
+        self::OLD_PASSWORDS
+    ];
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
