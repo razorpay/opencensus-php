@@ -131,18 +131,24 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    /*public function testTrialGatewaySelection()
+    public function testTrialGatewaySelection()
     {
         $this->fixtures->create('terminal:all_shared_terminals');
 
         $payment = $this->getDefaultPaymentArray();
 
+        // Setting Netbanking ICICI as the payment method
+        $payment['method'] = 'netbanking';
+        $payment['bank']   = 'ICIC';
+
         $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
-        sd($payment);
-    }*/
+        // Payment won't have ICICI as gateway due to trial gateway sorter
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+        $this->assertEquals('billdesk', $payment['gateway']);
+    }
 
     public function testTerminalChoiceonChance()
     {

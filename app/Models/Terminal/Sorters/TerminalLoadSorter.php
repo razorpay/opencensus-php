@@ -14,7 +14,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     // add it here to the rules
 
     protected $properties = [
-        //'trial_gateway',
+        'trial_gateway',
         'gateway',
     ];
 
@@ -47,11 +47,11 @@ class TerminalLoadSorter extends Terminal\Sorter
     ];
 
     protected static $prodTrialGateways = [
-        // Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_ICICI,
     ];
 
     protected static $testTrialGateways = [
-        Gateway::PAYTM,
+        Gateway::NETBANKING_ICICI,
     ];
 
     public function getRules()
@@ -85,7 +85,6 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         foreach ($terminals as $key => $terminal)
         {
-            s($terminal->getGateway());
             if (in_array($terminal->getGateway(), $applicableGateways))
             {
                 $sortedTerminals[] = $terminal;
