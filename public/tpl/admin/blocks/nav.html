@@ -85,8 +85,7 @@
       <span>Groups</span>
     </a>
   </li>
-  <!-- ng-show="admin.permissions.indexOf('view_audit_log') !== -1" -->
-  <li >
+  <li ng-show="admin.permissions.indexOf('view_auditlog') !== -1">
     <a id="auditlogNav" ui-sref="app.auditlogs.list">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Audit Log</span>
