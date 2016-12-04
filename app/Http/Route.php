@@ -336,6 +336,7 @@ final class Route
                   ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                  ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
+        'auditlog_search'                         => ['get',      'admin/auditlog/search/{id}',                          'AdminController@auditLogSearch'                                    ],
     );
 
     public static $public = array(
@@ -727,6 +728,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
+        'auditlog_search',
     );
 
     public static $internalApps = array(

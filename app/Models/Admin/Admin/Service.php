@@ -15,6 +15,7 @@ use RZP\Models\Admin\Action;
 use Mail;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\EsDao;
 
 class Service extends Base\Service
 {
@@ -401,5 +402,21 @@ class Service extends Base\Service
         $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
 
         return ['count' => $unactivatedAccounts + $unusedAccounts];
+    }
+
+    public function searchAuditLogs($orgId)
+    {
+        try
+        {
+            $esDao = new EsDao();
+
+            return $esDao->searchAuditLogs($orgId);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(TraceCode::HEIMDALL_AUDIT_LOG_SEARCH_FAIL, ['error' => $e]);
+
+            throw $e;
+        }
     }
 }

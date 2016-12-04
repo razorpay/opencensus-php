@@ -41,20 +41,6 @@ class EsDao
         $this->es = $this->buildEsClient($hostName);
 
         $this->esHeimdall = $this->buildEsClient($heimdallHost);
-
-        /*$params = [
-            'hosts' => [
-                $hostName
-            ],
-        ];
-
-        // Since the es client is being set on this, ensure that only this es
-        // instance is used to perform any operations on the client.
-        $this->es->setEsClient($params);
-
-        $params['hosts'] = [$heimdallHost];
-
-        $this->esHeimdall->setEsClient($params);*/
     }
 
     protected function buildEsClient($hostName)
@@ -311,5 +297,34 @@ class EsDao
         // TODO: log this if need arises
 
         // sd($updateReponse);
+    }
+
+    public function searchAuditLogs($orgId)
+    {
+        $params = [
+            'index'  => $orgId
+        ];
+        $results =  $this->esHeimdall->search($params);
+
+        // format results
+        $keyMap = [
+            '_id' => 'id',
+            '_source' => 'event'
+        ];
+
+        foreach($results as &$item)
+        {
+            foreach ($keyMap as $key => $replace)
+            {
+                if (key_exists($key, $item) === true)
+                {
+                    $item[$replace] = $item[$key];
+
+                    unset($item[$key]);
+                }
+            }
+        }
+
+        return $results;
     }
 }

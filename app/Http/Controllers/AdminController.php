@@ -315,4 +315,18 @@ class AdminController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function auditLogSearch($orgId)
+    {
+        try
+        {
+            $response = (new Admin\Admin\Service)->searchAuditLogs($orgId);
+
+            return ApiResponse::json($response);
+        }
+        catch(\Exception $e)
+        {
+            throw $e;
+        }
+    }
 }

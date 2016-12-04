@@ -104,5 +104,24 @@ class EsClient
         return $this->client;
     }
 
+    public function search($params)
+    {
+        // If ES mock is set to true.
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
+        $searchResponse = $this->client->search($params);
+
+        if ($searchResponse['hits']['total'] === 0)
+        {
+            return null;
+        }
+
+        $entityResults = $searchResponse['hits']['hits'];
+
+        return $entityResults;
+    }
 
 }
