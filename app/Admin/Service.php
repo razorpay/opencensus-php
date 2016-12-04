@@ -2427,6 +2427,11 @@ class Service extends Base\Service
     {
         $cacheKey = $domain;
 
+        if ($this->cache->has($cacheKey) === false)
+        {
+            $this->getOrg($domain);
+        }
+
         return $this->cache->get($cacheKey);
     }
 
