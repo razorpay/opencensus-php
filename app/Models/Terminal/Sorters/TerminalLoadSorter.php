@@ -79,7 +79,7 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function trialGatewaySorter($terminals, array $input, $options)
     {
-        $applicableGateways = $this->getApplicableGateways($terminals);
+        $applicableGateways = $this->getTrialGateways();
 
         $sortedTerminals = [];
 
@@ -160,26 +160,6 @@ class TerminalLoadSorter extends Terminal\Sorter
                 return $terminalId;
             }
         }
-    }
-
-    // Get all the gateways applicable to this
-    protected function getApplicableGateways($terminals)
-    {
-        $allTrialGateways = $this->getTrialGateways();
-
-        $applicableGateways = [];
-
-        foreach ($terminals as $terminal)
-        {
-            $terminalGateway = $terminal->getGateway();
-
-            if (in_array($terminalGateway, $allTrialGateways, true) === true)
-            {
-                $applicableGateways[] = $terminalGateway;
-            }
-        }
-
-        return $applicableGateways;
     }
 
     protected function getApplicableRules($terminals)
