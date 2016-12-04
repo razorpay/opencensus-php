@@ -304,4 +304,65 @@ class AdminTest extends TestCase
 
         $this->assertEquals(count($result), 4);
     }
+
+    public function testLoginUserDoesNotExist()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+    }
+
+    public function testLoginOAuth()
+    {
+        $admin = $this->fixtures->create(
+            'admin',
+            [
+                'org_id' => $this->orgId,
+                'email' => 'test@email.com',
+                'oauth_access_token' => 'test oauth token',
+                'oauth_provider_id'  => 'test oauth provider id',
+            ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLoginOAuth()
+    {
+        $admin = $this->fixtures->create(
+            'admin',
+            [
+                'org_id' => $this->orgId,
+                'email' => 'test@email.com',
+                'oauth_access_token' => 'test oauth token 2',
+                'oauth_provider_id'  => 'test oauth provider id',
+            ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertEquals($admin['failed_attempts'], 1);
+    }
 }

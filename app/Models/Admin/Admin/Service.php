@@ -79,6 +79,9 @@ class Service extends Base\Service
         {
             $admin->incrementFailedAttempts();
             $this->repo->saveOrFail($admin);
+
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
 
         return null;
