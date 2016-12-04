@@ -74,13 +74,13 @@ class AuditLogListener
     public function handle(AuditLogEntry $event)
     {
         // strtolower since index names must be lowercase
-        $index = strtolower($this->baseIndex);
+        $admin = $event->admin;
+
+        $index = strtolower($this->baseIndex).'_'.strtolower($admin['org_id']);
 
         $type = 'audit_log';
 
         $fields = [];
-
-        $admin = $event->admin;
 
         // Whitelisting admin props we need to log
         $fields['admin'] = [
