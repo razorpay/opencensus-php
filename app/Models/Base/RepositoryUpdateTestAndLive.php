@@ -80,7 +80,7 @@ trait RepositoryUpdateTestAndLive
         try
         {
             //
-            // The entity hasn't been persisted yet.
+            // The relationship hasn't been synced yet.
             // Create it's copies for live and test database
             //
             $testEntity = clone $entity;
@@ -88,7 +88,13 @@ trait RepositoryUpdateTestAndLive
 
             $defaultConnection = Config::get('database.default');
 
-            // Persist the entity in both live and test databases.
+            // Sync the relationship in both live and test databases.
+            // In laravel 5.2 there is no way to use the parent
+            // model connection in relations because of which this
+            // hack is used.
+            // This has been fixed in Laravel 5.4 by #16103.
+            // We'll use the parent connection once we update to
+            // L5.4
             Config::set('database.default', 'live');
             $changes = $liveEntity->$relation()->sync($ids);
 
@@ -107,6 +113,7 @@ trait RepositoryUpdateTestAndLive
         }
         finally
         {
+            // Revert back the database connection to default.
             Config::set('database.default', $defaultConnection);
         }
 
@@ -127,7 +134,7 @@ trait RepositoryUpdateTestAndLive
         try
         {
             //
-            // The entity hasn't been persisted yet.
+            // The relationship hasn't been attached yet.
             // Create it's copies for live and test database
             //
             $testEntity = clone $entity;
@@ -135,7 +142,7 @@ trait RepositoryUpdateTestAndLive
 
             $defaultConnection = Config::set('database.default');
 
-            // Persist the entity in both live and test databases.
+            // Attach the relationship in both live and test databases.
             Config::set('database.default', 'live');
             $liveEntity->$relation()->attach($id);
 
