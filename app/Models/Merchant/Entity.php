@@ -114,6 +114,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::LOGO_URL,
         self::ORG_ID,
+        'groups',
+        'admins'
      );
 
     protected $defaults = array(
@@ -727,7 +729,7 @@ class Entity extends Base\PublicEntity
 
          $groups = $this->groups;
 
-         $merchant['groups'] = $groups->toArrayPublic()['items'];
+         $merchant['groups'] = $groups->toArrayPublicEmbedded();
 
          return $merchant;
     }

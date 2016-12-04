@@ -146,4 +146,14 @@ class Entity extends Base\PublicEntity
 
         return explode(',', $emailDomains);
     }
+
+    protected function setEmailDomainsAttribute($emailDomains)
+    {
+        if (is_array($emailDomains) === true)
+        {
+            $emailDomains = implode(',', $emailDomains);
+        }
+
+        $this->attributes[self::EMAIL_DOMAINS] = $emailDomains;
+    }
 }

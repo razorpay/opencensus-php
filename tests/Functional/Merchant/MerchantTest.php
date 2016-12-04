@@ -163,14 +163,10 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
-        $this->startTest();
-
-        // get response content
-        $content = $this->response->getContent();
-        $content = json_decode($content, true);
+        $response = $this->startTest();
 
         // list of created group ids
-        $createdGroupIds = array_column($content['groups'], 'id');
+        $createdGroupIds = array_column($response['groups'], 'id');
 
         // check total created groups against request groups
         $this->assertEquals(count($groupIds), count($createdGroupIds));
@@ -194,14 +190,10 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
-        $this->startTest();
-
-        // get response content
-        $content = $this->response->getContent();
-        $content = json_decode($content, true);
+        $response = $this->startTest();
 
         // list of new group ids
-        $createdGroupIds = array_column($content['groups'], 'id');
+        $createdGroupIds = array_column($response['groups'], 'id');
 
         $this->assertEquals(count($newGroupIds), count($createdGroupIds));
 
@@ -844,7 +836,7 @@ class MerchantTest extends TestCase
 
         $merchantValidator->validateLogo($imageDetails);
 
-        $imageDetails = ['size' => 1+(1024*1024), 'width' => '300', 'height' => '300'];
+        $imageDetails = ['size' => 1 + (1024 * 1024), 'width' => '300', 'height' => '300'];
 
         $data = $this->testData['testValidateLogoImageTooBig'];
 

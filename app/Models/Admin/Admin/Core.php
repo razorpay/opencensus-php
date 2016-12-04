@@ -6,26 +6,17 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Role;
 
 class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
-        $admin = (new Entity);
-        $admin->generateId();
+        $admin = (new Entity)->generateId();
 
         $admin->org()->associate($org);
 
         $admin->build($input);
-
-        if (isset($input['password']) === true)
-        {
-            (new AuthPolicy\Service)->validate($admin, $input['password']);
-
-            $admin->setOldPasswords();
-        }
 
         $this->repo->saveOrFail($admin);
 
@@ -77,19 +68,6 @@ class Core extends Base\Core
     public function edit(Entity $admin, array $input)
     {
         $admin->edit($input);
-
-        if (isset($input['password']) === true)
-        {
-            (new AuthPolicy\Service)
-                ->validate($admin, $input['password']);
-
-            $admin->setOldPasswords();
-
-            if ($admin->getLastLoginAt() === null)
-            {
-                $admin->updateLastLoginAt();
-            }
-        }
 
         $this->repo->saveOrFail($admin);
 

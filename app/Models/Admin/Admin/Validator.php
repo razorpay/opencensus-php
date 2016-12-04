@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Admin;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org\AuthPolicy;
 
 class Validator extends Base\Validator
 {
@@ -14,7 +15,7 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|max:255|email|custom',
         Entity::NAME                  => 'required|alpha_space|between:3,100',
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
-        Entity::PASSWORD              => 'sometimes|string|between:6,50|confirmed',
+        Entity::PASSWORD              => 'sometimes|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'sometimes',
         Entity::REMEMBER_TOKEN        => 'sometimes|string|max:250',
         Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:250',
@@ -32,7 +33,8 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|alpha_space|between:3,100',
-        Entity::PASSWORD              => 'sometimes|string|between:6,50',
+        Entity::PASSWORD              => 'sometimes|string|confirmed',
+        Entity::PASSWORD_CONFIRMATION => 'sometimes',
         Entity::BRANCH_CODE           => 'sometimes|string',
         Entity::DEPARTMENT_CODE       => 'sometimes|string',
         Entity::SUPERVISOR_CODE       => 'sometimes|string',
@@ -46,7 +48,15 @@ class Validator extends Base\Validator
 
     protected static $loginRules = [
         Entity::USERNAME              => 'required|email|max:250',
-        Entity::PASSWORD              => 'required|between:6,50'
+        Entity::PASSWORD              => 'required'
+    ];
+
+    protected static $createValidators = [
+        Entity::PASSWORD
+    ];
+
+    protected static $editValidators = [
+        Entity::PASSWORD
     ];
 
     public function validateCredentials(array $input)
@@ -64,6 +74,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID, 'email', $email);
+        }
+    }
+
+    protected function validatePassword($input)
+    {
+        if (isset($input[Entity::PASSWORD]) === true)
+        {
+            $admin = $this->entity;
+
+            (new AuthPolicy\Service)->validate($admin, $input[Entity::PASSWORD]);
         }
     }
 }

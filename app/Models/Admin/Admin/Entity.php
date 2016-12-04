@@ -44,8 +44,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'admin';
 
-    protected $table = Table::ADMIN;
-
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
@@ -111,6 +109,10 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_CONFIRMATION
     ];
 
+    protected static $unsetEditInput = [
+        self::PASSWORD_CONFIRMATION
+    ];
+
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
@@ -144,7 +146,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicOrgIdAttribute(array & $attributes)
     {
-        $attributes[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+        $orgId = $this->getAttribute(self::ORG_ID);
+
+        if ($orgId !== null)
+        {
+            $attributes[self::ORG_ID] = Org\Entity::getSignedId($orgId);
+        }
     }
 
     public function getPermissionsList()
@@ -266,6 +273,15 @@ class Entity extends Base\PublicEntity
     protected function setPasswordAttribute($password)
     {
         $this->attributes[self::PASSWORD] = Hash::make($password);
+
+        $this->setOldPasswords();
+
+        $this->updatePasswordChangedAt();
+    }
+
+    protected function updatePasswordChangedAt()
+    {
+        $this->attributes[self::PASSWORD_CHANGED_AT] = time();
     }
 
     protected function setOldPasswordsAttribute($oldPasswords = [])

@@ -16,15 +16,12 @@ class Entity extends Base\PublicEntity
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const ORG_ID            = 'org_id';
+    const DELETED_AT        = 'deleted_at';
 
     /**
      * Holds all the permissions as relation key.
      */
     const PERMISSIONS       = 'permissions';
-
-    const DELETED_AT        = 'deleted_at';
-
-    protected $table = Table::ROLE;
 
     protected $entity = 'role';
 
@@ -107,8 +104,13 @@ class Entity extends Base\PublicEntity
     /**
      * Public setters
      * */
-    public function setPublicOrgIdAttribute(array &$array)
+    public function setPublicOrgIdAttribute(array & $attributes)
     {
-        $array[self::ORG_ID] = Org::getSignedId($array[self::ORG_ID]);
+        $orgId = $this->getAttribute(self::ORG_ID);
+
+        if ($orgId !== null)
+        {
+            $attributes[self::ORG_ID] = Org::getSignedId($orgId);
+        }
     }
 }
