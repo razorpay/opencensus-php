@@ -98,6 +98,7 @@ return [
             'content' => [
                 'name' => 'test',
                 'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
             ],
         ],
         'response' => [

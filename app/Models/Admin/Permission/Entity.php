@@ -14,8 +14,6 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
 
-    protected $table = Constants\Table::PERMISSION;
-
     protected $entity = 'permission';
 
     protected static $sign = 'perm';

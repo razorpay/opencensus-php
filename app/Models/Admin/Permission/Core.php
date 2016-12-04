@@ -24,4 +24,24 @@ class Core extends Base\Core
 
         return $permissions;
     }
+
+    public function edit(Entity $perm, array $input)
+    {
+        $perm->edit($input);
+
+        $this->repo->saveOrFail($perm);
+
+        return $perm;
+    }
+
+    public function delete(Entity $perm)
+    {
+        $this->repo->deleteOrFail($perm);
+
+        $ret = $perm->toArrayDeleted();
+
+        $ret = array_merge($ret, ['success' => true]);
+
+        return $ret;
+    }
 }

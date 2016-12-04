@@ -24,8 +24,6 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT       = 'deleted_at';
 
-    protected $table = Table::GROUP;
-
     protected $entity = 'group';
 
     protected static $sign = 'grp';
@@ -103,9 +101,14 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
-    public function setPublicOrgIdAttribute(array & $array)
+    public function setPublicOrgIdAttribute(array & $attributes)
     {
-        $array[self::ORG_ID] = Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+        $orgId = $this->getAttribute(self::ORG_ID);
+
+        if ($orgId !== null)
+        {
+            $attributes[self::ORG_ID] = Org\Entity::getSignedId($orgId);
+        }
     }
 
     public function getName()

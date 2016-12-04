@@ -229,40 +229,46 @@ class AdminController extends Controller
 
 // --------------------- CRUD for Permissions ----------------------------------------
 
-    // public function createPermission()
-    // {
-    //     $input = Request::all();
-    //
-    //     $data = (new Admin\Permission\Service)->createPermission($input);
-    //
-    //     return ApiResponse::json($data);
-    // }
-    //
-    // public function createPermissionsFromJson()
-    // {
-    //     $input = Request::all();
-    //
-    //     $data = (new Admin\Permission\Service)->createPermissionsFromJson(
-    //         $input);
-    //
-    //     return ApiResponse::json($data);
-    // }
-    //
-    // public function getPermission(string $permissionId)
-    // {
-    //     $data = (new Admin\Permission\Service)->getPermission($permissionId);
-    //
-    //     return ApiResponse::json($data);
-    // }
+     public function createPermission()
+     {
+         $input = Request::all();
 
-    public function getMultiplePermissions()
-    {
-        $input = Request::all();
+         $data = (new Admin\Permission\Service)->createPermission($input);
 
-        $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
+         return ApiResponse::json($data);
+     }
 
-        return ApiResponse::json($data);
-    }
+     public function deletePermission(string $permId)
+     {
+         $data = (new Admin\Permission\Service)->deletePermission($permId);
+
+         return ApiResponse::json($data);
+     }
+
+     public function getPermission(string $permissionId)
+     {
+         $data = (new Admin\Permission\Service)->getPermission($permissionId);
+
+         return ApiResponse::json($data);
+     }
+
+     public function putPermission(string $permissionId)
+     {
+         $input = Request::all();
+
+         $data = (new Admin\Permission\Service)->editPermission($permissionId, $input);
+
+         return ApiResponse::json($data);
+     }
+
+     public function getMultiplePermissions()
+     {
+         $input = Request::all();
+
+         $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
+
+         return ApiResponse::json($data);
+     }
 
 // --------------------- END CRUD for Permissions ----------------------------------------
 

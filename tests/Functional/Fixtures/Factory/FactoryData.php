@@ -382,8 +382,9 @@ final class FactoryData
 
         $factory(\RZP\Models\Admin\Permission\Entity::class, [
             'id'            => $faker->uniqueid,
-            'name'          => 'view_merchant_balance',
-            'description'   => 'permission to view balance',
+            'name'          => $faker->word,
+            'category'      => 'test category',
+            'description'   => 'test description',
         ]);
 
         $factory(\RZP\Models\Admin\Role\Entity::class, [

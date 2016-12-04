@@ -74,7 +74,7 @@ return [
                 'email'                 => 'xyz@rzp.com',
                 'username'              => 'harshil',
                 'password'              => 'x',
-                'password_confirmation' => 'helloworld',
+                'password_confirmation' => 'x',
                 'remember_token'        => 'yes',
                 'oauth_access_token'    => 'oauth123',
                 'oauth_provider_id'     => 'google',
@@ -89,7 +89,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The password must be between 6 and 50 characters.',
+                    'description' => 'Password should be atleast 8 characters long',
                 ],
             ],
             'status_code' => 400,
@@ -108,8 +108,8 @@ return [
                 'name'                  => 'testadmin',
                 'email'                 => 'xyz@rzp.com',
                 'username'              => 'harshil',
-                'password'              => '1a2s3d4f5g6h7j8k9l1q',
-                'password_confirmation' => '1a2s3d4f5g6h7j8k9l1q',
+                'password'              => '1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q',
+                'password_confirmation' => '1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q1a2s3d4f5g6h7j8k9l1q',
                 'remember_token'        => 'yes',
                 'oauth_access_token'    => 'oauth123',
                 'oauth_provider_id'     => 'google',
