@@ -118,6 +118,7 @@ class Service extends Base\Service
                 if ($group['id'] === $reject['id'])
                 {
                     $isReject = true;
+                    break;
                 }
             }
 

@@ -17,9 +17,9 @@ class Validator extends Base\Validator
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD              => 'sometimes|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'sometimes',
-        Entity::REMEMBER_TOKEN        => 'sometimes|string|max:250',
-        Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:250',
-        Entity::OAUTH_PROVIDER_ID     => 'sometimes|string|max:250',
+        Entity::REMEMBER_TOKEN        => 'sometimes|string|max:255',
+        Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:255',
+        Entity::OAUTH_PROVIDER_ID     => 'sometimes|string|max:255',
         //TODO remove it later
         Entity::BRANCH_CODE           => 'required|string',
         Entity::DEPARTMENT_CODE       => 'required|string',
@@ -47,7 +47,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $loginRules = [
-        Entity::USERNAME              => 'required|email|max:250',
+        Entity::USERNAME              => 'required|email|max:255',
         Entity::PASSWORD              => 'required'
     ];
 
