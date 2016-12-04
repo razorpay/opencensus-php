@@ -116,8 +116,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $chancePercent = $options->getChance();
 
-            $boostedTerminalId = $this->getBoostedTerminalId(
-                $terminals, $chancePercent);
+            $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
 
             if (is_null($boostedTerminalId) == false)
             {

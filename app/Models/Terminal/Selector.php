@@ -62,8 +62,8 @@ class Selector
     public function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo->terminal->
-            getTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
+        $merchantTerminals = $this->repo->terminal->getTerminalsForMerchantAndSharedMerchant(
+            $this->merchant->getId());
 
         // Fetch Shared Terminals
         $sharedTerminals = $this->repo->terminal->getAllSharedTerminals();
