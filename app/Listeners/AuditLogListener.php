@@ -161,7 +161,7 @@ class AuditLogListener
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(TraceCode::HEIMDALL_AUDIT_LOG_FAIL, $e);
+            $this->trace->warning(TraceCode::HEIMDALL_AUDIT_LOG_FAIL, ['msg' => $e]);
         }
 
         $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, ['event' => $event, 'fields' => $fields, 'type' => $type]);
