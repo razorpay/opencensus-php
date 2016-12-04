@@ -151,7 +151,7 @@ class AuditLogListener
 
         try
         {
-            if ($this->config->get('heimdall.is_es_enabled'))
+            if ($this->config->get('database.es_mock') === false)
             {
                 // $fields['extra'] = ...;
                 $this->esDao->storeAdminEvent(

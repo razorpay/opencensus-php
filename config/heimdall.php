@@ -42,5 +42,4 @@ return [
 
     'default_role_name' => 'superadmin',
     'default_role_desc' => 'superadmin with all possible permissions',
-    'is_es_enabled' => env('ES_MOCK') === true ? false : true
 ];

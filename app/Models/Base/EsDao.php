@@ -293,33 +293,50 @@ class EsDao
         ];
 
         $updateReponse = $this->esHeimdall->createIndex($params);
-
-        // TODO: log this if need arises
-
-        // sd($updateReponse);
     }
 
     public function searchAuditLogs($orgId)
     {
+        $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+        $baseIndex = $this->config->get('database.es_heimdall')[$mode];
+
+        $index = $baseIndex.'_'.$orgId;
+
         $params = [
-            'index'  => $orgId
+            'index'  => $index
         ];
         $results =  $this->esHeimdall->search($params);
 
+        return $this->formatAuditLogResults($results);
+    }
+
+    protected function formatAuditLogResults($results)
+    {
         // format results
         $keyMap = [
             '_id' => 'id',
             '_source' => 'event'
         ];
 
+        $exclude = ['_index','_type','_score'];
+
         foreach($results as &$item)
         {
             foreach ($keyMap as $key => $replace)
             {
-                if (key_exists($key, $item) === true)
+                if (isset($item[$key]) === true)
                 {
                     $item[$replace] = $item[$key];
 
+                    unset($item[$key]);
+                }
+            }
+
+            foreach($exclude as $key)
+            {
+                if (isset($item[$key]))
+                {
                     unset($item[$key]);
                 }
             }
