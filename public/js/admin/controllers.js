@@ -49,8 +49,8 @@ angular.module('app.controllers', [
 
       case 'icici':
         theme.apply(angular.extend(baseTheme, {
-          navBg: '#0A3D6B',
-          primary : '#F07937',
+          navBg : '#F07937',
+          primary: '#0A3D6B',
         }));
         break;
 
