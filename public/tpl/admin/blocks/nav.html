@@ -79,11 +79,17 @@
       <span>Permissions</span>
     </a>
   </li>
-
   <li ng-show="admin.permissions.indexOf('view_group') !== -1">
     <a id="groupsNav" ui-sref="app.groups.list">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Groups</span>
+    </a>
+  </li>
+  <!-- ng-show="admin.permissions.indexOf('view_audit_log') !== -1" -->
+  <li >
+    <a id="auditlogNav" ui-sref="app.auditlogs.list">
+      <i class="fa fa-users icon text-warning-lter"></i>
+      <span>Audit Log</span>
     </a>
   </li>
 </ul>

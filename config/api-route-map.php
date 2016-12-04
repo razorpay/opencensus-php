@@ -7,6 +7,7 @@ return [
     'org_edit'                          => 'orgs/{id}',
     'org_delete'                        => 'orgs/{id}',
 
+    'org_admin_logs'                    => 'admin/auditlog/search/id',
     // Roles
     'role_get_multiple'                 => 'orgs/{id}/roles',
     'role_get'                          => 'orgs/{id}/roles/{roleId}',
