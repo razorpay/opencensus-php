@@ -13,6 +13,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
 use Mail;
+use RZP\Models\Merchant;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
