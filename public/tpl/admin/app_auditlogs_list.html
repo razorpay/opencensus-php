@@ -1,0 +1,50 @@
+<div ng-controller="AuditlogsCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Audit Log
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of Audit Log Entries
+      </div>
+      <!-- <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div> -->
+      <!-- <div class="row wrapper"> -->
+<!--         <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div> -->
+        <!-- <div class="col-md-6">
+          <button id='sendInvitationButton' class='btn btn-default pull-right' ui-sref="app.merchants.invite">
+            Invite a Merchant
+          </button>
+        </div>
+      </div> -->
+      <!-- <div> -->
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>Actor</th>
+              <th>Category</th>
+              <th>Event Type</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in audit_logs">
+              <td>{{row.event.admin.name}}</td>
+              <td>{{row.event.category}}</td>
+              <td>{{row.event.action}}</td>
+            </tr>
+            <tr ng-show="invitations.length == 0">
+              <td colspan="6">No Activity</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

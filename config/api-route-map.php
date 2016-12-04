@@ -31,6 +31,9 @@ return [
     'admin_create'                      => 'orgs/{id}/admins',
     'admin_get_app_auth'                => 'orgs/{id}/current_admin',
 
+    // AuditLog
+    'admin_auditlog'                    => 'admin/auditlog/search/{id}',
+
     // Permissions
     'permission_get_multiple'           => 'permissions',
     'permission_create'                 => 'permissions',

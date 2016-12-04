@@ -164,6 +164,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse(['Invalid Credentials'], []);
     }
 
+    public function getAuditLogs()
+    {
+        $domain = request()->server->get('SERVER_NAME');
+
+        list($error, $data) = (new Admin\Service)->getAuditLogs($domain);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getOrg()
     {
         $domain = request()->server->get('SERVER_NAME');

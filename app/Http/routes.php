@@ -317,6 +317,8 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::delete('/admin/generic', 'GenericController@deleteGeneric');
     Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
     Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
+
+    Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
     Route::get('admin/get_current');
 });
 
