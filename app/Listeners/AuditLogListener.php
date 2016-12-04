@@ -149,12 +149,19 @@ class AuditLogListener
             // environment, etc.
         ];
 
-        if ($this->config->get('heimdall.is_es_enabled'))
+        try
         {
-            // $fields['extra'] = ...;
-            $this->esDao->storeAdminEvent(
-                $index, $type, $fields
-            );
+            if ($this->config->get('heimdall.is_es_enabled'))
+            {
+                // $fields['extra'] = ...;
+                $this->esDao->storeAdminEvent(
+                    $index, $type, $fields
+                );
+            }
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(TraceCode::HEIMDALL_AUDIT_LOG_FAIL, $e);
         }
 
         $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, ['event' => $event, 'fields' => $fields, 'type' => $type]);
