@@ -57,7 +57,7 @@ class Core extends Base\Core
 
         $subMerchant = (new Merchant\Entity)->build($input);
 
-        $merchant->setAuditAction(Action::CREATE_SUBMERCHANT);
+        $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 

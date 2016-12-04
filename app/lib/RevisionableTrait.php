@@ -179,6 +179,11 @@ trait RevisionableTrait
 
                     $admin = $this->getAdmin();
 
+                    if ($admin === null)
+                    {
+                        return;
+                    }
+
                     $action = $this->getAuditAction();
 
                     $trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
@@ -222,6 +227,11 @@ trait RevisionableTrait
                 $trace = $this->getTrace();
 
                 $admin = $this->getAdmin();
+
+                if ($admin === null)
+                {
+                    return ;
+                }
 
                 $action = $this->getAuditAction();
 
@@ -462,9 +472,16 @@ trait RevisionableTrait
 
     protected function getAdmin()
     {
-        $app = App::getFacadeRoot();
+        try
+        {
+            $app = App::getFacadeRoot();
 
-        return $app['basicauth']->getAdmin();
+            return $app['basicauth']->getAdmin();
+        }
+        catch(\Exception $e)
+        {
+            return null;
+        }
     }
 
     protected function getTrace()
