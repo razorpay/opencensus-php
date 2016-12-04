@@ -63,6 +63,9 @@ class PermissionTest extends TestCase
         $perm = $this->fixtures->times(2)->create(
             'permission', ['category' => 'test cat2']);
 
+        $perm = $this->fixtures->create(
+            'permission', ['category' => 'test cat3']);
+
         $this->startTest();
     }
 
