@@ -320,6 +320,9 @@ class AdminController extends Controller
     {
         try
         {
+            // Indexes use lower case of orgid
+            $orgId = strtolower($orgId);
+
             $response = (new Admin\Admin\Service)->searchAuditLogs($orgId);
 
             return ApiResponse::json($response);

@@ -654,6 +654,7 @@ final class Route
         'permission_create',
         'permission_edit',
         'permission_delete',
+        'auditlog_search',
     ];
 
     public static $adminPermission = [
@@ -709,6 +710,7 @@ final class Route
         'permission_edit'            => ['edit_permission'],
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
+        'auditlog_search'            => ['view_auditlog'],
     ];
 
     public static $direct = array(
@@ -728,7 +730,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
-        'auditlog_search',
+        'auditlog_search'
     );
 
     public static $internalApps = array(

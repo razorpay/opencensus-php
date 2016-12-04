@@ -38,6 +38,7 @@ return [
         'edit_admin',
         'delete_admin',
         'view_all_permission',
+        'view_auditlog',
     ],
 
     'default_role_name' => 'superadmin',
