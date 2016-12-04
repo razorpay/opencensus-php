@@ -103,3 +103,7 @@
 6mPyowCC4eEiQF,"edit_admin","admin",""
 6mPyowlZtmUvj8,"delete_admin","admin",""
 6mPyoxYii0LlRH,"view_all_permission","permission",""
+6mPyoxYii0LQSI,"create_permission","permission",""
+6mPyoxYii0lQSJ,"edit_permission","permission",""
+6mPyoxYii0lQSK,"delete_permission","permission",""
+6mPyoxYii0lQSL,"get_permission","permission",""

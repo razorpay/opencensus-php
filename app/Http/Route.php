@@ -328,14 +328,14 @@ final class Route
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'AdminController@postLockBulkAccounts'                              ],
 
         // Permission can only be created by certain organisations.
-        // 'permission_create'                       => ['post',     'permissions',                                    'AdminController@createPermission'                                  ],
-        // 'permission_create_json'                  => ['post',     'permissions/json',                               'AdminController@createPermissionsFromJson'                         ],
+        'permission_create'                       => ['post',     'permissions',                                    'AdminController@createPermission'                                  ],
+        'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
         'permission_get_multiple'                 => ['get',      'permissions',                                    'AdminController@getMultiplePermissions'                            ],
-        // 'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
-        // 'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermissions'                                    ],
-        // 'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
-        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                 ],
-        'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                       ],
+        'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
+        'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermission',
+                  ],
+        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                  ],
+        'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
     );
 
     public static $public = array(
@@ -649,6 +649,10 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'permission_get',
+        'permission_create',
+        'permission_edit',
+        'permission_delete',
     ];
 
     public static $adminPermission = [
@@ -700,6 +704,10 @@ final class Route
         'schedule_assign'            => ['schedule_assign'],
         'schedule_migration'         => ['schedule_migration'],
         'admin_fetch_merchant_ids'   => ['view_all_merchants'],
+        'permission_create'          => ['create_permission'],
+        'permission_edit'            => ['edit_permission'],
+        'permission_get'             => ['get_permission'],
+        'permission_delete'          => ['delete_permission'],
     ];
 
     public static $direct = array(

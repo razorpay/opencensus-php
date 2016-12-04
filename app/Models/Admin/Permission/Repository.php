@@ -8,12 +8,19 @@ class Repository extends Base\Repository
 {
     protected $entity = 'permission';
 
+    protected $adminFetchParamRules = [
+        Entity::CATEGORY  => 'sometimes|string|max:255',
+        Entity::NAME      => 'sometimes|string|max:255',
+    ];
+
     protected $proxyFetchParamRules = [
+        Entity::CATEGORY  => 'sometimes|string|max:255',
         Entity::NAME    => 'sometimes|string',
     ];
 
     protected $appFetchParamRules = [
-        Entity::NAME    => 'sometimes|string',
+        Entity::CATEGORY  => 'sometimes|string|max:255',
+        Entity::NAME      => 'sometimes|string',
     ];
 
     public function isMerchantIdRequiredForFetch()

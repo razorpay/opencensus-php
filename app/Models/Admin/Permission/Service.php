@@ -18,22 +18,37 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($permissionId);
 
-        $permission = $this->repo->permission->findOrFail($permissionId);
+        $permission = $this->repo->permission->findorfailpublic($permissionId);
 
         return $permission->toArrayPublic();
+    }
+
+    public function deletePermission(string $permId)
+    {
+        Entity::verifyIdAndStripSign($permId);
+
+        $perm = $this->repo->permission->findorfailpublic($permId);
+
+        $data = $this->core()->delete($perm);
+
+        return $data;
+    }
+
+    public function editPermission(string $permId, array $input)
+    {
+        Entity::verifyIdAndStripSign($permId);
+
+        $perm = $this->repo->permission->findOrFail($permId);
+
+        $perm = $this->core()->edit($perm, $input);
+
+        return $perm->toArrayPublic();
     }
 
     public function getMultiplePermissions(array $input)
     {
-        $permission = $this->repo->permission->fetchAll($input);
+        $perms = $this->repo->permission->fetch($input);
 
-        return $permission->toArrayPublic();
-    }
-
-    public function createPermissionsFromJson(array $input)
-    {
-        $permission = (new Core)->create($input);
-
-        return $permission->toArrayPublic();
+        return $perms->toArrayPublic();
     }
 }
