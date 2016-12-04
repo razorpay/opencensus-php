@@ -87,6 +87,8 @@ class Service extends Base\Service
     private function generateLoginToken($admin)
     {
         $admin->resetFailedAttempts();
+        $admin->updateLastLoginAt();
+
         $this->repo->saveOrFail($admin);
 
         $tokenAttributes = [
