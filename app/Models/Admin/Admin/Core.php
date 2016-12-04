@@ -114,22 +114,22 @@ class Core extends Base\Core
         {
             Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
 
-            $admin->roles()->sync($input['roles']);
+            $this->repo->sync($admin, 'roles',  $input['roles']);
         }
         else
         {
-            $admin->roles()->sync([]);
+            $this->repo->sync($admin, 'roles',  []);
         }
 
         if (isset($input['groups']) === true)
         {
             Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
 
-            $admin->groups()->sync($input['groups']);
+            $this->repo->sync($admin, 'groups', $input['groups']);
         }
         else
         {
-            $admin->groups()->sync([]);
+            $this->repo->sync($admin, 'groups', []);
         }
     }
 }

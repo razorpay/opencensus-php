@@ -95,6 +95,20 @@ class Repository extends \Razorpay\Spine\Repository
         $this->saveInEs($entity, $dirty);
     }
 
+    public function sync($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->sync($ids);
+
+        return $this;
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $entity->$relation()->attach($id, $attributes, $touch);
+
+        return $this;
+    }
+
     public function getEntityClass()
     {
         return E::getEntityClass($this->entity);

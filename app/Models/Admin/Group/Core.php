@@ -48,12 +48,12 @@ class Core extends Base\Core
         {
             Entity::verifyIdAndStripSignMultiple($input['parents']);
 
-            $group->parents()->sync($input['parents']);
+            $this->repo->sync($group, 'parents', $input['parents']);
         }
         else
         {
             // Deletion of all
-            $group->parents()->sync([]);
+            $this->repo->sync($group, 'parents', []);
         }
     }
 }

@@ -380,7 +380,7 @@ class Service extends Base\Service
 
         $responseHash = [];
 
-        $merchants = Merchant\Entity::whereIn('id', $merchantIds)->get();
+        $merchants = $this->repo->merchant->findManyByIdsWithRelations($merchantIds);
 
         foreach ($merchants as $merchant)
         {

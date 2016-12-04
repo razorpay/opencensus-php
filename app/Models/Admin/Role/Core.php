@@ -51,12 +51,12 @@ class Core extends Base\Core
                 Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
             }
 
-            $role->permissions()->sync($input['permissions']);
+            $this->repo->sync($role, 'permissions', $input['permissions']);
         }
         else
         {
             // Deletion of all
-            $role->permissions()->sync([]);
+            $this->repo->sync($role, 'permissions', []);
         }
 
         return $role;

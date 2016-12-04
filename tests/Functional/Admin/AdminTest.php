@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use Carbon\Carbon;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
@@ -224,5 +226,82 @@ class AdminTest extends TestCase
         $result = $this->startTest();
 
         $this->assertEquals($admin->getPublicId(), $result['id']);
+    }
+
+    public function testLockUnusedAccounts()
+    {
+        $now = Carbon::now();
+        $now_minus_120 = $now->subDays(120);
+        $now_minus_40 = $now->subDays(40);
+
+        $admins = $this->fixtures->times(2)->create(
+            'admin',
+            [
+                'org_id' => $this->orgId,
+                'last_login_at' => $now_minus_120->timestamp,
+                'created_at' => $now_minus_120->timestamp,
+                'updated_at' => $now_minus_120->timestamp,
+            ]);
+
+        // Unactivated Accounts
+        $this->fixtures->times(2)->create(
+            'admin',
+            [
+                'org_id' => $this->orgId,
+                'last_login_at' => null,
+                'created_at' => $now_minus_40->timestamp,
+                'updated_at' => $now_minus_40->timestamp,
+            ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantIds()
+    {
+        $grp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+        $subGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $subGrp->parents()->attach($grp);
+
+        $merchantsGrp = $this->fixtures->create(
+            'merchant', ['org_id' => $this->orgId]);
+        $merchantsSubGrp = $this->fixtures->create(
+            'merchant', ['org_id' => $this->orgId]);
+
+        $grp->merchants()->attach($merchantsGrp);
+        $subGrp->merchants()->attach($merchantsSubGrp);
+
+        $adminGrp = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId]);
+        $adminSubGrp = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId]);
+
+        $adminGrp->merchants()->attach($merchantsGrp);
+        $adminSubGrp->merchants()->attach($merchantsSubGrp);
+
+        $grp->admins()->attach($adminGrp);
+        $subGrp->admins()->attach($adminSubGrp);
+
+        $merchantsAdminGrp = $this->fixtures->create(
+            'merchant', ['org_id' => $this->orgId]);
+        $merchantsAdminSubGrp = $this->fixtures->create(
+            'merchant', ['org_id' => $this->orgId]);
+
+        $adminGrp->merchants()->attach($merchantsAdminGrp);
+        $adminSubGrp->merchants()->attach($merchantsAdminSubGrp);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $adminGrp->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals(count($result), 4);
     }
 }

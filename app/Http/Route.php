@@ -578,6 +578,7 @@ final class Route
         'oauth_login',
         'org_get_self',
         'org_get_by_hostname',
+        'admin_lock_old_accounts',
     );
 
     public static $proxy = array(

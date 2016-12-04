@@ -61,7 +61,16 @@ class Org extends Base
 
         $permissions = $this->fixtures->create('permission:default_permissions');
 
-        $adminRole->permissions()->attach($permissions);
+        $liveAdminRole = clone $adminRole;
+        $testAdminRole = clone $adminRole;
+
+        $testAdminRole->permissions()->attach($permissions);
+
+        $this->onLive();
+
+        $liveAdminRole->permissions()->attach($permissions);
+
+        $this->fixtures->setDefaultConn();
 
         $admin = $this->fixtures->create('admin', [
             'id'     => self::RZP_USER,
@@ -69,7 +78,16 @@ class Org extends Base
             'email'  => 'admin@rzp.io'
         ]);
 
-        $admin->roles()->attach($adminRole);
+        $liveAdmin = clone $admin;
+        $testAdmin = clone $admin;
+
+        $testAdmin->roles()->attach($testAdminRole);
+
+        $this->onLive();
+
+        $liveAdmin->roles()->attach($liveAdminRole);
+
+        $this->fixtures->setDefaultConn();
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::RZP_USER,
