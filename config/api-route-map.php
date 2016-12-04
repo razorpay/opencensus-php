@@ -7,7 +7,6 @@ return [
     'org_edit'                          => 'orgs/{id}',
     'org_delete'                        => 'orgs/{id}',
 
-    'org_admin_logs'                    => 'admin/auditlog/search/id',
     // Roles
     'role_get_multiple'                 => 'orgs/{id}/roles',
     'role_get'                          => 'orgs/{id}/roles/{roleId}',
@@ -31,6 +30,9 @@ return [
     'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
     'admin_create'                      => 'orgs/{id}/admins',
     'admin_get_app_auth'                => 'orgs/{id}/current_admin',
+
+    // AuditLog
+    'admin_auditlog'                    => 'admin/auditlog/search/{id}',
 
     // Permissions
     'permission_get_multiple'           => 'permissions',

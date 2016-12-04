@@ -13,19 +13,17 @@ app.controller('AuditlogsCtrl', [
     $scope.count = 0;
 
     $scope.fetchAuditLogs = function () {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'org_audit_logs'
-        }
-      });
+
+      console.log('start');
+      var request = $http.get('/admin/auditlogs');
 
       $scope.audit_logs = []
       $scope.count = 0;
 
       request.success(function (data) {
         if (data.success) {
+          console.log(data);
           $scope.audit_logs = data.data;
-          $scope.count = data.data.count;
         }
       });
     }

@@ -13,6 +13,7 @@ use App\Mailers\MiscMailer;
 use App\Session as SessionTable;
 use App\Providers\ApiGuard;
 use App\Schedules;
+use App\Generic;
 
 use Auth;
 use Config;
@@ -251,6 +252,19 @@ class Service extends Base\Service
         }
 
         return [$error, null];
+    }
+
+    public function getAuditLogs($domain)
+    {
+        $orgId = $this->getOrgFromCache($domain);
+
+        $input = ['method' => 'get'];
+
+        $path = "admin/auditlog/search/$orgId";
+
+        list($error, $data) = (new Generic\Service)->call($input, $path);
+
+        return [$error, $data];
     }
 
     public function editAdmin($input, $id)
