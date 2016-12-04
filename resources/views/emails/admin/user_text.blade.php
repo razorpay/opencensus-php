@@ -4,7 +4,7 @@ We are writing to let you know that your account has been created with {{$user['
 
 You can access the dashboard with the following credentials at {{$user['url']}}
 
-- EMail:    {{$user['email']}}
+- Email:    {{$user['email']}}
 
 - Password:   {{$user['password']}}
 

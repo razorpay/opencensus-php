@@ -135,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOSTNAME);
     }
 
+    public function getDisplayName()
+    {
+        return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
     public function getAuthType()
     {
         return $this->getAttribute(self::AUTH_TYPE);

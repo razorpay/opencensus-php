@@ -110,25 +110,20 @@ class Service extends Base\Service
 
         $admin = $this->core()->create($org, $input);
 
-        $admin = $admin->toArrayPublic();
+        $this->sendAdminCreateEmail($admin, $input);
 
-        if (isset($admin) === true)
-        {
-            $this->sendAdminCreateEmail($admin, $input);
-        }
-
-        return $admin;
+        return $admin->toArrayPublic();
     }
 
-    public function sendAdminCreateEmail($data, $input)
+    public function sendAdminCreateEmail($admin, $input)
     {
-        $org = (new Org\Service)->fetch($data['org_id']);
+        $org = $admin->org;
 
         $from       = 'support@razorpay.com';
         $replyTo    = 'support@razorpay.com';
         $fromHeader = 'Team Razorpay';
-        $to         = $data['email'];
-        $subject    = 'Your admin account details for '. $org['display_name'].' dashboard';
+        $to         = $admin->getEmail();
+        $subject    = 'Your admin account details for ' . $org->getDisplayName() . ' dashboard';
 
         $view = [
             'html' => 'emails.admin.user',
@@ -137,10 +132,11 @@ class Service extends Base\Service
 
         $template = [
             'user' => [
-                'email' => $data['email'],
+                'email' => $admin->getEmail(),
+                // Hack for now. Remove it
                 'password' => $input['password'],
-                'org' => $org['display_name'],
-                'url' => $_ENV['APP_DASHBOARD_URL'],
+                'org' => $org->getDisplayName(),
+                'url' => $this->app['config']->get('applications.dashboard.url'),
             ]
         ];
 
