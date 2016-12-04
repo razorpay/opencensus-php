@@ -32,7 +32,7 @@ class Core extends Base\Core
 
         if (isset($input['groups']) === true)
         {
-            $merchant->groups()->sync($input['groups']);
+            $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
         return $merchant;
@@ -100,7 +100,7 @@ class Core extends Base\Core
 
         if (isset($input['groups']) === true)
         {
-            $merchant->groups()->sync($input['groups']);
+            $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
         $this->saveAndNotify($merchant);

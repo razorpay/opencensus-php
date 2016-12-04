@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use Config;
 use RZP\Exception;
 
 trait RepositoryUpdateTestAndLive
@@ -67,6 +68,100 @@ trait RepositoryUpdateTestAndLive
         $attributes = $liveEntity->getAttributes();
         $entity->setRawAttributes($attributes, true);
         $entity->exists = true;
+    }
+
+    public function sync($entity, $relation, $ids = array())
+    {
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
+
+        $changes = [];
+
+        try
+        {
+            //
+            // The entity hasn't been persisted yet.
+            // Create it's copies for live and test database
+            //
+            $testEntity = clone $entity;
+            $liveEntity = clone $entity;
+
+            $defaultConnection = Config::get('database.default');
+
+            // Persist the entity in both live and test databases.
+            Config::set('database.default', 'live');
+            $changes = $liveEntity->$relation()->sync($ids);
+
+            Config::set('database.default', 'test');
+            $testEntity->$relation()->sync($ids);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // Some error occurred, rollback now.
+            //
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
+
+            throw $e;
+        }
+        finally
+        {
+            Config::set('database.default', $defaultConnection);
+        }
+
+        // Update finished successfully, commit now.
+        $this->db->connection('live')->commit();
+        $this->db->connection('test')->commit();
+
+        $entity = $liveEntity;
+
+        return $changes;
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
+
+        try
+        {
+            //
+            // The entity hasn't been persisted yet.
+            // Create it's copies for live and test database
+            //
+            $testEntity = clone $entity;
+            $liveEntity = clone $entity;
+
+            $defaultConnection = Config::set('database.default');
+
+            // Persist the entity in both live and test databases.
+            Config::set('database.default', 'live');
+            $liveEntity->$relation()->attach($id);
+
+            Config::set('database.default', 'test');
+            $testEntity->$relation()->attach($id);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // Some error occurred, rollback now.
+            //
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
+
+            throw $e;
+        }
+        finally
+        {
+            Config::set('database.default', $defaultConnection);
+        }
+
+        // Update finished successfully, commit now.
+        $this->db->connection('live')->commit();
+        $this->db->connection('test')->commit();
+
+        $entity = $liveEntity;
     }
 
     public function delete($entity)
@@ -139,16 +234,12 @@ trait RepositoryUpdateTestAndLive
 
         if (count($diff1) > 0)
         {
-            ob_start();
-            print_r($diff1);
-            $msg .= ob_get_clean() . PHP_EOL;
+            $msg .= print_r($diff1, true) . PHP_EOL;
             $diff = true;
         }
         if (count($diff2) > 0)
         {
-            ob_start();
-            print_r($diff2);
-            $msg .= ob_get_clean() . PHP_EOL;
+            $msg .= print_r($diff2, true) . PHP_EOL;
             $diff = true;
         }
 
