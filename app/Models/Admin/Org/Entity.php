@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Org;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
+use Lib\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
@@ -12,6 +13,7 @@ use RZP\Models\Admin\Admin;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use RevisionableTrait;
 
     const AUTH_TYPE         = 'auth_type';
     const BUSINESS_NAME     = 'business_name';
@@ -28,6 +30,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'org';
 
     protected $generateIdOnCreate = false;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::DISPLAY_NAME,

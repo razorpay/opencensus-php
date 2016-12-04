@@ -16,6 +16,9 @@ class EsDao
 
     protected $mode;
 
+    // Logically seperated instance for heimdall
+    protected $esHeimdall;
+
     public function __construct($mode = null)
     {
         $this->app = App::getFacadeRoot();
@@ -25,6 +28,9 @@ class EsDao
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
 
+        // Heimdall hostname
+        $heimdallHost = $this->config->get('database.es_heimdall_host');
+
         // Since, we are using only one index, declaring the index name
         // in this class itself. If we have different indices based on some
         // logic, it makes sense to move it to an appropriate class then.
@@ -32,7 +38,14 @@ class EsDao
         // Live and Test have different index names in the ES cluster.
         $this->setIndexName($mode);
 
-        $this->es = $this->app['es'];
+        $this->es = $this->buildEsClient($hostName);
+
+        $this->esHeimdall = $this->buildEsClient($heimdallHost);
+    }
+
+    protected function buildEsClient($hostName)
+    {
+        $es = $this->app['es'];
 
         $params = [
             'hosts' => [
@@ -40,9 +53,9 @@ class EsDao
             ],
         ];
 
-        // Since the es client is being set on this, ensure that only this es
-        // instance is used to perform any operations on the client.
-        $this->es->setEsClient($params);
+        $es->setEsClient($params);
+
+        return $es;
     }
 
 
@@ -268,5 +281,67 @@ class EsDao
         ];
 
         return $this->es->changeIndexSettings($params);
+    }
+
+    // $admin, $action, $customProperties, $caller
+    public function storeAdminEvent($index, $type, $fields)
+    {
+        $params = [
+            'index' => $index,
+            'type'  => $type,
+            'body'  => $fields
+        ];
+
+        $updateReponse = $this->esHeimdall->createIndex($params);
+    }
+
+    public function searchAuditLogs($orgId)
+    {
+        $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+        $baseIndex = $this->config->get('database.es_heimdall')[$mode];
+
+        $index = $baseIndex.'_'.$orgId;
+
+        $params = [
+            'index'  => $index
+        ];
+        $results =  $this->esHeimdall->search($params);
+
+        return $this->formatAuditLogResults($results);
+    }
+
+    protected function formatAuditLogResults($results)
+    {
+        // format results
+        $keyMap = [
+            '_id' => 'id',
+            '_source' => 'event'
+        ];
+
+        $exclude = ['_index','_type','_score'];
+
+        foreach($results as &$item)
+        {
+            foreach ($keyMap as $key => $replace)
+            {
+                if (isset($item[$key]) === true)
+                {
+                    $item[$replace] = $item[$key];
+
+                    unset($item[$key]);
+                }
+            }
+
+            foreach($exclude as $key)
+            {
+                if (isset($item[$key]))
+                {
+                    unset($item[$key]);
+                }
+            }
+        }
+
+        return $results;
     }
 }

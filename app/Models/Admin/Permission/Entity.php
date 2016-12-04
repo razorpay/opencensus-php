@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use Lib\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
@@ -16,6 +19,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'perm';
 
     protected $generateIdOnCreate = true;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::ID,

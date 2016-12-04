@@ -166,6 +166,10 @@ class PermissionSeeder extends Seeder
             'permission' => [
                 'view_all_permission' => 'View all permissions',
             ],
+
+            'auditlog' => [
+                'view_auditlog'     => 'View auditlog for activities',
+            ],
         ];
 
         // trimmed down which an HDFC manager would have
@@ -230,6 +234,10 @@ class PermissionSeeder extends Seeder
             // Permissions
             'permission' => [
                 'view_all_permission' => 'View all permissions',
+            ],
+
+            'auditlog' => [
+                'view_auditlog'     => 'View auditlog for activities',
             ],
         ];
 

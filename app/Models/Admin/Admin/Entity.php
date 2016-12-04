@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
 use Hash;
+use Lib\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -14,6 +15,8 @@ use RZP\Models\Admin\Org;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    // enable revisioning on this entity
+    use RevisionableTrait;
 
     const ORG_ID                = 'org_id';
     const NAME                  = 'name';
@@ -39,6 +42,19 @@ class Entity extends Base\PublicEntity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
+
+    protected $dontKeepRevisionOf = [
+        self::PASSWORD,
+        self::PASSWORD_CONFIRMATION,
+        self::REMEMBER_TOKEN,
+        self::OAUTH_ACCESS_TOKEN,
+        self::OAUTH_PROVIDER_ID,
+        self::OLD_PASSWORDS
+    ];
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected static $sign = 'admin';
 

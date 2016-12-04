@@ -86,7 +86,7 @@ class EsClient
 
     public function createIndex($params)
     {
-        return $this->client->indices()->create($params);
+        return $this->client->index($params);
     }
 
     public function deleteIndex($params)
@@ -99,5 +99,29 @@ class EsClient
         $this->client->indices()->putSettings($params);
     }
 
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    public function search($params)
+    {
+        // If ES mock is set to true.
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
+        $searchResponse = $this->client->search($params);
+
+        if ($searchResponse['hits']['total'] === 0)
+        {
+            return null;
+        }
+
+        $entityResults = $searchResponse['hits']['hits'];
+
+        return $entityResults;
+    }
 
 }

@@ -11,6 +11,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Exception;
+use RZP\Models\Admin\Action;
 
 use Config;
 
@@ -19,6 +20,8 @@ class Core extends Base\Core
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
+
+        $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];
 
@@ -53,6 +56,8 @@ class Core extends Base\Core
         }
 
         $subMerchant = (new Merchant\Entity)->build($input);
+
+        $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
@@ -92,6 +97,8 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
+        $merchant->setAuditAction(Action::EDIT_MERCHANT);
+
         $merchant->edit($input);
 
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);

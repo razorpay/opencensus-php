@@ -6,12 +6,15 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
     public function create(array $input, Org\Entity $org)
     {
         $group = (new Entity)->generateId();
+
+        $group->setAuditAction(Action::CREATE_GROUP);
 
         $group->build($input);
 
@@ -28,6 +31,8 @@ class Core extends Base\Core
 
     public function edit(Entity $group, array $input)
     {
+        $group->setAuditAction(Action::EDIT_GROUP);
+
         $group->edit($input);
 
         $this->repo->saveOrFail($group);

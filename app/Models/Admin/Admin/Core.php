@@ -7,12 +7,15 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
     public function create(Org\Entity $org, array $input)
     {
         $admin = (new Entity)->generateId();
+
+        $admin->setAuditAction(Action::CREATE_ADMIN);
 
         $admin->org()->associate($org);
 
@@ -33,6 +36,7 @@ class Core extends Base\Core
         $token = new Token\Entity();
 
         $token->build($input);
+
         $token->admin()->associate($admin);
 
         $token->saveOrFail();
@@ -67,6 +71,8 @@ class Core extends Base\Core
 
     public function edit(Entity $admin, array $input)
     {
+        $admin->setAuditAction(Action::EDIT_ADMIN);
+
         $admin->edit($input);
 
         $this->repo->saveOrFail($admin);

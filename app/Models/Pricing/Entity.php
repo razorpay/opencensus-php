@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Pricing;
 
+use Lib\RevisionableTrait;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';
     const PLAN_NAME             = 'plan_name';
@@ -29,6 +32,11 @@ class Entity extends Base\PublicEntity
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
 
     protected $fillable = array(
         self::ID,

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Lib\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
@@ -10,6 +11,8 @@ use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
@@ -52,6 +55,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = '';
 
     protected static $delimiter = '';
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);

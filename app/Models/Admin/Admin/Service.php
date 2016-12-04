@@ -3,16 +3,20 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use Event;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Admin\Action;
 use Mail;
+use RZP\Models\Merchant;
+use RZP\Events\AuditLogEntry;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base\EsDao;
 
 class Service extends Base\Service
 {
@@ -41,23 +45,70 @@ class Service extends Base\Service
         $admin->getValidator()->validateCredentials($input);
 
         $authPolicy = new AuthPolicy\Service;
+
         $authPolicy->validateLogin($admin, $input['password']);
 
         // Valid password ?
+        $isAuthenticated = true;
+
+        $errorCode = null;
+
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
 
             $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
 
+            // Send admin, description, entity object
+
+            if ($validate !== null)
+            {
+                $isAuthenticated = false;
+
+                $errorCode = Error\ErrorCode::BAD_REQUEST_AUTH_VALIDATION_FAILED;
+            }
+            else
+            {
+                $this->fireAdminAction($admin, Action::LOGIN);
+            }
+
             return $data;
         }
+        else
+        {
+            $isAuthenticated = false;
 
-        $admin->incrementFailedAttempts();
-        $this->repo->saveOrFail($admin);
+            $errorCode = Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED;
+        }
 
-        throw new Exception\BadRequestException(
-            Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        return $this->handleAuthFailure($isAuthenticated, $errorCode, $admin);
+    }
+
+    protected function handleAuthFailure(bool $isAuthenticated, string $errorCode, $admin)
+    {
+        if ($isAuthenticated === false)
+        {
+            $admin->incrementFailedAttempts();
+
+            $this->fireAdminAction($admin, Action::LOGIN_FAIL, ['failed_attempts' => $admin->getFailedAttempts]);
+
+            $this->repo->saveOrFail($admin);
+
+            throw new Exception\BadRequestException($errorCode);
+
+        }
+    }
+
+    protected function fireAdminAction(Entity $admin, array $action, array $customProperties = null)
+    {
+        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
+
+        if (!is_array($admin))
+        {
+            $admin = $admin->toArrayPublic();
+        }
+        event(new AuditLogEntry($admin, $action, $customProperties));
+        //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function loginWithOAuth($input)
@@ -73,11 +124,16 @@ class Service extends Base\Service
         {
             $data = $this->generateLoginToken($admin);
 
+            $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+
             return $data;
         }
         else
         {
             $admin->incrementFailedAttempts();
+
+            $this->fireAdminAction($admin, Action::LOGIN_FAIL_OAUTH, ['failed_attempts' => $admin->getFailedAttempts()]);
+
             $this->repo->saveOrFail($admin);
 
             throw new Exception\BadRequestException(
@@ -89,7 +145,10 @@ class Service extends Base\Service
 
     private function generateLoginToken($admin)
     {
+        $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
+
         $admin->resetFailedAttempts();
+
         $admin->updateLastLoginAt();
 
         $this->repo->saveOrFail($admin);
@@ -123,6 +182,11 @@ class Service extends Base\Service
     public function sendAdminCreateEmail($admin, $input)
     {
         $org = $admin->org;
+
+        if ($org['auth_type'] !== 'password')
+        {
+            return;
+        }
 
         $from       = 'support@razorpay.com';
         $replyTo    = 'support@razorpay.com';
@@ -338,5 +402,21 @@ class Service extends Base\Service
         $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
 
         return ['count' => $unactivatedAccounts + $unusedAccounts];
+    }
+
+    public function searchAuditLogs($orgId)
+    {
+        try
+        {
+            $esDao = new EsDao();
+
+            return $esDao->searchAuditLogs($orgId);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(TraceCode::HEIMDALL_AUDIT_LOG_SEARCH_FAIL, ['error' => $e]);
+
+            throw $e;
+        }
     }
 }

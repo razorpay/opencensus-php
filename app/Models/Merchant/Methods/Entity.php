@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use Lib\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
     const NETBANKING        = 'netbanking';
@@ -29,6 +32,10 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::MERCHANT_ID;
 
     protected $entity = 'methods';
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = array(
         self::MERCHANT_ID,
