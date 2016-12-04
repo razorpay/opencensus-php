@@ -135,6 +135,9 @@ class Service extends Base\Service
             $this->fireAdminAction($admin, Action::LOGIN_FAIL_OUATH, ['failed_attempts' => $admin->getFailedAttempts()]);
 
             $this->repo->saveOrFail($admin);
+
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
 
         return null;
@@ -142,7 +145,11 @@ class Service extends Base\Service
 
     private function generateLoginToken($admin)
     {
+        $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
+
         $admin->resetFailedAttempts();
+
+        $admin->updateLastLoginAt();
 
         $this->repo->saveOrFail($admin);
 
@@ -154,13 +161,9 @@ class Service extends Base\Service
         // Create a token for the user
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
-        $adminObj = $admin;
-
         $admin = $admin->toArrayPublic();
 
         $admin['token'] = $token->getToken();
-
-        $this->fireAdminAction($adminObj, Action::GENERATE_LOGIN_TOKEN);
 
         return $admin;
     }
@@ -171,19 +174,14 @@ class Service extends Base\Service
 
         $admin = $this->core()->create($org, $input);
 
-        $admin = $admin->toArrayPublic();
+        $this->sendAdminCreateEmail($admin, $input);
 
-        if (isset($admin) === true)
-        {
-            $this->sendAdminCreateEmail($admin, $input);
-        }
-
-        return $admin;
+        return $admin->toArrayPublic();
     }
 
-    public function sendAdminCreateEmail($data, $input)
+    public function sendAdminCreateEmail($admin, $input)
     {
-        $org = (new Org\Service)->fetch($data['org_id']);
+        $org = $admin->org;
 
         if ($org['auth_type'] !== 'password')
         {
@@ -193,8 +191,8 @@ class Service extends Base\Service
         $from       = 'support@razorpay.com';
         $replyTo    = 'support@razorpay.com';
         $fromHeader = 'Team Razorpay';
-        $to         = $data['email'];
-        $subject    = 'Your admin account details for '. $org['display_name'].' dashboard';
+        $to         = $admin->getEmail();
+        $subject    = 'Your admin account details for ' . $org->getDisplayName() . ' dashboard';
 
         $view = [
             'html' => 'emails.admin.user',
@@ -203,10 +201,11 @@ class Service extends Base\Service
 
         $template = [
             'user' => [
-                'email' => $data['email'],
+                'email' => $admin->getEmail(),
+                // Hack for now. Remove it
                 'password' => $input['password'],
-                'org' => $org['display_name'],
-                'url' => $_ENV['APP_DASHBOARD_URL'],
+                'org' => $org->getDisplayName(),
+                'url' => $this->app['config']->get('applications.dashboard.url'),
             ]
         ];
 

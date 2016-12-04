@@ -134,6 +134,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');

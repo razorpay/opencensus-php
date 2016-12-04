@@ -284,7 +284,7 @@ class AdminController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function oAuthLogin(Admin\Service $service)
+    public function oAuthLogin(string $orgId)
     {
         $input = Request::all();
 

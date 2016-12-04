@@ -332,11 +332,11 @@ final class Route
         'permission_get'                          => ['get',      'permissions/{permissionId}',                     'AdminController@getPermission'                                     ],
         'permission_get_multiple'                 => ['get',      'permissions',                                    'AdminController@getMultiplePermissions'                            ],
         'permission_delete'                       => ['delete',   'permissions/{permissionId}',                     'AdminController@deletePermission'                                  ],
-        'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermission',
-                  ],
+        'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermission',                                    ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                  ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
-        'auditlog_search'                         => ['get',      'admin/auditlog/search/{id}',                          'AdminController@auditLogSearch'                                    ],
+        'auditlog_search'                         => ['get',      'admin/auditlog/search/{id}',                     'AdminController@auditLogSearch'                                    ],
+        'oauth_login'                             => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
     );
 
     public static $public = array(
