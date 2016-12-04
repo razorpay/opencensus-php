@@ -147,11 +147,14 @@ class AuditLogListener
             // environment, etc.
         ];
 
-        // $fields['extra'] = ...;
-        $this->esDao->storeAdminEvent(
-            $index, $type, $fields
-        );
+        if ($this->app['is_es_enabled'])
+        {
+            // $fields['extra'] = ...;
+            $this->esDao->storeAdminEvent(
+                $index, $type, $fields
+            );
+        }
 
-        $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, [$event]);
+        $this->trace->info(TraceCode::HEIMDALL_EVENT_RECORD, ['event' => $event, 'fields' => $fields, 'type' => $type]);
     }
 }
