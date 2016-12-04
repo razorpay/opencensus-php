@@ -189,4 +189,29 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testLockUnusedAccounts' => [
+        'request' => [
+            'url' => '/admins/lock_accounts',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 4,
+            ],
+        ],
+    ],
+
+    'testGetMerchantIds' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s/merchant_ids',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ]
 ];

@@ -46,7 +46,7 @@ class Repository extends Base\Repository
     public function lockUnactivatedAccounts($timestamp)
     {
         return $this->newQuery()
-                    ->whereNull(Entity::LAST_LOGIN)
+                    ->whereNull(Entity::LAST_LOGIN_AT)
                     ->where(Entity::CREATED_AT, '<=', $timestamp)
                     ->update([
                         Entity::LOCKED => true,
@@ -56,7 +56,7 @@ class Repository extends Base\Repository
     public function lockUnusedAccounts($timestamp)
     {
         return $this->newQuery()
-                    ->where(Entity::LAST_LOGIN, '<=', $timestamp)
+                    ->where(Entity::LAST_LOGIN_AT, '<=', $timestamp)
                     ->update([
                         Entity::LOCKED => true,
                     ]);
