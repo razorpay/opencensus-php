@@ -38,6 +38,8 @@ class AuditLogListener
 
     protected $baseIndex;
 
+    protected $config;
+
     /**
      * Create the event listener.
      *
@@ -55,11 +57,11 @@ class AuditLogListener
 
         $this->esDao = new EsDao();
 
-        $config = $this->app['config'];
+        $this->config = $this->app['config'];
 
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        $this->baseIndex = $config->get('database.es_heimdall')[$mode];
+        $this->baseIndex = $this->config->get('database.es_heimdall')[$mode];
     }
 
 
@@ -147,7 +149,7 @@ class AuditLogListener
             // environment, etc.
         ];
 
-        if ($this->app['is_es_enabled'])
+        if ($this->config->get('heimdall.is_es_enabled'))
         {
             // $fields['extra'] = ...;
             $this->esDao->storeAdminEvent(
