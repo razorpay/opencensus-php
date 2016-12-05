@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
 use Hash;
+use Carbon\Carbon;
 use Lib\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Constants\Table;
@@ -104,7 +105,6 @@ class Entity extends Base\PublicEntity
         self::LAST_LOGIN_AT,
         self::FAILED_ATTEMPTS,
         self::OLD_PASSWORDS,
-        self::PASSWORD_EXPIRY,
         self::PASSWORD_CHANGED_AT,
         self::EXPIRED_AT,
         self::DELETED_AT,
@@ -258,7 +258,7 @@ class Entity extends Base\PublicEntity
 
     public function updateLastLoginAt()
     {
-        $this->setAttribute(self::LAST_LOGIN_AT, time());
+        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->timestamp);
     }
 
     public function getLastLoginAt()
@@ -266,9 +266,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_LOGIN_AT);
     }
 
-    public function getPasswordExpiry()
+    public function getPasswordChangedAt()
     {
-        return $this->getAttribute(self::PASSWORD_EXPIRY);
+        return $this->getAttribute(self::PASSWORD_CHANGED_AT);
     }
 
     public function getFailedAttempts()
@@ -304,7 +304,7 @@ class Entity extends Base\PublicEntity
 
         $oldPasswordsCount = count($oldPasswords);
 
-        if ($oldPasswordsCount === $maxPasswordsToRetain)
+        if ($oldPasswordsCount >= $maxPasswordsToRetain)
         {
             array_shift($oldPasswords);
         }
@@ -334,7 +334,7 @@ class Entity extends Base\PublicEntity
 
     protected function updatePasswordChangedAt()
     {
-        $this->attributes[self::PASSWORD_CHANGED_AT] = time();
+        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->timestamp);
     }
 
     protected function setOldPasswordsAttribute($oldPasswords = [])

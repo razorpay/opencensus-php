@@ -3,19 +3,22 @@
 namespace RZP\Models\Admin\Org\AuthPolicy\Rules;
 
 use RZP\Exception;
+use Carbon\Carbon;
 
-class ExpiresInRule extends Base
+class PasswordExpiryRule extends Base
 {
     protected $expiresIn;
 
-    public function __construct($expiresIn)
+    public function __construct($passwordExpiry)
     {
-        $this->expiresIn = $expiresIn;
+        $this->passwordExpiry = $passwordExpiry;
     }
 
     public function validate($admin, $password)
     {
-        if ($admin->getPasswordExpiry() > time())
+        $time = Carbon::now()->subDays($this->passwordExpiry)->timestamp;
+
+        if ($time > $admin->getPasswordChangedAt())
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Account password has expired. Please contact administrator.');

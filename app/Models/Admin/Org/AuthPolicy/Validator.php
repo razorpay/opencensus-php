@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::MAX_FAILED_ATTEMPTS             => 'required|numeric|min:5',
         Entity::ENFORCE_INITIAL_PASSWORD_CHANGE => 'required|boolean',
         Entity::MAX_PASSWORD_RETAIN             => 'required|numeric|min:5',
-        Entity::EXPIRES_IN                      => 'required|numeric|min:30',
+        Entity::PASSWORD_EXPIRY                 => 'required|numeric|min:30',
     ];
 
     public function setPolicy(Entity $policy)

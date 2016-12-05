@@ -336,7 +336,8 @@ final class Route
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                  ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
         'auditlog_search'                         => ['get',      'admin/auditlog/search/{id}',                     'AdminController@auditLogSearch'                                    ],
-        'oauth_login'                             => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
+        'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
+        'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'AdminController@postPasswordReset'                                 ],
     );
 
     public static $public = array(
@@ -577,6 +578,7 @@ final class Route
         'admin_get_app_auth',
         'admin_authentication',
         'oauth_login',
+        'admin_oauth_authenticate',
         'org_get_self',
         'org_get_by_hostname',
         'admin_lock_old_accounts',

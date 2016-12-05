@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     const ENFORCE_INITIAL_PASSWORD_CHANGE   = 'enforce_initial_password_change';
     const MAX_PASSWORD_RETAIN               = 'max_password_retain';
     const INACTIVITY_LOCK                   = 'inactivity_lock';
-    const EXPIRES_IN                        = 'expires_in';
+    const PASSWORD_EXPIRY                   = 'password_expiry';
 
     protected $entity = 'auth_policy';
 
@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRES_IN,
+        self::PASSWORD_EXPIRY,
     ];
 
     protected $visible = [
@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRES_IN,
+        self::PASSWORD_EXPIRY,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FAILED_ATTEMPTS,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE,
         self::MAX_PASSWORD_RETAIN,
-        self::EXPIRES_IN,
+        self::PASSWORD_EXPIRY,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -97,7 +97,7 @@ class Entity extends Base\PublicEntity
         self::STRONG_PASSWORD                 => true,
         self::ENFORCE_INITIAL_PASSWORD_CHANGE => true,
         self::MAX_PASSWORD_RETAIN             => 10,
-        self::EXPIRES_IN                      => 30,
+        self::PASSWORD_EXPIRY                 => 30,
     ];
 
     protected $casts = [
@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
         self::STRONG_PASSWORD                 => 'bool',
         self::ENFORCE_INITIAL_PASSWORD_CHANGE => 'bool',
         self::MAX_PASSWORD_RETAIN             => 'int',
-        self::EXPIRES_IN                      => 'int',
+        self::PASSWORD_EXPIRY                 => 'int',
     ];
 
     protected $createRules = [
@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $afterLoginRules = [
-        self::EXPIRES_IN
+        self::PASSWORD_EXPIRY
     ];
 
     public function toArray()
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
             self::MAX_FAILED_ATTEMPTS             => 10,
             self::ENFORCE_INITIAL_PASSWORD_CHANGE => true,
             self::MAX_PASSWORD_RETAIN             => 10,
-            self::EXPIRES_IN                      => 30,
+            self::PASSWORD_EXPIRY                 => 30,
         ];
     }
 

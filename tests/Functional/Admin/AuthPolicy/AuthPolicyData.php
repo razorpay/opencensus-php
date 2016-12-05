@@ -182,4 +182,43 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testPasswordRetainPolicyWithNewPassword' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'password'              => '@#12$%^&dfghq',
+                'password_confirmation' => '@#12$%^&dfghq',
+            ],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testPasswordChangedAtPolicy' => [
+        'request' => [
+            'url' => '/orgs/org_RazorpayOrgnId/admin/authenticate',
+            'method' => 'post',
+            'content' => [
+                'username' => 'randomemail2@rzp.com',
+                'password' => 'test123456'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account password has expired. Please contact administrator.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

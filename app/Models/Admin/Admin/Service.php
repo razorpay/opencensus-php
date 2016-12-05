@@ -120,6 +120,11 @@ class Service extends Base\Service
         //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
+    protected function passwordReset(string $orgId, array $input)
+    {
+        return $this->core()->passwordReset($orgId, $input);
+    }
+
     public function loginWithOAuth($input)
     {
         // TODO: error validation
