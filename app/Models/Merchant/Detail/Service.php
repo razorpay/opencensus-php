@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
@@ -17,6 +18,17 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->merchant->merchantDetail;
 
+        if ($merchantDetails === null)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
+                [
+                    'merchant_id'         => $this->merchant->getId(),
+                ]);
+
+            return [];
+        }
+
         return $this->createResponse($merchantDetails);
     }
 
@@ -24,7 +36,19 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->merchant->merchantDetail;
 
-        if ($merchantDetails->isLocked())
+        if ($merchantDetails === null)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
+                [
+                    'merchant_id'    => $this->merchant->getId(),
+                ]);
+
+            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
+        }
+
+        if ((isset($input[Detail\Entity::LOCKED]) === false) and
+            ($merchantDetails->isLocked()))
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
@@ -58,6 +82,17 @@ class Service extends Base\Service
     public function uploadActivationFile(array $input)
     {
         $merchantDetails = $this->merchant->merchantDetail;
+
+        if ($merchantDetails === null)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
+                [
+                    'merchant_id'   => $this->merchant->getId(),
+                ]);
+
+            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
+        }
 
         if ($merchantDetails->isLocked())
         {
@@ -98,6 +133,14 @@ class Service extends Base\Service
         $merchantDetail->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($merchantDetail);
+
+        $this->trace->info(
+                TraceCode::CREATE_MERCHANT_DETAIL,
+                [
+                    'merchant_details'   => $merchantDetail->toArrayPublic(),
+                ]);
+
+        return $merchantDetail;
     }
 
     protected function createFile(Detail\Entity $merchantDetail,

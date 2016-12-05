@@ -2,15 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+
 class MerchantDetail extends Base
 {
     public function create(array $attributes = array())
     {
-        $merchant = $this->fixtures->create('merchant');
-
-        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchant['id'], 'id' => 'TestAuthKey123'], 'test');
-
-        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchant['id'], 'id' => 'LiveAuthKey123'], 'live');
+        $merchant = $this->fixtures->create('merchant:with_keys');
 
         $defaultValues =  [
                 'merchant_id'   => $merchant['id'],

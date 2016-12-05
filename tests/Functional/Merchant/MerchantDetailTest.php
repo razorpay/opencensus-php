@@ -51,4 +51,44 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testLockMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testUnlockMerchant()
+    {
+        $attribute = ['locked' => true];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testUnlockMerchant2()
+    {
+        $attribute = ['locked' => true];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantDetailIfNotExist()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+
+        $this->startTest();
+    }
 }

@@ -72,4 +72,86 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED,
         ],
     ],
+
+    'testLockMerchant' => [
+        'request' => [
+            'content' =>[
+                "locked" => true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "locked" => true,
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "details_submitted" => false,
+            ],
+        ],
+    ],
+
+    'testUnlockMerchant' => [
+        'request' => [
+            'content' =>[
+                "locked" => 0
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "locked" => false,
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "details_submitted" => false,
+            ],
+        ],
+    ],
+
+    'testUnlockMerchant2' => [
+        'request' => [
+            'content' =>[
+                "bank_branch_ifsc"=>"ICIC0000002",
+                "locked" => 0
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "bank_branch_ifsc" => "ICIC0000002",
+                "locked" => false,
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "details_submitted" => false,
+            ],
+        ],
+    ],
+
+    'testCreateMerchantDetailIfNotExist' => [
+        'request' => [
+            'content' =>[
+                "bank_branch_ifsc"=>"ICIC0000002",
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "bank_branch_ifsc" => "ICIC0000002",
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "details_submitted" => false,
+            ],
+        ],
+    ],
 ];
