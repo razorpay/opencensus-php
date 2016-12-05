@@ -239,7 +239,12 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $error[] = 'An error occured in file upload.';
-            // $error[] = $e->getMessage();
+
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured in file upload",
+                    'exception' => $e->getMessage(),
+            ]);
+
         }
 
         return $error;
