@@ -50,9 +50,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         Gateway::NETBANKING_ICICI,
     ];
 
-    protected static $testTrialGateways = [
-        Gateway::NETBANKING_ICICI,
-    ];
+    protected static $testTrialGateways = [];
 
     public function getRules()
     {
@@ -67,6 +65,12 @@ class TerminalLoadSorter extends Terminal\Sorter
         }
 
         return self::$prodTrialGateways;
+    }
+
+    // Only used for test situations
+    public static function setTestTrialGateways($trialGateways)
+    {
+        self::$testTrialGateways = $trialGateways;
     }
 
     /**

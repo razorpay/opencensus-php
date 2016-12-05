@@ -7,6 +7,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Options;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\Sorters\TerminalLoadSorter;
 
 class TerminalSelectionTest extends TestCase
 {
@@ -133,22 +135,39 @@ class TerminalSelectionTest extends TestCase
 
     public function testTrialGatewaySelection()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal');
 
         $payment = $this->getDefaultPaymentArray();
-
-        // Setting Netbanking ICICI as the payment method
-        $payment['method'] = 'netbanking';
-        $payment['bank']   = 'ICIC';
 
         $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
-        // Payment won't have ICICI as gateway due to trial gateway sorter
-        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
-        $this->assertEquals('billdesk', $payment['gateway']);
+        // Payment will use default hdfc gateway
+        $this->assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // We have to assert that HDFC won't be selected
+        $trialGateway = [
+            Gateway::HDFC
+        ];
+
+        // Set HDFC as trial gateway and assert that axis is used
+        TerminalLoadSorter::setTestTrialGateways($trialGateway);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // payment will use axis bank
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+        $this->assertEquals('axis_migs', $payment['gateway']);
     }
+
+    // protected function setTrialGateway($)
 
     public function testTerminalChoiceonChance()
     {
