@@ -1,14 +1,12 @@
 <?php
 
-// Work on this in your free time
-
 namespace RZP\Gateway\Netbanking\Icici;
 
 use phpseclib\Crypt\AES;
 
 trait AesTrait
 {
-    public function encryptString($string, $masterKey)
+    public function encryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
         $aes->setKey($masterKey);
@@ -17,7 +15,7 @@ trait AesTrait
         return base64_encode($aes->encrypt($string));
     }
 
-    public function decryptString($string, $masterKey)
+    public function decryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
         $aes->setKey($masterKey);

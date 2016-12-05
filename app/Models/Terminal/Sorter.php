@@ -6,20 +6,10 @@ use Trace;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use Illuminate\Support\Facades\App;
+use RZP\Models\Base;
 
-class Sorter
+class Sorter extends Base\Core
 {
-    protected $mode;
-
-    public function __construct()
-    {
-        $this->app = App::getFacadeRoot();
-
-        // Setting mode
-        $this->mode = $this->app['rzp.mode'];
-    }
-
     /**
      * This should be overridden in the child class with the respective sorter properties
      * @var array

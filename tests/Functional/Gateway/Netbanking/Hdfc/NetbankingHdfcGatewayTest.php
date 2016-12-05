@@ -16,7 +16,6 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         parent::setUp();
 
-        // Delete
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'netbanking_hdfc';

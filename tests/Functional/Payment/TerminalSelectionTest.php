@@ -135,6 +135,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testTrialGatewaySelection()
     {
+        // Creating 2 terminals for test purpose
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
@@ -147,12 +148,11 @@ class TerminalSelectionTest extends TestCase
         // Payment will use default hdfc gateway
         $this->assertEquals('hdfc', $payment['gateway']);
 
-        // We have to assert that HDFC won't be selected
+        // Setting HDFC as a trial gateway to test trialGatewaySorter
         $trialGateway = [
             Gateway::HDFC
         ];
 
-        // Set HDFC as trial gateway and assert that axis is used
         TerminalLoadSorter::setTestTrialGateways($trialGateway);
 
         $payment = $this->getDefaultPaymentArray();
@@ -161,16 +161,12 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        // sd($payment['terminal_id']);
-
-        // payment will use axis bank
+        // payment will use AXIS because HDFC was pushed down by new sorter
         $this->assertEquals('axis_migs', $payment['gateway']);
 
-        // Unsetting Gateway::HDFC as trial
+        // Unsetting Gateway::HDFC as trial gateway
         TerminalLoadSorter::setTestTrialGateways([]);
     }
-
-    // protected function setTrialGateway($)
 
     public function testTerminalChoiceonChance()
     {

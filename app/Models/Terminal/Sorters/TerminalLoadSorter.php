@@ -83,13 +83,13 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function trialGatewaySorter($terminals, array $input, $options)
     {
-        $applicableGateways = $this->getTrialGateways();
+        $trialGateways = $this->getTrialGateways();
 
         $sortedTerminals = [];
 
         foreach ($terminals as $key => $terminal)
         {
-            if (in_array($terminal->getGateway(), $applicableGateways))
+            if (in_array($terminal->getGateway(), $trialGateways))
             {
                 $sortedTerminals[] = $terminal;
 

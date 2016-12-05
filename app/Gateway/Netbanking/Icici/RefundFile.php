@@ -14,24 +14,22 @@ class RefundFile extends Base\RefundFile
 
     // The columns of the file
     protected static $headers = [
-        'Sr No',
-        'Payee id',
-        'SPID',
-        'Bank Reference No.',
-        'Transaction Date',
-        'Transaction Amount',
-        'Refund Amount',
-        'Transaction Id',
-        'Reversal/Cancellation',
-        'Remarks'
+        RefundFields::SERAL_NO,
+        RefundFields::PAYEE_ID,
+        RefundFields::SPID,
+        RefundFields::BANK_REFERENCE_ID,
+        RefundFields::TRANSACTION_DATE,
+        RefundFields::TRANSACTION_AMOUNT,
+        RefundFields::REFUND_AMOUNT,
+        RefundFields::TRANSACTION_ID,
+        RefundFields::REFUND_MODE,
+        RefundFields::REMARKS,
     ];
 
     public function generate($input)
     {
-        // Calling method from below
         $data = $this->getRefundData($input);
 
-        // Gets $filetoWriteName
         $fileName = $this->getFileToWriteNameWithoutExt();
 
         // Gets the path to the excel file
@@ -44,7 +42,6 @@ class RefundFile extends Base\RefundFile
             $fileName,
             FileStore\Type::ICICI_NETBANKING_REFUND);
 
-        // filepath and body
         $fileData = [
             'file_path' => $this->getExcelFullFilePath(),
             'body' => self::EMAIL_BODY,
@@ -57,25 +54,22 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $i = 1; // Serial Number starts at 1
-
-
-        foreach ($input['data'] as $row)
+        foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
 
             $data[] = array(
-                'Sr No'                  => $i++, // assign then increment
-                'Payee id'               => $row['terminal']['gateway_merchant_id'],
-                'SPID'                   => $row['terminal']['gateway_merchant_id2'],
-                'Bank Reference No.'     => $row['gateway']['bank_payment_id'],
-                'Transaction Date'       => $date,
-                'Transaction Amount'     => $row['payment']['amount'] / 100,
-                'Refund Amount'          => $row['refund']['amount'] / 100,
-                'Transaction Id'         => $row['payment']['id'],
-                'Reversal/Cancellation'  => 'C', // R and C -- need a logic to get this - for now saying C
-                'Remarks'                => '', // empty
+                RefundFields::SERAL_NO               => $index + 1,
+                RefundFields::PAYEE_ID               => $row['terminal']['gateway_merchant_id'],
+                RefundFields::SPID                   => $row['terminal']['gateway_merchant_id2'],
+                RefundFields::BANK_REFERENCE_ID      => $row['gateway']['bank_payment_id'],
+                RefundFields::TRANSACTION_DATE       => $date,
+                RefundFields::TRANSACTION_AMOUNT     => $row['payment']['amount'] / 100,
+                RefundFields::REFUND_AMOUNT          => $row['refund']['amount'] / 100,
+                RefundFields::TRANSACTION_ID         => $row['payment']['id'],
+                RefundFields::REFUND_MODE            => 'C',
+                RefundFields::REMARKS                => '', // empty
             );
         }
 

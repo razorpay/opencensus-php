@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
@@ -26,11 +27,13 @@ class Gateway extends Base\Gateway
 
     const MODE_ECB = 1;
 
-    protected $map = array(
+    protected $map = [
         RequestFields::AMOUNT  => 'amount'
-    );
+    ];
 
     /**
+     * Builds the authorize request for ICICI netbanking
+     *
      * @param  array $input
      * @return void
      */
@@ -41,13 +44,14 @@ class Gateway extends Base\Gateway
         $content = $this->getPaymentRequestData($input);
 
         // Create payment entity before passing it to gateway payment entity
-        $entity = $this->createPaymentEntity($content);
+        $entity = $this->createPaymentArray($content);
 
         $payment = $this->createGatewayPaymentEntity($entity);
 
-        $request = $this->getRequestArray($content);
+        $this->traceGatewayPaymentRequest($content, $input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        unset($content[RequestFields::AMOUNT]);
+        $request = $this->getStandardRequestArray($content);
 
         return $request;
     }
@@ -60,7 +64,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        // Ask ICICI about this ? Sometimes wrong ecrypted string returned.
+        // TODO: returned encrypted string from ICICI sometimes fails decryption
         $content = $this->getDataFromResponse($input['gateway']);
 
         $this->trace->info(
@@ -71,13 +75,13 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         // Use maps - Response Fields
-        $attrs = $this->getAuthorizeResponseAttributes($content);
+        $attrs = $this->getCallbackAttributes($content);
 
         $payment->fill($attrs);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
-        if ($attrs['status'] !== 'Y')
+        if (!isset($attrs['status']) or $attrs['status'] !== Confirmation::YES)
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -96,29 +100,18 @@ class Gateway extends Base\Gateway
      */
     public function verify(array $input)
     {
-        // Similar to the code above.... Essentially the same thing
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
 
-        // Calling Parent class's method - need to write 2 classes on my own
-        // sendPaymentVerifyRequest and verifyPayment
         return $this->runPaymentVerifyFlow($verify);
     }
 
     public function sendPaymentVerifyRequest($verify)
     {
-        $payment = $verify->payment;
-        $input = $verify->input;
+        $content = $this->getPaymentVerifyData($verify);
 
-        $content = $this->getPaymentVerifyData($input);
-
-        $paymentDate = $this->getPaymentDate($payment);
-
-        // Getting payment date in the specified format
-        $content[RequestFields::PAYMENT_DATE] = $paymentDate;
-
-        $request = $this->getRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -140,7 +133,7 @@ class Gateway extends Base\Gateway
         $status = VerifyResult::STATUS_MATCH;
 
         // Converting response string to XML format.
-        $xml = $this->getResponseXml($content);
+        $xml = $this->getResponseArray($content);
 
         // Should probably trace this
         $this->trace->info(
@@ -150,7 +143,7 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
-        if ($xml['STATUS'] === 'SUCCESS')
+        if (isset($xml['STATUS']) and $xml['STATUS'] === ResponseFields::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -186,19 +179,29 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getPaymentVerifyData($input)
+    protected function getPaymentVerifyData($verify)
     {
+        $input = $verify->input;
+        $payment = $verify->payment;
+
         $data = $this->createDefaultRequestData($input);
+
+        $paymentDate = $this->getPaymentDate($payment);
+
+        // Getting payment date in the specified format
+        $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
         $data[RequestFields::MODE]  = Mode::VERIFY;
 
-        $prn = $input['payment']['id'];
+        $prn = $input['payment'][Payment\Entity::ID];
 
-        $data += array(
+        $additionalData = [
             RequestFields::PAYMENT_REFERENCE_NUBER  => $prn,
             RequestFields::ITEM_CODE                => strtoupper($prn),
             RequestFields::CURRENCY_CODE            => 'INR',
-        );
+        ];
+
+        $data = array_merge($data, $additionalData);
 
         return $data;
     }
@@ -207,7 +210,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getAuthorizeRequestData($input);
 
-        $queryString = $this->createUrl($data);
+        $queryString = $this->createQueryString($data);
 
         $masterKey = $this->getMasterKey();
 
@@ -219,18 +222,18 @@ class Gateway extends Base\Gateway
         // Formatted for ICICI
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
-        $prn = $input['payment']['id'];
+        $prn = $input['payment'][Payment\Entity::ID];
 
         $amount = $input['payment']['amount'] / 100;
 
-        $data = array(
+        $data = [
             RequestFields::PAYMENT_REFERENCE_NUBER => $prn ,
             RequestFields::ITEM_CODE               => strtoupper($prn),
             RequestFields::AMOUNT                  => $amount,
             RequestFields::CURRENCY_CODE           => 'INR',
             RequestFields::RETURN_URL              => $callbackUrl,
             RequestFields::CONFIRMATION            => Confirmation::YES,
-        );
+        ];
 
         return $data;
     }
@@ -241,51 +244,37 @@ class Gateway extends Base\Gateway
 
         $spid = $this->getSpid();
 
-        $data = array(
+        $data = [
             RequestFields::OBJ_NAME   => Constants::LOGIN,
             RequestFields::BAY_BANKID => Constants::BANKID,
             RequestFields::MODE       => Mode::PAY,
             RequestFields::PAYEE_ID   => $pid,  // Hardcoding it for now
             RequestFields::SPID       => $spid,
             RequestFields::AMOUNT     => $input['payment']['amount'] / 100
-        );
+        ];
 
         return $data;
     }
 
-    protected function createUrl($data)
+    protected function createQueryString($data)
     {
-        $url = '';
+        $urlArray = [];
 
         foreach ($data as $key => $value)
         {
-            $url .= $key . '=' . $value . '&';
+            $urlArray[] = $key . '=' . $value;
         }
 
-        // Removing the trailing &
-        return rtrim($url, '&');
+        $url = implode('&', $urlArray);
+
+        return $url;
     }
 
-    protected function getRequestArray($content)
+    protected function createPaymentArray($content)
     {
-        // Amount not needed for the Purchase Request, but needed for verify
-        if ($content['MD'] === 'P')
-        {
-            unset($content[RequestFields::AMOUNT]);
-        }
-
-        return array(
-            'url' => Url::LIVE_DOMAIN,
-            'method' => 'post',
-            'content' => $content
-        );
-    }
-
-    protected function createPaymentEntity($content)
-    {
-        return array(
+        return [
             RequestFields::AMOUNT => $content[RequestFields::AMOUNT]
-        );
+        ];
     }
 
     protected function getPaymentDate($payment)
@@ -307,16 +296,16 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getAuthorizeResponseAttributes($content)
+    protected function getCallbackAttributes($content)
     {
-        return array(
-            'received' => true,
-            'status'   => $content[ResponseFields::STATUS],
-            'bank_payment_id' => $content[ResponseFields::BANK_PAYMENT_ID]
-        );
+        return [
+            'received'          => true,
+            'status'            => $content[ResponseFields::STATUS],
+            'bank_payment_id'   => $content[ResponseFields::BANK_PAYMENT_ID]
+        ];
     }
 
-    protected function getResponseXml($content)
+    protected function getResponseArray($content)
     {
         $xml = (array) simplexml_load_string($content);
 

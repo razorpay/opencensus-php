@@ -64,11 +64,11 @@ class Server extends Base\Mock\Server
     public function createPostData($input)
     {
         $response = array(
-            RequestFields::PAYMENT_REFERENCE_NUBER      => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
-            RequestFields::ITEM_CODE                    => strtoupper($input[RequestFields::ITEM_CODE]), // Caps
-            RequestFields::AMOUNT                       => $input[RequestFields::AMOUNT],
-            RequestFields::CURRENCY_CODE                => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::STATUS                      => 'Y',
+            RequestFields::PAYMENT_REFERENCE_NUBER  => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
+            RequestFields::ITEM_CODE                => strtoupper($input[RequestFields::ITEM_CODE]),
+            RequestFields::AMOUNT                   => $input[RequestFields::AMOUNT],
+            RequestFields::CURRENCY_CODE            => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::STATUS                  => 'Y',
         );
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
@@ -94,7 +94,6 @@ class Server extends Base\Mock\Server
 
     public function createXmlResponse($input)
     {
-        // Hardcoding success for now
         $response = '<?xml version="1.0" encoding="utf-8" ?>' . PHP_EOL;
         $response .= '<VerifyOutput ITC="'. $input['ITC'] .'" PRN="'. $input['PRN'] .'" CURRENCY="'. $input['CRN'] .'" PMTDATE="'. $input['Pmt_Date'] .'" AMT="'. number_format($input['AMT'], 2, '.', '') .'" STATUS="SUCCESS" />';
 
