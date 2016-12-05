@@ -38,6 +38,7 @@ app.controller('AddOrgCtrl', [
       delete data.body.id;
       delete data.body.created_at;
       delete data.body.admin;
+      delete data.body.entity;
 
       var request = $http.put('/admin/generic', data, {
         params: {
