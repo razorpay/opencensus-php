@@ -140,7 +140,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -157,7 +157,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 

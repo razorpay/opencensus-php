@@ -15,7 +15,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
     protected $properties = [
         'trial_gateway',
-        'gateway',
+        'chance_gateway',
     ];
 
     protected static $rules = [
@@ -112,7 +112,7 @@ class TerminalLoadSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function gatewaySorter($terminals, array $input, $options)
+    public function chanceGatewaySorter($terminals, array $input, $options)
     {
         $sortedTerminals = $terminals;
 
