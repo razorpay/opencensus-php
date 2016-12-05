@@ -41,7 +41,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $hidden = array('password', 'remember_token');
+    protected $hidden = ['password', 'remember_token'];
 
     /**
      * The attributes that are mass assignable.
