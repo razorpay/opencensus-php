@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
+    const TPV                           = 'tpv';
 
     const SHARED                        = 'shared';
 
@@ -57,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::SHARED,
         self::RECURRING,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -82,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::RECURRING,
         self::SHARED,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -119,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
+        self::TPV                       => false,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
@@ -133,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::ENABLED                   => 'boolean',
+        self::TPV                       => 'boolean',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -443,14 +448,7 @@ class Entity extends Base\PublicEntity
 
     public function isTPVTerminal()
     {
-        if (is_null($this->getCategory()) === false)
-        {
-            $tpvCategories = ['6211', '9999'];
-
-            return in_array($this->getCategory(), $tpvCategories);
-        }
-
-        return false;
+        return $this->getAttribute(self::TPV);
     }
 
     public function isRecurringAuthTerminal()

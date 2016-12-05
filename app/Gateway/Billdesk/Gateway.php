@@ -12,6 +12,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
@@ -326,12 +327,12 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $content = array(
+        $content = [
             'RequestType'   => '0122',
             'Merchant ID'   => $input['terminal']['gateway_merchant_id'],
             'Customer ID'   => $input['payment']['id'],
             'Current Date/ Timestamp' => $now,
-        );
+        ];
 
         if ($this->mode === Mode::TEST)
         {
@@ -359,7 +360,7 @@ class Gateway extends Base\Gateway
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
         $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
 
-        $content = array(
+        $content = [
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
@@ -372,7 +373,7 @@ class Gateway extends Base\Gateway
             'Filler1'           => 'NA',
             'Filler2'           => 'NA',
             'Filler3'           => 'NA',
-        );
+        ];
 
         if ($this->mode === Mode::TEST)
         {
@@ -401,11 +402,11 @@ class Gateway extends Base\Gateway
 
         $method = $form->getMethod();
 
-        $request = array(
-            'url' => $form->getUri(),
-            'method' => strtolower($method),
+        $request = [
+            'url'     => $form->getUri(),
+            'method'  => strtolower($method),
             'content' => $form->getValues(),
-        );
+        ];
 
         return $request;
     }
@@ -481,7 +482,7 @@ class Gateway extends Base\Gateway
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
 
-        $content = array(
+        $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
             'AccountNumber'             => 'NA',
@@ -504,10 +505,10 @@ class Gateway extends Base\Gateway
             'Unknown10'                 => 'NA',
             'Unknown11'                 => 'NA',
             'RU'                        => $input['callbackUrl'],
-        );
+        ];
 
         // Change Content for Merchants with TPV Required
-        if ($input['merchant']->isTPVRequired())
+        if ($this->isTPVEnabled())
         {
             $content['AccountNumber'] = $input['order']['account_number'];
         }
@@ -587,20 +588,20 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_CHECKSUM_VERIFY_REQUEST,
             [$msg]);
 
-        $request = array(
-            'url' => $this->getUrl($this->action),
-            'method' => 'post',
+        $request = [
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
             'content' => ['msg' => $msg],
-        );
+        ];
 
         return $request;
     }
 
     protected function getSecurityId()
     {
-        if ($this->input['merchant']->isTPVRequired())
+        if ($this->isTPVEnabled())
         {
-            return $this->config['live_access_code_sec'];
+             return $this->config['live_access_code_sec'];
         }
 
         return $this->config['live_access_code'];
@@ -608,19 +609,36 @@ class Gateway extends Base\Gateway
 
     public function getSecret()
     {
-        if ($this->tpv === true)
+        if ($this->isTPVEnabled())
         {
             return $this->config['live_hash_secret_sec'];
+        }
+
+        return $this->config['live_hash_secret'];
+    }
+
+    protected function isTPVEnabled()
+    {
+        if ($this->tpv === true)
+        {
+            return true;
         }
         else if (isset($this->input['merchant']))
         {
             if ($this->input['merchant']->isTPVRequired())
             {
-                return $this->config['live_hash_secret_sec'];
+                return true;
+            }
+        }
+        else if (isset($this->input['terminal']))
+        {
+            if ($this->input['terminal']->isTPVTerminal())
+            {
+                return true;
             }
         }
 
-        return $this->config['live_hash_secret'];
+        return false;
     }
 
     protected function setTpv($gatewayPayment)
@@ -628,9 +646,11 @@ class Gateway extends Base\Gateway
         $this->tpv = $gatewayPayment->isTpv();
     }
 
-    public function isPaymentTpvEnabled(Entity $gatewayPayment, Merchant\Entity $merchant)
+    public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
     {
-        if (($gatewayPayment->isTpv()) or ($merchant->isTPVRequired()))
+        if (($gatewayPayment->isTpv()) or
+            ($payment->merchant->isTPVRequired()) or
+            ($payment->terminal->isTPVTerminal()))
         {
             return true;
         }
