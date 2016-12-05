@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Gateway\Netbanking\Icici\AesTrait;
-use RZP\Gateway\Netbanking\Icici\Gateway;
+use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 
 class Validator extends Base\Validator
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
 
     protected function validateES($input)
     {
-        $gateway = new Gateway;
+        $gateway = new IciciGateway;
 
         $gateway->setMode(Mode::TEST);
 
