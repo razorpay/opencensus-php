@@ -18,10 +18,15 @@ class PasswordExpiryRule extends Base
     {
         $time = Carbon::now()->subDays($this->passwordExpiry)->timestamp;
 
-        if ($time > $admin->getPasswordChangedAt())
+        $passwordChangedAt = $admin->getPasswordChangedAt();
+
+        if ($passwordChangedAt !== null)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Account password has expired. Please contact administrator.');
+            if ($time > $admin->getPasswordChangedAt())
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Account password has expired. Please contact administrator.');
+            }
         }
     }
 }
