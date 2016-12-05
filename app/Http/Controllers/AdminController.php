@@ -23,17 +23,6 @@ class AdminController extends Controller
     protected $redirectTo = '/admin';
     protected $guard = 'admin';
 
-    // Org domain => Org ID
-    // We'll hardcode this for now
-    const ORG_CHART = [
-        'dashboard.razorpay.dev'            => 'org_6dLbNSpv5XbCOG',
-        'heimdall.razorpay.dev'             => 'org_6dLbNSpv5XbCOG',
-        'beta-wl-dashboard.razorpay.com'    => 'org_6dLbNSpv5XbCOG',
-        'dashboard.codeankit.me'            => 'org_6dLbNSpv5XbCOG',
-        'beta-icici-dashboard.razorpay.com' => 'org_6lFupOxpf36BY3',
-        'beta-bob-dashboard.razorpay.com'   => 'org_6dLbNSpv5XbCOI',
-    ];
-
     /*
     |--------------------------------------------------------------------------
     | Admin Controller
