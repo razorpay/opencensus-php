@@ -87,23 +87,26 @@ class TerminalRotatorTest extends TestCase
         // only a order id, ensure the payment goes through
         // the other terminal
 
+        $this->config['app.throw_exception_in_testing'] = false;
+
         $order = $this->createTestOrder();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
-
         $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
 
-        $payment1 = $this->getPaymentArray();
+        $payment1 = $this->getDefaultPaymentArray();
 
         $payment1['order_id'] = $order['id'];
 
         $this->ba->publicAuth();
 
-        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
+        // This card number will cause signature validation failure.
+        $payment1['card']['number'] = '4012001036853337';
+        $this->doAuthPayment($payment1);
+        $payment = $this->getLastPayment(true);
+        $terminalsUsed[] = $payment['terminal_id'];
 
-        $payment = $this->getLastPayment();
-
-        $payment2 = $this->getPaymentArray();
+        $payment2 = $this->getDefaultPaymentArray();
 
         $payment2['order_id'] = $order['id'];
 

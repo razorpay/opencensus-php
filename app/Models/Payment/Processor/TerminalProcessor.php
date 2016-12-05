@@ -44,19 +44,19 @@ class TerminalProcessor extends Base\Core
             $pastPayments = $this->repo->payment->getRecentMerchantPaymentsForCheckoutId($checkoutId);
         }
 
-        $usedTerminals = [];
+        $failedTerminals = [];
 
         foreach ($pastPayments as $pastPayment)
         {
             if ($pastPayment->hasNotBeenAuthorized())
             {
-                $usedTerminals[] = $pastPayment->getTerminalId();
+                $failedTerminals[] = $pastPayment->getTerminalId();
             }
         }
 
-        // $usedTerminals = $this->repo->terminal->findMany($usedTerminals);
+        // $failedTerminals = $this->repo->terminal->findMany($failedTerminals);
 
-        return array_unique($usedTerminals);
+        return array_unique($failedTerminals);
     }
 
     /**
@@ -69,13 +69,13 @@ class TerminalProcessor extends Base\Core
      */
     public function getTerminalsForPayment(Payment\Entity $payment)
     {
-        $usedTerminals = $this->getFailedTerminals($payment);
+        $failedTerminals = $this->getFailedTerminals($payment);
 
         // add trace to tell that we are excluding terminals
-        if (count($usedTerminals) > 0)
+        if (count($failedTerminals) > 0)
         {
             $traceData = array(
-                'used_terminals'        => $usedTerminals,
+                'failed_terminals'      => $failedTerminals,
                 'payment_id'            => $payment->getId(),
             );
 
@@ -84,7 +84,7 @@ class TerminalProcessor extends Base\Core
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
-        $opts = ['failed' => $usedTerminals];
+        $opts = ['failed' => $failedTerminals];
 
         $terminalsSelected = $terminalSelector->selectTerminals($opts);
 
