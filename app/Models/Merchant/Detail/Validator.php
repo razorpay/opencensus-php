@@ -66,6 +66,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|email|max:255',
+        Entity::LOCKED                          => 'sometimes|boolean',
         Entity::SUBMIT                          => 'sometimes',
     ];
 
