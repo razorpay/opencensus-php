@@ -255,13 +255,13 @@ class Repository extends Base\Repository
         $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
 
-        $paymentId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
 
-        $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
-        $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
+        $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);
 
-        $transactionData = Entity::getAttributeWithTableName('*');
+        $transactionData = $this->getAttributeWithTableName('*');
 
         return $this->newQuery()
                     ->select($transactionData)

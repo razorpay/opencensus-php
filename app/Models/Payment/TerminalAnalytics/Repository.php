@@ -13,7 +13,7 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num',
     );
-    
+
     public function fetchUsedTerminalsForPaymentIds($paymentIds = [])
     {
         return $this->newQuery()

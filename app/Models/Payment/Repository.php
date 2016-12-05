@@ -483,7 +483,7 @@ class Repository extends Base\Repository
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
 
-    public function getCreatedPaymentsForOrder($orderId)
+    public function getCreatedAndFailedPaymentsForOrder($orderId)
     {
         $ts = time() - Payment\Entity::PAYMENT_WINDOW;
 

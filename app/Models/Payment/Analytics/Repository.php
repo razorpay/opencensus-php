@@ -18,11 +18,9 @@ class Repository extends Base\Repository
 
     public function findForPayment($paymentId)
     {
-        $repo = $this->repo;
-
-        $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
-
-        return $results->get();
+        return $this->repo
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->get();
     }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

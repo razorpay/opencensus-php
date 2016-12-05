@@ -21,21 +21,17 @@ class TerminalProcessor extends Base\Core
      * @param $payment
      * @return array
      */
-    protected function getFailedTerminals($payment)
+    protected function getFailedTerminalIds($payment)
     {
         $metadata = $payment->getMetadata();
 
-        $pastPaymentIds = [];
-
         $orderId = $payment->getApiOrderId();
-
-        //TODO: should we do a join on these queries instead of multiple queries
 
         $pastPayments = [];
 
         if ($orderId !== null)
         {
-            $pastPayments = $this->repo->payment->getCreatedPaymentsForOrder($orderId);
+            $pastPayments = $this->repo->payment->getCreatedAndFailedPaymentsForOrder($orderId);
         }
         else if (isset($metadata[AnalyticsEntity::CHECKOUT_ID]) === true)
         {
@@ -44,19 +40,19 @@ class TerminalProcessor extends Base\Core
             $pastPayments = $this->repo->payment->getRecentMerchantPaymentsForCheckoutId($checkoutId);
         }
 
-        $failedTerminals = [];
+        $failedTerminalIds = [];
 
         foreach ($pastPayments as $pastPayment)
         {
             if ($pastPayment->hasNotBeenAuthorized())
             {
-                $failedTerminals[] = $pastPayment->getTerminalId();
+                $failedTerminalIds[] = $pastPayment->getTerminalId();
             }
         }
 
         // $failedTerminals = $this->repo->terminal->findMany($failedTerminals);
 
-        return array_unique($failedTerminals);
+        return array_unique($failedTerminalIds);
     }
 
     /**
@@ -69,22 +65,22 @@ class TerminalProcessor extends Base\Core
      */
     public function getTerminalsForPayment(Payment\Entity $payment)
     {
-        $failedTerminals = $this->getFailedTerminals($payment);
+        $failedTerminalIds = $this->getFailedTerminalIds($payment);
 
         // add trace to tell that we are excluding terminals
-        if (count($failedTerminals) > 0)
+        if (count($failedTerminalIds) > 0)
         {
-            $traceData = array(
-                'failed_terminals'      => $failedTerminals,
-                'payment_id'            => $payment->getId(),
-            );
-
-            $this->trace->info(TraceCode::TERMINAL_USED_BEFORE, $traceData);
+            $this->trace->info(
+                TraceCode::TERMINAL_USED_BEFORE,
+                [
+                    'failed_terminals'      => $failedTerminalIds,
+                    'payment_id'            => $payment->getId(),
+                ]);
         }
 
         $terminalSelector = new Terminal\Selector($payment, $this->mode);
 
-        $opts = ['failed' => $failedTerminals];
+        $opts = [Terminal\Options::FAILED => $failedTerminalIds];
 
         $terminalsSelected = $terminalSelector->selectTerminals($opts);
 

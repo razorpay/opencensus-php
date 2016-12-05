@@ -44,11 +44,6 @@ class TerminalRotatorTest extends TestCase
         $this->assertEquals($payment['gateway'], 'cybersource');
     }
 
-    public function testTerminalRotatorOnSecondPaymentAttempt()
-    {
-        ;
-    }
-
     public function testCheckoutMultipleAttempts()
     {
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
