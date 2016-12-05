@@ -170,7 +170,7 @@ class Repository extends Base\Repository
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
         $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
                     ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
@@ -184,12 +184,10 @@ class Repository extends Base\Repository
     public function getAuthorizedPaymentsForAutoRefund()
     {
         $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId       = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
-
-
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') >= ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
