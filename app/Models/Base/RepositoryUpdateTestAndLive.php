@@ -41,6 +41,9 @@ trait RepositoryUpdateTestAndLive
                 // Create it's copies for live and test database
                 //
                 $testEntity = clone $entity;
+                // we do not care about audit actions for test entities at this point
+                $testEntity->resetAuditAction();
+
                 $liveEntity = clone $entity;
             }
 
@@ -84,6 +87,7 @@ trait RepositoryUpdateTestAndLive
             // Create it's copies for live and test database
             //
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $defaultConnection = Config::get('database.default');
@@ -138,6 +142,7 @@ trait RepositoryUpdateTestAndLive
             // Create it's copies for live and test database
             //
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $defaultConnection = Config::set('database.default');
@@ -176,6 +181,7 @@ trait RepositoryUpdateTestAndLive
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $res1 = $liveEntity->setConnection('live')->delete();
@@ -199,6 +205,7 @@ trait RepositoryUpdateTestAndLive
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $res1 = $testEntity->forceDelete();
@@ -219,11 +226,18 @@ trait RepositoryUpdateTestAndLive
     {
         $id = $entity->getKey();
 
+        // fetch existing audit action
+        $auditAction = $entity->getAuditAction();
+
         $testEntity = $this->newQueryWithConnection('test')->lockForUpdate()->findOrFail($id);
         $liveEntity = $this->newQueryWithConnection('live')->lockForUpdate()->findOrFail($id);
 
         $testAttributes = $testEntity->getAttributes();
         $liveAttributes = $liveEntity->getAttributes();
+
+        // reset the current entity's audit action with the older one
+        $liveEntity->setAuditAction($auditAction);
+        $testEntity->resetAuditAction();
 
         // Timestamps are allowed to be different
         // Ignore timestamps for similarity.

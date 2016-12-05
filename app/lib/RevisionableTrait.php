@@ -5,6 +5,7 @@ namespace Lib;
 
 use App;
 use RZP\Events\AuditLogEntry;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 trait RevisionableTrait
@@ -40,11 +41,6 @@ trait RevisionableTrait
      * @var array
      */
     protected $dirtyData = [];
-
-    /**
-     * Keeps the current action value here to be set by the entity updater
-     */
-    protected $action = [];
 
     /**
      * Ensure that the bootRevisionableTrait is called only
@@ -87,6 +83,7 @@ trait RevisionableTrait
         static::deleted(function ($model)
         {
             $model->preSave();
+
             $model->postDelete();
         });
     }
@@ -171,30 +168,28 @@ trait RevisionableTrait
             $formattedRevisons = $this->formatRevisions($revisions);
 
             // TODO: Modify this
-            if (count($revisions) > 0)
+            if ((empty($formattedRevisons) === false) and (empty($this->getAuditAction()) === false))
             {
-                if (empty($this->getAuditAction()) === false)
+                $trace = $this->getTrace();
+
+                $admin = $this->getAdmin();
+
+                if ($admin === null)
                 {
-                    $trace = $this->getTrace();
-
-                    $admin = $this->getAdmin();
-
-                    if ($admin === null)
-                    {
-                        return;
-                    }
-
-                    $action = $this->getAuditAction();
-
-                    $trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
-
-                    event(new AuditLogEntry(
-                            $admin->toArrayPublic(),
-                            $action,
-                            ['updated' => $formattedRevisons])
-                    );
+                    return;
                 }
-                // \Event::fire('revisionable.saved', array('model' => $this, 'revisions' => $revisions));
+
+                $action = $this->getAuditAction();
+
+                $trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
+
+                event(new AuditLogEntry(
+                        $admin->toArrayPublic(),
+                        $action,
+                        ['updated' => $formattedRevisons])
+                );
+
+                $this->resetAuditAction();
             }
         }
     }
@@ -214,18 +209,10 @@ trait RevisionableTrait
 
         if ((!isset($this->revisionEnabled) or $this->revisionEnabled))
         {
-            $revisions[] = [
-                'revisionable_type' => $this->getMorphClass(),
-                'revisionable_id' => $this->getKey(),
-                'key' => self::CREATED_AT,
-                'old_value' => null,
-                'new_value' => $this->{self::CREATED_AT}
-            ];
+            $trace = $this->getTrace();
 
             if (empty($this->getAuditAction()) === false)
             {
-                $trace = $this->getTrace();
-
                 $admin = $this->getAdmin();
 
                 if ($admin === null)
@@ -242,6 +229,7 @@ trait RevisionableTrait
                         $action,
                         ['created' => $this->toArrayPublic()])
                 );
+
             }
         }
     }
@@ -254,7 +242,8 @@ trait RevisionableTrait
         if ((!isset($this->revisionEnabled) || $this->revisionEnabled)
             and $this->isSoftDelete()
             and $this->isRevisionable($this->getDeletedAtColumn())
-        ) {
+        )
+        {
             $revisions[] = [
                 'revisionable_type' => $this->getMorphClass(),
                 'revisionable_id' => $this->getKey(),
@@ -278,6 +267,8 @@ trait RevisionableTrait
                         $action,
                         ['deleted' => $revisions])
                 );
+
+                $this->resetAuditAction();
             }
         }
     }
@@ -455,21 +446,6 @@ trait RevisionableTrait
         }
     }
 
-    public function setAuditAction(array $action)
-    {
-        $this->action = $action;
-    }
-
-    protected function getAuditAction()
-    {
-        return $this->action;
-    }
-
-    protected function clearAuditAction()
-    {
-        $this->action = [];
-    }
-
     protected function getAdmin()
     {
         try
@@ -489,6 +465,13 @@ trait RevisionableTrait
         $app = App::getFacadeRoot();
 
         return $app['trace'];
+    }
+
+    protected function getMode()
+    {
+        $app = App::getFacadeRoot();
+
+        return $app['rzp.mode'];
     }
 
     protected function formatRevisions(array $revisions)
