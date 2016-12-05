@@ -33,9 +33,7 @@ class MerchantDetail extends Entity
     public function uploadActivationFile($merchantId, $input)
     {
         // Makes a guzzle file request
-        $response = $this->makeGuzzleFileRequest('live', $merchantId, $input);
-
-        return $response;
+        return $this->makeGuzzleFileRequest('live', $merchantId, $input);
     }
 
     protected function makeGuzzleFileRequest($mode, $merchantId, $input)

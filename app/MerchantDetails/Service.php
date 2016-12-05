@@ -327,6 +327,13 @@ class Service extends Base\Service
                                               ->merchantDetail
                                               ->submitDetails($input);
 
+        if (empty($error) === false)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured saving merchant details on API",
+                    'exception' => $error,
+            ]);
+        }
         // return $merchantDetails;
     }
 
