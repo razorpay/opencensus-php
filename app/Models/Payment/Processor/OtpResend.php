@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Exception\LogicException;
 
 trait OtpResend
 {
@@ -35,7 +36,7 @@ trait OtpResend
 
         $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
-        throw new LogicException(
+        throw new Exception\LogicException(
             'Gateway does not support OTP resend',
             null,
             ['payment_id' => $id]);
