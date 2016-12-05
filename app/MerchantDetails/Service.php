@@ -319,9 +319,14 @@ class Service extends Base\Service
         return $error;
     }
 
-    protected function saveDetailsOnAPI(array $input)
+    public function saveDetailsOnAPI(array $input, $merchantId = null)
     {
-        $this->setApiCredentials($this->merchant['id']);
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant['id'];
+        }
+
+        $this->setApiCredentials($merchantId);
 
         list($error, $merchantDetails) = $this->api
                                               ->merchantDetail
