@@ -18,6 +18,7 @@ use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 
+
 class Service extends Base\Service
 {
     public function authenticate(string $orgId, array $input)
@@ -292,6 +293,8 @@ class Service extends Base\Service
     public function deleteAdmin(string $orgId, string $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+        $admin->setAuditAction(Action::DELETE_ADMIN);
 
         return $this->core()->delete($admin);
     }

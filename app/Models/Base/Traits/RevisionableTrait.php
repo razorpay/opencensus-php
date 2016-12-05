@@ -1,7 +1,7 @@
 <?php
 
 // Borrowed from https://github.com/VentureCraft/revisionable
-namespace Lib;
+namespace RZP\Models\Base\Traits;
 
 use App;
 use RZP\Events\AuditLogEntry;
@@ -167,7 +167,6 @@ trait RevisionableTrait
 
             $formattedRevisons = $this->formatRevisions($revisions);
 
-            // TODO: Modify this
             if ((empty($formattedRevisons) === false) and (empty($this->getAuditAction()) === false))
             {
                 $trace = $this->getTrace();

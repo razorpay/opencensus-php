@@ -3,7 +3,7 @@
 namespace RZP\Models\Admin\Org\AuthPolicy;
 
 use App;
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;

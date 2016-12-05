@@ -3,11 +3,8 @@
 namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\Role;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Exception;
+use RZP\Models\Admin\Action;
 
 class Service extends Base\Service
 {
@@ -41,6 +38,8 @@ class Service extends Base\Service
     public function deleteGroup(string $orgId, string $groupId)
     {
         $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+
+        $group->setAuditAction(Action::DELETE_GROUP);
 
         $this->repo->deleteOrFail($group);
 

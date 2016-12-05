@@ -29,6 +29,8 @@ class Core extends Base\Core
     {
         $perm->edit($input);
 
+        $perm->setAuditAction(Action::EDIT_PERMISSION);
+
         $this->repo->saveOrFail($perm);
 
         return $perm;
@@ -36,6 +38,8 @@ class Core extends Base\Core
 
     public function delete(Entity $perm)
     {
+        $perm->setAuditAction(Action::DELETE_PERMISSION);
+
         $this->repo->deleteOrFail($perm);
 
         $ret = $perm->toArrayDeleted();
