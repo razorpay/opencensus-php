@@ -117,7 +117,7 @@ class Repository extends Base\Repository
             function ($join) use ($params)
             {
                 $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = $this->manager->merchant->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
