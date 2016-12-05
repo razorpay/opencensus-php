@@ -894,6 +894,10 @@ class Gateway extends Base\Gateway
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
         ];
 
+        $content[F::BUSINESS_RULES] = [
+            F::IGNORE_AVS_RESULT => 'true'
+        ];
+
         if (isset($this->eci) === true)
         {
             $cardNetwork = $input['card']['network_code'];
