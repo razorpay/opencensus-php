@@ -100,7 +100,7 @@ class Core extends Base\Core
 
         $isFlashWalletCapture = ($payment->getWallet() === Payment\Processor\Wallet::FLASHWALLET);
 
-        if ($isFlashWalletCapture)
+        if ($isFlashWalletCapture === true)
         {
             $updateNodalBalance = false;
         }
@@ -296,6 +296,8 @@ class Core extends Base\Core
 
         assert ($payment->transaction !== null);
 
+        $updateNodalBalance = true;
+
         $settledAt = 1;
 
         $txnData = array(
@@ -331,6 +333,13 @@ class Core extends Base\Core
 
         $paymentStatus = $payment->getStatus();
 
+        $isFlashWalletCapture = ($payment->getWallet() === Payment\Processor\Wallet::FLASHWALLET);
+
+        if ($isFlashWalletCapture === true)
+        {
+            $updateNodalBalance = false;
+        }
+
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
@@ -339,7 +348,7 @@ class Core extends Base\Core
 
                 break;
             case Payment\Status::CAPTURED:
-                $this->updateBalances($txn);
+                $this->updateBalances($txn, $updateNodalBalance);
 
                 break;
             case Payment\Status::REFUNDED:
@@ -401,6 +410,13 @@ class Core extends Base\Core
         return $txn;
     }
 
+    /**
+     * Record and associate a transaction from a transfer payment action.
+     *
+     * @param  Transfer\Entity      $transfer Transfer entity
+     * @param  Base\Entity          $to       Entity that is receiving the transfer
+     * @return Transaction\Entity
+     */
     public function createFromTransfer($transfer, $to)
     {
         $txn = new Transaction\Entity;

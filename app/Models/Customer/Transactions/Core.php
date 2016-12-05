@@ -18,7 +18,7 @@ class Core extends Base\Core
     {
         $amount = $payment->getAmount();
 
-        $customerTxn = $this->createEntityForType('debit', $payment, $amount, $payment->customer);
+        $customerTxn = $this->createEntityForType('debit', $payment->merchant, $amount, $payment->customer);
 
         $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);
 
@@ -27,9 +27,17 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
+    /**
+     * Create customer_transaction on payment capture+transfer.
+     *
+     * @param  Payment\Entity   $payment
+     * @param  int              $amount
+     * @param  Customer\Entity  $customer
+     * @return Entity
+     */
     public function createFromCustomerCredit($payment, int $amount, $customer)
     {
-        $customerTxn = $this->createEntityForType('credit', $payment, $amount, $customer);
+        $customerTxn = $this->createEntityForType('credit', $payment->merchant, $amount, $customer);
 
         $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant);
@@ -39,14 +47,34 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    protected function createEntityForType(string $type, $payment, int $amount, $customer)
+    /**
+     * Create entry for a refund transaction
+     *
+     * @param  string $customerId
+     * @param  int    $amount
+     * @return Entity
+     */
+    public function createFromCustomerRefund($customerId, int $amount)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+
+        $customerTxn = $this->createEntityForType('credit', $this->merchant, $amount, $customer);
+
+        $balance = (new Customer\Balance\Service)->refund($customer, $amount);
+
+        $customerTxn->setBalance($balance->getBalance());
+
+        return $customerTxn;
+    }
+
+    protected function createEntityForType(string $type, $merchant, int $amount, $customer)
     {
         $customerTxn = new Entity;
 
         $txnData = [
             Entity::ENTITY_ID           => $customer->getId(),
             Entity::ENTITY_TYPE         => Type::CUSTOMER,
-            Entity::STATUS              => 'transfered', // ? todo
+            Entity::STATUS              => 'transferred', // ? todo
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
             Entity::DESCRIPTION         => 'NA', // ? todo
@@ -67,7 +95,7 @@ class Core extends Base\Core
 
         $customerTxn->customer()->associate($customer);
 
-        $customerTxn->merchant()->associate($payment->merchant);
+        $customerTxn->merchant()->associate($merchant);
 
         $customerTxn->fillAndGenerateId($txnData);
 

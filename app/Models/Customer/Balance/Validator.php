@@ -18,9 +18,11 @@ class Validator extends Base\Validator
 
         $maxBalance = $wallet->getMaxBalance();
 
+        //TODO: Validate for daliy/weekly/monthly usage here
         if ($balance > $maxBalance)
         {
-            throw new \Exception('Will cross max_balance', 400);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER);
         }
     }
 
@@ -30,7 +32,8 @@ class Validator extends Base\Validator
 
         if ($balance < 0)
         {
-            throw new \Exception('Balance will go below 0', 400);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
     }
 }

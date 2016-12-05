@@ -9,19 +9,25 @@ use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
-    const DEFAULT_MIN_BALANCE       = 0;
-    const DEFAULT_MAX_BALANCE       = 1000000;
-
+    /**
+     * Create and save a new customer_balance record for a customer <> merchant
+     *
+     * @param  string  $customerId
+     * @return Entity              Balance Entity
+     */
     protected function create($customerId) : Entity
     {
         $balance = new Entity;
 
-        $customer = $this->repo->customer->findByPublicId($customerId);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
         $balanceData = [
-            Entity::NAME                => $this->merchant->getName(),
+            Entity::NAME                => $this->merchant->getBillingLabelElseName(),
             Entity::BALANCE             => 0,
-            Entity::MAX_BALANCE         => self::DEFAULT_MAX_BALANCE,
+            Entity::MAX_BALANCE         => Entity::DEFAULT_MAX_BALANCE,
+            Entity::DAILY_USAGE         => 0,
+            Entity::WEEKLY_USAGE        => 0,
+            Entity::MONTHLY_USAGE       => 0,
         ];
 
         $balance->customer()->associate($customer);
@@ -35,7 +41,14 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function debit(Entity $balance, int $amount)
+    /**
+     * Debit an amount from customer_balance
+     *
+     * @param  Entity $balance
+     * @param  int    $amount
+     * @return Entity
+     */
+    public function debit(Entity $balance, int $amount) : Entity
     {
         $balance->getValidator()->validateBalanceForDebit($balance, $amount);
 
@@ -46,6 +59,13 @@ class Core extends Base\Core
         return $balance;
     }
 
+    /**
+     * Credit an amount from customer_balance
+     *
+     * @param  Entity $balance
+     * @param  int    $amount
+     * @return Entity
+     */
     public function credit(Entity $balance, int $amount) : Entity
     {
         $balance->getValidator()->validateBalanceForCredit($balance, $amount);
@@ -57,7 +77,14 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function fetchOrCreate($customerId) : Entity
+
+    /**
+     * Fetches or creates and returns a customer_balance entity for a merchant-customer pair
+     *
+     * @param  string $customerId
+     * @return Entity
+     */
+    public function fetchOrCreate(string $customerId) : Entity
     {
         $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
@@ -67,7 +94,23 @@ class Core extends Base\Core
             return $balance;
         }
 
-        // No existing wallet found for the customer ID, create one
+        // No existing wallet found for the customer ID linked
+        // to the current merchant, create one instead
         return $this->create($customerId);
+    }
+
+    /**
+     * Refund an amount to customer_balance, lock and credit
+     *
+     * @param  string $customerId
+     * @param  int    $amount
+     * @return Entity
+     */
+    public function refund(string $customerId, int $amount) : Entity
+    {
+        $balance = $this->repo->customer_balance
+                        ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
+
+        return $this->credit($balance, $amount);
     }
 }

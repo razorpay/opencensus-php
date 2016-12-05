@@ -17,6 +17,9 @@ class Entity extends Base\PublicEntity
     const MONTHLY_USAGE = 'monthly_usage';
     const MAX_BALANCE   = 'max_balance';
 
+    // RBI-defined maximum limit for wallet balance
+    const DEFAULT_MAX_BALANCE = 2000000;
+
     protected static $sign = 'cust';
 
     protected $entity = 'customer_balance';

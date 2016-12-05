@@ -25,4 +25,14 @@ class Service extends Base\Service
 
         return $entities->toArrayPublic();
     }
+
+    public function createForRefund($customerId, $amount)
+    {
+        $this->repo->transaction(function () use ($customerId, $amount)
+        {
+            $customerTxn = $this->core->createFromCustomerRefund($customerId, $amount);
+
+            $this->repo->saveOrFail($customerTxn);
+        });
+    }
 }

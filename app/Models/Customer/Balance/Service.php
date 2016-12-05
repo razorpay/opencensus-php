@@ -37,13 +37,13 @@ class Service extends Base\Service
         return $this->core->debit($balance, $amount);
     }
 
-    public function sendMoney($customerId, array $input)
+    public function refund(Customer\Entity $customer, int $amount)
     {
-
+        return $this->core->refund($customer->getPublicId(), $amount);
     }
 
-    public function refund($customerId, array $input)
+    public function sendMoney($customerId, array $input)
     {
-
+        ;
     }
 }

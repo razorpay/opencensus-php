@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
