@@ -676,14 +676,7 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'headers'    => $response->headers->getAll(),
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]
-        );
+        $this->handleRequestFailed($response);
 
         $content = $this->jsonToArray($response->body);
 
