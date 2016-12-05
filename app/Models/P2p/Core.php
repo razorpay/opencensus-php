@@ -96,7 +96,7 @@ class Core extends Base\Core
         $gatewayInput['method'] = 'ReqPay';
         $gatewayInput['params'] = [
             'p2p'          => $p2p->toArray(),
-            'customer'     => $p2p->customer()->toArray(),
+            'customer'     => $p2p->customer->toArray(),
             'source'       => $p2p->source->toArray(),
             'bank_account' => $p2p->source->bankAccount->toArray(),
             'sink'         => $p2p->sink->toArray(),

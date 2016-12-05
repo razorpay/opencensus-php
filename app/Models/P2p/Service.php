@@ -69,9 +69,7 @@ class Service extends Base\Service
 
     public function authorize(string $id, array $input)
     {
-        $p2p = $this->core->authorize($id, $input);
-
-        return $p2p->toArrayPublic();
+        return $this->core->authorize($id, $input);
     }
 
     protected function eventP2pCreated($p2p)
