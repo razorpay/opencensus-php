@@ -400,20 +400,20 @@ class Processor
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
 
-        // Throw payment failed exception if async payment timeout (5mins)
-        // has been exceeded
-        if ($payment->justCreated() === false)
-        {
-            $e = new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
-
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
-
-            throw $e;
-        }
-
         if ($payment->isCreated() === true)
         {
+            // Throw payment failed exception if async payment timeout (5mins)
+            // has been exceeded
+            if ($payment->justCreated() === false)
+            {
+                $e = new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+
+                $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
+
+                throw $e;
+            }
+
             return [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
