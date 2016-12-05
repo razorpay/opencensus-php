@@ -71,6 +71,38 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => 'org_6lFupOxpf36BY3',
+                    'auth_type'         => 'password',
+                    'business_name'     => 'ICICI',
+                    'display_name'      => 'ICICI Bank Pvt Ltd',
+                    'email'             => 'icici@icici.in',
+                    'email_domains'     => 'icici.in',
+                    'hostname'          => 'icici.in',
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => time(),
+                    'updated_at'        => time(),
+                ]
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => 'org_6dLbNSpv5XbCOI',
+                    'auth_type'         => 'password',
+                    'business_name'     => 'BOB',
+                    'display_name'      => 'BOB Pvt Ltd',
+                    'email'             => 'bob@bob.in',
+                    'email_domains'     => 'bob.in',
+                    'hostname'          => 'bob.in',
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => time(),
+                    'updated_at'        => time(),
+                ]
+            );
+
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
@@ -216,6 +248,156 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::DEMO_ACCOUNT,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_ICICI,
+                    'name'          =>  'Razorpay Nodal Account',
+                    'email'         =>  'icici1@razorpay.com',
+                    'category'      =>  '1234',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'icici1@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6lFupOxpf36BY3',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_ICICI,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_ICICI,
+                    'name'          =>  'Razorpay Atom Account',
+                    'email'         =>  'icici2@razorpay.com',
+                    'category'      =>  '1234',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'icici2@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6lFupOxpf36BY3',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_ICICI,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_ICICI,
+                    'name'          =>  'Razorpay Fee Account',
+                    'email'         =>  'icici3@razorpay.com',
+                    'category'      =>  '1234',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'icici3@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6lFupOxpf36BY3',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_ICICI,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_BOB,
+                    'name'          =>  'Test Account',
+                    'email'         =>  'bob1@razorpay.com',
+                    'category'      =>  '1234',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'bob1@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOI',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_BOB,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'balance'       =>  100000,
+                    'credits'       =>  50000,
+                    'on_hold'       =>  10000,
+                )
+            );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_BOB,
+                    'name'          =>  'Shared Account',
+                    'email'         =>  'bob2@razorpay.com',
+                    'category'      =>  '1234',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'bob2@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOI',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::TEST_ACCOUNT_BOB,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_BOB,
+                    'name'          =>  'Demo Account',
+                    'email'         =>  'bob3@razorpay.com',
+                    'category'      =>  '1234',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'bob3@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOI',
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::DEMO_ACCOUNT_BOB,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
