@@ -7,6 +7,7 @@ use RZP\Gateway\Netbanking;
 
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
+use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Icici\AesTrait;
 use phpseclib\Crypt\AES;
@@ -97,20 +98,22 @@ class Server extends Base\Mock\Server
         // Hardcoding success for now
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
 
-        $xml->addAttribute(RequestFields::ITEM_CODE,
+        $xml->addAttribute(ResponseFields::ITEM_CODE,
             $input[RequestFields::ITEM_CODE]);
 
-        $xml->addAttribute(RequestFields::PAYMENT_REFERENCE_NUBER,
+        $xml->addAttribute(ResponseFields::PAYMENT_REFERENCE_NUBER,
             $input[RequestFields::PAYMENT_REFERENCE_NUBER]);
 
-        $xml->addAttribute('CURRENCY', $input[RequestFields::CURRENCY_CODE]);
+        $xml->addAttribute(ResponseFields::CURRENCY,
+            $input[RequestFields::CURRENCY_CODE]);
 
-        $xml->addAttribute('PMTDATE', $input[RequestFields::PAYMENT_DATE]);
+        $xml->addAttribute(ResponseFields::PAYMENT_DATE,
+            $input[RequestFields::PAYMENT_DATE]);
 
-        $xml->addAttribute(RequestFields::AMOUNT,
+        $xml->addAttribute(ResponseFields::AMOUNT,
             number_format($input[RequestFields::AMOUNT], 2, '.', ''));
 
-        $xml->addAttribute('STATUS', ResponseFields::SUCCESS);
+        $xml->addAttribute(ResponseFields::STATE, Constants::SUCCESS);
 
         $response = $xml->asXML();
 

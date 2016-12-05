@@ -143,7 +143,7 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
-        if (isset($xml['STATUS']) and $xml['STATUS'] === ResponseFields::SUCCESS)
+        if (isset($xml['STATUS']) and $xml['STATUS'] === Constants::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
