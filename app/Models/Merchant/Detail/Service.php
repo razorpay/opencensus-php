@@ -43,8 +43,8 @@ class Service extends Base\Service
             $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
 
             $params = [
-                    Entity::SUBMITTED  => 1,
-                    Entity::SUBMITTED  => $submittedAt
+                    Entity::SUBMITTED     => 1,
+                    Entity::SUBMITTED_AT  => $submittedAt
             ];
 
             $merchantDetails->fill($params);
