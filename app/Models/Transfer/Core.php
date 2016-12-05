@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
@@ -50,6 +51,8 @@ class Core extends Base\Core
     {
         $validator = new Validator;
 
+        $this->validateTransfers($payment, $transfers);
+
         foreach ($transfers as $transfer)
         {
             $validator->validateInput('payment_transfer', $transfer);
@@ -70,4 +73,54 @@ class Core extends Base\Core
 
         }
     }
+
+    protected function validateTransfers($payment, $transfers)
+    {
+        // For now -
+        // 1. Sum of transfers cant be greater than the capture amount
+        // 2. Sum of transfers should be greater than merchant balance
+
+        $transferSum = 0;
+
+        foreach ($transfers as $transfer)
+        {
+            $amount = $transfer['amount'];
+
+            $transferSum += $transfer['amount'];
+        }
+
+        $traceData = [
+            'payment_id' => $payment->getId(),
+            'transfers'  => $transfers
+        ];
+
+        if ($transferSum > $payment->getAmount())
+        {
+            $this->failValidationForTotalSum($traceData);
+        }
+
+        $balance = $this->repo->balance->getMerchantBalance($this->merchant);
+
+        if ($transferSum > $balance->getBalance())
+        {
+            $this->failValdationForMerchantBalance($traceData);
+        }
+    }
+
+    protected function failValidationForTotalSum($traceData)
+    {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_VALIDATION_FAILED, $traceData);
+
+        throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED);
+    }
+
+    protected function failValdationForMerchantBalance($traceData)
+    {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_VALIDATION_FAILED, $traceData);
+
+        throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE);
+    }
+
 }

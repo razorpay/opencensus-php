@@ -46,11 +46,10 @@ class PaymentTransferTest extends TestCase
 
         $transferData = [
             'customer' => $customerPublicId,
-            'amount'   => $amount
+            'amount'   => $amount,
         ];
 
         $this->testData[__FUNCTION__]['request']['content']['transfers'][0] = $transferData;
-
 
         $this->startTest();
 

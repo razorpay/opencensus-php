@@ -296,6 +296,23 @@ class Processor
     }
 
     /**
+     * Transfer a previously captured payment
+     * to a wallet or other merchant
+     *
+     * @param  string $id    Pamyent ID
+     * @param  array  $input Input Array
+     * @throws Exception\BadRequestException
+     */
+    public function transfer(string $id, array $input)
+    {
+        $payment = $this->retrieve($id);
+
+        return []; //TODO
+
+        return $this->transferPayment($payment, $input['transfers']);
+    }
+
+    /**
      * Cancels a previously created payment
      *
      * @param  string $id Id of payment to be captured

@@ -16,6 +16,6 @@ class Validator extends Base\Validator
 
     protected static $paymentTransferRules = [
         'customer'             => 'sometimes|string|size:19',
-        'amount'               => 'required|integer',
+        'amount'               => 'required|integer|min:1',
     ];
 }

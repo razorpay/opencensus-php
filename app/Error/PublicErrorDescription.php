@@ -276,4 +276,7 @@ class PublicErrorDescription
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
+
+    const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED             = 'The sum of amount requested for transfer is greater than the captured amount';
+    const BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE                       = 'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
 }

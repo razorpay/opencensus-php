@@ -411,6 +411,9 @@ class TraceCode
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
+    // Trace for Payment/Transfers
+    const PAYMENT_TRANSFER_VALIDATION_FAILED        = 'PAYMENT_TRANSFER_VALIDATION_FAILED';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -525,6 +528,7 @@ class TraceCode
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
         self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+        self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount'
     );
 
     /**

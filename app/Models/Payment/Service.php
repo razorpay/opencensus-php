@@ -325,6 +325,13 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function transfer($id, $input)
+    {
+        $payment = $this->getNewProcessor()->transfer($id, $input);
+
+        return $payment->toArrayPublic();
+    }
+
 
     /**
      * If a payment has been captured on gateway but not on the api side,
