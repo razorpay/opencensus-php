@@ -251,7 +251,7 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByIdAndOrgIdWithRelations($adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
         $permissions = [];
@@ -266,21 +266,25 @@ class Service extends Base\Service
             ];
         }
 
+        $permissions = null;
+
         foreach ($roles as $role)
         {
             $roleNames[] = $role['name'];
-            $rolePermissions = $role->permissions;
 
-            foreach ($rolePermissions as $rolePermission)
+            if ($permissions === null)
             {
-                $rolePermission = $rolePermission->toArrayPublic();
-                $permissions[] = $rolePermission['name'];
+                $permissions = $role->permissions->pluck('name');
+            }
+            else
+            {
+                $permissions = $permissions->merge($role->permissions->pluck('name'));
             }
         }
 
         $admin = $admin->toArrayPublic();
 
-        $admin['permissions'] = $permissions;
+        $admin['permissions'] = $permissions->all();
 
         $admin['roles'] = $roleNames;
 

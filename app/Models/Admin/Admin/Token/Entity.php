@@ -54,10 +54,7 @@ class Entity extends Base\PublicEntity
 
     public function getAdminId()
     {
-        $adminId = Admin\Entity::getSignedId(
-            $this->getAttribute(self::ADMIN_ID));
-
-        return $adminId;
+        return $this->getAttribute(self::ADMIN_ID);
     }
 
     public function getToken()
