@@ -94,8 +94,25 @@ class Server extends Base\Mock\Server
 
     public function createXmlResponse($input)
     {
-        $response = '<?xml version="1.0" encoding="utf-8" ?>' . PHP_EOL;
-        $response .= '<VerifyOutput ITC="'. $input['ITC'] .'" PRN="'. $input['PRN'] .'" CURRENCY="'. $input['CRN'] .'" PMTDATE="'. $input['Pmt_Date'] .'" AMT="'. number_format($input['AMT'], 2, '.', '') .'" STATUS="SUCCESS" />';
+        // Hardcoding success for now
+        $xml = new \SimpleXMLElement('<VerifyOutput/>');
+
+        $xml->addAttribute(RequestFields::ITEM_CODE,
+            $input[RequestFields::ITEM_CODE]);
+
+        $xml->addAttribute(RequestFields::PAYMENT_REFERENCE_NUBER,
+            $input[RequestFields::PAYMENT_REFERENCE_NUBER]);
+
+        $xml->addAttribute('CURRENCY', $input[RequestFields::CURRENCY_CODE]);
+
+        $xml->addAttribute('PMTDATE', $input[RequestFields::PAYMENT_DATE]);
+
+        $xml->addAttribute(RequestFields::AMOUNT,
+            number_format($input[RequestFields::AMOUNT], 2, '.', ''));
+
+        $xml->addAttribute('STATUS', ResponseFields::SUCCESS);
+
+        $response = $xml->asXML();
 
         return $response;
     }
