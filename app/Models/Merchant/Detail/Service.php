@@ -71,7 +71,7 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $fileName = $this->merchant->getId() .'_' . $key;
+            $fileName = 'api/' .$this->merchant->getId() .'/' .$key;
 
             $ufh = $this->createFile($merchantDetails,
                                     $value->extension(),
