@@ -126,6 +126,8 @@ class Service extends Base\Service
 
         $response = $merchantDetails->toArrayPublic();
 
+        $requiredFields = [];
+
         // List of all the required fields which are not set
         foreach (ValidationFields::DASHBOARD_FIELDS as $key)
         {
