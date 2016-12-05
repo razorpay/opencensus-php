@@ -195,6 +195,10 @@ class Service extends Base\Service
             $merchantDetails = $merchant->merchantDetails;
             $merchantDetails->contact_email = $merchant->email;
             $merchantDetails->save();
+
+            $params = ['contact_email' => $merchant->email];
+
+            (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
         }
 
         return [$error, null];

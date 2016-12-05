@@ -707,6 +707,8 @@ class Service extends Base\Service
             $merchantDetails->fill($merchantDetailsData);
             $merchantDetails->save();
 
+            (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetailsData, $id);
+
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
 
@@ -726,6 +728,9 @@ class Service extends Base\Service
 
         $merchantDetails->comment = $comment;
         $merchantDetails->save();
+
+        $params = ['comment' => $comment];
+        (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
 
         return array($error, $comment);
     }
