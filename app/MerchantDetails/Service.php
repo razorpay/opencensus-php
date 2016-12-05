@@ -151,7 +151,7 @@ class Service extends Base\Service
      * @param  string $email New Transaction report email
      * @return array Errors
      */
-    public static function changeTransactionEmail($id, $email)
+    public function changeTransactionEmail($id, $email)
     {
         $merchantDetails = Entity::findorfail($id);
 

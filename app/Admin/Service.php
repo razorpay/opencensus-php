@@ -569,7 +569,7 @@ class Service extends Base\Service
             if (isset($input['transaction_report_email']))
             {
                 // Only when it is changed on API side we update on the dashboard side as well
-                $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
+                $error = (new MerchantDetails\Service)->changeTransactionEmail($id, $csvEmail);
             }
 
             if (isset($input['name']))
