@@ -22,14 +22,9 @@ class FakerProviderFrequent extends Base
         return time();
     }
 
-    public function groupName()
+    public function name($n = 5)
     {
-        return Str::random(5);
-    }
-
-    public function permissionName()
-    {
-        return Str::random(5);
+        return Str::random($n);
     }
 
     public function rzpSubdomain()

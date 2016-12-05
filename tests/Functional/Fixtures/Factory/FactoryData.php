@@ -380,9 +380,9 @@ final class FactoryData
             'auth_type'     => 'password',
         ]);
 
-        $factory(\RZP\Models\Admin\Permission\Entity::class, [
+    $factory(\RZP\Models\Admin\Permission\Entity::class, [
             'id'            => $faker->uniqueid,
-            'name'          => $faker->permissionName,
+            'name'          => $faker->name,
             'category'      => 'test category',
             'description'   => 'test description',
         ]);
@@ -395,7 +395,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Admin\Group\Entity::class, [
             'id'          => $faker->uniqueid,
-            'name'        => $faker->groupName,
+            'name'        => $faker->name,
             'description' => 'This is a test group',
         ]);
 
