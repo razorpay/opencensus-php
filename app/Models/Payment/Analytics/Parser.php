@@ -250,7 +250,11 @@ class Parser extends Base\Core
 
         if ($orderId !== null)
         {
-            $attempts = $this->getAttemptsFromOrderId($orderId);
+            $order = $payment->order;
+
+            // No need to increment count here as it's already done
+            // during payment creation for an order.
+            $attempts = $order->getAttempts();
         }
         else
         {
@@ -267,13 +271,6 @@ class Parser extends Base\Core
         }
 
         $log->setAttempts($attempts);
-    }
-
-    protected function getAttemptsFromOrderId($orderId)
-    {
-        $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
-
-        return $payments->count();
     }
 
     protected function getAttemptsFromCheckoutId($checkoutId)
