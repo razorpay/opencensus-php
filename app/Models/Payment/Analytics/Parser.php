@@ -92,12 +92,11 @@ class Parser extends Base\Core
     /**
      * Traces if column values aren't consistent with each other
      */
-    public function traceInconsistentData(Entity $paymentAnalytics)
+    public function traceInconsistentData(array $pa)
     {
-        // If library is Checkoutjs, then referer should always be present
-        $library = $paymentAnalytics->getLibrary();
+        $library = $pa[Entity::LIBRARY] ?? null;
 
-        $referer = $paymentAnalytics->getReferer();
+        $referer = $pa[Entity::REFERER] ?? null;
 
         if (($library !== null) and
             ($library === Metadata::CHECKOUTJS) and
@@ -115,10 +114,8 @@ class Parser extends Base\Core
     /**
      * Traces any Metadata value sent by front-end, that is not recognized by API
      */
-    public function traceUnrecognizedData(Entity $paymentAnalytics)
+    public function traceUnrecognizedData(array $pa)
     {
-        $pa = $paymentAnalytics->toArrayPublic();
-
         $invalidData = [];
 
         foreach ($pa as $key => $value)
@@ -134,7 +131,7 @@ class Parser extends Base\Core
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
                 ['invalid_data' => $invalidData,
-                 'payment_id'   => $paymentAnalytics->getPaymentId()]);
+                 'payment_id'   => $pa[Entity::PAYMENT_ID]]);
         }
     }
 
@@ -286,18 +283,28 @@ class Parser extends Base\Core
             return 1;
         }
 
-        $oldPayments = $this->repo
+        $oldPaymentAnalytics = $this->repo
                             ->payment_analytics
                             ->getRecentMerchantPaymentsForCheckoutId($checkoutId);
 
-        $count = $oldPayments->count();
+        $count = $oldPaymentAnalytics->count();
+
+        $latestEntity = $oldPaymentAnalytics->first();
 
         if (($count > 0) and
-            ($count !== $oldPayments->first()->getAttempts()))
+            ($count !== $latestEntity->getAttempts()))
         {
             $this->trace->warning(
                 TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
-                ['checkout_id' => $checkoutId]);
+                [
+                     'checkout_id' => $checkoutId,
+                     'count' => $count,
+                     'last_entity' => [
+                                        'id' => $latestEntity->getId(),
+                                        'attempts' => $latestEntity->getAttempts()
+                                      ]
+                ]
+            );
 
             return;
         }
