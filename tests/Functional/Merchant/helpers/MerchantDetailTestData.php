@@ -22,7 +22,7 @@ return [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
                 ],
-                "details_submitted" => false,
+                "can_submit" => false,
             ],
         ],
     ],
@@ -78,7 +78,7 @@ return [
             'content' =>[
                 "locked" => true
             ],
-            'url' => '/merchant/activation',
+            'url' => '/merchant/activation/lock',
             'method' => 'POST'
         ],
         'response' => [
@@ -88,7 +88,7 @@ return [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
                 ],
-                "details_submitted" => false,
+                "can_submit" => false,
             ],
         ],
     ],
@@ -98,7 +98,7 @@ return [
             'content' =>[
                 "locked" => 0
             ],
-            'url' => '/merchant/activation',
+            'url' => '/merchant/activation/lock',
             'method' => 'POST'
         ],
         'response' => [
@@ -108,7 +108,7 @@ return [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
                 ],
-                "details_submitted" => false,
+                "can_submit" => false,
             ],
         ],
     ],
@@ -119,7 +119,7 @@ return [
                 "bank_branch_ifsc"=>"ICIC0000002",
                 "locked" => 0
             ],
-            'url' => '/merchant/activation',
+            'url' => '/merchant/activation/lock',
             'method' => 'POST'
         ],
         'response' => [
@@ -130,7 +130,7 @@ return [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
                 ],
-                "details_submitted" => false,
+                "can_submit" => false,
             ],
         ],
     ],
@@ -150,7 +150,7 @@ return [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
                 ],
-                "details_submitted" => false,
+                "can_submit" => false,
             ],
         ],
     ],

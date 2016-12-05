@@ -591,5 +591,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postLockActivation($id)
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->lockMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
     // == / Activation Form Handlers ==
 }

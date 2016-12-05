@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Constants;
 use RZP\Exception;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Type
 {
@@ -20,8 +21,6 @@ class Type
     const BATCH_INPUT                       = 'batch_input';
 
     const BATCH_OUTPUT                      = 'batch_output';
-
-    const MERCHANT_ACTIVATION               = 'merchant_activation';
 
     const BLANK                             = 'blank';
 
@@ -44,7 +43,13 @@ class Type
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
-            self::MERCHANT_ACTIVATION,
+            MerchantDetail::BUSINESS_PROOF_URL,
+            MerchantDetail::BUSINESS_OPERATION_PROOF_URL,
+            MerchantDetail::BUSINESS_PAN_URL,
+            MerchantDetail::ADDRESS_PROOF_URL,
+            MerchantDetail::PROMOTER_PROOF_URL,
+            MerchantDetail::PROMOTER_PAN_URL,
+            MerchantDetail::PROMOTER_ADDRESS_URL,
         ],
     ];
 
@@ -69,7 +74,7 @@ class Type
      */
     public static function validateType(string $type)
     {
-        foreach(self::TYPE_MAP as $entity => $typeArray)
+        foreach (self::TYPE_MAP as $entity => $typeArray)
         {
             if (in_array($type, $typeArray) === true)
             {

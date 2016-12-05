@@ -140,7 +140,8 @@ final class Route
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
-        'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload_file',                'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_lock'                => ['post',     'merchant/activation/{id}/lock',                  'MerchantController@postLockActivation'                             ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -534,6 +535,7 @@ final class Route
         'payments_multiple_authorize_refund',
         'transaction_create_fees_breakup',
         'adj_add_reverse',
+        'merchant_activation_lock',
     );
 
     public static $proxy = array(

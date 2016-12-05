@@ -5,15 +5,11 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mockery;
 use Carbon\Carbon;
-use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-
 
 class MerchantDetailTest extends TestCase
 {
-    use FileHandlerTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -56,7 +52,13 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -67,7 +69,13 @@ class MerchantDetailTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -78,7 +86,13 @@ class MerchantDetailTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

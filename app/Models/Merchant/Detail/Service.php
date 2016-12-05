@@ -16,42 +16,19 @@ class Service extends Base\Service
 {
     public function fetchMerchantDetails()
     {
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [
-                    'merchant_id'         => $this->merchant->getId(),
-                ]);
-
-            return [];
-        }
+        $merchantDetails = $this->getMerchantDetails($this->merchant);
 
         return $this->createResponse($merchantDetails);
     }
 
     public function saveMerchantDetails(array $input)
     {
-        $merchantDetails = $this->merchant->merchantDetail;
+        $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
-        if ($merchantDetails === null)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [
-                    'merchant_id'    => $this->merchant->getId(),
-                ]);
-
-            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
-        }
-
-        if ((isset($input[Detail\Entity::LOCKED]) === false) and
-            ($merchantDetails->isLocked()))
+        if ($merchantDetails->isLocked())
         {
             throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
+                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }
 
         $merchantDetails->edit($input);
@@ -60,15 +37,15 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
-        if ((empty($input[Detail\Entity::SUBMIT]) === false) and
+        if ((isset($input[Detail\Entity::SUBMIT]) === true) and
             ($input[Detail\Entity::SUBMIT] === true) and
-            ($response['details_submitted'] === true))
+            ($response['can_submit'] === true))
         {
             $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
 
             $params = [
-                    Entity::SUBMITTED     => 1,
-                    Entity::SUBMITTED_AT  => $submittedAt
+                Entity::SUBMITTED     => 1,
+                Entity::SUBMITTED_AT  => $submittedAt
             ];
 
             $merchantDetails->fill($params);
@@ -81,23 +58,12 @@ class Service extends Base\Service
 
     public function uploadActivationFile(array $input)
     {
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [
-                    'merchant_id'   => $this->merchant->getId(),
-                ]);
-
-            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
-        }
+        $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
         if ($merchantDetails->isLocked())
         {
             throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
+                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }
 
         $merchantDetails->edit($input);
@@ -112,7 +78,7 @@ class Service extends Base\Service
                                     $value->extension(),
                                     $value,
                                     $fileName,
-                                    FileStore\Type::MERCHANT_ACTIVATION);
+                                    $key);
 
             $params[$key] = $ufh->get()['id'];
         }
@@ -122,6 +88,35 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchantDetails);
 
         return $this->createResponse($merchantDetails);
+    }
+
+    public function lockMerchantDetails($id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->edit($input);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $this->createResponse($merchantDetails);
+    }
+
+    protected function getMerchantDetails(Merchant\Entity $merchant, array $input = [])
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($merchantDetails === null)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
+                [ 'merchant_id'    => $this->merchant->getId() ]);
+
+            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
+        }
+
+        return $merchantDetails;
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -136,9 +131,7 @@ class Service extends Base\Service
 
         $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [
-                    'merchant_details'   => $merchantDetail->toArrayPublic(),
-                ]);
+                [ 'merchant_id'   => $merchant->getId() ]);
 
         return $merchantDetail;
     }
@@ -169,34 +162,24 @@ class Service extends Base\Service
 
         $response = $merchantDetails->toArrayPublic();
 
-        $requiredFields = [];
-
         // List of all the required fields which are not set
-        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
-        {
-            if (isset($merchantDetailsArr[$key]) === false)
-            {
-                $requiredFields[] = $key;
-            }
-        }
+        $requiredFields = array_diff(array_keys($merchantDetailsArr), ValidationFields::DASHBOARD_FIELDS);
 
         if (count($requiredFields) > 0)
         {
             $response['verification'] = [
-                                    'status'            => 'disabled',
-                                    'disabled_reason'   => 'required_fields',
-                                    'required_fields'   =>  $requiredFields
-                                ];
+                'status'            => 'disabled',
+                'disabled_reason'   => 'required_fields',
+                'required_fields'   =>  $requiredFields
+            ];
 
-            $response['details_submitted'] = false;
+            $response['can_submit'] = false;
         }
         else
         {
-            $response['verification'] = [
-                                    'status' => 'pending'
-                                ];
+            $response['verification'] = [ 'status' => 'pending'];
 
-            $response['details_submitted'] = true;
+            $response['can_submit'] = true;
         }
 
         return $response;
