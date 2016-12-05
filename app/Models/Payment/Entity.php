@@ -252,6 +252,9 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL     => 'bool',
     ];
 
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------

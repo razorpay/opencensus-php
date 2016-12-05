@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -22,5 +23,16 @@ class Repository extends Base\Repository
         $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
 
         return $results->get();
+    }
+
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->latest()
+                    ->get();
     }
 }

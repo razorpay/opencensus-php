@@ -58,12 +58,9 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
-    // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
-
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
-        $timestamp = time() - self::PAYMENT_WINDOW;
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
         $paPaymentId = $this->manager
@@ -488,7 +485,7 @@ class Repository extends Base\Repository
 
     public function getCreatedPaymentsForOrder($orderId)
     {
-        $ts = time() - self::PAYMENT_WINDOW;
+        $ts = time() - Payment\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
