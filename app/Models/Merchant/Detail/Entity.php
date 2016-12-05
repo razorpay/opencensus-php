@@ -2,12 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use Config;
-use RZP\Trace;
 use RZP\Models\Base;
-use RZP\Constants\Table;
-use RZP\Models\BankAccount;
-use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -75,8 +70,6 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                        =      'updated_at';
 
     const SUBMIT                            =       'submit';
-
-    protected $table = Table::MERCHANT_DETAIL;
 
     protected $entity = 'merchant_detail';
 
