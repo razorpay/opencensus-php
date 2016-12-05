@@ -65,7 +65,7 @@ class FlashWalletPaymentTest extends TestCase
 
         $this->assertEquals($payment['status'], 'captured');
 
-        //Assert - merchant balance/ nodal account ?
+        // Assert - merchant balance/ nodal account ?
     }
 
     protected function doAuthPaymentFromWallet($customerBalance, $paymentAmount)

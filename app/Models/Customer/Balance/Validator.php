@@ -10,6 +10,9 @@ class Validator extends Base\Validator
         Entity::NAME                    => 'required|string|max:50',
         Entity::BALANCE                 => 'required|integer',
         Entity::MAX_BALANCE             => 'required|integer',
+        Entity::DAILY_USAGE             => 'required|integer',
+        Entity::WEEKLY_USAGE            => 'required|integer',
+        Entity::MONTHLY_USAGE           => 'required|integer',
     ];
 
     public function validateBalanceForCredit(Entity $wallet, int $amount)

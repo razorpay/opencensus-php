@@ -18,7 +18,13 @@ class Entity extends Base\PublicEntity
     const MAX_BALANCE   = 'max_balance';
 
     // RBI-defined maximum limit for wallet balance
-    const DEFAULT_MAX_BALANCE = 2000000;
+    const DEFAULT_MAX_BALANCE   = 2000000;
+
+    // Default limits for daily/weekly/monthly wallet usage
+    const DEFAULT_DAILY_USAGE   = 2000000;
+    const DEFAULT_WEEKLY_USAGE  = 2000000;
+    const DEFAULT_MONTHLY_USAGE = 2000000;
+
 
     protected static $sign = 'cust';
 

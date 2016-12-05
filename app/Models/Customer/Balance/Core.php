@@ -25,9 +25,9 @@ class Core extends Base\Core
             Entity::NAME                => $this->merchant->getBillingLabelElseName(),
             Entity::BALANCE             => 0,
             Entity::MAX_BALANCE         => Entity::DEFAULT_MAX_BALANCE,
-            Entity::DAILY_USAGE         => 0,
-            Entity::WEEKLY_USAGE        => 0,
-            Entity::MONTHLY_USAGE       => 0,
+            Entity::DAILY_USAGE         => Entity::DEFAULT_DAILY_USAGE,
+            Entity::WEEKLY_USAGE        => Entity::DEFAULT_WEEKLY_USAGE,
+            Entity::MONTHLY_USAGE       => Entity::DEFAULT_MONTHLY_USAGE,
         ];
 
         $balance->customer()->associate($customer);
