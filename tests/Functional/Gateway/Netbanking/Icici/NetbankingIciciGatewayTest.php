@@ -19,6 +19,11 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_icici';
 
+        $this->payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Setting it manually because default is IDIB
+        $this->payment['bank'] = 'ICIC';
+
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
@@ -26,8 +31,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $paymentAction = 'AuthAndCapture';
-        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -46,8 +50,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $paymentAction = 'Auth';
-        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        $payment = $this->doAuthPayment($this->payment);
 
         $content = $this->verifyPayment($payment['razorpay_payment_id']);
 
@@ -56,16 +59,13 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
-        // Do an Auth and Capture of a payment
-        $paymentAction = 'AuthAndCapture';
-
-        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         // Refund the payment above in full
         $refund = $this->refundPayment($payment['id']);
 
         // Create a new payment #2
-        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         // Do a partial refund of 10000 of payment #2
         $refund = $this->refundPayment($payment['id'], 10000);
@@ -84,7 +84,7 @@ class NetbankingIciciGatewayTest extends TestCase
         }
 
         // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
-        $payment = $this->doNetbankingIciciPayment($paymentAction);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
         // refunding it
         $this->refundPayment($payment['id']);
 
@@ -95,28 +95,6 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->assertEquals($data['netbanking_icici']['count'], 3);
         $this->assertTrue(file_exists($data['netbanking_icici']['file']));
-    }
-
-    protected function doNetbankingIciciPayment($paymentAction)
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray();
-
-        // Setting it manually because default is IDIB
-        $payment['bank'] = 'ICIC';
-
-        // Switch case
-        switch ($paymentAction)
-        {
-            case 'Auth':
-                $payment = $this->doAuthPayment($payment);
-                break;
-
-            default:
-                $payment = $this->doAuthAndCapturePayment($payment);
-                break;
-        }
-
-        return $payment;
     }
 
 }
