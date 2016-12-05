@@ -835,7 +835,7 @@ return [
                     'ICIC' => 'ICICI Bank',
                 ],
                 'disabled' => [
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                     'VIJB' => 'Vijaya Bank',
                 ]
             ],
