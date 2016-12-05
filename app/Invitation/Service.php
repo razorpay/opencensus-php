@@ -16,6 +16,7 @@ class Service extends Base\Service
     const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
     const ALREADY_INVITED = 'An invitation has already been sent to the user.';
     const INVALID_INVITE = 'The invitation is invalid.';
+    const ALREADY_A_MEMBER = 'A user with this email is already a team member.';
 
     public function __construct()
     {
@@ -64,6 +65,10 @@ class Service extends Base\Service
         else if ($merchant->hasInvitiationForEmail($input['email']))
         {
             $errors[] = static::ALREADY_INVITED;
+        }
+        else if ($merchant->hasUserForEmail($input['email']))
+        {
+            $errors[] = static::ALREADY_A_MEMBER;
         }
 
         if (empty($errors))
