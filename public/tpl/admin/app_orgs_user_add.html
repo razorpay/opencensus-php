@@ -20,14 +20,14 @@
             <input type="text" class="form-control m-b" name="name" ng-model="user.name" />
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-show="!user.id">
           <label class="col-lg-2 control-label">Username</label>
           <div class="col-lg-10" >
             <input type="text" class="form-control m-b" name="username" ng-model="user.username" />
             <span class="help-block">Required to login to user panel.</span>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-show="!user.id">
           <label class="col-lg-2 control-label">Email</label>
           <div class="col-lg-10" >
             <input type="email" class="form-control m-b" name="email" ng-model="user.email" />
@@ -37,6 +37,12 @@
           <label class="col-lg-2 control-label">Password</label>
           <div class="col-lg-10" >
             <input type="password" class="form-control m-b" name="password" ng-model="user.password" />
+          </div>
+        </div>
+        <div class="form-group" ng-show="!user.id">
+          <label class="col-lg-2 control-label">Re enter Password</label>
+          <div class="col-lg-10" >
+            <input type="password" class="form-control m-b" name="password_confirmation" ng-model="user.password_confirmation" />
           </div>
         </div>
         <div class="form-group">

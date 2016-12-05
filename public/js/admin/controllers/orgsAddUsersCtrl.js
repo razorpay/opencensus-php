@@ -75,8 +75,8 @@ app.controller('OrgsAddUsersCtrl', [
       var data = {};
       data.body = {
         name: user.name,
-        email: user.email,
-        username: user.username,
+        //email: user.email,
+        //username: user.username,
         department_code: user.department_code,
         branch_code: user.branch_code,
         location_code: user.location_code,

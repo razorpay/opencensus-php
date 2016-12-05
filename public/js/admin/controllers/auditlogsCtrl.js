@@ -13,8 +13,6 @@ app.controller('AuditlogsCtrl', [
     $scope.count = 0;
 
     $scope.fetchAuditLogs = function () {
-
-      console.log('start');
       var request = $http.get('/admin/auditlogs');
 
       $scope.audit_logs = []
@@ -22,7 +20,6 @@ app.controller('AuditlogsCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          console.log(data);
           $scope.audit_logs = data.data;
         }
       });
