@@ -580,7 +580,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content)
+    protected function getRequestArray(array $content)
     {
         $msg = $this->getMessageStringWithHash($content);
 
@@ -601,7 +601,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->isTPVEnabled())
         {
-             return $this->config['live_access_code_sec'];
+            return $this->config['live_access_code_sec'];
         }
 
         return $this->config['live_access_code'];
@@ -641,7 +641,7 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function setTpv($gatewayPayment)
+    protected function setTpv(Entity $gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
     }
