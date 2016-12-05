@@ -22,7 +22,6 @@ app.controller('AuditlogsCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          console.log(data);
           $scope.audit_logs = data.data;
         }
       });
