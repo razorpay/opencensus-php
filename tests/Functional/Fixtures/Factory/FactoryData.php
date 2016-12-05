@@ -382,7 +382,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Admin\Permission\Entity::class, [
             'id'            => $faker->uniqueid,
-            'name'          => $faker->word,
+            'name'          => $faker->permissionName,
             'category'      => 'test category',
             'description'   => 'test description',
         ]);
