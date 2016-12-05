@@ -44,9 +44,18 @@ class Service extends Base\Service
 
         $admin->getValidator()->validateCredentials($input);
 
-        $authPolicy = new AuthPolicy\Service;
+        try
+        {
+            $authPolicy = new AuthPolicy\Service;
+            $authPolicy->validateLogin($admin, $input['password']);
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            $admin->incrementFailedAttempts();
+            $this->repo->saveOrFail($admin);
 
-        $authPolicy->validateLogin($admin, $input['password']);
+            throw $e;
+        }
 
         // Valid password ?
         $isAuthenticated = true;

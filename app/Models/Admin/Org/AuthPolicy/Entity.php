@@ -114,7 +114,7 @@ class Entity extends Base\PublicEntity
     protected $createRules = [
         self::MIN_LENGTH,
         self::MAX_LENGTH,
-        // self::TYPE,
+        self::MAX_PASSWORD_RETAIN,
         self::STRONG_PASSWORD
     ];
 

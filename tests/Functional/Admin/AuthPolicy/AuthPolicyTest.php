@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin\AuthPolicy;
 
+use Hash;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -16,6 +17,8 @@ class AuthPolicyTest extends TestCase
         $this->testDataFilePath = __DIR__.'/AuthPolicyData.php';
 
         parent::setUp();
+
+        $this->org = $this->createOrg();
     }
 
     public function testAdminLogin()
@@ -29,11 +32,9 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $org = $this->createOrg();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $org->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -44,11 +45,9 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $org = $this->createOrg();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $org->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -59,15 +58,84 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $org = $this->createOrg();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $org->getPublicId());
+        $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testMaxFailedLoginAttempts()
+    {
+        $this->ba->appAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'randomemail@rzp.com',
+            'org_id' => $this->org->getId(),
+            'failed_attempts' => 10
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertNull($admin['last_login_at']);
+        $this->assertEquals(true, $admin['locked']);
+        $this->assertEquals(11, $admin['failed_attempts']);
+    }
+
+    public function testPasswordRetainPolicy()
+    {
+        $this->ba->adminAuth();
+
+        $oldPasswords = [
+            // 123456
+            '$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW',
+            // test123456
+            '$2y$10$kcwfoCfrgZChRwHISglsIeYzPwyh6TNuSaCeGMc9C51AjCEOOy/HK',
+            // toughpassword
+            '$2y$10$IdcBm3wGwfy2HCLkqrlWFevwfzfynwptNArJ9ACrlwx2mddbK15TS',
+            // @#12$%^&dfgh
+            '$2y$10$xbRt8IF86kfdyqt2X7aQp.iX1C69HNSvCezRV2mTsYTo/3MG.7H.6',
+            // qwerty123456
+            '$2y$10$mUWQe/ATmMOBS.6ehmo5W.GlztIhcxFXH5JcQgdQ5sdeDgT8w103S',
+            // zxcvbnasdf2345
+            '$2y$10$vax680GhSwRUOZiBGK.Yke1uSkcpNcg6JXTcjLxDkIT/TUZo3Q2RK',
+            // 98765432poiuyt
+            '$2y$10$UWm513HnYiGkncMTKWbhoOGtvrK3MeGSNsbSrHBFs7VjpZJUOJVUy',
+            // *&^%@#$%
+            '$2y$10$P2Mj.MKwSsiPoDvTm0pPceFW38B/OeN.lfZu4PQQsy.5lAYpzF1uO',
+            // iuytrsdfh
+            '$2y$10$d208fXY5jBW9c0fNdifVpeGn..lPzCJCDmFwm/z4g4HCebskcwNvK',
+            // randompassword
+            '$2y$10$lqX9S.Gpr4ZVQHK0iEjSnO/AMOAfDhclolNoOvhhFMvrwPqY3sQke',
+        ];
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'randomemail@rzp.com',
+            'org_id' => $this->org->getId(),
+            'old_passwords' => $oldPasswords
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertFalse(Hash::check('@#12$%^&dfgh', $admin['password']));
     }
 
     protected function createOrg()

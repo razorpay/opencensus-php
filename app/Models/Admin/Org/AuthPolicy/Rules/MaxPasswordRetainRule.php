@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Admin\Org\AuthPolicy\Rules;
 
+use Hash;
 use RZP\Exception;
 
 class MaxPasswordRetainRule extends Base
@@ -17,10 +18,13 @@ class MaxPasswordRetainRule extends Base
     {
         $previousPasswords = $admin->getOldPasswords();
 
-        if (in_array($admin->getPassword(), $previousPasswords, true) === true)
+        foreach ($previousPasswords as $oldPassword)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Password cannot be same as last ' . $this->maxPasswordRetain . ' passwords');
+            if (Hash::check($password, $oldPassword) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Password cannot be same as last ' . $this->maxPasswordRetain . ' passwords.');
+            }
         }
     }
 }

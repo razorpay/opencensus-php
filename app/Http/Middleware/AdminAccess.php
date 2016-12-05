@@ -27,7 +27,6 @@ class AdminAccess
 
     public function handle($request, Closure $next)
     {
-
         if ($this->ba->isAdminAuth())
         {
             // $adminAuthRoutes = Route::$admin;

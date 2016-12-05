@@ -10,15 +10,17 @@ class MaxFailedAttemptsRule extends Base
 
     public function __construct($maxFailedAttempts)
     {
+        parent::__construct();
+
         $this->maxFailedAttempts = $maxFailedAttempts;
     }
 
     public function validate($admin, $password)
     {
-        if ($admin->getFailedAttempts() > $this->maxFailedAttempts)
+        if ($admin->getFailedAttempts() >= $this->maxFailedAttempts)
         {
             $admin->lock();
-            $admin->saveOrFail();
+            $this->repo->saveOrFail($admin);
 
             throw new Exception\BadRequestValidationFailureException(
                 'You have exceeded maxmium number of login attempts.');

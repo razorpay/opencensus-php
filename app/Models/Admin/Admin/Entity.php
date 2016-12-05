@@ -82,8 +82,40 @@ class Entity extends Base\PublicEntity
         self::LAST_LOGIN_AT
     ];
 
+    protected $visible = [
+        self::ID,
+        self::ENTITY,
+        self::ORG_ID,
+        self::NAME,
+        self::USERNAME,
+        self::EMAIL,
+        self::PASSWORD,
+        self::REMEMBER_TOKEN,
+        self::OAUTH_ACCESS_TOKEN,
+        self::OAUTH_PROVIDER_ID,
+        self::USER_TYPE,
+        self::EMPLOYEE_CODE,
+        self::BRANCH_CODE,
+        self::DEPARTMENT_CODE,
+        self::SUPERVISOR_CODE,
+        self::LOCATION_CODE,
+        self::DISABLED,
+        self::LOCKED,
+        self::LAST_LOGIN_AT,
+        self::FAILED_ATTEMPTS,
+        self::OLD_PASSWORDS,
+        self::PASSWORD_EXPIRY,
+        self::PASSWORD_CHANGED_AT,
+        self::EXPIRED_AT,
+        self::DELETED_AT,
+        'roles',
+        'groups',
+        'merchants',
+    ];
+
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::EMAIL,
         self::NAME,
         self::USERNAME,

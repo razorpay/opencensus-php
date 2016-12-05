@@ -820,14 +820,14 @@ class BasicAuth
         return $this->proxy;
     }
 
-    public function isAdminAuth()
-    {
-        return $this->isAdmin;
-    }
-
     public function isAppAuth()
     {
         return $this->appAuth;
+    }
+
+    public function isAdminAuth()
+    {
+        return ($this->type === Type::ADMIN_AUTH);
     }
 
     public function isPublicAuth()

@@ -134,4 +134,52 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testMaxFailedLoginAttempts' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/authenticate',
+            'method' => 'post',
+            'content' => [
+                'username'                 => 'randomemail@rzp.com',
+                'password'              => 'test123456'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You have exceeded maxmium number of login attempts.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testPasswordRetainPolicy' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'password'              => '@#12$%^&dfgh',
+                'password_confirmation' => '@#12$%^&dfgh',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Password cannot be same as last 10 passwords.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];
