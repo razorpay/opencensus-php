@@ -18,8 +18,8 @@ class Validator extends Base\Validator
         RequestFields::OBJ_NAME                  => 'required|in:bay_mc_login',
         RequestFields::BAY_BANKID                => 'required|in:ICI',
         RequestFields::MODE                      => 'required|alpha',
-        RequestFields::PAYEE_ID                  => 'required|numeric',
-        RequestFields::SPID                      => 'required|numeric',
+        RequestFields::PAYEE_ID                  => 'required',
+        RequestFields::SPID                      => 'required',
         RequestFields::ENCRYPTED_STRING          => 'required',
     ];
 
@@ -31,8 +31,8 @@ class Validator extends Base\Validator
         RequestFields::OBJ_NAME                  => 'required|in:bay_mc_login',
         RequestFields::BAY_BANKID                => 'required|in:ICI',
         RequestFields::MODE                      => 'required|alpha',
-        RequestFields::PAYEE_ID                  => 'required|numeric',
-        RequestFields::SPID                      => 'required|numeric',
+        RequestFields::PAYEE_ID                  => 'required',
+        RequestFields::SPID                      => 'required',
         RequestFields::AMOUNT                    => 'required|numeric',
         RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num',
         RequestFields::ITEM_CODE                 => 'required|alpha_num',
