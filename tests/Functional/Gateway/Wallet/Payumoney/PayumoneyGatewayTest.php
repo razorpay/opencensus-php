@@ -610,6 +610,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->assertEquals(4, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        unlink($data['wallet_payumoney']['file']);
     }
 
     public function testRefundExcelFileForAParticularMonth()
@@ -647,6 +649,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->assertEquals(3, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        unlink($data['wallet_payumoney']['file']);
 
         Carbon::setTestNow();
     }
