@@ -372,7 +372,7 @@ class Terminal extends Base
         $attributes['id'] = '2RecurringTerm';
         $attributes['recurring'] = 2;
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())

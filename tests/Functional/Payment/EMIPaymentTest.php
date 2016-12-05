@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Str;
 use File;
-use Carbon\Carbon;
 use ZipArchive;
+use Carbon\Carbon;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -95,10 +96,10 @@ class EmiPaymentTest extends TestCase
 
         $this->assertEquals(count($content), 4);
 
-        $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
-        $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
-        $this->assertEquals(File::exists($this->zipFileName($content['INDB'])), true);
-        $this->assertEquals(File::exists($this->zipFileName($content['RATN'])), true);
+        $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
@@ -106,12 +107,28 @@ class EmiPaymentTest extends TestCase
         $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
 
         $this->fixtures->merchant->disableEmi();
+
+        $this->deleteAlltheGenerateFiles($content);
     }
 
     private function zipFileName($filePath)
     {
         $pathinfo = pathinfo($filePath);
+
         return $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.zip';
+    }
+
+    private function deleteAlltheGenerateFiles($content)
+    {
+        foreach ($content as $file)
+        {
+            $zipFile = $this->zipFileName($file);
+
+            if (file_exists($zipFile) === true)
+            {
+                unlink($zipFile);
+            }
+        }
     }
 
     private function checkPasswordProtectedZip($filePath)
@@ -122,19 +139,22 @@ class EmiPaymentTest extends TestCase
         $pathinfo = pathinfo($filePath);
 
         // Extraction fails, unset password
-        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->assertEquals(false, $zip->extractTo($pathinfo['dirname']));
         $this->deleteExtractedFile($pathinfo);
 
-        $zip->setPassword('incorrect_password');
+        $zip->setPassword(Str::quickRandom(10));
         // Extraction fails, incorrect password
-        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->assertEquals(false, $zip->extractTo($pathinfo['dirname']));
         $this->deleteExtractedFile($pathinfo);
+
+        $zip->close();
     }
 
     protected function deleteExtractedFile($pathinfo)
     {
         $excelFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx';
         $txtFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.txt';
+
         if (file_exists($excelFileName) === true)
         {
             unlink($excelFileName);
@@ -145,7 +165,7 @@ class EmiPaymentTest extends TestCase
         }
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration, $paymentTime, $save = 0, $appToken = null, $customerId =  null)
+    protected function makeEmiPaymentOnCard($card, $emiDuration, $paymentTime, $save = 0, $appToken = null, $customerId = null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';

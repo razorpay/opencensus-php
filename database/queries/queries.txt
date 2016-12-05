@@ -1272,6 +1272,10 @@ ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
 
+--Queries for updating credit_card, debit_card method
+UPDATE merchant_banks SET credit_card = 0 WHERE card = 0;
+UPDATE merchant_banks SET debit_card = 0 WHERE card = 0;
+
 --- Pre code deployment / https://github.com/razorpay/api/pull/1697
 
 ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
@@ -1306,6 +1310,33 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
+----
+# Following queries are executed for altering cybersource table
+# These changes have arised because of cybersource refactoring
+ALTER TABLE cybersource
+    ADD COLUMN avsCode CHAR(2) DEFAULT NULL AFTER xid,
+    ADD COLUMN cardCategory CHAR(2) DEFAULT NULL AFTER avsCode,
+    ADD COLUMN cardGroup CHAR(2) DEFAULT NULL AFTER cardCategory,
+    ADD COLUMN cvCode CHAR(2) DEFAULT NULL AFTER cardGroup,
+    ADD COLUMN veresEnrolled CHAR(2) DEFAULT NULL AFTER cvCode,
+    ADD COLUMN authorizationCode CHAR(6) DEFAULT NULL AFTER cavv,
+    ADD COLUMN receiptNumber CHAR(6) DEFAULT NULL AFTER authorizationCode,
+    ADD COLUMN merchantAdviceCode CHAR(30) DEFAULT NULL AFTER capture_ref,
+    ADD COLUMN gatewayTransactionId CHAR(30) DEFAULT NULL AFTER merchantAdviceCode,
+    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL AFTER gatewayTransactionId;
+
+ALTER TABLE cybersource
+    MODIFY COLUMN pares_status CHAR(2) DEFAULT NULL,
+    MODIFY COLUMN eci CHAR(2) DEFAULT NULL,
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL;
+
+ALTER TABLE cybersource
+    ADD COLUMN acquirer CHAR(10) DEFAULT NULL AFTER payment_id;
+
+
+ALTER TABLE cybersource
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
+
 
 ----- B2B wallet
 
@@ -1313,3 +1344,5 @@ ALTER TABLE merchant_banks
     ADD COLUMN flashwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
 
 ----- -end- B2B Wallet
+
+

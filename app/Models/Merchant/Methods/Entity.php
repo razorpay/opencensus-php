@@ -33,7 +33,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::CARD,
         self::AMEX,
         self::BANKS,
         self::PAYTM,
@@ -136,7 +135,7 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return $this->getAttribute(self::CARD);
+        return ($this->isDebitCardEnabled() || $this->isCreditCardEnabled());
     }
 
     public function isDebitCardEnabled()
