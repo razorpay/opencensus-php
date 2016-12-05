@@ -145,7 +145,6 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         // Payment will use default hdfc gateway
-        $this->assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
         $this->assertEquals('hdfc', $payment['gateway']);
 
         // We have to assert that HDFC won't be selected
@@ -162,9 +161,13 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        // sd($payment['terminal_id']);
+
         // payment will use axis bank
-        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
         $this->assertEquals('axis_migs', $payment['gateway']);
+
+        // Unsetting Gateway::HDFC as trial
+        TerminalLoadSorter::setTestTrialGateways([]);
     }
 
     // protected function setTrialGateway($)
