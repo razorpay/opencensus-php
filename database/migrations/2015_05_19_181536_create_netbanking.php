@@ -29,6 +29,7 @@ class CreateNetbanking extends Migration
             $table->string('merchant_code')->nullable();
             $table->string('bank_payment_id')->nullable();
             $table->bigInteger('int_payment_id')->nullable();
+            $table->string('account_number')->nullable();
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();

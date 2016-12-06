@@ -678,6 +678,16 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciTpvTerminal()
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedAmexTerminal(array $attributes = array())
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;

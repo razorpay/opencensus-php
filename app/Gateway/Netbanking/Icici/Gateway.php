@@ -201,6 +201,13 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => 'INR',
         ];
 
+        // $input['merchant']->setCategory2('securities');
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $additionalData[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
+        }
+
         $data = array_merge($data, $additionalData);
 
         return $data;
@@ -234,6 +241,13 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL              => $callbackUrl,
             RequestFields::CONFIRMATION            => Confirmation::YES,
         ];
+
+        // $input['merchant']->setCategory2('securities');
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
+        }
 
         return $data;
     }

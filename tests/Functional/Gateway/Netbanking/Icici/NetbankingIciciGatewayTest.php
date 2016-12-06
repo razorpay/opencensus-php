@@ -31,7 +31,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -85,16 +85,38 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
         $payment = $this->doAuthAndCapturePayment($this->payment);
-        // refunding it
+
         $this->refundPayment($payment['id']);
 
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForIciciNB();
 
         // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
-
         $this->assertEquals($data['netbanking_icici']['count'], 3);
         $this->assertTrue(file_exists($data['netbanking_icici']['file']));
     }
 
+    // $input['merchant']->setCategory2('securities');
+
+    public function testTPVPayment()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Asserting that TPV terminal of ICICI gets picked and not regular
+        $this->assertEquals($payment['terminal_id'], '100NbIcicTpvTl');
+
+    }
 }

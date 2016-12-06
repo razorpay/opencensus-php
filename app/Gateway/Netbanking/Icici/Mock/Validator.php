@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Gateway\Netbanking\Icici\AesTrait;
 use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
@@ -37,6 +38,7 @@ class Validator extends Base\Validator
         RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num',
         RequestFields::ITEM_CODE                 => 'required|alpha_num',
         RequestFields::CURRENCY_CODE             => 'required|in:INR',
+        RequestFields::ACCOUNT_NO                => 'sometimes',
         RequestFields::PAYMENT_DATE              => 'required',
     ];
 
@@ -61,35 +63,19 @@ class Validator extends Base\Validator
 
         parse_str($string, $decryptedData);
 
-        if (!isset($decryptedData[RequestFields::AMOUNT]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Amount not specified');
-        }
+        $this->assertField($decryptedData, RequestFields::AMOUNT);
+        $this->assertField($decryptedData, RequestFields::CURRENCY_CODE);
+        $this->assertField($decryptedData, RequestFields::PAYMENT_REFERENCE_NUBER);
+        $this->assertField($decryptedData, RequestFields::ITEM_CODE);
+        $this->assertField($decryptedData, RequestFields::RETURN_URL);
+    }
 
-        else if ((!isset($decryptedData[RequestFields::CURRENCY_CODE])) or
-            ($decryptedData[RequestFields::CURRENCY_CODE] !== 'INR'))
+    protected function assertField($decryptedData, $field)
+    {
+        if (!isset($decryptedData[$field]))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Currency not set correctly');
-        }
-
-        else if (!isset($decryptedData[RequestFields::PAYMENT_REFERENCE_NUBER]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'PRN not specified');
-        }
-
-        else if (!isset($decryptedData[RequestFields::ITEM_CODE]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'ITC not specified');
-        }
-
-        else if (!isset($decryptedData[RequestFields::RETURN_URL]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Return URL not specified');
+                $field . ' not specified');
         }
     }
 }

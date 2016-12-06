@@ -28,6 +28,7 @@ class Entity extends Base\Entity
         'reference1',
         'int_payment_id',
         'caps_payment_id',
+        'account_number',
     );
 
     protected $fillable = array(
