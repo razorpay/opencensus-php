@@ -894,6 +894,10 @@ class Gateway extends Base\Gateway
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
         ];
 
+        $content[F::BUSINESS_RULES] = [
+            F::IGNORE_AVS_RESULT => 'true'
+        ];
+
         if (isset($this->eci) === true)
         {
             $cardNetwork = $input['card']['network_code'];
@@ -968,6 +972,8 @@ class Gateway extends Base\Gateway
             F::XID                => $gatewayPayment->getXid(),
             F::ECI_RAW            => $gatewayPayment->getEci(),
             F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
+            F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
         ];
 
         $cardNetwork = $input['card']['network_code'];
@@ -979,7 +985,7 @@ class Gateway extends Base\Gateway
 
         if ($cardNetwork === Card\Network::MC)
         {
-            $content[F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+            $ccAuthService[F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
         }
 
         $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;

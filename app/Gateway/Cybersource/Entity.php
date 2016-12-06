@@ -163,6 +163,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PARES_STATUS);
     }
 
+    public function getVeresEnrolled()
+    {
+        return $this->getAttribute(self::VERES_ENROLLED);
+    }
+
     public function getReasonCode()
     {
         return $this->getAttribute(self::REASON_CODE);

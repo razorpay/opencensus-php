@@ -156,6 +156,10 @@ class Fields
 
     const MERCHANT_DESCRIPTOR           = 'merchantDescriptor';
 
+    const BUSINESS_RULES                = 'businessRules';
+
+    const IGNORE_AVS_RESULT             = 'ignoreAVSResult';
+
     const ACCOUNT_NUMBER                = 'accountNumber';
 
     const EXPIRATION_MONTH              = 'expirationMonth';

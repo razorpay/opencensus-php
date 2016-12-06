@@ -21,12 +21,12 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '1000AxisMigsTl' => [
             'gateway'    => Gateway::AXIS_MIGS,
-            'load'       => 10,
+            'load'       => 25,
         ],
 
         '5yKTyCuDne8eiz' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 0,
+            'load'       => 1,
         ],
 
         // Test terminals, won't be used on prod.

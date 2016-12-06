@@ -42,6 +42,7 @@ class Validator extends Base\Validator
         'ccAuthService.cavv'                   => 'sometimes|string',
         'invoiceHeader'                        => 'sometimes|array',
         'invoiceHeader.merchantDescriptor'     => 'sometimes|max:22|alpha_num',
+        'businessRules'                        => 'sometimes|array',
         'ucaf'                                 => 'sometimes|array',
         'ucaf.commerceIndicator'               => 'sometimes|string',
         'payerAuthValidateService'             => 'sometimes|array',
