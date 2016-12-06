@@ -42,7 +42,7 @@ class DeviceTest extends TestCase
 
         $device = $this->fixtures->create('device:verified');
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/devices/' . $device->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/upi/devices/' . $device->getPublicId();
 
         $response = $this->startTest();
 
@@ -58,7 +58,7 @@ class DeviceTest extends TestCase
 
         $response = $this->startTest($createRequest);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/devices/verify';
+        $this->testData[__FUNCTION__]['request']['url'] = '/upi/devices/verify';
         $this->testData[__FUNCTION__]['request']['content']['message'] = $response['verification_token'];
 
         $this->ba->directAuth();

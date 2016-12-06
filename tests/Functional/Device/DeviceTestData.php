@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testCreateDevice' => [
         'request' => [
-            'url' => '/devices',
+            'url' => '/upi/devices',
             'method' => 'POST',
             'content' => [
                 'imei'         => '869649022152494',
@@ -27,7 +27,7 @@ return [
 
     'testFetchCreatedDevice' => [
         'request' => [
-            'url' => '/devices/dev_RazorpayDevice',
+            'url' => '/upi/devices/dev_RazorpayDevice',
             'method' => 'GET',
             'content' => []
         ],
