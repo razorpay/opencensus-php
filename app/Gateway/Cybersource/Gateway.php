@@ -793,7 +793,7 @@ class Gateway extends Base\Gateway
 
         if (isset($payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA]) === true)
         {
-            $attributes[E::CAVV] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
+            $attributes[E::AUTH_DATA] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
         }
 
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
