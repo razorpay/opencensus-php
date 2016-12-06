@@ -139,16 +139,29 @@ class CybersourceGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
-    public function testGatewayFullRefund()
+    public function testNotEnrolledPayment()
     {
-        $payment = $this->doAuthAndCapturePayment();
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
 
-        $this->assertRefundAmount($payment['amount']);
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['two_factor_auth'],
             \RZP\Models\Payment\TwoFactorAuth::NOT_APPLICABLE);
+
+        $gatewayPayment = $this->getLastEntity('cybersource', true);
+
+         $this->assertArraySelectiveEquals(
+            $this->testData['testNotEnrolledCSEntity'], $gatewayPayment);
+    }
+
+    public function testGatewayFullRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->assertRefundAmount($payment['amount']);
 
         $this->refundPayment($payment['id']);
 
