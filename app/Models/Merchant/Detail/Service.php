@@ -33,20 +33,9 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
-        if ((isset($input[Detail\Entity::SUBMIT]) === true) and
-            ($input[Detail\Entity::SUBMIT] === true) and
-            ($response['can_submit'] === true))
+        if ($this->canSubmit($input, $response) === true)
         {
-            $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
-
-            $params = [
-                Entity::SUBMITTED     => 1,
-                Entity::SUBMITTED_AT  => $submittedAt
-            ];
-
-            $merchantDetails->fill($params);
-
-            $this->repo->saveOrFail($merchantDetails);
+            $this->markSubmitted($merchantDetails);
         }
 
         return $response;
@@ -126,6 +115,27 @@ class Service extends Base\Service
                 [ 'merchant_id'   => $merchant->getId()]);
 
         return $merchantDetail;
+    }
+
+    protected function canSubmit($input, $response)
+    {
+        return (($response['can_submit'] === true) and
+                (isset($input[Detail\Entity::SUBMIT]) === true) and
+                ($input[Detail\Entity::SUBMIT] === true));
+    }
+
+    protected function markSubmitted($merchantDetails)
+    {
+        $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $input = [
+            Entity::SUBMITTED     => 1,
+            Entity::SUBMITTED_AT  => $submittedAt
+        ];
+
+        $merchantDetails->fill($input);
+
+        $this->repo->saveOrFail($merchantDetails);
     }
 
     protected function createFile(Detail\Entity $merchantDetail,

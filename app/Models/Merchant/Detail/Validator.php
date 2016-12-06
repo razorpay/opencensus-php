@@ -129,7 +129,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|email|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
-        Entity::SUBMIT                          => 'sometimes',
+        Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
     protected static $lockRules = [
