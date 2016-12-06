@@ -17,6 +17,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
         parent::setUp();
 
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->gateway = 'netbanking_icici';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray();
@@ -117,5 +119,18 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals($payment['terminal_id'], '100NbIcicTpvTl');
 
         $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testFailedAuthPayment()
+    {
+        $payment = $this->payment;
+
+        unset($payment['amount']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
     }
 }

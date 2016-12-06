@@ -358,4 +358,34 @@ class Gateway extends Base\Gateway
 
         return $spid;
     }
+
+    /**
+     * @param $response
+     * @throws Exception\BadRequestException
+     * @throws Exception\GatewayErrorException
+     */
+    protected function throwException($response)
+    {
+        if (isset($response['reasonCode']) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $reasonCode = $response['reasonCode'];
+
+        $desc = ResponseCode::getDescription($reasonCode);
+
+        if (ResponseCode::isValidationError($reasonCode))
+        {
+            throw new Exception\BadRequestException(
+                ResponseCode::getMappedCode($reasonCode),
+                $reasonCode);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ResponseCode::getMappedCode($reasonCode),
+            $reasonCode,
+            $desc);
+    }
 }
