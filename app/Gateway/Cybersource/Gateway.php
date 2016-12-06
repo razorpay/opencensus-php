@@ -972,6 +972,8 @@ class Gateway extends Base\Gateway
             F::XID                => $gatewayPayment->getXid(),
             F::ECI_RAW            => $gatewayPayment->getEci(),
             F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
+            F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
         ];
 
         $cardNetwork = $input['card']['network_code'];
