@@ -367,5 +367,11 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'entity_type'       => 'merchant'
         ]);
+
+        $factory(\RZP\Models\Merchant\Detail\Entity::class, [
+            'merchant_id'   => $faker->uniqueid,
+            'contact_email' => $faker->email,
+        ]);
+
     }
 }
