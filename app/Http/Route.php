@@ -405,7 +405,6 @@ final class Route
         'p2p_fetch',
         'p2p_authorize',
         'p2p_reject',
-        'upi_customer_fetch',
         'customer_collect_request_fetch',
         'device_customer_fetch',
     );
