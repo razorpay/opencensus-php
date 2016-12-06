@@ -76,7 +76,7 @@ class Core extends Base\Core
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {
         return $this->repo->transaction(
-            function() use($merchant, $oldBankAccount, $input)
+            function() use ($merchant, $oldBankAccount, $input)
             {
                 $this->repo->delete($oldBankAccount);
 

@@ -69,6 +69,8 @@ class Fixtures
 
         $this->create('card:default_cards');
 
+        $this->customer->setUp();
+
         $this->create('device', [
             'id' => 'RazorpayDevice',
             'verification_token' => 'sample_verification_token',
@@ -76,8 +78,6 @@ class Fixtures
         ]);
 
         $this->create('vpa:default');
-
-        $this->customer->setUp();
 
         $this->entities = $entities;
     }

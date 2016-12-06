@@ -27,24 +27,44 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getBankAccountsForCustomer($customer, $ifsc = 'RAZR')
+    public function getBankAccountsForCustomer($customer, $ifsc = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, '=', $customer->getId())
-                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
-                    ->whereRaw(Entity::IFSC_CODE . " LIKE '$ifsc%'")
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(Entity::ENTITY_ID, '=', $customer->getId())
+                      ->where(Entity::TYPE, '=', Type::CUSTOMER);
+
+        if ($ifsc !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', '%'.$ifsc.'%');
+        }
+
+        return $query->get();
     }
 
-    public function getBankAccountsFromAccountNumber($accountNumber)
+    public function getRazorpayBankAccountsForCustomer($customer, $ifsc = 'RAZR')
+    {
+        return $this->getBankAccountsForCustomer($customer, $ifsc);
+    }
+
+    public function getBankAccountsFromAccountNumber($accountNumber, $ifsc = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                      ->where(Entity::TYPE, '=', Type::CUSTOMER);
+
+        if ($ifsc !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', '%'.$ifsc.'%');
+        }
+
+        return $query->get();
+    }
+
+    public function getRazarpayBankAccountsFromAccountNumber($accountNumber)
     {
         $ifsc = 'RAZR';
 
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->where(Entity::TYPE, '=', Type::CUSTOMER)
-                    ->whereRaw(Entity::IFSC_CODE . " LIKE '$ifsc%'")
-                    ->get();
+        return $this->getBankAccountsFromAccountNumber($accountNumber, $ifsc);
     }
 
     public function findByCustomerIdAndAccountNumber($customerId, $accountNumber)

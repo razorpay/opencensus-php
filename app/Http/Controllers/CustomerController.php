@@ -47,6 +47,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchUpiCustomer()
+    {
+        $data = $this->customer->fetchByDeviceAuth();
+
+        return ApiResponse::json($data);
+    }
+
     public function getDeviceCustomer()
     {
         $data = $this->customer->getDeviceCustomer();

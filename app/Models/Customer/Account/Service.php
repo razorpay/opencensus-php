@@ -89,6 +89,11 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    public function fetchByDeviceAuth()
+    {
+        return $this->device->customer->toArrayPublic();
+    }
+
     public function fetchMultiple(array $input)
     {
         $customers = $this->repo->customer->fetch($input, $this->merchant->getId());

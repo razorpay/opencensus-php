@@ -145,6 +145,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->hasOne('RZP\Models\Upi\Vpa\Entity');
+    }
+
     public function source()
     {
         $type = $this->getAttribute(self::TYPE);

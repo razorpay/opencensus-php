@@ -64,7 +64,7 @@ final class FactoryData
             'beneficiary_city' => 'new delhi',
             'beneficiary_state' => 'DE',
             'beneficiary_country' => 'IN',
-            'beneficiary_email' => $faker->email,
+            'beneficiary_email' => 'random@email.com',
             'beneficiary_mobile' => 9988776655,
             'beneficiary_pin' => 100000,
         ]);
@@ -235,19 +235,18 @@ final class FactoryData
             'active' => true,
         ]);
 
-        $factory(\RZP\Models\Address\Entity::class,
-            [
-                'line1'         => 'some line one',
-                'line2'         => 'some line two',
-                'city'          => 'Bangalore',
-                'state'         => 'Karnataka',
-                'zipcode'       => '560078',
-                'country'       => 'in',
-                'type'          => 'shipping_address',
-                'primary'       => true,
-                'entity_id'     => '100000customer',
-                'entity_type'   => 'customer',
-            ]);
+        $factory(\RZP\Models\Address\Entity::class, [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560078',
+            'country'       => 'in',
+            'type'          => 'shipping_address',
+            'primary'       => true,
+            'entity_id'     => '100000customer',
+            'entity_type'   => 'customer',
+        ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
             'id' => 10101010101010,
@@ -366,6 +365,44 @@ final class FactoryData
         $factory(\RZP\Models\Feature\Entity::class, [
             'id'                => $faker->uniqueid,
             'entity_type'       => 'merchant'
+        ]);
+
+        $factory(\RZP\Models\Device\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'type'               => 'android',
+            'os'                 => 'android',
+            'os_version'         => '5.2.3',
+            'imei'               => '98765432123456',
+            'challenge'          => 'challenge_value',
+            'package_name'       => 'com.razorpay.sample',
+            'status'             => 'created',
+            'verification_token' => $faker->sha256,
+            'upi_token'          => 'upi_auth_token',
+            'auth_token'         => $faker->sha256,
+            'verified_at'        => null,
+            'registered_at'      => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Upi\Vpa\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'username'           => $faker->word,
+            'handle'             => 'razorpay',
+            'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
+            'customer_id'        => '100000customer',
+            'frequency'          => 'multiple',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\P2p\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'username'           => $faker->word,
+            'handle'             => 'razorpay',
+            'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
+            'customer_id'        => '100000customer',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
         ]);
     }
 }
