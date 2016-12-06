@@ -134,7 +134,7 @@ class Entity
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
-        self::TRANSFER              => \RZP\Models\Transaction::class,
+        self::TRANSFER              => \RZP\Models\Transfer::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTIONS => \RZP\Models\Customer\Transactions::class,
     );

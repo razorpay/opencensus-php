@@ -68,6 +68,25 @@ class FlashWalletPaymentTest extends TestCase
         // Assert - merchant balance/ nodal account ?
     }
 
+    public function testRefundWalletPayment()
+    {
+        $paymentId = $this->doAuthPaymentFromWallet(3000, 1000);
+
+        $this->capturePayment($paymentId, 1000);
+
+        $this->refundPayment($paymentId, 1000);
+
+        $customerBalance = $this->getLastEntity('customer_balance', true);
+
+        $customerTransaction = $this->getLastEntity('customer_transactions', true);
+
+        $expected = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expected['customerBalance'], $customerBalance);
+
+        $this->assertArraySelectiveEquals($expected['customerTransaction'], $customerTransaction);
+    }
+
     protected function doAuthPaymentFromWallet($customerBalance, $paymentAmount)
     {
         $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => $customerBalance]);

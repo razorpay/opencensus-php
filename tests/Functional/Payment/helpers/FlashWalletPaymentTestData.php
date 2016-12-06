@@ -54,5 +54,16 @@ return [
             'balance'       => 1000
         ],
     ],
+    'testRefundWalletPayment' => [
+        'customerBalance' => [
+            'balance'       => 3000,
+        ],
+        'customerTransaction' => [
+            'amount'        => 1000,
+            'debit'         => 0,
+            'credit'        => 1000,
+            'balance'       => 3000
+        ],
+    ],
 
 ];

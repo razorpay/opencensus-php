@@ -78,5 +78,25 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testTransferAndVerifyCustomerBalance' => [
+        'request' => [
+            'content' => [
+                'amount' => 200,
+                'transfers' => [
+                    [
+                        'customer' => null,
+                        'amount'   => null
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
 ];
