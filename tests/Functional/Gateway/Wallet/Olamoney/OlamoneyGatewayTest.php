@@ -199,7 +199,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 

@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Freecharge;
 
-use Cache;
 use Carbon\Carbon;
 use Config;
 use RZP\Constants\HashAlgo;
@@ -25,6 +24,8 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed;
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
+
+    const BALANCE_CACHE_KEY = 'freecharge_balance_';
 
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 
@@ -460,7 +461,13 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {
-            return (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+            $key = $this->getBalanceKeyForCache($input['payment']);
+
+            $walletBalance = (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+
+            $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL);
+
+            return $walletBalance;
         }
 
         return 0;
@@ -577,9 +584,16 @@ class Gateway extends Base\Gateway
 
     protected function getTopupWalletRedirectRequestArray($input)
     {
+        $key = $this->getBalanceKeyForCache($input['payment']);
+
+        // Wallet Balance is in paise
+        $walletBalance = $this->app['cache']->get($key, 0);
+
+        $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
+
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) ($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT       => (string) $topupAmount,
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
@@ -667,13 +681,15 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
+        $this->handleRequestFailed($response);
+
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content' => $content,
-                'gateway' => $this->gateway,
+                'content'    => $content,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -930,18 +946,34 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
-        else if (($response->status_code === 202) or
-                 ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE)))
+        else if($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        }
+        else if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
 
-            $errorCode = $content[ResponseFields::ERROR_CODE];
-
             throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($errorCode),
+                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
         }
+        else if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE))
+        {
+            $content = $this->jsonToArray($response->body);
+
+            throw new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
+                $content[ResponseFields::ERROR_CODE],
+                $content[ResponseFields::ERROR_MESSAGE]);
+        }
+    }
+
+    protected function getBalanceKeyForCache($payment)
+    {
+        return self::BALANCE_CACHE_KEY . $payment['id'];
     }
 }

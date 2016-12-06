@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -269,6 +268,30 @@ return [
         'exception' => [
             'class'               => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ],
+    ],
+
+    'testOtpResendOnFailedPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                '_' => [
+                    'source' => 'checkoutjs'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED
         ],
     ],
 
