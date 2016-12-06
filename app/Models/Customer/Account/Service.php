@@ -318,7 +318,7 @@ class Service extends Base\Service
         }
 
         $balance = [
-            'id'     => $accountId,
+            'id'     => $bankAccount->getPublicId(),
             'amount' => '10000',
         ];
 
