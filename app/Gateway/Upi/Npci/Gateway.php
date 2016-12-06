@@ -815,12 +815,20 @@ EOT;
     protected function signXml($xml)
     {
         $xml = str_replace("\n", "", $xml);
-        chdir("/home/nemo/projects/work/razorpay/upi-clients/tmp");
-        file_put_contents("/home/nemo/projects/work/razorpay/upi-clients/tmp/request.txt", $xml);
-        @unlink('request.xml');
-        shell_exec("java SignatureGen");
 
-        return file_get_contents('request.xml');
+        $inputxml = tempnam(sys_get_temp_dir(), 'req');
+        file_put_contents($inputxml, $xml);
+
+        $outputxml = tempnam(sys_get_temp_dir(), 'res');
+
+        $privateKey = storage_path('certs/razorpay-npci-pkcs8.key');
+        $publicKey  = storage_path('certs/razorpay-npci.pub');
+
+        chdir(app_path('../scripts'));
+
+        shell_exec("/usr/bin/java SignatureGen '$inputxml' '$outputxml' '$privateKey' '$publicKey'");
+
+        return file_get_contents($outputxml);
     }
 
     protected function fireRequest(string $method, string $txnId, string $unsignedXml)
