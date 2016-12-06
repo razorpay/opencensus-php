@@ -342,6 +342,28 @@ class Service extends Base\Service
         // return $merchantDetails;
     }
 
+    public function lockMerchantOnAPI(array $input, $merchantId = null)
+    {
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant['id'];
+        }
+
+        $this->setApiCredentials($merchantId);
+
+        list($error, $merchantDetails) = $this->api
+                                              ->merchantDetail
+                                              ->lockDetails($merchantId, $input);
+
+        if (empty($error) === false)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured locking merchant details on API",
+                    'exception' => $error,
+            ]);
+        }
+    }
+
     protected function uploadFileToAPI(array $input)
     {
         $this->setApiCredentials($this->merchant['id']);

@@ -12,7 +12,7 @@ use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
 class MerchantDetail extends Entity
 {
-    public function submitDetails($input)
+    public function submitDetails(array $input)
     {
         $error = $response = null;
 
@@ -30,7 +30,25 @@ class MerchantDetail extends Entity
         return [ $error, $response ];
     }
 
-    public function uploadActivationFile($merchantId, $input)
+    public function lockDetails($merchantId, array $input)
+    {
+        $error = $response = null;
+
+        try
+        {
+            $relativeUrl = "merchant/activation/$merchantId/lock";
+
+            $response = $this->request('POST', $relativeUrl, $input)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+        }
+
+        return [ $error, $response ];
+    }
+
+    public function uploadActivationFile($merchantId, array $input)
     {
         // Makes a guzzle file request
         return $this->makeGuzzleFileRequest('live', $merchantId, $input);

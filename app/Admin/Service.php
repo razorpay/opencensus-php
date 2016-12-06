@@ -973,7 +973,7 @@ class Service extends Base\Service
 
         $params = ['locked' => true];
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
+        (new MerchantDetails\Service)->lockMerchantOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
@@ -997,7 +997,7 @@ class Service extends Base\Service
 
         $params = ['locked' => false];
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
+        (new MerchantDetails\Service)->lockMerchantOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 
