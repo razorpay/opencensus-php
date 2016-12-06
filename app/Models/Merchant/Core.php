@@ -67,9 +67,9 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        (new Detail\Service)->createMerchantDetails($merchant);
-
         $this->setDefaultFeatures($merchant);
+
+        (new Detail\Service)->createMerchantDetails($merchant);
     }
 
     protected function setDefaultFeatures($merchant)
