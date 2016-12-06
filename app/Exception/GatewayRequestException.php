@@ -15,7 +15,9 @@ class GatewayRequestException extends RecoverableException
 
         $this->error = new Error($code);
 
-        $this->message = $curlErrorMessage;
+        $this->message = 'Gateway request failed with error';
+
+        $this->data['message'] = $curlErrorMessage;
 
         $this->safeRetry = $safeRetry;
     }

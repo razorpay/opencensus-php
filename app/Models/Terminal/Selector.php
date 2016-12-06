@@ -111,7 +111,6 @@ class Selector
         if ((count($failedTerminals) > 0))
         {
             $this->input['failed_terminals'] = $failedTerminals;
-
         }
 
         foreach (self::$sorters as $sorter)
@@ -172,7 +171,6 @@ class Selector
         }
     }
 
-
     /**
      * Methods selects a list of terminals for payment. We are
      * selecting a list here since, we want to iterate through
@@ -186,10 +184,10 @@ class Selector
     {
         $options = new Terminal\Options;
 
-        if ((isset($opts['failed']) === true) and
-            (is_array($opts['failed']) === true))
+        if ((isset($opts[Options::FAILED]) === true) and
+            (is_array($opts[Options::FAILED]) === true))
         {
-            $options->setFailedTerminals($opts['failed']);
+            $options->setFailedTerminals($opts[Options::FAILED]);
         }
 
         $terminalsSelected = $this->select($options);

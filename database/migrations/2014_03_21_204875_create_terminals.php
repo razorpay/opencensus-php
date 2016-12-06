@@ -83,6 +83,9 @@ class CreateTerminals extends Migration
                   ->default(Recurring::NON_RECURRING);
 
             $table->tinyInteger(Terminal::SHARED)
+                   ->default(0);
+
+            $table->tinyInteger(Terminal::TPV)
                   ->default(0);
 
             $table->string(Terminal::NETWORK_CATEGORY)

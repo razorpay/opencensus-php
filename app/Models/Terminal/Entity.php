@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
+    const TPV                           = 'tpv';
 
     const SHARED                        = 'shared';
 
@@ -57,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::SHARED,
         self::RECURRING,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -82,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::RECURRING,
         self::SHARED,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -119,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
+        self::TPV                       => false,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
@@ -133,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::ENABLED                   => 'boolean',
+        self::TPV                       => 'boolean',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -441,16 +446,14 @@ class Entity extends Base\PublicEntity
         return ($value === $actualValue);
     }
 
-    public function isTPVTerminal()
+    public function isTpv()
     {
-        if (is_null($this->getCategory()) === false)
-        {
-            $tpvCategories = ['6211', '9999'];
+        return $this->getAttribute(self::TPV);
+    }
 
-            return in_array($this->getCategory(), $tpvCategories);
-        }
-
-        return false;
+    public function isNotTpv()
+    {
+        return ($this->getAttribute(self::TPV) === false);
     }
 
     public function isRecurringAuthTerminal()
@@ -483,5 +486,10 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isNon3DSRecurring()
+    {
+        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
 }

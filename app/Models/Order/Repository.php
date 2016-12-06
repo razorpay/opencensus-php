@@ -58,9 +58,9 @@ class Repository extends Base\Repository
         // group by `orders`.`id`
         // having count(*) > 1
 
-        $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
-        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
-        $orderId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $orderId = $this->getAttributeWithTableName(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
 
         $results = $this->newQuery()
