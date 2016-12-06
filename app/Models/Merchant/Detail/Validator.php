@@ -138,4 +138,13 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
         }
     }
+
+    public function validateIsNotLocked()
+    {
+        if ($this->entity->isLocked())
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
+        }
+    }
 }

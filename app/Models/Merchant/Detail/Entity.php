@@ -76,9 +76,7 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::MERCHANT_ID;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::CONTACT_NAME,
-        self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,

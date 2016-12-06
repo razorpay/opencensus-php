@@ -60,11 +60,7 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
-        if ($merchantDetails->isLocked())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
-        }
+        $merchantDetails->getValidator()->validateIsNotLocked();
 
         $merchantDetails->edit($input);
 
@@ -136,7 +132,7 @@ class Service extends Base\Service
 
         $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId() ]);
+                [ 'merchant_id'   => $merchant->getId()]);
 
         return $merchantDetail;
     }
@@ -168,7 +164,8 @@ class Service extends Base\Service
         $response = $merchantDetails->toArrayPublic();
 
         // List of all the required fields which are not set
-        $requiredFields = array_diff(array_keys($merchantDetailsArr), ValidationFields::DASHBOARD_FIELDS);
+        $detailsKeys = array_keys($merchantDetailsArr);
+        $requiredFields = array_diff($detailsKeys, ValidationFields::DASHBOARD_FIELDS);
 
         if (count($requiredFields) > 0)
         {
@@ -182,7 +179,7 @@ class Service extends Base\Service
         }
         else
         {
-            $response['verification'] = [ 'status' => 'pending'];
+            $response['verification'] = ['status' => 'pending'];
 
             $response['can_submit'] = true;
         }
