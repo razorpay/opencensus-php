@@ -396,7 +396,7 @@ EOT;
 
     protected function makeUrl(string $method,string $txnId)
     {
-        return "https://103.14.161.148/upi/$method/1.0/urn:txnid:$txnId";
+        return "http://npci.razorpay.in/upi/$method/1.0/urn:txnid:$txnId";
     }
 
     protected function cacheRequestOrResponse(array $input, $msgId, string $txnId)
