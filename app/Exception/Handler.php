@@ -91,10 +91,13 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function traceException($exception, $level = null, $code = null)
+    public function traceException(
+        $exception,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $traceData = $this->getExceptionDetails($exception);
-
+        $traceData = $this->getExceptionDetails($exception, 0, $extraData);
         if (($level === null) and
             ($code === null))
         {
@@ -149,7 +152,10 @@ class Handler extends ExceptionHandler
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
-    protected function getExceptionDetails($exception, $level = 0)
+    protected function getExceptionDetails(
+        $exception,
+        $level = 0,
+        array $extraData = [])
     {
         $previousException = $exception->getPrevious();
 
@@ -160,7 +166,7 @@ class Handler extends ExceptionHandler
             $previous = $this->getExceptionDetails($previousException, $level + 1);
         }
 
-        $data = $this->getDataArrayPropertyFromException($exception);
+        $data = $this->getDataArrayPropertyFromException($exception, $extraData);
 
         $stack = explode("\n", $exception->getTraceAsString());
 
@@ -278,7 +284,9 @@ class Handler extends ExceptionHandler
         return $data;
     }
 
-    protected function getDataArrayPropertyFromException($e)
+    protected function getDataArrayPropertyFromException(
+        $e,
+        array $extraData = [])
     {
         $data = null;
 
@@ -296,6 +304,15 @@ class Handler extends ExceptionHandler
             {
                 $data = null;
             }
+        }
+
+        if ($data !== null)
+        {
+            $data = array_merge($data, $extraData);
+        }
+        else
+        {
+            $data = $extraData;
         }
 
         return $data;

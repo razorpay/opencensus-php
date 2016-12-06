@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Exception;
 
@@ -15,6 +16,16 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
+            'load'       => 5,
+        ],
+
+        '1000AxisMigsTl' => [
+            'gateway'    => Gateway::AXIS_MIGS,
+            'load'       => 25,
+        ],
+
+        '5yKTyCuDne8eiz' => [
+            'gateway'    => Gateway::CYBERSOURCE,
             'load'       => 0,
         ],
 

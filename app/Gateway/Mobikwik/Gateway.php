@@ -293,12 +293,12 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::OTP_GENERATE);
 
         $content = array(
-            'amount'    => $input['payment']['amount'] / 100,
-            'cell'      => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $input['merchant']['billing_label'],
-            'mid'       => $this->getMobikwikMerchantId($input['terminal']),
-            'msgcode'   => MessageCode::OTP_GENERATE,
-            'tokentype' => '0',
+            'amount'       => $input['payment']['amount'] / 100,
+            'cell'         => $this->getFormattedContact($input['payment']['contact']),
+            'merchantname' => $this->getBillingLabel($input),
+            'mid'          => $this->getMobikwikMerchantId($input['terminal']),
+            'msgcode'      => MessageCode::OTP_GENERATE,
+            'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $input['merchant']['billing_label'],
+            'merchantname'  => $this->getBillingLabel($input),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -745,5 +745,19 @@ class Gateway extends Base\Gateway
         $number = new PhoneBook($contact, true);
 
         return $number->format(PhoneBook::DOMESTIC);
+    }
+
+    protected function getBillingLabel(array $input)
+    {
+        $label = $input['merchant']['billing_label'];
+
+        if (empty($label) === true)
+        {
+            $label = $input['merchant']['name'];
+        }
+
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        return $filteredLabel;
     }
 }

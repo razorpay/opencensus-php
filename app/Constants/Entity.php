@@ -19,6 +19,7 @@ class Entity
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
+    const ITEM                  = 'item';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
@@ -141,6 +142,16 @@ class Entity
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
+    protected static $syncedInLiveAndTest = array(
+        self::IIN,
+        self::FEATURE,
+        self::METHODS,
+        self::PRICING,
+        self::EMI_PLAN,
+        self::MERCHANT,
+        self::SCHEDULE,
+    );
+
     public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
@@ -152,7 +163,7 @@ class Entity
 
         // Converts first character of the
         // words (delimited by underscores/hyphens/spaces) to uppercase
-        return '\RZP\Models\\' . studly_case($entity);
+        return 'RZP\Models\\' . studly_case($entity);
     }
 
     public static function getEntityClass(string $entity)
@@ -241,5 +252,10 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    public static function isEntitySyncedInLiveAndTest($entity)
+    {
+        return in_array($entity, self::$syncedInLiveAndTest, true);
     }
 }

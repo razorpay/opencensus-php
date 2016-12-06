@@ -44,13 +44,6 @@ class Creator extends Base\Core
 
     const DEFAULT_STORE = 's3';
 
-    /**
-     * Default Merchant ID, for File Type which are not part of any merchant
-     */
-    const DEFAULT_MERCHANT_ID = Account::SHARED_ACCOUNT;
-
-    const STORAGE_DIRECTORY = 'files/filestore/';
-
     public function __construct()
     {
         parent::__construct();
@@ -67,9 +60,12 @@ class Creator extends Base\Core
 
     /**
      * Set the File name in File Store
+     *
+     * @param string $name File Name
+     *
      * @return Creator object
      */
-    public function name($name)
+    public function name(string $name)
     {
         $this->file->setName($name);
 
@@ -78,6 +74,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Content of File
+     *
+     * @param string $content Content of file
+     *
      * @return Creator object
      */
     public function content($content)
@@ -99,10 +98,13 @@ class Creator extends Base\Core
     }
 
     /**
-     * Set the Extention of File Store
+     * Set the Extension of File Store
+     *
+     * @param string $extension Extension of file
+     *
      * @return Creator object
      */
-    public function extension($extension)
+    public function extension(string $extension)
     {
         $this->file->setExtension($extension);
 
@@ -122,9 +124,12 @@ class Creator extends Base\Core
 
     /**
      * Set the Store  of File Store
+     *
+     * @param string $store Service to be used for storing file
+     *
      * @return Creator object
      */
-    public function store($store)
+    public function store(string $store)
     {
         $this->file->setStore($store);
 
@@ -135,9 +140,12 @@ class Creator extends Base\Core
 
     /**
      * Set the type of File Store
+     *
+     * @param string $type File type
+     *
      * @return Creator object
      */
-    public function type($type)
+    public function type(string $type)
     {
         $this->file->setType($type);
 
@@ -145,10 +153,24 @@ class Creator extends Base\Core
     }
 
     /**
-     * Set the delimiter used for creation of file
+     * Set the Entity of File Store
      * @return Creator object
      */
-    public function delimiter($delimiter = ',')
+    public function entity(Base\Entity $entity)
+    {
+        $this->file->entity()->associate($entity);
+
+        return $this;
+    }
+
+    /**
+     * Set the delimiter used for creation of file
+     *
+     * @param string $delimiter Delimiter value
+     *
+     * @return Creator object
+     */
+    public function delimiter(string $delimiter = ',')
     {
         $this->delimiter = $delimiter;
 
@@ -169,6 +191,7 @@ class Creator extends Base\Core
     /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
+     *
      * @return Creator object
      */
     public function save()
@@ -198,6 +221,7 @@ class Creator extends Base\Core
 
     /**
      * Returns Array of File Store Values
+     *
      * @return array
      */
     public function get()
@@ -240,7 +264,7 @@ class Creator extends Base\Core
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileDetails = [
-            'name'      => $fileName,
+            'key'       => $fileName,
             'path'      => $this->filePath,
             'mime'      => $this->file->getMime(),
             'metadata'  => [],
@@ -248,7 +272,7 @@ class Creator extends Base\Core
 
         $location = $this->storageHandler->save($bucket, $fileDetails);
 
-        $this->file->setLocation($location);
+        $this->file->setLocation($fileDetails['key']);
     }
 
     /**
@@ -328,33 +352,18 @@ class Creator extends Base\Core
     {
         if ($this->merchant !== null)
         {
-            $this->file->merchant()->associate($this->merchant);
+            $merchant = $this->merchant;
         }
         else
         {
-            $this->setDefaultMerchantId();
+            $type = $this->file->getType();
+
+            Type::isTypeForSharedAccount($type);
+
+            $merchant = $this->repo->merchant->getSharedAccount();
         }
-    }
 
-    /**
-     * Sets the Merchant id for file store to shared account's merchant id
-     *
-     * @return void
-     */
-    protected function setDefaultMerchantId()
-    {
-        // TODO : Add logs
-        $type = $this->file->getType();
-
-        if (Type::isTypeForSharedAccount($type))
-        {
-            $this->file->setMerchantId(self::DEFAULT_MERCHANT_ID);
-        }
-    }
-
-    protected function getRelativePath()
-    {
-        return self::STORAGE_DIRECTORY . $this->file->getName() . '.' .$this->file->getExtension();
+        $this->file->merchant()->associate($merchant);
     }
 
     protected function getFullFilePath()
@@ -364,6 +373,6 @@ class Creator extends Base\Core
 
     protected function getStorageDir()
     {
-        return storage_path(self::STORAGE_DIRECTORY);
+        return storage_path(Store::STORAGE_DIRECTORY);
     }
 }

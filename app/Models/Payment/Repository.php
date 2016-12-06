@@ -58,6 +58,31 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
+        $paPaymentId = $this->manager
+                            ->payment_analytics
+                            ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
+
+        $paymentColumns = $this->getAttributeWithTableName('*');
+
+        $paTable = $this->manager->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->manager
+                               ->payment_analytics
+                               ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join($paTable, $pid, '=', $paPaymentId)
+                    ->where($checkoutIdAttr, '=', $checkoutId)
+                    ->createdAtGreaterThan($timestamp)
+                    ->latest()
+                    ->get();
+    }
+
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         return $this->newQuery()
@@ -458,9 +483,9 @@ class Repository extends Base\Repository
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
 
-    public function getCreatedPaymentsForOrder($orderId)
+    public function getCreatedAndFailedPaymentsForOrder($orderId)
     {
-        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+        $ts = time() - Payment\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
@@ -468,7 +493,7 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::CREATED_AT, '>', $ts)
                     ->get();
     }
-    
+
     public function getCapturedPaymentForOrder($orderId)
     {
         return $this->newQuery()
@@ -506,7 +531,7 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
@@ -559,7 +584,9 @@ class Repository extends Base\Repository
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
                     ->statusSuccess()
-                    ->sum(Entity::AMOUNT);
+                    ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
+                       'COUNT(*) AS count')
+                    ->first();
 
         return $vol;
     }

@@ -68,6 +68,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function postRefundAuthorizedInBulk()
+    {
+        $input = Request::all();
+
+        $summary = $this->payment->refundAuthorizedInBulk($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function postForceAuthorize($id)
     {
         $input = Request::all();

@@ -247,7 +247,11 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
                 );
 
-                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
+                // Adding a delay here because some gateways return back an error if a capture request
+                // is sent within a few seconds of the first capture request.
+                // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
+                // previous capture request.
+                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
             }
 
             $this->recordCapture();
@@ -335,7 +339,7 @@ trait Capture
         });
 
         $this->eventOrderPaid();
-        $this->eventInvoicePaid();
+        $this->notifyInvoicePaid();
 
         //
         // Analytics
@@ -356,19 +360,41 @@ trait Capture
         }
     }
 
-    protected function eventInvoicePaid()
+    protected function notifyInvoicePaid()
     {
         $payment = $this->payment;
+        $invoice = null;
 
-        if ($payment->getApiOrderId() !== null)
+        if ($payment->getApiOrderId() === null)
         {
-            $order = $payment->order;
-
-            if ($order->invoice !== null)
-            {
-                $this->app['events']->fire('api.invoice.paid', array($payment));
-            }
+            return;
         }
+
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        if ($invoice === null)
+        {
+            return;
+        }
+
+        $this->eventInvoicePaid($payment);
+
+        $this->communicateInvoicePaid($invoice);
+    }
+
+    protected function communicateInvoicePaid(Invoice\Entity $invoice)
+    {
+        $notifier = new Notify($this->payment, $invoice);
+
+        $trigger = Notify::INVOICE_PAID;
+
+        $notifier->trigger($trigger);
+    }
+
+    protected function eventInvoicePaid($payment)
+    {
+        $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)
@@ -378,6 +404,13 @@ trait Capture
         $payment->setCaptureTimestamp();
 
         $payment->setAutoCaptured($autoCaptured);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_STATUS_CAPTURED,
+            [
+                'payment_id'    => $payment->getId(),
+                'auto_capture'  => $autoCaptured,
+            ]);
     }
 
     protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
@@ -429,15 +462,14 @@ trait Capture
 
         if (isset($order) === true)
         {
+            $order->setStatus(Order\Status::PAID);
+
             $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+                TraceCode::ORDER_STATUS_PAID,
                 [
                     'payment_id' => $payment->getId(),
                     'order_id' => $order->getId(),
-                ]
-            );
-
-            $order->setStatus(Order\Status::PAID);
+                ]);
 
             $this->repo->saveOrFail($order);
 

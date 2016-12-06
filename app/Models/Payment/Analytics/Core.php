@@ -3,26 +3,27 @@
 namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
-use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment;
 
 class Core extends Base\Core
 {
-    public function create($payment)
+    public function create(Payment\Entity $payment)
     {
-        $input = [];
+        $pa = new Entity;
 
-        $parser = new Analytics\Parser;
+        $parser = new Parser;
 
         // parse, and set data in $paymentAnalytics object
-        $parser->recordPaymentRequestData($input, $payment);
+        $parser->recordPaymentRequestData($pa, $payment);
 
-        $paymentAnalytics = (new Analytics\Entity)->build($input);
+        $this->repo->saveOrFail($pa);
 
-        $this->repo->saveOrFail($paymentAnalytics);
+        $paArray = $pa->toArrayPublic();
 
-        // trace unrecognized data in $paymentAnalytics object
-        $parser->traceUnrecognizedData($paymentAnalytics);
+        $parser->traceInconsistentData($paArray);
 
-        return $paymentAnalytics;
+        $parser->traceUnrecognizedData($paArray);
+
+        return $pa;
     }
 }

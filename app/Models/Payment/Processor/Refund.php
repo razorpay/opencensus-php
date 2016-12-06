@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
@@ -331,6 +332,24 @@ trait Refund
         }
     }
 
+    protected function reverseOnGateway($data)
+    {
+        try
+        {
+            $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            throw $e;
+        }
+    }
+
     protected function recordRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
@@ -355,7 +374,8 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]);
+            ]
+        );
 
         $this->setPayment($payment);
 
@@ -396,6 +416,11 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
+            else if (($this->gatewaySupportsReverse($payment) === true) and
+                     ($payment->merchant->isFeatureEnabled(Feature::REVERSE) === true))
+            {
+                $this->reverseOnGateway($data);
+            }
 
             $this->recordRefund();
 
@@ -403,6 +428,13 @@ trait Refund
         });
 
         return $refund;
+    }
+
+    protected function gatewaySupportsReverse($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        return Payment\Gateway::supportsReverse($gateway);
     }
 
     protected function updatePaymentRefunded()
@@ -495,7 +527,7 @@ trait Refund
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
             $this->repo->saveOrFail($txn);
-            
+
             $this->trace->info(
                 TraceCode::REFUND_TRANSACTION_CREATED,
                 [
@@ -504,7 +536,8 @@ trait Refund
                     'transaction_id'    => $txn->getId(),
                     'auth_capture'      => $supportsAuthAndCapture,
                     'force_refund_txn'  => $forceRefundTransaction,
-                ]);
+                ]
+            );
 
             return $txn;
         }
@@ -527,7 +560,8 @@ trait Refund
                     'message' => 'Batch entry already processed',
                     'batch'   => $batch->getId(),
                     'refunds' => $refunds->toArrayPublic()
-                ]);
+                ]
+            );
 
             assert($count === 1);
 

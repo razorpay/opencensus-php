@@ -31,6 +31,7 @@ trait Verify
         $data = [
             'payment' => $payment->toArray(),
             'refunds' => $refunds->toArray(),
+            'merchant' => $this->merchant,
         ];
 
         if ($payment->isMethodCardOrEmi())
@@ -108,9 +109,9 @@ trait Verify
             $message,
             $data,
             [
-                'color' => 'bad',
-                'icon' => ':boom:',
-                'channel' => Config::get('slack.channels.tech_logs')
+                'color'   => 'bad',
+                'icon'    => ':boom:',
+                'channel' => Config::get('slack.channels.tech_logs_verify')
             ]);
     }
 }

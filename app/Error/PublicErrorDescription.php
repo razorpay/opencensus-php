@@ -13,6 +13,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
     const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
+    const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
 
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
@@ -203,6 +204,8 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE                           = 'Unable to authorize.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
+    const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
+    const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                             = 'Customer details should be sent as part of the invoice request';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
@@ -265,7 +268,12 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another batch operation is in progress';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
+    const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';
 
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                 = 'Mailgun signature validation failed';
+
+    const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
+    const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
+    const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
 }

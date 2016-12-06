@@ -372,7 +372,7 @@ class Terminal extends Base
         $attributes['id'] = '2RecurringTerm';
         $attributes['recurring'] = 2;
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())
@@ -433,7 +433,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                    => $termId,
             'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
@@ -442,6 +442,8 @@ class Terminal extends Base
             'netbanking'            => 1,
             'shared'                => 1,
         );
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
@@ -450,7 +452,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                    => $termId,
             'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
@@ -458,8 +460,11 @@ class Terminal extends Base
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,
-            'category'              => 9999,
+            'category'              => 0,
+            'network_category'      => 'securities',
         );
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

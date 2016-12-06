@@ -130,6 +130,58 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function refundAuthorizedInBulk(array $input)
+    {
+        $paymentIds = $input['payment_ids'];
+
+        $count = count($paymentIds);
+
+        $success = $failure = 0;
+
+        $failurePayments = $successRefunds = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $refund = $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
+
+                $success++;
+
+                $successRefunds[] = $refund->getId();
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failure++;
+
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'count' => $count,
+            'success' => $success,
+            'failure' => $failure,
+            'failure_payments' => $failurePayments,
+            'success_refunds' => $successRefunds,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_AUTHORIZE_BULK,
+            $data
+        );
+
+        return $data;
+    }
+
     public function verify($id)
     {
         $payment = $this->core->retrieveById($id);
@@ -658,6 +710,14 @@ class Service extends Base\Service
             $this->setErrorCodeAndDescription($payment);
 
             $payment->setStatus(Payment\Status::FAILED);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_FAILED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'error_code'        => $payment->getErrorCode(),
+                    'error_description' => $payment->getErrorDescription(),
+                ]);
 
             $payment->setVerifyBucket(0);
 

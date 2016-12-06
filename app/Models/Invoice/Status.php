@@ -12,6 +12,13 @@ class Status
     const EXPIRED       = 'expired';
     const DELETED       = 'deleted';
 
+    // These statuses have corresponding timestamps column in invoice
+    public static $timestampedStatuses = [
+        self::ISSUED,
+        self::PAID,
+        self::EXPIRED,
+    ];
+
     public static function isStatusValid($status)
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

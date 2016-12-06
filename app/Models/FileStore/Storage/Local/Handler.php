@@ -17,7 +17,7 @@ class Handler extends Base\Handler
     {
         $content = file_get_contents($fileDetails['path']);
 
-        $fileName = self::STORAGE_DIRECTORY . $bucket . '/' . $fileDetails['name'];
+        $fileName = self::STORAGE_DIRECTORY . $bucket . '/' . $fileDetails['key'];
 
         Storage::put($fileName, $content);
 
@@ -26,7 +26,12 @@ class Handler extends Base\Handler
 
     public function getBucketName($type)
     {
-        $bucketType = Bucket::BUCKET_MAP[$type];
+        $bucketType = Bucket::getBucketConfigName($type);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $bucketType = 'rzp-test-bucket';
+        }
 
         return $bucketType;
     }

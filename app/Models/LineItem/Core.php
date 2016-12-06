@@ -4,43 +4,65 @@ namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Item;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
+     * @param array             $input
+     * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $entity
+     * @param Item\Entity       $item
+     *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $entity,
+        Item\Entity $item)
     {
-        $item = (new Entity)->build($input);
+        $this->trace->info(
+            TraceCode::LINE_ITEM_CREATE_REQUEST,
+            [
+                'input'         => $input,
+                'entity_id'    => $entity->getId(),
+                'item_id'       => $item->getId(),
+            ]);
 
-        $item->merchant()->associate($merchant);
+        $lineItem = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($item);
+        $this->setLineItemAssociations($lineItem, $merchant, $entity, $item);
 
-        return $item;
+        $this->repo->saveOrFail($lineItem);
+
+        return $lineItem;
     }
 
-    public function getTotalAmountFromLineItems(array $items)
+    public function getTotalAmountFromLineItems(array $lineItems)
     {
         $totalAmount = 0;
 
-        array_map(function($item) use (& $totalAmount)
+        array_map(function($lineItem) use (& $totalAmount)
         {
-            $quantity = $item->getQuantity();
-            $amount = $item->getAmount();
+            $quantity = $lineItem->getQuantity();
+            $amount   = $lineItem->item->getAmount();
 
             $totalAmount += ($amount * $quantity);
-        }, $items);
+        }, $lineItems);
 
         return $totalAmount;
+    }
+
+    protected function setLineItemAssociations(
+        Entity $lineItem, Merchant\Entity $merchant, Base\PublicEntity $entity, Item\Entity $item)
+    {
+        $lineItem->entity()->associate($entity);
+
+        $lineItem->item()->associate($item);
+
+        $lineItem->merchant()->associate($merchant);
     }
 }

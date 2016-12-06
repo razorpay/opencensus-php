@@ -11,7 +11,9 @@ use Monolog\Formatter;
 
 class Trace extends Logger
 {
-    // used as channel for Monolog\Logger
+    /**
+     * used as channel for Monolog\Logger
+     */
     const CHANNEL = "Razorpay API";
 
     protected $app;
@@ -51,7 +53,7 @@ class Trace extends Logger
         $this->defineProcessors();
     }
 
-    public function addRecord($level, $message, array $context = array())
+    public function addRecord($level, $message, array $context = [])
     {
         try
         {
@@ -106,9 +108,14 @@ class Trace extends Logger
         return $context;
     }
 
-    public function traceException(\Throwable $exception, $level = null, $code = null)
+    public function traceException(
+        \Throwable $exception,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $this->app['exception.handler']->traceException($exception, $level, $code);
+        $this->app['exception.handler']
+             ->traceException($exception, $level, $code, $extraData);
     }
 
     protected function sendMailAboutTracingFailure($exception, $level, $message, $context)

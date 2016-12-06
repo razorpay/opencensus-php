@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -12,25 +13,24 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
         Entity::CHECKOUT_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num'
     );
+
+    public function findForPayment($paymentId)
+    {
+        return $this->repo
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->get();
+    }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
-        $timestamp = time() - Entity::PAYMENT_WINDOW;
+        $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->where(Entity::CHECKOUT_ID, '=', $checkoutId)
                     ->where(Entity::CREATED_AT, '>=', $timestamp)
                     ->latest()
                     ->get();
-    }
-
-    public function findForPayment($paymentId)
-    {
-        $repo = $this->repo;
-
-        $results =  $repo->where(Entity::PAYMENT_ID, '=', $paymentId);
-
-        return $results->get();
     }
 }

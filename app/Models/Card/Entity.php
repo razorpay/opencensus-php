@@ -251,7 +251,14 @@ class Entity extends Base\PublicEntity
 
     public function getType()
     {
-        return $this->getAttribute(self::TYPE);
+        $type = $this->getAttribute(self::TYPE);
+
+        if ($type === Type::UNKNOWN)
+        {
+            return Type::CREDIT;
+        }
+
+        return $type;
     }
 
     public function getLast4()
@@ -286,7 +293,7 @@ class Entity extends Base\PublicEntity
 
         if ($cardType === Card\Type::UNKNOWN)
         {
-            $cardType = Card\Type::DEBIT;
+            $cardType = Card\Type::CREDIT;
         }
 
         return $cardType;
@@ -437,13 +444,20 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isDebit()
+    {
+        $type = $this->getType();
+
+        return ($type === Type::DEBIT);
+    }
+
     public function isRecurringSupported()
     {
         $isCreditCard = ($this->getType() === Card\Type::CREDIT);
 
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
-        return (($isCreditCard == true) and ($isSupportedNetwork == true));
+        return (($isCreditCard === true) and ($isSupportedNetwork === true));
     }
 
     public function isBlocked()

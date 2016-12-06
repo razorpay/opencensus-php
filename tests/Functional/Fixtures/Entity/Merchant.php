@@ -177,12 +177,27 @@ class Merchant extends Base
 
     public function enableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => true]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true, 'credit_card' => true]);
     }
 
     public function disableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => false]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false]);
+    }
+
+    public function disableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => false]);
+    }
+
+    public function enableDebitCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true]);
+    }
+
+    public function enableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => true]);
     }
 
     public function enableNetbanking($id = '10000000000000')
@@ -261,7 +276,7 @@ class Merchant extends Base
     {
         $features = collect();
 
-        foreach ($featureNames as $featureName) {
+        foreach ((array) $featureNames as $featureName) {
             $attributes = [
                 'name'      => $featureName,
                 'entity_id' => $id
@@ -294,12 +309,12 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->edit($id, ['category' => 9999]);
+        return $this->editCategory2('securities', $id);
     }
 
     public function disableTPV($id = '10000000000000')
     {
-        return $this->edit($id, ['category' => 9990]);
+        return $this->editCategory2('ecommerce', $id);
     }
 
     public function disableAllMethods($id = '10000000000000')
