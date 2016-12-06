@@ -283,16 +283,31 @@ class EsDao
         return $this->es->changeIndexSettings($params);
     }
 
-    // $admin, $action, $customProperties, $caller
     public function storeAdminEvent($index, $type, $fields)
     {
+        $this->createIndexIfNotExists($index);
+
         $params = [
             'index' => $index,
             'type'  => $type,
             'body'  => $fields
         ];
 
-        $updateReponse = $this->esHeimdall->createIndex($params);
+        $updateReponse = $this->esHeimdall->index($params);
+    }
+
+    protected function createIndexIfNotExists($index)
+    {
+        $params['index'] = $index;
+
+        $client = $this->esHeimdall->getClient();
+
+        $doesExist = $client->indices()->exists($params);
+
+        if ($doesExist === false)
+        {
+            $client->indices()->create($params);
+        }
     }
 
     public function searchAuditLogs($orgId)

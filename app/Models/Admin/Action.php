@@ -64,6 +64,12 @@ class Action
         'action' => AC::ACTION_EDIT
     ];
 
+    const DELETE_GROUP = [
+        'category' => AC::CATEGORY_UAM,
+        'label' => AC::LABEL_GROUP,
+        'action' => AC::ACTION_DELETE
+    ];
+
     const CREATE_AUTH_POLICY = [
         'category' => AC::CATEGORY_AUTH,
         'label' => AC::CATEGORY_AUTH_POLICY,
@@ -94,6 +100,18 @@ class Action
         'action' => AC::ACTION_CREATE
     ];
 
+    const EDIT_PERMISSION = [
+        'category' => AC::CATEGORY_UAM,
+        'label' => AC::LABEL_PERMISSION,
+        'action' => AC::ACTION_EDIT
+    ];
+
+    const DELETE_PERMISSION = [
+        'category' => AC::CATEGORY_UAM,
+        'label' => AC::LABEL_PERMISSION,
+        'action' => AC::ACTION_DELETE
+    ];
+
     const CREATE_ROLE = [
         'category' => AC::CATEGORY_UAM,
         'label' => AC::LABEL_ADMIN_ROLES,
@@ -104,6 +122,12 @@ class Action
         'category' => AC::CATEGORY_UAM,
         'label' => AC::LABEL_ADMIN_ROLES,
         'action' => AC::ACTION_EDIT
+    ];
+
+    const DELETE_ROLE = [
+        'category' => AC::CATEGORY_UAM,
+        'label' => AC::LABEL_ADMIN_ROLES,
+        'action' => AC::ACTION_DELETE
     ];
 
     const CREATE_MERCHANT = [

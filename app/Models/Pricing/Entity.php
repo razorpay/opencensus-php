@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity

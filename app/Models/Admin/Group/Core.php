@@ -14,13 +14,13 @@ class Core extends Base\Core
     {
         $group = (new Entity)->generateId();
 
-        $group->setAuditAction(Action::CREATE_GROUP);
-
         $group->build($input);
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
 
         $group->org()->associate($org);
+
+        $group->setAuditAction(Action::CREATE_GROUP);
 
         $this->repo->saveOrFail($group);
 
@@ -44,6 +44,7 @@ class Core extends Base\Core
 
     protected function associateRelevantEntitiesToGroup($input, Entity $group)
     {
+
         if (isset($input['parents']) === true)
         {
             Entity::verifyIdAndStripSignMultiple($input['parents']);

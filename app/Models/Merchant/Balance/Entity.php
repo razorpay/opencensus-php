@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Models\Base;
 

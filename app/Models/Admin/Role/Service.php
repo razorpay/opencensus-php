@@ -4,8 +4,7 @@ namespace RZP\Models\Admin\Role;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
-use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Action;
 
 class Service extends Base\Service
 {
@@ -37,6 +36,8 @@ class Service extends Base\Service
     public function deleteRole($orgId, $roleId)
     {
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+
+        $role->setAuditAction(Action::DELETE_ROLE);
 
         $this->repo->deleteOrFail($role);
 

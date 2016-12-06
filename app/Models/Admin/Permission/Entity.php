@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
-use RZP\Constants;
 
 class Entity extends Base\PublicEntity
 {

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App;
 use Hash;
 use Carbon\Carbon;
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;

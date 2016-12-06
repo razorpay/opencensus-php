@@ -4,7 +4,7 @@ namespace RZP\Models\Admin\Role;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Lib\RevisionableTrait;
+use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Admin\Permission;
