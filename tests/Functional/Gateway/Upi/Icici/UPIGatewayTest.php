@@ -139,6 +139,29 @@ EOT;
         });
     }
 
+    public function testInvalidVPAError()
+    {
+        $vpas = [
+            'user@invalidbank',
+            'invalidvpa@icici'
+        ];
+
+        foreach ($vpas as $vpa)
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+
+            $payment['vpa'] = $vpa;
+
+            $data = $this->testData['testInvalidVPAError'];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        }
+    }
+
     public function testSingleWordVPA()
     {
         $payment = $this->getDefaultUpiPaymentArray();

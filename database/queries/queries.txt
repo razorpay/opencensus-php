@@ -1325,7 +1325,12 @@ CREATE INDEX items_deleted_at_index ON items (deleted_at);
 
 ---
 
-----
+--- Post code deployment / https://github.com/razorpay/api/pull/1732
+
+UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
+
+---
+
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource

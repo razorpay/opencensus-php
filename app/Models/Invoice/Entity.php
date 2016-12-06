@@ -117,6 +117,7 @@ class Entity extends Base\PublicEntity
     // No validation performed on these fields.
     protected static $generators = [
         // self::DISCOUNT,
+        self::DATE,
         self::DUE_BY,
         self::SCHEDULED_AT,
         self::EMAIL_STATUS,
@@ -241,6 +242,22 @@ class Entity extends Base\PublicEntity
         self::AMOUNT    => 'int',
         self::DATE      => 'int',
     ];
+
+
+    // -------------------------------------- Mutators --------------------------------------
+
+    public function setDateAttribute($date)
+    {
+        // To convert '' (empty strings coming from url encoded form data) to null
+        if (empty($date))
+        {
+            $date = null;
+        }
+
+        $this->attributes[self::DATE] = $date;
+    }
+
+    // -------------------------------------- End Mutators --------------------------------------
 
     // -------------------------------------- Getters --------------------------------------
 
@@ -488,6 +505,18 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- End Public Setters --------------------------------------
 
     // -------------------------------------- Generators --------------------------------------
+
+    public function generateDate($input)
+    {
+        // If DATE is not sent in input, set it to now
+        // If DATE is sent, even as null use that only(so not using isset)
+        if (array_key_exists(Entity::DATE, $input) === false)
+        {
+            $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute(self::DATE, $now);
+        }
+    }
 
     public function generateEmailStatus($input)
     {

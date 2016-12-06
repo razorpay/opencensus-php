@@ -81,6 +81,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => null,
                 'type' => 'ecod',
                 'user_id'  => 'abcdefghij1234',
             ],
@@ -104,6 +105,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => null,
                 'view_less' => true,
                 'amount' => 100000,
                 //'user_id'  => 'abcdefghij1234',
@@ -125,6 +127,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => 1480666664,
             ],
         ],
         'response' => [
@@ -146,6 +149,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => 1480666664,
                 'view_less' => true,
                 'amount' => 100000
             ],
@@ -416,7 +420,6 @@ return [
                 'paid_at'          => null,
                 'sms_status'       => 'pending',
                 'email_status'     => 'pending',
-                'date'             => null,
                 'amount'           => 1000,
                 'description'      => 'Abc def',
                 'notes'            => [],
@@ -491,7 +494,6 @@ return [
                 'paid_at'              => null,
                 'sms_status'           => null,
                 'email_status'         => null,
-                'date'                 => null,
                 'amount'               => 1000,
                 'description'          => null,
                 'notes'                => [],

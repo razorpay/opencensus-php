@@ -197,7 +197,12 @@ class Reconciler3
 
         if ($status === 'P')
         {
-            $utr = $row['UTR number'];
+            $utr = trim($row['UTR number']);
+
+            if (empty($utr) === true)
+            {
+                $utr = null;
+            }
 
             // If current time is before 10 pm, dont mark the settlement as
             // processed and update only the utr
