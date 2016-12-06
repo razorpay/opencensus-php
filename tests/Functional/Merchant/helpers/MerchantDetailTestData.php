@@ -96,7 +96,6 @@ return [
     'testLockMerchantWithInvalidParams' => [
         'request' => [
             'content' =>[
-
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'POST'
@@ -105,14 +104,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid parameter. Locked variable not set.',
+                    'description' => 'The locked field is required.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_LOCKED_NOT_SET,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 
@@ -139,7 +138,6 @@ return [
     'testUnlockMerchant2' => [
         'request' => [
             'content' =>[
-                "bank_branch_ifsc"=>"ICIC0000002",
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
@@ -147,7 +145,6 @@ return [
         ],
         'response' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000002",
                 "locked" => false,
                 "verification" => [
                     "status" => "disabled",

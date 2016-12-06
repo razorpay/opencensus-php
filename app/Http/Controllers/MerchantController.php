@@ -566,7 +566,7 @@ class MerchantController extends Controller
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
-    // == Activation Form Handlers ==
+    // Activation Form Handlers
     public function getActivationDetails()
     {
         $response = (new Detail\Service)->fetchMerchantDetails();

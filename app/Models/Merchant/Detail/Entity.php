@@ -207,7 +207,7 @@ class Entity extends Base\PublicEntity
 
     public function isLocked()
     {
-        return $this->getAttribute(self::LOCKED);
+        return ($this->getAttribute(self::LOCKED) === true);
     }
 
     public function setContactEmail($email)

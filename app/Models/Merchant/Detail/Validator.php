@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant\Detail;
@@ -132,7 +133,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $lockRules = [
-        Entity::LOCKED                          => 'sometimes|boolean',
+        Entity::LOCKED                          => 'required|boolean',
     ];
 
     public function validateBankBranchIfsc($attribute, $value)
