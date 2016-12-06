@@ -1346,4 +1346,4 @@ ALTER TABLE cybersource
 ALTER TABLE terminals
     ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
 
-UPDATE terminals SET tpv = true WHERE category IN ('6211', '9999');
+UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
