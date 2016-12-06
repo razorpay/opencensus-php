@@ -386,4 +386,5 @@ class ErrorCode
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
 
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
+    const BAD_REQUEST_LOCKED_NOT_SET                                                = 'BAD_REQUEST_LOCKED_NOT_SET';
 }

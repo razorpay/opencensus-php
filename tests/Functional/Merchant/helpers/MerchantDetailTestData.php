@@ -93,6 +93,29 @@ return [
         ],
     ],
 
+    'testLockMerchantWithInvalidParams' => [
+        'request' => [
+            'content' =>[
+
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid parameter. Locked variable not set.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOCKED_NOT_SET,
+        ],
+    ],
+
     'testUnlockMerchant' => [
         'request' => [
             'content' =>[

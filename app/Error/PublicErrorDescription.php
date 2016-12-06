@@ -278,4 +278,6 @@ class PublicErrorDescription
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
 
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
+
+    const BAD_REQUEST_LOCKED_NOT_SET                                            = 'Invalid parameter. Locked variable not set.';
 }

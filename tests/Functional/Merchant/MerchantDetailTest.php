@@ -63,6 +63,21 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testLockMerchantWithInvalidParams()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testUnlockMerchant()
     {
         $attribute = ['locked' => true];
