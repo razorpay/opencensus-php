@@ -103,7 +103,14 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeCreatedAtLessThan($query, $createdAt)
     {
-        return $query->where(Common::CREATED_AT, '<', $createdAt);
+        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        return $query->where($createdAtColumn, '<', $createdAt);
+    }
+
+    public function scopeCreatedAtGreaterThan($query, $createdAt)
+    {
+        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        return $query->where($createdAtColumn, '>', $createdAt);
     }
 
     public static function createOrFail(array $attributes)

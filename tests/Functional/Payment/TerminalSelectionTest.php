@@ -137,12 +137,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 91 to 100 should give AxisMigs
+            // Chance from 76 to 100 should give AxisMigs
             [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            // Chance from 81 to 90 should give Cybersource
-            [ 'chanceValue' => 89, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 75 to 80 should give First Data
-            [ 'chanceValue' => 76,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 66 to 75 should give Cybersource
+            [ 'chanceValue' => 69, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 60 to 65 should give First Data
+            [ 'chanceValue' => 63,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
