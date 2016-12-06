@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num',
         RequestFields::ITEM_CODE                 => 'required|alpha_num',
         RequestFields::CURRENCY_CODE             => 'required|in:INR',
-        RequestFields::ACCOUNT_NO                => 'sometimes',
+        RequestFields::ACCOUNT_NO                => 'sometimes|string',
         RequestFields::PAYMENT_DATE              => 'required',
     ];
 
