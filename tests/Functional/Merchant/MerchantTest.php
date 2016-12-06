@@ -627,6 +627,24 @@ class MerchantTest extends TestCase
             });
     }
 
+    public function testCreateMerchantWithLongName()
+    {
+        $id = '1X4hRFHFx4UiXt';
+        $merchant = array(
+            'id'    => $id,
+            'name'  => 'Merchant business name just long enought to break things',
+            'email' => 'liveandtest@localhost.com'
+        );
+
+        $request = array(
+            'content' => $merchant,
+            'url' => '/merchants',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+    }
+
     protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
