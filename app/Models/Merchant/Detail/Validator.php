@@ -131,6 +131,10 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes',
     ];
 
+    protected static $lockRules = [
+        Entity::LOCKED                          => 'sometimes|boolean',
+    ];
+
     public function validateBankBranchIfsc($attribute, $value)
     {
         if (IFSC::validate($value) === false)

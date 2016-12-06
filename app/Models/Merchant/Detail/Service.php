@@ -84,16 +84,11 @@ class Service extends Base\Service
 
     public function lockMerchantDetails($id, array $input)
     {
-        if (isset($input[Entity::LOCKED]) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCKED_NOT_SET);
-        }
-
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $merchantDetails->edit($input);
+        $merchantDetails->edit($input, 'lock');
 
         $this->repo->saveOrFail($merchantDetails);
 
