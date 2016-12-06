@@ -110,6 +110,7 @@ class TraceCode
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
     const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
+    const TERMINAL_BOOST_INVALID                    = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                      = 'TERMINAL_USED_BEFORE';
 
     const CARD_NETWORK_INVALID                      = 'CARD_NETWORK_INVALID';
@@ -251,6 +252,7 @@ class TraceCode
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';

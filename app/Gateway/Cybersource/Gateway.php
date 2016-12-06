@@ -793,7 +793,7 @@ class Gateway extends Base\Gateway
 
         if (isset($payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA]) === true)
         {
-            $attributes[E::CAVV] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
+            $attributes[E::AUTH_DATA] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
         }
 
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
@@ -985,7 +985,7 @@ class Gateway extends Base\Gateway
 
         if ($cardNetwork === Card\Network::MC)
         {
-            $ccAuthService[F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
         }
 
         $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;

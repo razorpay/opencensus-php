@@ -54,6 +54,8 @@ class Fields
 
     const UCAF_AUTHENTICATION_DATA      = 'ucafAuthenticationData';
 
+    const AUTHENTICATION_DATA           = 'authenticationData';
+
     const RECEIPT_NUMBER                = 'receiptNumber';
 
     const AUTHORIZATION_CODE            = 'authorizationCode';
