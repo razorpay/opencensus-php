@@ -116,5 +116,6 @@ class NetbankingIciciGatewayTest extends TestCase
         // Asserting that TPV terminal of ICICI gets picked and not regular
         $this->assertEquals($payment['terminal_id'], '100NbIcicTpvTl');
 
+        $this->fixtures->merchant->disableTPV();
     }
 }
