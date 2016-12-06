@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::RECURRING                   => 'sometimes|in:0,2',
-        Entity::TPV                         => 'required_only_if:netbanking,1|boolean',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
@@ -192,6 +192,7 @@ class Validator extends Base\Validator
             $input['netbanking'],
             $input['merchant_id'],
             $input['category'],
+            $input['tpv'],
             $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
