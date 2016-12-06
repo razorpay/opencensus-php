@@ -722,6 +722,7 @@ class Service extends Base\Service
                     'error_description' => $payment->getErrorDescription(),
                 ]);
 
+            $payment->setVerified(null);
             $payment->setVerifyBucket(0);
 
             $saved = $this->repo->save($payment);
@@ -845,8 +846,8 @@ class Service extends Base\Service
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
         $result = [
-            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
-            'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
+            'initial'   => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
+            'final'     => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
 
         $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
@@ -858,7 +859,7 @@ class Service extends Base\Service
     {
         $result = [
             // This holds the counts
-            'counts'=>[]
+            'counts' => []
         ];
 
         // This is the start of the day 00:00, $day ago
