@@ -86,7 +86,7 @@ class EsClient
 
     public function createIndex($params)
     {
-        return $this->client->index($params);
+        return $this->client->indices()->create($params);
     }
 
     public function deleteIndex($params)
@@ -124,4 +124,8 @@ class EsClient
         return $entityResults;
     }
 
+    public function index($params)
+    {
+        $this->client->index($params);
+    }
 }
