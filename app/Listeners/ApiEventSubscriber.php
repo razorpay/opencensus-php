@@ -166,14 +166,14 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function getP2pPayload($vpa)
+    protected function getP2pPayload($p2p)
     {
-        $source = $vpa->source;
+        $source = $p2p->source;
 
-        $sink = $vpa->sink;
+        $sink = $p2p->sink;
 
-        $partialPayload[Constants\Entity::VPA] = [
-            'entity' => $vpa->toArrayPublic()
+        $partialPayload[Constants\Entity::P2P] = [
+            'entity' => $p2p->toArrayPublic()
         ];
 
         $partialPayload['source'] = [

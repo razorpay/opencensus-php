@@ -42,7 +42,6 @@ class Entity extends Base\PublicEntity
         self::ADDRESS,
         self::USERNAME,
         self::HANDLE,
-        self::ADDRESS,
         self::CUSTOMER_ID,
         self::BANK_ACCOUNT_ID,
     ];
