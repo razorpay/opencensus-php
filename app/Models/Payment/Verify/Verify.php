@@ -94,11 +94,17 @@ class Verify extends Base\Core
      */
     const ROWS_TO_FETCH = 100;
 
+    /**
+     * Threshold for which logs should be posted to slack
+     */
+    const LOGGING_THRESHOLD = 30;
+
     // ================== End Configurations ==================
 
     protected $core;
     protected $mutex;
     protected $slack;
+    protected $slackChannel;
     protected $route;
 
     public function __construct()
@@ -110,6 +116,8 @@ class Verify extends Base\Core
         $this->slack = $this->app['slack'];
 
         $this->route = $this->app['api.route']->getCurrentRouteName();
+
+        $this->slackChannel = Config::get('slack.channels.tech_logs_verify');
     }
 
     /**
@@ -357,7 +365,7 @@ class Verify extends Base\Core
         $total = array_sum($resultSet);
 
         if (($total !== 0) and
-            (($resultSet[Result::SUCCESS] > 4) or
+            (($resultSet[Result::SUCCESS] > self::LOGGING_THRESHOLD) or
              ($total !== $resultSet[Result::SUCCESS])))
         {
             // Drop all false values (NULL, 0, "", [])
@@ -369,7 +377,7 @@ class Verify extends Base\Core
                 $message,
                 $slackArray,
                 [
-                    'channel' => Config::get('slack.channels.tech_logs')
+                    'channel' => $this->slackChannel
                 ]
             );
         }
@@ -453,8 +461,9 @@ class Verify extends Base\Core
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
             // exception.
+            $extraData = ['payment_id' => $payment->getId()];
 
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, null, null, $extraData);
 
             // Just continue
             $result = Result::ERROR;
@@ -464,7 +473,9 @@ class Verify extends Base\Core
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
             // exception.
-            $this->trace->traceError($e);
+            $extraData = ['payment_id' => $payment->getId()];
+
+            $this->trace->traceError($e, null, null, $extraData);
 
             // Just continue
             $result = Result::ERROR;
