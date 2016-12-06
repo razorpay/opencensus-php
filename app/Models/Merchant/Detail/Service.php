@@ -25,11 +25,7 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
-        if ($merchantDetails->isLocked())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
-        }
+        $merchantDetails->getValidator()->validateIsNotLocked();
 
         $merchantDetails->edit($input);
 
