@@ -740,6 +740,10 @@ class Entity extends Base\PublicEntity
          {
             $merchant['groups'] = $groups->toArrayPublicEmbedded();
          }
+         else
+         {
+            $merchant['groups'] = $groups;
+         }
 
          return $merchant;
     }
