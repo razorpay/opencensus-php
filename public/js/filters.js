@@ -45,7 +45,7 @@ angular.module('app.filters', []).filter('fromNow', function () {
         support:    'Support',
         finance:    'Finance',
         admin:      'Admin',
-        sellerapp:  'Delivery Executive',
+        sellerapp:  'ePOS',
         manager:    'Manager',
         owner:      'Owner'
       };
