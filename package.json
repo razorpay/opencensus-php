@@ -42,13 +42,13 @@
     "react-dates": "^4.0.2",
     "react-dom": "^15.3.2",
     "react-modal": "^1.5.2",
-    "react-power-select": "github:selvagsz/react-power-select#ea0544a",
+    "react-power-select": "0.0.2",
     "react-redux": "^4.4.5",
     "react-tether": "^0.5.2",
     "react-time": "^4.2.0",
     "react-tooltip": "^3.2.1",
     "redux": "^3.6.0",
-    "redux-form": "github:selvagsz/redux-form#b8be7f8",
+    "redux-form": "selvagsz/redux-form#b8be7f8",
     "redux-thunk": "^2.1.0"
   }
 }
