@@ -403,7 +403,7 @@ class Service extends Base\Service
     public function fetch($id)
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
-sd(json_encode(new \stdClass) );
+
         return $payment->toArrayPublic();
     }
 
