@@ -55,13 +55,14 @@ class Service extends Base\Service
         {
             $fileName = 'api/' .$this->merchant->getId() .'/' .$key;
 
-            $ufh = $this->createFile($merchantDetails,
-                                    $value->extension(),
-                                    $value,
-                                    $fileName,
-                                    $key);
+            $file = $this->createFile(
+                $merchantDetails,
+                $value->extension(),
+                $value,
+                $fileName,
+                $key);
 
-            $params[$key] = $ufh->get()['id'];
+            $params[$key] = $file['id'];
         }
 
         $merchantDetails->fill($params);
@@ -147,15 +148,16 @@ class Service extends Base\Service
     {
         $creator = new FileStore\Creator;
 
-        $creator->extension($extension)
-                ->localFile($file)
-                ->name($fileName)
-                ->store($store)
-                ->type($type)
-                ->entity($merchantDetail)
-                ->save();
+        $file = $creator->extension($extension)
+                        ->localFile($file)
+                        ->name($fileName)
+                        ->store($store)
+                        ->type($type)
+                        ->entity($merchantDetail)
+                        ->save()
+                        ->get();
 
-        return $creator;
+        return $file;
     }
 
     protected function createResponse(Detail\Entity $merchantDetails)
