@@ -456,7 +456,7 @@ class Verify extends Base\Core
             // Just continue
             $result = Result::TIMEOUT;
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
@@ -464,18 +464,6 @@ class Verify extends Base\Core
             $extraData = ['payment_id' => $payment->getId()];
 
             $this->trace->traceException($e, null, null, $extraData);
-
-            // Just continue
-            $result = Result::ERROR;
-        }
-        catch (\Error $e)
-        {
-            // @note: If payment verification fails due to any reason
-            // other than expected ones, we should log it as an error
-            // exception.
-            $extraData = ['payment_id' => $payment->getId()];
-
-            $this->trace->traceError($e, null, null, $extraData);
 
             // Just continue
             $result = Result::ERROR;
