@@ -201,8 +201,6 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => 'INR',
         ];
 
-        // $input['merchant']->setCategory2('securities');
-
         if ($input['merchant']->isTPVRequired())
         {
             $additionalData[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
@@ -242,8 +240,6 @@ class Gateway extends Base\Gateway
             RequestFields::CONFIRMATION            => Confirmation::YES,
         ];
 
-        // $input['merchant']->setCategory2('securities');
-
         if ($input['merchant']->isTPVRequired())
         {
             $data[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
@@ -262,7 +258,7 @@ class Gateway extends Base\Gateway
             RequestFields::OBJ_NAME   => Constants::LOGIN,
             RequestFields::BAY_BANKID => Constants::BANKID,
             RequestFields::MODE       => Mode::PAY,
-            RequestFields::PAYEE_ID   => $pid,  // Hardcoding it for now
+            RequestFields::PAYEE_ID   => $pid,
             RequestFields::SPID       => $spid,
             RequestFields::AMOUNT     => $input['payment']['amount'] / 100
         ];

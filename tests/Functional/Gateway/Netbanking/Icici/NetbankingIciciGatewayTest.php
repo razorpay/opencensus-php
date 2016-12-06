@@ -96,8 +96,6 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertTrue(file_exists($data['netbanking_icici']['file']));
     }
 
-    // $input['merchant']->setCategory2('securities');
-
     public function testTPVPayment()
     {
         $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
