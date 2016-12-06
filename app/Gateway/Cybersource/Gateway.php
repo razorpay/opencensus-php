@@ -985,7 +985,7 @@ class Gateway extends Base\Gateway
 
         if ($cardNetwork === Card\Network::MC)
         {
-            $ccAuthService[F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+            $authServiceRequest['content'][F::UCAF][F::UCAF_AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
         }
 
         $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;
