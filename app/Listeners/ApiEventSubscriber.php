@@ -154,7 +154,7 @@ class ApiEventSubscriber
 
     protected function onP2pCreated($p2p)
     {
-        $payload = $this->getP2pPayload($vpa);
+        $payload = $this->getP2pPayload($p2p);
 
         $this->prepareAndDispatchWebhook($payload);
     }
