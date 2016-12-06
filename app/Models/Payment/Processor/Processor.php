@@ -75,6 +75,10 @@ class Processor
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
+    // Make sure that this is below 900 (seconds) because SQS doesn't support
+    // delay over 15 minutes.
+    const CAPTURE_QUEUE_DELAY = 180;
+
     protected $merchant;
     protected $trace;
     protected $payment;
@@ -188,8 +192,7 @@ class Processor
         }
         else
         {
-            list($fee, $serviceTax, $ruleKey, $feesSplit) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
         }
 
         $data = array(
@@ -416,15 +419,18 @@ class Processor
             ];
         }
 
-        // We don't want to reach this in case of captured|refunded payments
-        // However, the payment would be captured here IFF it was auto-captured
-        // So we make an exception for that.
-        $returnResponse = (($payment->isAuthorized()) or
-                           ($payment->getAutoCaptured() and $payment->isCaptured()));
+        $diff = time() - $payment->getCreatedAt();
 
-        assertTrue($returnResponse);
+        if (($payment->hasBeenAuthorized() === true) and
+            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+        {
+            return $this->processAuthorizeResponse($payment);
+        }
 
-        return $this->processAuthorizeResponse($payment);
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -572,6 +578,8 @@ class Processor
 
         $this->setOrderDetails($payment, $input);
 
+        $this->setInvoiceDetails($payment);
+
         $metadata = isset($input['_']) ? $input['_'] : null;
 
         $payment->setMetadata($metadata);
@@ -693,8 +701,7 @@ class Processor
 
         $validator->validateOrderNotPaid($this->order);
 
-        $validator->validateMerchantSpecificData($this->order,
-                                                 $payment);
+        $validator->validateMerchantSpecificData($this->order, $payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -707,9 +714,26 @@ class Processor
                 'attempts'      => $this->order->getAttempts(),
             ]);
 
-        $this->order->saveOrFail();
+        $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function setInvoiceDetails(Payment\Entity $payment)
+    {
+        if ($this->order === null)
+        {
+            return;
+        }
+
+        if ($this->order->invoice === null)
+        {
+            return;
+        }
+
+        $invoice = $this->order->invoice;
+
+        $payment->invoice()->associate($invoice);
     }
 
     protected function tracePaymentFailed($error, $traceCode)

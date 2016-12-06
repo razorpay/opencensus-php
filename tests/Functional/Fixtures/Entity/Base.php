@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Config;
 use Eloquent;
 use RZP\Models;
+use RZP\Constants\Entity as E;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (in_array($entity, self::$liveAndTest, true))
+        if (E::isEntitySyncedInLiveAndTest($entity))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -95,12 +96,12 @@ class Base
     {
         $this->stripSign($id);
 
-        if (in_array($entity, self::$liveAndTest, true))
+        if (E::isEntitySyncedInLiveAndTest($entity))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -117,7 +118,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -141,7 +142,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -168,7 +169,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -181,7 +182,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entityClass = self::$map[$entity];
+        $entityClass = E::getEntityClass($entity);
 
         $entity = Factory::create($entityClass, $attributes);
 

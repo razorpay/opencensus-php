@@ -31,6 +31,7 @@ trait Verify
         $data = [
             'payment' => $payment->toArray(),
             'refunds' => $refunds->toArray(),
+            'merchant' => $this->merchant,
         ];
 
         if ($payment->isMethodCardOrEmi())

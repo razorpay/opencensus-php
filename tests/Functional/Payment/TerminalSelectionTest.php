@@ -137,10 +137,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 86 to 95 should give Cybersource
-            [ 'chanceValue' => 95, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 80 to 85 should give First Data
-            [ 'chanceValue' => 81,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 91 to 100 should give AxisMigs
+            [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            // Chance from 81 to 90 should give Cybersource
+            [ 'chanceValue' => 89, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 75 to 80 should give First Data
+            [ 'chanceValue' => 76,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
@@ -372,16 +374,24 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'ecommerce',
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'securities',
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
              ['id' => 'SharNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
-
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl2',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'ecommerce']);
-
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl3',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'securities']);
 
@@ -391,9 +401,11 @@ class TerminalSelectionTest extends TestCase
 
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('SharNbBdkTmnl3', $payment1['terminal_id']);
+        $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
 
-        $this->fixtures->terminal->edit('SharNbBdkTmnl3',['enabled' => false]);
+        $this->verifyPayment($payment1['id']);
+
+        $this->fixtures->terminal->edit('DrctNbBdkTmnl3',['enabled' => false]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
@@ -449,5 +461,35 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testCorporateMerchantsBilldeskICICI()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'SharNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'corporate']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+
+        // Ideally the terminal picked should have been the corporate terminal
+        // But because of the newly added icici billdesk filter,
+        // the ecommerce one should get picked.
+        $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
     }
 }

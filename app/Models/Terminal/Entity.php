@@ -484,4 +484,9 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function isNon3DSRecurring()
+    {
+        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
 }

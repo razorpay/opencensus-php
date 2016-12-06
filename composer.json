@@ -24,7 +24,8 @@
         "jenssegers/agent": "^2.3",
         "minfraud/http": "^1.70",
         "razorpay/upi-clients": "dev-master",
-        "fr3d/xmldsig": "^2.1"
+        "fr3d/xmldsig": "^2.1",
+        "doctrine/dbal": "^2.5"
     },
     "repositories": [
         {

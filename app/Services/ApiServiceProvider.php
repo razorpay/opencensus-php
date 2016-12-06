@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -107,16 +109,6 @@ class ApiServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Defines string to className map for polymorphic associations
-     */
-    public function boot()
-    {
-        Relation::morphMap([
-            'merchant' => Constants\Entity::getEntityClass(Constants\Entity::MERCHANT),
-        ]);
-    }
-
-    /**
      * Get the services provided by the provider.
      *
      * @return array
@@ -211,7 +203,8 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
-            'invoice' => \RZP\Models\Invoice\Entity::class,
+            'invoice' => Invoice\Entity::class,
+            'merchant'  => Merchant\Entity::class,
         ]);
     }
 }

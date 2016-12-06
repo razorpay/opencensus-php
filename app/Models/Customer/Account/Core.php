@@ -17,7 +17,15 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createLocalCustomer($input, $merchant, $failOnDuplicate = true)
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createLocalCustomer(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         return $this->create($input, $merchant, $failOnDuplicate);
     }
@@ -36,7 +44,7 @@ class Core extends Base\Core
         return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
-    protected function create($input, $merchant, $failOnDuplicate = true)
+    protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
 
