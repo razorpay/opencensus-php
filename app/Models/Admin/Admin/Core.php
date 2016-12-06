@@ -33,7 +33,7 @@ class Core extends Base\Core
 
     public function createAuthToken(Entity $admin, array $input)
     {
-        $token = new Token\Entity();
+        $token = new Token\Entity;
 
         $token->build($input);
 
@@ -46,26 +46,12 @@ class Core extends Base\Core
 
     public function delete(Entity $admin)
     {
-        // Delete the admin tokens first
-        $adminTokens = $this->repo->admin_token->fetchTokensByAdminId($admin->getId());
-
-        if (empty($adminTokens) === true)
-        {
-            $this->repo->deleteOrFail($admin);
-        }
-        else
-        {
-            foreach ($adminTokens as $adminToken)
-            {
-                $this->repo->deleteOrFail($adminToken);
-            }
-
-            $this->repo->deleteOrFail($admin);
-        }
+        $this->repo->deleteOrFail($admin);
 
         // @todo: To maintain bc. Remove first two lines later.
         $ret = $admin->toArrayDeleted();
         $ret = array_merge($ret, ['success' => true]);
+
         return $ret;
     }
 
@@ -87,27 +73,27 @@ class Core extends Base\Core
 
     public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
     {
+        $roles = [];
+        $groups = [];
+
         if (isset($input['roles']) === true)
         {
-            Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
+            $roles = Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
+        }
 
-            $this->repo->sync($admin, 'roles',  $input['roles']);
-        }
-        else
-        {
-            $this->repo->sync($admin, 'roles',  []);
-        }
+        $this->repo->sync($admin, 'roles',  $roles);
 
         if (isset($input['groups']) === true)
         {
-            Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
+            $groups = Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
+        }
 
-            $this->repo->sync($admin, 'groups', $input['groups']);
-        }
-        else
-        {
-            $this->repo->sync($admin, 'groups', []);
-        }
+        $this->repo->sync($admin, 'groups', $groups);
+    }
+
+    public function passwordReset(string $orgId, array $input)
+    {
+        ;
     }
 }
 

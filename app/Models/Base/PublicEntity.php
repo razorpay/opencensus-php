@@ -121,7 +121,7 @@ class PublicEntity extends UniqueIdEntity
 
         foreach ($publicRelations as $key => $value)
         {
-            if ($value instanceof PublicCollection)
+            if (PublicCollection::isPublicCollection($value))
             {
                 $array[$key] = $value->toArrayPublicEmbedded();
             }

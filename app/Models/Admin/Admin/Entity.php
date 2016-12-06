@@ -161,6 +161,16 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_CONFIRMATION
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($admin)
+        {
+            $admin->tokens()->delete();
+        });
+    }
+
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
@@ -184,7 +194,7 @@ class Entity extends Base\PublicEntity
     // Admins can be part of multiple groups
     public function groups()
     {
-        return $this->morphToMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()
@@ -192,9 +202,9 @@ class Entity extends Base\PublicEntity
         return $this->morphToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
-    public function token()
+    public function tokens()
     {
-        return $this->hasMany('Token\Entity');
+        return $this->hasMany('RZP\Models\Admin\Admin\Token\Entity');
     }
 
     public function setPublicOrgIdAttribute(array & $attributes)
