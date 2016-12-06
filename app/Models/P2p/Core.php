@@ -83,7 +83,13 @@ class Core extends Base\Core
         else
         {
             // Fail the payment
-            $p2p->setStatus('failed')->save();
+            $p2p->setStatus('failed');
+
+            $p2p->setErrorCode('13');
+
+            $p2p->setErrorDescription('An unknown error has occurred.');
+
+            $p2p->save();
         }
 
         return $p2p;

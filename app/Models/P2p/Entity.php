@@ -165,6 +165,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::GATEWAY, $gateway);
     }
 
+    public function setErrorCode($code)
+    {
+        return $this->setAttribute(self::ERROR_CODE, $code);
+    }
+
+    public function setErrorDescription($description)
+    {
+        return $this->setAttribute(self::ERROR_DESCRIPTION, $description);
+    }
+
     // ----------------------- Getters ------------------------
 
     public function getSinkType()
