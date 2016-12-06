@@ -6,7 +6,7 @@ use RZP\Exception\CardNumberTraceException;
 
 class Trace extends TraceWriter
 {
-    public function addRecord($level, $message, array $context = array())
+    public function addRecord($level, $message, array $context = [])
     {
         $traceCode = $message;
 
@@ -84,13 +84,21 @@ class Trace extends TraceWriter
         return $context;
     }
 
-    public function traceError(\Error $error, $level = null, $code = null)
+    public function traceError(
+        \Error $error,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $this->app['exception.handler']->traceException($error, $level, $code);
+        $this->app['exception.handler']->traceException($error, $level, $code, $extraData);
     }
 
-    public function traceException(\Exception $exception, $level = null, $code = null)
+    public function traceException(
+        \Exception $exception,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $this->app['exception.handler']->traceException($exception, $level, $code);
+        $this->app['exception.handler']->traceException($exception, $level, $code, $extraData);
     }
 }
