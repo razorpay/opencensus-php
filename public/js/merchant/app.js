@@ -64,7 +64,13 @@ var app = angular.module('app', [
     app.service = $provide.service;
     app.constant = $provide.constant;
     app.value = $provide.value;
-    $urlRouterProvider.otherwise('/app/dashboard');
+    $urlRouterProvider.otherwise(function($injector, $location) {
+      var role = $injector.get('$rootScope').role
+      if (role === 'sellerapp') {
+        return '/app/invoices'
+      }
+      return '/app/dashboard'
+    });
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,
