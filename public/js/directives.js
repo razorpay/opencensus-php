@@ -8,12 +8,12 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
   function (MODULE_CONFIG, uiLoad, $compile) {
     return {
       restrict: 'A',
-      compile: function (el, attrs) {
+      compile: function (el) {
         var contents = el.contents().clone();
         return function (scope, el, attrs) {
           el.contents().remove();
           uiLoad.load(MODULE_CONFIG[attrs.uiModule]).then(function () {
-            $compile(contents)(scope, function (clonedElement, scope) {
+            $compile(contents)(scope, function (clonedElement) {
               el.append(clonedElement);
             });
           });
@@ -55,9 +55,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     };
   }
 ]).directive('uiToggleClass', [
-  '$timeout',
-  '$document',
-  function ($timeout, $document) {
+  function () {
     return {
       restrict: 'AC',
       link: function (scope, el, attr) {
@@ -269,7 +267,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     restrict: 'A',
     link: function(scope, element, attrs) {
       var tour = $.tourbus(element, {
-        onDepart: function(bus) {
+        onDepart: function() {
           var backDrop = $('.intro-tour-overlay');
           if (!backDrop.length) {
             $('#sidebar, #main-content').append('<div class="intro-tour-overlay"></div>');
@@ -278,7 +276,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
           $('.intro-tour-overlay').show();
         },
 
-        onLegStart: function(leg, bus) {
+        onLegStart: function(leg) {
           if (!leg.scopeRebinded) {
             $compile(angular.element(leg.el))(scope); // re-binds angular scope for dynamic html
             leg.scopeRebinded = true;
@@ -318,7 +316,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
           leg.$target.removeClass('leg-target-active');
         },
 
-        onStop: function(bus) {
+        onStop: function() {
           $('.intro-tour-overlay').hide();
         }
       });
@@ -326,20 +324,20 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
       tourbusService.start = function() {
         tour.repositionLegs();
         tour.depart();
-      }
+      };
 
       tourbusService.next = function() {
         tour.repositionLegs();
         tour.next();
-      }
+      };
 
       tourbusService.prev = function() {
         tour.prev();
-      }
+      };
 
       tourbusService.stop = function() {
         tour.stop();
-      }
+      };
     }
   };
 }]).directive("myRole", function() {

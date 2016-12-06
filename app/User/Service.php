@@ -397,12 +397,20 @@ class Service extends Base\Service
         );
 
         // Credentials are correct
-        if (Auth::attempt($credentials))
+        // Parameters passed are [creds], $remember, $login
+        if (Auth::attempt($credentials, false, false))
         {
             // And user is not confirmed
-            if (Auth::attempt($credentials + ['confirm_token' => null]) === false)
+            if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
             {
+                // TODO: Use single error message to avoid info leak
+                // @see https://github.com/razorpay/dashboard/issues/216
                 $error = ['User account not confirmed'];
+            }
+            else
+            {
+                // Login the user
+                Auth::attempt($credentials, false, true);
             }
         }
         else
