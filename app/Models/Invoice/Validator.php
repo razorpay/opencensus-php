@@ -272,12 +272,8 @@ class Validator extends Base\Validator
 
         if (in_array($invoiceStatus, $allowedStatuses, true) === false)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_OPERATION_NOT_ALLOWED,
-                null,
-                [
-                    'status'     => $invoiceStatus
-                ]
+            throw new BadRequestValidationFailureException(
+                'Operation not allowed for invoice in ' . $invoiceStatus . ' status.'
             );
         }
     }

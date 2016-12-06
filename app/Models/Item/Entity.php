@@ -93,7 +93,7 @@ class Entity extends Base\PublicEntity
 
     public function isNotActive()
     {
-        return !($this->isActive());
+        return ($this->isActive() === false);
     }
 
     // -------------------------- Getters Ends --------------------------
