@@ -510,7 +510,7 @@ class Gateway extends Base\Gateway
         // Change Content for Merchants with TPV Required
         if ($this->isTPVEnabled())
         {
-            if (isset($$input['order']['account_number']) === false)
+            if (isset($input['order']['account_number']) === false)
             {
                 throw new Exception\LogicException(
                     'Bank account number should have been present');
