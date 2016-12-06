@@ -200,7 +200,6 @@ class ApiServiceProvider extends BaseServiceProvider
         Relation::morphMap([
             'invoice'           => Invoice\Entity::class,
             'merchant'          => Merchant\Entity::class,
-            'merchant_detail'   => Merchant\MerchantDetail\Entity::class,
         ]);
     }
 }
