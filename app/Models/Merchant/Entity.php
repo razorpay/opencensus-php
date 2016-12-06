@@ -736,7 +736,10 @@ class Entity extends Base\PublicEntity
 
          $groups = $this->groups;
 
-         $merchant['groups'] = $groups->toArrayPublicEmbedded();
+         if ($groups !== null)
+         {
+            $merchant['groups'] = $groups->toArrayPublicEmbedded();
+         }
 
          return $merchant;
     }
