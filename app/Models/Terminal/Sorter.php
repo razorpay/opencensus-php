@@ -6,31 +6,16 @@ use Trace;
 
 use App;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Sorter
+class Sorter extends Base\Core
 {
     /**
      * This should be overridden in the child class with the respective sorter properties
      * @var array
      */
     protected $properties;
-
-    protected $app;
-
-    protected $trace;
-
-    public function __construct()
-    {
-        $this->app = App::getFacadeRoot();
-
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
-
-        $this->trace = $this->app['trace'];
-    }
 
     public function sort($terminals, $input, $verbose = false, $options = null)
     {
