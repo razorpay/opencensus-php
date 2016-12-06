@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 
+use App;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
@@ -14,6 +15,22 @@ class Sorter
      * @var array
      */
     protected $properties;
+
+    protected $app;
+
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+
+        $this->trace = $this->app['trace'];
+    }
 
     public function sort($terminals, $input, $verbose = false, $options = null)
     {
