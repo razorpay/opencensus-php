@@ -90,7 +90,24 @@ class Generator extends Base\Core
             throw $e;
         }
 
-        (new Notifier($this->invoice))->sendNotificationToCustomer();
+        //
+        // In case notification to the customer throws any kind of exception,
+        // we should not fail the invoice creation.
+        //
+        try
+        {
+            (new Notifier($this->invoice))->sendNotificationToCustomer();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            $this->trace->error(
+                TraceCode::INVOICE_NOTIFICATION_FAILED,
+                [
+                    'invoice_id' => $this->invoice->getId()
+                ]);
+        }
 
         return $this->invoice;
     }

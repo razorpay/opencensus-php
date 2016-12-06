@@ -145,7 +145,23 @@ class Notifier extends Base\Core
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
-        $response = $this->raven->sendSms($request);
+        try
+        {
+            $response = $this->raven->sendSms($request);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+            
+            $this->trace->error(
+                TraceCode::INVOICE_RAVEN_REQUEST_FAILED,
+                [
+                    'contact' => $contact,
+                    'invoice_id' => $this->invoice->getId(),
+                ]);
+            
+            return false;
+        }
 
         if (isset($response['sms_id']))
         {
