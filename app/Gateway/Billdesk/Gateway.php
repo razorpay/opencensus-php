@@ -617,6 +617,8 @@ class Gateway extends Base\Gateway
     {
         if ($this->isTPVEnabled())
         {
+            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+
             return $this->config['live_hash_secret_sec'];
         }
 
