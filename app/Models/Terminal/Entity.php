@@ -446,9 +446,14 @@ class Entity extends Base\PublicEntity
         return ($value === $actualValue);
     }
 
-    public function isTPVTerminal()
+    public function isTpv()
     {
         return $this->getAttribute(self::TPV);
+    }
+
+    public function isNotTpv()
+    {
+        return ($this->getAttribute(self::TPV) === false);
     }
 
     public function isRecurringAuthTerminal()

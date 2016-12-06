@@ -510,6 +510,12 @@ class Gateway extends Base\Gateway
         // Change Content for Merchants with TPV Required
         if ($this->isTPVEnabled())
         {
+            if (isset($$input['order']['account_number']) === false)
+            {
+                throw new Exception\LogicException(
+                    'Bank account number should have been present');
+            }
+
             $content['AccountNumber'] = $input['order']['account_number'];
         }
 
@@ -625,17 +631,16 @@ class Gateway extends Base\Gateway
         }
         else if (isset($this->input['merchant']))
         {
+            // If merchant is tpv then terminal should also be tpv
             if ($this->input['merchant']->isTPVRequired())
             {
+                assert ($this->input['terminal']->isTpv() === true);
+
                 return true;
             }
-        }
-        else if (isset($this->input['terminal']))
-        {
-            if ($this->input['terminal']->isTPVTerminal())
-            {
-                return true;
-            }
+
+            // If merchant is not tpv then terminal should also not be tpv
+            assert ($this->input['terminal']->isNotTpv() === true);
         }
 
         return false;
@@ -648,9 +653,7 @@ class Gateway extends Base\Gateway
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
     {
-        if (($gatewayPayment->isTpv()) or
-            ($payment->merchant->isTPVRequired()) or
-            ($payment->terminal->isTPVTerminal()))
+        if (($gatewayPayment->isTpv()))
         {
             return true;
         }
