@@ -125,14 +125,6 @@ class MinAmount
 
         $netbankingMap = constant('self::MIN_AMOUNT')['netbanking'];
 
-        // if no gateway (bank) is mentioned
-        if (empty($gateway) === true)
-        {
-            $minAmount = self::minAmountFromArray($netbankingMap['default'], $category);
-
-            return $minAmount;
-        }
-
         // check gateway exists in top_six
         if (in_array($gateway, constant('self::TOP_SIX')) === true)
         {
@@ -174,7 +166,7 @@ class MinAmount
             $networkTag = 'default';
         }
 
-        $minAmount = self::minAmountFromArray($netbankingMap, $gatewayTag, $category);
+        $minAmount = self::minAmountFromArray($netbankingMap, $networkTag, $category);
 
         return $minAmount;
     }
