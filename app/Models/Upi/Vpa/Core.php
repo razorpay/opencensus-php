@@ -35,6 +35,19 @@ class Core extends Base\Core
 
     public function editVpa($vpa, $input)
     {
+        if (isset($input[Entity::BANK_ACCOUNT_ID]))
+        {
+            $accountId = $input[Entity::BANK_ACCOUNT_ID];
+
+            Entity::stripSignWithoutValidation($accountId);
+
+            $bankAccount = $this->repo->bank_account->findOrFail($accountId);
+
+            $vpa->bankAccount()->associate($bankAccount);
+
+            unset($input[Entity::BANK_ACCOUNT_ID]);
+        }
+
         $vpa->edit($input);
 
         $this->repo->saveOrFail($vpa);
