@@ -406,7 +406,7 @@ class Processor
             // has been exceeded
             if ($payment->justCreated() === false)
             {
-                $this->updatePaymentTimedOut();
+                $this->timeout($payment);
 
                 throw new Exception\BadRequestException(
                             ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
@@ -447,6 +447,28 @@ class Processor
         $data = $this->payment->toArrayTraceRelevant();
 
         $this->trace->addRecord($level, $traceCode, $data);
+    }
+
+    public function timeout($payment = null)
+    {
+        $traceCode = TraceCode::PAYMENT_TIMED_OUT;
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
+
+        if ($this->payment === null)
+        {
+            $this->payment = $payment;
+        }
+
+        if ($payment->getInternalErrorCode() !== null)
+        {
+            $errorCode = $payment->getInternalErrorCode();
+
+            $traceCode = TraceCode::PAYMENT_STATUS_FAILED;
+        }
+
+        $exception = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
     }
 
     protected function updatePaymentFailed($exception, $traceCode)
@@ -506,14 +528,6 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
-    }
-
-    protected function updatePaymentTimedOut()
-    {
-        $e = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
-
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
     }
 
     protected function eventPaymentFailed()

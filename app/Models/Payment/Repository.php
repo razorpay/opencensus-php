@@ -158,12 +158,18 @@ class Repository extends Base\Repository
                         );
     }
 
-    public function fetchOldCreatedPaymentsForTimeout($timestamp)
+    public function fetchOldCreatedPaymentsForTimeout($timestamp, $relations = [])
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with($relations)
                     ->get();
+    }
+
+    public function fetchOldCreatedPaymentsForTimeoutWithMerchant($timestamp)
+    {
+        return $this->fetchOldCreatedPaymentsForTimeout($timestamp, ['merchant']);
     }
 
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
@@ -567,7 +573,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
