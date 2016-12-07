@@ -36,6 +36,9 @@ class DatabaseSeeder extends Seeder
         {
             $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
 
+            $todayTime = strtotime('today');
+            $currentTime = time();
+
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
 
@@ -50,8 +53,8 @@ class DatabaseSeeder extends Seeder
                     'hostname'          => 'razorpay.com',
                     'login_logo_url'    => null,
                     'main_logo_url'     => null,
-                    'created_at'        => time(),
-                    'updated_at'        => time(),
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
                 ]
             );
 
@@ -66,8 +69,8 @@ class DatabaseSeeder extends Seeder
                     'hostname'          => 'hdfcbank.in',
                     'login_logo_url'    => null,
                     'main_logo_url'     => null,
-                    'created_at'        => time(),
-                    'updated_at'        => time(),
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
                 ]
             );
 
@@ -82,8 +85,8 @@ class DatabaseSeeder extends Seeder
             //         'hostname'          => 'icici.in',
             //         'login_logo_url'    => null,
             //         'main_logo_url'     => null,
-            //         'created_at'        => time(),
-            //         'updated_at'        => time(),
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
             //     ]
             // );
 
@@ -98,8 +101,8 @@ class DatabaseSeeder extends Seeder
             //         'hostname'          => 'bob.in',
             //         'login_logo_url'    => null,
             //         'main_logo_url'     => null,
-            //         'created_at'        => time(),
-            //         'updated_at'        => time(),
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
             //     ]
             // );
 
@@ -109,8 +112,8 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Nodal Account',
                     'email'         =>  'nodal@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -122,8 +125,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -133,8 +136,8 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Atom Account',
                     'email'         =>  'atom@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -146,8 +149,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::ATOM_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -157,8 +160,8 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Fee Account',
                     'email'         =>  'fees@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'fees@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -170,8 +173,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::API_FEE_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -182,8 +185,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'test@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'test@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -195,8 +198,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::TEST_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'balance'       =>  100000,
                     'credits'       =>  50000,
                     'on_hold'       =>  10000,
@@ -210,8 +213,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'shared@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'shared@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -223,8 +226,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::SHARED_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -235,8 +238,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'demo@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'demo@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
@@ -248,8 +251,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::DEMO_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -259,8 +262,8 @@ class DatabaseSeeder extends Seeder
             //         'name'          =>  'Razorpay Nodal Account',
             //         'email'         =>  'icici1@razorpay.com',
             //         'category'      =>  '1234',
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'icici1@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -272,8 +275,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::TEST_ACCOUNT_ICICI,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time()
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime
             //         )
             //     );
 
@@ -283,8 +286,8 @@ class DatabaseSeeder extends Seeder
             //         'name'          =>  'Razorpay Atom Account',
             //         'email'         =>  'icici2@razorpay.com',
             //         'category'      =>  '1234',
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'icici2@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -296,8 +299,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time()
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime
             //         )
             //     );
 
@@ -307,8 +310,8 @@ class DatabaseSeeder extends Seeder
             //         'name'          =>  'Razorpay Fee Account',
             //         'email'         =>  'icici3@razorpay.com',
             //         'category'      =>  '1234',
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'icici3@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -320,8 +323,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time()
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime
             //         )
             //     );
 
@@ -332,8 +335,8 @@ class DatabaseSeeder extends Seeder
             //         'email'         =>  'bob1@razorpay.com',
             //         'category'      =>  '1234',
             //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'bob1@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -345,8 +348,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'balance'       =>  100000,
             //         'credits'       =>  50000,
             //         'on_hold'       =>  10000,
@@ -360,8 +363,8 @@ class DatabaseSeeder extends Seeder
             //         'email'         =>  'bob2@razorpay.com',
             //         'category'      =>  '1234',
             //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'bob2@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -373,8 +376,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         )
             //     );
 
@@ -385,8 +388,8 @@ class DatabaseSeeder extends Seeder
             //         'email'         =>  'bob3@razorpay.com',
             //         'category'      =>  '1234',
             //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         'transaction_report_email'=>'bob3@razorpay.com',
             //         'settlement_schedule' => 3,
             //         'risk_rating'   => 3,
@@ -398,8 +401,8 @@ class DatabaseSeeder extends Seeder
             // DB::table(Table::BALANCE)->insert(
             //     array(
             //         'id'            =>  Account::DEMO_ACCOUNT_BOB,
-            //         'created_at'    =>  time(),
-            //         'updated_at'    =>  time(),
+            //         'created_at'    =>  $currentTime,
+            //         'updated_at'    =>  $currentTime,
             //         )
             //     );
 
@@ -423,8 +426,8 @@ class DatabaseSeeder extends Seeder
                     'airtelmoney'   => '1',
                     'card'          => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -442,8 +445,8 @@ class DatabaseSeeder extends Seeder
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -455,8 +458,8 @@ class DatabaseSeeder extends Seeder
                     'rate'          => 1400,
                     'min_amount'    => 300000,
                     'methods'       => 'card',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 )
             );
 
@@ -474,9 +477,9 @@ class DatabaseSeeder extends Seeder
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
-                    'last_login_at' => strtotime('today'),
-                    'created_at'    => strtotime('today'),
-                    'updated_at'    => strtotime('today'),
+                    'last_login_at' => $todayTime,
+                    'created_at'    => $todayTime,
+                    'updated_at'    => $todayTime,
                 ],
                 [
                     'id'            => '6dLbNSpv5Ybbbc',
@@ -491,9 +494,9 @@ class DatabaseSeeder extends Seeder
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
-                    'last_login_at' => strtotime('today'),
-                    'created_at'    => strtotime('today'),
-                    'updated_at'    => strtotime('today'),
+                    'last_login_at' => $todayTime,
+                    'created_at'    => $todayTime,
+                    'updated_at'    => $todayTime,
                 ]
             ]);
 
@@ -510,8 +513,8 @@ class DatabaseSeeder extends Seeder
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
                     'last_login_at' => null,
-                    'created_at'    => strtotime('today'),
-                    'updated_at'    => strtotime('today'),
+                    'created_at'    => $todayTime,
+                    'updated_at'    => $todayTime,
                 ]
             ]);
 
@@ -521,16 +524,16 @@ class DatabaseSeeder extends Seeder
                     'name'          => 'SuperAdmin',
                     'description'   => 'Super Administrator',
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 ],
                 [
                     'id'            => '6dLbNSpv5XbC5G',
                     'name'          => 'Admin',
                     'description'   => 'Administrator',
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 ]
             ]);
 
@@ -553,24 +556,24 @@ class DatabaseSeeder extends Seeder
                     'name'          => 'Karnataka',
                     'description'   => 'Karnataka Group',
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 ],
                 [
                     'id'            => '6euDnqS4zQR4kf',
                     'name'          => 'Bangalore',
                     'description'   => 'Bangalore Group',
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 ],
                 [
                     'id'            => '6euDnqS4zQR4kg',
                     'name'          => 'Indiranagar',
                     'description'   => 'Indiranagar Group',
                     'org_id'        => '6dLbNSpv5XbCOG',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 ]
             ]);
 
