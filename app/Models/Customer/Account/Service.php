@@ -545,7 +545,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchUpiBankAccounts($id, $ifsc = 'RAZR')
+    public function fetchUpiBankAccounts($ifsc = 'RAZR')
     {
         $accounts = $this->repo->bank_account->getBankAccountsForCustomer($this->device->customer, $ifsc);
 
