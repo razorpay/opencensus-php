@@ -330,6 +330,20 @@ class Service extends Base\Service
         return $balance;
     }
 
+    public function fetchBankAccount($accountId)
+    {
+        Entity::stripSignWithoutValidation($accountId);
+
+        $bankAccount = $this->repo->bank_account->find($accountId);
+
+        if ($bankAccount->getEntityId() !== $this->device->customer->getId())
+        {
+            return;
+        }
+
+        return $bankAccount->toArrayPublic();
+    }
+
     public function fetchPaymentsForGlobalCustomer($input)
     {
         Customer\Validator::validateFetchCustomerPaymentsInput($input);
