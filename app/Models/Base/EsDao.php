@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 
 class EsDao
 {
@@ -28,36 +29,27 @@ class EsDao
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
 
-        // Heimdall hostname
-        $heimdallHost = $this->config->get('database.es_heimdall_host');
-
         // Since, we are using only one index, declaring the index name
         // in this class itself. If we have different indices based on some
         // logic, it makes sense to move it to an appropriate class then.
-
         // Live and Test have different index names in the ES cluster.
         $this->setIndexName($mode);
 
-        $this->es = $this->buildEsClient($hostName);
-
-        $this->esHeimdall = $this->buildEsClient($heimdallHost);
-    }
-
-    protected function buildEsClient($hostName)
-    {
-        $es = $this->app['es'];
+        $this->es = $this->app['es'];
 
         $params = [
             'hosts' => [
                 $hostName
             ],
         ];
+        // Since the es client is being set on this, ensure that only this es
+        // instance is used to perform any operations on the client.
+        $this->es->setEsClient($params);;
 
-        $es->setEsClient($params);
+        $heimdallHost = $this->config->get('database.es_heimdall_host');
 
-        return $es;
+        $this->es->setHeimdallESClient([$heimdallHost]);
     }
-
 
     public function setIndexName($mode)
     {
@@ -293,14 +285,14 @@ class EsDao
             'body'  => $fields
         ];
 
-        $updateReponse = $this->esHeimdall->index($params);
+        $updateReponse = $this->es->indexHeimdall($params);
     }
 
     protected function createIndexIfNotExists($index)
     {
         $params['index'] = $index;
 
-        $client = $this->esHeimdall->getClient();
+        $client = $this->es->getHeimdallClient();
 
         $doesExist = $client->indices()->exists($params);
 
@@ -314,14 +306,28 @@ class EsDao
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        $baseIndex = $this->config->get('database.es_heimdall')[$mode];
+        //$baseIndex = $this->config->get('database.es_heimdall')[$mode];
 
-        $index = $baseIndex.'_'.$orgId;
+        //$index = $baseIndex.'_'.$orgId;
+
+        $index = $this->config->get('database.es_heimdall')[$mode];
 
         $params = [
-            'index'  => $index
+            'index'  => $index,
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'extra.org_id' => $orgId
+                    ]
+                ],
+                'sort' => [
+                    'created_at' => ['order' => 'desc']
+                ]
+            ]
         ];
-        $results =  $this->esHeimdall->search($params);
+        $results =  $this->es->searchHeimdall($params);
+
+        $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
 
         return $this->formatAuditLogResults($results);
     }

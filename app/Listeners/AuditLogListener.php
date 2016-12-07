@@ -76,7 +76,9 @@ class AuditLogListener
         // strtolower since index names must be lowercase
         $admin = $event->admin;
 
-        $index = strtolower($this->baseIndex).'_'.strtolower($admin['org_id']);
+        //$index = strtolower($this->baseIndex).'_'.strtolower($admin['org_id']);
+
+        $index = strtolower($this->baseIndex);
 
         $type = 'audit_log';
 
@@ -151,7 +153,7 @@ class AuditLogListener
 
         try
         {
-            if ($this->config->get('database.es_mock') === false)
+            if ($this->config->get('database.es_heimdall_mock') === false)
             {
                 // $fields['extra'] = ...;
                 $this->esDao->storeAdminEvent(
