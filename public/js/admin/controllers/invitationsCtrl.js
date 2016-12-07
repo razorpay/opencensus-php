@@ -16,7 +16,7 @@ app.controller('InvitationsCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.invitations = data.data;
-          $scope.count = data.data.count;
+          $scope.count = data.data.length;
         }
       });
     }
