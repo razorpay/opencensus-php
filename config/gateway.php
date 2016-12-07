@@ -185,6 +185,11 @@ return array(
         'test_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
     ),
 
+    'netbanking_axis' => array(
+        'test_master_key' => env('AXIS_GATEWAY_TEST_MASTER_KEY'),
+        'test_pid' => env('AXIS_GATEWAY_TEST_PID'),
+    ),
+
     'sharp' => array(
     ),
 
