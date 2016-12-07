@@ -80,9 +80,14 @@ trait RevisionableTrait
             $model->postCreate();
         });
 
+        static::deleting(function($model)
+        {
+            $model->preDelete();
+        });
+
         static::deleted(function ($model)
         {
-            $model->preSave();
+            //$model->preSave();
 
             $model->postDelete();
         });
@@ -137,6 +142,30 @@ trait RevisionableTrait
         }
     }
 
+    /**
+     * Called before the model is deleted
+     */
+
+    public function preDelete()
+    {
+        $app = App::getFacadeRoot();
+
+        if (!isset($this->revisionEnabled) or $this->revisionEnabled)
+        {
+            // if there's no revisionEnabled. Or if there is, if it's true
+
+            $this->originalData = $this->original;
+        }
+
+        unset($this->originalData['dontKeepRevisionOf']);
+
+        unset($this->originalData['keepRevisionOf']);
+
+        $removeFields = ['created_at', 'updated_at', 'deleted_at'];
+
+        unset($this->originalData[$removeFields]);
+    }
+
 
     /**
      * Called after a model is successfully saved.
@@ -165,7 +194,7 @@ trait RevisionableTrait
                 ];
             }
 
-            $formattedRevisons = $this->formatRevisions($revisions);
+            $formattedRevisons = $this->formatRevisions($revisions, 'EDIT');
 
             if ((empty($formattedRevisons) === false) and (empty($this->getAuditAction()) === false))
             {
@@ -180,12 +209,10 @@ trait RevisionableTrait
 
                 $action = $this->getAuditAction();
 
-                $trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
-
                 event(new AuditLogEntry(
                         $admin->toArrayPublic(),
                         $action,
-                        ['updated' => $formattedRevisons])
+                        $formattedRevisons)
                 );
 
                 $this->resetAuditAction();
@@ -198,6 +225,7 @@ trait RevisionableTrait
      */
     public function postCreate()
     {
+        $app = App::getFacadeRoot();
         // Check if we should store creations in our revision history
         // Set this value to true in your model if you want to
         if(empty($this->revisionCreationsEnabled))
@@ -208,6 +236,20 @@ trait RevisionableTrait
 
         if ((!isset($this->revisionEnabled) or $this->revisionEnabled))
         {
+            $created = $this->toArrayPublic();
+
+            $removeFields = ['created_at','updated_at','deleted_at'];
+
+            unset($this->originalData[$removeFields]);
+
+            $revisions = [
+                'revisionable_type' => $this->getMorphClass(),
+                'revisionable_id' => $this->getKey(),
+                'created' => $created
+            ];
+
+            $formatted = $this->formatRevisions($revisions, 'CREATE');
+
             $trace = $this->getTrace();
 
             if (empty($this->getAuditAction()) === false)
@@ -226,7 +268,7 @@ trait RevisionableTrait
                 event(new AuditLogEntry(
                         $admin->toArrayPublic(),
                         $action,
-                        ['created' => $this->toArrayPublic()])
+                        $formatted)
                 );
 
             }
@@ -238,18 +280,21 @@ trait RevisionableTrait
      */
     public function postDelete()
     {
+        $app = App::getFacadeRoot();
+
         if ((!isset($this->revisionEnabled) || $this->revisionEnabled)
             and $this->isSoftDelete()
             and $this->isRevisionable($this->getDeletedAtColumn())
         )
         {
-            $revisions[] = [
+
+            $revisions = [
                 'revisionable_type' => $this->getMorphClass(),
                 'revisionable_id' => $this->getKey(),
-                'key' => $this->getDeletedAtColumn(),
-                'old_value' => null,
-                'new_value' => $this->{$this->getDeletedAtColumn()},
+                'deleted' => $this->originalData
             ];
+
+            $formatted = $this->formatRevisions($revisions, 'DELETE');
 
             if (empty($this->getAuditAction()) === false)
             {
@@ -264,7 +309,7 @@ trait RevisionableTrait
                 event(new AuditLogEntry(
                         $admin->toArrayPublic(),
                         $action,
-                        ['deleted' => $revisions])
+                        $formatted)
                 );
 
                 $this->resetAuditAction();
@@ -473,40 +518,84 @@ trait RevisionableTrait
         return $app['rzp.mode'];
     }
 
-    protected function formatRevisions(array $revisions)
+    protected function formatRevisions(array $revisions, $mode)
     {
-        $formatted = [];
-
-        $entities = [];
-
-        foreach($revisions as $revision)
+        if ((empty($revisions) === true) or (is_array($revisions) === false))
         {
-            $type = $revision['revisionable_type'];
-
-            $id = $revision['revisionable_id'];
-
-            $key = $revision['key'];
-
-            $oldValue = $revision['old_value'];
-
-            $newValue = $revision['new_value'];
-
-            if (isset($entities[$id]) === false)
-            {
-                $entities[$id] = [
-                    'type' => $type,
-                    'id' => $id,
-                    'change' => [$key => ['old' => $oldValue, 'new' => $newValue]]
-                ];
-            }
-            else
-            {
-                $entities[$id]['change'][$key] = ['old' => $oldValue, 'new' => $newValue];
-            }
+            return null;
         }
 
-        $formatted['entities'] = $entities;
+        $formatted = [];
+
+        $changes = [
+            'old' => [],
+            'new' => []
+        ];
+
+        $entityName = null;
+
+        $entityId = null;
+
+        if ($mode === 'EDIT')
+        {
+            list($entityName, $entityId) = $this->getPrefix($revisions[0]);
+
+            foreach($revisions as $revision)
+            {
+                $key = $revision['key'];
+
+                $changes['old'][$key] = $revision['old_value'];
+
+                $changes['new'][$key] = $revision['new_value'];
+            }
+        }
+        if ($mode === 'CREATE')
+        {
+            list($entityName, $entityId) = $this->getPrefix($revisions);
+
+            unset($changes['old']);
+
+            $changes['new'] = $revisions['created'];
+        }
+        if ($mode === 'DELETE')
+        {
+            list($entityName, $entityId) = $this->getPrefix($revisions);
+
+            unset($changes['new']);
+
+            $changes['old'] = $revisions['deleted'];
+        }
+
+        $formatted['entity'] = [
+            'id' => $entityId,
+            'name' => $entityName,
+            'change' => $changes
+        ];
 
         return $formatted;
+    }
+
+    protected function getPrefix($revision)
+    {
+        $entityName = null;
+
+        $entityId = null;
+
+        try
+        {
+            if ((empty($revision) === false) and (is_array($revision) === true))
+            {
+                $entityName = $revision['revisionable_type'];
+
+                $entityId = $revision['revisionable_id'];
+            }
+
+        }
+        catch(\Exception $e)
+        {
+            return null;
+        }
+
+        return [$entityName, $entityId];
     }
 }
