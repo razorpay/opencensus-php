@@ -81,6 +81,26 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
+    public function getBalance()
+    {
+        return (int) $this->getAttribute(self::BALANCE);
+    }
+
+    public function getDebit()
+    {
+        return (int) $this->getAttribute(self::DEBIT);
+    }
+
+    public function getCredit()
+    {
+        return (int) $this->getAttribute(self::CREDIT);
+    }
+
+    public function getAmount()
+    {
+        return (int) $this->getAttribute(self::AMOUNT);
+    }
+
     public function setBalance($amount)
     {
         $this->setAttribute(self::BALANCE, $amount);

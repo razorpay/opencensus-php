@@ -93,14 +93,28 @@ class Entity extends Base\PublicEntity
 
     public function getBalance()
     {
-        return $this->getAttribute(self::BALANCE);
+        return (int) $this->getAttribute(self::BALANCE);
     }
 
     public function getMaxbalance()
     {
-        return $this->getAttribute(self::MAX_BALANCE);
+        return (int) $this->getAttribute(self::MAX_BALANCE);
     }
 
+    public function getDailyUsage()
+    {
+        return (int) $this->getAttribute(self::DAILY_USAGE);
+    }
+
+    public function getWeeklyUsage()
+    {
+        return (int) $this->getAttribute(self::WEEKLY_USAGE);
+    }
+
+    public function getMonthlyUsage()
+    {
+        return (int) $this->getAttribute(self::MONTHLY_USAGE);
+    }
 
     // -------------------- Helpers ----------------------------
 
