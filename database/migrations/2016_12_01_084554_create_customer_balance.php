@@ -29,19 +29,19 @@ class CreateCustomerBalance extends Migration
 
             $table->string(Entity::NAME, 50);
 
-            $table->bigInteger(Entity::BALANCE)
+            $table->integer(Entity::BALANCE)
                   ->nullable();
 
-            $table->bigInteger(Entity::DAILY_USAGE)
+            $table->integer(Entity::DAILY_USAGE)
                   ->unsigned();
 
-            $table->bigInteger(Entity::WEEKLY_USAGE)
+            $table->integer(Entity::WEEKLY_USAGE)
                   ->unsigned();
 
-            $table->bigInteger(Entity::MONTHLY_USAGE)
+            $table->integer(Entity::MONTHLY_USAGE)
                   ->unsigned();
 
-            $table->bigInteger(Entity::MAX_BALANCE)
+            $table->integer(Entity::MAX_BALANCE)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -75,10 +75,7 @@ class CreateCustomerBalance extends Migration
         {
             $table->dropForeign(
                 Table::CUSTOMER_BALANCE . '_' . Entity::CUSTOMER_ID . '_foreign');
-        });
 
-        Schema::table(Table::CUSTOMER_BALANCE, function($table)
-        {
             $table->dropForeign(
                 Table::CUSTOMER_BALANCE . '_' . Entity::MERCHANT_ID . '_foreign');
         });
