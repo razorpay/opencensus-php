@@ -32,7 +32,7 @@ return [
     'admin_get_app_auth'                => 'orgs/{id}/current_admin',
 
     // AuditLog
-    'auditlog_search'                    => 'admin/auditlog/search/{id}',
+    'auditlog_search'                    => 'orgs/{id}/auditlog/search',
 
     // Permissions
     'permission_get_multiple'           => 'permissions',

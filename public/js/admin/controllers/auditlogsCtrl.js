@@ -24,10 +24,7 @@ app.controller('AuditlogsCtrl', [
         var request = $http({
           url: '/admin/generic',
           params: {
-            route_name: 'auditlog_search',
-            url_params: {
-              '{id}' : data.id
-            }
+            route_name: 'auditlog_search'
           }
         });
 

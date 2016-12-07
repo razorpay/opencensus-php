@@ -30,7 +30,7 @@
               <td>{{row.event.label}}</td>
               <td data-value="{{row.event.created_at}}">{{row.event.created_at * 1000 | date:'medium'}}</td>
               <td>
-                <a href="javascript:void(0);" class="label text-base bg-info" ng-click="showAuditLogDetail(row.id)">
+                <a href="javascript:void(0);" class="btn btn-default btn-xs" ng-click="showAuditLogDetail(row.id)">
                   Details
                 </a>
               </td>
