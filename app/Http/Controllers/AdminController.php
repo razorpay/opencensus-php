@@ -137,7 +137,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        $domain = request()->server->get('SERVER_NAME');
+        $domain = \Request::server('SERVER_NAME');
 
         // This is password based login
         list($error, $user) = (new Admin\Service)->passwordLogin($domain, $input);
@@ -166,7 +166,7 @@ class AdminController extends Controller
 
     public function getOrg()
     {
-        $domain = request()->server->get('SERVER_NAME');
+        $domain = \Request::server('SERVER_NAME');
 
         list($error, $org) = (new Admin\Service)->getOrg($domain);
 
