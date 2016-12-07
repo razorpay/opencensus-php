@@ -6,8 +6,12 @@ app.controller('OrgsUsersCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   'organization',
+  'admin',
   function ($scope, $http, $modal, alertsFactory, transformRequestAsFormPost,
-    organization) {
+    organization, admin) {
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
     $scope.users = [];
     $scope.count = 0;
     $scope.alerts = alertsFactory.getHandler();

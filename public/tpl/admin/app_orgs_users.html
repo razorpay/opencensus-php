@@ -40,7 +40,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in users">
+          <tr ng-repeat="row in users"  ng-hide="row.id == admin.id">
             <td>{{row.id}}</td>
             <td>{{row.name}}</td>
             <td>{{row.username}}</td>
