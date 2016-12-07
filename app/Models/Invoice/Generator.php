@@ -100,13 +100,14 @@ class Generator extends Base\Core
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::INVOICE_NOTIFICATION_FAILED,
                 [
                     'invoice_id' => $this->invoice->getId()
-                ]);
+                ]
+            );
         }
 
         return $this->invoice;

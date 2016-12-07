@@ -130,9 +130,9 @@ class Notifier extends Base\Core
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::INVOICE_INVALID_CONTACT_NUMBER,
                 [
                     'contact' => $contact,
@@ -151,15 +151,16 @@ class Notifier extends Base\Core
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-            
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::INVOICE_RAVEN_REQUEST_FAILED,
                 [
                     'contact' => $contact,
                     'invoice_id' => $this->invoice->getId(),
-                ]);
-            
+                ]
+            );
+
             return false;
         }
 
