@@ -54,9 +54,9 @@ class PaymentTransferTest extends TestCase
 
         $customerBalance = $this->getLastEntity('customer_balance', true);
 
-        $this->assertEquals($customerPublicId, $customerBalance['customer_id']);
+        $this->assertSame($customerPublicId, $customerBalance['customer_id']);
 
-        $this->assertEquals($customerBalance['balance'], $amount);
+        $this->assertSame($amount, $customerBalance['balance']);
     }
 
     public function testTransferAndVerifyCustomerBalance()
@@ -79,14 +79,14 @@ class PaymentTransferTest extends TestCase
 
         $customerBalance = $this->getLastEntity('customer_balance', true);
 
-        $this->assertEquals($customerPublicId, $customerBalance['customer_id']);
+        $this->assertSame($customerPublicId, $customerBalance['customer_id']);
 
-        $this->assertEquals($customerBalance['balance'], $oldBalanceAmount + $amount);
+        $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
 
         $this->testLastTransferEntity($customerId, 'customer', $amount);
     }
 
-    protected function testLastTransferEntity($toId, $toType, $amount)
+    protected function testLastTransferEntity($toId, $toType, int $amount)
     {
         $testData = [
             'to_type' => $toType,
