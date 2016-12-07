@@ -167,5 +167,7 @@ return array(
 
     'es_mock'  => env('ES_MOCK'),
 
+    'es_heimdall_mock' => env('ES_HEIMDALL_MOCK'),
+
 
 );

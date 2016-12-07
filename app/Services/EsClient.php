@@ -10,15 +10,36 @@ class EsClient
 
     protected $esMock;
 
+    protected $esHeimdallMock;
+
+    protected $app;
+
+    protected $heimdallClient;
+
+
     public function setEsClient($params)
     {
         $app = \App::getFacadeRoot();
+
         $this->esMock = $app['config']->get('database.es_mock');
 
         // Initiate client only if ES is not mocked.
         if ($this->esMock !== true)
         {
             $this->client = ClientBuilder::fromConfig($params);
+        }
+    }
+
+    public function setHeimdallESClient($hosts)
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->esHeimdallMock = $app['config']->get('database.es_heimdall_mock');
+
+        if ($this->esHeimdallMock !== true)
+        {
+            $this->heimdallClient = ClientBuilder::create()
+                                        ->setHosts($hosts)->build();
         }
     }
 
@@ -104,15 +125,20 @@ class EsClient
         return $this->client;
     }
 
-    public function search($params)
+    public function getHeimdallClient()
+    {
+        return $this->heimdallClient;
+    }
+
+    public function searchHeimdall($params)
     {
         // If ES mock is set to true.
-        if ($this->esMock === true)
+        if ($this->esHeimdallMock === true)
         {
             return null;
         }
 
-        $searchResponse = $this->client->search($params);
+        $searchResponse = $this->heimdallClient->search($params);
 
         if ($searchResponse['hits']['total'] === 0)
         {
@@ -127,5 +153,10 @@ class EsClient
     public function index($params)
     {
         $this->client->index($params);
+    }
+
+    public function indexHeimdall($params)
+    {
+        $this->heimdallClient->index($params);
     }
 }
