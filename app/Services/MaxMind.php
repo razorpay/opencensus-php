@@ -40,7 +40,8 @@ class MaxMind
 
     public function query($payment)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) or
+            ($this->basicauth->isPrivateAuth() === true))
         {
             return;
         }
@@ -63,11 +64,6 @@ class MaxMind
             'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),
             'requested_type'    => 'standard'
         );
-
-        if ($this->basicauth->isPrivateAuth() === true)
-        {
-            unset($input['i']);
-        }
 
         $this->maxmind->input($input);
         $this->maxmind->query();
