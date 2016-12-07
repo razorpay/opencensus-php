@@ -474,9 +474,9 @@ class DatabaseSeeder extends Seeder
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
-                    'last_login_at' => time(),
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'last_login_at' => strtotime('today'),
+                    'created_at'    => strtotime('today'),
+                    'updated_at'    => strtotime('today'),
                 ],
                 [
                     'id'            => '6dLbNSpv5Ybbbc',
@@ -491,9 +491,9 @@ class DatabaseSeeder extends Seeder
                     'branch_code'   => 'HDFC010',
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
-                    'last_login_at' => time(),
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'last_login_at' => strtotime('today'),
+                    'created_at'    => strtotime('today'),
+                    'updated_at'    => strtotime('today'),
                 ]
             ]);
 
@@ -510,8 +510,8 @@ class DatabaseSeeder extends Seeder
                     'supervisor_code' => '001',
                     'location_code' => 'BLR',
                     'last_login_at' => null,
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => strtotime('today'),
+                    'updated_at'    => strtotime('today'),
                 ]
             ]);
 
