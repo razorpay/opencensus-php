@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'kotak';
 
+    protected $tpv;
+
     protected $sortRequestContent = false;
 
     protected $fields = array(
@@ -56,7 +58,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
 
         $request = $this->getRequestArray($content);
 
@@ -91,16 +93,16 @@ class Gateway extends Base\Gateway
         // is different than what we sent
         unset($content['DateTimeInGMT']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];
 
-        $payment->fill($attrs);
+        $gatewayPayment->fill($attrs);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
 
         if ($attrs['status'] !== 'Y')
         {
@@ -168,16 +170,16 @@ class Gateway extends Base\Gateway
      */
     protected function fillStatusAndBankPaymentId($input, $content)
     {
-        $payment = $this->repo->retrieveByPaymentIdOrFail(
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail(
             $input['payment']['id']);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];
 
-        $payment->fill($attrs);
+        $gatewayPayment->fill($attrs);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
     }
 
     protected function validateCallbackChecksum($content)
@@ -242,14 +244,14 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $input = $verify->input;
 
         $content = array(
             'MessageCode'   => MessageCodes::VERIFY,
-            'DateTimeInGMT' => $payment['date'],
-            'MerchantId'    => $payment['merchant_code'],
-            'TraceNumber'   => $payment['int_payment_id'],
+            'DateTimeInGMT' => $gatewayPayment['date'],
+            'MerchantId'    => $gatewayPayment['merchant_code'],
+            'TraceNumber'   => $gatewayPayment['int_payment_id'],
             'Future1'       => '',
             'Future2'       => '',
         );
@@ -357,18 +359,18 @@ class Gateway extends Base\Gateway
             return $row['payment']['id'];
         }, $input['data']);
 
-        $payments = $this->repo->fetchByPaymentIdsAndAction(
+        $gatewayPayments = $this->repo->fetchByPaymentIdsAndAction(
                                 $paymentIds, Action::AUTHORIZE);
 
-        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
+        $gatewayPayments = $gatewayPayments->getDictionaryByAttribute(Entity::PAYMENT_ID);
 
-        $input['data'] = array_map(function($row) use ($payments)
+        $input['data'] = array_map(function($row) use ($gatewayPayments)
         {
             $paymentId = $row['payment']['id'];
 
-            if (isset($payments[$paymentId]))
+            if (isset($gatewayPayments[$paymentId]))
             {
-                $row['gateway'] = $payments[$paymentId]->toArray();
+                $row['gateway'] = $gatewayPayments[$paymentId]->toArray();
             }
 
             return $row;
