@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_DOMAINS     = 'email_domains';
     const LOGIN_LOGO_URL    = 'login_logo_url';
     const MAIN_LOGO_URL     = 'main_logo_url';
+    const INVOICE_LOGO_URL  = 'invoice_logo_url';
     const DELETED_AT        = 'deleted_at';
 
     protected static $sign = 'org';
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
+        self::INVOICE_LOGO_URL,
     ];
 
     protected $visible = [
@@ -56,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
+        self::INVOICE_LOGO_URL,
         self::DELETED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -71,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
+        self::INVOICE_LOGO_URL,
         self::AUTH_TYPE,
         self::CREATED_AT,
     ];

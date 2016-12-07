@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::AUTH_TYPE           => 'required|string|max:255|in:password,google_auth',
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
+        Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         'admin'                     => 'required|array',
     ];
 
@@ -28,6 +29,7 @@ class Validator extends Base\Validator
         Entity::AUTH_TYPE           => 'sometimes|string|max:255|in:password,google_auth',
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
+        Entity::INVOICE_LOGO_URL    => 'sometimes|url',
     ];
 
     protected function validateEmailDomains($attribute, $value)

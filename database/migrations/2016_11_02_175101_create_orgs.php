@@ -45,6 +45,9 @@ class CreateOrgs extends Migration
             $table->string(Org::MAIN_LOGO_URL)
                   ->nullable();
 
+            $table->string(Org::INVOICE_LOGO_URL)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);
 
