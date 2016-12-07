@@ -306,10 +306,6 @@ class EsDao
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        //$baseIndex = $this->config->get('database.es_heimdall')[$mode];
-
-        //$index = $baseIndex.'_'.$orgId;
-
         $index = $this->config->get('database.es_heimdall')[$mode];
 
         $params = [
