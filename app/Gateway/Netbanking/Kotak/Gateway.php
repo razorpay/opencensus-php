@@ -232,7 +232,6 @@ class Gateway extends Base\Gateway
         {
             $data['TransactionDescription'] = $input['order']['account_number'];
 
-
             if ($this->mode === Mode::TEST)
             {
                 $data['MerchantId'] = $this->getTestTPVMerchantId();
