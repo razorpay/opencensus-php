@@ -23,7 +23,8 @@ angular.module('app.controllers', [
     };
 
     for (var key in themeKeys) {
-      if (themeKeys.hasOwnProperty(key) && location.hostname.indexOf(key) > 0){
+      if (themeKeys.hasOwnProperty(key) &&
+          (location.hostname.indexOf(key) > 0 || localStorage.getItem('theme') === key)) {
         orgTheme = themeKeys[key];
         break;
       };
