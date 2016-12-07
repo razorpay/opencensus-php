@@ -3,6 +3,8 @@
 namespace RZP\Models\Customer\Balance;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -22,6 +24,7 @@ class Validator extends Base\Validator
         $maxBalance = $wallet->getMaxBalance();
 
         //TODO: Validate for daliy/weekly/monthly usage here
+
         if ($balance > $maxBalance)
         {
             throw new Exception\BadRequestException(
