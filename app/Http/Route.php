@@ -335,7 +335,7 @@ final class Route
         'permission_edit'                         => ['put',      'permissions/{permissionId}',                     'AdminController@putPermission',                                    ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'AdminController@postAuthenticate'                                  ],
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
-        'auditlog_search'                         => ['get',      'admin/auditlog/search/{id}',                     'AdminController@auditLogSearch'                                    ],
+        'auditlog_search'                         => ['get',      'orgs/{id}/auditlog/search',                      'AdminController@auditLogSearch'                                    ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'AdminController@postPasswordReset'                                 ],
     );
