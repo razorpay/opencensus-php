@@ -132,14 +132,29 @@ class AuditLogListener
         $fields['ip_address']   = \Request::ip() ?? null;
         $fields['created_at']   = time();
 
-        // add action specific properties. e.g. failed_payment_attempt in case of
-        // login failure
-        $fields['action_properties'] = $event->customProperties ?? null;
-
         // org_id, mode, etc.
         $fields['extra'] = [
             'org_id' => $event->admin['org_id']
         ];
+
+        // add action specific properties. e.g. failed_payment_attempt in case of
+        // login failure
+
+        $customProperties = $event->customProperties ?? null;
+
+        // move the entity object one level up
+        // refer audit log spec for why this is needed
+        if (($customProperties !== null ) and (is_array($customProperties) === true))
+        {
+            if (isset($customProperties['entity']))
+            {
+                $fields['entity'] = $customProperties['entity'];
+            }
+            else
+            {
+                $fields['extra']['custom'] = $customProperties;
+            }
+        }
 
         $fields['internal'] = [
             // firing() - Gets the event that is currently firing
