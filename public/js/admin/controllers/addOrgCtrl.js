@@ -32,22 +32,16 @@ app.controller('AddOrgCtrl', [
       $scope.fetchOrg($stateParams.id)
     }
 
-    $scope.editOrg = function(organization) {
-      var data = {};
-      data.body = jQuery.extend(true, {}, organization);
-      delete data.body.id;
-      delete data.body.created_at;
-      delete data.body.admin;
-      delete data.body.entity;
-
+    $scope.editOrg = function(data) {
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'org_edit',
           url_params: {
-            '{id}' : organization.id
+            '{id}' : $scope.organization.id
           }
         }
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization updated', true);
@@ -58,103 +52,79 @@ app.controller('AddOrgCtrl', [
           });
         }
       });
+
+      return request
     }
 
-    // File uploads
-    $scope.logos = {};
-
-    $scope.onLoginLogoSelect = function ($files, fieldname) {
-      var file = $files[0];
-
-      $scope.logos.loginFileName = file;
-      $scope.logos.loginFieldName = fieldname;
-
-      // Start upload of the logo as soon as the selection is done
-
-      var request = $upload.upload({
+    $scope.uploadFile = function (file, fieldName, type) {
+      debugger
+      return $upload.upload({
         url: '/admin/org/' + $scope.organization.id,
         method: 'POST',
-        file: $scope.logos.loginFileName,
-        fileFormDataName: $scope.logos.loginFieldName,
-        data: { type: 'login' }
-      });
+        file: file,
+        fileFormDataName: fieldName,
+        data: { type: type }
+      })
+    }
 
-      request.success(function (data, status, headers, config) {
-        if (data.success) {
-          var url = data.data;
+    $scope.onInvoiceLogoSelect = function ($files) {
+      var file = $files[0];
+      $scope.uploadFile(file, 'invoice_logo', 'invoice').success(function(response) {
+        if (response.success) {
+          var url = response.data
           var data = {
             body: {
-              login_logo_url: url
+              invoice_logo_url: url
             }
-          };
-
-          // Update org details
-          var request = $http.put('/admin/generic', data, {
-            params: {
-              route_name: 'org_edit',
-
-              url_params: {
-                '{id}' : $scope.organization.id
-              }
-            }
-          });
-
-          // Do nothing on success for now
-          request.success(function (data) {});
+          }
+          $scope.editOrg(data)
         }
       });
-
-      // end@onLoginLogoSelect
     };
 
-    $scope.onMainLogoSelect = function ($files, fieldname) {
+    $scope.onMainLogoSelect = function ($files) {
       var file = $files[0];
-
-      $scope.logos.mainFileName = file;
-      $scope.logos.mainFieldName = fieldname;
-
-      var request = $upload.upload({
-        url: '/admin/org/' + $scope.organization.id,
-        method: 'POST',
-        file: $scope.logos.mainFileName,
-        fileFormDataName: $scope.logos.mainFieldName,
-        data: { type: 'main' }
-      });
-
-      request.success(function (data, status, headers, config) {
-        if (data.success) {
-          var url = data.data;
-
+      $scope.uploadFile(file, 'main_logo', 'main').success(function(response) {
+        if (response.success) {
+          var url = response.data
           var data = {
             body: {
               main_logo_url: url
             }
-          };
+          }
+          $scope.editOrg(data)
+        }
+      });
+    };
 
-          // Update org details
-          var request = $http.put('/admin/generic', data, {
-            params: {
-              route_name: 'org_edit',
-
-              url_params: {
-                '{id}' : $scope.organization.id
-              }
+    $scope.onLoginLogoSelect = function ($files, fieldname) {
+      var file = $files[0];
+      $scope.uploadFile(file, 'login_logo', 'login').success(function(response) {
+        if (response.success) {
+          var url = response.data
+          var data = {
+            body: {
+              login_logo_url: url
             }
-          });
-
-          // Do nothing on success for now
-          request.success(function (data) {});
+          }
+          $scope.editOrg(data)
         }
       });
     };
 
     $scope.save = function(organization) {
+      var data = {};
       if (organization.id) {
-        $scope.editOrg(organization)
+        data.body = jQuery.extend(true, {}, organization);
+        delete data.body.id;
+        delete data.body.created_at;
+        delete data.body.admin;
+        delete data.body.entity;
+
+        $scope.editOrg(data)
         return
       }
 
-      var data = {}
       data.body = organization;
       data.route_name = 'org_create';
 
