@@ -325,7 +325,9 @@ class EsDao
 
         $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
 
-        return $this->formatAuditLogResults($results);
+        $formattedResults = $this->formatAuditLogResults($results);
+
+        return $formattedResults;
     }
 
     protected function formatAuditLogResults($results)
@@ -336,7 +338,11 @@ class EsDao
             '_source' => 'event'
         ];
 
-        $exclude = ['_index','_type','_score'];
+        $exclude = [
+            '_index',
+            '_type',
+            '_score'
+        ];
 
         foreach($results as &$item)
         {
