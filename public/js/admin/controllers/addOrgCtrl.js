@@ -57,7 +57,6 @@ app.controller('AddOrgCtrl', [
     }
 
     $scope.uploadFile = function (file, fieldName, type) {
-      debugger
       return $upload.upload({
         url: '/admin/org/' + $scope.organization.id,
         method: 'POST',
@@ -71,13 +70,7 @@ app.controller('AddOrgCtrl', [
       var file = $files[0];
       $scope.uploadFile(file, 'invoice_logo', 'invoice').success(function(response) {
         if (response.success) {
-          var url = response.data
-          var data = {
-            body: {
-              invoice_logo_url: url
-            }
-          }
-          $scope.editOrg(data)
+          $scope.organization.invoice_logo_url = response.data;
         }
       });
     };
@@ -86,13 +79,7 @@ app.controller('AddOrgCtrl', [
       var file = $files[0];
       $scope.uploadFile(file, 'main_logo', 'main').success(function(response) {
         if (response.success) {
-          var url = response.data
-          var data = {
-            body: {
-              main_logo_url: url
-            }
-          }
-          $scope.editOrg(data)
+          $scope.organization.main_logo_url = response.data;
         }
       });
     };
@@ -101,13 +88,7 @@ app.controller('AddOrgCtrl', [
       var file = $files[0];
       $scope.uploadFile(file, 'login_logo', 'login').success(function(response) {
         if (response.success) {
-          var url = response.data
-          var data = {
-            body: {
-              login_logo_url: url
-            }
-          }
-          $scope.editOrg(data)
+          $scope.organization.login_logo_url = response.data;
         }
       });
     };
