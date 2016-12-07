@@ -33,6 +33,10 @@ class PaymentTransferTest extends TestCase
     {
         $this->payment = $this->defaultAuthPayment();
 
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
         $this->startTest();
     }
 
@@ -43,6 +47,8 @@ class PaymentTransferTest extends TestCase
         $customerPublicId = $customer->getPublicId();
 
         $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
 
         $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
 
@@ -66,6 +72,8 @@ class PaymentTransferTest extends TestCase
         $oldBalanceAmount = $customerBalance->getBalance();
 
         $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
 
         $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
 
@@ -122,9 +130,7 @@ class PaymentTransferTest extends TestCase
     {
         $this->checkAndSetIdAndAmount($id, $amount);
 
-        $request['content']['amount'] = $amount;
-
-        $url = '/payments/' . $id . '/capture';
+        $url = '/payments/' . $id . '/transfer';
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
     }

@@ -55,23 +55,31 @@ class Core extends Base\Core
 
         foreach ($transfers as $transfer)
         {
-            $validator->validateInput('payment_transfer', $transfer);
-
-            $from = $payment->merchant;
-
-            if (isset($transfer['customer']) === true)
+            if (isset($transfer[ToType::CUSTOMER]) === true)
             {
-                $to = $this->repo->customer->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
-
-                $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
-
-                $customerTxn = (new Customer\Transactions\Core)
-                                ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
-
-                $this->repo->saveOrFail($customerTxn);
+                $this->customerTransfer($payment, $transfer);
             }
-
         }
+
+        return $payment;
+    }
+
+    protected function customerTransfer($payment, $transfer)
+    {
+        $to = $this->repo->customer
+                   ->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
+
+        $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
+
+        $customerTxn = (new Customer\Transactions\Core)
+                        ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
+
+        $this->repo->saveOrFail($customerTxn);
+    }
+
+    protected function merchantTransfer()
+    {
+        ;
     }
 
     protected function validateTransfers($payment, $transfers)

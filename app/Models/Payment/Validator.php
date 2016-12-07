@@ -40,15 +40,22 @@ class Validator extends Base\Validator
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');
 
-    protected static $captureRules = array(
+    protected static $captureRules = [
         'amount'        => 'required|integer',
         'currency'      => 'sometimes|in:INR',
-        'transfers'     => 'sometimes|array');
+    ];
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|integer',
         'notes'         => 'sometimes|notes'
     );
+
+    protected static $transferRules = [
+        'transfers'                  => 'required|array',
+        'transfers.*.customer'       => 'required_without_all:transfers.*.merchant|string|size:19',
+        'transfers.*.merchant'       => 'required_without_all:transfers.*.customer|string|size:19',
+        'transfers.*.amount'         => 'required|integer|min:1',
+    ];
 
     protected static $createValidators = array(
         'card_key',

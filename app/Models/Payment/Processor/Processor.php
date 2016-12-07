@@ -21,6 +21,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transaction;
+use RZP\Models\Transfer;
 use RZP\Models\Feature\Constants as Feature;
 
 class Processor
@@ -312,6 +313,8 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        $payment->getValidator()->validateInput('transfer', $input);
+
         if ($payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
@@ -320,17 +323,16 @@ class Processor
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
-            return $this->transferPayment($payment, $input);
+            return $this->transferPayment($payment, $input['transfers']);
         });
     }
 
-    protected function transferPayment($payment, $input)
+    protected function transferPayment($payment, array $transfers)
     {
-        $transfers = (new Transfer\Core)->createForPayment($payment, $input);
+        $transfers = (new Transfer\Core)->createForPayment($payment, $transfers);
 
         return $transfers;
     }
-
 
     /**
      * Cancels a previously created payment
