@@ -33,6 +33,8 @@ class MaxMind
 
         $this->licenseKey = $this->config['secret'];
 
+        $this->basicauth = $app['basicauth'];
+
         $this->maxmind = new CreditCardFraudDetection;
     }
 
@@ -61,6 +63,11 @@ class MaxMind
             'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),
             'requested_type'    => 'standard'
         );
+
+        if ($this->basicauth->isPrivateAuth() === true)
+        {
+            unset($input['i']);
+        }
 
         $this->maxmind->input($input);
         $this->maxmind->query();
