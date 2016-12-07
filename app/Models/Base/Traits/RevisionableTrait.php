@@ -161,9 +161,9 @@ trait RevisionableTrait
 
         unset($this->originalData['keepRevisionOf']);
 
-        $removeFields = ['created_at', 'updated_at', 'deleted_at'];
+        //$removeFields = ['created_at', 'updated_at', 'deleted_at'];
 
-        unset($this->originalData[$removeFields]);
+        //unset($this->originalData[$removeFields]);
     }
 
 
@@ -238,9 +238,9 @@ trait RevisionableTrait
         {
             $created = $this->toArrayPublic();
 
-            $removeFields = ['created_at','updated_at','deleted_at'];
+            //$removeFields = ['created_at','updated_at','deleted_at'];
 
-            unset($this->originalData[$removeFields]);
+            //unset($this->originalData[$removeFields]);
 
             $revisions = [
                 'revisionable_type' => $this->getMorphClass(),
