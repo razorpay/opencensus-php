@@ -38,6 +38,9 @@ class Server extends Base\Mock\Server
 
         $postData = $this->createPostData($decryptedData); // response from icici bank
 
+        // For test cases
+        $this->content($postData, 'authorize');
+
         $content = $this->formatPostData($postData);
 
         $request = array(
@@ -58,6 +61,9 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input);
 
         $response = $this->createXmlResponse($input);
+
+        // For test cases
+        $this->content($response, 'verify');
 
         return $this->makeResponse($response);
     }

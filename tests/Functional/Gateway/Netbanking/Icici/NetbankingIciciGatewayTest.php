@@ -46,6 +46,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertArrayHasKey('bank_payment_id', $payment);
+        // Assert that BID is an integer
         $this->assertTrue(filter_var($payment['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
     }
@@ -123,14 +124,59 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testFailedAuthPayment()
     {
-        $payment = $this->payment;
-
-        unset($payment['amount']);
+        $this->mockPaymentFailure();
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testVerifyMismatch()
+    {
+        $this->mockVerifyFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment){
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+    }
+
+    protected function mockPaymentFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                // results in a bad request error
+                $content['PAID'] = 'N';
+            }
+        });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                // results in a bad request error
+                $contentArray = (array) simplexml_load_string($content);
+                $contentArray['@attributes']['STATUS'] = 'FAILED';
+
+                $contentArray = array_flip($contentArray['@attributes']);
+
+                $xml = new \SimpleXMLElement('<VerifyOutput/>');
+                array_walk_recursive($contentArray, array ($xml, 'addAttribute'));
+
+                $content = $xml->asXML();
+            }
         });
     }
 }
