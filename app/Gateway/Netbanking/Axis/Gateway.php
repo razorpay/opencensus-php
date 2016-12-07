@@ -31,17 +31,17 @@ class Gateway extends Base\Gateway
 
     ];
 
-    public function authorize($input)
+    public function authorize(array $input)
+    {
+        sd('111');
+    }
+
+    public function callback(array $input)
     {
 
     }
 
-    public function callback($input)
-    {
-
-    }
-
-    public function verify($input)
+    public function verify(array $input)
     {
 
     }

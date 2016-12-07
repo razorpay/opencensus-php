@@ -6,7 +6,7 @@ use phpseclib\Crypt\Aes;
 
 trait AesTrait
 {
-    public function encryptString(string $string, $string $masterKey)
+    public function encryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
         $aes->setMasterKey($masterKey);
@@ -14,7 +14,7 @@ trait AesTrait
         return base64_encode($aes->encrypt($string));
     }
 
-    public function decryptString(string $string, $string $masterKey)
+    public function decryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
         $aes->setMasterKey($masterKey);

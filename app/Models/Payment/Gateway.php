@@ -25,6 +25,7 @@ class Gateway
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_AXIS    = 'netbanking_axis';
     const UPI_ICICI          = 'upi_icici';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
@@ -65,6 +66,7 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -99,6 +101,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
+            self::NETBANKING_AXIS,
         ),
 
         Method::WALLET => array(
@@ -352,6 +355,7 @@ class Gateway
      */
     public static $netbankingToGatewayMap = array(
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK);
 
     /**

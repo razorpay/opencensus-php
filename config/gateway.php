@@ -24,6 +24,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'netbanking_kotak',
+        'netbanking_axis',
         'sharp',
         'wallet_olamoney',
         'upi_icici',
