@@ -47,31 +47,43 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    public function createForPayment($payment, $transfers)
+    public function createForPayment($payment, $input)
     {
-        $validator = new Validator;
+        $transfers = new Base\PublicCollection;
 
-        $this->validateTransfers($payment, $transfers);
+        $this->validateTransfers($payment, $input);
 
-        foreach ($transfers as $transfer)
+        foreach ($input as $transfer)
         {
-            $validator->validateInput('payment_transfer', $transfer);
-
-            $from = $payment->merchant;
-
-            if (isset($transfer['customer']) === true)
+            if (isset($transfer[ToType::CUSTOMER]) === true)
             {
-                $to = $this->repo->customer->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
+                $transfer = $this->customerTransfer($payment, $transfer);
 
-                $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
-
-                $customerTxn = (new Customer\Transactions\Core)
-                                ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
-
-                $this->repo->saveOrFail($customerTxn);
+                $transfers->push($transfer);
             }
-
         }
+
+        return $transfers;
+    }
+
+    protected function customerTransfer($payment, $transfer)
+    {
+        $to = $this->repo->customer
+                   ->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
+
+        $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
+
+        $customerTxn = (new Customer\Transactions\Core)
+                        ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
+
+        $this->repo->saveOrFail($customerTxn);
+
+        return $transfer;
+    }
+
+    protected function merchantTransfer()
+    {
+        ;
     }
 
     protected function validateTransfers($payment, $transfers)

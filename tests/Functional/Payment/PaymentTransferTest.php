@@ -15,23 +15,23 @@ class PaymentTransferTest extends TestCase
 
         parent::setUp();
 
-        $payment = $this->fixtures->create('payment:authorized');
+        $this->fixtures->create('payment:captured');
 
-        $this->payment = $payment->toArrayPublic();
+        $this->payment = $this->getLastEntity('payment', false);
 
         $this->ba->privateAuth();
     }
 
     public function testCaptureAndTransferToInvalidCustomerId()
     {
-        $this->payment = $this->defaultAuthPayment();
+        $this->payment = $this->doAuthAndCapturePayment();
 
         $this->startTest();
     }
 
     public function testCaptureAndTransferToUnknownCustomerId()
     {
-        $this->payment = $this->defaultAuthPayment();
+        $this->payment = $this->doAuthAndCapturePayment();
 
         $this->startTest();
     }
@@ -120,27 +120,13 @@ class PaymentTransferTest extends TestCase
 
     protected function setRequestData(& $request, $id = null, $amount = null)
     {
-        $this->checkAndSetIdAndAmount($id, $amount);
-
-        $request['content']['amount'] = $amount;
-
-        $url = '/payments/' . $id . '/capture';
-
-        $this->setRequestUrlAndMethod($request, $url, 'POST');
-    }
-
-    protected function checkAndSetIdAndAmount(& $id = null, & $amount = null)
-    {
         if ($id === null)
         {
             $id = $this->payment['id'];
         }
 
-        if ($amount === null)
-        {
-            if (isset($this->payment['amount']))
-                $amount = $this->payment['amount'];
-        }
-    }
+        $url = '/payments/' . $id . '/transfer';
 
+        $this->setRequestUrlAndMethod($request, $url, 'POST');
+    }
 }

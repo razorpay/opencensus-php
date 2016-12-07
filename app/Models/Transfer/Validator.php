@@ -13,9 +13,4 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE    => 'required|string',
         Entity::AMOUNT         => 'required|integer',
     ];
-
-    protected static $paymentTransferRules = [
-        'customer'             => 'sometimes|string|size:19',
-        'amount'               => 'required|integer|min:1',
-    ];
 }

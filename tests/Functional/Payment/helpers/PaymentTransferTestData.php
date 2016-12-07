@@ -9,7 +9,6 @@ return [
     'testCaptureAndTransferToInvalidCustomerId' => [
         'request' => [
             'content' => [
-                'amount' => 200,
                 'transfers' => [
                     [
                         'customer' => 'cust_asd',
@@ -22,7 +21,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The customer must be 19 characters.'
+                    'description' => 'asd is not a valid id'
                 ],
             ],
             'status_code' => 400,
@@ -35,7 +34,6 @@ return [
     'testCaptureAndTransferToUnknownCustomerId' => [
         'request' => [
             'content' => [
-                'amount' => 200,
                 'transfers' => [
                     [
                         'customer' => 'cust_3030300000cust',
@@ -61,7 +59,6 @@ return [
     'testTransferToExistingCustomerWithNoExistingWallet' => [
         'request' => [
             'content' => [
-                'amount' => 200,
                 'transfers' => [
                     [
                         'customer' => null,
@@ -72,8 +69,13 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'status' => 'captured',
-                'entity' => 'payment',
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
             ],
             'status_code' => 200,
         ],
@@ -81,7 +83,6 @@ return [
     'testTransferAndVerifyCustomerBalance' => [
         'request' => [
             'content' => [
-                'amount' => 200,
                 'transfers' => [
                     [
                         'customer' => null,
@@ -92,11 +93,15 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'status' => 'captured',
-                'entity' => 'payment',
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
             ],
             'status_code' => 200,
         ],
     ],
-
 ];
