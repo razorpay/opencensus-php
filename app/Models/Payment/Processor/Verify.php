@@ -109,9 +109,9 @@ trait Verify
             $message,
             $data,
             [
-                'color' => 'bad',
-                'icon' => ':boom:',
-                'channel' => Config::get('slack.channels.tech_logs')
+                'color'   => 'bad',
+                'icon'    => ':boom:',
+                'channel' => Config::get('slack.channels.tech_logs_verify')
             ]);
     }
 }

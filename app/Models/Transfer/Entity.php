@@ -45,6 +45,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
         self::TO_ID,
         self::TO_TYPE,

@@ -1095,10 +1095,10 @@ trait PaymentTrait
     /**
      * Get Otp resend Url
      */
-    public function getOtpResendUrl($payment)
+    public function getOtpResendUrl($paymentId)
     {
         $params = [
-            'id' => $payment->getPublicId(),
+            'id' => $paymentId,
             'key_id' => $this->ba->getKey()
         ];
 

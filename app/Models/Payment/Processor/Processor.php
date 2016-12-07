@@ -20,8 +20,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Transaction;
 use RZP\Models\Transfer;
+use RZP\Models\Transaction;
 use RZP\Models\Feature\Constants as Feature;
 
 class Processor

@@ -11,7 +11,6 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Transfer;
 
 trait Capture
 {

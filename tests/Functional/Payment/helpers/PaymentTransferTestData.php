@@ -21,7 +21,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The transfers.0.customer must be 19 characters.'
+                    'description' => 'asd is not a valid id'
                 ],
             ],
             'status_code' => 400,
@@ -69,8 +69,13 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'status' => 'captured',
-                'entity' => 'payment',
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
             ],
             'status_code' => 200,
         ],
@@ -88,11 +93,15 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'status' => 'captured',
-                'entity' => 'payment',
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
             ],
             'status_code' => 200,
         ],
     ],
-
 ];

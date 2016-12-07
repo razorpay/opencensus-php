@@ -47,21 +47,23 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    public function createForPayment($payment, $transfers)
+    public function createForPayment($payment, $input)
     {
-        $validator = new Validator;
+        $transfers = new Base\PublicCollection;
 
-        $this->validateTransfers($payment, $transfers);
+        $this->validateTransfers($payment, $input);
 
-        foreach ($transfers as $transfer)
+        foreach ($input as $transfer)
         {
             if (isset($transfer[ToType::CUSTOMER]) === true)
             {
-                $this->customerTransfer($payment, $transfer);
+                $transfer = $this->customerTransfer($payment, $transfer);
+
+                $transfers->push($transfer);
             }
         }
 
-        return $payment;
+        return $transfers;
     }
 
     protected function customerTransfer($payment, $transfer)
@@ -75,6 +77,8 @@ class Core extends Base\Core
                         ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
 
         $this->repo->saveOrFail($customerTxn);
+
+        return $transfer;
     }
 
     protected function merchantTransfer()

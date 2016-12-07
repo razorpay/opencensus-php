@@ -26,6 +26,7 @@ class Table
     const CUSTOMER              = 'customers';
     const SCHEDULE              = 'schedules';
     const EMI_PLAN              = 'emi_plans';
+    const TRANSFER              = 'transfers';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
@@ -34,10 +35,10 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const MERCHANT_DETAIL       = 'merchant_details';
+    const CUSTOMER_BALANCE      = 'customer_balance';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const TRANSFER              = 'transfers';
-    const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTIONS = 'customer_transactions';
 
     // Gateway related

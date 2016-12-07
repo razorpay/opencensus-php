@@ -54,6 +54,8 @@ class Fields
 
     const UCAF_AUTHENTICATION_DATA      = 'ucafAuthenticationData';
 
+    const AUTHENTICATION_DATA           = 'authenticationData';
+
     const RECEIPT_NUMBER                = 'receiptNumber';
 
     const AUTHORIZATION_CODE            = 'authorizationCode';
@@ -155,6 +157,10 @@ class Fields
     const INVOICE_HEADER                = 'invoiceHeader';
 
     const MERCHANT_DESCRIPTOR           = 'merchantDescriptor';
+
+    const BUSINESS_RULES                = 'businessRules';
+
+    const IGNORE_AVS_RESULT             = 'ignoreAVSResult';
 
     const ACCOUNT_NUMBER                = 'accountNumber';
 

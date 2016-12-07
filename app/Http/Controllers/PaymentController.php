@@ -259,8 +259,8 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->payment->transfer($paymentId, $input);
+        $transfers = $this->payment->transfer($paymentId, $input);
 
-        return ApiResponse::json($payment);
+        return ApiResponse::json($transfers);
     }
 }

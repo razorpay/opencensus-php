@@ -52,9 +52,9 @@ class Validator extends Base\Validator
 
     protected static $transferRules = [
         'transfers'                  => 'required|array',
-        'transfers.*.customer'       => 'required_without_all:transfers.*.merchant|string|size:19',
-        'transfers.*.merchant'       => 'required_without_all:transfers.*.customer|string|size:19',
-        'transfers.*.amount'         => 'required|integer|min:1',
+        'transfers.*.customer'       => 'required_without_all:transfers.*.merchant|string|max:19',
+        'transfers.*.merchant'       => 'required_without_all:transfers.*.customer|string|max:19',
+        'transfers.*.amount'         => 'required|integer|min:100',
     ];
 
     protected static $createValidators = array(
