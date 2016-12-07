@@ -254,19 +254,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function getAuditLogs($domain)
-    {
-        $orgId = $this->getOrgFromCache($domain);
-
-        $input = ['method' => 'get'];
-
-        $path = "admin/auditlog/search/$orgId";
-
-        list($error, $data) = (new Generic\Service)->call($input, $path);
-
-        return [$error, $data];
-    }
-
     public function editAdmin($input, $id)
     {
         $error = [];
