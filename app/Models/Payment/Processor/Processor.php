@@ -296,8 +296,7 @@ class Processor
     }
 
     /**
-     * Transfer a previously captured payment
-     * to a wallet or other merchant
+     * Transfer a captured payment to a customer or merchant
      *
      * @param  string $id    Pamyent ID
      * @param  array  $input Input Array
@@ -305,12 +304,33 @@ class Processor
      */
     public function transfer(string $id, array $input)
     {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_REQUEST,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $payment = $this->retrieve($id);
 
-        return []; //TODO
+        if ($payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
 
-        return $this->transferPayment($payment, $input['transfers']);
+        return $this->repo->transaction(function () use ($payment, $input)
+        {
+            return $this->transferPayment($payment, $input);
+        });
     }
+
+    protected function transferPayment($payment, $input)
+    {
+        $transfers = (new Transfer\Core)->createForPayment($payment, $input);
+
+        return $transfers;
+    }
+
 
     /**
      * Cancels a previously created payment

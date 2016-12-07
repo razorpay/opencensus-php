@@ -37,14 +37,7 @@ trait Capture
 
         $payment->getValidator()->validateInput('capture', $input);
 
-        $payment = $this->capturePayment($payment, $input['amount']);
-
-        if (isset($input['transfers']) === true)
-        {
-            return $this->transferPayment($payment, $input['transfers']);
-        }
-
-        return $payment;
+        return $this->capturePayment($payment, $input['amount']);
     }
 
     /**
@@ -209,16 +202,6 @@ trait Capture
         }
 
         $this->captureOnGateway($data);
-
-        return $payment;
-    }
-
-    protected function transferPayment($payment, $transfers)
-    {
-        $this->repo->transaction(function () use ($payment, $transfers)
-        {
-            (new Transfer\Core)->createForPayment($payment, $transfers);
-        });
 
         return $payment;
     }
