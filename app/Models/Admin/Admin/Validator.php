@@ -86,4 +86,13 @@ class Validator extends Base\Validator
             (new AuthPolicy\Service)->validate($admin, $input[Entity::PASSWORD]);
         }
     }
+
+    public function validateSelfEditForbidden(Entity $authAdmin, Entity $admin)
+    {
+        if ($authAdmin->getId() === $admin->getId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
+        }
+    }
 }

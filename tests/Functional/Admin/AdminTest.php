@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Admin;
 use Carbon\Carbon;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 
@@ -14,7 +15,7 @@ use RZP\Models\Admin\Group;
 
 class AdminTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -159,9 +160,9 @@ class AdminTest extends TestCase
 
     public function testDeleteAdmin()
     {
-        $adminToken = $this->fixtures->create('admin_token', ['token' => 'secondToken']);
-
-        $admin = $adminToken['admin'];
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -364,5 +365,38 @@ class AdminTest extends TestCase
         $admin = $this->getEntityById('admin', $admin->getId(), true);
 
         $this->assertEquals($admin['failed_attempts'], 1);
+    }
+
+    public function testSelfEditAdminFailed()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $org = $admin->org;
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testSelfDeleteAdminFailed()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $org = $admin->org;
+
+        $data = $this->testData['testSelfEditAdminFailed'];
+
+        $this->runRequestResponseFlow($data, function() use ($org, $admin)
+        {
+            $this->deleteAdmin($org->getPublicId(), $admin->getPublicId());
+        });
     }
 }
