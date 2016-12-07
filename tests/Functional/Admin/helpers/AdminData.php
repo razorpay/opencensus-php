@@ -280,4 +280,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
         ],
     ],
+
+    'testSelfEditAdminFailed' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test asd',
+                'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED,
+        ],
+    ],
 ];

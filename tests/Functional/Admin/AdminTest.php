@@ -365,4 +365,21 @@ class AdminTest extends TestCase
 
         $this->assertEquals($admin['failed_attempts'], 1);
     }
+
+    public function testSelfEditAdminFailed()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $org = $admin->org;
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

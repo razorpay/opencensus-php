@@ -280,4 +280,13 @@ class Authorization
 
         $this->appAuth($key);
     }
+
+    public function getAdmin()
+    {
+        $token = $this->secret;
+
+        $this->admin = (new \RZP\Models\Admin\Admin\Token\Repository)->findOrFailToken($token)->admin;
+
+        return $this->admin;
+    }
 }
