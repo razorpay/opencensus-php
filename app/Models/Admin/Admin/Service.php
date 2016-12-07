@@ -296,7 +296,11 @@ class Service extends Base\Service
 
     public function deleteAdmin(string $orgId, string $adminId)
     {
+        $authAdmin = $this->app['basicauth']->getAdmin();
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
         $admin->setAuditAction(Action::DELETE_ADMIN);
 
@@ -314,7 +318,11 @@ class Service extends Base\Service
 
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
+        $authAdmin = $this->app['basicauth']->getAdmin();
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
         $admin = $this->core()->edit($admin, $input);
 
