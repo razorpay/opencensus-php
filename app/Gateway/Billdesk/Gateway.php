@@ -114,15 +114,17 @@ class Gateway extends Base\Gateway
 
         $this->setTpv($gatewayPayment);
 
-        $request = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
+        $requestContent = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
 
-        // This may throw a gateway timeout exception or gateway request exception.
-        // These exceptions bubble up to api's refund processor and are handled there.
-        $response = $this->postRequest($request);
+        // This may throw a gateway timeout exception or
+        // gateway request exception. These exceptions bubble up to api's
+        // refund processor and are handled there.
+        $response = $this->postRequest($requestContent);
 
         $response['refund_id'] = $input['refund']['id'];
         $response['CurrencyType'] = 'INR';
         $response['received'] = 1;
+
         $refund = $this->createGatewayPaymentEntity($response);
 
         if ($response['ProcessStatus'] !== 'Y')
@@ -145,12 +147,10 @@ class Gateway extends Base\Gateway
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                $response
-            );
+                $response);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED
-            );
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
     }
 
@@ -179,10 +179,11 @@ class Gateway extends Base\Gateway
     protected function checkIfAlreadyRefunded(array $response, array $input)
     {
         //
-        // NOTE: Billdesk is NOT going to throw this error if the attempted refund is less
-        // than [transaction_amount - {refunds so far}]
+        // NOTE: Billdesk is NOT going to throw this error if the
+        // attempted refund is less than [transaction_amount - {refunds so far}]
         // It will, instead, do an actual refund.
-        // This error is thrown only when the total refund equals/exceeds the total payment.
+        // This error is thrown only when the total refund
+        // equals/exceeds the total payment.
         //
         if ($response['ErrorCode'] === 'ERR_REF010')
         {
@@ -210,9 +211,11 @@ class Gateway extends Base\Gateway
     {
         $refundAmount = $input['amount'];
 
-        // We check whether we have a refund record for this particular payment already in the Billdesk entity.
+        // We check whether we have a refund record for this particular
+        // payment already in the Billdesk entity.
 
-        $refundRecords = $this->repo->getSuccessfulRefundRecordForThePayment($input['payment'][Payment\Entity::ID]);
+        $refundRecords = $this->repo->getSuccessfulRefundRecordForThePayment(
+            $input['payment'][Payment\Entity::ID]);
 
         if (empty($refundRecords) === true)
         {
