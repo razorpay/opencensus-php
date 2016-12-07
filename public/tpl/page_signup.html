@@ -1,58 +1,137 @@
-    <div class="container w-xxl w-auto-xs">
-      <a href="#/" class="col-sm-12 text-center m-t m-b"><img class="img-responsive" src="img/logo_black.png" alt="."></a>
-      <div class="m-b-lg" ng-controller="RegisterCtrl">
-        <div class="wrapper text-center">
-          <strong>Sign up to start using our service now</strong>
-        </div>
-        <form name="signup" class="form-validation" ng-submit="submit(signup.$valid)" novalidate>
-          <div class="list-group list-group-sm">
-            <div class="list-group-item" ng-if="!data.invitation">
-              <input placeholder="Business Name" name="business_name"  ng-model="data.business_name" class="form-control no-border" required>
-            </div>
-            <div class="list-group-item">
-              <input placeholder="Individual Name" name="name"  ng-model="data.name" class="form-control no-border" required>
-            </div>
-            <div class="list-group-item">
-              <input placeholder="Phone Number (optional)" name="contact_mobile"  ng-model="data.contact_mobile" class="form-control no-border">
-            </div>
-            <div class="list-group-item" ng-if="!data.invitation">
-              <input type="email" placeholder="Email" name="email" ng-model="data.email" class="form-control no-border" required>
-            </div>
-            <div class="list-group-item">
-               <input type="password" placeholder="Password" name="password" ng-model="data.password" class="form-control no-border" required>
-            </div>
-            <div class="list-group-item">
-              <input type="password" placeholder="Password Confirmation" name="password_confirmation" ng-model="data.password_confirmation" class="form-control no-border" required ui-validate=" '$value==data.password' " ui-validate-watch=" 'data.password' ">
-            </div>
-            <span ng-show='signup.password_confirmation.$error.validator'>Passwords do not match!</span>
-          </div>
-          <div class="checkbox m-b-md m-t-none">
-            <label class="i-checks">
-              <input type="checkbox" name="agree" class="agree" ng-model="agree"><i></i> Agree the <a href="https://razorpay.com/terms/" target="_blank">terms & conditions</a> and <a href="https://razorpay.com/privacy/" target="_blank">privacy policy</a>
-            </label>
-          </div>
-          <div class="m-t m-b" no-captcha
-              g-recaptcha-response="data.captcha"
-              theme='light'
-              control="noCaptchaControl"
-              site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
-          </div>
-          <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block">Sign up</button>
-          <div class="text-center m-t m-b">
-            <spinner></spinner>
-            <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-          </div>
+<div class="fullpage signup" ng-controller='RegisterCtrl'>
+  <div class="header container">
+    <img class="logo" src="img/logo_full.png" alt='Razorpay' height="">
+  </div>
+  <div class="container main">
+    <div class="form mchild">
+      <div class='head-text'>Signing up, almost there...</div>
 
-          <div class="line line-dashed"></div>
-          <p class="text-center"><small>Already have an account?</small></p>
-          <a ui-sref="access.signin" class="btn btn-lg btn-default btn-block">Sign in</a>
-        </form>
-        <div class="wrapper text-center" ng-show="data.ref=='nasscom'">
-          <a target="_blank" href="http://10000startups.com/">
-            <img alt="10000 startups, a Nasscom initiative" src="/img/10k_nasscom.png">
-          </a>
+      <form class="multistep-form" data-step='{{ms.step}}'>
+        <div class="indicator">
+          <span ng-repeat='x in range(ms.totalSteps)' ng-class="{'selected': x===ms.step}"></span>
         </div>
+        <div class="stepswrapper">
+          <div class="steps" style="width: {{(ms.width+24)*ms.totalSteps}}px; transform: translateX({{-(ms.width+24)*ms.step}}px)">
+            <div class="step">
+              <label class="form-label" for="email">Your Office Email</label>
+              <input type="email" placeholder="yourname@company.com"
+                name="email" id="email" ng-model="data.email"
+                class="form-control" required>
 
-      </div>
-      <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
+              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
+              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(1)'>Continue</div>
+            </div>
+            <div class="step">
+              <div class="form-label">Your Business Type?</div>
+              <div class="select-one">
+                <div class="select-one-option">
+                  <input type="radio" name="business_type" value="private_ltd" id="private_ltd" ng-model='data.business_type'/>
+                  <label for='private_ltd'>
+                    Private Limited
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+                <div class="select-one-option">
+                  <input type="radio" name="business_type" value="propreitorship" id="propreitorship" ng-model='data.business_type'/>
+                  <label for='propreitorship'>
+                    Propreitorship
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+                <div class="select-one-option">
+                  <input type="radio" name="business_type" value="partnership" id="partnership" ng-model='data.business_type'/>
+                  <label for='partnership'>
+                    Partnership
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+                <div class="select-one-option" ng-show='more === false'>
+                  <input type="checkbox" name="business_type" value="true" id="more" ng-model='more'/>
+                  <label for='more'>
+                    More
+                    <i class="pull-right fa fa-ellipsis-h"></i>
+                  </label>
+                </div>
+                <div ng-show='more === true'>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="llp" id="llp" ng-model='data.business_type'/>
+                    <label for='llp'>
+                      LLP
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="edu" id="edu" ng-model='data.business_type'/>
+                    <label for='edu'>
+                      Educational Institutes
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="trust_society" id="trust_society" ng-model='data.business_type'/>
+                    <label for='trust_society'>
+                      Trust / Society
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="individual" id="individual" ng-model='data.business_type'/>
+                    <label for='individual'>
+                      Individual
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="public_ltd" id="public_ltd" ng-model='data.business_type'/>
+                    <label for='public_ltd'>
+                      Public Limited
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                  <div class="select-one-option">
+                    <input type="radio" name="business_type" value="ngo" id="ngo" ng-model='data.business_type'/>
+                    <label for='ngo'>
+                      NGO
+                      <i class="pull-right fa fa-check"></i>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
+              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(2)'>Continue</div>
+            </div>
+            <div class="step">
+              <label for="email">Your Office Email2</label>
+              <input type="email" placeholder="yourname@company.com"
+                name="email" id="email" ng-model="data.email"
+                class="form-control" required>
+
+              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
+              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(3)'>Continue</div>
+            </div>
+            <div class="step">
+              <label for="email">Your Office Email3</label>
+              <input type="email" placeholder="yourname@company.com"
+                name="email" id="email" ng-model="data.email"
+                class="form-control" required>
+
+              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
+              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(4)'>Continue</div>
+            </div>
+            <div class="step">
+              <label for="email">Your Office Email</label>
+              <input type="email" placeholder="yourname@company.com"
+                name="email" id="email" ng-model="data.email"
+                class="form-control" required>
+
+              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
+              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(0)'>Continue</div>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
+    <div class="announcements mchild">
+    </div>
+  </div>
+</div>

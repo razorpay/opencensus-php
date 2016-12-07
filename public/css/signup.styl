@@ -1,0 +1,108 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/UyBMtLsHKBKXelqf4x7VRQ.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/1YwB1sO8YE1Lyjf12WNiUA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+
+.fullpage{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(116deg, #1b2566, #a899d2);
+}
+
+.signup {
+  font-family: "Lato", "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+
+  .header {
+    .logo {
+      height: 32px;
+    }
+  }
+
+  .container{
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 28px;
+    padding: 0;
+
+    &.main {
+      text-align: center;
+    }
+  }
+
+  .form, .announcements {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+    margin: 14px auto;
+    width: 100%;
+    border-radius: 4px;
+  }
+
+  .form{
+    background: #fafafa;
+    min-height: 540px;
+    max-width: 320px;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15),
+                0 0 2px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    position: relative;
+
+    .form-label {
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1.64;
+    }
+  }
+
+  .form-control {
+    font-size: 14px;
+    line-height: 24px;
+    height: 40px;
+    width: 240px;
+    border: 1px solid #7266ba;
+  }
+
+  .faded-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #999999;
+  }
+
+  .form-control, .btn, .faded-text {
+    margin: 10px 0;
+  }
+
+  .head-text {
+    font-size: 18px;
+    line-height: 1.56;
+    height: 28px;
+    color: #555555;
+  }
+
+  .announcements {
+    background: #eaeaea;
+    max-width: 480px;
+    min-height: 480px;
+    margin-left: -0.25em;
+    border-radius: 0 4px 4px 0;
+  }
+}
