@@ -281,6 +281,7 @@ class Validator extends Base\Validator
         // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
+            ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getRecurring() === $existing->getRecurring()) and
