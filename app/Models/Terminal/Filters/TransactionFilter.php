@@ -241,11 +241,13 @@ class TransactionFilter extends Terminal\Filter
 
         $filterParams['method'] = $input['payment']->getMethod();
 
-        $filterParams['bank'] = $input['payment']->getBank();
-
         $filterParams['network'] = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $minAmount = Terminal\Category::getMinAmount($filterParams);
+        $bank = $input['payment']->getBank();
+
+        $filterParams['gateway'] = is_null($bank) ? $input['payment']->getGateway() : $bank;
+
+        $minAmount = Terminal\MinAmount::getMinAmount($filterParams);
 
         $amount = $input['payment']->getAmount();
 

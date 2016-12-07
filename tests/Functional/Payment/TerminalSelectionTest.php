@@ -369,7 +369,7 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         // ecomm KKBK terminal
-        $this->assertEquals('DrctNbKtkTrmnl', $payment['terminal_id']);
+        $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'KKBK';
