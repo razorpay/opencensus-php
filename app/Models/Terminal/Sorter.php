@@ -4,10 +4,12 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 
+use App;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Sorter
+class Sorter extends Base\Core
 {
     /**
      * This should be overridden in the child class with the respective sorter properties

@@ -461,6 +461,7 @@ class Terminal extends Base
             'netbanking'            => 1,
             'shared'                => 1,
             'category'              => 0,
+            'tpv'                   => 1,
             'network_category'      => 'securities',
         );
 

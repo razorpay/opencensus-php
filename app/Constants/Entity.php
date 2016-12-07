@@ -49,6 +49,7 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const MERCHANT_DETAIL       = 'merchant_detail';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -110,6 +111,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::TRANSFER              => \RZP\Models\Transfer::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
@@ -123,8 +125,10 @@ class Entity
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
+        self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
@@ -134,8 +138,6 @@ class Entity
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
-        self::TRANSFER              => \RZP\Models\Transfer::class,
-        self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTIONS => \RZP\Models\Customer\Transactions::class,
     );
 

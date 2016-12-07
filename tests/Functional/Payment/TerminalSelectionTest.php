@@ -137,12 +137,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 91 to 100 should give AxisMigs
+            // Chance from 76 to 100 should give AxisMigs
             [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            // Chance from 81 to 90 should give Cybersource
-            [ 'chanceValue' => 89, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 75 to 80 should give First Data
-            [ 'chanceValue' => 76,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 66 to 75 should give Cybersource
+            [ 'chanceValue' => 69, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 60 to 65 should give First Data
+            [ 'chanceValue' => 63,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
@@ -374,26 +374,38 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'shared' => 0]);
+            [
+                'id'          => 'DrctNbBdkTmnl1',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'tpv'         => 1,
+                'shared'      => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl2',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'network_category' => 'ecommerce',
-              'shared' => 0]);
+            [
+                'id'               => 'DrctNbBdkTmnl2',
+                'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
+                'network_category' => 'ecommerce',
+                'tpv'              => 1,
+                'shared'           => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl3',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'network_category' => 'securities',
-              'shared' => 0]);
+            [
+                'id'               => 'DrctNbBdkTmnl3',
+                'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
+                'network_category' => 'securities',
+                'tpv'              => 1,
+                'shared'           => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'securities']);
+            [
+                'id'               => 'SharNbBdkTmnl1',
+                'merchant_id'      => Merchant\Account::SHARED_ACCOUNT,
+                'tpv'              => 1,
+                'network_category' => 'securities'
+            ]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
