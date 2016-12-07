@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'hdfc';
 
+    protected $tpv;
+
     protected $sortRequestContent = false;
 
     protected $fields = array(
@@ -56,7 +58,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -383,7 +385,38 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::LIVE);
 
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_cug'];
+            }
+        }
+
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->tpv === true)
+        {
+            return $this->config['test_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['test_hash_secret_cug'];
+            }
+        }
+
+        return $this->config['test_hash_secret'];
     }
 
     protected function buildQueryString($data)
