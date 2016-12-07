@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
-    protected $fields = array(
+    protected $fields = [
         'ClientCode',
         'MerchantCode',
         'TxnCurrency',
@@ -36,9 +36,9 @@ class Gateway extends Base\Gateway
         'SuccessStatifFlag',
         'FailureStaticFlag',
         'Date',
-    );
+    ];
 
-    protected $map = array(
+    protected $map = [
         'ClientCode'    => 'client_code',
         'MerchantCode'  => 'merchant_code',
         'TxnAmount'     => 'amount',
@@ -46,7 +46,7 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
-    );
+    ];
 
     /**
      * @param  array  $input
@@ -156,7 +156,6 @@ class Gateway extends Base\Gateway
             'SuccessStaticFlag' => 'N',
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
-            'DynamicUrl'        => $input['callbackUrl'],
         );
 
         if ($this->mode === Mode::TEST)
@@ -174,6 +173,9 @@ class Gateway extends Base\Gateway
             }
         }
 
+        // Moving this as the HDFC TPV requires the ClientAccCode to
+        // be moved in between the Date and the DynamicUrl
+        $data['DynamicUrl'] = $input['callbackUrl'];
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
