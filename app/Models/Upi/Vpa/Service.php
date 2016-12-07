@@ -76,11 +76,11 @@ class Service extends Base\Service
         $this->repo->vpa->deleteOrFail($vpa);
     }
 
-    // TODO: Fix authorization here
-    // Make sure customer owns the VPA before editing it
     public function edit($vpaId, $input)
     {
-        $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
+        $customerId = $this->device->customer->getId();
+
+        $vpa = $this->repo->vpa->findByIdAndCustomerIdOrFail($vpaId, $customerId);
 
         $vpa = (new Core)->editVpa($vpa, $input);
 
