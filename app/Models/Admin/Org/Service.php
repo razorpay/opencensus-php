@@ -60,14 +60,13 @@ class Service extends Base\Service
     {
         $org = $this->core()->fetch($id);
 
-        $hostnames = $org->hostnames();
+        $hostnames = array_map(create_function('$o', 'return $o->getHostname();'), $org->hostnames->all());
 
         $this->trace->info(TraceCode::ERROR_EXCEPTION, ['hostnames' => $hostnames]);
 
-
         $org = $org->toArrayPublic();
 
-        $this->trace->info(TraceCode::ERROR_EXCEPTION, ['org' => $org]);
+        $org['hostname'] = implode($hostnames, ', ');
 
         return $org;
     }
