@@ -25,11 +25,18 @@ class Core extends Base\Core
 
     public function firstOrCreate(Org\Entity $org, string $hostname)
     {
-        $orgHost = $this->repo->org_hostname->firstOrCreate(['hostname' => $hostname]);
+        $orgHost = $this->repo->org_hostname->findByHostname($hostname);
 
-        $orgHost->org()->associate($org);
+        if (empty($orgHost) === true)
+        {
+            $orgHost = new Entity;
 
-        $this->repo->org_hostname->saveOrFail($orgHost);
+            $orgHost->setHostname($hostname);
+
+            $orgHost->org()->associate($org);
+
+            $this->repo->org_hostname->saveOrFail($orgHost);
+        }
 
         return $orgHost;
     }

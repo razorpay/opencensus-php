@@ -43,8 +43,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($org);
 
-        // $this->associateHostnameToGroup($input, $org);
-
         return $org;
     }
 
@@ -59,18 +57,5 @@ class Core extends Base\Core
         $this->repo->deleteOrFail($org);
 
         return ['success' => true];
-    }
-
-    protected function associateHostnameToGroup($input, $org)
-    {
-        if (isset($input['hostname']) === true)
-        {
-            // create hostname
-            $newHostnames = explode(',', $input['hostname']);
-
-            foreach ($hostnames as $hostname) {
-                $this->repo->org_hostname->firstOrCreate($org, $hostname);
-            }
-        }
     }
 }

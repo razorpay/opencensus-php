@@ -13,4 +13,11 @@ class Repository extends Base\Repository
         Entity::ORG_ID                => 'sometimes|string',
         Entity::HOSTNAME              => 'sometimes|string|max:255',
     );
+
+    public function findByHostname(string $hostname)
+    {
+        return $this->newQuery()
+                    ->where(Entity::HOSTNAME, '=', $hostname)
+                    ->first();
+    }
 }

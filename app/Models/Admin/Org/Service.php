@@ -91,7 +91,22 @@ class Service extends Base\Service
 
     public function edit(string $id, array $input)
     {
-        $org = $this->core()->edit($id, $input);
+        $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
+        {
+            $org = $this->core()->edit($id, $input);
+
+            if (isset($input['hostname']) === true)
+            {
+                // create hostname
+                $hostnames = explode(',', $input['hostname']);
+
+                foreach ($hostnames as $hostname) {
+                    (new Hostname\Core)->firstOrCreate($org, $hostname);
+                }
+            }
+
+            return $org;
+        });
 
         return $org->toArrayPublic();
     }
