@@ -133,7 +133,7 @@ class MinAmount
 
         // over-write filter for top-6
         // & billdesk etc specific cases
-        elseif (array_key_exists($gateway, $netbankingMap))
+        elseif (array_key_exists($gateway, $netbankingMap) === true)
         {
             $gatewayTag = $gateway;
         }
@@ -196,7 +196,7 @@ class MinAmount
 
         $defaultArray = constant('self::MIN_AMOUNT')['default'];
 
-        if (array_key_exists($category, $defaultArray))
+        if (array_key_exists($category, $defaultArray) === true)
         {
             $minAmount = $defaultArray[$category];
         }
