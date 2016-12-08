@@ -324,12 +324,12 @@ class EsDao
 
         if (isset($options['skip']))
         {
-            $params['body']['from'] = $options['skip'];
+            $params['body']['from'] = (int) $options['skip'];
         }
 
-        if (isset($options['size']))
+        if (isset($options['count']))
         {
-            $params['body']['size'] = $options['count'];
+            $params['body']['size'] = (int) $options['count'];
         }
 
         $results =  $this->es->searchHeimdall($params);
