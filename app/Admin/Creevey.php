@@ -44,7 +44,7 @@ class Creevey
             'multipart'=> [
                 [
                     'name'  => 'token',
-                    'contents' => Config::get('creevey.token')
+                    'contents' => config('creevey.token')
                 ],
                 [
                     'name'      => 'file',
@@ -70,7 +70,7 @@ class Creevey
 
     protected function getGuzzleInstance()
     {
-        $config = Config::get('creevey');
+        $config = config('creevey');
 
         return new Guzzle([
             // Base URI is used with relative requests
@@ -92,7 +92,7 @@ class Creevey
         $s3 = $this->getS3Client();
 
         $s3Obj = [
-            'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
+            'Bucket'        => config('aws.activation_bucket'),
             'Key'           => $this->merchantId."/screenshots/$remoteFilename",
             'ContentType'   => "image/jpeg",
             'Body'          => $data
@@ -105,7 +105,7 @@ class Creevey
     {
         $config = config('aws');
 
-        $config['region'] = env('AWS_BUCKET_REGION', 'us-east-1');
+        $config['region'] = $config['bucket_region'];
 
         $client = new \Aws\Sdk($config);
 
@@ -118,7 +118,7 @@ class Creevey
         $urls = $data[1];
         $this->name = $data[2];
 
-        $config = Config::get('creevey');
+        $config = config('creevey');
         $baseUrl = $config['root'];
 
         if ($config['mock'])
@@ -178,7 +178,7 @@ class Creevey
      */
     protected function getChannel()
     {
-        return Config::get('razorpay.slack.creevey');
+        return config('razorpay.slack.creevey');
     }
 
     public function handleError($status)
@@ -212,7 +212,7 @@ class Creevey
         {
             $fullPath = $this->dir . "/$filename";
             $s3Obj = [
-                'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+                'Bucket'        => config('aws.activation_bucket'),
                 'Key'           => $this->merchantId."/screenshots/$filename",
                 'ContentType'   => "image/jpeg",
                 'SourceFile'    => $fullPath,
