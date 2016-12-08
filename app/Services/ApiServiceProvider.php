@@ -91,6 +91,10 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
+        $this->app->singleton('exchange', function($app)
+        {
+            return new Exchange($app);
+        });
 
         $this->registerApiMutex();
 
@@ -126,6 +130,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'maxmind',
             'bitly',
             'segment',
+            'exchange',
         );
     }
 

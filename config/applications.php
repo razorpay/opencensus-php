@@ -71,4 +71,9 @@ return array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
     ),
+
+    'exchange'  => [
+        'url'       => env('EXCHANGE_URL'),
+        'appId'     => env('EXCHANGE_APP_ID')
+    ],
 );
