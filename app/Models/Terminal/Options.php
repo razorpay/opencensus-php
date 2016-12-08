@@ -4,6 +4,8 @@ namespace RZP\Models\Terminal;
 
 class Options
 {
+    const FAILED = 'failed';
+
     protected $chance;
 
     protected static $testChance;

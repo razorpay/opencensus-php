@@ -110,6 +110,8 @@ class TraceCode
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
     const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
+    const TERMINAL_BOOST_INVALID                    = 'TERMINAL_BOOST_INVALID';
+    const TERMINAL_USED_BEFORE                      = 'TERMINAL_USED_BEFORE';
 
     const CARD_NETWORK_INVALID                      = 'CARD_NETWORK_INVALID';
 
@@ -198,12 +200,21 @@ class TraceCode
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_RECURRING_AUTH_REQUEST            = 'GATEWAY_RECURRING_AUTH_REQUEST';
+    const GATEWAY_RECURRING_AUTH_RESPONSE           = 'GATEWAY_RECURRING_AUTH_RESPONSE';
+    const GATEWAY_RECURRING_AUTH_ERROR              = 'GATEWAY_RECURRING_AUTH_ERROR';
+    const GATEWAY_VALIDATE_AUTH_REQUEST             = 'GATEWAY_VALIDATE_AUTH_REQUEST';
+    const GATEWAY_VALIDATE_AUTH_RESPONSE            = 'GATEWAY_VALIDATE_AUTH_RESPONSE';
+    const GATEWAY_VALIDATE_AUTH_ERROR               = 'GATEWAY_VALIDATE_AUTH_ERROR';
     const GATEWAY_VALIDATE_RESPONSE                 = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                  = 'GATEWAY_VALIDATE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                    = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_AUTHORIZE_RESPONSE                = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                 = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_AUTHORIZE_ERROR                   = 'GATEWAY_AUTHORIZE_ERROR';
+    const GATEWAY_VOID_RESPONSE                     = 'GATEWAY_VOID_RESPONSE';
+    const GATEWAY_VOID_REQUEST                      = 'GATEWAY_VOID_REQUEST';
+    const GATEWAY_VOID_ERROR                        = 'GATEWAY_VOID_ERROR';
     const GATEWAY_AUTH_REQUEST                      = 'GATEWAY_AUTH_REQUEST';
     const GATEWAY_SUPPORT_REQUEST                   = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE                  = 'GATEWAY_SUPPORT_RESPONSE';
@@ -234,12 +245,15 @@ class TraceCode
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
+    const GATEWAY_CALLBACK_EMPTY                    = 'GATEWAY_CALLBACK_EMPTY';
+    const GATEWAY_CALLBACK_PARES                    = 'GATEWAY_CALLBACK_PARES';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
     const GATEWAY_ABSENCE_CREATE                    = 'GATEWAY_ABSENCE_CREATE';
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -401,6 +415,10 @@ class TraceCode
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
+    // Trace code for Merchant Details
+    const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
+    const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -515,6 +533,9 @@ class TraceCode
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
         self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+
+        self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
+        self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
     );
 
     /**

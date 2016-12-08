@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -254,7 +255,11 @@ class Entity extends Base\PublicEntity
         self::SAVE              => 'bool',
         self::INTERNATIONAL     => 'bool',
         self::GATEWAY_CAPTURED  => 'bool',
+        self::LATE_AUTHORIZED   => 'bool',
     ];
+
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
 
 // --------------------- Generators --------------------------------------------
 
@@ -664,7 +669,12 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->isAttributeNull(self::AUTHORIZED_AT) === false);
+        return ($this->isAttributeNotNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasNotBeenAuthorized()
+    {
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
     }
 
     public function hasTransaction()
@@ -1380,5 +1390,20 @@ class Entity extends Base\PublicEntity
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(null);
+    }
+
+    /**
+     * List of all features based on various conditions
+     */
+    public function getPricingFeatures()
+    {
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        return $features;
     }
 }
