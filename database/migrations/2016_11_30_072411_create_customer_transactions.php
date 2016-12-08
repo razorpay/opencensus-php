@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 
-use RZP\Models\Customer\Transactions\Entity;
+use RZP\Models\Customer\Transaction\Entity;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -18,7 +18,7 @@ class CreateCustomerTransactions extends Migration
      */
     public function up()
     {
-        Schema::create(Table::CUSTOMER_TRANSACTIONS, function(Blueprint $table)
+        Schema::create(Table::CUSTOMER_TRANSACTION, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -81,18 +81,18 @@ class CreateCustomerTransactions extends Migration
      */
     public function down()
     {
-        Schema::table(Table::CUSTOMER_TRANSACTIONS, function($table)
+        Schema::table(Table::CUSTOMER_TRANSACTION, function($table)
         {
             $table->dropForeign(
-                Table::CUSTOMER_TRANSACTIONS . '_' . Entity::MERCHANT_ID . '_foreign');
+                Table::CUSTOMER_TRANSACTION . '_' . Entity::MERCHANT_ID . '_foreign');
         });
 
-        Schema::table(Table::CUSTOMER_TRANSACTIONS, function($table)
+        Schema::table(Table::CUSTOMER_TRANSACTION, function($table)
         {
             $table->dropForeign(
-                Table::CUSTOMER_TRANSACTIONS . '_' . Entity::CUSTOMER_ID . '_foreign');
+                Table::CUSTOMER_TRANSACTION . '_' . Entity::CUSTOMER_ID . '_foreign');
         });
 
-        Schema::drop(Table::CUSTOMER_TRANSACTIONS);
+        Schema::drop(Table::CUSTOMER_TRANSACTION);
     }
 }

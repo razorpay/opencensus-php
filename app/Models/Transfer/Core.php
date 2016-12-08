@@ -73,7 +73,7 @@ class Core extends Base\Core
 
         $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
 
-        $customerTxn = (new Customer\Transactions\Core)
+        $customerTxn = (new Customer\Transaction\Core)
                         ->createFromCustomerCredit($payment, $transfer->transaction->getAmount(), $to);
 
         $this->repo->saveOrFail($customerTxn);

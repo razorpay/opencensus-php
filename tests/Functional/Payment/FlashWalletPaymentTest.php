@@ -44,7 +44,7 @@ class FlashWalletPaymentTest extends TestCase
 
         $customerBalance = $this->getLastEntity('customer_balance', true);
 
-        $customerTransaction = $this->getLastEntity('customer_transactions', true);
+        $customerTransaction = $this->getLastEntity('customer_transaction', true);
 
         $expected = $this->testData[__FUNCTION__];
 
@@ -78,7 +78,7 @@ class FlashWalletPaymentTest extends TestCase
 
         $customerBalance = $this->getLastEntity('customer_balance', true);
 
-        $customerTransaction = $this->getLastEntity('customer_transactions', true);
+        $customerTransaction = $this->getLastEntity('customer_transaction', true);
 
         $expected = $this->testData[__FUNCTION__];
 

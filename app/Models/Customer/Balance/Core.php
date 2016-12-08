@@ -21,20 +21,11 @@ class Core extends Base\Core
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
-        $balanceData = [
-            Entity::NAME                => $this->merchant->getBillingLabelElseName(),
-            Entity::BALANCE             => 0,
-            Entity::MAX_BALANCE         => Entity::DEFAULT_MAX_BALANCE,
-            Entity::DAILY_USAGE         => Entity::DEFAULT_DAILY_USAGE,
-            Entity::WEEKLY_USAGE        => Entity::DEFAULT_WEEKLY_USAGE,
-            Entity::MONTHLY_USAGE       => Entity::DEFAULT_MONTHLY_USAGE,
-        ];
-
         $balance->customer()->associate($customer);
 
         $balance->merchant()->associate($this->merchant);
 
-        $balance->build($balanceData);
+        $balance->build();
 
         $this->repo->saveOrFail($balance);
 
@@ -66,7 +57,7 @@ class Core extends Base\Core
      * @param  int    $amount
      * @return Entity
      */
-    public function credit(Entity $balance, int $amount) : Entity
+    public function credit(Entity $balance, int $amount, bool $isRefund = false) : Entity
     {
         $balance->getValidator()->validateBalanceForCredit($balance, $amount);
 
@@ -89,7 +80,8 @@ class Core extends Base\Core
         $balance = $this->repo->customer_balance
                         ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
-        if ($balance !== null and $balance instanceof Entity)
+        if (($balance !== null) and
+            ($balance instanceof Entity))
         {
             return $balance;
         }
@@ -111,6 +103,6 @@ class Core extends Base\Core
         $balance = $this->repo->customer_balance
                         ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
 
-        return $this->credit($balance, $amount);
+        return $this->credit($balance, $amount, truerue);
     }
 }

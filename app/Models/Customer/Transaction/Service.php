@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Transactions;
+namespace RZP\Models\Customer\Transaction;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -20,7 +20,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('get_statement', $input);
 
-        $entities = $this->repo->customer_transactions
+        $entities = $this->repo->customer_transaction
                     ->fetchCustomerStatement($input, $customerId, $this->merchant->getId());
 
         return $entities->toArrayPublic();

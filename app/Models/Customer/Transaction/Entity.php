@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Transactions;
+namespace RZP\Models\Customer\Transaction;
 
 use RZP\Models\Base;
 
@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'ctxn';
 
-    protected $entity = 'customer_transactions';
+    protected $entity = 'customer_transaction';
 
     protected $generateIdOnCreate = true;
 

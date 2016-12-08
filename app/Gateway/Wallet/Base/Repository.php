@@ -45,9 +45,4 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY_REFUND_ID, '=', $gatewayRefundId)
                     ->firstOrFail();
     }
-
-    protected function validateWallet($attribute, $value)
-    {
-        Processor\Wallet::validateExists($value);
-    }
 }

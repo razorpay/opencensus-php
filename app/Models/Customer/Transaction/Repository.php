@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Transactions;
+namespace RZP\Models\Customer\Transaction;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -8,7 +8,7 @@ use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'customer_transactions';
+    protected $entity = 'customer_transaction';
 
     protected $entityFetchParamRules = [
         'customer_id'  => 'sometimes|string|size:19'

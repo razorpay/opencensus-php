@@ -27,8 +27,6 @@ class CreateCustomerBalance extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->string(Entity::NAME, 50);
-
             $table->integer(Entity::BALANCE)
                   ->nullable();
 

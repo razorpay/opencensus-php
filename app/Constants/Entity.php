@@ -56,7 +56,7 @@ class Entity
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSFER              = 'transfer';
     const CUSTOMER_BALANCE      = 'customer_balance';
-    const CUSTOMER_TRANSACTIONS = 'customer_transactions';
+    const CUSTOMER_TRANSACTION  = 'customer_transaction';
 
     //
     // Gateway entities
@@ -138,7 +138,7 @@ class Entity
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
-        self::CUSTOMER_TRANSACTIONS => \RZP\Models\Customer\Transactions::class,
+        self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
     );
 
     protected static $repository = array(

@@ -236,7 +236,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $statement = (new Customer\Transactions\Service)->getStatement($id, $input);
+        $statement = (new Customer\Transaction\Service)->getStatement($id, $input);
 
         return ApiResponse::json($statement);
     }

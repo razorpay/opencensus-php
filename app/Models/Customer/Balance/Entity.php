@@ -10,21 +10,11 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const CUSTOMER_ID   = 'customer_id';
     const MERCHANT_ID   = 'merchant_id';
-    const NAME          = 'name';
     const BALANCE       = 'balance';
     const DAILY_USAGE   = 'daily_usage';
     const WEEKLY_USAGE  = 'weekly_usage';
     const MONTHLY_USAGE = 'monthly_usage';
     const MAX_BALANCE   = 'max_balance';
-
-    // RBI-defined maximum limit for wallet balance
-    const DEFAULT_MAX_BALANCE   = 2000000;
-
-    // Default limits for daily/weekly/monthly wallet usage
-    const DEFAULT_DAILY_USAGE   = 2000000;
-    const DEFAULT_WEEKLY_USAGE  = 2000000;
-    const DEFAULT_MONTHLY_USAGE = 2000000;
-
 
     protected static $sign = 'cust';
 
@@ -33,7 +23,6 @@ class Entity extends Base\PublicEntity
     public $incrementing = true;
 
     protected $fillable = [
-        self::NAME,
         self::BALANCE,
         self::DAILY_USAGE,
         self::WEEKLY_USAGE,
@@ -44,7 +33,6 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
-        self::NAME,
         self::BALANCE,
         self::DAILY_USAGE,
         self::WEEKLY_USAGE,
@@ -56,8 +44,17 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
+        self::MONTHLY_USAGE,
         self::CREATED_AT,
         self::UPDATED_AT
+    ];
+
+    protected $defaults = [
+        self::BALANCE       => 0,
+        self::MAX_BALANCE   => 2000000,
+        self::DAILY_USAGE   => 0,
+        self::WEEKLY_USAGE  => 0,
+        self::MONTHLY_USAGE => 0,
     ];
 
     protected $publicSetters = [
@@ -118,7 +115,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Helpers ----------------------------
 
-    public function addBalance($amount) //change to protected
+    protected function addBalance(int $amount)
     {
         $this->checkNumeric($amount);
 
@@ -127,7 +124,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $balance);
     }
 
-    public function deductBalance($amount) //cahnge to protected
+    public function deductBalance($amount) //@todo: Refactor, change to protected
     {
         $this->checkNumeric($amount);
 

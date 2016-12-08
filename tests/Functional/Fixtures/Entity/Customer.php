@@ -151,7 +151,6 @@ class Customer extends Base
         $customerBalanceValues = [
             'customer_id'   => $customer->getId(),
             'merchant_id'   => $merchantId,
-            'name'          => 'NewWallet',
             'balance'       => 0,
             'daily_usage'   => 2000000,
             'weekly_usage'  => 2000000,

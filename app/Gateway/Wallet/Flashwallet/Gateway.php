@@ -45,7 +45,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            (new Customer\Transactions\Service)->createForRefund($customerId, $input['amount']);
+            (new Customer\Transaction\Service)->createForRefund($customerId, $input['amount']);
         }
         catch (\Throwable $ex)
         {

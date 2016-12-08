@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Customer\Transactions;
+namespace RZP\Models\Customer\Transaction;
 
 class Type
 {

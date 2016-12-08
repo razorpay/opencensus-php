@@ -1738,7 +1738,7 @@ trait Authorize
 
     protected function processFlashWalletPayment(Payment\Entity $payment)
     {
-        $customerTxn = (new Customer\Transactions\Core)
+        $customerTxn = (new Customer\Transaction\Core)
                         ->createForCustomerDebit($payment);
 
         $this->repo->saveOrFail($customerTxn);
