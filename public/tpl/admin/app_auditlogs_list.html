@@ -51,38 +51,40 @@
   </div>
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
-    <h4>Admin User Details</h4>
+    <h4>Admin User</h4>
 
-    <table class="table table-striped b-t b-light">
-      <thead>
-        <tr>
-          <th ng-show="data.admin.username">Username</th>
-          <th ng-show="data.admin.email">Email</th>
-          <th ng-show="data.admin.employee_code">Employee Code</th>
-          <th ng-show="data.admin.branch_code">Branch Code</th>
-          <th ng-show="data.admin.department_code">Department Code</th>
-          <th ng-show="data.admin.supervisor_code">Supervisor Code</th>
-          <th ng-show="data.admin.location_code">Location Code</th>
-          <th ng-show="data.admin.roles.length">Roles</th>
-          <th ng-show="data.admin.groups.length">Groups</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td ng-show="data.admin.username">{{ data.admin.username }}</td>
-          <td ng-show="data.admin.email">{{ data.admin.email }}</td>
-          <td ng-show="data.admin.employee_code">{{ data.admin.employee_code }}</td>
-          <td ng-show="data.admin.branch_code">{{ data.admin.branch_code }}</td>
-          <td ng-show="data.admin.department_code">{{ data.admin.department_code }}</td>
-          <td ng-show="data.admin.supervisor_code">{{ data.admin.supervisor_code }}</td>
-          <td ng-show="data.admin.location_code">{{ data.admin.location_code }}</td>
-          <th ng-show="data.admin.roles.length">{{ data.admin.roles.join(', ') }}</th>
-          <th ng-show="data.admin.groups.length">{{ data.admin.groups.join(', ') }}</th>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th ng-show="data.admin.username">Username</th>
+            <th ng-show="data.admin.email">Email</th>
+            <th ng-show="data.admin.employee_code">Employee</th>
+            <th ng-show="data.admin.branch_code">Branch</th>
+            <th ng-show="data.admin.department_code">Department</th>
+            <th ng-show="data.admin.supervisor_code">Supervisor</th>
+            <th ng-show="data.admin.location_code">Location</th>
+            <th ng-show="data.admin.roles.length">Roles</th>
+            <th ng-show="data.admin.groups.length">Groups</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td ng-show="data.admin.username">{{ data.admin.username }}</td>
+            <td ng-show="data.admin.email">{{ data.admin.email }}</td>
+            <td ng-show="data.admin.employee_code">{{ data.admin.employee_code }}</td>
+            <td ng-show="data.admin.branch_code">{{ data.admin.branch_code }}</td>
+            <td ng-show="data.admin.department_code">{{ data.admin.department_code }}</td>
+            <td ng-show="data.admin.supervisor_code">{{ data.admin.supervisor_code }}</td>
+            <td ng-show="data.admin.location_code">{{ data.admin.location_code }}</td>
+            <td ng-show="data.admin.roles.length">{{ data.admin.roles.join(', ') }}</td>
+            <td ng-show="data.admin.groups.length">{{ data.admin.groups.join(', ') }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <h4>Event Details</h4>
+    <h4>Event</h4>
 
     <table class="table table-striped b-t b-light">
       <thead>
@@ -103,7 +105,43 @@
       </tbody>
     </table>
 
-    <h4>Extra Details</h4>
+    <h4 ng-show="data.entity.change">Change</h4>
+
+    <p ng-show="data.entity.change.old"><em>Old Data:</em></p>
+
+    <table ng-show="data.entity.change" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.entity.change.old">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p ng-show="data.entity.change.new"><em>New Data:</em></p>
+
+    <table ng-show="data.entity.change" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.entity.change.new">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Extra</h4>
 
     <table class="table table-striped b-t b-light">
       <thead>
@@ -122,7 +160,7 @@
       </tbody>
     </table>
 
-    <h4>Other Details</h4>
+    <h4>Other</h4>
 
     <table class="table table-striped b-t b-light">
       <thead>
