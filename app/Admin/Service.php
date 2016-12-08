@@ -1709,7 +1709,7 @@ class Service extends Base\Service
     {
         $s3 = $this->getS3Client();
 
-        $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
+        $bucket = env('AWS_ACTIVATION_BUCKET');
         $keys = MerchantDetails\Entity::getUrlKeys();
 
         $links = [];
@@ -1717,10 +1717,13 @@ class Service extends Base\Service
         foreach ($keys as $key)
         {
             $filename = "$id/screenshots/$key.jpg";
-            $links[$key] = $s3->getObjectUrl($bucket, $filename,
+            $links[$key] = $s3->getObjectUrl(
+                $bucket,
+                $filename,
                 '+10 minutes', [
                     'https'     => true
-            ]);
+                ]
+            );
         }
 
         return $links;

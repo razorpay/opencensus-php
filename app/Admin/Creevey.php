@@ -10,11 +10,11 @@ use VIPSoft\Unzip\Unzip;
 
 class Creevey
 {
-    protected static $HEADERS = [
+    const HEADERS = [
         'Content-Type' => 'application/json'
     ];
 
-    protected static $OPTIONS = [
+    const OPTIONS = [
         'timeout'   => 200,
         // This is not used for authentication, as expected
         'useragent' => 'Razorpay/Dashboard'
@@ -54,7 +54,6 @@ class Creevey
             ]
         ];
 
-        $relativeUrl = '/1n9zuwq1';
         $relativeUrl = "/convert/$key.jpg";
 
         $response = $this->getGuzzleInstance()->post($relativeUrl, $data);
@@ -72,13 +71,13 @@ class Creevey
     protected function getGuzzleInstance()
     {
         $config = Config::get('creevey');
+
         return new Guzzle([
             // Base URI is used with relative requests
-            //'base_uri' => 'http://requestb.in',
             'base_uri' => $config['root'],
             // You can set any number of default request options.
-            'timeout'  => 200,
-            //'headers'  => self::$HEADERS
+            'timeout'  => self::OPTIONS['timeout'],
+            'headers'  => self::HEADERS
         ]);
     }
 
@@ -90,16 +89,27 @@ class Creevey
      */
     protected function uploadSingleImageToS3($remoteFilename, $data)
     {
-        $s3 =  AWS::get('s3');
+        $s3 = $this->getS3Client();
 
         $s3Obj = [
-            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
             'Key'           => $this->merchantId."/screenshots/$remoteFilename",
             'ContentType'   => "image/jpeg",
             'Body'          => $data
         ];
 
         $s3->putObject($s3Obj);
+    }
+
+    protected function getS3Client()
+    {
+        $config = config('aws');
+
+        $config['region'] = env('AWS_BUCKET_REGION', 'us-east-1');
+
+        $client = new \Aws\Sdk($config);
+
+        return $client->createClient('S3');
     }
 
     public function fire($job, array $data)
@@ -127,9 +137,9 @@ class Creevey
         try
         {
             $response = Requests::post($baseUrl,
-                self::$HEADERS,
+                self::HEADERS,
                 $postData,
-                self::$OPTIONS
+                self::OPTIONS
             );
 
             if ($response->success)
@@ -196,7 +206,8 @@ class Creevey
 
     public function uploadToS3($images)
     {
-        $s3 =  AWS::get('s3');
+        $s3 = $this->getS3Client();
+
         foreach ($images as $filename)
         {
             $fullPath = $this->dir . "/$filename";
