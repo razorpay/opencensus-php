@@ -173,6 +173,7 @@ class Repository extends Base\Repository
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
                     ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
                     ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->status(Payment\Status::AUTHORIZED)
@@ -594,7 +595,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
