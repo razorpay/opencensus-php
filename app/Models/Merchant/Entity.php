@@ -67,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,
@@ -103,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
+        self::AUTO_REFUND_DELAY,
         self::BRAND_COLOR,
         self::RISK_RATING,
         self::CREATED_AT,
@@ -142,7 +144,6 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => 'bool',
         self::CATEGORY              => 'int',
         self::SETTLEMENT_SCHEDULE   => 'int',
-        self::AUTO_REFUND_DELAY     => 'int',
     );
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -538,6 +539,39 @@ class Entity extends Base\PublicEntity
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)
+    {
+        if ($autoRefundDelayPeriod === null)
+        {
+            $this->attributes[self::AUTO_REFUND_DELAY] = null;
+            return;
+        }
+
+        $autoRefundDelay = explode(' ', $autoRefundDelayPeriod);
+
+        $time = $autoRefundDelay[0];
+        $duration = $autoRefundDelay[1];
+
+        switch ($duration)
+        {
+            case 'mins':
+                $multipier = 60;
+                break;
+
+            case 'hours':
+                $multipier = 3600;
+                break;
+
+            case 'days':
+                $multipier = 86400;
+                break;
+        }
+
+        $delay = $time * $multipier;
+
+        $this->attributes[self::AUTO_REFUND_DELAY] = (int) $delay;
     }
 
     protected function setPublicLogoUrlAttribute(array & $array)

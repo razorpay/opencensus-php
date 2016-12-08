@@ -179,7 +179,7 @@ class RefundTest extends TestCase
     public function testRefundPaymentsWithRefundDelay()
     {
         // Change auto refund delay to 2 days
-        $this->fixtures->merchant->editAutoRefundDelay(172800);
+        $this->fixtures->merchant->editAutoRefundDelay('2 days');
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
 
