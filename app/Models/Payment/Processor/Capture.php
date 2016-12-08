@@ -51,6 +51,11 @@ trait Capture
 
         $amount = $payment->getAmount();
 
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $amount -= $payment->getFee();
+        }
+
         // set auto-capture 1
         $payment->setAutoCapturedTrue();
 
@@ -186,8 +191,7 @@ trait Capture
                     'payment_id' => $payment->getId(),
                     'amount' => $amount,
                     'message' => 'Adds fee to the amount because fee bearer is customer',
-                ]
-            );
+                ]);
         }
 
         $payment->getValidator()->captureValidate($payment, $amount);

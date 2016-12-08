@@ -79,6 +79,17 @@ class GatewayController extends Controller
 
         $data = [];
 
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
+            [
+                'input'     => $input,
+                'body'      => Request::getContent(),
+                'headers'   => Request::header(),
+                'gateway'   => $gateway,
+            ]);
+
         switch ($gateway)
         {
             case 'billdesk':
@@ -87,17 +98,6 @@ class GatewayController extends Controller
 
             case 'wallet_olamoney':
             case 'upi_hdfc':
-                $trace = $this->app['trace'];
-
-                $trace->info(
-                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                    [
-                        'input'     => $input,
-                        'body'      => Request::getContent(),
-                        'headers'   => Request::header(),
-                        'gateway'   => $gateway,
-                    ]);
-
                 break;
 
             case 'wallet_freecharge':
