@@ -18,7 +18,8 @@ class Core extends Base\Core
     {
         $amount = $payment->getAmount();
 
-        $customerTxn = $this->createEntityForType('debit', $payment->merchant, $amount, $payment->customer);
+        $customerTxn = $this->createEntityForType(
+            'debit', $payment->merchant, $amount, $payment->customer);
 
         $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);
 
@@ -80,17 +81,21 @@ class Core extends Base\Core
             Entity::DESCRIPTION         => 'NA', // ? todo
         ];
 
-        if ($type === 'debit')
+        if ($type === Entity::DEBIT)
         {
             $customerTxn->setDebit($amount);
 
             $customerTxn->setCredit(0);
         }
-        else
+        else if ($type === Entity::CREDIT)
         {
             $customerTxn->setCredit($amount);
 
             $customerTxn->setDebit(0);
+        }
+        else
+        {
+            assert (false);
         }
 
         $customerTxn->customer()->associate($customer);
@@ -101,5 +106,4 @@ class Core extends Base\Core
 
         return $customerTxn;
     }
-
 }
