@@ -436,13 +436,13 @@ class Service extends Base\Service
         return ['count' => $unactivatedAccounts + $unusedAccounts];
     }
 
-    public function searchAuditLogs($orgId)
+    public function searchAuditLogs($orgId, $input)
     {
         try
         {
             $esDao = new EsDao();
 
-            return $esDao->searchAuditLogs($orgId);
+            return $esDao->searchAuditLogs($orgId, $input);
         }
         catch(\Exception $e)
         {

@@ -302,7 +302,7 @@ class EsDao
         }
     }
 
-    public function searchAuditLogs($orgId)
+    public function searchAuditLogs($orgId, $options = [])
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
@@ -321,6 +321,17 @@ class EsDao
                 ]
             ]
         ];
+
+        if (isset($options['skip']))
+        {
+            $params['body']['from'] = $options['skip'];
+        }
+
+        if (isset($options['size']))
+        {
+            $params['body']['size'] = $options['count'];
+        }
+
         $results =  $this->es->searchHeimdall($params);
 
         $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
