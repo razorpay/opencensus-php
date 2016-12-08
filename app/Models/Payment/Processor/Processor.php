@@ -297,29 +297,23 @@ class Processor
     }
 
     /**
-     * Transfer a captured payment to a customer or merchant
+     * Transfer a captured payment to a customer or another Razorpay account
      *
-     * @param  string $id    Pamyent ID
+     * @param  string $id    Payment ID
      * @param  array  $input Input Array
      * @throws Exception\BadRequestException
      */
     public function transfer(string $id, array $input)
     {
-        $this->trace->info(TraceCode::PAYMENT_TRANSFER_REQUEST,
-            [
-                'payment_id' => $id,
-                'input'      => $input
-            ]);
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_REQUEST,
+            ['payment_id' => $id, 'input' => $input]);
 
         $payment = $this->retrieve($id);
 
         $payment->getValidator()->validateInput('transfer', $input);
 
-        if ($payment->isCaptured() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
-        }
+        $payment->getValidator()->validateIsCaptured($payment);
 
         return $this->repo->transaction(function () use ($payment, $input)
         {

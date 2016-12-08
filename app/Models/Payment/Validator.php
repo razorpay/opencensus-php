@@ -318,6 +318,15 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
+    public function validateIsCaptured($payment)
+    {
+        if ($payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+    }
+
     public function captureAmountValidate($payment, $amount)
     {
         $amount = (int) $amount;
