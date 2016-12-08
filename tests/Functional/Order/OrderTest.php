@@ -328,9 +328,9 @@ class OrderTest extends TestCase
 
         if ($payment['amount'] === 50000)
         {
-            $this->assertEquals($feesArray['input']['fee'], 1173);
+            $this->assertEquals(1173, $feesArray['input']['fee']);
 
-            $this->assertEquals($feesArray['display']['service_tax'], 1.49);
+            $this->assertEquals(1.49, $feesArray['display']['service_tax']);
         }
 
         return $feesArray;
