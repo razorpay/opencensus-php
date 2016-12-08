@@ -132,15 +132,25 @@ class Gateway
      *
      * @var array
      */
-    public static $authAndCapture = array(
+    public static $authAndCapture = [
         self::HDFC => [
-            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
+          self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
         self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
         self::FIRST_DATA => [],
-    );
+    ];
+
+    /**
+    * Card gateways which support full auth reversal
+    *
+    * @var array
+    */
+    public static $reverse = [
+        // self::CYBERSOURCE
+        self::FIRST_DATA
+    ];
 
 
     /**
@@ -426,6 +436,11 @@ class Gateway
         return self::$channels[$gateway];
     }
 
+    public static function supportsReverse($gateway)
+    {
+        return in_array($gateway, self::$reverse, true);
+    }
+
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
@@ -531,7 +546,7 @@ class Gateway
                 (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 
-    public static function getGatewaysForNetbankingBank($bank)
+    public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
     {
         $gateways = [];
 
@@ -544,7 +559,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
             {
                 $gateways[] = $netbankingGateway;
             }

@@ -34,6 +34,7 @@ putenv("APP_ENV=$env");
 
 $file = $app->environmentFile();
 
+
 $cascadingEnvFile = '.env.' . $env;
 
 //
@@ -62,7 +63,6 @@ if (! function_exists('read_env_file'))
         $dotenv->load();
     }
 }
-
 read_env_file($envDir, '.env.vault');
 read_env_file($envDir, $cascadingEnvFile);
 read_env_file($envDir, '.env.defaults');

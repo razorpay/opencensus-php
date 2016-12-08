@@ -59,18 +59,69 @@ class NetbankingIciciGatewayTest extends TestCase
         assert($content['payment']['verified'] === 1);
     }
 
+    public function testRefundFileGeneration()
+    {
+        // Make 3 test payments
+        $this->testPayment();
+
+        $this->testPayment();
+
+        $this->testPayment();
+
+        $payments = $this->getEntities('payment', [], true);
+
+        // We are saying that createdAt = yesterday at 10:30 AM
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+
+        // Set payment dates to yesterday
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $createdAt,
+                                                              'authorized_at' => $createdAt + 10,
+                                                              'captured_at' => $createdAt + 20]);
+        }
+
+        // Set the transactions to be reconciled today
+        $transactions = $this->getEntities('transaction', [], true);
+
+        // ReconciledAt = today @ 05:13 am
+        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+
+        foreach ($transactions['items'] as $transaction)
+        {
+            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+        }
+
+        // there are 3 test payments. Select the last one to refund. Index 2 = payment 3
+        $lastPayment = $payments['items'][2];
+
+        // Refund Re.1 first - partial
+        // $refundPayment = $this->refundPayment($lastPayment['id'], 100);
+
+        // Refund the remaining amount
+        $refundPayment = $this->refundPayment($lastPayment['id']);
+
+        // sd($refundPayment);
+
+        sd('111');
+    }
+
     protected function doNetbankingIciciPayment($paymentAction)
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'ICIC';
 
         // Switch case
-        $switch = array(
-            'Auth'           => $this->doAuthPayment($payment),
-            'AuthAndCapture' => $this->doAuthAndCapturePayment($payment)
-        );
+        switch ($paymentAction)
+        {
+            case 'Auth':
+                $payment = $this->doAuthPayment($payment);
+                break;
 
-        $payment = $switch[$paymentAction];
+            default:
+                $payment = $this->doAuthAndCapturePayment($payment);
+                break;
+        }
 
         return $payment;
     }

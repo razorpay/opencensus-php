@@ -409,8 +409,6 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        // mutex??
-        // sd($this);
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
             if (($payment->getTransactionId() !== null) or
