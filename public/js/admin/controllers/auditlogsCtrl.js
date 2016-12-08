@@ -22,15 +22,13 @@ app.controller('AuditlogsCtrl', [
     };
 
     $scope.prev = function () {
-      $scope.pager.count -= 100;
-      $scope.pager.skip = $scope.pager.count - 100;
+      $scope.pager.skip -= $scope.pager.count;
 
       $scope.fetchAuditLogs();
     };
 
     $scope.next = function () {
-      $scope.pager.count += 100;
-      $scope.pager.skip = $scope.pager.count - 100;
+      $scope.pager.skip += $scope.pager.count;
 
       $scope.fetchAuditLogs();
     };
@@ -73,7 +71,8 @@ app.controller('AuditlogsCtrl', [
               $scope.audit_log_cache[v.id] = v.event;
             });
 
-            if (!data.data.length && $scope.pager.skip >= 100) {
+            if ((!data.data.length && $scope.pager.skip >= 100) ||
+                (data.data.length < $scope.pager.count)){
               $scope.pager.allowNext = false;
             }
             else {
