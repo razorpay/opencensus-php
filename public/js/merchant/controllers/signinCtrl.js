@@ -29,11 +29,16 @@ app.controller('SigninCtrl', [
       request.success(function (data) {
         if (data.success) {
           user.identity(true).then(function(user) {
-            console.log(user.merchants[user.id].pivot.role);
-            if (user.merchants[user.id].pivot.role === 'support') {
-              $state.go('app.payments.list');
-            } else {
-              $state.go('app.dashboard');
+            var role = user.merchants[user.id].pivot.role;
+            switch (role) {
+              case 'support':
+                $state.go('app.payments.list');
+                break;
+              case 'sellerapp':
+                $state.go('app.invoices');
+                break;
+              default:
+                $state.go('app.dashboard');
             }
           });
         } else {
