@@ -24,10 +24,9 @@ class GroupMapSeeder extends Seeder
 
         DB::transaction(function() use ($name)
         {
-            $id1 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id1,
+                    'id'            =>  'hEJJyhYr35v71S',
                     'name'          =>  'Some name one',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -37,10 +36,9 @@ class GroupMapSeeder extends Seeder
                     )
                 );
 
-            $id2 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id2,
+                    'id'            =>  'nh9Ixjoj22MdRk',
                     'name'          =>  'Some name two',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -52,16 +50,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id1,
-                    'entity_id'    =>  $id2,
+                    'group_id'     =>  'hEJJyhYr35v71S',
+                    'entity_id'    =>  'nh9Ixjoj22MdRk',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id3 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id3,
+                    'id'            =>  'JpSuVlMR67O1J7',
                     'name'          =>  'Some name three',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -73,16 +70,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id2,
-                    'entity_id'    =>  $id3,
+                    'group_id'     =>  'nh9Ixjoj22MdRk',
+                    'entity_id'    =>  'JpSuVlMR67O1J7',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id4 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id4,
+                    'id'            =>  'TDjd5yjJ6oL8qe',
                     'name'          =>  'Some name four',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -94,16 +90,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id3,
-                    'entity_id'    =>  $id4,
+                    'group_id'     =>  'JpSuVlMR67O1J7',
+                    'entity_id'    =>  'TDjd5yjJ6oL8qe',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id5 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id5,
+                    'id'            =>  'HEMH803EQRhLGK',
                     'name'          =>  'Some name five',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -115,16 +110,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id4,
-                    'entity_id'    =>  $id5,
+                    'group_id'     =>  'TDjd5yjJ6oL8qe',
+                    'entity_id'    =>  'HEMH803EQRhLGK',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id6 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id6,
+                    'id'            =>  'DQUM0vXtlSBaJp',
                     'name'          =>  'Some name six',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -136,16 +130,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id6,
-                    'entity_id'    =>  $id3,
+                    'group_id'     =>  'DQUM0vXtlSBaJp',
+                    'entity_id'    =>  'JpSuVlMR67O1J7',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id7 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id7,
+                    'id'            =>  'ZKXuBlfuwy3LpA',
                     'name'          =>  'Some name seven',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -157,16 +150,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id6,
-                    'entity_id'    =>  $id7,
+                    'group_id'     =>  'DQUM0vXtlSBaJp',
+                    'entity_id'    =>  'ZKXuBlfuwy3LpA',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id8 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id8,
+                    'id'            =>  'HAg9V9NnyLMepb',
                     'name'          =>  'Some name eight',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -178,16 +170,15 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id6,
-                    'entity_id'    =>  $id8,
+                    'group_id'     =>  'DQUM0vXtlSBaJp',
+                    'entity_id'    =>  'HAg9V9NnyLMepb',
                     'entity_type'  =>  'group'
                     )
                 );
 
-            $id9 = str_random(14);
             DB::table(Table::GROUP)->insert(
                 array(
-                    'id'            =>  $id9,
+                    'id'            =>  'df3AhChTlBtDEq',
                     'name'          =>  'Some name nine',
                     'description'   =>  'Some description',
                     'org_id'        =>  '6dLbNSpv5XbCOG',
@@ -199,12 +190,12 @@ class GroupMapSeeder extends Seeder
 
             DB::table(Table::GROUP_MAP)->insert(
                 array(
-                    'group_id'     =>  $id9,
-                    'entity_id'    =>  $id6,
+                    'group_id'     =>  'df3AhChTlBtDEq',
+                    'entity_id'    =>  'DQUM0vXtlSBaJp',
                     'entity_type'  =>  'group'
                     )
                 );
-            
+
         });
     }
 }
