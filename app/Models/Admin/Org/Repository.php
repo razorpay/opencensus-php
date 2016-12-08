@@ -18,7 +18,6 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
-        // Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     // These are admin allowed params to search on.
@@ -26,7 +25,6 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
-        // Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     public function isMerchantIdRequiredForFetch()
@@ -63,7 +61,6 @@ class Repository extends Base\Repository
     public function findOrFailWithHostname(string $orgId)
     {
         return $this->newQuery()
-                    // ->with('hostnames')
                     ->findOrFailPublic($orgId);
     }
 }
