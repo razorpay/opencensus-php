@@ -67,6 +67,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input
+        );
+
         $msg = $input['gateway']['msg'];
 
         $content = $this->getContentAfterChecksumVerification($msg);
