@@ -61,8 +61,7 @@ build:
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
-          # tech_bots
-          channel:  C06SYCWKX
+          channel:  tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
 
@@ -90,7 +89,6 @@ deploy:
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
-          # tech_bots
-          channel: C06SYCWKX
+          channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
