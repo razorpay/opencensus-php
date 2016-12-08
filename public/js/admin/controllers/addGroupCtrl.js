@@ -109,6 +109,7 @@ app.controller('AddGroupCtrl', [
 
     $scope.save = function (group) {
       var body = angular.extend({}, group);
+      var request;
 
       delete body.sub_groups;
 
@@ -132,7 +133,7 @@ app.controller('AddGroupCtrl', [
       if ($scope.group_id) {
         // Edit
 
-        var request = $http({
+        request = $http({
           url: '/admin/generic',
           method: 'PUT',
           params: {
@@ -150,7 +151,7 @@ app.controller('AddGroupCtrl', [
       else {
         // Create
 
-        var request = $http({
+        request = $http({
           url: '/admin/generic',
           method: 'POST',
           params: {
@@ -194,6 +195,8 @@ app.controller('AddGroupCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
+
+      return request;
     }
   }
 ])
