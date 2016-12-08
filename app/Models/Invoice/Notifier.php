@@ -115,8 +115,7 @@ class Notifier extends Base\Core
                     'invoice_id' => $this->invoice->getId(),
                     'sent_status' => $sent,
                     'contact' => $contact,
-                ]
-            );
+                ]);
         }
 
         return $sent;
@@ -132,13 +131,12 @@ class Notifier extends Base\Core
         {
             $this->trace->traceException(
                 $ex,
-                Trace::ERROR,
-                TraceCode::INVOICE_INVALID_CONTACT_NUMBER,
+                null,
+                null,
                 [
                     'contact' => $contact,
                     'invoice_id' => $this->invoice->getId(),
-                ]
-            );
+                ]);
 
             return false;
         }
@@ -153,13 +151,12 @@ class Notifier extends Base\Core
         {
             $this->trace->traceException(
                 $ex,
-                Trace::ERROR,
-                TraceCode::INVOICE_RAVEN_REQUEST_FAILED,
+                null,
+                null,
                 [
                     'contact' => $contact,
                     'invoice_id' => $this->invoice->getId(),
-                ]
-            );
+                ]);
 
             return false;
         }
