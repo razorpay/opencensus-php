@@ -163,48 +163,48 @@ class CaptureTest extends TestCase
         $this->app['config']->set('gateway.mock_atom', true);
 
         $createdAt = time() - rand(0, 23) * 60 * 60;
-        $updated_at = $createdAt;
+        $updatedAt = $createdAt;
 
         $payment = $this->fixtures->create(
-            'payment:authorized', ['created_at' => $createdAt, 'updated_at' => $updated_at]);
+            'payment:authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_authorized', ['created_at' => $createdAt, 'updated_at' => $updated_at]);
+            'payment:netbanking_authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-        $updated_at = $createdAt;
+        $updatedAt = $createdAt;
 
         $payment = $this->fixtures->create(
-            'payment:status_created', ['created_at' => $createdAt, 'updated_at' => $updated_at]);
+            'payment:status_created', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $payment = $this->fixtures->create(
-            'payment:captured', ['created_at' => $createdAt, 'updated_at' => $updated_at]);
+            'payment:captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_captured', ['created_at' => $createdAt, 'updated_at' => $updated_at]);
+            'payment:netbanking_captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $x = range(1,3);
 
         foreach ($x as $i)
         {
             $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updated_at = $createdAt;
+            $updatedAt = $createdAt;
 
             $payment = $this->fixtures->create(
                 'payment:authorized',
                 ['created_at' => $createdAt,
-                 'updated_at' => $updated_at]);
+                 'updated_at' => $updatedAt]);
         }
 
         foreach ($x as $i)
         {
             $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updated_at = $createdAt;
+            $updatedAt = $createdAt;
 
             $payment = $this->fixtures->create(
                 'payment:netbanking_authorized',
                 ['created_at' => $createdAt,
-                 'updated_at' => $updated_at]);
+                 'updated_at' => $updatedAt]);
         }
 
         $payment = $this->fixtures->create('payment:netbanking_authorized');

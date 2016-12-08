@@ -9,11 +9,6 @@ use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
-    /**
-     * Max auto refund delay as 5 days in seconds
-     */
-    const MAX_AUTO_REFUND_DELAY = 432000;
-
     const ID                        = 'id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
@@ -72,7 +67,6 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,

@@ -167,6 +167,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * This function is used to fetch the authorized payments where
+     * Merchant auto refund delay is null.
+     *
+     * @param $timestamp
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
         $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
@@ -182,7 +190,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getAuthorizedPaymentsForAutoRefund()
+    /**
+     * This function is used to fetch the authorized payments with
+     * merchant auto delay delay
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
+    public function getAuthorizedPaymentsWithAutoRefundDelay()
     {
         $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
         $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
@@ -190,7 +204,7 @@ class Repository extends Base\Repository
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
 
-        $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') >= ' . Merchant\Entity::AUTO_REFUND_DELAY;
+        $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))

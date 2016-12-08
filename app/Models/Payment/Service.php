@@ -606,9 +606,9 @@ class Service extends Base\Service
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay
         // Maximum delay can be 5 days
-        $partialPayments = $this->repo->payment->getAuthorizedPaymentsForAutoRefund();
+        $payments2 = $this->repo->payment->getAuthorizedPaymentsWithAutoRefundDelay();
 
-        $payments = $payments->merge($partialPayments);
+        $payments = $payments->merge($payments2);
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -618,7 +618,9 @@ class Service extends Base\Service
 
         $payments = $payments->shuffle();
 
-        $this->trace->info(TraceCode::PAYMENT_AUTO_REFUND_CRON, [
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_REFUND_CRON,
+            [
                 'count' => $authorized,
                 'start_time' => $time
             ]);
@@ -634,7 +636,9 @@ class Service extends Base\Service
                 $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment($payment);
 
-                $this->trace->info(TraceCode::PAYMENT_AUTO_REFUND, [
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTO_REFUND,
+                    [
                         'payment_id' => $payment->getId(),
                         'auto_refund_delay' => $merchant->getAutoRefundDelay()
                     ]);
@@ -862,8 +866,8 @@ class Service extends Base\Service
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
         $result = [
-            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
-            'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
+            'initial'   => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
+            'final'     => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
 
         $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
@@ -875,7 +879,7 @@ class Service extends Base\Service
     {
         $result = [
             // This holds the counts
-            'counts'=>[]
+            'counts' => []
         ];
 
         // This is the start of the day 00:00, $day ago
