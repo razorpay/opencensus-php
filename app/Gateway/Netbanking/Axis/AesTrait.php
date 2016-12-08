@@ -9,7 +9,7 @@ trait AesTrait
     public function encryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
-        $aes->setMasterKey($masterKey);
+        $aes->setKey($masterKey);
 
         return base64_encode($aes->encrypt($string));
     }
@@ -17,7 +17,7 @@ trait AesTrait
     public function decryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_ECB);
-        $aes->setMasterKey($masterKey);
+        $aes->setKey($masterKey);
 
         $encryptedString = base64_decode($string);
 

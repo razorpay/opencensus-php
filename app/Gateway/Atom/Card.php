@@ -45,7 +45,7 @@ class Card
         return substr($text, 0, -1 * $pad);
     }
 
-    public static  function encode($data)
+    public static function encode($data)
     {
         $blockSize = mcrypt_get_block_size(MCRYPT_DES, MCRYPT_MODE_ECB);
 

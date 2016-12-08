@@ -46,6 +46,7 @@ return array(
     'mock_paytm'              => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -187,8 +188,8 @@ return array(
     ),
 
     'netbanking_axis' => array(
-        'test_master_key' => env('AXIS_GATEWAY_TEST_MASTER_KEY'),
-        'test_pid' => env('AXIS_GATEWAY_TEST_PID'),
+        'test_master_key' => env('NETBANKING_AXIS_GATEWAY_TEST_MASTER_KEY'),
+        'test_pid' => env('NETBANKING_AXIS_GATEWAY_TEST_PID'),
     ),
 
     'sharp' => array(
