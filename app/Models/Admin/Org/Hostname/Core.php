@@ -50,8 +50,6 @@ class Core extends Base\Core
     {
         $orgHostname = $this->repo->org_hostname->findByHostname($hostname);
 
-        $orgHostname->setAuditAction(Action::DELETE_ORG_HOSTNAME);
-
-        $this->repo->deleteOrFail($orgHostname);
+        $this->repo->org_hostname->deleteOrFail($orgHostname);
     }
 }

@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'org_hostname';
 
-    protected $generateIdOnCreate = false;
+    public $incrementing = true;
 
     protected $fillable = [
         self::HOSTNAME

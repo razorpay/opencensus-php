@@ -20,10 +20,12 @@ class CreateOrgHostnamesTable extends Migration
         {
             $table->engine = 'InnoDB';
 
+            $table->increments('id');
+
             $table->char(OrgHostMap::ORG_ID);
 
             $table->string(OrgHostMap::HOSTNAME)
-                  ->unique();;
+                  ->unique();
 
             $table->integer(OrgHostMap::CREATED_AT);
 
@@ -35,7 +37,8 @@ class CreateOrgHostnamesTable extends Migration
 
             $table->foreign(OrgHostMap::ORG_ID)
                   ->references(Org::ID)
-                  ->on(Table::ORG);
+                  ->on(Table::ORG)
+                  ->on_delete('cascade');
         });
     }
 

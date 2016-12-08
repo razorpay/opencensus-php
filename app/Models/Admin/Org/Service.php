@@ -60,9 +60,7 @@ class Service extends Base\Service
     {
         $org = $this->core()->fetch($id);
 
-        $hostnames = array_map(create_function('$o', 'return $o->getHostname();'), $org->hostnames->all());
-
-        $this->trace->info(TraceCode::ERROR_EXCEPTION, ['hostnames' => $hostnames]);
+        $hostnames = $this->getArrayOfHostnames($org);
 
         $org = $org->toArrayPublic();
 
@@ -96,11 +94,24 @@ class Service extends Base\Service
 
             if (isset($input['hostname']) === true)
             {
-                // create hostname
-                $hostnames = explode(',', $input['hostname']);
+                $newHostnames = explode(',', $input['hostname']);
+                $newHostnames = array_map('trim', $newHostnames);
 
-                foreach ($hostnames as $hostname) {
-                    (new Hostname\Core)->firstOrCreate($org, $hostname);
+                $existingHostnames = $this->getArrayOfHostnames($org);
+
+                $this->trace->info(TraceCode::ERROR_EXCEPTION,
+                    ['newHostnames' => $newHostnames, 'existingHostnames' => $existingHostnames]);
+
+                $hostnamesToCreate = array_diff($newHostnames, $existingHostnames);
+
+                $hostnamesToDelete = array_diff($existingHostnames, $newHostnames);
+
+                foreach ($hostnamesToCreate as $hostname) {
+                    (new Hostname\Core)->create($org, $hostname);
+                }
+
+                foreach ($hostnamesToDelete as $hostname) {
+                    (new Hostname\Core)->delete($hostname);
                 }
             }
 
@@ -115,5 +126,12 @@ class Service extends Base\Service
         $orgs = $this->repo->org->fetch($input);
 
         return $orgs->toArrayPublic();
+    }
+
+    protected function getArrayOfHostnames(Entity $org)
+    {
+        $hostnames = array_map(create_function('$o', 'return $o->getHostname();'), $org->hostnames->all());
+
+        return $hostnames;
     }
 }
