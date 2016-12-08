@@ -100,7 +100,10 @@ class Service extends Base\Service
         {
             $admin->incrementFailedAttempts();
 
-            $this->fireAdminAction($admin, Action::LOGIN_FAIL, ['failed_attempts' => $admin->getFailedAttempts]);
+            $this->fireAdminAction(
+                $admin,
+                Action::LOGIN_FAIL,
+                ['failed_attempts' => $admin->getFailedAttempts()]);
 
             $this->repo->saveOrFail($admin);
 
