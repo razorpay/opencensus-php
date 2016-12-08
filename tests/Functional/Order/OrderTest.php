@@ -156,6 +156,29 @@ class OrderTest extends TestCase
         $this->assertAutoCaptureResponse($response, $payment, $order);
     }
 
+    public function testAutoCaptureFeeBearerCustomer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $feesArray = $this->testFees($payment);
+        $this->ba->privateAuth();
+
+        $amount = $payment['amount'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $order = $this->testCreateAutoCaptureOrder();
+
+        $payment['order_id'] = $order['id'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertAutoCaptureResponse($response, $payment, $order);
+    }
+
     public function testStatusAfterAutoCapturePaymentWCallback()
     {
         // Sharp gateway will make payment go via callback flow
@@ -297,5 +320,19 @@ class OrderTest extends TestCase
         );
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function testFees($payment)
+    {
+        $feesArray = $this->createAndGetFeesForPayment($payment);
+
+        if ($payment['amount'] === 50000)
+        {
+            $this->assertEquals($feesArray['input']['fee'], 1173);
+
+            $this->assertEquals($feesArray['display']['service_tax'], 1.49);
+        }
+
+        return $feesArray;
     }
 }
