@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID       = 'customer_id';
     const ENTITY_ID         = 'entity_id';
     const ENTITY_TYPE       = 'entity_type';
+    const TYPE              = 'type';
     const STATUS            = 'status';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::TYPE,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
@@ -43,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::TYPE,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
@@ -57,6 +60,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::STATUS,
+        self::TYPE,
         self::AMOUNT,
         self::CURRENCY,
         self::CREDIT,
@@ -114,6 +118,11 @@ class Entity extends Base\PublicEntity
     public function setCredit($amount)
     {
         $this->setAttribute(self::CREDIT, $amount);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
     }
 
 }

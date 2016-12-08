@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Balance;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Wallet;
 use RZP\Models\Transaction;
@@ -63,6 +64,11 @@ class Core extends Base\Core
 
         $balance->addBalance($amount);
 
+        if ($isRefund === false)
+        {
+            $balance = $this->updateUsages($balance, $amount);
+        }
+
         $this->repo->saveOrFail($balance);
 
         return $balance;
@@ -103,6 +109,104 @@ class Core extends Base\Core
         $balance = $this->repo->customer_balance
                         ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
 
-        return $this->credit($balance, $amount, truerue);
+        return $this->credit($balance, $amount, true);
+    }
+
+    protected function updateUsages(Entity $balance, int $amount)
+    {
+        $lastTxnTime = (new Customer\Transaction\Core)->getLastTransactionTime($balance);
+
+        // No previous transaction on the wallet
+        if ($lastTxnTime === null)
+        {
+            return $this->resetAllUsages($balance, $amount);
+        }
+
+        $this->checkTimestampForReset($lastTxnTime);
+
+        list($resetDay, $resetWeek, $resetMonth) = $this->checkTimestampForReset($lastTxnTime);
+
+        $balance = $this->updateDailyUsage($balance, $amount, $resetDay);
+
+        $balance = $this->updateWeeklyUsage($balance, $amount, $resetWeek);
+
+        $balance = $this->updateMonthlyUsage($balance, $amount, $resetMonth);
+
+        return $balance;
+    }
+
+    protected function checkTimestampForReset(Carbon $lastTxnTime)
+    {
+        $now = Carbon::now('Asia/Kolkata');
+
+        $resetDay = false;
+
+        $resetWeek = false;
+
+        $resetMonth = false;
+
+        if ($lastTxnTime->dayOfYear !== $now->dayOfYear)
+        {
+            $resetDay = true;
+        }
+
+        if ($lastTxnTime->weekOfYear !== $now->weekOfYear)
+        {
+            $resetWeek = true;
+        }
+
+        if ($lastTxnTime->month !== $now->month)
+        {
+            $resetMonth = true;
+        }
+
+        return [$resetDay, $resetWeek, $resetMonth];
+    }
+
+    protected function resetAllUsages(Entity $balance, int $amount)
+    {
+        $balance->setDailyUsage($amount);
+
+        $balance->setWeeklyUsage($amount);
+
+        $balance->setMonthlyUsage($amount);
+
+        return $balance;
+    }
+
+    protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay)
+    {
+        if ($resetDay === false)
+        {
+            $amount = $balance->getDailyUsage() + $amount;
+        }
+
+        $balance->setDailyUsage($amount);
+
+        return $balance;
+    }
+
+    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek)
+    {
+        if ($resetWeek === false)
+        {
+            $amount = $balance->getWeeklyUsage() + $amount;
+        }
+
+        $balance->setWeeklyUsage($amount);
+
+        return $balance;
+    }
+
+    protected function updateMonthlyUsage(Entity $balance, int $amount, bool $resetMonth)
+    {
+        if ($resetMonth === false)
+        {
+            $amount = $balance->getMonthlyUsage() + $amount;
+        }
+
+        $balance->setMonthlyUsage($amount);
+
+        return $balance;
     }
 }

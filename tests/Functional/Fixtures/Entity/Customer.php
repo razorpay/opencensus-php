@@ -152,9 +152,9 @@ class Customer extends Base
             'customer_id'   => $customer->getId(),
             'merchant_id'   => $merchantId,
             'balance'       => 0,
-            'daily_usage'   => 2000000,
-            'weekly_usage'  => 2000000,
-            'monthly_usage' => 2000000,
+            'daily_usage'   => 0,
+            'weekly_usage'  => 0,
+            'monthly_usage' => 0,
             'max_balance'   => 2000000,
         ];
 

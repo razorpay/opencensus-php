@@ -385,10 +385,21 @@ final class FactoryData
             'merchant_id'   => '10000gcustomer',
             'merchant_id'   => '10000000000000',
             'balance'       => 0,
-            'daily_usage'   => 2000000,
-            'weekly_usage'  => 2000000,
-            'monthly_usage' => 2000000,
+            'daily_usage'   => 0,
+            'weekly_usage'  => 0,
+            'monthly_usage' => 0,
             'max_balance'   => 2000000,
+        ]);
+
+        $factory(\RZP\Models\Customer\Transaction\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'status'            => 'transferred',
+            'amount'            => 100,
+            'debit'             => 100,
+            'credit'            => 10,
+            'balance'           => 0,
+            'description'       => 'NA'
         ]);
     }
 }

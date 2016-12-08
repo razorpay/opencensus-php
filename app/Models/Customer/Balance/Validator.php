@@ -31,7 +31,7 @@ class Validator extends Base\Validator
     {
         $monthlyUsage = $wallet->getMonthlyUsage();
 
-        if ($newBalance > $monthlyUsage)
+        if ($newBalance + $monthlyUsage > $wallet->getMaxBalance())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED);

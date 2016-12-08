@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
+        self::DAILY_USAGE,
+        self::WEEKLY_USAGE,
         self::MONTHLY_USAGE,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -75,13 +77,27 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
-    public function setBalance($balance)
+    public function setBalance(int $balance)
     {
         assert($balance >= 0);
 
         $this->setAttribute(self::BALANCE, $balance);
     }
 
+    public function setDailyUsage(int $amount)
+    {
+        $this->setAttribute(self::DAILY_USAGE, $amount);
+    }
+
+    public function setWeeklyUsage(int $amount)
+    {
+        $this->setAttribute(self::WEEKLY_USAGE, $amount);
+    }
+
+    public function setMonthlyUsage(int $amount)
+    {
+        $this->setAttribute(self::MONTHLY_USAGE, $amount);
+    }
 
     public function getCustomerId()
     {
@@ -115,7 +131,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Helpers ----------------------------
 
-    protected function addBalance(int $amount)
+    public function addBalance(int $amount)
     {
         $this->checkNumeric($amount);
 
@@ -135,38 +151,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $balance);
     }
 
-    /**
-     * Only this method should be public
-     * for updating balance.
-     * We need to check for balance going negative
-     * whenever we update balance
-     *
-     * @param  \RZP\Models\Transaction\Entity $txn
-     * @throws Exception\LogicException
-     */
-    public function updateBalance($txn)
-    {
-        $amount = $txn->getNetAmount();
-
-        // Negating the amount here because customer balance txn is a debit wrt merchants
-        // NetAmount for debits will be negative
-        $this->addBalance(-1 * $amount);
-
-        if ($this->getBalance() < 0)
-        {
-            $data = [
-                'balance' => $this->toArray(),
-                'transaction' => $txn->toArray(),
-                'amount' => $amount
-            ];
-
-            throw new Exception\LogicException(
-                'Something very wrong is happening! Balance is going negative',
-                null,
-                $data);
-        }
-    }
-
     protected function checkNumeric($arg)
     {
         if (is_int($arg) === false)
@@ -177,7 +161,6 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Helpers -------------------------
-
 
     protected function setPublicCustomerIdAttribute(array & $array)
     {

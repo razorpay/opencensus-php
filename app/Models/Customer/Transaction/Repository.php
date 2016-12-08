@@ -14,7 +14,6 @@ class Repository extends Base\Repository
         'customer_id'  => 'sometimes|string|size:19'
     ];
 
-
     /**
      * Fetches transaction statement for a customer balance account
      * Common pagination params apply (count, skip, from, to)
@@ -43,5 +42,17 @@ class Repository extends Base\Repository
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
+    }
+
+    public function fetchLastCreditTransaction(string $customerId, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CUSTOMER_ID, $customerId)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::TYPE, '!=', Type::REFUND)
+                    ->where(Entity::DEBIT, 0)
+                    ->where(Entity::CREDIT, '>', 0)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
     }
 }

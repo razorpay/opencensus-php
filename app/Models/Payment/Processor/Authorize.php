@@ -679,11 +679,6 @@ trait Authorize
     {
         $this->payment->customer()->associate($customer);
 
-        if ($payment->isWallet())
-        {
-            return;
-        }
-
         //
         // if token is set, payment is either from a saved card or is second recurring
         // else, the card needs to be saved or need to mark the payment as recurring (first recurring)

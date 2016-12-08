@@ -16,13 +16,6 @@ class Repository extends Base\Repository
         return $this->findByCustomerIdAndMerchant($customerId, $merchant, true);
     }
 
-    public function updateBalance($balance)
-    {
-        assert($this->isTransactionActive());
-
-        $balance->saveOrFail();
-    }
-
     public function findByCustomerIdAndMerchantSilent(string $customerId, Merchant\Entity $merchant)
     {
         $customerId = Entity::verifyIdAndSilentlyStripSign($customerId);

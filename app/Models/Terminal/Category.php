@@ -91,8 +91,6 @@ class Category
         'travel_agency'  => 'travel_agency',
     ];
 
-
-
     public static function getDefaultForMethod($method)
     {
         return self::getDefaultForType('method', $method);

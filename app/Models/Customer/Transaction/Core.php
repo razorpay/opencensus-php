@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Transaction;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
@@ -62,7 +63,9 @@ class Core extends Base\Core
 
         $customerTxn = $this->createEntityForType('credit', $this->merchant, $amount, $customer);
 
-        $balance = (new Customer\Balance\Service)->refund($customer, $amount);
+        $customerTxn->setType(Type::REFUND);
+
+        $balance = (new Customer\Balance\Core)->refund($customer->getPublicId(), $amount);
 
         $customerTxn->setBalance($balance->getBalance());
 
@@ -75,7 +78,8 @@ class Core extends Base\Core
 
         $txnData = [
             Entity::ENTITY_ID           => $customer->getId(),
-            Entity::ENTITY_TYPE         => Type::CUSTOMER,
+            Entity::ENTITY_TYPE         => 'customer',
+            Entity::TYPE                => Type::TRANSFER,
             Entity::STATUS              => 'transferred', // ? todo
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
@@ -106,5 +110,20 @@ class Core extends Base\Core
         $customerTxn->fillAndGenerateId($txnData);
 
         return $customerTxn;
+    }
+
+    public function getLastTransactionTime(Customer\Balance\Entity $balance)
+    {
+        $lastTxn = $this->repo
+                        ->customer_transaction
+                        ->fetchLastCreditTransaction(
+                            $balance->getCustomerId(), $this->merchant->getId());
+
+        if ($lastTxn === NULL)
+        {
+            return NULL;
+        }
+
+        return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
     }
 }

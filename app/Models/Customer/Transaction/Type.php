@@ -4,5 +4,6 @@ namespace RZP\Models\Customer\Transaction;
 
 class Type
 {
-    const CUSTOMER      = 'customer';
+    const TRANSFER      = 'transfer';
+    const REFUND        = 'refund';
 }

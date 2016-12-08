@@ -86,6 +86,41 @@ class PaymentTransferTest extends TestCase
         $this->testLastTransferEntity($customerId, 'customer', $amount);
     }
 
+    public function testTransferCustomerUsageFirstTxn()
+    {
+        $customerValues = [
+            'balance'       => 100,
+            'daily_usage'   => 100,
+            'weekly_usage'  => 100,
+            'monthly_usage' => 100,
+        ];
+
+        $customerBalance = $this->fixtures->create('customer:customer_balance', $customerValues);
+
+        $customerPublicId = $customerBalance->customer->getPublicId();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
+
+        $this->assertNull($this->getLastEntity('customer_transaction', true));
+
+        $this->startTest();
+
+        $customerBalance = $this->getLastEntity('customer_balance', true);
+
+        $expected = [
+            'balance'       => $amount + 100,
+            'daily_usage'   => $amount,
+            'weekly_usage'  => $amount,
+            'monthly_usage' => $amount,
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $customerBalance);
+    }
+
     protected function testLastTransferEntity($toId, $toType, int $amount)
     {
         $testData = [

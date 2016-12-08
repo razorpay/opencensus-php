@@ -104,4 +104,19 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testTransferCustomerUsageFirstTxn' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => null,
+                        'amount'   => null
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => []
+        ],
+    ]
 ];

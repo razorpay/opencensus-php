@@ -35,6 +35,8 @@ class CreateCustomerTransactions extends Migration
 
             $table->string(Entity::STATUS, 50);
 
+            $table->string(Entity::TYPE, 30);
+
             $table->bigInteger(Entity::AMOUNT)
                   ->unsigned();
 

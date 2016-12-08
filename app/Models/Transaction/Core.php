@@ -449,7 +449,7 @@ class Core extends Base\Core
 
         $transfer->transaction()->associate($txn);
 
-        $this->updateBalancesForTransfer($to, $txn);
+        $this->creditBalancesForTransfer($to, $txn);
 
         return $txn;
     }
@@ -459,11 +459,11 @@ class Core extends Base\Core
         return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    protected function updateBalancesForTransfer($to, $txn)
+    protected function creditBalancesForTransfer($to, $txn)
     {
         if ($to instanceof Customer\Entity)
         {
-            $this->updateCustomerBalance($to, $txn);
+            $this->creditCustomerBalance($to, $txn);
         }
 
         $this->updateBalances($txn, false);
@@ -513,17 +513,11 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
+    public function creditCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
     {
         $balance = $this->getCustomerBalanceLockForUpdate($customer);
 
-        $balance->updateBalance($txn);
-
-        $this->repo->customer_balance->updateBalance($balance);
-
-        $txn->setBalance($balance->getBalance());
-
-        return $txn;
+        $balance = (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
     }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
