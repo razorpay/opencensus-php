@@ -20,4 +20,11 @@ class Repository extends Base\Repository
                     ->where(Entity::HOSTNAME, '=', $hostname)
                     ->first();
     }
+
+    public function deleteHostnamesOfOrg(string $orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->delete();
+    }
 }

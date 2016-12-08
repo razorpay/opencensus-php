@@ -52,4 +52,9 @@ class Core extends Base\Core
 
         $this->repo->org_hostname->deleteOrFail($orgHostname);
     }
+
+    public function deleteHostnamesOfOrg(string $orgId)
+    {
+        $this->repo->org_hostname->deleteHostnamesOfOrg($orgId);
+    }
 }

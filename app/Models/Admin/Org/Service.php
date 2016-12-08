@@ -83,7 +83,14 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        return $this->core()->delete($id);
+        return $this->repo->transactionOnLiveAndTest(function() use ($id)
+        {
+            $this->core()->delete($id);
+
+            $orgId = Entity::verifyIdAndStripSign($id);
+
+            (new Hostname\Core)->deleteHostnamesOfOrg($orgId);
+        });
     }
 
     public function edit(string $id, array $input)
