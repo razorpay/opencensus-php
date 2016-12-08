@@ -102,8 +102,7 @@ app.controller('AddOrgCtrl', [
         delete data.body.admin;
         delete data.body.entity;
 
-        $scope.editOrg(data)
-        return
+        return $scope.editOrg(data)
       }
 
       data.body = organization;
@@ -124,6 +123,8 @@ app.controller('AddOrgCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
+
+      return request
     }
   }
 ])

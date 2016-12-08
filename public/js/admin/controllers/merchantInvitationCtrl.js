@@ -38,6 +38,8 @@ app.controller('MerchantInvitationCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
+
+      return request;
     }
   }
 ])

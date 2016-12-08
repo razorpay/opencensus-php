@@ -361,4 +361,24 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     }
   };
   }
-);
+).directive('asyncBtnClick', function() {
+  return {
+    restrict: 'A',
+    scope: {
+      onClick: '&asyncBtnClick'
+    },
+    link: function(scope, element, attrs) {
+      element.on('click', function() {
+        if (typeof scope.onClick === 'function') {
+          var returnFn = scope.onClick()
+          if (returnFn.then) {
+            element.attr('disabled', true)
+            returnFn.then(function() {
+              element.attr('disabled', false)
+            })
+          }
+        }
+      })
+    }
+  }
+});
