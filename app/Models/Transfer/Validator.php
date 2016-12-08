@@ -89,6 +89,12 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
+        if ($transferSum > $payment->getAmountUntransferred())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED);
+        }
+
         if ($transferSum > $merchantBalance->getBalance())
         {
             throw new Exception\BadRequestException(

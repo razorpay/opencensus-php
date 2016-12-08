@@ -12,6 +12,13 @@ use RZP\Models\Customer;
 
 class Core extends Base\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * Creates and saves a new transfer entity
      *
@@ -47,13 +54,17 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    public function createForPayment($payment, $input)
+    public function createForPayment($payment, array $input)
     {
         $transfers = new Base\PublicCollection;
 
         $merchantBalance = $this->repo->balance->getMerchantBalance($this->merchant);
 
         (new Validator)->validateTransfers($payment, $merchantBalance, $input);
+
+        $totalTransferAmount = $this->getTotalTransferAmount($input);
+
+        $this->updatePaymentTransferAmount($payment, $totalTransferAmount);
 
         foreach ($input as $transfer)
         {
@@ -68,10 +79,32 @@ class Core extends Base\Core
         return $transfers;
     }
 
+    protected function getTotalTransferAmount(array $input)
+    {
+        $amount = 0;
+
+        foreach ($input as $transfer)
+        {
+            $amount += $transfer['amount'];
+        }
+
+        return $amount;
+    }
+
+    protected function updatePaymentTransferAmount($payment, int $amount)
+    {
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $amount)
+        {
+            $payment->transferAmount($amount);
+
+            $this->repo->saveOrFail($payment);
+        });
+    }
+
     protected function customerTransfer($payment, $transfer)
     {
         $to = $this->repo->customer
-                   ->findByPublicIdAndMerchant($transfer['customer'], $this->merchant);
+                   ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $this->merchant);
 
         $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
 

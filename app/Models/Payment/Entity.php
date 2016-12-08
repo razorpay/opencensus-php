@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
+    const AMOUNT_TRANSFERRED    = 'amount_transferred';
     const STATUS                = 'status';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
@@ -114,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_TRANSFERRED,
         self::CURRENCY,
         self::STATUS,
         self::REFUND_STATUS,
@@ -212,24 +214,25 @@ class Entity extends Base\PublicEntity
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
     protected $defaults = array(
-        self::STATUS            => Status::CREATED,
-        self::REFUND_STATUS     => Refund\Status::NULL,
-        self::NOTES             => [],
-        self::AMOUNT_REFUNDED   => 0,
-        self::SIGNED            => 0,
-        self::VERIFIED          => null,
-        self::CAPTURED_AT       => null,
-        self::AUTO_CAPTURED     => 0,
-        self::SAVE              => false,
-        self::FEE               => null,
-        self::SERVICE_TAX       => null,
-        self::OTP_ATTEMPTS      => null,
-        self::OTP_COUNT         => null,
-        self::EMI_PLAN_ID       => null,
-        self::LATE_AUTHORIZED   => null,
-        self::RECURRING         => false,
-        self::INTERNATIONAL     => null,
-        self::VERIFY_BUCKET     => null,
+        self::STATUS                => Status::CREATED,
+        self::REFUND_STATUS         => Refund\Status::NULL,
+        self::NOTES                 => [],
+        self::AMOUNT_REFUNDED       => 0,
+        self::AMOUNT_TRANSFERRED    => 0,
+        self::SIGNED                => 0,
+        self::VERIFIED              => null,
+        self::CAPTURED_AT           => null,
+        self::AUTO_CAPTURED         => 0,
+        self::SAVE                  => false,
+        self::FEE                   => null,
+        self::SERVICE_TAX           => null,
+        self::OTP_ATTEMPTS          => null,
+        self::OTP_COUNT             => null,
+        self::EMI_PLAN_ID           => null,
+        self::LATE_AUTHORIZED       => null,
+        self::RECURRING             => false,
+        self::INTERNATIONAL         => null,
+        self::VERIFY_BUCKET         => null,
     );
 
     protected $amounts = array(
@@ -241,17 +244,18 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = [
-        self::RECURRING         => 'bool',
-        self::AMOUNT_AUTHORIZED => 'int',
-        self::AMOUNT_REFUNDED   => 'int',
-        self::AUTO_CAPTURED     => 'bool',
-        self::SIGNED            => 'bool',
-        self::AMOUNT            => 'int',
-        self::FEE               => 'int',
-        self::SERVICE_TAX       => 'int',
-        self::SAVE              => 'bool',
-        self::INTERNATIONAL     => 'bool',
-        self::LATE_AUTHORIZED   => 'bool',
+        self::RECURRING             => 'bool',
+        self::AMOUNT_AUTHORIZED     => 'int',
+        self::AMOUNT_REFUNDED       => 'int',
+        self::AMOUNT_TRANSFERRED    => 'int',
+        self::AUTO_CAPTURED         => 'bool',
+        self::SIGNED                => 'bool',
+        self::AMOUNT                => 'int',
+        self::FEE                   => 'int',
+        self::SERVICE_TAX           => 'int',
+        self::SAVE                  => 'bool',
+        self::INTERNATIONAL         => 'bool',
+        self::LATE_AUTHORIZED       => 'bool',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -796,6 +800,16 @@ class Entity extends Base\PublicEntity
     public function getAmountUnrefunded()
     {
         return $this->getAmount() - $this->getAmountRefunded();
+    }
+
+    public function getAmountTransferred()
+    {
+        return $this->getAttribute(SELF::AMOUNT_TRANSFERRED);
+    }
+
+    public function getAmountUntransferred()
+    {
+        return $this->getAmount() - $this->getAmountTransferred();
     }
 
     public function getCurrency()
@@ -1346,6 +1360,29 @@ class Entity extends Base\PublicEntity
         $amountRefunded = $this->getAmountRefunded() + $amount;
 
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
+    }
+
+    public function transferAmount($amount)
+    {
+        if (is_int($amount) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'amount should be an integer ' . $amount);
+        }
+
+        $amount = (int) $amount;
+
+        $amountUntransferred = $this->getAmountUntransferred();
+
+        if ($amount > $amountUntransferred)
+        {
+            throw new Exception\LogicException(
+                'Transfer amount should be less than or equal to amount not transferred yet');
+        }
+
+        $amountTransferred = $this->getAmountTransferred() + $amount;
+
+        $this->setAttribute(self::AMOUNT_TRANSFERRED, $amountTransferred);
     }
 
     public function toArrayTraceRelevant()
