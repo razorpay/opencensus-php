@@ -13,7 +13,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::WALLET        => 'sometimes|in:payzapp,payumoney,olamoney,airtelmoney,freecharge,flashwallet',
+        Entity::WALLET        => 'sometimes|custom',
     );
 
     protected function validateWallet($attribute, $value)
@@ -44,5 +44,10 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::GATEWAY_REFUND_ID, '=', $gatewayRefundId)
                     ->firstOrFail();
+    }
+
+    protected function validateWallet($attribute, $value)
+    {
+        Processor\Wallet::validateExists($value);
     }
 }
