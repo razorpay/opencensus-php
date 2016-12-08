@@ -116,8 +116,6 @@ class GatewayController extends Controller
 
         // $input['gateway'] = $gateway;
 
-        // $app['slack']->send($input, 'transactions', '#tech_logs');
-
         return ApiResponse::json($data);
     }
 

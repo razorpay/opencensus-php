@@ -72,8 +72,10 @@ trait Capture
         {
             $this->trace->error(
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
-                ['auto_capture' => 1,
-                'payment_id' => $payment->getPublicId()]);
+                [
+                    'auto_capture' => true,
+                    'payment_id' => $payment->getPublicId()
+                ]);
 
             $customProperties = [
                 'error' => $e->getError(),
@@ -229,6 +231,12 @@ trait Capture
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+                $this->payment->setGatewayCaptured(true);
+
+                // Saving this here itself because recordCapture will perform other actions too,
+                // in a transaction, which could fail and end up rolling back.
+                $this->repo->saveOrFail($this->payment);
             }
             catch (Exception\GatewayTimeoutException $ex)
             {
@@ -236,7 +244,7 @@ trait Capture
                 // We are currently doing capture queue for HDFC, as we don't want to mark
                 // the captured payment on gateway as failed on API
                 // Note: Capture shouldn't be done again for Cybersource
-                // as cybersource settles the amount from CH account again
+                // as Cybersource settles the amount from CH account again
                 //
                 if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
                 {
