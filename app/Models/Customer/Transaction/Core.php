@@ -41,7 +41,8 @@ class Core extends Base\Core
         $customerTxn = $this->createEntityForType('credit', $payment->merchant, $amount, $customer);
 
         $balance = $this->repo->customer_balance
-                        ->findByCustomerIdAndMerchant($customer->getPublicId(), $payment->merchant);
+                        ->findByCustomerIdAndMerchant(
+                            $customer->getPublicId(), $payment->merchant);
 
         $customerTxn->setBalance($balance->getBalance());
 
