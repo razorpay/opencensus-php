@@ -294,15 +294,31 @@ class Validator extends Base\Validator
 
     public function usedTerminalValidator($terminal, $input)
     {
+        $this->validateAndUnsetMerchantId($terminal, $input);
+
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();
             $this->validateInput($gateway.'_edit_terminal', $input);
         }
-        else
+        else if (empty($input) !== false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
+        }
+    }
+
+    protected function validateAndUnsetMerchantId($terminal, & $input)
+    {
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            if($terminal->isShared() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant Editing not supported for Shared Terminal');
+            }
+
+            unset($input[Entity::MERCHANT_ID]);
         }
     }
 }
