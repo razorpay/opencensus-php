@@ -715,7 +715,9 @@ class Service extends Base\Service
         {
             try
             {
-                $this->getNewProcessor($payment->merchant)->timeout($payment);
+                $this->getNewProcessor($payment->merchant)
+                     ->setPayment($payment)
+                     ->timeoutPayment();
 
                 ++$count;
             }
