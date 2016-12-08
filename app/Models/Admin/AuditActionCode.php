@@ -10,6 +10,7 @@ class AuditActionCode
     const CATEGORY_AUTH_POLICY          = 'Auth Policy';
     const CATEGORY_UAM                  = 'UAM';
     const CATEGORY_ORG                  = 'Org';
+    const CATEGORY_HOSTNAME             = 'Hostname';
     const CATEGORY_MERCHANT             = 'Merchant';
 
     // actions
@@ -26,6 +27,7 @@ class AuditActionCode
     const LABEL_ADMIN                   = 'Admin';
     const LABEL_GROUP                   = 'Group';
     const LABEL_ORG                     = 'Org';
+    const LABEL_HOSTNAME                = 'Hostname';
     const LABEL_PERMISSION              = 'Permission';
     const LABEL_ADMIN_ROLES             = 'Admin Roles';
     const LABEL_MERCHANT                = 'Merchant';

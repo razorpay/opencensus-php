@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Admin;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use Config;
 
 class Service extends Base\Service
@@ -16,8 +18,17 @@ class Service extends Base\Service
         {
             $org = $this->core()->create($input);
 
+            // create hostname
+            $hostnames = explode(',', $input['hostname']);
+
+            foreach ($hostnames as $hostname) {
+                (new Hostname\Core)->create($org, $hostname);
+            }
+
+            // create default role
             $role = $this->createDefaultRole($org);
 
+            // create admin
             $input['admin']['roles'] = (array) $role->getPublicId();
 
             $input['admin']['email'] = $input['email'];
@@ -49,14 +60,28 @@ class Service extends Base\Service
     {
         $org = $this->core()->fetch($id);
 
-        return $org->toArrayPublic();
+        $hostnames = $org->hostnames();
+
+        $this->trace->info(TraceCode::ERROR_EXCEPTION, ['hostnames' => $hostnames]);
+
+
+        $org = $org->toArrayPublic();
+
+        $this->trace->info(TraceCode::ERROR_EXCEPTION, ['org' => $org]);
+
+        return $org;
     }
 
     public function fetchByHostname(string $hostname)
     {
         $org = $this->repo->org->findOrFailByHostname($hostname);
 
-        return $org->toArrayPublic();
+        $org = $org->toArrayPublic();
+
+        // find a way to fix this
+        $org['hostname'] = $hostname;
+
+        return $org;
     }
 
     public function delete(string $id)

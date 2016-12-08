@@ -1,0 +1,16 @@
+<?php
+
+namespace RZP\Models\Admin\Org\Hostname;
+
+use RZP\Models\Base;
+
+class Repository extends Base\Repository
+{
+    protected $entity = 'org_hostname';
+
+    // These are admin allowed params to search on.
+    protected $appFetchParamRules = array(
+        Entity::ORG_ID                => 'sometimes|string',
+        Entity::HOSTNAME              => 'sometimes|string|max:255',
+    );
+}

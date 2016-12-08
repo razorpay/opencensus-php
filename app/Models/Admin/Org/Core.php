@@ -26,7 +26,9 @@ class Core extends Base\Core
     {
         $orgId = Entity::verifyIdAndStripSign($orgId);
 
-        return $this->repo->org->findOrFailPublic($orgId);
+        return $this->repo->org->findOrFailWithHostname($orgId);
+
+        // return $this->repo->org->findOrFailPublic($orgId);
     }
 
     public function edit(string $orgId, array $input)
@@ -40,6 +42,8 @@ class Core extends Base\Core
         $org->edit($input);
 
         $this->repo->saveOrFail($org);
+
+        // $this->associateHostnameToGroup($input, $org);
 
         return $org;
     }
@@ -55,5 +59,18 @@ class Core extends Base\Core
         $this->repo->deleteOrFail($org);
 
         return ['success' => true];
+    }
+
+    protected function associateHostnameToGroup($input, $org)
+    {
+        if (isset($input['hostname']) === true)
+        {
+            // create hostname
+            $newHostnames = explode(',', $input['hostname']);
+
+            foreach ($hostnames as $hostname) {
+                $this->repo->org_hostname->firstOrCreate($org, $hostname);
+            }
+        }
     }
 }

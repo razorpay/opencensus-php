@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     const BUSINESS_NAME     = 'business_name';
     const DISPLAY_NAME      = 'display_name';
     const EMAIL             = 'email';
-    const HOSTNAME          = 'hostname';
+    // const HOSTNAME          = 'hostname';
     const EMAIL_DOMAINS     = 'email_domains';
     const LOGIN_LOGO_URL    = 'login_logo_url';
     const MAIN_LOGO_URL     = 'main_logo_url';
@@ -41,7 +41,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::AUTH_TYPE,
-        self::HOSTNAME,
+        // self::HOSTNAME,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::AUTH_TYPE,
-        self::HOSTNAME,
+        // self::HOSTNAME,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
@@ -69,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,
-        self::HOSTNAME,
+        // self::HOSTNAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
         self::LOGIN_LOGO_URL,
@@ -79,9 +79,9 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected $defaults = [
-        self::HOSTNAME => 'razorpay.com'
-    ];
+    // protected $defaults = [
+    //     self::HOSTNAME => 'razorpay.com'
+    // ];
 
     protected $guarded = [
         self::ID
@@ -108,6 +108,11 @@ class Entity extends Base\PublicEntity
             $org->groups()->withTrashed()->restore();
             $org->permissions()->withTrashed()->restore();
         });
+    }
+
+    public function hostnames()
+    {
+        return $this->hasMany('RZP\Models\Admin\Org\Hostname\Entity');
     }
 
     public function policy()
@@ -140,10 +145,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL_DOMAINS);
     }
 
-    public function getHostname()
-    {
-        return $this->getAttribute(self::HOSTNAME);
-    }
+    // public function getHostname()
+    // {
+    //     return $this->getAttribute(self::HOSTNAME);
+    // }
 
     public function getDisplayName()
     {

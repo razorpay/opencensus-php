@@ -29,8 +29,8 @@ class CreateOrgs extends Migration
 
             $table->string(Org::DISPLAY_NAME);
 
-            $table->string(Org::HOSTNAME)
-                  ->unique();
+            // $table->string(Org::HOSTNAME)
+            //       ->unique();
 
             $table->string(Org::EMAIL)
                   ->unique();

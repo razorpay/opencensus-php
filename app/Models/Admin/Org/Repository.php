@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
+use RZP\Constants\Table;
+use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
@@ -16,7 +18,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
-        Entity::HOSTNAME              => 'sometimes|string|max:100',
+        // Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     // These are admin allowed params to search on.
@@ -24,7 +26,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
-        Entity::HOSTNAME              => 'sometimes|string|max:100',
+        // Entity::HOSTNAME              => 'sometimes|string|max:100',
     );
 
     public function isMerchantIdRequiredForFetch()
@@ -36,8 +38,32 @@ class Repository extends Base\Repository
     {
         $hostname = mb_strtolower($hostname);
 
+        $orgId = $this->getAttributeWithTableName(Entity::ID);
+        $hostnameOrgId = $this->manager
+                              ->org_hostname
+                              ->getAttributeWithTableName(Hostname\Entity::ORG_ID);
+
+        $hostnameAttr = $this->manager
+                             ->org_hostname
+                             ->getAttributeWithTableName(Hostname\Entity::HOSTNAME);
+
+        $orgColumnNames = $this->getAttributeWithTableName('*');
+
+        $orgHostnamesTable = $this->manager
+                                  ->org_hostname
+                                  ->getTableName();
+
         return $this->newQuery()
-                    ->where(Entity::HOSTNAME, '=', $hostname)
+                    ->select($orgColumnNames)
+                    ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
+                    ->where($hostnameAttr, '=', $hostname)
                     ->firstOrFailPublic();
+    }
+
+    public function findOrFailWithHostname(string $orgId)
+    {
+        return $this->newQuery()
+                    // ->with('hostnames')
+                    ->findOrFailPublic($orgId);
     }
 }

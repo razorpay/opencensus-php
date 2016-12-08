@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
                     'display_name'      => 'razorpay pvt ltd',
                     'email'             => 'admin@rzp.in',
                     'email_domains'     => 'razorpay.com',
-                    'hostname'          => 'razorpay.com',
+                    // 'hostname'          => 'razorpay.com',
                     'login_logo_url'    => null,
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
@@ -66,9 +66,36 @@ class DatabaseSeeder extends Seeder
                     'display_name'      => 'HDFC Bank Pvt Ltd',
                     'email'             => 'hdfc@bank.rzp.in',
                     'email_domains'     => 'hdfcbank.in',
-                    'hostname'          => 'hdfcbank.in',
+                    // 'hostname'          => 'hdfcbank.in',
                     'login_logo_url'    => null,
                     'main_logo_url'     => null,
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '6dLbNSpv5XbCOF',
+                    'hostname'          => 'razorpay.com',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '6dLbNSpv5XbCOF',
+                    'hostname'          => 'razorpay.dev',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '6dLbNSpv5XbCOG',
+                    'hostname'          => 'dashboard.razorpay.dev',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]
