@@ -24,6 +24,24 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function removeMerchantToTerminal($terminal, $merchantIds)
+    {
+        $terminal->removeMerchantToTerminal($merchantIds);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
+    public function addMerchantToTerminal($terminal, $merchantIds)
+    {
+        $terminal->addMerchantToTerminal($merchantIds);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
     public function copy($input, $terminal)
     {
         if ($terminal->isShared() === true)

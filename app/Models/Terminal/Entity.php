@@ -45,6 +45,11 @@ class Entity extends Base\PublicEntity
 
     const ENABLED                       = 'enabled';
 
+    /**
+     * Used for column name in merchant terminal pivot table
+     */
+    const TERMINAL_ID                   = 'terminal_id';
+
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
@@ -373,7 +378,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function edit(array $input = [], $operation = 'edit'))
+    public function edit(array $input = [], $operation = 'edit')
     {
         if ($this->getUsedCount() === 0)
         {
@@ -415,6 +420,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function merchants()
+    {
+        return $this->belongsToMany('RZP\Models\Merchant\Entity');
     }
 
     public function toArrayWithPassword()
@@ -498,5 +508,15 @@ class Entity extends Base\PublicEntity
     public function isNon3DSRecurring()
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
+
+    public function removeMerchantToTerminal(array $merchantIds)
+    {
+        $this->merchants()->detach($merchantIds);
+    }
+
+    public function addMerchantToTerminal(array $merchantIds)
+    {
+        $this->merchants()->attach($merchantIds);
     }
 }

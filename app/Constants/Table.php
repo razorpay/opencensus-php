@@ -37,6 +37,7 @@ class Table
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
+    const MERCHANT_TERMINAL     = 'merchant_terminal';
 
     // Gateway related
     const EBS                   = 'ebs';
