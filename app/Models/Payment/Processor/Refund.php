@@ -414,7 +414,7 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
-            else if ($this->gatewaySupportsReverse($payment) === true)
+            else if ($this->gatewaySupportsReversal($payment) === true)
             {
                 $this->reverseOnGateway($data);
             }
@@ -427,7 +427,7 @@ trait Refund
         return $refund;
     }
 
-    protected function gatewaySupportsReverse($payment)
+    protected function gatewaySupportsReversal($payment)
     {
         $gateway = $payment->getGateway();
 
