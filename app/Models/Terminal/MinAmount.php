@@ -12,49 +12,49 @@ class MinAmount
 
         'netbanking' => [
             'default' => [
-                'default'   => 1000,
-                'utilities' => 1000,
-                'grocery'   => 1000,
+                'default'   => 100,
+                'utilities' => 100,
+                'grocery'   => 100,
             ],
             'billdesk' => [
-                'default'   => 1000,
-                'grocery'   => 1000,
-                'utilities' => 1000,
+                'default'   => 100,
+                'grocery'   => 100,
+                'utilities' => 100,
             ],
             'top_six' => [
-                'default'   => 1000,
-                'grocery'   => 1000,
-                'ecommerce' => 1000,
+                'default'   => 100,
+                'grocery'   => 100,
+                'ecommerce' => 100,
             ],
             'kkbk' => [
-                'default'   => 1000,
-                'grocery'   => 1000,
-                'ecommerce' => 1000,
+                'default'   => 100,
+                'grocery'   => 100,
+                'ecommerce' => 100,
             ],
         ],
 
         'network' => [
             'default' => [
-                'default'           => 1000,
+                'default'           => 100,
                 'utilities'         => 1000,
                 'retail_services'   => 1000,
             ],
             Network::AMEX => [
-                'default'   => 1000,
-                'retail_services' => 1000,
-                'utilities'       => 1000,
+                'default'   => 100,
+                'retail_services' => 100,
+                'utilities'       => 100,
             ],
             Network::MC => [
-                'default'   => 1000,
-                'education' => 1000,
-                'utilities' => 1000,
+                'default'   => 100,
+                'education' => 100,
+                'utilities' => 100,
             ],
         ],
 
         'default' => [
-            'default'   => 1000,
-            'ecommerce' => 1000,
-            'utilities' => 1000,
+            'default'   => 100,
+            'ecommerce' => 100,
+            'utilities' => 100,
         ],
     ];
 
