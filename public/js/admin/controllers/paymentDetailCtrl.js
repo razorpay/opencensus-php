@@ -155,6 +155,8 @@ app.controller('PaymentDetailCtrl', [
         return 'Not Verified';
       case null:
         return 'Unknown';
+      case 2:
+        return 'Verify Error';
       }
     };
     $scope.openCaptureModal = function () {

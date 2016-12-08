@@ -100,6 +100,8 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/balance', 'MerchantController@getBalance')->name('balance_get');
     Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
 
+    Route::get('/{mode}/credits', 'MerchantController@getCreditsLog');
+
     // Invitation and Team Support
     Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
 

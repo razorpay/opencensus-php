@@ -103,7 +103,7 @@ app.controller('UserCtrl', [
         $scope.loggedInUser = data.user;
         $scope.hasMerchant = false;
 
-        if ($cookies.show_rzp_welcome_guide) {
+        if ($cookies.show_rzp_welcome_guide && ['owner', 'manager', 'admin'].indexOf($scope.role) !== -1) {
           setTimeout(function() {
             jqTourbusService.start();
           }, 1500);

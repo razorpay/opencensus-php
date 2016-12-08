@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         // Individual Name
         'name'                  => 'required|alpha_space|max:200',
         // Merchant Business Name
-        'business_name'         => 'alpha_space_num|max:200',
+        'business_name'         => 'alpha_space_num|max:200|min:4',
 
         // Mobile Number (optional). Saved in merchant_details
         'contact_mobile'        => 'sometimes|numeric|digits_between:8,11',

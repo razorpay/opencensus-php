@@ -57,6 +57,12 @@ class RawApiRequest
         {
             $this->path .= '?' . http_build_query(Request::query());
         }
+        else if (!empty(Request::query('query_params')))
+        {
+            $queryParams = json_decode(Request::query('query_params'), true);
+
+            $this->path .= '?' . http_build_query($queryParams);
+        }
     }
 
     protected function setupCredentials($input)

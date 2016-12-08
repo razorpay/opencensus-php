@@ -69,11 +69,18 @@ angular.module('app.services', [])
       authorize: function () {
         return user.identity().then(function () {
           if ($rootScope.toState.data.role === 'auth') {
-            if (user.isAuthenticated() === false)
-              $state.go('access.signin');  // user is signed in but not authorized for desired state
-          } else if ($rootScope.toState.data.role === 'guest') {
-            if (user.isAuthenticated() === true)
-              $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+            if (user.isAuthenticated() === false) {
+              $state.go('access.signin');
+            }
+          }
+          else if ($rootScope.toState.data.role === 'guest') {
+            if (user.isAuthenticated() === true) {
+              if ($rootScope.role === 'sellerapp') {
+                $state.go('app.invoices')
+              } else {
+                $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+              }
+            }
           }
         });
       }

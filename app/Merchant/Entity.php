@@ -310,8 +310,15 @@ class Entity extends Base\Entity
     public function hasInvitiationForEmail($email)
     {
         return $this->invitations()
-                        ->where('email', $email)
-                        ->exists();
+                    ->where('email', $email)
+                    ->exists();
+    }
+
+    public function hasUserForEmail($email)
+    {
+        return $this->users()
+                    ->where('email', $email)
+                    ->exists();
     }
 
     /**

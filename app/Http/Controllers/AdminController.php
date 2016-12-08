@@ -16,6 +16,7 @@ use OAuthFacade;
 use Redirect;
 use Cache;
 use Session;
+use View;
 
 class AdminController extends Controller
 {
@@ -357,6 +358,7 @@ class AdminController extends Controller
     public function getMerchantScreenshot($id)
     {
         $links = (new Admin\Service)->getScreenshot($id);
+
         return View::make('admin.screenshots', ['links' => $links]);
     }
 

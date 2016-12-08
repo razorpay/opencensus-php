@@ -64,7 +64,13 @@ var app = angular.module('app', [
     app.service = $provide.service;
     app.constant = $provide.constant;
     app.value = $provide.value;
-    $urlRouterProvider.otherwise('/app/dashboard');
+    $urlRouterProvider.otherwise(function($injector, $location) {
+      var role = $injector.get('$rootScope').role
+      if (role === 'sellerapp') {
+        return '/app/invoices'
+      }
+      return '/app/dashboard'
+    });
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,
@@ -179,7 +185,7 @@ var app = angular.module('app', [
     }).state('app.invoicedetails', {
       url: '/invoices/:id',
       controller: ['$scope', '$stateParams', function($scope, $stateParams) {
-        $scope.invoiceId = $stateParams.id
+        $scope.invoiceId = $stateParams.id;
       }],
       templateProvider: reactTemplateProvider('<invoice-detail id="invoiceId" />')
     }).state('app.subscriptions', {
@@ -233,7 +239,8 @@ var app = angular.module('app', [
       templateUrl: 'tpl/page_forgotpwd.html'
     }).state('access.confirm', {
       url: '/confirm/:token',
-      templateUrl: 'tpl/page_confirm.html'
+      templateUrl: 'tpl/page_confirm.html',
+      data: { role: 'any' }
     }).state('access.resetpwd', {
       url: '/resetpwd/:token',
       templateUrl: 'tpl/page_resetpwd.html'
@@ -259,33 +266,32 @@ var app = angular.module('app', [
 ]);
 
 var injectScript = (function () {
-  var relative = document.getElementsByTagName('script')[0];
   return function (src, callback) {
     var script = document.createElement('script');
     script.async = true;
     script.src = src;
     if (callback) {
       script.onload = function() {
-        callback.call()
-      }
+        callback.call();
+      };
     }
-    document.getElementsByTagName('head')[0].appendChild(script)
-  }
+    document.getElementsByTagName('head')[0].appendChild(script);
+  };
 })();
 
 var reactTemplateProvider = function(template) {
-  return ['$q', '$stateParams', function ($q, $stateParams) {
+  return ['$q', '$stateParams', function ($q) {
     var deferred = $q.defer();
     if (!window.React) {
       // Really dirty hack which will vanish soon
-      var url = "<% asset('js/generated/merchant_react.js') %>"
-      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js'
+      var url = "<% asset('js/generated/merchant_react.js') %>";
+      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js';
       injectScript(url, function() {
-        deferred.resolve(template)
-      })
+        deferred.resolve(template);
+      });
     } else {
-      deferred.resolve(template)
+      deferred.resolve(template);
     }
     return deferred.promise;
-  }]
-}
+  }];
+};

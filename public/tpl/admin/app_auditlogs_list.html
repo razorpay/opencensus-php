@@ -41,6 +41,23 @@
           </tbody>
         </table>
       </div>
+
+      <footer class="panel-footer">
+        <div class="row">
+          <div class="col-sm-4 hidden-xs">
+          </div>
+          <div class="col-sm-4 text-center">
+            <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+          </div>
+          <div class="col-sm-4 text-right text-center-xs">
+            <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+              <li ng-click="pager.allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!pager.allowPrev"></button></li>
+              <li ng-click="pager.allowNext && next()"><button class="btn btn-default fa fa-chevron-right" ng-disabled="!pager.allowNext"></button></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+
     </div>
   </div>
 </div>
