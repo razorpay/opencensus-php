@@ -128,8 +128,9 @@ class AuditLogListener
         $fields['entity']       = $event->entity ?? null;
 
         // Meta
-        $fields['user_agent']   = \Request::header('User-Agent') ?? null;
-        $fields['ip_address']   = \Request::ip() ?? null;
+        $fields['user_agent']   = \Request::header('X-User-Agent') ?? null;
+        $fields['ip_address']   = \Request::header('X-IP-Address') ?? null;
+
         $fields['created_at']   = time();
 
         // org_id, mode, etc.
