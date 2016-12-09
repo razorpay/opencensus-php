@@ -10,14 +10,14 @@ return [
             'url' => '/orgs/org_RazorpayOrgnId/admin/authenticate',
             'method' => 'post',
             'content' => [
-                'username' => 'admin@rzp.io',
+                'username' => 'superadmin@razorpay.com',
                 'password' => 'test123456'
             ],
         ],
         'response' => [
             'content' => [
                 'name'               => 'test admin',
-                'email'              => 'admin@rzp.io',
+                'email'              => 'superadmin@razorpay.com',
                 'username'           => 'harshil',
                 'remember_token'     => 'yes',
                 'employee_code'      => 'rzp_1',

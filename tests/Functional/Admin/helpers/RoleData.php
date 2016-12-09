@@ -30,7 +30,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'        => 'admin',
+                'name'        => 'SuperAdmin',
             ],
             'status_code' => 200,
         ],

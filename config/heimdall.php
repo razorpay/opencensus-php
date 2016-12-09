@@ -41,6 +41,6 @@ return [
         'view_auditlog',
     ],
 
-    'default_role_name' => 'superadmin',
+    'default_role_name' => 'SuperAdmin',
     'default_role_desc' => 'superadmin with all possible permissions',
 ];
