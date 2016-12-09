@@ -663,7 +663,7 @@ class Terminal extends Base
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_icici',
@@ -671,7 +671,8 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay_submerchant',
             'gateway_terminal_password' => 'razorpay_password',
             'netbanking'                => 1,
-            'shared'                    => 1);
+            'shared'                    => 1
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

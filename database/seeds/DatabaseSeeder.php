@@ -722,7 +722,7 @@ class DatabaseSeeder extends Seeder
     protected function createNetbankingIciciTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                        =>  Terminal\Shared::NETBANKING_ICICI_TERMINAL,
                 'merchant_id'               =>  Account::TEST_ACCOUNT,
                 'gateway'                   =>  'netbanking_icici',
@@ -734,7 +734,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'                 =>  0,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
-            )
+            ]
         );
     }
 

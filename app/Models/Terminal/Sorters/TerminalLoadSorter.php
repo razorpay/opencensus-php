@@ -10,9 +10,6 @@ use RZP\Exception;
 
 class TerminalLoadSorter extends Terminal\Sorter
 {
-    // New sorter for trial gateways
-    // add it here to the rules
-
     protected $properties = [
         'trial_gateway',
         'chance_gateway',
@@ -59,12 +56,14 @@ class TerminalLoadSorter extends Terminal\Sorter
 
     public function getTrialGateways()
     {
+        $testGatways = self::$prodTrialGateways;
+
         if ($this->mode === Mode::TEST)
         {
-            return self::$testTrialGateways;
+            $testGatways = self::$testTrialGateways;
         }
 
-        return self::$prodTrialGateways;
+        return $testGatways;
     }
 
     // Only used for test situations

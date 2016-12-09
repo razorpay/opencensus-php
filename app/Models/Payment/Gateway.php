@@ -25,7 +25,7 @@ class Gateway
     const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
-    const NETBANKING_ICICI   = 'netbanking_icici'; // change
+    const NETBANKING_ICICI   = 'netbanking_icici';
     const UPI_ICICI          = 'upi_icici';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';

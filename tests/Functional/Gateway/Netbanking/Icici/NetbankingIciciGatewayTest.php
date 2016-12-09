@@ -21,10 +21,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_icici';
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray();
-
-        // Setting it manually because default is IDIB
-        $this->payment['bank'] = 'ICIC';
+        $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC');
 
         $this->setMockGatewayTrue();
 
@@ -135,11 +132,11 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testVerifyMismatch()
     {
-        $this->mockVerifyFailure();
-
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockVerifyFailure();
 
         $this->runRequestResponseFlow($data, function() use ($payment){
             $this->verifyPayment($payment['razorpay_payment_id']);
@@ -148,15 +145,14 @@ class NetbankingIciciGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
     }
 
+    // auth failure but verify fails
+
     protected function mockPaymentFailure()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === 'authorize')
-            {
-                // results in a bad request error
-                $content['PAID'] = 'N';
-            }
+            // results in a bad request error
+            $content['PAID'] = 'N';
         });
     }
 
@@ -164,19 +160,8 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === 'verify')
-            {
-                // results in a bad request error
-                $contentArray = (array) simplexml_load_string($content);
-                $contentArray['@attributes']['STATUS'] = 'FAILED';
-
-                $contentArray = array_flip($contentArray['@attributes']);
-
-                $xml = new \SimpleXMLElement('<VerifyOutput/>');
-                array_walk_recursive($contentArray, array ($xml, 'addAttribute'));
-
-                $content = $xml->asXML();
-            }
+            // Payment verify failure
+            $content['STATUS'] = 'FAILED';
         });
     }
 }

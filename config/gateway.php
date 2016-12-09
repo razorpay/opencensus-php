@@ -187,11 +187,11 @@ return array(
         'test_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
     ),
 
-    'netbanking_icici' => array(
+    'netbanking_icici' => [
         'test_master_key'   => env('ICICI_GATEWAY_TEST_MASTER_KEY'),
         'test_pid'          => env('ICICI_GATEWAY_TEST_PID'),
         'test_spid'         => env('ICICI_GATEWAY_TEST_SPID'),
-    ),
+    ],
 
     'sharp' => array(
     ),

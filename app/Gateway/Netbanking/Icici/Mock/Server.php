@@ -39,15 +39,15 @@ class Server extends Base\Mock\Server
         $postData = $this->createPostData($decryptedData); // response from icici bank
 
         // For test cases
-        $this->content($postData, 'authorize');
+        $this->content($postData);
 
         $content = $this->formatPostData($postData);
 
-        $request = array(
+        $request = [
             'url' => $callbackUrl,
             'content' => $content,
             'method' => 'post', // for debug only
-        );
+        ];
 
         $callbackUrl .= '?' . http_build_query($content);
 
@@ -62,13 +62,10 @@ class Server extends Base\Mock\Server
 
         $response = $this->createXmlResponse($input);
 
-        // For test cases
-        $this->content($response, 'verify');
-
         return $this->makeResponse($response);
     }
 
-    public function createPostData($input)
+    protected function createPostData($input)
     {
         $response = array(
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
@@ -88,7 +85,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function formatPostData($postData)
+    protected function formatPostData($postData)
     {
         $masterKey = $this->getGatewayInstance()->getMasterKey();
 
@@ -99,30 +96,33 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
-    public function createXmlResponse($input)
+    protected function createXmlResponse($input)
     {
         // Hardcoding success for now
+        $xmlArray = $this->createXmlArray($input);
+
+        // For test cases
+        $this->content($xmlArray);
+
+        $xmlArray = array_flip($xmlArray);
+
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
-
-        $xml->addAttribute(ResponseFields::ITEM_CODE,
-            $input[RequestFields::ITEM_CODE]);
-
-        $xml->addAttribute(ResponseFields::PAYMENT_REFERENCE_NUBER,
-            $input[RequestFields::PAYMENT_REFERENCE_NUBER]);
-
-        $xml->addAttribute(ResponseFields::CURRENCY,
-            $input[RequestFields::CURRENCY_CODE]);
-
-        $xml->addAttribute(ResponseFields::PAYMENT_DATE,
-            $input[RequestFields::PAYMENT_DATE]);
-
-        $xml->addAttribute(ResponseFields::AMOUNT,
-            number_format($input[RequestFields::AMOUNT], 2, '.', ''));
-
-        $xml->addAttribute(ResponseFields::STATE, Constants::SUCCESS);
+        array_walk_recursive($xmlArray, array ($xml, 'addAttribute'));
 
         $response = $xml->asXML();
 
         return $response;
+    }
+
+    protected function createXmlArray($input)
+    {
+        return [
+            ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_REFERENCE_NUBER => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
+            ResponseFields::CURRENCY                => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::PAYMENT_DATE            => $input[RequestFields::PAYMENT_DATE],
+            ResponseFields::AMOUNT                  => number_format($input[RequestFields::AMOUNT], 2, '.', ''),
+            ResponseFields::STATE                   => Constants::SUCCESS,
+        ];
     }
 }

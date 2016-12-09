@@ -7,17 +7,14 @@ use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Entity;
 
 class Gateway extends Base\Gateway
 {
-    use AuthorizeFailed;
+    use GatewayBase\AuthorizeFailed;
 
     use AesTrait;
 
@@ -44,13 +41,11 @@ class Gateway extends Base\Gateway
         $content = $this->getPaymentRequestData($input);
 
         // Create payment entity before passing it to gateway payment entity
-        $entity = $this->createPaymentArray($content);
+        $entity = $this->createPaymentArray($input);
 
         $payment = $this->createGatewayPaymentEntity($entity);
 
-        $this->traceGatewayPaymentRequest($content, $input);
-
-        unset($content[RequestFields::AMOUNT]);
+        // unset($content[RequestFields::AMOUNT]);
         $request = $this->getStandardRequestArray($content);
 
         return $request;
@@ -72,7 +67,7 @@ class Gateway extends Base\Gateway
             $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
 
         // Use maps - Response Fields
         $attrs = $this->getCallbackAttributes($content);
@@ -81,7 +76,8 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($payment);
 
-        if (!isset($attrs['status']) or $attrs['status'] !== Confirmation::YES)
+        if ((isset($attrs['status']) === false) or
+            ($attrs['status'] !== Confirmation::YES))
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -102,7 +98,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new Verify($this->gateway, $input);
+        $verify = new GatewayBase\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -114,7 +110,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
 
         $response = $this->sendGatewayRequest($request);
@@ -130,14 +126,13 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseBody;
 
-        $status = VerifyResult::STATUS_MATCH;
+        $status = GatewayBase\VerifyResult::STATUS_MATCH;
 
-        // Converting response string to XML format.
         $xml = $this->getResponseArray($content);
 
         // Should probably trace this
         $this->trace->info(
-            TraceCode::VERIFY_CAPTURE_RESPONSE,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             (array)$xml);
 
         $verify->apiSuccess = true;
@@ -160,10 +155,10 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = VerifyResult::STATUS_MISMATCH;
+            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
 
         return $status;
     }
@@ -173,6 +168,9 @@ class Gateway extends Base\Gateway
         $encryptedString = $this->getEncryptedString($input);
 
         $data = $this->createDefaultRequestData($input);
+
+        // Amount not needed for authorize
+        unset($data[RequestFields::AMOUNT]);
 
         $data[RequestFields::ENCRYPTED_STRING] = $encryptedString;
 
@@ -215,6 +213,8 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getAuthorizeRequestData($input);
 
+        $this->traceGatewayPaymentRequest($data, $input);
+
         $queryString = $this->createQueryString($data);
 
         $masterKey = $this->getMasterKey();
@@ -224,7 +224,6 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData($input)
     {
-        // Formatted for ICICI
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
         $prn = $input['payment'][Payment\Entity::ID];
@@ -254,13 +253,15 @@ class Gateway extends Base\Gateway
 
         $spid = $this->getSpid();
 
+        $amount = $input['payment']['amount'] / 100;
+
         $data = [
             RequestFields::OBJ_NAME   => Constants::LOGIN,
             RequestFields::BAY_BANKID => Constants::BANKID,
             RequestFields::MODE       => Mode::PAY,
             RequestFields::PAYEE_ID   => $pid,
             RequestFields::SPID       => $spid,
-            RequestFields::AMOUNT     => $input['payment']['amount'] / 100
+            RequestFields::AMOUNT     => $amount
         ];
 
         return $data;
@@ -280,10 +281,12 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function createPaymentArray($content)
+    protected function createPaymentArray($input)
     {
+        $amount = $input['payment']['amount'] / 100;
+
         return [
-            RequestFields::AMOUNT => $content[RequestFields::AMOUNT]
+            RequestFields::AMOUNT => $amount
         ];
     }
 
@@ -357,35 +360,5 @@ class Gateway extends Base\Gateway
         }
 
         return $spid;
-    }
-
-    /**
-     * @param $response
-     * @throws Exception\BadRequestException
-     * @throws Exception\GatewayErrorException
-     */
-    protected function throwException($response)
-    {
-        if (isset($response['reasonCode']) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $reasonCode = $response['reasonCode'];
-
-        $desc = ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isValidationError($reasonCode))
-        {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode);
-        }
-
-        throw new Exception\GatewayErrorException(
-            ResponseCode::getMappedCode($reasonCode),
-            $reasonCode,
-            $desc);
     }
 }
