@@ -14,6 +14,7 @@
     "babel-preset-stage-0": "6.16.0",
     "bootstrap-styl": "5.0.8",
     "css-loader": "0.25.0",
+    "dot": "1.1.1",
     "gulp": "3.9.1",
     "gulp-autoprefixer": "3.1.1",
     "gulp-concat-multi": "1.0.0",
