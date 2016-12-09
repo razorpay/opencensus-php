@@ -1305,3 +1305,10 @@ UPDATE billdesk
     JOIN orders ON orders.id = payments.order_id
 SET
     billdesk.AccountNumber = orders.account_number;
+
+-----
+
+ALTER TABLE netbanking
+    ADD COLUMN account_number VARCHAR(255) AFTER int_payment_id;
+
+-----

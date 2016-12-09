@@ -70,9 +70,9 @@ class Validator extends Base\Validator
         $this->assertField($decryptedData, RequestFields::RETURN_URL);
     }
 
-    protected function assertField($decryptedData, $field)
+    protected function assertField($data, $field)
     {
-        if (!isset($decryptedData[$field]))
+        if (!isset($data[$field]))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $field . ' not specified');

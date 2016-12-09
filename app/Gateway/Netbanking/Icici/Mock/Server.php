@@ -3,14 +3,12 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking;
 
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Icici\AesTrait;
-use phpseclib\Crypt\AES;
 
 class Server extends Base\Mock\Server
 {
@@ -24,17 +22,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $masterKey = $this->getGatewayInstance()->getMasterKey();
-
-        $decryptedString = $this->decryptString($input['ES'], $masterKey);
-
-        // Removing the %22 tags in the return URL
-        $string = str_replace('%22', '', $decryptedString);
-
-        parse_str($string, $decryptedData);
-
-        // $decrypted_data['RU'] now contains the callback URL
-        $callbackUrl = $decryptedData['RU'];
+        $decryptedData = $this->decryptData($input);
 
         $postData = $this->createPostData($decryptedData); // response from icici bank
 
@@ -43,13 +31,7 @@ class Server extends Base\Mock\Server
 
         $content = $this->formatPostData($postData);
 
-        $request = [
-            'url' => $callbackUrl,
-            'content' => $content,
-            'method' => 'post', // for debug only
-        ];
-
-        $callbackUrl .= '?' . http_build_query($content);
+        $callbackUrl = $decryptedData['RU'] . '?' . http_build_query($content);
 
         return $callbackUrl;
     }
@@ -94,6 +76,21 @@ class Server extends Base\Mock\Server
         $content['ES'] = $this->encryptString($httpQuery, $masterKey);
 
         return $content;
+    }
+
+    protected function decryptData($input)
+    {
+        $masterKey = $this->getGatewayInstance()->getMasterKey();
+
+        $decryptedString = $this->decryptString($input['ES'], $masterKey);
+
+        // Removing the %22 tags in the return URL
+        $string = str_replace('%22', '', $decryptedString);
+
+        parse_str($string, $decryptedData);
+
+        return $decryptedData;
+
     }
 
     protected function createXmlResponse($input)

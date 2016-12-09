@@ -57,6 +57,38 @@ class NetbankingIciciGatewayTest extends TestCase
         assert($content['payment']['verified'] === 1);
     }
 
+    public function testRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Refund the payment above in full
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals($payment['amount'], $refund['amount']);
+    }
+
+    public function testPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Refund the payment above partially
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $this->assertEquals($refund['amount'], 10000);
+    }
+
+    public function testFailedRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment){
+            // Refund double the amount
+            $refund = $this->refundPayment($payment['id'], 100000);
+        });
+    }
+
     public function testRefundExcelFile()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -141,11 +173,22 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment){
             $this->verifyPayment($payment['razorpay_payment_id']);
         });
-
-        $payment = $this->getLastEntity('payment', true);
     }
 
-    // auth failure but verify fails
+    // Authorization fails, but verify shows success
+    // Results in a payment verification error
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testFailedAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow($data, function() use ($payment){
+            $this->verifyPayment($payment['id']);
+        });
+    }
 
     protected function mockPaymentFailure()
     {
