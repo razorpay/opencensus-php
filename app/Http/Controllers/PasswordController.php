@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
 use Hash;
+use App\Merchant;
+use App\Generic;
 
 class PasswordController extends Controller
 {
@@ -18,6 +20,14 @@ class PasswordController extends Controller
      */
     public function postRemind()
     {
+        $merchant = Merchant\Entity::getMerchantFromEmail(Input::get('email'));
+        $org = $this->getMerchantOrg($merchant->org_id);
+        view()->composer('emails.auth.reminder', function($view) {
+            $view->with([
+                'org'   =>  $org;
+            ]);
+        });
+
         $response = Password::sendResetLink(Input::only('email'), function($message){
             $message->subject('Razorpay - Password Reset Request');
         });
@@ -30,6 +40,14 @@ class PasswordController extends Controller
             case Password::RESET_LINK_SENT:
                 return Response::json(array('success' => true));
         }
+    }
+
+    protected function getMerchantOrg(string $orgId)
+    {
+        $input = ['method' => 'get'];
+        $path = 'orgs/'.$orgId;
+
+        return (new Generic\Service)->makeRawApiCallInternal($input, $path);
     }
 
     /**
