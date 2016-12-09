@@ -7,17 +7,14 @@ use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
 {
-    use AuthorizeFailed;
+    use GatewayBase\AuthorizeFailed;
 
     use AesTrait;
 
@@ -43,8 +40,6 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($entity);
 
-        $this->traceGatewayPaymentRequest($content, $input);
-
         $request = $this->getStandardRequestArray($content);
 
         return $request;
@@ -52,7 +47,31 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        sd($input);
+        parent::callback($input);
+
+        $content = $this->getDataFromResponse($input['gateway']);
+
+        $this->trace>info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
+
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+
+        $attrs = $this->getCallbackAttributes($content);
+
+        $payment->fill($attrs);
+
+        $this->repo->saveOrFail($payment);
+
+        if ((isset($attrs['status']) === false) or
+            ($attrs['status'] !== Constants::YES))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     public function verify(array $input)
@@ -82,13 +101,16 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Constants::INDIAN_RUPEE,
-            RequestFields::CONFIRMATION      => Constants::CONFIRMATION,
+            RequestFields::CONFIRMATION      => Constants::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
         // if tpv is enabled, add tpv account number
 
         $data = array_merge($defaultData, $data);
+
+        // trace before encryption
+        $this->traceGatewayPaymentRequest($data, $input);
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
@@ -135,6 +157,28 @@ class Gateway extends Base\Gateway
 
         return [
             RequestFields::AMOUNT => $amount
+        ];
+    }
+
+    protected function getDataFromResponse($encryptedResponse)
+    {
+        $masterKey = $this->getMasterKey();
+
+        $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
+
+        $decryptedString = $this->decryptString($encryptedString, $masterKey);
+
+        parse_str($decryptedString, $response);
+
+        return $response;
+    }
+
+    protected function getCallbackAttributes($content)
+    {
+        return [
+            'received'          => true,
+            'status'            => $content[ResponseFields::STATUS],
+            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 

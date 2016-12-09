@@ -6,6 +6,8 @@ class Constants
 {
     const PAY          = 'P';
     const INDIAN_RUPEE = 'INR';
-    const CONFIRMATION = 'Y';
     const RESPONSE     = 'AUTO';
+    const YES          = 'Y';
+    const NO           = 'N';
+    const SUCCESS      = 'S';
 }

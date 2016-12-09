@@ -12,9 +12,9 @@ class RequestFields
     const PAYEE_ID                  = 'PID';
     const MODE_OF_OPERATION         = 'MD';
     const ITEM_CODE                 = 'ITC';
-    const CURRENCY_CODE             = 'INR';
+    const CURRENCY_CODE             = 'CRN';
     const RETURN_URL                = 'RU';
-    const ENCRYPTED_STRING          = 'QS';
+    const ENCRYPTED_STRING          = 'qs';
     const AMOUNT                    = 'AMT';
     const RESPONSE                  = 'RESPONSE';
     const CONFIRMATION              = 'CG';
