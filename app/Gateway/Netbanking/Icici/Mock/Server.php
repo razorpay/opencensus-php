@@ -42,7 +42,9 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $response = $this->createXmlResponse($input);
+        $responseArray = $this->createResponseArray($input);
+
+        $response = $this->createXmlResponse($responseArray);
 
         return $this->makeResponse($response);
     }
@@ -93,25 +95,22 @@ class Server extends Base\Mock\Server
 
     }
 
-    protected function createXmlResponse($input)
+    protected function createXmlResponse($responseArray)
     {
-        // Hardcoding success for now
-        $xmlArray = $this->createXmlArray($input);
-
         // For test cases
-        $this->content($xmlArray);
+        $this->content($responseArray);
 
-        $xmlArray = array_flip($xmlArray);
+        $responseArray = array_flip($responseArray);
 
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
-        array_walk_recursive($xmlArray, array ($xml, 'addAttribute'));
+        array_walk_recursive($responseArray, array ($xml, 'addAttribute'));
 
         $response = $xml->asXML();
 
         return $response;
     }
 
-    protected function createXmlArray($input)
+    protected function createResponseArray($input)
     {
         return [
             ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],

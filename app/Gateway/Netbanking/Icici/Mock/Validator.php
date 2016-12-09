@@ -44,11 +44,7 @@ class Validator extends Base\Validator
 
     protected function validateES($input)
     {
-        $gateway = new IciciGateway;
-
-        $gateway->setMode(Mode::TEST);
-
-        $masterKey = $gateway->getMasterKey();
+        $masterKey = $this->getGatewayMasterKey();
 
         $decryptedString = $this->decryptString($input['ES'], $masterKey);
 
@@ -77,5 +73,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 $field . ' not specified');
         }
+    }
+
+    protected function getGatewayMasterKey()
+    {
+        $gateway = new IciciGateway;
+
+        $gateway->setMode(Mode::TEST);
+
+        return $gateway->getMasterKey();
     }
 }

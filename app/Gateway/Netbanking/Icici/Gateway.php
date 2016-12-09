@@ -28,12 +28,6 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
-    /**
-     * Builds the authorize request for ICICI netbanking
-     *
-     * @param  array $input
-     * @return void
-     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -45,22 +39,23 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($entity);
 
-        // unset($content[RequestFields::AMOUNT]);
         $request = $this->getStandardRequestArray($content);
 
         return $request;
     }
 
-    /**
-     * @param  array $input
-     * @return void
-     */
     public function callback(array $input)
     {
         parent::callback($input);
 
-        // TODO: returned encrypted string from ICICI sometimes fails decryption
         $content = $this->getDataFromResponse($input['gateway']);
+
+        if (empty($content) === true)
+        {
+            // Decryption fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -89,11 +84,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-
-    /**
-     * @param  array $input
-     * @return void
-     */
     public function verify(array $input)
     {
         parent::verify($input);
@@ -130,10 +120,9 @@ class Gateway extends Base\Gateway
 
         $xml = $this->getResponseArray($content);
 
-        // Should probably trace this
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            (array)$xml);
+            (array) $xml);
 
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
