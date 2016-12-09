@@ -122,13 +122,14 @@ class Core extends Base\Core
             return $this->resetAllUsages($balance, $amount);
         }
 
-        $this->checkTimestampForReset($lastTxnTime);
-
         list($resetDay, $resetWeek, $resetMonth) = $this->checkTimestampForReset($lastTxnTime);
 
-        $balance = $this->updateDailyUsage($balance, $amount, $resetDay);
+        // Daily/ Weekly limits are not being enforced right now,
+        // leaving the code commented - for future use
 
-        $balance = $this->updateWeeklyUsage($balance, $amount, $resetWeek);
+        // $balance = $this->updateDailyUsage($balance, $amount, $resetDay);
+
+        // $balance = $this->updateWeeklyUsage($balance, $amount, $resetWeek);
 
         $balance = $this->updateMonthlyUsage($balance, $amount, $resetMonth);
 
@@ -165,15 +166,16 @@ class Core extends Base\Core
 
     protected function resetAllUsages(Entity $balance, int $amount)
     {
-        $balance->setDailyUsage($amount);
+        // $balance->setDailyUsage($amount);
 
-        $balance->setWeeklyUsage($amount);
+        // $balance->setWeeklyUsage($amount);
 
         $balance->setMonthlyUsage($amount);
 
         return $balance;
     }
 
+    // Unused
     protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay)
     {
         if ($resetDay === false)
@@ -186,6 +188,7 @@ class Core extends Base\Core
         return $balance;
     }
 
+    // Unused
     protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek)
     {
         if ($resetWeek === false)

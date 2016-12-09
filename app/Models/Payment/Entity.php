@@ -239,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_TRANSFERRED,
         self::FEE,
         self::SERVICE_TAX
     );

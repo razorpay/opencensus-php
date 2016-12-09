@@ -44,8 +44,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
-        self::DAILY_USAGE,
-        self::WEEKLY_USAGE,
+        self::MAX_BALANCE,
         self::MONTHLY_USAGE,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -61,6 +60,14 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::CUSTOMER_ID,
+    ];
+
+    protected $casts = [
+        self::BALANCE           => 'int',
+        self::MAX_BALANCE       => 'int',
+        self::DAILY_USAGE       => 'int',
+        self::WEEKLY_USAGE      => 'int',
+        self::MONTHLY_USAGE     => 'int',
     ];
 
     // -------------------- Relations ---------------------------

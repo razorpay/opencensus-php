@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Transaction;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Constants;
 
 class Core extends Base\Core
 {
@@ -20,7 +21,11 @@ class Core extends Base\Core
         $amount = $payment->getAmount();
 
         $customerTxn = $this->createEntityForType(
-            'debit', $payment->merchant, $amount, $payment->customer);
+                        'debit', $payment->merchant, $amount, $payment->customer);
+
+        $customerTxn->setEntityType(Constants\Entity::PAYMENT);
+
+        $customerTxn->setEntityId($payment->getId());
 
         $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);
 
@@ -37,11 +42,16 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit($payment, int $amount, $customer)
+    public function createFromCustomerCredit($payment, $transfer, int $amount, $customer)
     {
         $customerTxn = $this->createEntityForType('credit', $payment->merchant, $amount, $customer);
 
-        $balance = $this->repo->customer_balance
+        $customerTxn->setEntityType(Constants\Entity::TRANSFER);
+
+        $customerTxn->setEntityId($transfer->getId());
+
+        $balance = $this->repo
+                        ->customer_balance
                         ->findByCustomerIdAndMerchant(
                             $customer->getPublicId(), $payment->merchant);
 
@@ -57,13 +67,17 @@ class Core extends Base\Core
      * @param  int    $amount
      * @return Entity
      */
-    public function createFromCustomerRefund($customerId, int $amount)
+    public function createFromCustomerRefund(string $customerId, string $refundId, int $amount) : Entity
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
         $customerTxn = $this->createEntityForType('credit', $this->merchant, $amount, $customer);
 
         $customerTxn->setType(Type::REFUND);
+
+        $customerTxn->setEntityType(Constants\Entity::REFUND);
+
+        $customerTxn->setEntityId($refundId);
 
         $balance = (new Customer\Balance\Core)->refund($customer->getPublicId(), $amount);
 
@@ -77,13 +91,11 @@ class Core extends Base\Core
         $customerTxn = new Entity;
 
         $txnData = [
-            Entity::ENTITY_ID           => $customer->getId(),
-            Entity::ENTITY_TYPE         => 'customer',
             Entity::TYPE                => Type::TRANSFER,
-            Entity::STATUS              => 'transferred', // ? todo
+            Entity::STATUS              => 'complete', // @todo - change this to something useful
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
-            Entity::DESCRIPTION         => 'NA', // ? todo
+            Entity::DESCRIPTION         => 'NA', // @todo - change this to something useful
         ];
 
         if ($type === Entity::DEBIT)

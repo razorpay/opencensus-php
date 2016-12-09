@@ -57,6 +57,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     ];
 
+    protected $casts = [
+        self::AMOUNT    => 'int',
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function transaction()

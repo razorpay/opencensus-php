@@ -71,6 +71,13 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     ];
 
+    protected $casts = [
+        self::AMOUNT        => 'int',
+        self::CREDIT        => 'int',
+        self::DEBIT         => 'int',
+        self::BALANCE       => 'int',
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function customer()
@@ -123,6 +130,16 @@ class Entity extends Base\PublicEntity
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setEntityType($type)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $type);
+    }
+
+    public function setEntityId($id)
+    {
+        $this->setAttribute(self::ENTITY_ID, $id);
     }
 
 }
