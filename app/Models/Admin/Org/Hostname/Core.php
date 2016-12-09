@@ -12,31 +12,13 @@ class Core extends Base\Core
     {
         $orgHost = new Entity;
 
+        $orgHost->setHostname($hostname);
+
         $orgHost->setAuditAction(Action::CREATE_ORG_HOSTNAME);
 
         $orgHost->org()->associate($org);
 
-        $orgHost->setHostname($hostname);
-
         $this->repo->org_hostname->saveOrFail($orgHost);
-
-        return $orgHost;
-    }
-
-    public function firstOrCreate(Org\Entity $org, string $hostname)
-    {
-        $orgHost = $this->repo->org_hostname->findByHostname($hostname);
-
-        if (empty($orgHost) === true)
-        {
-            $orgHost = new Entity;
-
-            $orgHost->setHostname($hostname);
-
-            $orgHost->org()->associate($org);
-
-            $this->repo->org_hostname->saveOrFail($orgHost);
-        }
 
         return $orgHost;
     }
@@ -48,9 +30,11 @@ class Core extends Base\Core
 
     public function delete(string $hostname)
     {
-        $orgHostname = $this->repo->org_hostname->findByHostname($hostname);
+        $orgHost = $this->repo->org_hostname->findByHostname($hostname);
 
-        $this->repo->org_hostname->deleteOrFail($orgHostname);
+        $orgHost->setAuditAction(Action::DELETE_ORG_HOSTNAME);
+
+        $this->repo->org_hostname->deleteOrFail($orgHost);
     }
 
     public function deleteHostnamesOfOrg(string $orgId)

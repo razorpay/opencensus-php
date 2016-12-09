@@ -75,7 +75,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
                     'org_id'            => '6dLbNSpv5XbCOF',
-                    'hostname'          => 'razorpay.com',
+                    'hostname'          => 'razorpay.in',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]
