@@ -36,8 +36,8 @@ class MinAmount
         'network' => [
             'default' => [
                 'default'           => 100,
-                'utilities'         => 1000,
-                'retail_services'   => 1000,
+                'utilities'         => 100,
+                'retail_services'   => 100,
             ],
             Network::AMEX => [
                 'default'   => 100,
