@@ -377,10 +377,11 @@ class Entity extends Base\PublicEntity
     public function isSuperAdmin()
     {
         $roles = $this->roles;
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         foreach($roles as $role)
         {
+            // default role is SuperAdmin
             if($role->getName() === $app['config']['heimdall']['default_role_name'])
             {
                 return true;
