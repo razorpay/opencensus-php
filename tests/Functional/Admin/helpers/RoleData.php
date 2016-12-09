@@ -142,5 +142,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             'error_description' => 'The role with the name already exists',
         ],
+    ],
+
+    'testEditSuperAdminRole' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'put',
+            'content' => [
+                'description' => 'Super Admin Role edited',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE,
+            'error_description' => 'SuperAdmin Role is not editable',
+        ],
     ]
 ];

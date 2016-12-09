@@ -382,7 +382,7 @@ class Entity extends Base\PublicEntity
         foreach($roles as $role)
         {
             // default role is SuperAdmin
-            if($role->getName() === $app['config']['heimdall']['default_role_name'])
+            if($role->isSuperAdminRole() === true)
             {
                 return true;
             }

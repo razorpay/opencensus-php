@@ -19,7 +19,8 @@ class Service extends Base\Service
 
     public function getRole($orgId, $roleId)
     {
-        $role = $this->repo->role->findByPublicIdAndOrgIdWithRelations($roleId, $orgId);
+        $role = $this->repo->role->findByPublicIdAndOrgIdWithRelations(
+            $roleId, $orgId, ['permissions']);
 
         return $role->toArrayPublic();
     }
@@ -50,6 +51,8 @@ class Service extends Base\Service
     public function putRole(string $orgId, string $roleId, array $input)
     {
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+
+        $role->getValidator()->validateRoleIsNotSuperAdmin();
 
         $this->core()->edit($role, $input);
 

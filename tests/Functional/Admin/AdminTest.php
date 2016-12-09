@@ -80,7 +80,10 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('roles', $result);
+        $this->assertArrayHasKey('groups', $result);
     }
 
     public function testEditAdmin()
