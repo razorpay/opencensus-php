@@ -387,6 +387,12 @@ final class FactoryData
             'auth_type'     => 'password',
         ]);
 
+        $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
+            'id'            => $faker->randomNumber(3),
+            'org_id'        => $faker->uniqueid,
+            'hostname'      => $faker->rzpSubdomain,
+        ]);
+
         $factory(\RZP\Models\Admin\Permission\Entity::class, [
             'id'            => $faker->uniqueid,
             'name'          => $faker->name,

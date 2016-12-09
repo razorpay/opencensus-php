@@ -10,7 +10,7 @@ return [
             'url' => '/orgs',
             'method' => 'post',
             'content' => [
-                'hostname'  => 'hdfc.com',
+                'hostname'  => 'hdfc.com, hdfc.in',
                 'email_domains' => 'hdfc.com,fbapi.com',
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',

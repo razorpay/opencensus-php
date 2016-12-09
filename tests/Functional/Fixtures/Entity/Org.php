@@ -25,9 +25,14 @@ class Org extends Base
         // Default organisation to be used for tests
         $this->fixtures->create('org', [
             'id'            => self::HDFC_ORG,
-            'hostname'      => 'hdfcbank.com',
             'email'         => 'test@hdfcbank.com',
             'email_domains' => 'hdfcbank.com'
+        ]);
+
+        $orgHost = $this->fixtures->create('org_hostname', [
+            'id'        => 21,
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'hdfcbank.com',
         ]);
     }
 
@@ -40,6 +45,18 @@ class Org extends Base
             'id' => self::RZP_ORG,
             'email' => 'admin@razorpay.com',
             'hostname' => 'dashboard.razorpay.com'
+        ]);
+
+        $orgHost = $this->fixtures->create('org_hostname', [
+            'id'        => 22,
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.dev'
+        ]);
+
+        $orgHost = $this->fixtures->create('org_hostname', [
+            'id'        => 23,
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.com'
         ]);
 
         $this->fixtures->create('group', [
