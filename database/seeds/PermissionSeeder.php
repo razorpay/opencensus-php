@@ -117,6 +117,8 @@ class PermissionSeeder extends Seeder
                 'schedule_update' => '',
                 'schedule_assign' => '',
                 'schedule_migration' => '',
+                'view_actions' => '',
+                'view_merchant_stats' => '',
             ],
 
             'entity' => [
