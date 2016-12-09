@@ -373,4 +373,20 @@ class Entity extends Base\PublicEntity
 
         return json_decode($oldPasswords, true);
     }
+
+    public function isSuperAdmin()
+    {
+        $roles = $this->roles;
+        $app = \App::getFacadeRoot();
+
+        foreach($roles as $role)
+        {
+            if($role->getName() === $app['config']['heimdall']['default_role_name'])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

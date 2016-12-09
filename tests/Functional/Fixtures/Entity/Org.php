@@ -11,7 +11,7 @@ class Org extends Base
     const DEFAULT_GRP  = '1RazorpayGrpId';
     const ADMIN_ROLE   = 'RzpAdminRoleId';
     const MANAGER_ROLE = 'RzpMngerRoleId';
-    const RZP_USER     = 'RazorpayUserId';
+    const SUPER_ADMIN  = 'RzrpySprAdmnId';
 
     const DEFAULT_TOKEN = 'SecretTokenForRazorpayAdminAuthentication';
 
@@ -51,12 +51,13 @@ class Org extends Base
         $adminRole = $this->fixtures->create('role', [
             'id'     => self::ADMIN_ROLE,
             'org_id' => self::RZP_ORG,
-            'name'   => 'admin'
+            'name'   => 'SuperAdmin',
         ]);
 
         $this->fixtures->create('role', [
             'id'     => self::MANAGER_ROLE,
             'org_id' => self::RZP_ORG,
+            'name'   => 'Admin',
         ]);
 
         $permissions = $this->fixtures->create('permission:default_permissions');
@@ -73,9 +74,9 @@ class Org extends Base
         $this->fixtures->setDefaultConn();
 
         $admin = $this->fixtures->create('admin', [
-            'id'     => self::RZP_USER,
+            'id'     => self::SUPER_ADMIN,
             'org_id' => self::RZP_ORG,
-            'email'  => 'admin@rzp.io'
+            'email'  => 'superadmin@razorpay.com'
         ]);
 
         $liveAdmin = clone $admin;
@@ -90,7 +91,7 @@ class Org extends Base
         $this->fixtures->setDefaultConn();
 
         $this->fixtures->create('admin_token', [
-            'admin_id'   => self::RZP_USER,
+            'admin_id'   => self::SUPER_ADMIN,
             'token'      => self::DEFAULT_TOKEN,
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,

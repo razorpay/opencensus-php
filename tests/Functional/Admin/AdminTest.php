@@ -399,4 +399,13 @@ class AdminTest extends TestCase
             $this->deleteAdmin($org->getPublicId(), $admin->getPublicId());
         });
     }
+
+    public function testSuperAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->assertEquals($admin->isSuperAdmin(), true);
+     }
 }
