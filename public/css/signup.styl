@@ -21,7 +21,17 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(116deg, #1b2566, #a899d2);
+
+  &:before {
+    content: '';
+    background: linear-gradient(116deg, #1b2566, #a899d2);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    position: fixed;
+  }
 }
 
 .signup {
@@ -58,14 +68,14 @@
 
   .form{
     background: #fafafa;
-    min-height: 540px;
+    height: 540px;
     max-width: 320px;
     padding: 40px;
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15),
                 0 0 2px 0 rgba(0, 0, 0, 0.2);
     z-index: 1;
     position: relative;
-
+    overflow: auto;
     .form-label {
       font-size: 14px;
       font-weight: bold;

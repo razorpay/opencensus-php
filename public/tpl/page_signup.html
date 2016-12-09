@@ -6,42 +6,29 @@
     <div class="form mchild">
       <div class='head-text'>Signing up, almost there...</div>
 
-      <form class="multistep-form" data-step='{{ms.step}}'>
+      <form class="multistep-form" data-step='{{ms.step}}' ng-submit='ms.gotoNext($event)'>
         <div class="indicator">
           <span ng-repeat='x in range(ms.totalSteps)' ng-class="{'selected': x===ms.step}"></span>
         </div>
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
         <div class="stepswrapper">
           <div class="steps" style="width: {{(ms.width+24)*ms.totalSteps}}px; transform: translateX({{-(ms.width+24)*ms.step}}px)">
-            <div class="step">
+            <div class="step" ng-class="{'collapsed': ms.step !== 0}">
               <label class="form-label" for="email">Your Office Email</label>
               <input type="email" placeholder="yourname@company.com"
                 name="email" id="email" ng-model="data.email"
                 class="form-control" required>
 
               <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
-              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(1)'>Continue</div>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Continue</button>
             </div>
-            <div class="step">
+            <div class="step" ng-class="{'collapsed': ms.step !== 1}">
               <div class="form-label">Your Business Type?</div>
               <div class="select-one">
-                <div class="select-one-option">
-                  <input type="radio" name="business_type" value="private_ltd" id="private_ltd" ng-model='data.business_type'/>
-                  <label for='private_ltd'>
-                    Private Limited
-                    <i class="pull-right fa fa-check"></i>
-                  </label>
-                </div>
-                <div class="select-one-option">
-                  <input type="radio" name="business_type" value="propreitorship" id="propreitorship" ng-model='data.business_type'/>
-                  <label for='propreitorship'>
-                    Propreitorship
-                    <i class="pull-right fa fa-check"></i>
-                  </label>
-                </div>
-                <div class="select-one-option">
-                  <input type="radio" name="business_type" value="partnership" id="partnership" ng-model='data.business_type'/>
-                  <label for='partnership'>
-                    Partnership
+                <div class="select-one-option" ng-repeat="k in toArray(business_type)" ng-show='$index < 3 || more === true'>
+                  <input type="radio" name="business_type" value="{{k}}" id="{{k}}" ng-model='data.business_type'/>
+                  <label for='{{k}}'>
+                    {{business_type[k]}}
                     <i class="pull-right fa fa-check"></i>
                   </label>
                 </div>
@@ -52,80 +39,63 @@
                     <i class="pull-right fa fa-ellipsis-h"></i>
                   </label>
                 </div>
-                <div ng-show='more === true'>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="llp" id="llp" ng-model='data.business_type'/>
-                    <label for='llp'>
-                      LLP
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="edu" id="edu" ng-model='data.business_type'/>
-                    <label for='edu'>
-                      Educational Institutes
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="trust_society" id="trust_society" ng-model='data.business_type'/>
-                    <label for='trust_society'>
-                      Trust / Society
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="individual" id="individual" ng-model='data.business_type'/>
-                    <label for='individual'>
-                      Individual
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="public_ltd" id="public_ltd" ng-model='data.business_type'/>
-                    <label for='public_ltd'>
-                      Public Limited
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                  <div class="select-one-option">
-                    <input type="radio" name="business_type" value="ngo" id="ngo" ng-model='data.business_type'/>
-                    <label for='ngo'>
-                      NGO
-                      <i class="pull-right fa fa-check"></i>
-                    </label>
-                  </div>
-                </div>
               </div>
               <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
-              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(2)'>Continue</div>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Continue</button>
             </div>
-            <div class="step">
-              <label for="email">Your Office Email2</label>
-              <input type="email" placeholder="yourname@company.com"
-                name="email" id="email" ng-model="data.email"
-                class="form-control" required>
-
-              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
-              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(3)'>Continue</div>
+            <div class="step"  ng-class="{'collapsed': ms.step !== 2}">
+              <div class="form-label">Monthly Transaction Volume (INR)</div>
+              <div class="select-one">
+                <div class="select-one-option" ng-repeat="k in toArray(monthly_transaction)">
+                  <input type="radio" name="monthly_transaction" value="{{k}}" id="{{k}}" ng-model='data.monthly_transaction'/>
+                  <label for='{{k}}'>
+                    {{monthly_transaction[k]}}
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+              </div>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Continue</button>
             </div>
-            <div class="step">
-              <label for="email">Your Office Email3</label>
-              <input type="email" placeholder="yourname@company.com"
-                name="email" id="email" ng-model="data.email"
-                class="form-control" required>
-
-              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
-              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(4)'>Continue</div>
+            <div class="step" ng-class="{'collapsed': ms.step !== 3}">
+              <div class="form-label">Your Role</div>
+              <div class="select-one">
+                <div class="select-one-option" ng-repeat="k in toArray(role)">
+                  <input type="radio" name="role" value="{{k}}" id="{{k}}" ng-model='data.role'/>
+                  <label for='{{k}}'>
+                    {{role[k]}}
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+              </div>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Continue</button>
             </div>
-            <div class="step">
-              <label for="email">Your Office Email</label>
-              <input type="email" placeholder="yourname@company.com"
-                name="email" id="email" ng-model="data.email"
+            <div class="step" ng-class="{'collapsed': ms.step !== 4}">
+              <div class="form-label">Your Department</div>
+              <div class="select-one">
+                <div class="select-one-option" ng-repeat="k in toArray(department)">
+                  <input type="radio" name="department" value="{{k}}" id="{{k}}" ng-model='data.department'/>
+                  <label for='{{k}}'>
+                    {{department[k]}}
+                    <i class="pull-right fa fa-check"></i>
+                  </label>
+                </div>
+              </div>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Continue</button>
+            </div>
+            <div class="step" ng-class="{'collapsed': ms.step !== 5}">
+              <label class="form-label" for="name">Name</label>
+              <input type="text" name="name" id="name" ng-model="data.name"
                 class="form-control" required>
-
-              <div class="faded-text">We respect your privacy. We will use this email to contact you if required. You can add more email later to this account.</div>
-              <div class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoStep(0)'>Continue</div>
+              <label class="form-label" for="company_name">Company Name</label>
+              <input type="text" name="company_name" id="company_name" ng-model="data.company_name"
+                class="form-control" required>
+              <label class="form-label" for="phone">Phone</label>
+              <input type="tel" name="phone" id="phone" ng-model="data.phone"
+                class="form-control" required>
+              <label class="form-label" for="password">Password</label>
+              <input type="password" name="password" id="password" ng-model="data.password"
+                class="form-control" required>
+              <button class="btn btn-lg btn-primary btn-block" ng-click='ms.gotoNext($event)'>Submit</button>
             </div>
           </div>
         </div>
