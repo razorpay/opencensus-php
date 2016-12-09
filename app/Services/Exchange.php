@@ -27,7 +27,7 @@ class Exchange
     protected $mode;
 
     const URLS = [
-        'current' => 'latest.json',
+        'latest' => 'latest.json',
     ];
 
     public function __construct($app)
@@ -54,7 +54,7 @@ class Exchange
             'base'   => $base
         ];
 
-        $response = $this->sendRequest($url, 'get', $input);
+        $response = $this->sendRequest($url, 'GET', $input);
 
         return $response;
     }
@@ -85,15 +85,14 @@ class Exchange
 
         $response = $this->sendExchangeRequest($request);
 
-        $this->trace->info(TraceCode::EXCHANGE_RESPONSE, [
-            'response' => $response->body
-        ]);
+        $this->trace->info(TraceCode::EXCHANGE_RESPONSE,
+            [
+                'response' => $response->body
+            ]);
 
         $decodedResponse = json_decode($response->body, true);
 
         $this->trace->info(TraceCode::EXCHANGE_RESPONSE, $decodedResponse);
-
-        $this->checkErrors($decodedResponse);
 
         return $decodedResponse;
     }
@@ -106,10 +105,11 @@ class Exchange
 
         try
         {
-            $response = Requests::$method(
+            $response = Requests::request(
                 $request['url'],
                 $request['headers'],
                 $request['content'],
+                $request['method'],
                 $request['options']);
         }
         catch(\Requests_Exception $e)
