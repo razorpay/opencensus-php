@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Org\Hostname\Entity as OrgHostMap;
+use RZP\Models\Admin\Org\Hostname\Entity as OrgHost;
 use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateOrgHostnamesTable extends Migration
@@ -22,20 +22,20 @@ class CreateOrgHostnamesTable extends Migration
 
             $table->increments('id');
 
-            $table->char(OrgHostMap::ORG_ID);
+            $table->char(OrgHost::ORG_ID);
 
-            $table->string(OrgHostMap::HOSTNAME)
+            $table->string(OrgHost::HOSTNAME)
                   ->unique();
 
-            $table->integer(OrgHostMap::CREATED_AT);
+            $table->integer(OrgHost::CREATED_AT);
 
-            $table->integer(OrgHostMap::UPDATED_AT);
+            $table->integer(OrgHost::UPDATED_AT);
 
-            $table->integer(OrgHostMap::DELETED_AT)
+            $table->integer(OrgHost::DELETED_AT)
                   ->unsigned()
                   ->nullable();
 
-            $table->foreign(OrgHostMap::ORG_ID)
+            $table->foreign(OrgHost::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG)
                   ->on_delete('cascade');
