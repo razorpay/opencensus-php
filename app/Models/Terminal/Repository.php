@@ -44,20 +44,40 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($mid)
     {
-        return $this->newQuery()
-                    ->withTrashed()
-                    ->merchantId($mid)
-                    ->get();
+        $query = $this->newquery()
+                      ->withtrashed();
+
+        $this->addmerchantwherecondition($query, [$mid]);
+
+        return $query->get();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant($mid)
     {
         $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
-                    ->enabled()
-                    ->get();
+                    ->enabled();
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
+    protected function addMerchantWhereCondition($query, $merchantIds)
+    {
+        $query->where(
+            function ($query) use ($merchantIds)
+            {
+                $query->orWhereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+
+                $query = $query->orWhereHas(
+                    'merchants' , function($query) use ($merchantIds)
+                    {
+                        $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+                });
+            });
     }
 
     public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
@@ -73,18 +93,22 @@ class Repository extends Base\Repository
 
     public function getByIdAndMerchantId($mid, $tid)
     {
-        return $this->newQuery()
-                    ->withTrashed()
-                    ->merchantId($mid)
-                    ->findOrFailPublic($tid);
+        $query = $this->newquery()
+                      ->withtrashed();
+
+        $this->addmerchantwherecondition($query, [$mid]);
+
+        return $query->findOrFailPublic($tid);
     }
 
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
-        return $this->newQuery()
-                    ->merchantId($mid)
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->first();
+        $query = $this->newquery()
+                       ->where(Terminal\Entity::GATEWAY, '=', $gateway);
+
+        $this->addmerchantwherecondition($query, [$mid]);
+
+        return $query->first();
     }
 
     public function getSharedTerminalForGateway($gateway)
@@ -108,14 +132,16 @@ class Repository extends Base\Repository
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
-        return $this->newQuery()
-                    ->merchantId($mId)
+        $query = $this->newquery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->shared()
                     ->where(Terminal\Entity::EMI, '=', '1')
                     ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
-                    ->enabled()
-                    ->first();
+                    ->enabled();
+
+        $this->addmerchantwherecondition($query, [$mId]);
+
+        return $query->first();
     }
 
     public function getSharedTerminalsOnCommonAccount()

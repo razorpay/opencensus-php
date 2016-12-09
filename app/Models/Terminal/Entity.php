@@ -424,7 +424,7 @@ class Entity extends Base\PublicEntity
 
     public function merchants()
     {
-        return $this->belongsToMany('RZP\Models\Merchant\Entity');
+        return $this->belongsToMany('RZP\Models\Merchant\Entity', 'merchant_terminal');
     }
 
     public function toArrayWithPassword()
@@ -510,7 +510,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
 
-    public function removeMerchantToTerminal(array $merchantIds)
+    public function removeMerchantFromTerminal(array $merchantIds)
     {
         $this->merchants()->detach($merchantIds);
     }

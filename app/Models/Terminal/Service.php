@@ -106,11 +106,11 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function removeMerchantToTerminal($id, $merchantIds)
+    public function removeMerchantFromTerminal($id, $merchantIds)
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->removeMerchantToTerminal($terminal, $merchantIds);
+        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantIds);
 
         return $terminal->toArrayPublic();
     }
