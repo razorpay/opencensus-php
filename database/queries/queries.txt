@@ -1349,7 +1349,12 @@ ALTER TABLE cybersource
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
 
+----
 ALTER TABLE terminals
     ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
 
 UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
+
+----
+ALTER TABLE merchants
+    ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
