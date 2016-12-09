@@ -155,7 +155,24 @@ class RoleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $result = $this->startTest();
+        $this->startTest();
+    }
+
+    public function testEditSuperAdminRole()
+    {
+        $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
+
+        $orgId = 'org_' . Org::RZP_ORG;
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $orgId, $role['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testGetMultipleRoles()

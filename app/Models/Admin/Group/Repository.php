@@ -23,24 +23,6 @@ class Repository extends Base\Repository
         Entity::NAME    => 'sometimes|string',
     ];
 
-    public function findByPublicIdAndOrgIdWithRelations(
-        string $groupId,
-        string $orgId)
-    {
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        Entity::verifyIdAndStripSign($groupId);
-
-        return $this->newQuery()
-                    ->orgId($orgId)
-                    ->with('admins')
-                    ->with('merchants')
-                    ->with('subGroups')
-                    ->with('parents')
-                    ->with('roles')
-                    ->findOrFailPublic($groupId);
-    }
-
     public function validateOrgHasNoSuchGroup(Entity $group, Org\Entity $org)
     {
         $grpExists = $this->newQuery()
@@ -54,5 +36,4 @@ class Repository extends Base\Repository
                 'The group with the name already exists');
         }
     }
-
 }

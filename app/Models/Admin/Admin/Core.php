@@ -25,8 +25,8 @@ class Core extends Base\Core
 
         $this->associateRelevantEntitiesToAdmin($admin, $input);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $org->getId(), $admin->getId());
+        $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
+            $admin->getId(), $org->getId(), ['roles', 'groups']);
 
         return $admin;
     }
@@ -65,8 +65,8 @@ class Core extends Base\Core
 
         $this->associateRelevantEntitiesToAdmin($admin, $input);
 
-        $admin = $this->repo->admin->retrieveByOrgIdAndIdOrFail(
-            $admin['org_id'], $admin->getId());
+        $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
+            $admin->getId(), $admin['org_id'], ['roles', 'groups']);
 
         return $admin;
     }

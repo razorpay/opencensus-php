@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Admin\Role;
 
+use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base\Traits\RevisionableTrait;
@@ -118,5 +119,18 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::ORG_ID] = Org::getSignedId($orgId);
         }
+    }
+
+    public function isSuperAdminRole()
+    {
+        $app = App::getFacadeRoot();
+
+        // Default role is SuperAdmin
+        if ($app['config']['heimdall']['default_role_name'] === $this->getName())
+        {
+            return true;
+        }
+
+        return false;
     }
 }
