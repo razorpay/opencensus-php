@@ -90,8 +90,6 @@ class PaymentTransferTest extends TestCase
     {
         $customerValues = [
             'balance'       => 100,
-            'daily_usage'   => 100,
-            'weekly_usage'  => 100,
             'monthly_usage' => 100,
         ];
 
@@ -113,8 +111,6 @@ class PaymentTransferTest extends TestCase
 
         $expected = [
             'balance'       => $amount + 100,
-            'daily_usage'   => $amount,
-            'weekly_usage'  => $amount,
             'monthly_usage' => $amount,
         ];
 
