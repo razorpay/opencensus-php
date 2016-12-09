@@ -345,8 +345,6 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
-
-            throw $e;
         }
     }
 
@@ -416,8 +414,7 @@ trait Refund
             {
                 $this->refundOnGateway($data);
             }
-            else if (($this->gatewaySupportsReverse($payment) === true) and
-                     ($payment->merchant->isFeatureEnabled(Feature::REVERSE) === true))
+            else if ($this->gatewaySupportsReversal($payment) === true)
             {
                 $this->reverseOnGateway($data);
             }
@@ -430,7 +427,7 @@ trait Refund
         return $refund;
     }
 
-    protected function gatewaySupportsReverse($payment)
+    protected function gatewaySupportsReversal($payment)
     {
         $gateway = $payment->getGateway();
 

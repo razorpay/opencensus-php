@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
@@ -84,11 +85,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'payment';
 
-    protected $metadata         = array();
+    protected $metadata         = [];
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
@@ -106,9 +107,10 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::SERVICE_TAX,
         self::RECURRING,
-        self::SAVE);
+        self::SAVE
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::PUBLIC_ID,
         self::METHOD,
@@ -150,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
         self::CALLBACK_URL,
         self::RECURRING,
@@ -160,9 +163,10 @@ class Entity extends Base\PublicEntity
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -189,7 +193,8 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
     protected $publicSetters = [
         self::ID,
@@ -213,7 +218,7 @@ class Entity extends Base\PublicEntity
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
-    protected $defaults = array(
+    protected $defaults = [
         self::STATUS                => Status::CREATED,
         self::REFUND_STATUS         => Refund\Status::NULL,
         self::NOTES                 => [],
@@ -221,6 +226,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_TRANSFERRED    => 0,
         self::SIGNED                => 0,
         self::VERIFIED              => null,
+        self::GATEWAY_CAPTURED      => null,
         self::CAPTURED_AT           => null,
         self::AUTO_CAPTURED         => 0,
         self::SAVE                  => false,
@@ -233,16 +239,16 @@ class Entity extends Base\PublicEntity
         self::RECURRING             => false,
         self::INTERNATIONAL         => null,
         self::VERIFY_BUCKET         => null,
-    );
+    ];
 
-    protected $amounts = array(
+    protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::FEE,
         self::SERVICE_TAX
-    );
+    ];
 
     protected $casts = [
         self::RECURRING             => 'bool',
@@ -256,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX           => 'int',
         self::SAVE                  => 'bool',
         self::INTERNATIONAL         => 'bool',
+        self::GATEWAY_CAPTURED      => 'bool',
         self::LATE_AUTHORIZED       => 'bool',
     ];
 
@@ -458,6 +465,11 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setGatewayCaptured($gatewayCaptured)
+    {
+        $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
     }
 
     public function setServiceTax($serviceTax)

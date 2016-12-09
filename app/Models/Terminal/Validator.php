@@ -79,8 +79,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|min:5',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
@@ -281,6 +281,7 @@ class Validator extends Base\Validator
         // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
+            ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getRecurring() === $existing->getRecurring()) and

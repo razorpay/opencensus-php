@@ -333,15 +333,14 @@ class Validator extends Base\Validator
 
         if ($amount !== $payment->getAmount())
         {
-            $e = new Exception\BadRequestException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
                 Payment\Entity::AMOUNT,
                 [
                     'capture_amount' => $amount,
-                    'payment_amount' => $payment->getAmount()
+                    'payment_amount' => $payment->getAmount(),
+                    'payment_id'     => $payment->getId(),
                 ]);
-
-            throw $e;
         }
     }
 

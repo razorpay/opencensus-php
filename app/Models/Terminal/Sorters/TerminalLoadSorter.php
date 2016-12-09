@@ -16,7 +16,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 5,
+            'load'       => 30,
         ],
 
         '1000AxisMigsTl' => [
@@ -26,7 +26,12 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '5yKTyCuDne8eiz' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 0,
+            'load'       => 1,
+        ],
+
+        '6qJd4PFKxZwFbL' => [
+            'gateway'    => Gateway::CYBERSOURCE,
+            'load'       => 5,
         ],
 
         // Test terminals, won't be used on prod.
