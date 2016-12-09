@@ -39,6 +39,10 @@ class Core extends Base\Core
 
     public function deleteHostnamesOfOrg(string $orgId)
     {
-        $this->repo->org_hostname->deleteHostnamesOfOrg($orgId);
+        $allHosts = $this->repo->org_hostname->getHostsByOrgId($orgId);
+
+        foreach ($allHosts as $host) {
+            $this->repo->org_hostname->deleteOrFail($host);
+        }
     }
 }

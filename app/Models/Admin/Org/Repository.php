@@ -61,6 +61,7 @@ class Repository extends Base\Repository
     public function findOrFailWithHostname(string $orgId)
     {
         return $this->newQuery()
+                    ->with(['hostnames'])
                     ->findOrFailPublic($orgId);
     }
 }

@@ -18,11 +18,14 @@ class Service extends Base\Service
         {
             $org = $this->core()->create($input);
 
-            // create hostname
-            $hostnames = explode(',', $input['hostname']);
+            if (isset($input['hostname']))
+            {
+                // create hostname
+                $hostnames = explode(',', $input['hostname']);
 
-            foreach ($hostnames as $hostname) {
-                (new Hostname\Core)->create($org, $hostname);
+                foreach ($hostnames as $hostname) {
+                    (new Hostname\Core)->create($org, $hostname);
+                }
             }
 
             // create default role

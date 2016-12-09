@@ -26,10 +26,10 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function deleteHostnamesOfOrg(string $orgId)
+    public function getHostsByOrgId(string $orgId)
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
-                    ->delete();
+                    ->get();
     }
 }
