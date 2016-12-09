@@ -91,16 +91,13 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
-        $this->app->singleton('exchange', function($app)
-        {
-            return new Exchange($app);
-        });
-
         $this->registerApiMutex();
 
         $this->registerMaxMind();
 
         $this->registerBitly();
+
+        $this->registerExchange();
 
         $this->registerValidatorResolver();
 
@@ -183,6 +180,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Bitly($app);
+        });
+    }
+
+    protected function registerExchange()
+    {
+        $this->app->singleton('exchange', function($app)
+        {
+            $exchangeMock = $app['config']->get('applications.exchange.mock');
+
+            if ($exchangeMock === true)
+            {
+                return new Mock\Exchange($app);
+            }
+
+            return new Exchange($app);
         });
     }
 

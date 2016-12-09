@@ -73,6 +73,7 @@ return array(
     ),
 
     'exchange'  => [
+        'mock'      => env('MAXMIND_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
     ],
