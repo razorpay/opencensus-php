@@ -1,3 +1,4 @@
+"use strict";
 //User profile Controller
 app.controller('UserCtrl', [
   '$scope',
@@ -44,7 +45,7 @@ app.controller('UserCtrl', [
       }).error(function () {
         $scope.bankAccount = false;
       });
-    }
+    };
 
     $scope.acceptInvitation = function(invite) {
       var request = $http.post('settings/invitations/' + invite.id + '/accept');
@@ -58,7 +59,7 @@ app.controller('UserCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
     $scope.rejectInvitation = function(invite) {
       var request = $http.delete('settings/invitations/' + invite.id + '/reject');
       request.success(function (data) {
@@ -71,7 +72,7 @@ app.controller('UserCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     $scope.upgradeAcount = function(business_name) {
       var request = $http({
@@ -88,14 +89,15 @@ app.controller('UserCtrl', [
           $state.reload();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
+
     $scope.refreshUser = function (force) {
       user.identity(force).then(function (data) {
         $scope.user = data;
@@ -131,7 +133,9 @@ app.controller('UserCtrl', [
         if (window.smoochScript) {
           smoochScript.then(function() {
             var sk_user = function(){
-              window.skIntro && window.skIntro.html('');
+              if (window.skIntro) {
+                window.skIntro.html('');
+              }
               $('#sk-footer input').off('focus', window.skFocusListener);
               window.smoochUserLoaded = true;
               Smooch.updateUser({
@@ -145,7 +149,7 @@ app.controller('UserCtrl', [
                   role: $scope.role
                 }
               });
-            }
+            };
 
             if (Smooch._rzpReady) {
               sk_user();
@@ -156,7 +160,7 @@ app.controller('UserCtrl', [
               });
             }
           });
-        };
+        }
 
         analytics.identify(data.id, {
           name: data.name,
@@ -206,7 +210,7 @@ app.controller('UserCtrl', [
         url: '/user/keepalive',
         notBusy: true
       }).success(function (data) {
-        if (data.success == false) {
+        if (data.success === false) {
           location.reload();
         }
       }).error(function () {
@@ -251,7 +255,7 @@ app.controller('UserCtrl', [
           $scope.alerts.addAlert('success', 'Password changed successfully.', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
