@@ -30,7 +30,6 @@ class Org extends Base
         ]);
 
         $orgHost = $this->fixtures->create('org_hostname', [
-            'id'        => 21,
             'org_id'    => self::RZP_ORG,
             'hostname'  => 'hdfcbank.com',
         ]);
@@ -44,17 +43,14 @@ class Org extends Base
         $org = $this->fixtures->create('org', [
             'id' => self::RZP_ORG,
             'email' => 'admin@razorpay.com',
-            'hostname' => 'dashboard.razorpay.com'
         ]);
 
-        $orgHost = $this->fixtures->create('org_hostname', [
-            'id'        => 22,
+        $this->fixtures->create('org_hostname', [
             'org_id'    => self::RZP_ORG,
             'hostname'  => 'dashboard.razorpay.dev'
         ]);
 
-        $orgHost = $this->fixtures->create('org_hostname', [
-            'id'        => 23,
+        $this->fixtures->create('org_hostname', [
             'org_id'    => self::RZP_ORG,
             'hostname'  => 'dashboard.razorpay.com'
         ]);
