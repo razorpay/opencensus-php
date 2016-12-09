@@ -106,20 +106,20 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function removeMerchantFromTerminal($id, $merchantIds)
+    public function removeMerchantFromTerminal($id, $merchantId)
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantIds);
+        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }
 
-    public function addMerchantToTerminal($id, $merchantIds)
+    public function addMerchantToTerminal($id, $merchantId)
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->addMerchantToTerminal($terminal, $merchantIds);
+        (new Terminal\Core)->addMerchantToTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }

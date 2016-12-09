@@ -45,7 +45,7 @@ class Repository extends Base\Repository
     public function getByMerchantId($mid)
     {
         $query = $this->newquery()
-                      ->withtrashed();
+                      ->withTrashed();
 
         $this->addmerchantwherecondition($query, [$mid]);
 
@@ -94,7 +94,7 @@ class Repository extends Base\Repository
     public function getByIdAndMerchantId($mid, $tid)
     {
         $query = $this->newquery()
-                      ->withtrashed();
+                      ->withTrashed();
 
         $this->addmerchantwherecondition($query, [$mid]);
 
