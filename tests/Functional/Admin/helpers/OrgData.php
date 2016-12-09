@@ -81,7 +81,6 @@ return [
                         'id' => 'org_RazorpayOrgnId',
                         'display_name' => 'Razorpay',
                         'business_name' => 'Razorpay Software Pvt Ltd',
-                        'hostname' => 'dashboard.razorpay.com',
                         'email' => 'admin@razorpay.com',
                         'email_domains' => [
                             'razorpay.com',
@@ -95,7 +94,6 @@ return [
                         'id' => 'org_HDFCbankOrgnId',
                         'display_name' => 'Razorpay',
                         'business_name' => 'Razorpay Software Pvt Ltd',
-                        'hostname' => 'hdfcbank.com',
                         'email' => 'test@hdfcbank.com',
                         'email_domains' => [
                             'hdfcbank.com',
@@ -171,6 +169,14 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'admin' => [
+                    'name' => 'superadmin',
+                    'branch_code' => 'a',
+                    'employee_code' => 'a',
+                    'location_code' => 'a',
+                    'department_code' => 'a',
+                    'supervisor_code' => 'a',
+                ],
             ],
         ],
         'response'  => [
@@ -199,6 +205,14 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'admin' => [
+                    'name' => 'superadmin',
+                    'branch_code' => 'a',
+                    'employee_code' => 'a',
+                    'location_code' => 'a',
+                    'department_code' => 'a',
+                    'supervisor_code' => 'a',
+                ],
             ],
         ],
         'response'  => [

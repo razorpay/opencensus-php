@@ -3,12 +3,13 @@
 namespace RZP\Models\Admin\Org\Hostname;
 
 use RZP\Base;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
-    protected $createRules = [
+    protected static $createRules = [
         Entity::ORG_ID      => 'required|string',
-        Entity::HOSTNAME    => 'required|string|max:255|custom'
+        Entity::HOSTNAME    => 'required|string|max:255|custom|unique:org_hostname'
     ];
 
     protected function validateHostname($attribute, $hostname)

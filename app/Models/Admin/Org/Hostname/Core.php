@@ -12,11 +12,11 @@ class Core extends Base\Core
     {
         $orgHost = new Entity;
 
-        $orgHost->setHostname($hostname);
-
         $orgHost->setAuditAction(Action::CREATE_ORG_HOSTNAME);
 
         $orgHost->org()->associate($org);
+
+        $orgHost->build(['hostname' => $hostname, 'org_id' => $org->getId()]);
 
         $this->repo->org_hostname->saveOrFail($orgHost);
 
