@@ -50,12 +50,6 @@ class MinAmount
                 'utilities' => 100,
             ],
         ],
-
-        'default' => [
-            'default'   => 100,
-            'ecommerce' => 100,
-            'utilities' => 100,
-        ],
     ];
 
     const TOP_SIX = [
@@ -77,8 +71,6 @@ class MinAmount
     {
         $minAmount = 0;
 
-        $methodName = null;
-
         // unwrap filterParams
         $category = $filterParams['category'];
 
@@ -96,22 +88,12 @@ class MinAmount
 
         if (empty($method) === false)
         {
-            $methodName = $method;
-
             $minAmount = self::netbankingMinAmount($category, $gateway);
         }
 
         else if (empty($network) === false)
         {
-            $methodName = $network;
-
             $minAmount = self::networkMinAmount($category, $network);
-        }
-
-        // default case when no method is mentioned
-        if (empty($methodName) === true)
-        {
-            $minAmount = self::defaultMinAmount($category);
         }
 
         return $minAmount;
@@ -185,25 +167,6 @@ class MinAmount
         else
         {
             $minAmount = $amountArray['default'];
-        }
-
-        return $minAmount;
-    }
-
-    protected static function defaultMinAmount($category)
-    {
-        $minAmount = 0;
-
-        $defaultArray = constant('self::MIN_AMOUNT')['default'];
-
-        if (array_key_exists($category, $defaultArray) === true)
-        {
-            $minAmount = $defaultArray[$category];
-        }
-
-        else
-        {
-            $minAmount = $defaultArray['default'];
         }
 
         return $minAmount;
