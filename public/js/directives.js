@@ -368,7 +368,9 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
       onClick: '&asyncBtnClick'
     },
     link: function(scope, element, attrs) {
-      element.on('click', function() {
+      element.parents('form:first').on('submit', function(event) {
+        event.preventDefault()
+
         if (typeof scope.onClick === 'function') {
           var returnFn = scope.onClick()
           if (returnFn.then) {

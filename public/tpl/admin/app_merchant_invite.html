@@ -13,8 +13,8 @@
         <div class="panel-heading">
           <h4>Invitation details</h4>
         </div>
-        <div class="panel-body">
-          <form class="form-horizontal">
+        <form class="form-horizontal">
+          <div class="panel-body">
             <div class="form-group">
              <label for="channel_code" class="col-lg-3 control-label">Channel Code</label>
               <div class="col-lg-8" >
@@ -158,17 +158,17 @@
                   ng-model="merchant.dba_name" ng-required='true'>
               </div>
             </div>
-          </form>
-        </div>
-        <div class="panel-footer">
-          <div class="row">
-            <div class="col-lg-offset-3 col-lg-8 text-center">
-              <button class="btn btn-primary panel-btn-action" async-btn-click="inviteMerchant(merchant)">
-                Send
-              </button>
+          </div>
+          <div class="panel-footer">
+            <div class="row">
+              <div class="col-lg-offset-3 col-lg-8 text-center">
+                <button class="btn btn-primary panel-btn-action" async-btn-click="inviteMerchant(merchant)">
+                  Send
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>

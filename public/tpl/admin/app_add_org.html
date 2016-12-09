@@ -22,35 +22,35 @@
              <label for="email" class="col-lg-3 control-label">Email</label>
               <div class="col-lg-8" >
                 <input type="email" class="form-control m-b" name="email"
-                  ng-model="organization.email" ng-readonly="organization.id" placeholder="admin@company.com">
+                  ng-model="organization.email" ng-readonly="organization.id" placeholder="admin@company.com" ng-required="true">
               </div>
             </div>
             <div class="form-group">
              <label for="business_name" class="col-lg-3 control-label">Business name</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="business_name"
-                  ng-model="organization.business_name">
+                  ng-model="organization.business_name" ng-required="true">
               </div>
             </div>
             <div class="form-group">
              <label for="display_name" class="col-lg-3 control-label">Display name</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="display_name"
-                  ng-model="organization.display_name">
+                  ng-model="organization.display_name" ng-required="true">
               </div>
             </div>
             <div class="form-group">
              <label for="email_domains" class="col-lg-3 control-label">Email domains</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="email_domains"
-                  ng-model="organization.email_domains">
+                  ng-model="organization.email_domains" ng-required="true">
               </div>
             </div>
             <div class="form-group">
              <label for="hostname" class="col-lg-3 control-label">Hostname</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="hostname"
-                  ng-model="organization.hostname">
+                  ng-model="organization.hostname" ng-required="true">
               </div>
             </div>
             <!-- <div class="form-group">
@@ -63,7 +63,7 @@
             <div class="form-group">
              <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
               <div class="col-lg-8" >
-                <select class="form-control m-b" ng-model="organization.auth_type">
+                <select class="form-control m-b" ng-model="organization.auth_type" ng-required="true">
                   <option value="">Please select an auth type</option>
                   <option value="password">Password</option>
                   <option value="google_auth">Google Auth</option>
@@ -73,56 +73,56 @@
             <div class="form-group" ng-show=!organization.id>
               <label for="full_name" class="col-lg-3 control-label">Full Name</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.name" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.name" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="username" class="col-lg-3 control-label">Username</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="username" ng-model="organization.admin.username" />
+                <input type="text" class="form-control m-b" name="username" ng-model="organization.admin.username" ng-required="true" />
                 <span class="help-block">Required to login to user panel.</span>
               </div>
             </div>
             <div class="form-group" ng-show="!user.id && !organization.id">
               <label for="password" class="col-lg-3 control-label">Password</label>
               <div class="col-lg-8" >
-                <input type="password" class="form-control m-b" name="password" ng-model="organization.admin.password" />
+                <input type="password" class="form-control m-b" name="password" ng-model="organization.admin.password" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show="!user.id && !organization.id">
               <label for="password_confirmation" class="col-lg-3 control-label">Re-Type Password</label>
               <div class="col-lg-8" >
-                <input type="password" class="form-control m-b" name="password" ng-model="organization.admin.password_confirmation" />
+                <input type="password" class="form-control m-b" name="password" ng-model="organization.admin.password_confirmation" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="employee_code" class="col-lg-3 control-label">Employee Code</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.employee_code" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.employee_code" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="department_code" class="col-lg-3 control-label">Department Code</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.department_code" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.department_code" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="branch_code" class="col-lg-3 control-label">Branch Code</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.branch_code" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.branch_code" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="location_code" class="col-lg-3 control-label">Location Code</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.location_code" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.location_code" ng-required="true" />
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
               <label for="supervisor_code" class="col-lg-3 control-label">Supervisor Code</label>
               <div class="col-lg-8" >
-                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.supervisor_code" />
+                <input type="text" class="form-control m-b" name="name" ng-model="organization.admin.supervisor_code" ng-required="true" />
               </div>
             </div>
 
