@@ -372,7 +372,7 @@ class Terminal extends Base
         $attributes['id'] = '2RecurringTerm';
         $attributes['recurring'] = 2;
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())
@@ -461,6 +461,7 @@ class Terminal extends Base
             'netbanking'            => 1,
             'shared'                => 1,
             'category'              => 0,
+            'tpv'                   => 1,
             'network_category'      => 'securities',
         );
 

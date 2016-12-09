@@ -49,6 +49,8 @@ class MerchantCreateTest extends TestCase
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
+
+        $this->checkMerchantDetails();
     }
 
     protected function createMerchant()
@@ -99,6 +101,15 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals($methods['mobikwik'], true);
         $this->assertEquals($methods['paytm'], false);
+    }
+
+    protected function checkMerchantDetails()
+    {
+        $this->ba->appAuthTest();
+
+        $merchantDetails = $this->getEntityById('merchant_detail', '1X4hRFHFx4UiXt', true);
+
+        $this->assertEquals($merchantDetails['contact_email'], 'test@localhost.com');
     }
 
     protected function checkNetbankingBanksInMode($mode)

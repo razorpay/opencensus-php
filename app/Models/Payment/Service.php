@@ -44,8 +44,11 @@ class Service extends Base\Service
 
     /**
      * Processes a wallet payment
+     *
      * @param array $input
+     *
      * @return array|mixed
+     * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
     public function processWallet(array $input)

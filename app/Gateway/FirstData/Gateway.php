@@ -924,42 +924,32 @@ class Gateway extends Base\Gateway
     // Client Cert           => GATEWAY_CLIENT_CERTIFICATE (base64 encoded)
     // Client Cert Password  => GATEWAY_TERMINAL_PASSWORD
 
-    protected function getStoreId()
+    public function getStoreId()
     {
+        $storeId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_store_id'];
+            $storeId = $this->config['test_store_id'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-    }
-
-    protected function getSharedSecret()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_hash_secret'];
-        }
-
-        return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        return $storeId;
     }
 
     protected function getCredentials()
     {
+        $auth = [
+            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
+            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
+        ];
+
         if ($this->mode === Mode::TEST)
         {
             $auth = [
                 'username' => $this->config['test_user_id'],
                 'password' => $this->config['test_password']
             ];
-
-            return $auth;
         }
-
-        $auth = [
-            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
-            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
-        ];
 
         return $auth;
     }
@@ -986,13 +976,11 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
+            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+
             if ($this->mode === Mode::TEST)
             {
                 $encodedCert = $this->config['test_client_certificate'];
-            }
-            else
-            {
-                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
             $key = base64_decode($encodedCert);
@@ -1011,11 +999,13 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
+        $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_client_certificate_password'];
+            $password = $this->config['test_client_certificate_password'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        return $password;
     }
 }

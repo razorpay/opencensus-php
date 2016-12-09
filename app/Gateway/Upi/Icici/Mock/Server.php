@@ -126,7 +126,12 @@ class Server extends Base\Mock\Server
             // Just make sure that this doesn't return 92
             case 'unknownresponse@icici':
                 return mt_rand(93, 500);
-                break;
+            case 'invalidvpa@icici':
+                return 5007;
+            case 'user@invalidbank':
+                return 5008;
+            case 'serverdown@icici':
+                return 5009;
             default:
                 return 92;
         }

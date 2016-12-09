@@ -130,6 +130,10 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * @deprecated 
+     * @return mixed
+     */
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

@@ -117,7 +117,7 @@ class Repository extends Base\Repository
 
         $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
 
-        $count = $rule->payments->count();
+        $count = $rule->feesBreakup->count();
 
         if ($count === 0)
         {
@@ -139,7 +139,7 @@ class Repository extends Base\Repository
 
         $rule->setAuditLogAction(Action::DELETE_PRICING_PLAN_RULE);
 
-        $count = $rule->payments->count();
+        $count = $rule->feesBreakup->count();
 
         if ($count === 0)
         {

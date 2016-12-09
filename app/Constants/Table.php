@@ -36,6 +36,7 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_DETAIL       = 'merchant_details';
 
     // organization roles permissions
     const ORG                   = 'orgs';

@@ -141,6 +141,12 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Transaction\Entity', 'pricing_rule_id');
     }
 
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'pricing_rule_id');
+    }
+
+
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
@@ -263,6 +269,11 @@ class Entity extends Base\PublicEntity
     protected function getFixedRateAttribute()
     {
         return (int) $this->attributes[self::FIXED_RATE];
+    }
+
+    public function getFeature()
+    {
+        return $this->attributes[self::FEATURE];
     }
 
     /*

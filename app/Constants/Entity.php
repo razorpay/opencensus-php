@@ -49,6 +49,7 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const MERCHANT_DETAIL       = 'merchant_detail';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -142,6 +143,7 @@ class Entity
         self::GROUP                 => \RZP\Models\Admin\Group::class,
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
     protected static $repository = array(
