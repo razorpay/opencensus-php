@@ -33,6 +33,17 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $response = $this->getVerifyXml($input);
+
+        return $this->makeResponse($response);
+    }
+
     protected function getDecryptedData($input)
     {
         $masterKey = $this->getGatewayInstance()->getMasterKey();
@@ -70,5 +81,28 @@ class Server extends Base\Mock\Server
         $content['qs'] = $this->encryptString($query, $masterKey);
 
         return $content;
+    }
+
+    protected function getVerifyXml($input)
+    {
+        $response = [
+            ResponseFields::PAYEE_ID                   => $input[RequestFields::PAYEE_ID],
+            ResponseFields::ITEM_CODE                  => $input[RequestFields::ITEM_CODE],
+            ResponseFields::MERCHANT_UNIQUE_REFERENCE  => $input[RequestFields::MERCHANT_UNIQUE_REFERENCE],
+            ResponseFields::DATE                       => $input[RequestFields::DATE],
+            ResponseFields::AMOUNT                     => $input[RequestFields::AMOUNT],
+            // How do I get the BID to show up??
+            // ResponseFields::BANK_REFERENCE_ID          => $input[RequestFields::BANK_REFERENCE_ID],
+            ResponseFields::PAYMENT_STATUS             => Constants::SUCCESS,
+        ];
+
+        $response = array_flip($response);
+
+        $xml = new \SimpleXMLElement('<DataSet/>');
+        $xml->addChild('Table1');
+
+        array_walk_recursive($response, array ($xml->Table1, 'addChild'));
+
+        return $xml->asXML();
     }
 }

@@ -12,4 +12,7 @@ class ResponseFields
     const BANK_REFERENCE_ID         = 'BID';
     const FLAG                      = 'STATFLG';
     const ENCRYPTED_STRING          = 'qs';
+    const PAYEE_ID                  = 'PAYEEID';
+    const DATE                      = 'PaymentDate';
+    const PAYMENT_STATUS            = 'PaymentStatus';
 }

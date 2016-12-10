@@ -76,7 +76,88 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        parent::verify($input);
 
+        $verify = new GatewayBase\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $content = $this->getPaymentVerifyData($verify);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
+
+        return $verify;
+    }
+
+    public function verifyPayment($verify)
+    {
+        // Response XML
+        $content = $verify->verifyResponseBody;
+
+        $response = $this->parseResponseXml($content);
+
+        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            $response);
+
+        $verify->gatewaySuccess = false;
+        $verify->apiSuccess = true;
+
+        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
+            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $input = $verify->input;
+
+        if ($input['payment']['status'] === 'failed' or
+            $input['payment']['status'] === 'created')
+        {
+            $verify->apiSuccess = false;
+        }
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $status = Gateway\VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $status;
+    }
+
+    protected function getPaymentVerifyData($verify)
+    {
+        $input = $verify->input;
+        $payment = $verify->payment;
+
+        $data = $this->getDefaultRequestData($input);
+
+        $paymentDate = $this->getPaymentDate($payment);
+
+        $pid = $this->getPid();
+
+        // These two could be wrong
+        $data[RequestFields::DATE] = $paymentDate;
+        $data[RequestFields::PAYEE_ID] = $pid;
+
+        return $data;
     }
 
     protected function getPaymentRequestData($input)
@@ -115,11 +196,6 @@ class Gateway extends Base\Gateway
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
         return $this->encryptString($stringToEncrypt, $masterKey);
-    }
-
-    protected function getVerifyRequestData($input)
-    {
-
     }
 
     protected function getDefaultRequestData($input)
@@ -180,6 +256,22 @@ class Gateway extends Base\Gateway
             'status'            => $content[ResponseFields::STATUS],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
+    }
+
+    protected function getPaymentDate($payment)
+    {
+        $timestamp = $payment['original']['created_at'];
+
+        return date('Y-m-d', $timestamp);
+    }
+
+    protected function parseResponseXml($response)
+    {
+        $responseArray = (array) simplexml_load_string($response);
+
+        // Lets assume we verify only one payment at a time
+        // So the response will contain just 1 table at a time
+        return (array) $responseArray['Table1'];
     }
 
     public function getMasterKey()

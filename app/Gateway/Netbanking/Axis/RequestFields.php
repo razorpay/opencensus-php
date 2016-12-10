@@ -9,7 +9,7 @@ class RequestFields
     const CATEGORY_ID               = 'CATEGORY_ID'; // IRCSM for encrypted
     const MERCHANT_UNIQUE_REFERENCE = 'PRN';
     const BANK_ACCOUNT_NUMBER       = 'PRN1';
-    const PAYEE_ID                  = 'PID';
+    const PAYEE_ID                  = 'PID'; // For verify is this PAYEEID?? Check
     const MODE_OF_OPERATION         = 'MD';
     const ITEM_CODE                 = 'ITC';
     const CURRENCY_CODE             = 'CRN';
@@ -18,4 +18,5 @@ class RequestFields
     const AMOUNT                    = 'AMT';
     const RESPONSE                  = 'RESPONSE';
     const CONFIRMATION              = 'CG';
+    const DATE                      = 'DATE'; // check
 }

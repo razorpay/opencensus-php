@@ -4,9 +4,10 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 class Url
 {
-    const LIVE_DOMAIN = 'https://retail.axisbank.co.in/';
-    const TEST_DOMAIN = 'https://retail.axisbank.co.in/';
+    // hacky -- I'm sure there's a better way to do this
+    const LIVE_DOMAIN = 'https://';
+    const TEST_DOMAIN = 'https://';
 
-    const AUTHORIZE   = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?';
-    const VERIFY      = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?';
+    const AUTHORIZE   = 'retail.axisbank.co.in/wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?';
+    const VERIFY      = 'www.axisbank.co.in/Verification/Web/Applications/Query.aspx';
 }
