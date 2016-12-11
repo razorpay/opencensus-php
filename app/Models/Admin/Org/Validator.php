@@ -34,7 +34,7 @@ class Validator extends Base\Validator
 
     protected function validateEmailDomains($attribute, $value)
     {
-        $domains = explode(',', $value);
+        $domains = $value;
 
         foreach ($domains as $domain)
         {
