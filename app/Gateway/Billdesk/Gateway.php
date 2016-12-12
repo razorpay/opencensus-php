@@ -242,21 +242,6 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    /**
-     * Conditions which we use to determine if a payment has been refunded by Billdesk
-     * If the query status is not Y, return false.
-     * If auth status is not success, return false.
-     * If ref status is neither refunded nor cancelled, return false.
-     * If ref amount is not equal to api's ref amount, return false.
-     *
-     * DISCLAIMER: Will not work as expected in the following case:
-     * There are 3 partial refunds with amounts 5, 10 and 15.
-     * The refunds with 5 and 10 go through successfully and
-     * the one with 15 fails due to some server issue on Billdesk side and that times out on our end.
-     * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
-     * This below function will return back with TRUE because the refund amount totals 15. We will end up
-     * creating a refund entity on the gateway side even when we are not supposed to!
-     */
     protected function checkIfAlreadyRefunded(array $response, array $input)
     {
         //
@@ -280,13 +265,19 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * It is possible that a refund was successful on Billdesk and
-     * we even created a record in the Billdesk Entity, but, due to some reason,
-     * it failed on the API side and we don't have a record of it.
-     * Billdesk sends an error code of ERR_REF010 when we try to refund it again.
+     * Conditions which we use to determine if a payment has been refunded by Billdesk
+     * If the query status is not Y, return false.
+     * If auth status is not success, return false.
+     * If ref status is neither refunded nor cancelled, return false.
+     * If ref amount is not equal to api's ref amount, return false.
      *
-     * @param array $input
-     * @return bool
+     * DISCLAIMER: Will not work as expected in the following case:
+     * There are 3 partial refunds with amounts 5, 10 and 15.
+     * The refunds with 5 and 10 go through successfully and
+     * the one with 15 fails due to some server issue on Billdesk side and that times out on our end.
+     * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
+     * This below function will return back with TRUE because the refund amount totals 15. We will end up
+     * creating a refund entity on the gateway side even when we are not supposed to!
      */
     protected function verifyIfRefunded(array $input)
     {
@@ -359,6 +350,15 @@ class Gateway extends Base\Gateway
         return $refundContent;
     }
 
+    /**
+     * It is possible that a refund was successful on Billdesk and
+     * we even created a record in the Billdesk Entity, but, due to some reason,
+     * it failed on the API side and we don't have a record of it.
+     * Billdesk sends an error code of ERR_REF010 when we try to refund it again.
+     *
+     * @param array $input
+     * @return bool
+     */
     protected function validateAlreadyRefundedByApi(array $input)
     {
         $refundAmount = $input['amount'];
