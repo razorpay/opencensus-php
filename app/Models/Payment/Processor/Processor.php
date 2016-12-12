@@ -427,10 +427,10 @@ class Processor
             return $this->processAuthorizeResponse($payment);
         }
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
