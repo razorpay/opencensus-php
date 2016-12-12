@@ -35,6 +35,11 @@ class Validator extends Base\Validator
 
     protected function validateEmailDomains($attribute, $domains)
     {
+        if (is_array($domains) === false)
+        {
+            $domains = explode(',', $domains);
+        }
+
         foreach ($domains as $domain)
         {
             if (filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false)
