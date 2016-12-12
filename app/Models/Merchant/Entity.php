@@ -557,19 +557,19 @@ class Entity extends Base\PublicEntity
         switch ($duration)
         {
             case 'mins':
-                $multipier = 60;
+                $multiplier = 60;
                 break;
 
             case 'hours':
-                $multipier = 3600;
+                $multiplier = 3600;
                 break;
 
             case 'days':
-                $multipier = 86400;
+                $multiplier = 86400;
                 break;
         }
 
-        $delay = $time * $multipier;
+        $delay = $time * $multiplier;
 
         $this->attributes[self::AUTO_REFUND_DELAY] = (int) $delay;
     }
@@ -604,7 +604,7 @@ class Entity extends Base\PublicEntity
 
     public function isReceiptEmailsEnabled()
     {
-        return $this->getReceiptEmailEnabledAttribute();
+        return $this->getAttribute(self::RECEIPT_EMAIL_ENABLED);
     }
 
     public function getRiskRating()
