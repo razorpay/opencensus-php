@@ -106,6 +106,8 @@ app.controller('OrgsAddUsersCtrl', [
           });
         }
       });
+
+      return request;
     }
 
     function getSelectedGroups() {
@@ -130,8 +132,7 @@ app.controller('OrgsAddUsersCtrl', [
 
     $scope.save = function(user) {
       if (user.id) {
-        $scope.editUser(user)
-        return
+        return $scope.editUser(user)
       }
 
       var body = user;
@@ -160,6 +161,8 @@ app.controller('OrgsAddUsersCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
+
+      return request;
     }
 
     /**

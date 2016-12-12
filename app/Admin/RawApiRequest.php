@@ -38,24 +38,36 @@ class RawApiRequest
         // Increase the time limit
         set_time_limit(600);
 
-        // Create the guzzle client
-        $this->client = new Guzzle([
+        $options = [
             'base_url' => Config::get('api.url'),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'headers'   =>  ApiRequest::getHeaders() + [
-                'X-Dashboard' => 'true',
-                'User-Agent'  => 'Razorpay-PHP/guzzle6'
+                'X-Dashboard'   => 'true',
+                'User-Agent'    => 'Razorpay-PHP/guzzle6'
             ]
-        ]);
+        ];
+
+        // Create the guzzle client
+        $this->client = new Guzzle($options);
 
         $this->setupCredentials($input);
         $this->input = $input;
         $this->path = $path;
 
+        // Setting these in $options above wasn't working (not passing to API)
+        $this->params['headers']['X-User-Agent'] = Request::header('User-Agent');
+        $this->params['headers']['X-IP-Address'] = Request::ip();
+
         if (!empty(Request::query()) and $autoBuildQuery)
         {
             $this->path .= '?' . http_build_query(Request::query());
+        }
+        else if (!empty(Request::query('query_params')))
+        {
+            $queryParams = json_decode(Request::query('query_params'), true);
+
+            $this->path .= '?' . http_build_query($queryParams);
         }
     }
 
@@ -80,8 +92,6 @@ class RawApiRequest
 
     protected function setAdminCredentials($token, $mode = 'live')
     {
-        ApiRequest::addHeader('X-Dashboard', 'true');
-
         $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }
 
@@ -177,7 +187,9 @@ class RawApiRequest
         try
         {
             $this->prepareRequest();
+
             $method = $this->input['method'];
+
             $response = $this->client->$method($this->path, $this->params)->json();
 
             return [null, $response];

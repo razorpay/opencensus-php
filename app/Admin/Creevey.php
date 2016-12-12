@@ -10,11 +10,11 @@ use VIPSoft\Unzip\Unzip;
 
 class Creevey
 {
-    protected static $HEADERS = [
+    const HEADERS = [
         'Content-Type' => 'application/json'
     ];
 
-    protected static $OPTIONS = [
+    const OPTIONS = [
         'timeout'   => 200,
         // This is not used for authentication, as expected
         'useragent' => 'Razorpay/Dashboard'
@@ -44,7 +44,7 @@ class Creevey
             'multipart'=> [
                 [
                     'name'  => 'token',
-                    'contents' => Config::get('creevey.token')
+                    'contents' => config('creevey.token')
                 ],
                 [
                     'name'      => 'file',
@@ -54,7 +54,6 @@ class Creevey
             ]
         ];
 
-        $relativeUrl = '/1n9zuwq1';
         $relativeUrl = "/convert/$key.jpg";
 
         $response = $this->getGuzzleInstance()->post($relativeUrl, $data);
@@ -71,14 +70,14 @@ class Creevey
 
     protected function getGuzzleInstance()
     {
-        $config = Config::get('creevey');
+        $config = config('creevey');
+
         return new Guzzle([
             // Base URI is used with relative requests
-            //'base_uri' => 'http://requestb.in',
             'base_uri' => $config['root'],
             // You can set any number of default request options.
-            'timeout'  => 200,
-            //'headers'  => self::$HEADERS
+            'timeout'  => self::OPTIONS['timeout'],
+            'headers'  => self::HEADERS
         ]);
     }
 
@@ -90,10 +89,10 @@ class Creevey
      */
     protected function uploadSingleImageToS3($remoteFilename, $data)
     {
-        $s3 =  AWS::get('s3');
+        $s3 = $this->getS3Client();
 
         $s3Obj = [
-            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Bucket'        => config('aws.activation_bucket'),
             'Key'           => $this->merchantId."/screenshots/$remoteFilename",
             'ContentType'   => "image/jpeg",
             'Body'          => $data
@@ -102,13 +101,24 @@ class Creevey
         $s3->putObject($s3Obj);
     }
 
+    protected function getS3Client()
+    {
+        $config = config('aws');
+
+        $config['region'] = $config['bucket_region'];
+
+        $client = new \Aws\Sdk($config);
+
+        return $client->createClient('S3');
+    }
+
     public function fire($job, array $data)
     {
         $this->merchantId = $data[0];
         $urls = $data[1];
         $this->name = $data[2];
 
-        $config = Config::get('creevey');
+        $config = config('creevey');
         $baseUrl = $config['root'];
 
         if ($config['mock'])
@@ -127,9 +137,9 @@ class Creevey
         try
         {
             $response = Requests::post($baseUrl,
-                self::$HEADERS,
+                self::HEADERS,
                 $postData,
-                self::$OPTIONS
+                self::OPTIONS
             );
 
             if ($response->success)
@@ -168,7 +178,7 @@ class Creevey
      */
     protected function getChannel()
     {
-        return Config::get('razorpay.slack.creevey');
+        return config('razorpay.slack.creevey');
     }
 
     public function handleError($status)
@@ -196,12 +206,13 @@ class Creevey
 
     public function uploadToS3($images)
     {
-        $s3 =  AWS::get('s3');
+        $s3 = $this->getS3Client();
+
         foreach ($images as $filename)
         {
             $fullPath = $this->dir . "/$filename";
             $s3Obj = [
-                'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+                'Bucket'        => config('aws.activation_bucket'),
                 'Key'           => $this->merchantId."/screenshots/$filename",
                 'ContentType'   => "image/jpeg",
                 'SourceFile'    => $fullPath,

@@ -67,7 +67,7 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->login($input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     /**

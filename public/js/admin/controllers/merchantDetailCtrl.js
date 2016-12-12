@@ -988,6 +988,7 @@ app.controller('MerchantDetailCtrl', [
     function fetchBalance() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/balance');
       request.success(function (data) {
+
         if (data.success) {
           $scope.merchant.balance = {
             test: data.data.test.balance,
@@ -996,6 +997,10 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.credits = {
             test: data.data.test.credits,
             live: data.data.live.credits
+          };
+          $scope.merchant.fee_credits = {
+            test: data.data.test.fee_credits,
+            live: data.data.live.fee_credits
           };
         } else {
           $scope.alerts.resetAlerts();
@@ -1062,9 +1067,10 @@ app.controller('MerchantDetailCtrl', [
       'airtelmoney',
       'freecharge',
       'emi',
-      'card',
       'amex',
-      'netbanking'
+      'netbanking',
+      'debit_card',
+      'credit_card'
     ];
     $scope.methods = {};
 

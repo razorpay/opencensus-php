@@ -11,9 +11,16 @@ use Auth;
 
 class Service
 {
-    public function setAdminCredentials($mode = 'live')
+    private function setHeaders()
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
+        ApiRequest::addHeader('X-User-Agent', \Request::header('User-Agent'));
+        ApiRequest::addHeader('X-IP-Address', \Request::ip());
+    }
+
+    public function setAdminCredentials($mode = 'live')
+    {
+        $this->setHeaders();
 
         $token = Auth::guard('api')->user()->token;
 
@@ -22,7 +29,8 @@ class Service
 
     public function setApiCredentials($merchant_id = null, $mode = 'live')
     {
-        ApiRequest::addHeader('X-Dashboard', 'true');
+        $this->setHeaders();
+
         $id = 'rzp_' . $mode;
 
         if ($merchant_id)

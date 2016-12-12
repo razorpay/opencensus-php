@@ -10,7 +10,7 @@
       Invite users to your Organization Team
       <small class="pull-right">
         <a href="https://docs.razorpay.com/v1/page/team-support" class="highlight" target="_blank">
-          TEAM DOCUMENTATION &nbsp;<i class="fa fa-external-link"></i>
+          Team &amp Roles Documentation &nbsp;<i class="fa fa-external-link"></i>
         </a>
       </small>
     </div>
@@ -25,11 +25,12 @@
         <div class="m-b col-sm-4">
           <select class="form-control" name="role" required
             tooltip-placement="right" tooltip="User Role"
-            ng-model="team.role" ng-options="role as (role | roletoname) for role in roleOptions track by role"
+            ng-model="team.role" ng-options="role as (role | roletoname) for role in roles track by role"
           >
           </select>
         </div>
       </div>
+      <alert type="info">{{team.role | roletoname: true}}</alert>
       <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
     </div>
     <div class="team-users" ng-show="users.length > 1">
@@ -40,13 +41,13 @@
         <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
           <div class="m-b col-sm-4 b-w">{{ user.email }}</div>
           <div class="m-b col-sm-2">{{ user.name }}</div>
-          <div class="m-b col-sm-3" ng-show="rolesSupport">
-            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roleOptions track by role" class="form-control" required>
+          <div class="m-b col-sm-3">
+            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roles track by role" class="form-control" required>
             </select>
           </div>
           <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">
-            <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)" ng-show="rolesSupport">Update</button>
-            <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">
+            <button class="btn btn-sm btn-success" tooltip="Updates the user's role" ng-click="updateTeamMember(user)">Update</button>
+            <button class="btn btn-sm btn-danger" tooltip="Removes user from your team" ng-click="removeTeamMember(user)">
               Remove
             </button>
           </div>
@@ -59,12 +60,19 @@
       </div>
       <div class="row wrapper">
         <div class="row" ng-repeat="invite in invitations" ng-show="invite.email !== merchant.email">
-          <div class="m-b col-sm-5">{{ invite.email }}</div>
-          <!-- <div class="m-b col-sm-3"><select ng-model="invite.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div> -->
-          <div class="m-b col-sm-4">
-            <button class="btn btn-sm btn-primary" ng-click="resendInvitation(invite)">Resend</button>
-            <!-- <button class="btn btn-sm btn-success" ng-click="updateInvitation(invite)">Update</button> -->
-            <button class="btn btn-sm btn-danger" ng-click="removeInvitation(invite)">Cancel</button></div>
+          <div class="m-b col-sm-6 b-w">{{ invite.email }}</div>
+          <div class="m-b col-sm-3">
+            <select class="form-control" name="role" required
+              tooltip-placement="right" tooltip="User Role"
+              ng-model="invite.role" ng-options="role as (role | roletoname) for role in roles track by role"
+            >
+            </select>
+          </div>
+          <div class="m-b col-sm-3">
+            <button class="btn btn-sm btn-success" tooltip="Update role of the invited user" ng-click="updateInvitation(invite)">Update</button>
+            <button class="btn btn-sm btn-danger" tooltip="Cancels invitation" ng-click="removeInvitation(invite)">Cancel</button>
+            <button class="btn btn-sm btn-primary" tooltip="Resend invitation email" ng-click="resendInvitation(invite)">Resend</button>
+          </div>
         </div>
       </div>
     </div>

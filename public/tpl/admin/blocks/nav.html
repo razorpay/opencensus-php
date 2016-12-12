@@ -27,13 +27,13 @@
     </a>
   </li>
   <li>
-    <a id="aggregationsNav" ui-sref="app.aggregations">
+    <a id="aggregationsNav" ui-sref="app.aggregations" ng-show="admin.permissions.indexOf('view_merchant_stats') !== -1">
       <i class="fa fa-money icon text-warning-lter"></i>
       <span>Merchant Stats</span>
     </a>
   </li>
   <li>
-    <a id="actionsNav" ui-sref="app.actions">
+    <a id="actionsNav" ui-sref="app.actions" ng-show="admin.permissions.indexOf('view_actions') !== -1">
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Actions</span>
     </a>
