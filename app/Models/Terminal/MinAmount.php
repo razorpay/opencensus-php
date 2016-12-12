@@ -33,7 +33,7 @@ class MinAmount
             ],
         ],
 
-        'network' => [
+        'card' => [
             'default' => [
                 'default'           => 100,
                 'utilities'         => 100,
@@ -136,7 +136,7 @@ class MinAmount
 
         $networkTag = null;
 
-        $networkArray = constant('self::MIN_AMOUNT')['network'];
+        $networkArray = constant('self::MIN_AMOUNT')['card'];
 
         if (array_key_exists($network, $networkArray) === true)
         {
