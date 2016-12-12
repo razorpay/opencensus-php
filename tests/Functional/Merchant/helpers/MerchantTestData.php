@@ -382,6 +382,68 @@ return [
         ],
     ],
 
+    'testEditMerchantInvalidAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '40 days',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Auto refund delay should be between 1 and 5 days',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantInvalidDurationAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '3 weeeks',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Auto refund delay should be in mins, hours or days',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '3 hours',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'auto_refund_delay' => 10800
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],
@@ -996,7 +1058,7 @@ return [
     'testAddInvalidCategory2' => [
         'request' => [
             'content' => [
-                'category2'=>'education2'
+                'category2' => 'education2'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
