@@ -160,11 +160,16 @@ class Repository extends Base\Repository
                         );
     }
 
+    /**
+     * Fetches old payments which can be timed-out with respective
+     * merchant relation.
+     */
     public function fetchOldCreatedPaymentsForTimeout($timestamp)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with('merchant')
                     ->get();
     }
 

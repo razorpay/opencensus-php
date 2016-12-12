@@ -1362,3 +1362,17 @@ UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l')
 ----
 ALTER TABLE merchants
     ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
+
+----
+# Following queries are executed for fixing the error_code for
+# BAD_REQUEST_PAYMENT_TIMED_OUT
+UPDATE payments
+    SET internal_error_code = error_code
+    WHERE internal_error_code = null
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+
+UPDATE payments
+    SET error_code = 'BAD_REQUEST_ERROR'
+    WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+----
