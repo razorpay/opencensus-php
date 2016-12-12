@@ -13,7 +13,6 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
