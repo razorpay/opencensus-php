@@ -109,6 +109,9 @@ class Validator extends Base\Validator
 
         if (in_array($authType, $passwordResetTypes) === false)
         {
+            $this->entity->setAuditAction(
+                Action::RESET_PASSWORD_INVALID_AUTH_TYPE);
+
             throw new Exception\BadRequestValidationFailureException(
                 'The AuthType does not support password-reset');
         }

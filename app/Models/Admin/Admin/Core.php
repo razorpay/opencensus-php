@@ -104,9 +104,11 @@ class Core extends Base\Core
 
         $email = $input['email'];
 
-        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email, ['org']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail(
+            $orgId, $email, ['org']);
 
-        $validator->validateOrgSupportsPasswordReset($admin->org->getAuthType());
+        $admin->getValidator()->validateOrgSupportsPasswordReset(
+            $admin->org->getAuthType());
 
         $admin->setAuditAction(Action::RESET_PASSWORD);
 
@@ -120,6 +122,9 @@ class Core extends Base\Core
         if ($forgotPassword === false)
         {
             $oldPassword = $input['old_password'];
+
+            $admin->setAuditAction(
+                Action::RESET_PASSWORD_INVALID_OLD_PASSWORD);
 
             if($admin->matchPassword($oldPassword) === false)
             {

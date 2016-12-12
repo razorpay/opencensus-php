@@ -52,6 +52,24 @@ class Action
         'action' => AC::ACTION_RESET_PASSWORD,
     ];
 
+    const RESET_PASSWORD_FAILED = [
+        'action' => AC::CATEGORY_UAM,
+        'label'  => AC::LABEL_ADMIN,
+        'action' => AC::ACTION_RESET_PASSWORD_FAILED,
+    ];
+
+    const RESET_PASSWORD_INVALID_AUTH_TYPE = [
+        'action' => AC::CATEGORY_UAM,
+        'label'  => AC::LABEL_ADMIN,
+        'action' => AC::ACTION_RESET_PASSWORD_INVALID_AUTH_TYPE,
+    ];
+
+    const RESET_PASSWORD_INVALID_OLD_PASSWORD = [
+        'action' => AC::CATEGORY_UAM,
+        'label'  => AC::LABEL_ADMIN,
+        'action' => AC::ACTION_RESET_PASSWORD_INVALID_OLD_PASSWORD,
+    ];
+
     const DELETE_ADMIN = [
         'category' => AC::CATEGORY_UAM,
         'label' => AC::LABEL_ADMIN,
