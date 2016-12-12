@@ -16,8 +16,20 @@ class Service extends Base\Service
         {
             $org = $this->core()->create($input);
 
+            if (isset($input['hostname']))
+            {
+                // create hostname
+                $hostnames = explode(',', $input['hostname']);
+
+                foreach ($hostnames as $hostname) {
+                    (new Hostname\Core)->create($org, $hostname);
+                }
+            }
+
+            // create default role
             $role = $this->createDefaultRole($org);
 
+            // create admin
             $input['admin']['roles'] = (array) $role->getPublicId();
 
             $input['admin']['email'] = $input['email'];
@@ -49,24 +61,71 @@ class Service extends Base\Service
     {
         $org = $this->core()->fetch($id);
 
-        return $org->toArrayPublic();
+        $hostnames = $this->getArrayOfHostnames($org);
+
+        $org = $org->toArrayPublic();
+
+        $org['hostname'] = implode($hostnames, ', ');
+
+        return $org;
     }
 
     public function fetchByHostname(string $hostname)
     {
         $org = $this->repo->org->findOrFailByHostname($hostname);
 
-        return $org->toArrayPublic();
+        $org = $org->toArrayPublic();
+
+        // find a way to fix this
+        $org['hostname'] = $hostname;
+
+        return $org;
     }
 
     public function delete(string $id)
     {
-        return $this->core()->delete($id);
+        $response = $this->repo->transactionOnLiveAndTest(function() use ($id)
+        {
+            $resp = $this->core()->delete($id);
+
+            $orgId = Entity::verifyIdAndStripSign($id);
+
+            (new Hostname\Core)->deleteHostnamesOfOrg($orgId);
+
+            return $resp;
+        });
+
+        return $response;
     }
 
     public function edit(string $id, array $input)
     {
-        $org = $this->core()->edit($id, $input);
+        $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
+        {
+            $org = $this->core()->edit($id, $input);
+
+            if (isset($input['hostname']) === true)
+            {
+                $newHostnames = explode(',', $input['hostname']);
+                $newHostnames = array_map('trim', $newHostnames);
+
+                $existingHostnames = $this->getArrayOfHostnames($org);
+
+                $hostnamesToCreate = array_diff($newHostnames, $existingHostnames);
+
+                $hostnamesToDelete = array_diff($existingHostnames, $newHostnames);
+
+                foreach ($hostnamesToCreate as $hostname) {
+                    (new Hostname\Core)->create($org, $hostname);
+                }
+
+                foreach ($hostnamesToDelete as $hostname) {
+                    (new Hostname\Core)->delete($hostname);
+                }
+            }
+
+            return $org;
+        });
 
         return $org->toArrayPublic();
     }
@@ -76,5 +135,12 @@ class Service extends Base\Service
         $orgs = $this->repo->org->fetch($input);
 
         return $orgs->toArrayPublic();
+    }
+
+    protected function getArrayOfHostnames(Entity $org)
+    {
+        $hostnames = array_map(create_function('$o', 'return $o->getHostname();'), $org->hostnames->all());
+
+        return $hostnames;
     }
 }

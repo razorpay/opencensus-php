@@ -15,7 +15,10 @@ class GroupTest extends TestCase
 
         parent::setUp();
 
+        // create org, and its hostnames
         $this->org = $this->fixtures->create('org');
+
+        $hostnames = $this->fixtures->times(2)->create('org_hostname', ['org_id' => $this->org->getId()]);
 
         $this->ba->adminAuth('test');
     }

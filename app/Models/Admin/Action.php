@@ -76,6 +76,24 @@ class Action
         'action' => AC::ACTION_CREATE
     ];
 
+    const CREATE_ORG_HOSTNAME = [
+        'category' => AC::CATEGORY_HOSTNAME,
+        'label' => AC::LABEL_HOSTNAME,
+        'action' => AC::ACTION_CREATE
+    ];
+
+    const EDIT_ORG_HOSTNAME = [
+        'category' => AC::CATEGORY_HOSTNAME,
+        'label' => AC::LABEL_HOSTNAME,
+        'action' => AC::ACTION_EDIT
+    ];
+
+    const DELETE_ORG_HOSTNAME = [
+        'category' => AC::CATEGORY_HOSTNAME,
+        'label' => AC::LABEL_HOSTNAME,
+        'action' => AC::ACTION_DELETE
+    ];
+
     const CREATE_ORG = [
         'category' => AC::CATEGORY_ORG,
         'label' => AC::LABEL_ORG,

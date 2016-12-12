@@ -26,7 +26,7 @@ class Core extends Base\Core
     {
         $orgId = Entity::verifyIdAndStripSign($orgId);
 
-        return $this->repo->org->findOrFailPublic($orgId);
+        return $this->repo->org->findOrFailWithHostname($orgId);
     }
 
     public function edit(string $orgId, array $input)

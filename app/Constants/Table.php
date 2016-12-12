@@ -40,6 +40,7 @@ class Table
 
     // organization roles permissions
     const ORG                   = 'orgs';
+    const ORG_HOSTNAME          = 'org_hostname';
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
