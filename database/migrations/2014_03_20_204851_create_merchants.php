@@ -33,6 +33,9 @@ class CreateMerchants extends Migration
 
             $table->string(Merchant::EMAIL, 255);
 
+            $table->char(Merchant::PARENT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::ACTIVATED)
                   ->default(0);
 
@@ -119,6 +122,11 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+
+            $table->foreign(Merchant::PARENT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
     }
 
@@ -129,6 +137,12 @@ class CreateMerchants extends Migration
      */
     public function down()
     {
+        Schema::table(Table::MERCHANT, function($table)
+        {
+            $table->dropForeign(
+                Table::MERCHANT . '_' . MERCHANT::PARENT_ID . '_foreign');
+        });
+
         Schema::drop(Table::MERCHANT);
     }
 }

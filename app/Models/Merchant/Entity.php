@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
+    const PARENT_ID                 = 'parent_id';
     const ACTIVATED                 = 'activated';
     const ACTIVATED_AT              = 'activated_at';
     const LIVE                      = 'live';
@@ -59,7 +60,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
-    protected static $sign = '';
+    protected static $sign = 'acc';
 
     protected static $delimiter = '';
 
@@ -67,13 +68,15 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+    protected static $generators = [
+        self::TRANSACTION_REPORT_EMAIL
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::NAME,
         self::EMAIL,
+        self::PARENT_ID,
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
@@ -93,17 +96,17 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-    );
+    ];
 
     // Requires PHP 5.6
-    const CONFIG_LIST = array(
+    const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::NAME,
@@ -135,10 +138,11 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL,
         self::ORG_ID,
         'groups',
-        'admins'
-     );
+        'admins',
+     ];
 
-    protected $defaults = array(
+    protected $defaults = [
+        self::PARENT_ID              => null,
         self::CATEGORY2              => null,
         self::LIVE                   => false,
         self::ACTIVATED              => false,
@@ -158,15 +162,15 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
-    );
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::LOGO_URL,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::ACTIVATED             => 'bool',
         self::LIVE                  => 'bool',
         self::INTERNATIONAL         => 'bool',
@@ -175,7 +179,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY              => 'int',
         self::SETTLEMENT_SCHEDULE   => 'int',
         self::CONVERT_CURRENCY      => 'bool'
-    );
+    ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
@@ -219,6 +223,11 @@ class Entity extends Base\PublicEntity
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
+    }
+
+    public function isVendor()
+    {
+        return $this->parent !== null;
     }
 
     public function isEducationCategory()
@@ -324,6 +333,16 @@ class Entity extends Base\PublicEntity
     public function customers()
     {
         return $this->hasMany('RZP\Models\Customer\Entity');
+    }
+
+    public function vendors()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }
 
     public function balance()
@@ -608,6 +627,12 @@ class Entity extends Base\PublicEntity
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
 
         return $awsLogoUrl;
+    }
+
+
+    public function getParentId()
+    {
+        return $this->getAttribute(self::PARENT_ID);
     }
 
     protected function getLogoUrlBasedOnSize($logoUrl, $size)

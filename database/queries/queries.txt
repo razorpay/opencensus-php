@@ -1542,3 +1542,7 @@ ALTER TABLE merchant_banks
 ALTER TABLE payments
     ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded;
 
+ALTER TABLE merchants
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER email,
+    ADD CONSTRAINT merchants_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES merchants(id) ON DELETE RESTRICT;
+
