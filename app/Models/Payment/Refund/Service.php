@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use Config;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Gateway\Netbanking;
@@ -30,7 +31,7 @@ class Service extends Base\Service
 
         $gatewayCode = null;
 
-        $method = $input['method'];
+        $method = $input[Payment\Entity::METHOD];
 
         switch ($method)
         {

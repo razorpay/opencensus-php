@@ -206,7 +206,7 @@ trait Callback
     protected function checkForRecentFailedPayment($payment)
     {
         // Difference should be less than 30 minutes
-        $diff = time() - $payment->getUpdatedAt();
+        $diff = time() - $payment->getCreatedAt();
 
         if (($payment->isFailed()) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))

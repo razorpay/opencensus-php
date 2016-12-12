@@ -7,9 +7,9 @@ use Storage;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore\Storage\Base;
+use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
-class Handler extends Base\Handler
+class Handler extends BaseHandler
 {
     const STORAGE_DIRECTORY = 'files/';
 

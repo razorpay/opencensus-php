@@ -30,7 +30,7 @@ class FeeCalculator
     ];
 
     /**
-     * For which fees needs to be calculate.
+     * For which fees needs to be calculated.
      *
      * @var RZP\Models\Payment\Entity
      */
@@ -40,20 +40,24 @@ class FeeCalculator
 
     protected $feesSplit = null;
 
+    protected $pricingRules = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
 
         $this->feesSplit = new Base\PublicCollection;
 
+        $this->pricingRules = new Base\PublicCollection;
+
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing)
+    public function calculate(Pricing\Plan $pricing)
     {
         $entity = $this->entity;
 
-        $rule = $this->getRelevantPricingRule($pricing);
+        $this->getRelevantPricingRule($pricing);
 
         $amount = $entity->getAmount();
 
@@ -65,18 +69,25 @@ class FeeCalculator
             $amount = $amount - $entity->getFee();
         }
 
-        list($fee, $serviceTax) = $this->getFees($rule, $amount);
+        list($fee, $serviceTax) = $this->getFees($amount);
 
-        return array($fee, $serviceTax, $rule->getKey(), $this->feesSplit);
+        return [$fee, $serviceTax, $this->feesSplit];
     }
 
-    protected function getFees($rule, $amount)
+    protected function getFees($amount)
     {
-        $fee = $this->calculateRzpFee($rule, $amount);
+        $fees = 0;
 
-        $totalTaxes = $this->calculateServiceTaxes($fee, self::TAX_COMPONENTS);
+        foreach ($this->pricingRules as $rule)
+        {
+            $fee = $this->calculateRzpFee($rule, $amount);
 
-        $totalFees = $fee + $totalTaxes;
+            $fees += $fee;
+        }
+
+        $totalTaxes = $this->calculateServiceTaxes($fees, self::TAX_COMPONENTS);
+
+        $totalFees = $fees + $totalTaxes;
 
         if ($totalFees > $amount)
         {
@@ -85,7 +96,7 @@ class FeeCalculator
                 Payment\Entity::AMOUNT);
         }
 
-        return array($totalFees, $totalTaxes);
+        return [$totalFees, $totalTaxes];
     }
 
     public static function getServiceTaxRate()
@@ -100,13 +111,51 @@ class FeeCalculator
         return $this->feesSplit;
     }
 
-    protected function getRelevantPricingRule($pricing)
+    protected function getRelevantPricingRule(Pricing\Plan $pricing)
     {
         $entity = $this->entity;
 
-        $feature = $entity->getEntity();
+        $entityName = $entity->getEntity();
 
-        $method = $entity->getMethod();
+        $features = $entity->getPricingFeatures();
+
+        $this->getBasicPricingRule($pricing, $entityName);
+
+        $this->getAddOnPricingRule($pricing, $features, $entityName);
+    }
+
+    protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
+    {
+        $method = $this->entity->getMethod();
+
+        foreach ($features as $feature)
+        {
+            $filters = array(
+                [Pricing\Entity::FEATURE, $feature, false, null  ],
+                [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
+            );
+
+            $rules = $this->applyFiltersOnRules($pricing, $filters);
+
+            $this->trace->debug(
+                TraceCode::PRICING_RULE_SELECTION,
+                ['count' => count($rules)]);
+
+            $this->traceAllRules($rules);
+
+            if ((count($rules) > 0) and
+                $entityName === Pricing\Feature::PAYMENT)
+            {
+                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
+
+                $this->pricingRules->push($rule);
+            }
+        }
+    }
+
+    protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
+    {
+        $method = $this->entity->getMethod();
 
         $filters = array(
             [Pricing\Entity::FEATURE, $feature, false, null  ],
@@ -132,7 +181,7 @@ class FeeCalculator
                 'No appropriate pricing rule found', null, ['entity' => $entity->toArray()]);
         }
 
-        return $rule;
+        $this->pricingRules->push($rule);
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -512,7 +561,7 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    public function calculateRzpFee($rule, $amount)
+    public function calculateRzpFee(Pricing\Entity $rule, $amount)
     {
         list($percent, $fixed) = $rule->getRates();
 
@@ -521,7 +570,7 @@ class FeeCalculator
         $fee = (int) ceil($fee);
 
         $rzpFee = $this->createFeeBreakup(
-                                FeeBreakupName::PAYMENT,
+                                $rule->getFeature(),
                                 null,
                                 $fee,
                                 $rule->getId());
@@ -531,7 +580,7 @@ class FeeCalculator
         return $fee;
     }
 
-    public function calculateServiceTaxes($fee, $taxComponents)
+    public function calculateServiceTaxes($fee, array $taxComponents)
     {
         $splitTaxes = 0;
 
@@ -575,7 +624,7 @@ class FeeCalculator
 
     public function calculateServiceTaxesFromFees($fee, $taxComponents = self::TAX_COMPONENTS)
     {
-        $totaltaxes = 0;
+        $totalTaxes = 0;
 
         foreach ($taxComponents as $name => $percentage)
         {
@@ -588,10 +637,10 @@ class FeeCalculator
 
             $this->feesSplit->push($taxBreakup);
 
-            $totaltaxes += $taxValue;
+            $totalTaxes += $taxValue;
         }
 
-        return $totaltaxes;
+        return $totalTaxes;
     }
 
     protected function calculateTaxFromFees($fee, $taxPercentage)
