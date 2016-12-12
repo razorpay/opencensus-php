@@ -10,6 +10,7 @@ use DB;
 use Hash;
 use App\Merchant;
 use App\Generic;
+use App\Admin;
 
 class PasswordController extends Controller
 {
@@ -20,8 +21,8 @@ class PasswordController extends Controller
      */
     public function postRemind()
     {
-        $merchant = Merchant\Entity::getMerchantFromEmail(Input::get('email'));
-        $org = Input::get('org');
+        list($error, $org) = (new Admin\Service)->getOrg(Input::get('hostname'));
+
         view()->composer('emails.auth.reminder', function($view) use($org) {
             $view->with([
                 'org'   =>  $org
@@ -40,14 +41,6 @@ class PasswordController extends Controller
             case Password::RESET_LINK_SENT:
                 return Response::json(array('success' => true));
         }
-    }
-
-    protected function getMerchantOrg(string $orgId)
-    {
-        $input = ['method' => 'get'];
-        $path = 'orgs/'.$orgId;
-
-        return (new Generic\Service)->makeRawApiCallInternal($input, $path);
     }
 
     /**

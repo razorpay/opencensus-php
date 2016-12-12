@@ -32,7 +32,7 @@ app.controller('ForgotPasswordCtrl', [
     organization.fetchCurrentOrg().then(function (data) {
       if (data.login_logo_url) {
         $scope.login_logo = data.login_logo_url;
-        $scope.data.org = data;
+        $scope.data.hostname = data.hostname;
       }
       else {
         $scope.login_logo = 'img/logo_black.png';
