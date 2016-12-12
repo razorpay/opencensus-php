@@ -16,12 +16,11 @@
 		<div>
 			<p>
 			--<br/>
-			$org->name <br/>
+			{{$org['display_name']}} <br/>
 			<a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
 			</p>
-			{{$org}}
 			<div>
-				<img style="width:200px; height:auto;" src="{{$org->login_logo_url}}">
+				<img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">
 			</div>
 		</div>
 	</body>

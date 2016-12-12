@@ -21,10 +21,10 @@ class PasswordController extends Controller
     public function postRemind()
     {
         $merchant = Merchant\Entity::getMerchantFromEmail(Input::get('email'));
-        $org = $this->getMerchantOrg($merchant->org_id);
-        view()->composer('emails.auth.reminder', function($view) {
+        $org = Input::get('org');
+        view()->composer('emails.auth.reminder', function($view) use($org) {
             $view->with([
-                'org'   =>  $org;
+                'org'   =>  $org
             ]);
         });
 
