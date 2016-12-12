@@ -27,6 +27,7 @@ class AdminTest extends TestCase
         $this->org = $this->fixtures->create('org', [
             'email'         => 'random@rzp.com',
             'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
         ]);
 
         $this->orgId = $this->org->getId();
@@ -415,7 +416,7 @@ class AdminTest extends TestCase
         $this->assertEquals($admin->isSuperAdmin(), true);
     }
 
-    public function testPasswordReset()
+    public function testPasswordResetSuccess()
     {
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
@@ -430,7 +431,7 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $newPassword = $this->testData[__FUNCTION__]['request']['content']['new_password'];
+        $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
         $this->ba->appAuth();
 
@@ -469,5 +470,51 @@ class AdminTest extends TestCase
         $admin = $this->getEntityById('admin', $admin->getId(), true);
 
         $this->assertTrue(Hash::check($oldPwd, $admin['password']));
+    }
+
+    public function testPasswordResetInvalid()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWd';
+
+        $admin->setPassword($oldPwd);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetInvalidAuthType()
+    {
+        $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
+
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWd';
+
+        $admin->setPassword($oldPwd);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 }

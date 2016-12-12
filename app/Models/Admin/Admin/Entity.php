@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const LAST_LOGIN_AT         = 'last_login_at';
     const FAILED_ATTEMPTS       = 'failed_attempts';
     const OLD_PASSWORDS         = 'old_passwords';
+    const OLD_PASSWORD          = 'old_password';
     const PASSWORD_EXPIRY       = 'password_expiry';
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
@@ -413,10 +414,8 @@ class Entity extends Base\PublicEntity
 
     public function matchPassword(string $password)
     {
-        $actualPwdHash = Hash::make($password);
-
         $expectedPwdHash = $this->getPassword(self::PASSWORD);
 
-        return $actualPwdHash === $expectedPwdHash;
+        return Hash::check($password, $expectedPwdHash);
     }
 }

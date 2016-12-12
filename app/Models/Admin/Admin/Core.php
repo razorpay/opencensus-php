@@ -3,11 +3,11 @@
 namespace RZP\Models\Admin\Admin;
 
 use RZP\Exception;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Action;
 
@@ -96,28 +96,31 @@ class Core extends Base\Core
     public function passwordReset(
         string $orgId,
         array $input,
-        bool $forgotPassword=true)
+        bool $forgotPassword = true)
     {
+        $validator = new Validator();
+
+        $validator->validateInput('reset', $input);
+
         $email = $input['email'];
 
-        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email, ['org']);
+
+        $validator->validateOrgSupportsPasswordReset($admin->org->getAuthType());
 
         $admin->setAuditAction(Action::RESET_PASSWORD);
 
-        $newPassword = $input['new_password'];
-        $newConfirmedPassword = $input['confirm_password'];
-
-        if ($newPassword !== $newConfirmedPassword)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'New Password does not match with confirm password value');
-        }
+        // Check if the pwd follows the auth policy guidelines
+        $authPolicy = new AuthPolicy\Service;
+        $authPolicy->validate($admin, $input['password']);
 
         // In case of forgotten passwords, oldPassword is not present.
         // In case of voluntary change of password, we would require
         // oldPassword
         if ($forgotPassword === false)
         {
+            $oldPassword = $input['old_password'];
+
             if($admin->matchPassword($oldPassword) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
@@ -125,7 +128,7 @@ class Core extends Base\Core
             }
         }
 
-        $admin->setPassword($newPassword);
+        $admin->setPassword($input['password']);
 
         $this->repo->saveOrFail($admin);
     }

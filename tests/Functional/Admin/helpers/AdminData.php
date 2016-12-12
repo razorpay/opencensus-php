@@ -306,14 +306,14 @@ return [
         ],
     ],
 
-    'testPasswordReset' => [
+    'testPasswordResetSuccess' => [
         'request' => [
             'url' => '/orgs/%s/admin/password/reset',
             'method' => 'post',
             'content' => [
-                'email'            => 'abc@razorpay.com',
-                'new_password'     => 'Heimdall!4#2',
-                'confirm_password' => 'Heimdall!4#2',
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
             ],
         ],
         'response' => [
@@ -328,9 +328,57 @@ return [
             'url' => '/orgs/%s/admin/password/reset',
             'method' => 'post',
             'content' => [
-                'email'            => 'abc@razorpay.com',
-                'new_password'     => 'Heimdall!4#2',
-                'confirm_password' => 'Heimdall!4#28',
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#28',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPasswordResetInvalid' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/password/reset',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'p',
+                'password_confirmation' => 'p',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPasswordResetInvalidAuthType' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/password/reset',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'p',
+                'password_confirmation' => 'p',
             ],
         ],
         'response'  => [

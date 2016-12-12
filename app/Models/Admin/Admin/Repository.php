@@ -23,7 +23,7 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    public function findByOrgIdAndEmail($orgId, $email)
+    public function findByOrgIdAndEmail($orgId, $email, $relations = [])
     {
         $email = strtolower($email);
 
@@ -32,6 +32,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->orgId($orgId)
                     ->where(Entity::EMAIL, '=', $email)
+                    ->with($relations)
                     ->first();
     }
 
