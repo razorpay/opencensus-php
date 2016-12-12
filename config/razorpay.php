@@ -38,10 +38,10 @@ return array(
 
     'slack' =>  [
         // Channel to which to log operation team actions
-        'operations'    =>  '#operations_log',
-        'activations'   =>  '#activations_log',
-        'creevey'       =>  '#operations_log',
-        'risk'          =>  '#risk',
+        'operations'    =>  'C0KUX9WSE',
+        'activations'   =>  'C17UC7DHS',
+        'creevey'       =>  'C0KUX9WSE',
+        'risk'          =>  'C0SG9Q7TM',
 
         // This is used by the /v query command on slack
         'command_token' =>  env('SLACK_COMMAND_TOKEN', 'By9i0lp0y0T4mvgUn0Ljj1Rt'),

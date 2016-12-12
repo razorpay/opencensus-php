@@ -5,7 +5,7 @@
 $all = ['owner', 'manager', 'operations', 'finance', 'admin', 'support', 'sellerapp'];
 
 $writers = ['owner', 'manager', 'operations', 'admin'];
-$readers = $writers + ['finance'];
+$readers = array_merge($writers, ['finance']);
 
 // There are two exclusion roles: support, sellerapp
 

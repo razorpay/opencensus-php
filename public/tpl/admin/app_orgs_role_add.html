@@ -19,7 +19,7 @@
         <div class="form-group">
           <label for='name' class="col-lg-2 control-label">Name</label>
           <div class="col-lg-10" >
-            <input type="text" class="form-control m-b" name="name" ng-model="role.name" />
+            <input type="text" class="form-control m-b" name="name" ng-model="role.name" ng-required="true"/>
           </div>
         </div>
         <div class="form-group">
@@ -36,7 +36,6 @@
                 <tr>
                   <th data-sort-ignore="true">
                     <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
-                    <label for="select_all" class="select-all-label">Select all</label>
                   </th>
                   <th>Permission</th>
                   <th>Category</th>
@@ -58,7 +57,7 @@
         </div>
         <div class="panel-footer">
           <div class="center col-lg-2">
-            <button class="btn btn-primary panel-ok col-lg-12" ng-click='save(role, permissions)'>Save</button>
+            <button class="btn btn-primary panel-ok col-lg-12" async-btn-click='save(role, permissions)'>Save</button>
           </div>
         </div>
       </form>

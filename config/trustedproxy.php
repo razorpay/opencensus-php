@@ -31,5 +31,6 @@ return [
         Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_IP => 'X_FORWARDED_FOR',
         Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
         Symfony\Component\HttpFoundation\Request::HEADER_CLIENT_PORT => 'X_FORWARDED_PORT',
+        Symfony\Component\HttpFoundation\Request::HEADER_FORWARDED => null,
     ]
 ];

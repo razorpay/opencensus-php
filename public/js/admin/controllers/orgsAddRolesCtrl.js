@@ -83,7 +83,7 @@ app.controller('OrgsAddRolesCtrl', [
         }
       }
 
-      organization.addOrEditRole(body).then(function(data) {
+      return organization.addOrEditRole(body).then(function(data) {
         $scope.alerts.addAlert('success', 'Role saved', true);
       }).catch(function(errors){
         $scope.alerts.resetAlerts();

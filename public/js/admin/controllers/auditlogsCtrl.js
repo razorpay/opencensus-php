@@ -11,20 +11,55 @@ app.controller('AuditlogsCtrl', [
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.invitations = [];
-    $scope.count = 0;
 
-    $scope.audit_logs = [];
+    // TODO: rewrite the pager logic, it sucks atm!
 
-    $scope.audit_log_cache = {};
+    $scope.pager = {
+      allowPrev: true,
+      allowNext: true,
+      count: 100,
+      skip: 0
+    };
+
+    $scope.prev = function () {
+      $scope.pager.skip -= $scope.pager.count;
+
+      $scope.fetchAuditLogs();
+    };
+
+    $scope.next = function () {
+      $scope.pager.skip += $scope.pager.count;
+
+      $scope.fetchAuditLogs();
+    };
 
     $scope.fetchAuditLogs = function () {
 
       organization.fetchCurrentOrg().then(function (data) {
 
+        if ($scope.pager.skip < 0) {
+          return;
+        }
+
+        if ($scope.pager.skip === 0) {
+          $scope.pager.allowPrev = false;
+        }
+        else {
+          $scope.pager.allowPrev = true;
+        }
+
+        $scope.count = 0;
+        $scope.audit_logs = [];
+        $scope.audit_log_cache = {};
+
         var request = $http({
           url: '/admin/generic',
           params: {
-            route_name: 'auditlog_search'
+            route_name: 'auditlog_search',
+            query_params: {
+              count: $scope.pager.count,
+              skip: $scope.pager.skip
+            }
           }
         });
 
@@ -35,11 +70,19 @@ app.controller('AuditlogsCtrl', [
             $scope.audit_logs.forEach(function (v, i) {
               $scope.audit_log_cache[v.id] = v.event;
             });
+
+            if ((!data.data.length && $scope.pager.skip >= 100) ||
+                (data.data.length < $scope.pager.count)){
+              $scope.pager.allowNext = false;
+            }
+            else {
+              $scope.pager.allowNext = true;
+            }
           }
         });
 
       });
-    }
+    };
 
     $scope.fetchAuditLogs();
 
@@ -76,7 +119,6 @@ app.controller('AuditlogsCtrl', [
 
     $scope.audit_log_id = audit_log_id;
 
-    // TODO: Caching
     $scope.data = audit_log_cache[audit_log_id];
   }
 ]);
