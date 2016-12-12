@@ -257,6 +257,27 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantInvalidAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidDurationAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testAddCategory2()
     {
         $this->createMerchant();
