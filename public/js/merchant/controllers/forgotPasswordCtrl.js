@@ -4,7 +4,8 @@ app.controller('ForgotPasswordCtrl', [
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.data = {};
@@ -28,5 +29,15 @@ app.controller('ForgotPasswordCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.login_logo_url) {
+        $scope.login_logo = data.login_logo_url
+      }
+      else {
+        $scope.login_logo = 'img/logo_black.png';
+      }
+    });
   }
 ]);
