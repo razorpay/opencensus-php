@@ -19,7 +19,7 @@ class Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     /**
      * Default payment timeout duration in mins.
