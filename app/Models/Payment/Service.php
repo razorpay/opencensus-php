@@ -709,7 +709,7 @@ class Service extends Base\Service
         // All Payments in created state will be marked as failed after 9 minutes
         $timestamp = time() - 9 * 60;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeoutWithMerchant($timestamp);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
@@ -719,13 +719,13 @@ class Service extends Base\Service
                      ->setPayment($payment)
                      ->timeoutPayment();
 
-                ++$count;
+                $count++;
             }
             catch (\Exception $e)
             {
                 $this->trace->traceException($e);
 
-                ++$error;
+                $error++;
             }
         }
 
