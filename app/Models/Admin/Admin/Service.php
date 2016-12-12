@@ -456,4 +456,13 @@ class Service extends Base\Service
             throw $e;
         }
     }
+
+    public function logout()
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        (new Token\Core)->deleteTokensForAdmin($admin);
+
+        return ['success' => true];
+    }
 }

@@ -319,7 +319,7 @@ return [
         'response' => [
             'content' => [
                 'success' => true,
-            ]
+            ],
         ],
     ],
 
@@ -392,6 +392,20 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdminLogout' => [
+        'request' => [
+            'url'     => '/orgs/%s/admin/logout',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

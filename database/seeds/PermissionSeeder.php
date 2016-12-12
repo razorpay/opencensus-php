@@ -162,6 +162,7 @@ class PermissionSeeder extends Seeder
                 'create_admin'      => 'Create admin',
                 'edit_admin'        => 'Edit admin',
                 'delete_admin'      => 'Delete admin',
+                'logout_admin'      => 'Logout Admin',
             ],
 
             // Permissions
@@ -231,6 +232,7 @@ class PermissionSeeder extends Seeder
                 'create_admin'      => 'Create admin',
                 'edit_admin'        => 'Edit admin',
                 'delete_admin'      => 'Delete admin',
+                'logout_admin'      => 'Logout admin',
             ],
 
             // Permissions

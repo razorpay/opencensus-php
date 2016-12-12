@@ -341,6 +341,7 @@ final class Route
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'AdminController@postPasswordReset'                                 ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'AdminController@logoutAdmin'                                       ],
     );
 
     public static $public = array(
@@ -664,6 +665,7 @@ final class Route
         'permission_edit',
         'permission_delete',
         'auditlog_search',
+        'admin_logout',
     ];
 
     public static $adminPermission = [
@@ -720,6 +722,7 @@ final class Route
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
         'auditlog_search'            => ['view_auditlog'],
+        'admin_logout'               => ['logout_admin'],
     ];
 
     public static $direct = array(
