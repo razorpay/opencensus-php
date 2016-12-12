@@ -138,6 +138,10 @@ final class Route
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
+        'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_lock'                => ['post',     'merchant/activation/{id}/lock',                  'MerchantController@postLockActivation'                             ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -531,6 +535,7 @@ final class Route
         'payments_multiple_authorize_refund',
         'transaction_create_fees_breakup',
         'adj_add_reverse',
+        'merchant_activation_lock',
     );
 
     public static $proxy = array(
@@ -574,6 +579,9 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'merchant_activation_details',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
     );
 
     public static $direct = array(
@@ -691,6 +699,28 @@ final class Route
         'payment_otp_resend',
         'payment_topup_ajax');
 
+    const CRITICAL_ROUTES = array(
+        'payment_create',
+        'payment_create_private',
+        'payment_create_recurring',
+        'payment_create_private_old',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'payment_create_fees',
+        'payment_create_wallet',
+        'payment_callback_post',
+        'payment_callback_get',
+        'payment_callback_with_key_post',
+        'payment_callback_with_key_get',
+        'payment_get_status',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax',
+        'payment_topup_post',
+        'payment_redirect_callback',
+    );
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -703,6 +733,23 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    /**
+     * Check if provided route is critical route.
+     * If null then check for current route
+     *
+     * @param  string  $route
+     * @return boolean
+     */
+    public function isCriticalRoute($route = null)
+    {
+        if ($route === null)
+        {
+            $route = $this->getCurrentRouteName();
+        }
+
+        return in_array($route, self::CRITICAL_ROUTES, true);
     }
 
     public static function getSlaveRoutes()

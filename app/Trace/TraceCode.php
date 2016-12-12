@@ -32,6 +32,8 @@ class TraceCode
     const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
+    const PAYMENT_AUTO_REFUND                       = 'PAYMENT_AUTO_REFUND';
+    const PAYMENT_AUTO_REFUND_CRON                  = 'PAYMENT_AUTO_REFUND_CRON';
     const PAYMENT_QUEUE_CAPTURE_REQUEST             = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS             = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE             = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
@@ -96,6 +98,8 @@ class TraceCode
     const ORDER_STATUS_ATTEMPTED                    = 'ORDER_STATUS_ATTEMPTED';
     const PAYMENT_AUTHORIZE_CREATE_TRANSACTION      = 'PAYMENT_AUTHORIZE_CREATE_TRANSACTION';
     const TRANSACTION_CREATED                       = 'TRANSACTION_CREATED';
+    const INVOICE_RAVEN_REQUEST_FAILED              = 'INVOICE_RAVEN_REQUEST_FAILED';
+    const INVOICE_NOTIFICATION_FAILED               = 'INVOICE_NOTIFICATION_FAILED';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -110,6 +114,7 @@ class TraceCode
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
     const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
+    const TERMINAL_BOOST_INVALID                    = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                      = 'TERMINAL_USED_BEFORE';
 
     const CARD_NETWORK_INVALID                      = 'CARD_NETWORK_INVALID';
@@ -160,6 +165,7 @@ class TraceCode
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
+    const TRACE_MISC_CODE                           = 'TRACE_MISC_CODE';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
 
@@ -225,6 +231,7 @@ class TraceCode
     const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
+    const GATEWAY_PAYMENT_S2S_CALLBACK              = 'GATEWAY_PAYMENT_S2S_CALLBACK';
     const GATEWAY_PAYMENT_TOPUP_CALLBACK            = 'GATEWAY_PAYMENT_TOPUP_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
@@ -251,6 +258,7 @@ class TraceCode
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -412,6 +420,10 @@ class TraceCode
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
 
+    // Trace code for Merchant Details
+    const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
+    const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -526,6 +538,9 @@ class TraceCode
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
         self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+
+        self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
+        self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
     );
 
     /**

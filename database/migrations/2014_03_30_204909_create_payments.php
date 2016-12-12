@@ -139,6 +139,9 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::GATEWAY_CAPTURED)
+                  ->nullable();
+
             $table->tinyInteger(Payment::VERIFY_BUCKET)
                   ->nullable();
 
@@ -181,6 +184,8 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+
+            $table->index(Payment::GATEWAY_CAPTURED);
             $table->index(Payment::VERIFY_BUCKET);
             $table->index(Payment::GATEWAY);
             $table->index(Payment::AUTHORIZED_AT);

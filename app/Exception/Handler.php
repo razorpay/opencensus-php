@@ -39,6 +39,8 @@ class Handler extends ExceptionHandler
         $this->trace = $this->app['trace'];
 
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
+
+        $this->route = $this->app['api.route'];
     }
 
     /**
@@ -108,6 +110,11 @@ class Handler extends ExceptionHandler
             {
                 $level = Trace::ERROR;
                 $code = TraceCode::ERROR_EXCEPTION;
+
+                if ($this->route->isCriticalRoute())
+                {
+                    $level = Trace::CRITICAL;
+                }
             }
         }
 

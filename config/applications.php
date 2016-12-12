@@ -62,8 +62,9 @@ return array(
     ),
 
     'bitly' => array(
-        'mock'      => env('BITLY_MOCK', false),
-        'access_token'  => env('BITLY_ACCESS_TOKEN'),
+        'mock'          => env('BITLY_MOCK', false),
+        //'access_token'  => env('BITLY_ACCESS_TOKEN'),
+        'access_token'  => env('BITLY_ACCESS_TOKEN_PUBLIC'),
     ),
 
     'lumberjack' => array(

@@ -54,6 +54,10 @@ class Processor
      */
     const MAX_RETRY_ATTEMPTS = 5;
 
+    // Make sure that this is below 900 (seconds) because SQS doesn't support
+    // delay over 15 minutes.
+    const CAPTURE_QUEUE_DELAY = 180;
+
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
      * we do not send a notification to the customer.
@@ -74,10 +78,6 @@ class Processor
      * failed payment
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
-
-    // Make sure that this is below 900 (seconds) because SQS doesn't support
-    // delay over 15 minutes.
-    const CAPTURE_QUEUE_DELAY = 180;
 
     protected $merchant;
     protected $trace;
@@ -438,6 +438,10 @@ class Processor
         $this->payment = $payment;
 
         $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+        $payment->setGatewayCaptured(true);
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)

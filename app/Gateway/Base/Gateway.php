@@ -746,7 +746,7 @@ class Gateway
         }
     }
 
-    protected function getGatewayCertDirPath()
+    public function getGatewayCertDirPath()
     {
         $certificatePath = $this->app['config']->get('gateway.certificate_path');
 

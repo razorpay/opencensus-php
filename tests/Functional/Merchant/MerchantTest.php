@@ -197,6 +197,27 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantInvalidAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidDurationAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testAddCategory2()
     {
         $this->createMerchant();
@@ -794,7 +815,7 @@ class MerchantTest extends TestCase
 
         $merchantValidator->validateLogo($imageDetails);
 
-        $imageDetails = ['size' => 1+(1024*1024), 'width' => '300', 'height' => '300'];
+        $imageDetails = ['size' => 1 + (1024 * 1024), 'width' => '300', 'height' => '300'];
 
         $data = $this->testData['testValidateLogoImageTooBig'];
 
