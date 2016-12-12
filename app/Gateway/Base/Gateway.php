@@ -390,7 +390,7 @@ class Gateway
     {
         // This payment is the gateway entity payment.
         // Also sets this gateway payment in the verify object's payment.
-        $gatewayPayment = $this->getPaymentToVerify($verify->input, $verify);
+        $gatewayPayment = $this->getPaymentToVerify($verify);
 
         if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
@@ -460,8 +460,10 @@ class Gateway
             ]);
     }
 
-    protected function getPaymentToVerify($input, $verify)
+    protected function getPaymentToVerify($verify)
     {
+        $input = $verify->input;
+
         $payment = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
