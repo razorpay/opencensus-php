@@ -12,6 +12,7 @@ return [
             'content' => [
                 'hostname'  => 'hdfc.com,fbapi.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -32,6 +33,7 @@ return [
                     'hdfc.com',
                     'fbapi.com'
                 ],
+                'allow_sign_up' => false,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -48,6 +50,7 @@ return [
             'content' => [
                 'email_domains' => ['fbapi.com'],
                 'email' => 'test@hdfc.com',
+                'allow_sign_up' => 1,
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
@@ -58,6 +61,7 @@ return [
                 'email_domains' => [
                     'fbapi.com'
                 ],
+                'allow_sign_up' => true,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -86,6 +90,7 @@ return [
                             'razorpay.com',
                             'rzp.io',
                         ],
+                        'allow_sign_up' => false,
                         'login_logo_url' => null,
                         'main_logo_url' => null,
                         'auth_type' => 'password',
@@ -98,6 +103,7 @@ return [
                         'email_domains' => [
                             'hdfcbank.com',
                         ],
+                        'allow_sign_up' => false,
                         'login_logo_url' => null,
                         'main_logo_url' => null,
                         'auth_type' => 'password',
@@ -150,6 +156,7 @@ return [
                     'razorpay.com',
                     'rzp.io',
                 ],
+                'allow_sign_up' => false,
                 'login_logo_url' => null,
                 'main_logo_url' => null,
                 'auth_type' => 'password',
@@ -165,6 +172,7 @@ return [
             'content' => [
                 'hostname'  => 'invald@host%.com.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -201,6 +209,7 @@ return [
             'content' => [
                 'hostname'  => 'dashboard.razorpay.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -237,6 +246,7 @@ return [
             'content' => [
                 'hostname'  => 'dashboard2.razorpay.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',

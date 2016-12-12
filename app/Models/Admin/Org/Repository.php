@@ -17,6 +17,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
+        Entity::ALLOW_SIGN_UP         => 'sometimes|boolean',
     );
 
     // These are admin allowed params to search on.
@@ -24,6 +25,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                 => 'sometimes|email',
         Entity::AUTH_TYPE             => 'sometimes|string|max:50',
         Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
+        Entity::ALLOW_SIGN_UP         => 'sometimes|boolean',
     );
 
     public function isMerchantIdRequiredForFetch()
