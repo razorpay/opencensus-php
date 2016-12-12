@@ -44,7 +44,7 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($mid)
     {
-        $query = $this->newquery()
+        $query = $this->newQuery()
                       ->withTrashed();
 
         $this->addMerchantWhereCondition($query, [$mid]);
@@ -92,7 +92,7 @@ class Repository extends Base\Repository
 
     public function getByIdAndMerchantId($mid, $tid)
     {
-        $query = $this->newquery()
+        $query = $this->newQuery()
                       ->withTrashed();
 
         $this->addMerchantWhereCondition($query, [$mid]);
@@ -102,8 +102,8 @@ class Repository extends Base\Repository
 
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
-        $query = $this->newquery()
-                       ->where(Terminal\Entity::GATEWAY, '=', $gateway);
+        $query = $this->newQuery()
+                      ->where(Terminal\Entity::GATEWAY, '=', $gateway);
 
         $this->addMerchantWhereCondition($query, [$mid]);
 
@@ -131,7 +131,7 @@ class Repository extends Base\Repository
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
-        $query = $this->newquery()
+        $query = $this->newQuery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->shared()
                     ->where(Terminal\Entity::EMI, '=', '1')
