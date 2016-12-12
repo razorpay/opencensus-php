@@ -176,6 +176,15 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRefundCreateOnGatewayForMissingRefunds()
+    {
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testRefundPaymentsWithRefundDelay()
     {
         // Change auto refund delay to 2 days
