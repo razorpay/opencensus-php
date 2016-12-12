@@ -11,7 +11,7 @@ return [
             'method' => 'post',
             'content' => [
                 'hostname'  => 'hdfc.com',
-                'email_domains' => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -46,7 +46,7 @@ return [
             'url' => '/orgs',
             'method' => 'put',
             'content' => [
-                'email_domains' => 'fbapi.com',
+                'email_domains' => ['fbapi.com'],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -166,7 +166,7 @@ return [
             'method' => 'post',
             'content' => [
                 'hostname'  => 'invald@host%.com.com',
-                'email_domains' => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -194,7 +194,7 @@ return [
             'method' => 'post',
             'content' => [
                 'hostname'  => 'dashboard.razorpay.com',
-                'email_domains' => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
@@ -222,7 +222,7 @@ return [
             'method' => 'post',
             'content' => [
                 'hostname'  => 'dashboard2.razorpay.com',
-                'email_domains' => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'email' => 'test@hdfc.com',
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
