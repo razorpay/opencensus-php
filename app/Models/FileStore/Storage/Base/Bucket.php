@@ -20,11 +20,11 @@ class Bucket
 
     public static function getBucketConfigName($name)
     {
-        $bucketConfigName = self::DEFAULT_CONFIG_NAME;
+        $bucketConfigName = static::DEFAULT_CONFIG_NAME;
 
-        if (array_key_exists($name, self::BUCKET_MAP))
+        if (array_key_exists($name, static::BUCKET_MAP))
         {
-            $bucketConfigName = self::BUCKET_MAP[$name];
+            $bucketConfigName = static::BUCKET_MAP[$name];
         }
 
         return $bucketConfigName;

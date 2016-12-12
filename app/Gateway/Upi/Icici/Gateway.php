@@ -98,6 +98,7 @@ class Gateway extends Base\Gateway
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
         }
 
         return true;

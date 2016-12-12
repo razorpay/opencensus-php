@@ -23,6 +23,8 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
+        $this->request($input);
+
         $this->validateAuthorizeInput($input);
 
         $dateTime = Carbon::now('Asia/Kolkata');
@@ -64,8 +66,6 @@ class Server extends Base\Mock\Server
             FirstData\ConnectResponseFields::ENDPOINT_TRANSACTION_ID => '',
             FirstData\ConnectResponseFields::EXP_MONTH               => $input[FirstData\ConnectRequestFields::EXP_MONTH],
             FirstData\ConnectResponseFields::EXP_YEAR                => $input[FirstData\ConnectRequestFields::EXP_YEAR],
-            FirstData\ConnectResponseFields::FAIL_RC                 => '',
-            FirstData\ConnectResponseFields::FAIL_REASON             => '',
             FirstData\ConnectResponseFields::HASH_ALGORITHM          => $input[FirstData\ConnectRequestFields::HASH_ALGORITHM],
             FirstData\ConnectResponseFields::INVOICE_NUMBER          => $input[FirstData\ConnectRequestFields::INVOICE_NUMBER],
             FirstData\ConnectResponseFields::IPG_TRANSACTION_ID      => $this->generateId(),
@@ -257,11 +257,9 @@ class Server extends Base\Mock\Server
 
     protected function scrub($cardnumber, $paymentMethod)
     {
-        if ($paymentMethod === null)
-        {
-            $networkCode = 'UNKNOWN';
-        }
-        else
+        $networkCode = 'UNKNOWN';
+
+        if (is_null($paymentMethod) === false)
         {
             $methodMap = FirstData\PaymentMethod::METHOD_MAP;
 

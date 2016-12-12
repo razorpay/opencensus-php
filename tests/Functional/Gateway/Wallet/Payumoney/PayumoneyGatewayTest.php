@@ -237,12 +237,12 @@ class PayumoneyGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => 'payumoney',
-                            'gateway'       => 'wallet_payumoney',
-                            'otp_attempts'  => 3,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'otp_attempts'  => 3,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -258,18 +258,18 @@ class PayumoneyGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => 'payumoney',
-                            'gateway'       => 'wallet_payumoney',
-                            'contact'       => '9111111111',
-                            'otp_attempts'  => 2,
-                            'otp_count'     => 1,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'contact'       => '9111111111',
+            'otp_attempts'  => 2,
+            'otp_count'     => 1,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 
@@ -279,6 +279,21 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->assertSame($payment['otp_attempts'], null);
         $this->assertSame($payment['otp_count'], 2);
+    }
+
+    public function testOtpResendOnAuthorizedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $response = $this->doAuthPayment($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpResendUrl($response['razorpay_payment_id']);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
     }
 
     public function testInsufficientBalancePayment()
@@ -442,15 +457,15 @@ class PayumoneyGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => 'payumoney',
-                            'gateway'       => 'wallet_payumoney',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->getId()
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->getId()
+        ]);
 
         $paymentId = $payment->getPublicId();
 
@@ -499,15 +514,15 @@ class PayumoneyGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => 'payumoney',
-                            'gateway'       => 'wallet_payumoney',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $id = $payment->getPublicId();
 
@@ -610,6 +625,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->assertEquals(4, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        unlink($data['wallet_payumoney']['file']);
     }
 
     public function testRefundExcelFileForAParticularMonth()
@@ -647,6 +664,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->assertEquals(3, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        unlink($data['wallet_payumoney']['file']);
 
         Carbon::setTestNow();
     }
