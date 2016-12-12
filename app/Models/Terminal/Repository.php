@@ -69,13 +69,20 @@ class Repository extends Base\Repository
         $query->where(
             function ($query) use ($merchantIds)
             {
-                $query->orWhereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+                // Condition for the merchant id being directly in the terminal
+                $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
 
-                $query = $query->orWhereHas(
-                    'merchants' , function($query) use ($merchantIds)
+                //
+                // Condition for getting terminals where merchant id is
+                // associated through the many-to-many association in
+                // merchant-terminal table.
+                //
+                $query->orWhereHas(
+                    'merchants',
+                    function ($query) use ($merchantIds)
                     {
                         $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
-                });
+                    });
             });
     }
 
