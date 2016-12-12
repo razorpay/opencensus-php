@@ -67,9 +67,19 @@ class OrgTest extends TestCase
 
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
+        $orgHosts = $this->fixtures->times(2)->create('org_hostname',
+            ['org_id' => $org->getId()]);
+
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertNotEmpty($result['hostname']);
+
+        $hostnames = $result['hostname'];
+        $hostnames = explode(',', $result['hostname']);
+
+        $this->assertEquals(2, count($hostnames));
     }
 
     public function testGetOrgByHostname()
