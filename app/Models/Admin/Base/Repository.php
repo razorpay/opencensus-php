@@ -32,6 +32,18 @@ class Repository extends BaseRepository
                     ->findOrFailPublic($id);
     }
 
+    public function findByPublicIdAndOrgIdWithRelations(
+        $id,
+        $orgId,
+        $relations=[])
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        return $this->findByIdAndOrgIdWithRelations($id, $orgId, $relations);
+    }
+
     public function findByIdAndOrgIdWithRelations($id, $orgId, $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);

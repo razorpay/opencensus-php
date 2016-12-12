@@ -242,7 +242,9 @@ class Service extends Base\Service
 
     public function getAdmin(string $orgId, string $adminId)
     {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        // Fetch admin with relations
+        $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
+            $adminId, $orgId, ['groups', 'roles']);
 
         return $admin->toArrayPublic();
     }
@@ -255,7 +257,8 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
-        $admin = $this->repo->admin->findByIdAndOrgIdWithRelations($adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
+        $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
+            $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
         $permissions = [];

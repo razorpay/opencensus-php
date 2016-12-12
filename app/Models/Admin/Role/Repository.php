@@ -26,20 +26,6 @@ class Repository extends Base\Repository
         Entity::ORG_ID  => 'sometimes',
     ];
 
-    public function findByPublicIdAndOrgIdWithRelations(
-        string $roleId,
-        string $orgId)
-    {
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        Entity::verifyIdAndStripSign($roleId);
-
-        return $this->newQuery()
-                    ->orgId($orgId)
-                    ->with('permissions')
-                    ->findOrFailPublic($roleId);
-    }
-
     public function fetchRolesForOrg($orgId)
     {
         return $this->newQuery()

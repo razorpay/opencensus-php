@@ -32,17 +32,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function retrieveByOrgIdAndIdOrFail(
-        string $orgId,
-        string $adminId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where(Entity::ID, '=', $adminId)
-                    ->with(['groups', 'roles'])
-                    ->firstOrFail();
-    }
-
     public function lockUnactivatedAccounts($timestamp)
     {
         return $this->newQuery()
