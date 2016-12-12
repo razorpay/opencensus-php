@@ -172,26 +172,29 @@ class Repository extends Base\Repository
         $refundTable = Table::REFUND;
         $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
 
-        $refundId = Entity::getAttributeWithTableName(Entity::ID);
-        $refundPaymentId = Entity::getAttributeWithTableName(Entity::PAYMENT_ID);
-        $refundCreatedAt = Entity::getAttributeWithTableName(Entity::CREATED_AT);
+        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
 
-        $paymentId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-        $paymentGateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
-        $paymentRefundStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentRefundStatusAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
 
-        $gatewayRefundId = 'refund_id';
+        $gatewayRefundIdAttr = 'refund_id';
+
+        $refundAttributes = $this->getAttributeWithTableName('*');
 
         $response = $this->newQuery()
-                         ->join($paymentTable, $refundPaymentId, '=', $paymentId)
-                         ->where($paymentGateway, '=', $paymentGateway)
-                         ->whereNotNull($paymentRefundStatus)
-                         ->where($refundCreatedAt, '>', $ts)
-                         ->whereRaw($refundId . ' NOT IN ' .
+                         ->select($refundAttributes)
+                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                         ->where($paymentGatewayAttr, '=', $gateway)
+                         ->whereNotNull($paymentRefundStatusAttr)
+                         ->where($refundCreatedAtAttr, '>', $ts)
+                         ->whereRaw($refundIdAttr . ' NOT IN ' .
                                  '(' .
-                                     ' SELECT ' . $refundId .
+                                     ' SELECT ' . $refundIdAttr .
                                      ' FROM ' . $refundTable .
-                                     ' JOIN ' . $gatewayTable . ' ON ' . $refundId . ' = ' . $gatewayRefundId .
+                                     ' JOIN ' . $gatewayTable . ' ON ' . $refundIdAttr . ' = ' . $gatewayRefundIdAttr .
                                  ')'
                          )
                          ->get();
