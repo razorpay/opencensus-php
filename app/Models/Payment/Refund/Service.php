@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
-use Config;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Gateway\Netbanking;
