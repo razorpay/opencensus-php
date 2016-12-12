@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Transaction;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Payment;
 use RZP\Constants;
 
 class Core extends Base\Core
@@ -16,12 +17,12 @@ class Core extends Base\Core
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity
      */
-    public function createForCustomerDebit($payment)
+    public function createForCustomerDebit(Payment\Entity $payment)
     {
         $amount = $payment->getAmount();
 
         $customerTxn = $this->createEntityForType(
-                        'debit', $payment->merchant, $amount, $payment->customer);
+                        Entity::DEBIT, $payment->merchant, $amount, $payment->customer);
 
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
@@ -42,9 +43,9 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit($payment, $transfer, int $amount, $customer)
+    public function createFromCustomerCredit(Payment\Entity $payment, $transfer, int $amount, Customer\Entity $customer)
     {
-        $customerTxn = $this->createEntityForType('credit', $payment->merchant, $amount, $customer);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $payment->merchant, $amount, $customer);
 
         $customerTxn->setEntityType(Constants\Entity::TRANSFER);
 
@@ -71,7 +72,7 @@ class Core extends Base\Core
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
-        $customerTxn = $this->createEntityForType('credit', $this->merchant, $amount, $customer);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customer);
 
         $customerTxn->setType(Type::REFUND);
 
@@ -86,7 +87,22 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    protected function createEntityForType(string $type, $merchant, int $amount, $customer)
+    public function getLastTransactionTime(Customer\Balance\Entity $balance)
+    {
+        $lastTxn = $this->repo
+                        ->customer_transaction
+                        ->fetchLastCreditTransaction(
+                            $balance->getCustomerId(), $this->merchant->getId());
+
+        if ($lastTxn === NULL)
+        {
+            return NULL;
+        }
+
+        return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
+    }
+
+    protected function createEntityForType(string $type, $merchant, int $amount, Customer\Entity $customer)
     {
         $customerTxn = new Entity;
 
@@ -122,20 +138,5 @@ class Core extends Base\Core
         $customerTxn->fillAndGenerateId($txnData);
 
         return $customerTxn;
-    }
-
-    public function getLastTransactionTime(Customer\Balance\Entity $balance)
-    {
-        $lastTxn = $this->repo
-                        ->customer_transaction
-                        ->fetchLastCreditTransaction(
-                            $balance->getCustomerId(), $this->merchant->getId());
-
-        if ($lastTxn === NULL)
-        {
-            return NULL;
-        }
-
-        return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
     }
 }

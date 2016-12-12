@@ -87,7 +87,7 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_FLASHWALLET    = 'wallet_flashwallet';
 
-    public static $namespace = array(
+    public static $namespace = [
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
@@ -139,9 +139,9 @@ class Entity
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
-    );
+    ];
 
-    protected static $repository = array(
+    protected static $repository = [
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
@@ -150,9 +150,9 @@ class Entity
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
-    );
+    ];
 
-    protected static $syncedInLiveAndTest = array(
+    protected static $syncedInLiveAndTest = [
         self::IIN,
         self::FEATURE,
         self::METHODS,
@@ -160,7 +160,7 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::SCHEDULE,
-    );
+    ];
 
     public static function getEntityNamespace(string $entity)
     {

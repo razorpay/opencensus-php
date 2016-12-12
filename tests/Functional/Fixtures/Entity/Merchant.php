@@ -292,6 +292,11 @@ class Merchant extends Base
         return $this->edit($id, ['features' => $features]);
     }
 
+    public function editAutoRefundDelay($delay, $id = '10000000000000')
+    {
+        return $this->edit($id, ['auto_refund_delay' => $delay]);
+    }
+
     public function setCategory($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category' => $category]);

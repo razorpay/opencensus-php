@@ -39,7 +39,7 @@ class Table
     const CUSTOMER_BALANCE      = 'customer_balance';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const CUSTOMER_TRANSACTION = 'customer_transactions';
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
 
     // Gateway related
     const EBS                   = 'ebs';

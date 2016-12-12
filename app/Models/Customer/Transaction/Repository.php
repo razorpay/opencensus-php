@@ -44,6 +44,14 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
 
+    /**
+     * Fetch the last customer_transaction credit,
+     * that is not a refund txn
+     *
+     * @param  string $customerId
+     * @param  string $merchantId
+     * @return Entity
+     */
     public function fetchLastCreditTransaction(string $customerId, string $merchantId)
     {
         return $this->newQuery()

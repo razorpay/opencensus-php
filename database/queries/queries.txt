@@ -1341,6 +1341,11 @@ ALTER TABLE terminals
 UPDATE terminals
     SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
 
+----
+ALTER TABLE merchants
+    ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
+
+
 ----------------------------------- TODO ---------------------------------------
 
 ALTER TABLE merchant_banks

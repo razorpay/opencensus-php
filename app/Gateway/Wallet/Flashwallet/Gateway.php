@@ -32,8 +32,6 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $input);
 
-        // $this->validateInputForRefund($input);
-
         $this->processCustomerBalanceForRefund($input);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, []);
@@ -50,9 +48,7 @@ class Gateway extends Base\Gateway
         catch (\Throwable $ex)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $ex->getCode(),
-                $ex->getMessage());
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
     }
 
