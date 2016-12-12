@@ -136,9 +136,9 @@ class MinAmount
 
         $networkTag = null;
 
-        $networkArray = constant('self::MIN_AMOUNT')['card'];
+        $networkMap = constant('self::MIN_AMOUNT')['card'];
 
-        if (array_key_exists($network, $networkArray) === true)
+        if (array_key_exists($network, $networkMap) === true)
         {
             $networkTag = $network;
         }
@@ -148,7 +148,7 @@ class MinAmount
             $networkTag = 'default';
         }
 
-        $minAmount = self::minAmountFromArray($netbankingMap, $networkTag, $category);
+        $minAmount = self::minAmountFromArray($networkMap, $networkTag, $category);
 
         return $minAmount;
     }
