@@ -38,6 +38,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::LINE_ITEMS,
+        Entity::CURRENCY,
     ];
 
     /**
@@ -77,6 +78,27 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invoice cannot have more than 10 line items.'
+            );
+        }
+    }
+
+    /**
+     * Currency is optional (defaults to INR) but in laravel 5.2, if sent null
+     * no other validations would happen and will attempt to flush null in db.
+     * Ref: https://laravel.com/docs/5.2/validation#rule-string
+     * To avoid that, adding validator to be run by spine here.
+     */
+    public function validateCurrency(array $input)
+    {
+        if (array_key_exists(Entity::CURRENCY, $input) === false)
+        {
+            return;
+        }
+
+        if (empty($input[Entity::CURRENCY]))
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency must not be empty.'
             );
         }
     }
