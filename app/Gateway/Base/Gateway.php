@@ -3,12 +3,14 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Constants\Mode;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Requests;
+use RZP\Exception;
 use RZP\Models\Payment\Status;
-use Symfony\Component\DomCrawler\Crawler;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+
+use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use App;
 
 class Gateway
@@ -255,6 +257,16 @@ class Gateway
         assert (is_bool($mock));
 
         $this->mock = $mock;
+    }
+
+    protected function getCallbackResponseData(array $input)
+    {
+        if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
+        {
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
+        }
+
+        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
     }
 
     public function setInput(array $input)
@@ -731,7 +743,7 @@ class Gateway
 
         if ($payment['otp_attempts'] >= $limit)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
     }

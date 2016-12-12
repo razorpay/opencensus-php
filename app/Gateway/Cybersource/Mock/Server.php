@@ -85,6 +85,7 @@ class Server extends Base\Mock\Server
 
     protected function authorize($input)
     {
+        s('authorize');
         $this->validateAuthorizeInput($input);
 
         $response = [];
@@ -363,6 +364,11 @@ class Server extends Base\Mock\Server
                     F::XID => base64_encode($this->messageId)
                 ];
 
+                break;
+
+                case 42809500000009:
+                    $response[F::DECISION] = 'REJECT';
+                    $response[F::REASON_CODE] = 476;
                 break;
 
             // MasterCard SecureCode Card Enrolled: Unavailable Authentication
@@ -677,6 +683,17 @@ class Server extends Base\Mock\Server
                     F::ECI                 => '07'
                 ];
 
+                break;
+
+            case '42809500000009':
+
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = 476;
+                $response['payerAuthEnrollReply'] = [
+                    'reasonCode' => 476
+                ];
+                $response['missingField'] = 'c:authRequestID';
+                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
                 break;
 
             // MasterCard SecureCode Card Enrolled: Unsuccessful Authentication

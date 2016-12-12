@@ -510,13 +510,37 @@ class Processor
         $this->eventPaymentFailed();
     }
 
+    protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
+    {
+        $payment = $this->payment;
+
+        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
+        if ($payment->isNetbanking() === true)
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
+        }
+        else if (($exception instanceof Exception\GatewayErrorException) and
+                 ($exception->hasTwoFaError()))
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
+        }
+        else
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::UNKNOWN;
+        }
+
+        $payment->setTwoFactorAuth($twoFactorAuth);
+    }
+
     protected function eventPaymentFailed()
     {
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError($error)
+    protected function setPaymentError(Exception\BaseException $e)
     {
+        $error = $e->getError();
+
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
