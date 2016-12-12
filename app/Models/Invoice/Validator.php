@@ -98,7 +98,9 @@ class Validator extends Base\Validator
         if (empty($input[Entity::CURRENCY]))
         {
             throw new BadRequestValidationFailureException(
-                'Currency must not be empty.'
+                'Currency must not be empty.',
+                Entity::CURRENCY,
+                $input
             );
         }
     }
