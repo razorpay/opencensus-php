@@ -17,4 +17,14 @@ class Repository extends Base\Repository
         Entity::REF          => 'sometimes|string',
         Entity::CAPTURE_REF  => 'sometimes|string'
     );
+
+    // TODO: Rename the function to a proper one
+    // and fix the get auth code function for emi
+    public function findCapturedPaymentByIdOrFail($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
+                    ->firstOrFail();
+    }
 }
