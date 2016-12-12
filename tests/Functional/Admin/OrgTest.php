@@ -67,8 +67,9 @@ class OrgTest extends TestCase
 
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 
-        $orgHosts = $this->fixtures->times(2)->create('org_hostname',
-            ['org_id' => $org->getId()]);
+        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
 
