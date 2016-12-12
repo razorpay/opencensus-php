@@ -1,4 +1,4 @@
-<div class="container w-xl w-auto-xs">
+<div class="container w-xl w-auto-xs" ng-controller="ForgotPasswordCtrl">
   <div class="wrapper">
     <a href="#/" class="text-center">
       <img class="img-responsive" src="{{logo_url}}" alt=".">
@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <form name="reset" ng-submit="submit()" ng-controller="ForgotPasswordCtrl">
+  <form name="reset" ng-submit="submit()">
     <div class="list-group list-group-sm">
       <div class="list-group-item">
         <input type="email" placeholder="Email" ng-model="data.email" class="form-control no-border" required>

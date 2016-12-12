@@ -227,8 +227,16 @@ var app = angular.module('app', [
     }).state('access.logout', {
       url: '/logout',
       templateUrl: 'tpl/admin/page_logout.html'
-    }) //other
-.state('404', {
+    }).state('access.forgotpwd', {
+      url: '/forgotpwd',
+      templateUrl: 'tpl/admin/forgot_pwd.html'
+    }).state('access.resetpwd', {
+      url: '/resetpwd/:token',
+      templateUrl: 'tpl/admin/password_reset.html'
+    })
+
+    //other
+    .state('404', {
       url: '/404',
       templateUrl: 'tpl/page_404.html'
     })  //500
