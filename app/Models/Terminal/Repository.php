@@ -204,4 +204,14 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
                     ->count();
     }
+
+    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    {
+        $terminal->merchants()->attach($merchantId);
+    }
+
+    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    {
+        $terminal->merchants()->detach($merchantId);
+    }
 }

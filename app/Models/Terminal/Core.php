@@ -26,18 +26,14 @@ class Core extends Base\Core
 
     public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
     {
-        $terminal->removeMerchantFromTerminal($merchantId);
-
-        $this->repo->saveOrFail($terminal);
+        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal;
     }
 
     public function addMerchantToTerminal(Entity $terminal, string $merchantId)
     {
-        $terminal->addMerchantToTerminal($merchantId);
-
-        $this->repo->saveOrFail($terminal);
+        $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
 
         return $terminal;
     }

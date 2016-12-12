@@ -510,14 +510,4 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
-
-    public function removeMerchantFromTerminal(string $merchantId)
-    {
-        $this->merchants()->detach($merchantId);
-    }
-
-    public function addMerchantToTerminal(string $merchantId)
-    {
-        $this->merchants()->attach($merchantId);
-    }
 }
