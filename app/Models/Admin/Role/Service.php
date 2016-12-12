@@ -38,6 +38,8 @@ class Service extends Base\Service
     {
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
+        $role->getValidator()->validateRoleIsNotSuperAdmin();
+
         $role->setAuditAction(Action::DELETE_ROLE);
 
         $this->repo->deleteOrFail($role);
