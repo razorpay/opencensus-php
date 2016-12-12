@@ -174,6 +174,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::REASON_CODE);
     }
 
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTHORIZATION_CODE);
+    }
+
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);

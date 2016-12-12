@@ -315,6 +315,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
@@ -335,6 +336,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
@@ -355,6 +357,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
@@ -385,6 +388,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'axis',
             'gateway_merchant_id'       => 'cybersource',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
@@ -461,6 +465,7 @@ class Terminal extends Base
             'netbanking'            => 1,
             'shared'                => 1,
             'category'              => 0,
+            'tpv'                   => 1,
             'network_category'      => 'securities',
         );
 
@@ -608,7 +613,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createDynamicSharedHdfcTerminal(array $attributes=[])
+    public function createDynamicSharedHdfcTerminal(array $attributes = [])
     {
         $defaultValues = array(
             'merchant_id'               => '100000Razorpay',

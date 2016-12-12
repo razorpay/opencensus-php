@@ -276,4 +276,6 @@ class PublicErrorDescription
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'You cannot edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used in invoice as it is inactive';
+
+    const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
 }

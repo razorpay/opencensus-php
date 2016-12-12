@@ -74,8 +74,6 @@ class Generator extends Base\Core
                     $this->repo->saveOrFail($this->invoice);
                 }
             );
-
-            (new Notifier($this->invoice))->sendNotificationToCustomer();
         }
         catch (\Exception $e)
         {
@@ -93,6 +91,25 @@ class Generator extends Base\Core
             }
 
             throw $e;
+        }
+
+        //
+        // In case notification to the customer throws any kind of exception,
+        // we should not fail the invoice creation.
+        //
+        try
+        {
+            (new Notifier($this->invoice))->sendNotificationToCustomer();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
+                [
+                    'invoice_id' => $this->invoice->getId()
+                ]);
         }
 
         return $this->invoice;

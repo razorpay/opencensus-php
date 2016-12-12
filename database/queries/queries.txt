@@ -1310,6 +1310,7 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
+<<<<<<< HEAD
 --- Pre code deployment / PR: https://github.com/razorpay/api/pull/1620
 
 ALTER TABLE invoices MODIFY COLUMN order_id CHAR(14) DEFAULT NULL;
@@ -1323,6 +1324,12 @@ CREATE INDEX line_items_deleted_at_index ON line_items (deleted_at);
 ALTER TABLE items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
 CREATE INDEX items_deleted_at_index ON items (deleted_at);
 
+---
+
+--- Pre deployment https://github.com/razorpay/api/pull/910
+ALTER TABLE payments
+    ADD COLUMN gateway_captured TINYINT AFTER auto_captured
+    ADD INDEX payments_gateway_captured_index (gateway_captured);
 ---
 
 --- Post code deployment / https://github.com/razorpay/api/pull/1732
@@ -1356,3 +1363,13 @@ ALTER TABLE cybersource
 
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
+
+----
+ALTER TABLE terminals
+    ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
+
+UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
+
+----
+ALTER TABLE merchants
+    ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
