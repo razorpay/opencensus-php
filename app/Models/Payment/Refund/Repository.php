@@ -157,16 +157,18 @@ class Repository extends Base\Repository
      */
     public function fetchMissingRefundsOfGateway($gateway, $ts)
     {
-        // SELECT *
-        // FROM refunds
-        // JOIN payments ON refunds.payment_id = payments.id
-        // WHERE refunds.id NOT IN
-        //      (SELECT refunds.id
-        //       FROM refunds
-        //       JOIN $gateway ON refunds.id = refund_id)
-        // AND payments.gateway = '$gateway'
-        // AND payments.refund_status IS NOT NULL
-        // AND refunds.created_at > '$ts';
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // WHERE `payments`.`gateway` = '$gateway'
+        //     AND `payments`.`refund_status` IS NOT NULL
+        //     AND `payments`.`transaction_id` IS NOT NULL
+        //     AND `refunds`.`transaction_id` IS NOT NULL
+        //     AND `refunds`.`created_at` > '$ts'
+        //     AND refunds.id NOT IN
+        //         (SELECT refunds.id
+        //          FROM refunds
+        //          JOIN billdesk ON refunds.id = refund_id);
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
@@ -175,10 +177,12 @@ class Repository extends Base\Repository
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
         $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
 
         $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
         $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
         $paymentRefundStatusAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
 
         $gatewayRefundIdAttr = 'refund_id';
 
@@ -189,6 +193,8 @@ class Repository extends Base\Repository
                          ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
                          ->where($paymentGatewayAttr, '=', $gateway)
                          ->whereNotNull($paymentRefundStatusAttr)
+                         ->whereNotNull($paymentTransactionIdAttr)
+                         ->whereNotNull($refundTransactionIdAttr)
                          ->where($refundCreatedAtAttr, '>', $ts)
                          ->whereRaw($refundIdAttr . ' NOT IN ' .
                                  '(' .
