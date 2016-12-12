@@ -308,7 +308,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAndUnsetMerchantId($terminal, & $input)
+    protected function validateAndUnsetMerchantId(Entity $terminal, array & $input)
     {
         if (isset($input[Entity::MERCHANT_ID]) === true)
         {

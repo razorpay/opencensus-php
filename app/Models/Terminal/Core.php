@@ -24,7 +24,7 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    public function removeMerchantFromTerminal($terminal, $merchantId)
+    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
     {
         $terminal->removeMerchantFromTerminal($merchantId);
 
@@ -33,7 +33,7 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    public function addMerchantToTerminal($terminal, $merchantId)
+    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
     {
         $terminal->addMerchantToTerminal($merchantId);
 

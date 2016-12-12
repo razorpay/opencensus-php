@@ -106,7 +106,7 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function removeMerchantFromTerminal($id, $merchantId)
+    public function removeMerchantFromTerminal(string $id, string $merchantId)
     {
         $terminal = $this->repo->terminal->getById($id);
 
@@ -115,7 +115,7 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function addMerchantToTerminal($id, $merchantId)
+    public function addMerchantToTerminal(string $id, string $merchantId)
     {
         $terminal = $this->repo->terminal->getById($id);
 

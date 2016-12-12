@@ -8,7 +8,7 @@ use RZP\Models\Terminal;
 
 class TerminalController extends Controller
 {
-    public function putTerminal($id)
+    public function putTerminal(string $id)
     {
         $input = Request::all();
 
@@ -17,21 +17,21 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function restoreTerminal($id)
+    public function restoreTerminal(string $id)
     {
         $data = (new Terminal\Service)->restoreTerminal($id);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteTerminal($id)
+    public function deleteTerminal(string $id)
     {
         $data = (new Terminal\Service)->deleteTerminal2($id);
 
         return ApiResponse::json($data);
     }
 
-    public function postCheckTerminalEncryptedValue($id)
+    public function postCheckTerminalEncryptedValue(string $id)
     {
         $input = Request::all();
 
@@ -40,7 +40,7 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function toggleTerminal($id)
+    public function toggleTerminal(string $id)
     {
         $input = Request::all();
 
@@ -49,14 +49,14 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addMerchant($id, $mid)
+    public function addMerchant(string $id, string $mid)
     {
         $data = (new Terminal\Service)->addMerchantToTerminal($id, $mid);
 
         return ApiResponse::json($data);
     }
 
-    public function removeMerchant($id, $mid)
+    public function removeMerchant(string $id, string $mid)
     {
         $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $mid);
 

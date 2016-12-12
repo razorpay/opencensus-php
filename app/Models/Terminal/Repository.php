@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         $query = $this->newquery()
                       ->withTrashed();
 
-        $this->addmerchantwherecondition($query, [$mid]);
+        $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->get();
     }
@@ -57,15 +57,14 @@ class Repository extends Base\Repository
         $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
 
         $query = $this->newQuery()
-                    ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
-                    ->enabled();
+                      ->enabled();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
         return $query->get();
     }
 
-    protected function addMerchantWhereCondition($query, $merchantIds)
+    protected function addMerchantWhereCondition($query, array $merchantIds)
     {
         $query->where(
             function ($query) use ($merchantIds)
@@ -96,7 +95,7 @@ class Repository extends Base\Repository
         $query = $this->newquery()
                       ->withTrashed();
 
-        $this->addmerchantwherecondition($query, [$mid]);
+        $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->findOrFailPublic($tid);
     }
@@ -106,7 +105,7 @@ class Repository extends Base\Repository
         $query = $this->newquery()
                        ->where(Terminal\Entity::GATEWAY, '=', $gateway);
 
-        $this->addmerchantwherecondition($query, [$mid]);
+        $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->first();
     }
@@ -139,7 +138,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
                     ->enabled();
 
-        $this->addmerchantwherecondition($query, [$mId]);
+        $this->addMerchantWhereCondition($query, [$mId]);
 
         return $query->first();
     }

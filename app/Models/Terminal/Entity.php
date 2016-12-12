@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 
@@ -424,7 +425,7 @@ class Entity extends Base\PublicEntity
 
     public function merchants()
     {
-        return $this->belongsToMany('RZP\Models\Merchant\Entity', 'merchant_terminal');
+        return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
     }
 
     public function toArrayWithPassword()
