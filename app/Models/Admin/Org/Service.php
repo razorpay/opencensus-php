@@ -6,8 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Admin;
-use RZP\Exception;
-use RZP\Trace\TraceCode;
 use Config;
 
 class Service extends Base\Service
@@ -112,9 +110,6 @@ class Service extends Base\Service
                 $newHostnames = array_map('trim', $newHostnames);
 
                 $existingHostnames = $this->getArrayOfHostnames($org);
-
-                $this->trace->info(TraceCode::ERROR_EXCEPTION,
-                    ['newHostnames' => $newHostnames, 'existingHostnames' => $existingHostnames]);
 
                 $hostnamesToCreate = array_diff($newHostnames, $existingHostnames);
 

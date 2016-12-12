@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         if (filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid domain name provided', $attribute, $hostname);
+                'Invalid hostname provided', $attribute, $hostname);
         }
     }
 }

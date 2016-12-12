@@ -33,10 +33,8 @@ class Validator extends Base\Validator
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
     ];
 
-    protected function validateEmailDomains($attribute, $value)
+    protected function validateEmailDomains($attribute, $domains)
     {
-        $domains = explode(',', $value);
-
         foreach ($domains as $domain)
         {
             if (filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false)

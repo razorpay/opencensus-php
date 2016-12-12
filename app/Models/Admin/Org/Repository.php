@@ -3,7 +3,6 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
-use RZP\Constants\Table;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
 
@@ -34,6 +33,7 @@ class Repository extends Base\Repository
 
     public function findOrFailByHostname(string $hostname)
     {
+        // Collect different table names, and their columns to query on
         $hostname = mb_strtolower($hostname);
 
         $orgId = $this->getAttributeWithTableName(Entity::ID);
@@ -51,6 +51,7 @@ class Repository extends Base\Repository
                                   ->org_hostname
                                   ->getTableName();
 
+        // Join the orgs, and org_hostname table to get the org with the given hostname
         return $this->newQuery()
                     ->select($orgColumnNames)
                     ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
