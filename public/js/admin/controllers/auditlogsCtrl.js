@@ -119,7 +119,6 @@ app.controller('AuditlogsCtrl', [
 
     $scope.audit_log_id = audit_log_id;
 
-    // TODO: Caching
     $scope.data = audit_log_cache[audit_log_id];
   }
 ]);
