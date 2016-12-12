@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Admin;
 
 use Carbon\Carbon;
+use Hash;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\HeimdallTrait;
@@ -26,11 +27,14 @@ class AdminTest extends TestCase
         $this->org = $this->fixtures->create('org', [
             'email'         => 'random@rzp.com',
             'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
         ]);
 
         $this->orgId = $this->org->getId();
 
         $this->ba->adminAuth();
+
+        $this->repo = (new Admin\Repository);
     }
 
     public function testCreateAdmin()
@@ -319,7 +323,7 @@ class AdminTest extends TestCase
 
         $this->ba->appAuth();
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testLoginOAuth()
@@ -410,5 +414,107 @@ class AdminTest extends TestCase
         $admin = $this->ba->getAdmin();
 
         $this->assertEquals($admin->isSuperAdmin(), true);
-     }
+    }
+
+    public function testPasswordResetSuccess()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $admin->setPassword('M!2#uWd');
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        if ((isset($result['success']) === true) and
+            ($result['success'] === true))
+        {
+            $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+            $this->assertTrue(Hash::check($newPassword, $admin['password']));
+        }
+    }
+
+    public function testPasswordResetMismatch()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWd';
+
+        $admin->setPassword($oldPwd);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertTrue(Hash::check($oldPwd, $admin['password']));
+    }
+
+    public function testPasswordResetInvalid()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWd';
+
+        $admin->setPassword($oldPwd);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetInvalidAuthType()
+    {
+        $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
+
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWd';
+
+        $admin->setPassword($oldPwd);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
 }

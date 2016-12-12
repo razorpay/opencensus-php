@@ -51,6 +51,13 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required'
     ];
 
+    protected static $resetRules = [
+        Entity::EMAIL                 => 'required|email|max:255',
+        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD_CONFIRMATION => 'required|string',
+        Entity::OLD_PASSWORD          => 'sometimes',
+    ];
+
     protected static $createValidators = [
         Entity::PASSWORD
     ];
@@ -93,6 +100,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
+        }
+    }
+
+    public function validateOrgSupportsPasswordReset(string $authType)
+    {
+        $passwordResetTypes = ['password'];
+
+        if (in_array($authType, $passwordResetTypes) === false)
+        {
+            $this->entity->setAuditAction(
+                Action::RESET_PASSWORD_INVALID_AUTH_TYPE);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'The AuthType does not support password-reset');
         }
     }
 }

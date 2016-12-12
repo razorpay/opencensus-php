@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const LAST_LOGIN_AT         = 'last_login_at';
     const FAILED_ATTEMPTS       = 'failed_attempts';
     const OLD_PASSWORDS         = 'old_passwords';
+    const OLD_PASSWORD          = 'old_password';
     const PASSWORD_EXPIRY       = 'password_expiry';
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
@@ -171,15 +172,6 @@ class Entity extends Base\PublicEntity
         });
     }
 
-    public function getPassword()
-    {
-        return $this->getAttribute(self::PASSWORD);
-    }
-
-    public function getEmail()
-    {
-        return $this->getAttribute(self::EMAIL);
-    }
 
     public function org()
     {
@@ -352,11 +344,40 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
 
+
+    /*
+     * Setters
+     *
+     */
+    public function setPassword(string $password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
+    }
+
+
+    /*
+     * Getters
+     *
+     */
     public function getOldPasswords()
     {
         return $this->getAttribute(self::OLD_PASSWORDS);
     }
 
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    /*
+     * Accessors
+     *
+     */
     protected function getOldPasswordsAttribute()
     {
         $oldPasswords = null;
@@ -389,5 +410,12 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function matchPassword(string $password)
+    {
+        $expectedPwdHash = $this->getPassword(self::PASSWORD);
+
+        return Hash::check($password, $expectedPwdHash);
     }
 }
