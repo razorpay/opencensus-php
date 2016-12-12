@@ -388,11 +388,7 @@ class Entity extends Base\PublicEntity
             // by ourselves.
 
             $input[Entity::GATEWAY] = $this->getGateway();
-
-            if (isset($input[Entity::MERCHANT_ID]) === false)
-            {
-                $input[Entity::MERCHANT_ID] = $this->getMerchantId();
-            }
+            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
 
             return parent::edit($input, 'create');
         }
