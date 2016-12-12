@@ -37,13 +37,19 @@ class Action
     const CREATE_ADMIN = [
         'category'  => AC::CATEGORY_UAM,
         'label'     => AC::LABEL_ADMIN,
-        'action'    => AC::ACTION_CREATE
+        'action'    => AC::ACTION_CREATE,
     ];
 
     const EDIT_ADMIN = [
-        'category' => AC::CATEGORY_UAM,
-        'label' => AC::LABEL_ADMIN,
-        'action' => AC::ACTION_EDIT
+        'category'  => AC::CATEGORY_UAM,
+        'label'     => AC::LABEL_ADMIN,
+        'action'    => AC::ACTION_EDIT,
+    ];
+
+    const RESET_PASSWORD = [
+        'action' => AC::CATEGORY_UAM,
+        'label'  => AC::LABEL_ADMIN,
+        'action' => AC::ACTION_RESET_PASSWORD,
     ];
 
     const DELETE_ADMIN = [

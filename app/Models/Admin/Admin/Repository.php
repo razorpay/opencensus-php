@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
 
@@ -19,12 +20,14 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
-                    ->first();
+                    ->firstOrFailPublic();
     }
 
     public function findByOrgIdAndEmail($orgId, $email)
     {
         $email = strtolower($email);
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         return $this->newQuery()
                     ->orgId($orgId)

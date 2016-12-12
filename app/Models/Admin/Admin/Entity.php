@@ -171,15 +171,6 @@ class Entity extends Base\PublicEntity
         });
     }
 
-    public function getPassword()
-    {
-        return $this->getAttribute(self::PASSWORD);
-    }
-
-    public function getEmail()
-    {
-        return $this->getAttribute(self::EMAIL);
-    }
 
     public function org()
     {
@@ -352,11 +343,40 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
 
+
+    /*
+     * Setters
+     *
+     */
+    public function setPassword(string $password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
+    }
+
+
+    /*
+     * Getters
+     *
+     */
     public function getOldPasswords()
     {
         return $this->getAttribute(self::OLD_PASSWORDS);
     }
 
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    /*
+     * Accessors
+     *
+     */
     protected function getOldPasswordsAttribute()
     {
         $oldPasswords = null;
@@ -389,5 +409,14 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function matchPassword(string $password)
+    {
+        $actualPwdHash = Hash::make($password);
+
+        $expectedPwdHash = $this->getPassword(self::PASSWORD);
+
+        return $actualPwdHash === $expectedPwdHash;
     }
 }

@@ -22,6 +22,7 @@ class AuditActionCode
     const ACTION_LOGIN_OAUTH            = 'Login Oauth';
     const ACTION_LOGIN_FAIL_OAUTH       = 'Login Oauth Fail';
     const ACTION_GENERATE_LOGIN_TOKEN   = 'Generate Login Token';
+    const ACTION_RESET_PASSWORD         = 'Reset Password';
 
     // labels
     const LABEL_ADMIN                   = 'Admin';

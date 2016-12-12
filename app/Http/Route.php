@@ -583,6 +583,7 @@ final class Route
         'org_get_by_hostname',
         'admin_lock_old_accounts',
         'merchant_activation_lock',
+        'admin_password_reset',
     );
 
     public static $proxy = array(

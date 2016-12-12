@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Admin;
 
+use RZP\Exception;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
@@ -91,9 +93,40 @@ class Core extends Base\Core
         $this->repo->sync($admin, 'groups', $groups);
     }
 
-    public function passwordReset(string $orgId, array $input)
+    public function passwordReset(
+        string $orgId,
+        array $input,
+        bool $forgotPassword=true)
     {
-        ;
+        $email = $input['email'];
+
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        $admin->setAuditAction(Action::RESET_PASSWORD);
+
+        $newPassword = $input['new_password'];
+        $newConfirmedPassword = $input['confirm_password'];
+
+        if ($newPassword !== $newConfirmedPassword)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'New Password does not match with confirm password value');
+        }
+
+        // In case of forgotten passwords, oldPassword is not present.
+        // In case of voluntary change of password, we would require
+        // oldPassword
+        if ($forgotPassword === false)
+        {
+            if($admin->matchPassword($oldPassword) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old Password is incorrect');
+            }
+        }
+
+        $admin->setPassword($newPassword);
+
+        $this->repo->saveOrFail($admin);
     }
 }
-

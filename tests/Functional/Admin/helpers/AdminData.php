@@ -305,4 +305,45 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED,
         ],
     ],
+
+    'testPasswordReset' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/password/reset',
+            'method' => 'post',
+            'content' => [
+                'email'            => 'abc@razorpay.com',
+                'new_password'     => 'Heimdall!4#2',
+                'confirm_password' => 'Heimdall!4#2',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
+    'testPasswordResetMismatch' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/password/reset',
+            'method' => 'post',
+            'content' => [
+                'email'            => 'abc@razorpay.com',
+                'new_password'     => 'Heimdall!4#2',
+                'confirm_password' => 'Heimdall!4#28',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
