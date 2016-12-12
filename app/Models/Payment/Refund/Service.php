@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
@@ -15,6 +16,12 @@ use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
+    /**
+     * We get the last 24 hours refunds created of a gateway.
+     * We run the cron for this once a day.
+     */
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 86400;
+
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
@@ -23,7 +30,7 @@ class Service extends Base\Service
 
         $gatewayCode = null;
 
-        $method = $input['method'];
+        $method = $input[Payment\Entity::METHOD];
 
         switch ($method)
         {
@@ -70,6 +77,9 @@ class Service extends Base\Service
                     $gateway = $gateways[$bank];
                 }
                 break;
+
+            default:
+                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
         }
 
         if ($gatewayCode === null)
@@ -353,6 +363,56 @@ class Service extends Base\Service
             'failed_refund_ids' => $failureRefundIds,
         ];
     }
+
+    public function createGatewayRefundRecords($gateway)
+    {
+        // Currently, we are running this for billdesk refund timeouts only.
+        assert ($gateway === Payment\Gateway::BILLDESK);
+
+        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
+
+        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
+
+        $data = [];
+
+        // We get all the Billdesk refunds. We return back data for applicable and if success.
+
+        foreach ($refunds as $refund)
+        {
+            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+
+            $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($refund);
+        }
+
+        $applicable = $success = 0;
+        $successRefundData = [];
+
+        foreach ($data as $refundData)
+        {
+            if ($refundData['applicable'] === true)
+            {
+                $applicable++;
+            }
+
+            if ($refundData['success'] === true)
+            {
+                $success++;
+                $successRefundData[] = $refundData;
+            }
+        }
+
+        $summary = [
+            'total_applicable_refunds'  => $applicable,
+            'total_success_refunds'     => $success,
+            'success_refund_data'       => $successRefundData,
+        ];
+
+        $message = "Gateway refund records creation";
+
+        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
+     }
 
     protected function getNewProcessor($merchant)
     {

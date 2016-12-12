@@ -5,12 +5,29 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testThreeDSAuthFailedPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            'two_fa_error' => true,
+        ],
+    ],
 
     'testPayment' => [
-        'merchant_id'       => '10000000000000',
-        'amount'            => 50000,
-        'method'            => 'card',
-        'status'            => 'captured',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth' => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,

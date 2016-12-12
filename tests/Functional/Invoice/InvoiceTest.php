@@ -192,6 +192,11 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithNullCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->fixtures->create('order', ['id' => '100000000order']);

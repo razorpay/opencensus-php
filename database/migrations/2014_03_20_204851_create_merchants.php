@@ -81,6 +81,10 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
                   ->nullable();
 
+            $table->integer(Merchant::AUTO_REFUND_DELAY)
+                  ->nullable()
+                  ->default(null);
+
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();

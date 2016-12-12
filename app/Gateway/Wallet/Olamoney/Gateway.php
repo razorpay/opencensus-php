@@ -185,7 +185,11 @@ class Gateway extends Base\Gateway
                 $message);
         }
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function checkBalance(array $input)

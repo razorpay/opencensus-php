@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class DailyReport extends Base\Core
 {
@@ -75,20 +76,15 @@ class DailyReport extends Base\Core
                                 ->fetchSettlementSummaryBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
-        if (isset($input[Entity::ID]) === true)
+        // To allow manual report generation for specific merchants
+        if (isset($input['ids']) === true)
         {
-            $merchantIds = $input[Entity::ID];
+            $merchantIds = $input['ids'];
         }
         else
         {
-            $merchantIds = array_unique(
-                array_merge(
-                    array_keys($captureMerchants),
-                    array_keys($authMerchants),
-                    array_keys($refundMerchants),
-                    array_keys($setlMerchants)
-                )
-            );
+            $merchantIds = array_keys($captureMerchants + $authMerchants
+                                    + $refundMerchants + $setlMerchants);
         }
 
         // Summary of merchants mailed

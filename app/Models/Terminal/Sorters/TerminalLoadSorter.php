@@ -16,7 +16,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 30,
+            'load'       => 5,
         ],
 
         '1000AxisMigsTl' => [
