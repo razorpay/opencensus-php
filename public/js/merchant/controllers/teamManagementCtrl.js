@@ -11,7 +11,7 @@ app.controller('TeamManagementCtrl', [
     $scope.alerts = alertsFactory.getHandler();
 
     // This list does not include owner
-    $scope.roles = ['manager', 'operations', 'finance', 'admin', 'sellerapp'];
+    $scope.roles = ['manager', 'operations', 'finance', 'admin', 'sellerapp', 'support'];
 
     $scope.team = {
       role: 'manager'
@@ -156,7 +156,7 @@ app.controller('TeamManagementCtrl', [
         if (data.success) {
           $scope.alerts
                 .addAlert('success', 'Invitation has been successfully sent to ' + $scope.team.email, true);
-          $scope.team.role = $scope.roles[1];
+          $scope.team.role = $scope.roles[0];
           $scope.team.email = '';
           $scope.getTeamMembers();
         } else {
