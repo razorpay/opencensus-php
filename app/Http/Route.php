@@ -302,6 +302,7 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
     );
 
     public static $public = array(
@@ -520,6 +521,7 @@ final class Route
         'gateway_delete_absence',
         'gateway_fetch_absence',
         'order_refund_multiple_authorized',
+        'refund_create_gateway_record',
         'scorecard',
         'billdesk_reconcile_cancelled',
         'schedule_create',
@@ -640,6 +642,8 @@ final class Route
             'invoice_expire',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'refund_create_gateway_record',
+            'migrate_transactions',
             'merchant_migrate_features',
         ),
 

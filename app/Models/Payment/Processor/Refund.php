@@ -116,7 +116,7 @@ trait Refund
         // been captured. Check PR #905 and #909.
         assert (($payment->hasBeenCaptured() === true) or
                 (in_array($payment->card->getNetworkCode(),
-                    [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+                          [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
         $data = array(
             'payment'   => $payment->toArray(),
@@ -155,6 +155,29 @@ trait Refund
         ];
     }
 
+    public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        // The refund should have already been successful and everything on the api side.
+        // Because on timeout, we would have ignored it and created a refund as it was successful.
+        assert ($refund->getTransactionId() !== null);
+
+        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
+        // if payment does not have a transaction, anyway.
+        assert ($payment->getTransactionId() !== null);
+
+        $data = [
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount()
+        ];
+
+        return $this->callGatewayForCreateRefundRecord($data);
+    }
+
     protected function setPaymentAndRefundInfo($refund, $payment)
     {
         $this->merchant = $payment->merchant;
@@ -177,9 +200,7 @@ trait Refund
      * @param  Payment\Refund\Entity $refund  Refund Entity
      * @return null
      */
-    protected function sendRefundNotification(
-        Payment\Entity $payment,
-        Payment\Refund\Entity $refund)
+    protected function sendRefundNotification(Payment\Entity $payment, Payment\Refund\Entity $refund)
     {
         //
         // Analytics is on dashboard side for now
@@ -207,11 +228,11 @@ trait Refund
 
         // if ($this->payment->getDaysSinceAuthorized() <= $days)
         // {
-            if ((isset($input['force'])) and
-                ($input['force'] === '1'))
-            {
-                unset($input['force']);
-            }
+        if ((isset($input['force'])) and
+            ($input['force'] === '1'))
+        {
+            unset($input['force']);
+        }
         //     else
         //     {
         //         throw new Exception\BadRequestValidationFailureException(
@@ -314,15 +335,72 @@ trait Refund
         return $manualGatewayRefundResult;
     }
 
+    protected function callGatewayForCreateRefundRecord(array $data)
+    {
+        try
+        {
+            return $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
+            );
+
+            throw $ex;
+        }
+    }
+
     protected function refundOnGateway($data)
     {
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
+        catch (Exception\GatewayTimeoutException $ex)
+        {
+            //
+            // Currently, we are running this experiment only for Billdesk.
+            // Billdesk gives us a way to find out how much amount has been refunded.
+            // We are not aware of any other gateway which
+            // provides us this feature, currently.
+            //
+
+            if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
+            {
+                throw $ex;
+            }
+
+            $curlMessage = $ex->getData()['message'];
+
+            //
+            // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
+            // We want to mark the refund as successful only if the error
+            // message says that the operation timed out.
+            //
+
+            if (strpos($curlMessage, 'operation timed out') === false)
+            {
+                throw $ex;
+            }
+
+            $this->trace->traceException($ex);
+
+            //
+            // We just ignore the timeout and mark it as refunded on the api side.
+            // Later we would run verify for these refunds and
+            // create appropriate entries on the gateway side.
+            //
+
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
+                ['payment_id' => $this->payment->getId()]);
+        }
         catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->tracePaymentFailed(
                     $e->getError(),
@@ -340,7 +418,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
 
             $this->tracePaymentFailed(
                     $e->getError(),

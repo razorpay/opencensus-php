@@ -533,7 +533,12 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
-            [$response->body]);
+            [
+                'body'    => $response->body,
+                'headers' => $response->headers,
+                'code'    => $response->status_code,
+            ]
+        );
 
         $xml = simplexml_load_string(trim($response->body));
 

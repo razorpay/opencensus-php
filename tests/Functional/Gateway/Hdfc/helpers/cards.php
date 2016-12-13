@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testCardTimeout' => [
@@ -41,6 +42,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
+                'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,

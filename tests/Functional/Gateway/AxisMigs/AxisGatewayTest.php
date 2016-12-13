@@ -8,6 +8,8 @@ use RZP\Models\Payment;
 use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 
@@ -39,7 +41,9 @@ class AxisGatewayTest extends TestCase
         $this->assertNull($txn);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertNull($payment['transaction_id']);
+        $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
 
         $migs = $this->getLastEntity('axis_migs', true);
 
@@ -201,12 +205,20 @@ class AxisGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function()
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '55553555655655';
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-	        $payment = $this->getDefaultPaymentArray();
-	        $payment['card']['number'] = '55553555655655';
 	        $payment = $this->doAuthPayment($payment);
 	    });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(TwoFactorAuth::FAILED, $payment[Entity::TWO_FACTOR_AUTH]);
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     public function testFailureWhen3DSFailsForRiskyMerchant()

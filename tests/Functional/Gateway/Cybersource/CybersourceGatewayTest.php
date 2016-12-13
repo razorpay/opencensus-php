@@ -79,6 +79,18 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testThreeDSAuthFailedPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '42809500000009';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testGatewayTimeoutError()
     {
         $data = $this->testData[__FUNCTION__];
@@ -125,6 +137,19 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($response['razorpay_payment_id'], $payment['id']);
         $this->assertTestResponse($payment);
+    }
+
+    public function testNotEnrolledPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['two_factor_auth'],
+            \RZP\Models\Payment\TwoFactorAuth::NOT_APPLICABLE);
     }
 
     public function testGatewayFullRefund()
