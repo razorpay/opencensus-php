@@ -50,7 +50,7 @@ return [
             'content' => [
                 'email_domains' => ['fbapi.com'],
                 'email' => 'test@hdfc.com',
-                'allow_sign_up' => 1,
+                'allow_sign_up' => true,
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
