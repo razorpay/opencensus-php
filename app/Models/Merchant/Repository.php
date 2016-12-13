@@ -235,4 +235,21 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
     }
+
+    /**
+     * Fetches the merchant entity of a vendor for Transfer
+     *
+     * @param  string $vendorId
+     * @param  Entity $parentMerchant Parent Merchant Entity
+     * @return Entity
+     */
+    public function fetchVendorByIdAndMerchant(string $vendorId, Entity $parentMerchant) : Entity
+    {
+        $vendorId = Entity::verifyIdAndStripSign($vendorId);
+
+        return $this->newQuery()
+                    ->where(Entity::ID, $vendorId, $vendorId)
+                    ->where(Entity::PARENT_ID, $parentMerchant->getId())
+                    ->firstOrFail();
+    }
 }

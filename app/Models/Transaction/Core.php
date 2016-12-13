@@ -548,7 +548,7 @@ class Core extends Base\Core
      * Record and associate a transaction from a transfer payment action.
      *
      * @param  Transfer\Entity      $transfer Transfer entity
-     * @param  Base\Entity          $to       Entity that is receiving the transfer
+     * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/vendor)
      * @return Transaction\Entity
      */
     public function createFromTransfer($transfer, $to)

@@ -143,6 +143,24 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateForVendorTransfer(Entity $vendor)
+    {
+        if ($vendor->isVendor() === false)
+        {
+            ;
+        }
+
+        if ($vendor->isActivated() === false)
+        {
+            ;
+        }
+
+        if ($vendor->isLive() === false)
+        {
+            ;
+        }
+    }
+
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)

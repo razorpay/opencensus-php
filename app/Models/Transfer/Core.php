@@ -84,6 +84,12 @@ class Core extends Base\Core
 
                 $transfers->push($transfer);
             }
+            else if (isset($transfer[ToType::VENDOR]) === true)
+            {
+                $transfer = $this->merchantTransfer($payment, $transfer);
+
+                $transfers->push($transfer);
+            }
         }
 
         return $transfers;
@@ -131,6 +137,18 @@ class Core extends Base\Core
 
     protected function merchantTransfer()
     {
-        ;
+        $vendor = $this->repo
+                       ->merchant
+                       ->fetchVendorByIdAndMerchant($transfer[ToType::VENDOR], $this->merchant);
+
+        $vendor->getValidator()->validateVendorForTransfer();
+
+        $transfer = $this->createTransfer($vendor, $payment, $transfer['amount']);
+
+        $vendorPayment = null;
+
+        $this->repo->saveOrFail($vendorPayment);
+
+        return $transfer;
     }
 }

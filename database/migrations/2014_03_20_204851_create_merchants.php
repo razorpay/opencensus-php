@@ -122,9 +122,12 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+        });
 
+        Schema::table(Table::MERCHANT, function(Blueprint $table)
+        {
             $table->foreign(Merchant::PARENT_ID)
-                  ->references(Merchant\Entity::ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
