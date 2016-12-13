@@ -407,6 +407,10 @@ class Service extends Base\Service
             'success_refund_data'       => $successRefundData,
         ];
 
+        $this->trace->info(
+            TraceCode::CREATE_GATEWAY_REFUND_RECORD_SUMMARY,
+            $summary);
+
         $message = "Gateway refund records creation";
 
         $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
