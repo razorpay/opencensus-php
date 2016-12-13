@@ -430,4 +430,24 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getMerchantFeatures()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        list($error, $data) = (new Merchant\Service)->fetchMerchantFeatures($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postUpdateMerchantFeatures()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->updateMerchantFeatures($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
