@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -20,14 +21,14 @@ class Repository extends Base\Repository
 
     // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = array(
-        Entity::ORDER_ID        => 'sometimes|string|size:20',
+        Entity::ORDER_ID           => 'sometimes|string|size:20',
     );
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
-        Entity::EMAIL           => 'sometimes',
-        Entity::STATUS          => 'sometimes|string',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::EMAIL              => 'sometimes',
+        Entity::STATUS             => 'sometimes|string',
+        Entity::NOTES              => 'sometimes|string|max:500',
     );
 
     // These are admin allowed params to search on.
@@ -35,6 +36,7 @@ class Repository extends Base\Repository
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::TWO_FACTOR_AUTH    => 'sometimes|string',
         Entity::BANK               => 'sometimes',
         Entity::METHOD             => 'sometimes',
         Entity::GATEWAY            => 'sometimes',
@@ -57,6 +59,31 @@ class Repository extends Base\Repository
     protected $esWhitelistedParams = [
         Entity::NOTES
     ];
+
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
+        $paPaymentId = $this->manager
+                            ->payment_analytics
+                            ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
+
+        $paymentColumns = $this->getAttributeWithTableName('*');
+
+        $paTable = $this->manager->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->manager
+                               ->payment_analytics
+                               ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join($paTable, $pid, '=', $paPaymentId)
+                    ->where($checkoutIdAttr, '=', $checkoutId)
+                    ->createdAtGreaterThan($timestamp)
+                    ->latest()
+                    ->get();
+    }
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
@@ -133,20 +160,66 @@ class Repository extends Base\Repository
                         );
     }
 
+    /**
+     * Fetches old payments which can be timed-out with respective
+     * merchant relation.
+     */
     public function fetchOldCreatedPaymentsForTimeout($timestamp)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with('merchant')
                     ->get();
     }
 
+    /**
+     * This function is used to fetch the authorized payments where
+     * Merchant auto refund delay is null.
+     *
+     * @param $timestamp
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
+        $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
         return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->status(Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where($createdAt, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
+                    ->get();
+    }
+
+    /**
+     * This function is used to fetch the authorized payments with
+     * merchant auto delay delay
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
+    public function getAuthorizedPaymentsWithAutoRefundDelay()
+    {
+        $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
+        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
+
+        $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
+
+        return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                    ->status(Payment\Status::AUTHORIZED)
+                    ->whereRaw($rawCondition)
+                    ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
+                    ->where($paymentCreatedAt, '<', $minCreatedAt)
+                    ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
     }
 
@@ -458,9 +531,9 @@ class Repository extends Base\Repository
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
 
-    public function getCreatedPaymentsForOrder($orderId)
+    public function getCreatedAndFailedPaymentsForOrder($orderId)
     {
-        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+        $ts = time() - Payment\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
@@ -542,7 +615,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::CAPTURED)

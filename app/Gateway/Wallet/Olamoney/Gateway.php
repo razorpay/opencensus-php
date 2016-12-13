@@ -21,6 +21,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const BALANCE_CACHE_KEY = 'olamoney_balance_%s';
+
     // 8 hours - 8 * 60 * 60 = 28
     const WALLET_ACCESS_TOKEN_EXPIRY = 28800;
 
@@ -183,7 +185,11 @@ class Gateway extends Base\Gateway
                 $message);
         }
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function checkBalance(array $input)
@@ -212,12 +218,14 @@ class Gateway extends Base\Gateway
             (isset($content[ResponseFields::AMOUNT]) === true))
         {
             $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
+
+            $key = $this->getBalanceKeyForCache($input['payment']);
+
+            $this->app['cache']->put($key, $userBalance, self::PAYMENT_TTL);
         }
 
         if ($input['payment']['amount'] > $userBalance)
         {
-            $input['payment']['amount'] = $input['payment']['amount'] - $userBalance;
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
@@ -418,7 +426,14 @@ class Gateway extends Base\Gateway
 
     protected function getBillGeneratorAttributes(array $input)
     {
-        $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $key = $this->getBalanceKeyForCache($input['payment']);
+
+        // Wallet Balance is in paise
+        $walletBalance = $this->app['cache']->get($key, 0);
+
+        $topupAmount = ($input['payment']['amount'] - $walletBalance);
+
+        $formattedAmount = number_format($topupAmount / 100, 2, '.', '');
 
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
         $udf = json_encode($udf);
@@ -431,7 +446,7 @@ class Gateway extends Base\Gateway
             RequestFields::UDF                      => $udf,
             RequestFields::RETURN_URL               => $input['callbackUrl'],
             RequestFields::NOTIFICATION_URL         => 'NA',
-            RequestFields::AMOUNT                   => $amount,
+            RequestFields::AMOUNT                   => $formattedAmount,
             RequestFields::USER_ACCESS_TOKEN        => $input['token']['gateway_token'],
             RequestFields::CURRENCY                 => $input['payment']['currency'],
             RequestFields::BALANCE_TYPE             => 'cash',
@@ -920,5 +935,10 @@ class Gateway extends Base\Gateway
         $content = $this->jsonToArray($response->body);
 
         return $content;
+    }
+
+    protected function getBalanceKeyForCache($payment)
+    {
+        return sprintf(self::BALANCE_CACHE_KEY, $payment['id']);
     }
 }

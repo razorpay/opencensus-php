@@ -26,5 +26,4 @@ class FeeBearer
 
         return $values[$bearerValue];
     }
-
 }

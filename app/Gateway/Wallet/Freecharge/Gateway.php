@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Freecharge;
 
-use Cache;
 use Carbon\Carbon;
 use Config;
 use RZP\Constants\HashAlgo;
@@ -16,6 +15,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -24,6 +24,8 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed;
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
+
+    const BALANCE_CACHE_KEY = 'freecharge_balance_';
 
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 
@@ -188,7 +190,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $data = array();
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
@@ -201,7 +203,11 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input);
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function debit(array $input)
@@ -455,7 +461,13 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {
-            return (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+            $key = $this->getBalanceKeyForCache($input['payment']);
+
+            $walletBalance = (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+
+            $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL);
+
+            return $walletBalance;
         }
 
         return 0;
@@ -572,9 +584,16 @@ class Gateway extends Base\Gateway
 
     protected function getTopupWalletRedirectRequestArray($input)
     {
+        $key = $this->getBalanceKeyForCache($input['payment']);
+
+        // Wallet Balance is in paise
+        $walletBalance = $this->app['cache']->get($key, 0);
+
+        $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
+
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) ($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT       => (string) $topupAmount,
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
@@ -662,13 +681,17 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
+        // Regular error handling cannot be used here because freecharge sends
+        // an error code if the transaction does not exist
+        $this->handleServerTimeouts($response);
+
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content' => $content,
-                'gateway' => $this->gateway,
+                'content'    => $content,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -925,6 +948,11 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
+        else if($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        }
         else if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
@@ -943,6 +971,22 @@ class Gateway extends Base\Gateway
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
+        }
+    }
+
+    protected function getBalanceKeyForCache($payment)
+    {
+        return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function handleServerTimeouts($response)
+    {
+        // Freecharge servers timeout internally, It is not request timeout.
+        // Handle the timeout errors
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
         }
     }
 }

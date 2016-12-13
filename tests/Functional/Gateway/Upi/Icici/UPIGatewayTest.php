@@ -104,7 +104,8 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() {
+        $this->runRequestResponseFlow($data, function()
+        {
             $this->testPayment('failed');
         });
     }
@@ -136,6 +137,29 @@ EOT;
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
         });
+    }
+
+    public function testInvalidVPAError()
+    {
+        $vpas = [
+            'user@invalidbank',
+            'invalidvpa@icici'
+        ];
+
+        foreach ($vpas as $vpa)
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+
+            $payment['vpa'] = $vpa;
+
+            $data = $this->testData['testInvalidVPAError'];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        }
     }
 
     public function testSingleWordVPA()
@@ -199,13 +223,15 @@ EOT;
 
         $content = $server->getAsyncCallbackContent($upiEntity, $payment);
 
-        $this->runRequestResponseFlow($data, function () use ($content) {
+        $this->runRequestResponseFlow($data, function () use ($content)
+        {
             $this->makeS2SCallbackAndGetContent($content);
         });
 
         $data = $this->testData['testStatusRejectPayment'];
 
-        $this->runRequestResponseFlow($data, function () use ($payment) {
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
             $this->getPaymentStatus($payment['id']);
         });
     }
@@ -361,6 +387,8 @@ EOT;
 
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
+
+        unlink($data['upi_icici']['file']);
     }
 
     protected function generateRefundsExcelForIciciUpi($date = false)

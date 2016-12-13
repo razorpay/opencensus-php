@@ -114,7 +114,7 @@ class Repository extends Base\Repository
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
 
-        $count = $rule->payments->count();
+        $count = $rule->feesBreakup->count();
 
         if ($count === 0)
         {
@@ -134,7 +134,7 @@ class Repository extends Base\Repository
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
 
-        $count = $rule->payments->count();
+        $count = $rule->feesBreakup->count();
 
         if ($count === 0)
         {

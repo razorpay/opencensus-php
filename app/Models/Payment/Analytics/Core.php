@@ -18,9 +18,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($pa);
 
-        $parser->traceInconsistentData($pa);
+        $paArray = $pa->toArrayPublic();
 
-        $parser->traceUnrecognizedData($pa);
+        $parser->traceInconsistentData($paArray);
+
+        $parser->traceUnrecognizedData($paArray);
 
         return $pa;
     }

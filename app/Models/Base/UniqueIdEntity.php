@@ -300,8 +300,7 @@ class UniqueIdEntity extends Entity
 
     public static function nanotimeToBase62($nanotime)
     {
-        // Timestmap of 1st Jan 2014!!
-        // 1388534400
+        // Timestamp of 1st Jan 2014
         $ts1stJan2014 = 1388534400;
 
         // Subtract nanotime of 1st Jan 2014

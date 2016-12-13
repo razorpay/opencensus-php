@@ -117,6 +117,8 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
