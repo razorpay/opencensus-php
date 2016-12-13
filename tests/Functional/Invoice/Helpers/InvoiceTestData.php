@@ -547,6 +547,43 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithNullCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'currency'      => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency must not be empty.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 
     'testGetInvoice' => [
         'request' => [

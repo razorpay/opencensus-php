@@ -10,6 +10,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'captured',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
@@ -35,6 +36,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'captured',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
@@ -60,6 +62,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'captured',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
@@ -94,8 +97,9 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+            'two_fa_error' => true,
         ],
     ],
 
@@ -117,8 +121,9 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+            'two_fa_error' => true,
         ],
     ],
 
@@ -154,7 +159,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
         ],
     ],
@@ -223,7 +228,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
             'gateway_error_code'  => null
         ],
@@ -245,7 +250,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT
         ],
     ],
@@ -261,7 +266,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\PaymentVerificationException',
+            'class'               => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
@@ -345,7 +350,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE
         ],
     ],

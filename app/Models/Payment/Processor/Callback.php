@@ -169,7 +169,16 @@ trait Callback
 
         try
         {
-            $data = $this->callGatewayCallback($payment, $input);
+            $data = $this->callGatewayCallback($input);
+
+            if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
+            {
+                $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
+
+                $payment->setTwoFactorAuth($twoFactorAuth);
+
+                $this->repo->saveOrFail($payment);
+            }
         }
         catch (Exception\BaseException $e)
         {
@@ -179,7 +188,7 @@ trait Callback
         $this->updateAndNotifyPaymentAuthorized();
     }
 
-    protected function callGatewayCallback($payment, $input)
+    protected function callGatewayCallback($input)
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
@@ -279,13 +288,15 @@ trait Callback
 
         $code = $e->getError()->getInternalErrorCode();
 
+        $this->setTwoFactorAuthAfterCallbackException($e);
+
         if (Error\Error::hasAction($code) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {
-            $this->setPaymentError($e->getError());
+            $this->setPaymentError($e);
         }
 
         switch ($code)

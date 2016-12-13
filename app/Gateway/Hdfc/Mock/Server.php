@@ -39,10 +39,12 @@ class Server extends Base\Mock\Server
         '4012001037490014',
         '6073849700004947',
         '4111111111111111',
+        '4012001037411127',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
         '4012001037141112',
+        '4012001037411127',
     );
 
     protected $onlyPurchaseCardNetworks = array(
@@ -67,7 +69,6 @@ class Server extends Base\Mock\Server
         {
             $this->data['paymentid'] = $input['MD'];
             $ret = $this->getAuthResponse($input['MD']);
-            // sd($input);
             $ret['TermUrl'] = $input['TermUrl'];
             $ret['MD'] = $input['MD'];
 
@@ -158,10 +159,12 @@ class Server extends Base\Mock\Server
 
     public function authEnrolled()
     {
+        $cardNumber = $this->data['card'];
+
         $this->processInput('authEnrolled');
         $this->setAction('authorize');
 
-        $res = $this->getAuthResponse($this->data['paymentid']);
+        $res = $this->getAuthResponse($this->data['paymentid'], $cardNumber);
 
         $this->content($res, $this->action);
 
@@ -170,9 +173,10 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($xml);
     }
 
-    protected function getAuthResponse($txnId)
+    protected function getAuthResponse($txnId, $cardNumber = null)
     {
         $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($txnId);
+
         $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)

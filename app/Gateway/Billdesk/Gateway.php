@@ -103,6 +103,8 @@ class Gateway extends Base\Gateway
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)

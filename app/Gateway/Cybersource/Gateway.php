@@ -116,6 +116,8 @@ class Gateway extends Base\Gateway
         $response = $this->validateAuthReply($input, $gatewayPayment);
 
         $this->authorizeEnrolled($input, $response, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
