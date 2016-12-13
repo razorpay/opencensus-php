@@ -340,6 +340,7 @@ final class Route
         'auditlog_search'                         => ['get',      'orgs/{id}/auditlog/search',                      'AdminController@auditLogSearch'                                    ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'AdminController@postPasswordReset'                                 ],
+        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
     );
 
     public static $public = array(
@@ -556,6 +557,7 @@ final class Route
         'gateway_delete_absence',
         'gateway_fetch_absence',
         'order_refund_multiple_authorized',
+        'refund_create_gateway_record',
         'scorecard',
         'billdesk_reconcile_cancelled',
         'schedule_create',
@@ -773,6 +775,8 @@ final class Route
             'invoice_expire',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'refund_create_gateway_record',
+            'migrate_transactions',
             'merchant_migrate_features',
         ),
 

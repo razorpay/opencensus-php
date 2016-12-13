@@ -65,7 +65,9 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $this->verifyPaymentCallbackResponse($input);
+        $this->verifyPaymentCallbackResponse($input['gateway']);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -379,10 +381,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                throw new Exception\GatewayErrorException(
-                    ResponseCodeMap::getApiErrorCode($code),
-                    $responseArray['statuscode'],
-                    $responseArray['statusdescription']);
+                $this->throwPaymentFailureException($responseArray);
             }
         }
 
@@ -401,6 +400,8 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -649,22 +650,27 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
-
     protected function verifyPaymentCallbackResponse($input)
     {
-        $content = $input['gateway'];
-        $code = (int) $input['gateway']['statuscode'];
-
-        if ($content['statuscode'] !== Status::SUCCESS)
+        if ($input['statuscode'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($code);
-
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $input['gateway']['statuscode'],
-                $input['gateway']['statusmessage']);
+            $this->throwPaymentFailureException($input);
         }
+    }
+
+    protected function throwPaymentFailureException(array $response)
+    {
+        $code = $response['statuscode'];
+
+        $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+        $message = $response['statusmessage'] ?? $response['statusdescription'];
+
+        throw new Exception\GatewayErrorException(
+            $errorCode,
+            $code,
+            $message);
     }
 
     protected function getUrlDomain()

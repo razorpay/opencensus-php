@@ -400,20 +400,18 @@ class Processor
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
 
-        // Throw payment failed exception if async payment timeout (5mins)
-        // has been exceeded
-        if ($payment->justCreated() === false)
-        {
-            $e = new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
-
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TIMED_OUT);
-
-            throw $e;
-        }
-
         if ($payment->isCreated() === true)
         {
+            // Throw payment failed exception if async payment timeout (5mins)
+            // has been exceeded
+            if ($payment->justCreated() === false)
+            {
+                $this->timeoutPayment();
+
+                throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+            }
+
             return [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
@@ -427,10 +425,10 @@ class Processor
             return $this->processAuthorizeResponse($payment);
         }
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -449,6 +447,25 @@ class Processor
         $data = $this->payment->toArrayTraceRelevant();
 
         $this->trace->addRecord($level, $traceCode, $data);
+    }
+
+    public function timeoutPayment()
+    {
+        $payment = $this->payment;
+
+        $traceCode = TraceCode::PAYMENT_TIMED_OUT;
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
+
+        if ($payment->getInternalErrorCode() !== null)
+        {
+            $errorCode = $payment->getInternalErrorCode();
+
+            $traceCode = TraceCode::PAYMENT_STATUS_FAILED;
+        }
+
+        $exception = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
     }
 
     protected function updatePaymentFailed($exception, $traceCode)
@@ -510,13 +527,37 @@ class Processor
         $this->eventPaymentFailed();
     }
 
+    protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
+    {
+        $payment = $this->payment;
+
+        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
+        if ($payment->isNetbanking() === true)
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
+        }
+        else if (($exception instanceof Exception\GatewayErrorException) and
+                 ($exception->hasTwoFaError()))
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::FAILED;
+        }
+        else
+        {
+            $twoFactorAuth = Payment\TwoFactorAuth::UNKNOWN;
+        }
+
+        $payment->setTwoFactorAuth($twoFactorAuth);
+    }
+
     protected function eventPaymentFailed()
     {
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError($error)
+    protected function setPaymentError(Exception\BaseException $e)
     {
+        $error = $e->getError();
+
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
@@ -809,9 +850,11 @@ class Processor
         $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
-    protected function setPayment($payment)
+    public function setPayment($payment)
     {
         $this->payment = $payment;
+
+        return $this;
     }
 
     protected function tracePaymentNewRequest($input)
