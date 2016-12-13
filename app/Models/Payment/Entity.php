@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const AMOUNT_TRANSFERRED    = 'amount_transferred';
     const STATUS                = 'status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
@@ -120,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_TRANSFERRED,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -382,6 +384,11 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setTwoFactorAuth($status)
+    {
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
     }
 
     public function setRefundStatus($status)
@@ -986,6 +993,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFactorAuth()
+    {
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
+    }
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);

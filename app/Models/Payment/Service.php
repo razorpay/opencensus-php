@@ -730,6 +730,9 @@ class Service extends Base\Service
     public function timeoutOldPayments()
     {
         $count = 0;
+        $error = 0;
+
+        $startTime = microtime(true);
 
         // All Payments in created state will be marked as failed after 9 minutes
         $timestamp = time() - 9 * 60;
@@ -738,60 +741,32 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
-            $this->setErrorCodeAndDescription($payment);
-
-            $payment->setStatus(Payment\Status::FAILED);
-
-            $this->trace->info(
-                TraceCode::PAYMENT_STATUS_FAILED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'error_code'        => $payment->getErrorCode(),
-                    'error_description' => $payment->getErrorDescription(),
-                ]);
-
-            $payment->setVerifyBucket(0);
-
-            $saved = $this->repo->save($payment);
-
-            if ($saved === true)
+            try
             {
-                ++$count;
+                $this->getNewProcessor($payment->merchant)
+                     ->setPayment($payment)
+                     ->timeoutPayment();
 
-                $this->app['events']->fire('api.payment.failed', array($payment));
+                $count++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $error++;
             }
         }
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
-            ['count' => $count,
-             'timestamp' => time()]);
+            [
+                'count'      => $count,
+                'error'      => $error,
+                'timestamp'  => time(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
 
         return ['count' => $count];
-    }
-
-    protected function setErrorCodeAndDescription($payment)
-    {
-        $internalErrorCode = $payment->getInternalErrorCode();
-
-        $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
-
-        $desc = Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT;
-
-        $internalCode = null;
-
-        if ($internalErrorCode !== null)
-        {
-            $error = new Error\Error($internalErrorCode);
-
-            $code = $error->getPublicErrorCode();
-
-            $desc = $error->getDescription();
-
-            $internalCode = $error->getInternalErrorCode();
-        }
-
-        $payment->setError($code, $desc, $internalCode);
     }
 
     public function autoCaptureOldAuthorizedPayments()

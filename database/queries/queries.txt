@@ -1219,6 +1219,10 @@ ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
 
+ALTER TABLE payments
+    ADD COLUMN two_factor_auth VARCHAR(20) AFTER status;
+
+=======
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
     ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
@@ -1345,6 +1349,19 @@ UPDATE terminals
 ALTER TABLE merchants
     ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
 
+----
+# Following queries are executed for fixing the error_code for
+# BAD_REQUEST_PAYMENT_TIMED_OUT
+UPDATE payments
+    SET internal_error_code = error_code
+    WHERE internal_error_code = null
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+
+UPDATE payments
+    SET error_code = 'BAD_REQUEST_ERROR'
+    WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+----
 
 ----------------------------------- TODO ---------------------------------------
 

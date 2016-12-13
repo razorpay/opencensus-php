@@ -37,6 +37,9 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::STATUS);
 
+            $table->string(Payment::TWO_FACTOR_AUTH, 20)
+                  ->nullable();
+
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
@@ -181,6 +184,7 @@ class CreatePayments  extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::TWO_FACTOR_AUTH);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);

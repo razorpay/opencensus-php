@@ -84,9 +84,13 @@ class TraceCode
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
+    const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE             = 'CHECKOUT_PREFERENCES_RESPONSE';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const CREATE_GATEWAY_REFUND_RECORD_FAILED       = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
+    const GATEWAY_REFUND_RECORD_CREATED             = 'GATEWAY_REFUND_RECORD_CREATED';
+    const GATEWAY_REFUND_ABSENT                     = 'GATEWAY_REFUND_ABSENT';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST              = 'REFUND_FILE_GENERATE_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
@@ -261,6 +265,7 @@ class TraceCode
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_ALREADY_REFUNDED                  = 'GATEWAY_ALREADY_REFUNDED';
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
@@ -470,6 +475,7 @@ class TraceCode
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
+        self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 

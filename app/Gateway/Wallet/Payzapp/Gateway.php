@@ -124,6 +124,8 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'pickedup_data' => $serverData,
             ]);
+
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAuthContent($input)
@@ -277,7 +279,6 @@ class Gateway extends Base\Gateway
             {
                 return;
             }
-
         }
 
         //trace input
