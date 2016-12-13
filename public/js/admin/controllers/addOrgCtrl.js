@@ -33,6 +33,11 @@ app.controller('AddOrgCtrl', [
     }
 
     $scope.editOrg = function(data) {
+      if (data.body.allow_sign_up == false) {
+        data.body.allow_sign_up = "0";
+      } else {
+        data.body.allow_sign_up = "1";
+      }
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'org_edit',

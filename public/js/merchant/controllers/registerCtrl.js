@@ -136,6 +136,7 @@ app.controller('RegisterCtrl', [
 
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
+      $scope.organization = data;
       if (data.login_logo_url) {
         $scope.login_logo = data.login_logo_url
       }
