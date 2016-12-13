@@ -202,12 +202,14 @@ class Gateway extends Base\Gateway
         {
             $applicable = true;
 
+            $this->action = Action::VERIFY;
             list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
 
             if ($refunded === true)
             {
                 $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
 
+                $this->action = Action::REFUND;
                 $this->createGatewayPaymentEntity($refundContent);
 
                 $success = true;
