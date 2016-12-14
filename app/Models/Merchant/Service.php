@@ -44,6 +44,15 @@ class Service extends Base\Service
             unset($input['admin_id']);
         }
 
+        if (isset($input['org_id']))
+        {
+            $orgId = $input['org_id'];
+
+            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
+
+            unset($input['org_id']);
+        }
+
         $merchant = (new Merchant\Core)->create($input);
 
         // Once the merchant is created we must tag him to
@@ -57,12 +66,17 @@ class Service extends Base\Service
             {
                 // Attach merchant to admin
                 $this->attachAdmin($merchant->getKey(), $adminId);
-
-                // Update merchant org
-                $merchant->org()->associate($admin->org);
-
-                $this->repo->saveOrFail($merchant);
             }
+        }
+
+        if (isset($orgId) === true)
+        {
+            $org = $this->repo->org->findOrFailPublic($orgId);
+
+            // Update merchant org
+            $merchant->org()->associate($org);
+
+            $this->repo->saveOrFail($merchant);
         }
 
         return $merchant->toArrayPublic();
