@@ -22,12 +22,12 @@ class Service extends Base\Service
     public function getGroup(string $orgId, string $groupId)
     {
         $relations = [
-            'admin', 'merchants', 'subGroups',
+            'admins', 'merchants', 'subGroups',
             'parents', 'roles',
         ];
 
         $group = $this->repo->group->findByPublicIdAndOrgIdWithRelations(
-            $groupId, $orgId);
+            $groupId, $orgId, $relations);
 
         return $group->toArrayPublic();
     }
