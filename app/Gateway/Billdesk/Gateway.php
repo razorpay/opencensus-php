@@ -211,7 +211,7 @@ class Gateway extends Base\Gateway
         // kind of bug.
         //
 
-        if ($gatewayEntities !== 1)
+        if ($gatewayEntitiesCount !== 1)
         {
             $this->trace->error(
                 TraceCode::MULTIPLE_GATEWAY_ENTITIES_FOUND,
