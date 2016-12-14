@@ -23,6 +23,7 @@ use Queue;
 use Session;
 use Crypt;
 use Cache;
+use Uuid;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -2494,7 +2495,7 @@ class Service extends Base\Service
     {
         $formData = json_encode($input);
 
-        $id = str_random(14);
+        $id = Uuid::generate();
 
         $leadId = \DB::table('admin_leads')->insertGetId(
             [
