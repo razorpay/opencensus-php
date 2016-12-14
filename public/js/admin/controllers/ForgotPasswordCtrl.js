@@ -22,7 +22,7 @@ app.controller('ForgotPasswordCtrl', [
       });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email from Razorpay.', true);
+          $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email.', true);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (error, key) {
