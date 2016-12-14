@@ -9,7 +9,6 @@ app.controller('ConfirmCtrl', [
   function ($scope, $http, $state, $stateParams, alertsFactory, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
-    $scope.confirm_logo = '';
     $scope.success = false;
     var token = $stateParams.token;
     if (!token) {
