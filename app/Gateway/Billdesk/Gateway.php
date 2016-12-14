@@ -226,13 +226,21 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $gatewayEntities->first();
 
         $gatewayAction = $gatewayEntity->getAction();
-
         $gatewayReceived = $gatewayEntity->getReceived();
-
         $gatewayAuthStatus = $gatewayEntity->getAuthStatus();
+        $gatewayCreatedAt = $gatewayEntity->getCreatedAt();
+        $gatewayUpdatedAt = $gatewayEntity->getUpdatedAt();
+
+        //
+        // The received attribute should be true always.
+        // But in case of late authorizations, received attribute will be false.
+        // For this, we check that the created_at and updated_at are different,
+        // since on verify, we update some fields in Billdesk if received is false.
+        //
 
         if (($gatewayAction !== Action::AUTHORIZE) or
-            ($gatewayReceived !== true) or
+            (($gatewayReceived !== true) and
+             ($gatewayCreatedAt !== $gatewayUpdatedAt)) or
             ($gatewayAuthStatus !== AuthStatus::SUCCESS))
         {
             return false;
