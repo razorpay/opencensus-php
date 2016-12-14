@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Mockery;
 use Dashboard\Payment;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment as Payments;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -56,6 +57,17 @@ class CaptureTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['gateway_captured']);
+    }
+
+    public function testCaptureWithFeeBreakupException()
+    {
+        $this->payment = $this->defaultAuthPayment();
+
+        $this->ba->privateAuth();
+
+        Payments\Processor\Processor::$raiseFeeBreakupException = true;
+
+        $this->startTest();
     }
 
     public function testCaptureTwice()

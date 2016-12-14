@@ -962,6 +962,8 @@ class Processor
         return substr($contact, -10);
     }
 
+    public static $raiseFeeBreakupException = false;
+
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
         $this->trace->info(
@@ -971,6 +973,13 @@ class Processor
                 'payment_id'        => $txn->getEntityId(),
                 'fee_split'         => $feesSplit->toArrayPublic(),
             ]);
+
+        // To test exception is handled correctly
+        if (self::$raiseFeeBreakupException === true)
+        {
+            throw new Exception\LogicException(
+                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED);
+        }
 
         try
         {
