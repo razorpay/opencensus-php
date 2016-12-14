@@ -3,19 +3,22 @@
 namespace RZP\Models\Admin\Admin\Token;
 
 use App;
+use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const ID         = 'id';
     const ADMIN_ID   = 'admin_id';
     const TOKEN      = 'token';
     const EXPIRES_AT = 'expires_at';
 
-    protected static $sign = 'token';
-
     protected $entity = 'admin_token';
+
+    public $incrementing = true;
 
     protected $fillable = [
         self::ADMIN_ID,
@@ -24,6 +27,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
         self::ADMIN_ID,
         self::TOKEN,
         self::EXPIRES_AT,
@@ -32,6 +36,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
         self::ADMIN_ID,
         self::TOKEN,
         self::EXPIRES_AT
@@ -47,6 +52,11 @@ class Entity extends Base\PublicEntity
             $this->getAttribute(self::ADMIN_ID));
     }
 
+    public function setExpiresAt(int $timestamp)
+    {
+        $this->setAttribute(self::EXPIRES_AT, $timestamp);
+    }
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -57,8 +67,28 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADMIN_ID);
     }
 
+    public function getExpiresAt()
+    {
+        return $this->getAttribute(self::EXPIRES_AT);
+    }
+
     public function getToken()
     {
         return $this->getAttribute(self::TOKEN);
+    }
+
+    /*
+     * Returns an unexpired token
+     */
+    public function getValidToken()
+    {
+        $now = Carbon::now()->timestamp;
+
+        if ($now >= $this->getExpiresAt())
+        {
+            return null;
+        }
+
+        return $this->getToken();
     }
 }
