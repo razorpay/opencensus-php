@@ -49,8 +49,9 @@ class Gateway extends Base\Gateway
     ];
 
     /**
-     * @param  array  $input
-     * @return void
+     * @param  array $input
+     *
+     * @return array
      */
     public function authorize(array $input)
     {
@@ -79,7 +80,11 @@ class Gateway extends Base\Gateway
      * We recieve callback from atom after bank net-banking
      * transaction is complete
      *
-     * @param  array    $input
+     * @param  array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
@@ -95,7 +100,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $bankRefNo = $input['gateway']['BankRefNo'];
@@ -104,8 +109,9 @@ class Gateway extends Base\Gateway
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
 
-        $payment->fill($attrs);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -116,6 +122,8 @@ class Gateway extends Base\Gateway
                     '',
                     $message);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)

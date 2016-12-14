@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Cybersource;
 
+use RZP\Exception;
+
 class CardType
 {
     const VISA     = '001';
@@ -21,4 +23,18 @@ class CardType
     const MAES_INT = '042';
 
     const ELO      = '054';
+
+    public static function get($network)
+    {
+        if (defined(__CLASS__ . '::' . $network))
+        {
+            return constant(__CLASS__ . '::' . $network);
+        }
+
+        // @codeCoverageIgnoreStart
+        // Adding this as a defensive code, code should never reach here.
+        throw new Exception\LogicException(
+            'Unsupported card network');
+        // @codeCoverageIgnoreEnd
+    }
 }

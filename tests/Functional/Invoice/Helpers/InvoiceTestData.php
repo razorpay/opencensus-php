@@ -81,6 +81,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => null,
                 'type' => 'ecod',
                 'user_id'  => 'abcdefghij1234',
             ],
@@ -104,6 +105,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => null,
                 'view_less' => true,
                 'amount' => 100000,
                 //'user_id'  => 'abcdefghij1234',
@@ -125,6 +127,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => 1480666664,
             ],
         ],
         'response' => [
@@ -146,6 +149,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => 1480666664,
                 'view_less' => true,
                 'amount' => 100000
             ],
@@ -533,6 +537,43 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Provide either line_items or amount, description.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithNullCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'currency'      => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency must not be empty.',
                 ],
             ],
             'status_code' => 400,

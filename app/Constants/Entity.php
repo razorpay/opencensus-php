@@ -49,10 +49,13 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const MERCHANT_DETAIL       = 'merchant_detail';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const OFFER                 = 'offer';
+    const COUPON                = 'coupon';
 
     //
     // Gateway entities
@@ -105,6 +108,8 @@ class Entity
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::OFFER                 => \RZP\Models\Offer::class,
+        self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
@@ -129,6 +134,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
     protected static $repository = array(

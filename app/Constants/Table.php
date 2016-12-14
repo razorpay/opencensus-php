@@ -36,6 +36,10 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_DETAIL       = 'merchant_details';
+    const OFFER                 = 'offers';
+    const COUPON                = 'coupons';
+    const MERCHANT_OFFER        = 'merchant_offer';
 
     // Gateway related
     const EBS                   = 'ebs';

@@ -15,11 +15,13 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Schedule;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -722,4 +724,123 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getOffers(string $mid)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $offers = (new Offer\Core)->fetchOffers($merchant);
+
+        return $offers->toArrayAdmin();
+    }
+
+    public function getMerchantFeatures()
+    {
+        $merchant = $this->merchant;
+
+        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+
+        return $data;
+    }
+
+    public function addOrRemoveMerchantFeatures($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_UPDATE,
+            $input);
+
+        $merchant = $this->merchant;
+
+        $merchant->validateInput('feature', $input);
+
+        $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
+
+        $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
+
+        $this->addFeatures($featuresToAdd);
+
+        $this->removeFeatures($featuresToRemove);
+
+        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+
+        return $data;
+    }
+
+    /**
+     * Gets the feature names to be added. A feature needs to be added to merchant
+     * only if the value in input is equal to the default value of the feature
+     */
+    private function getFeatureNamesToAdd($features)
+    {
+        $featureNames = [];
+
+        foreach ($features as $name => $value)
+        {
+            $value = (bool) $value;
+
+            $defaultValue = Feature\Constants::getFeatureValue(
+                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+
+            if ($value === $defaultValue)
+            {
+                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            }
+        }
+
+        return $featureNames;
+    }
+
+    /**
+     * Gets the feature names to be removed. A feature needs to be removed from a
+     * merchant only if the value in input is opposite of the default value of the feature
+     */
+    private function getFeatureNamesToRemove($features)
+    {
+        $featureNames = [];
+
+        foreach ($features as $name => $value)
+        {
+            $value = (bool) $value;
+
+            $defaultValue = Feature\Constants::getFeatureValue(
+                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+
+            if ($value !== $defaultValue)
+            {
+                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            }
+        }
+
+        return $featureNames;
+    }
+
+    private function addFeatures($featureNames)
+    {
+        $merchant = $this->merchant;
+
+        if (count($featureNames) > 0)
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_ID => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE => 'merchant',
+                'names' => $featureNames
+            ];
+
+            (new Feature\Service)->addFeatures($featureParams);
+        }
+    }
+
+    private function removeFeatures($featureNames)
+    {
+        $merchant = $this->merchant;
+
+        foreach ($featureNames as $featureName)
+        {
+            $feature = $this->repo->feature->findByEntityIdAndName($merchant->getId(),
+                            $featureName);
+            if ($feature !== null)
+            {
+                $this->repo->feature->delete($feature);
+            }
+        }
+    }
 }

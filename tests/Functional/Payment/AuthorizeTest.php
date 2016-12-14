@@ -380,6 +380,8 @@ class AuthorizeTest extends TestCase
 
     public function testMobikwikPaymentViaWalletS2S()
     {
+        $this->marktestSkipped('Disabling Mobikwik');
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2swallet']);
