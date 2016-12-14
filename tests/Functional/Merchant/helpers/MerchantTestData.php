@@ -1140,5 +1140,79 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
         ],
+    ],
+
+    'testGetMerchantFeatures' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature' => "flashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "Flash Checkout"
+                    ],
+                    [
+                        'feature' => "noflashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "No Flash Checkout"
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantFeatures' => [
+        'request' => [
+            'content' => [
+                "features" => [
+                    "flashcheckout" => "0",
+                ],
+                "optout_reason" => "some reason"
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature' => "flashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "Flash Checkout"
+                    ]
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantUnEditableFeatures' => [
+        'request' => [
+            'content' => [
+                "features" => [
+                    "dummy" => "1"
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
     ]
 ];

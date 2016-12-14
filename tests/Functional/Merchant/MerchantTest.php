@@ -825,4 +825,25 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testGetMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantUnEditableFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 }
