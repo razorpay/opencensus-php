@@ -28,7 +28,6 @@ class CreateAdminTokensTable extends Migration
 
             $table->integer(AdminToken::CREATED_AT);
             $table->integer(AdminToken::UPDATED_AT);
-            $table->integer(AdminToken::DELETED_AT)->nullable();
             $table->integer(AdminToken::EXPIRES_AT)->nullable();
 
             $table->foreign(AdminToken::ADMIN_ID)

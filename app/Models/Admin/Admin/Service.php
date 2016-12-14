@@ -461,7 +461,7 @@ class Service extends Base\Service
     {
         $admin = $this->app['basicauth']->getAdmin();
 
-        (new Token\Core)->deleteTokensForAdmin($admin);
+        $this->repo->admin_token->deleteTokensForAdmin($admin->getId());
 
         return ['success' => true];
     }

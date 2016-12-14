@@ -4,7 +4,6 @@ namespace RZP\Models\Admin\Admin\Token;
 
 use App;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
@@ -12,13 +11,10 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
-
     const ID         = 'id';
     const ADMIN_ID   = 'admin_id';
     const TOKEN      = 'token';
     const EXPIRES_AT = 'expires_at';
-    const DELETED_AT = 'deleted_at';
 
     protected $entity = 'admin_token';
 
@@ -69,11 +65,6 @@ class Entity extends Base\PublicEntity
     public function getAdminId()
     {
         return $this->getAttribute(self::ADMIN_ID);
-    }
-
-    public function isDeleted()
-    {
-        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 
     public function getExpiresAt()

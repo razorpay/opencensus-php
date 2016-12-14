@@ -563,17 +563,5 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
-
-        foreach ($adminTokens as $deletedToken)
-        {
-            // Doing a direct DB query because getEntityById does not return
-            // tokens
-            $deletedToken = (array) DB::table('admin_tokens')->where(
-                'id', $deletedToken->getId())->get()[0];
-
-            $this->assertTrue($deletedToken['expires_at'] < $now->addYear(1)->timestamp);
-
-            $this->assertNotNull($deletedToken['deleted_at']);
-        }
      }
 }
