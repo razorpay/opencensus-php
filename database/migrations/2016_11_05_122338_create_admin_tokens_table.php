@@ -4,6 +4,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Admin\Admin\Token\Entity as AdminToken;
+use RZP\Models\Admin\Admin\Entity as Admin;
 
 class CreateAdminTokensTable extends Migration
 {
@@ -16,19 +18,21 @@ class CreateAdminTokensTable extends Migration
     {
         Schema::create(Table::ADMIN_TOKEN, function (Blueprint $table)
         {
-            $table->increments('id');
+            $table->engine = 'InnoDB';
 
-            $table->char('admin_id', 14);
+            $table->increments(AdminToken::ID);
 
-            $table->string('token', 250)->unique();
+            $table->char(AdminToken::ADMIN_ID, 14);
 
-            $table->integer('created_at');
-            $table->integer('updated_at');
-            $table->integer('expires_at')->nullable();
+            $table->string(AdminToken::TOKEN, 250)->unique();
 
-            $table->foreign('admin_id')
-                  ->references('id')
-                  ->on('admins');
+            $table->integer(AdminToken::CREATED_AT);
+            $table->integer(AdminToken::UPDATED_AT);
+            $table->integer(AdminToken::EXPIRES_AT)->nullable();
+
+            $table->foreign(AdminToken::ADMIN_ID)
+                  ->references(Admin::ID)
+                  ->on(Table::ADMIN);
         });
     }
 

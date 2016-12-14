@@ -126,6 +126,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function logoutAdmin()
+    {
+        $data = (new Admin\Admin\Service)->logout();
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------

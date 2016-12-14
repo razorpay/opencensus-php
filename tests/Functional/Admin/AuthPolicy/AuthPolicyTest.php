@@ -26,7 +26,9 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->appAuth('rzp_live');
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('token', $result);
     }
 
     public function testWeakPassword()

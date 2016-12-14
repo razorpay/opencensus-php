@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Admin;
 
 use Carbon\Carbon;
 use Hash;
+use DB;
+use Str;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\HeimdallTrait;
@@ -409,6 +411,7 @@ class AdminTest extends TestCase
 
     public function testSuperAdmin()
     {
+        // By default - superadmin's creds are used for admin auth
         $this->ba->adminAuth();
 
         $admin = $this->ba->getAdmin();
@@ -517,4 +520,48 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testAdminLogout()
+    {
+        $now = Carbon::now();
+
+        $admin = $this->fixtures->create(
+            'admin',
+            [
+                'name'     => 'test admin',
+                'org_id'   => Org::RZP_ORG,
+                'username' => 'ram@razorpay.com',
+                'password' => 'Heimdall!432',
+            ]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        // Create some admin tokens
+        $adminTokens = $this->fixtures->times(3)->create(
+            'admin_token',
+            [
+                'admin_id'   => $admin->getId(),
+                'created_at' => $now->timestamp,
+                'expires_at' => $now->addYear(1)->timestamp,
+            ]);
+
+        $adminToken = $adminTokens[0];
+
+        $token = $adminToken->getValidToken();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        // Replace auth with this route
+        $this->ba->adminAuth('test', $token);
+
+        $admin = $this->ba->getAdmin()->toArray();
+
+        $this->assertEquals($admin['name'], 'test admin');
+
+        $this->startTest();
+     }
 }
