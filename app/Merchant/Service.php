@@ -11,6 +11,7 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Admin;
 
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
@@ -296,6 +297,14 @@ class Service extends Base\Service
         {
             $merchantApiData['admin_id'] = $lead->admin_id;
         }
+
+        // Fetch org by hostname and set the orgId in the input
+        // so that the merchant can be tagged to the Org
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $merchantApiData['org_id'] = $org['id'];
 
         // This is internal auth as of now
         // We need to shift this to some other auth
