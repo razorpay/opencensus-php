@@ -136,6 +136,8 @@ class AnalyticsTest extends TestCase
 
     public function testHttpRequestDataForOtpBasedPayment()
     {
+        $this->markTestSkipped('Disabling Mobikwik');
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
