@@ -972,22 +972,30 @@ class Processor
                 'fee_split'         => $feesSplit->toArrayPublic(),
             ]);
 
-        $this->repo->transaction(function() use ($txn, $feesSplit)
+        try
         {
-            foreach ($feesSplit as $feeSplit)
+            $this->repo->transaction(function() use ($txn, $feesSplit)
             {
-                $feeSplit->transaction()->associate($txn);
+                foreach ($feesSplit as $feeSplit)
+                {
+                    $feeSplit->transaction()->associate($txn);
 
-                $this->repo->saveOrFail($feeSplit);
-            }
+                    $this->repo->saveOrFail($feeSplit);
+                }
 
-            $this->trace->info(
-                TraceCode::FEES_BREAKUP_CREATED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                ]);
-        });
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_CREATED,
+                    [
+                        'transaction_id'    => $txn->getId(),
+                        'payment_id'        => $txn->getEntityId(),
+                        'fee_split'         => $feesSplit->toArrayPublic(),
+                    ]);
+            });
+        }
+        catch (Exception $ex)
+        {
+            throw new Exception\LogicException(
+                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED);
+        }
     }
 }

@@ -284,7 +284,8 @@ trait Capture
             // entity will have corrupted data
             //
 
-            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+            if (($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) or
+                ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED))
             {
                 // If pricing rule is not found, we should not mark capture as failed ever.
                 throw $ex;
