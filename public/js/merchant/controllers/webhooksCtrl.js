@@ -159,6 +159,7 @@ app.controller('WebhooksCtrl', [
       events: {
         'payment.authorized': false,
         'payment.failed': false,
+        'order.paid': false,
         'invoice.paid': false
       }
     };
