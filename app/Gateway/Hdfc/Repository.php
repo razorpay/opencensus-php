@@ -380,13 +380,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByPaymentId($id)
-    {
-        return $this->newQuery()
-                    ->where('payment_id', '=', $id)
-                    ->get();
-    }
-
     public function findByRefundIdOrderedById($refundId, $direction = 'desc')
     {
         return $this->newQuery()
