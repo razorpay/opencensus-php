@@ -69,8 +69,6 @@ class MinAmount
     */
     public static function getMinAmount(array $filterParams)
     {
-        $minAmount = 0;
-
         // unwrap filterParams
         $category = $filterParams['category'];
 
@@ -96,13 +94,16 @@ class MinAmount
             $minAmount = self::networkMinAmount($category, $network);
         }
 
+        if (is_null($minAmount) === true)
+        {
+            $minAmount = 0;
+        }
+
         return $minAmount;
     }
 
     protected static function netbankingMinAmount(string $category, string $gateway)
     {
-        $minAmount = 0;
-
         $netbankingMap = constant('self::MIN_AMOUNT')['netbanking'];
 
         // check gateway exists in top_six
@@ -130,8 +131,6 @@ class MinAmount
 
     protected static function networkMinAmount(string $category, string $network)
     {
-        $minAmount = 0;
-
         $networkMap = constant('self::MIN_AMOUNT')['card'];
 
         if (array_key_exists($network, $networkMap) === true)
@@ -151,8 +150,6 @@ class MinAmount
 
     protected static function minAmountFromArray(array $amountMap, string $tag, string $category)
     {
-        $minAmount = 0;
-
         $amountArray = $amountMap[$tag];
 
         if (array_key_exists($category, $amountArray) === true)
