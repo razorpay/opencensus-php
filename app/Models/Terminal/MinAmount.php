@@ -67,7 +67,7 @@ class MinAmount
     * @param $filterParams array
     * @return $minAmount from constant(MIN_AMOUNT)
     */
-    public static function getMinAmount($filterParams)
+    public static function getMinAmount(array $filterParams)
     {
         $minAmount = 0;
 
@@ -99,11 +99,9 @@ class MinAmount
         return $minAmount;
     }
 
-    protected static function netbankingMinAmount($category, $gateway)
+    protected static function netbankingMinAmount(string $category, string $gateway)
     {
         $minAmount = 0;
-
-        $gatewayTag = null;
 
         $netbankingMap = constant('self::MIN_AMOUNT')['netbanking'];
 
@@ -130,11 +128,9 @@ class MinAmount
         return $minAmount;
     }
 
-    protected static function networkMinAmount($category, $network)
+    protected static function networkMinAmount(string $category, string $network)
     {
         $minAmount = 0;
-
-        $networkTag = null;
 
         $networkMap = constant('self::MIN_AMOUNT')['card'];
 
@@ -153,7 +149,7 @@ class MinAmount
         return $minAmount;
     }
 
-    protected static function minAmountFromArray($amountMap, $tag, $category)
+    protected static function minAmountFromArray(array $amountMap, string $tag, string $category)
     {
         $minAmount = 0;
 

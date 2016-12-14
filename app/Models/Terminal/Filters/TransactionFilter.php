@@ -235,7 +235,7 @@ class TransactionFilter extends Terminal\Filter
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
     }
 
-    public function amountFilter($terminal, $input)
+    public function amountFilter(Terminal\Entity $terminal, array $input)
     {
         $filterParams['category'] = $terminal->getNetworkCategory();
 
