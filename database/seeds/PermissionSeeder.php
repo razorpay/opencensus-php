@@ -6,6 +6,229 @@ use RZP\Constants\Table;
 class PermissionSeeder extends Seeder
 {
 
+    protected static $permissions = [
+        'merchant' => [
+            'view_all_merchants'    => 'View all merchants in merchant lists',
+            'view_merchant'         => 'View a particular merchant details',
+        ],
+
+        'merchant_detail' => [
+            'view_merchant_balance' => 'View merchant balance in merchant details',
+            'view_merchant_features' => '',
+            'view_merchant_banks' => '',
+            'view_networks' => '',
+            'view_merchant_bank_accounts' => '',
+            'view_merchant_login' => '',
+            'view_activity' => '',
+            'view_pricing_list' => '',
+            'view_merchant_pricing_rules' => '',
+            'view_merchant_hdfc_excel' => '',
+            'view_beneficiary_file' => '',
+            'view_merchant_screenshot' => '',
+            'view_all_merchant_aggregations' => '',
+            'view_merchant_aggregations' => '',
+            'view_merchant_tags' => '',
+            'create_pricing_plan' => '',
+            'set_pricing_rules' => '',
+            'delete_pricing_plan_rules' => '',
+            'delete_emi_plan' => '',
+            'create_emi_plan' => '',
+            'create_merchant_lock' => '',
+            'create_merchant_unlock' => '',
+            'edit_merchant' => '',
+            'edit_merchant_tags' => '',
+            'edit_merchant_features' => '',
+            'edit_merchant_comments' => '',
+            'edit_merchant_banks' => '',
+            'edit_iin_rule' => '',
+            'create_merchant_adjustments' => '',
+            'edit_activate_merchant' => '',
+            'edit_merchant_enable_live' => '',
+            'edit_merchant_disable_live' => '',
+            'edit_merchant_archive' => '',
+            'edit_merchant_unarchive' => '',
+            'edit_merchant_methods' => '',
+            'edit_merchant_international' => '',
+            'edit_merchant_terminal' => '',
+            'edit_merchant_pricing' => '',
+            'view_merchant_company_info' => '',
+            'view_merchant_credits_log' => '',
+            'add_merchant_credits' => '',
+            'delete_merchant_credits' => '',
+            'edit_merchant_screenshot' => '',
+            'view_payment_verify' => '',
+            'edit_verify_payments' => '',
+            'edit_authorized_failed_payment' => '',
+            'view_refund_payments' => '',
+            'edit_authorized_refund_payment' => '',
+            'edit_payment_refund' => '',
+            'edit_payment_capture' => '',
+            'edit_merchant_confirm' => '',
+            'create_beneficiary_file' => '',
+            'create_netbanking_refund' => '',
+            'create_settlement_initiate' => '',
+            'delete_terminal' => '',
+            'edit_terminal' => '',
+            'create_settlements_reconcile' => '',
+            'create_reconciliate' => '',
+            'view_activation_form' => '',
+            'edit_merchant_confirm' => '',
+            'edit_merchant_lock_activation' => '',
+            'edit_merchant_unlock_activation' => '',
+            'edit_merchant_hold_funds' => '',
+            'edit_merchant_release_funds' => '',
+            'edit_merchant_enable_receipt' => '',
+            'edit_merchant_disable_receipt' => '',
+            'assign_merchant_terminal' => '',
+            'assign_merchant_banks' => '',
+            'add_merchant_adjustment' => '',
+            'edit_merchant_email' => '',
+            'merchant_autofill_form' => '',
+            'edit_merchant_mark_referred' => '',
+            'view_as_entity' => '',
+            'view_merchant_referrer' => '',
+            'view_merchant_balance_test' => '',
+            'view_merchant_balance_live' => '',
+            'add_reconciliation_file' => '',
+            'add_settlement_reconciliation' => '',
+            'send_newsletter' => '',
+            'trigger_dummy_error' => '',
+            'make_api_call' => '',
+            'schedule_create' => '',
+            'schedule_fetch' => '',
+            'schedule_fetch_multiple' => '',
+            'schedule_delete' => '',
+            'schedule_update' => '',
+            'schedule_assign' => '',
+            'schedule_migration' => '',
+            'view_actions' => '',
+            'view_merchant_stats' => '',
+        ],
+
+        'entity' => [
+            'view_all_entity' => 'View all entities data'
+        ],
+
+        // UAM
+
+        // ORG
+        'org' => [
+            'view_all_org'  => 'View all organizations',
+            'view_org'      => 'View organization detail',
+            'create_org'    => 'Create organization',
+            'edit_org'      => 'Edit organization',
+            'delete_org'    => 'Delete organization',
+        ],
+
+        // Roles
+        'role' => [
+            'view_all_role' => 'View all roles',
+            'view_role'     => 'View role detail',
+            'create_role'   => 'Create role',
+            'edit_role'     => 'Edit role',
+            'delete_role'   => 'Delete role',
+        ],
+
+        // Groups
+        'group' => [
+            'view_all_group'    => 'View all groups',
+            'view_group'        => 'View group detail',
+            'create_group'      => 'Create group',
+            'edit_group'        => 'Edit group',
+            'delete_group'      => 'Delete group',
+            'group_get_allowed_groups' => 'Get allowed groups',
+        ],
+
+        // Admin
+        'admin' => [
+            'view_all_admin'    => 'View all admins',
+            'view_admin'        => 'View admin detail',
+            'create_admin'      => 'Create admin',
+            'edit_admin'        => 'Edit admin',
+            'delete_admin'      => 'Delete admin',
+        ],
+
+        // Permissions
+        'permission' => [
+            'view_all_permission' => 'View all permissions',
+        ],
+
+        'auditlog' => [
+            'view_auditlog'     => 'View auditlog for activities',
+        ],
+    ];
+
+    // trimmed down which an HDFC manager would have
+    // This array must be a **strict** subset of the one above
+    protected static $trimmedDownPermissions = [
+        'merchant' => [
+            'view_all_merchants'    => 'View all merchants in merchant lists',
+            'view_merchant'         => 'View a particular merchant details',
+        ],
+
+        'merchant_detail' => [
+            'create_merchant_lock' => '',
+            'create_merchant_unlock' => '',
+            'edit_merchant' => '',
+            'edit_activate_merchant' => '',
+            'edit_merchant_enable_live' => '',
+            'edit_merchant_disable_live' => '',
+            'edit_merchant_archive' => '',
+            'edit_merchant_unarchive' => '',
+
+            'view_activation_form' => '',
+            'edit_merchant_confirm' => '',
+            'edit_merchant_lock_activation' => '',
+            'edit_merchant_unlock_activation' => '',
+            'edit_merchant_hold_funds' => '',
+            'edit_merchant_release_funds' => '',
+
+            'view_merchant_balance_test' => '',
+            'view_merchant_balance_live' => '',
+        ],
+
+        // UAM
+
+        // Roles
+        'role' => [
+            'view_all_role' => 'View all roles',
+            'view_role'     => 'View role detail',
+            'create_role'   => 'Create role',
+            'edit_role'     => 'Edit role',
+            'delete_role'   => 'Delete role',
+        ],
+
+        // Groups
+        'group' => [
+            'view_all_group'    => 'View all groups',
+            'view_group'        => 'View group detail',
+            'create_group'      => 'Create group',
+            'edit_group'        => 'Edit group',
+            'delete_group'      => 'Delete group',
+            'group_get_allowed_groups' => 'Get allowed groups',
+        ],
+
+        // Admin
+        'admin' => [
+            'view_all_admin'    => 'View all admins',
+            'view_admin'        => 'View admin detail',
+            'create_admin'      => 'Create admin',
+            'edit_admin'        => 'Edit admin',
+            'delete_admin'      => 'Delete admin',
+        ],
+
+        // Permissions
+        'permission' => [
+            'view_all_permission' => 'View all permissions',
+        ],
+
+        'auditlog' => [
+            'view_auditlog'     => 'View auditlog for activities',
+        ],
+    ];
+
+    protected static $permissionIds;
+
     /**
      * Run the database seeds.
      *
@@ -22,237 +245,30 @@ class PermissionSeeder extends Seeder
 
     private function seed()
     {
-        $permissions = [
-            'merchant' => [
-                'view_all_merchants'    => 'View all merchants in merchant lists',
-                'view_merchant'         => 'View a particular merchant details',
-            ],
+        $permissions = self::$permissions;
 
-            'merchant_detail' => [
-                'view_merchant_balance' => 'View merchant balance in merchant details',
-                'view_merchant_features' => '',
-                'view_merchant_banks' => '',
-                'view_networks' => '',
-                'view_merchant_bank_accounts' => '',
-                'view_merchant_login' => '',
-                'view_activity' => '',
-                'view_pricing_list' => '',
-                'view_merchant_pricing_rules' => '',
-                'view_merchant_hdfc_excel' => '',
-                'view_beneficiary_file' => '',
-                'view_merchant_screenshot' => '',
-                'view_all_merchant_aggregations' => '',
-                'view_merchant_aggregations' => '',
-                'view_merchant_tags' => '',
-                'create_pricing_plan' => '',
-                'set_pricing_rules' => '',
-                'delete_pricing_plan_rules' => '',
-                'delete_emi_plan' => '',
-                'create_emi_plan' => '',
-                'create_merchant_lock' => '',
-                'create_merchant_unlock' => '',
-                'edit_merchant' => '',
-                'edit_merchant_tags' => '',
-                'edit_merchant_features' => '',
-                'edit_merchant_comments' => '',
-                'edit_merchant_banks' => '',
-                'edit_iin_rule' => '',
-                'create_merchant_adjustments' => '',
-                'edit_activate_merchant' => '',
-                'edit_merchant_enable_live' => '',
-                'edit_merchant_disable_live' => '',
-                'edit_merchant_archive' => '',
-                'edit_merchant_unarchive' => '',
-                'edit_merchant_methods' => '',
-                'edit_merchant_international' => '',
-                'edit_merchant_terminal' => '',
-                'edit_merchant_pricing' => '',
-                'view_merchant_company_info' => '',
-                'view_merchant_credits_log' => '',
-                'add_merchant_credits' => '',
-                'delete_merchant_credits' => '',
-                'edit_merchant_screenshot' => '',
-                'view_payment_verify' => '',
-                'edit_verify_payments' => '',
-                'edit_authorized_failed_payment' => '',
-                'view_refund_payments' => '',
-                'edit_authorized_refund_payment' => '',
-                'edit_payment_refund' => '',
-                'edit_payment_capture' => '',
-                'edit_merchant_confirm' => '',
-                'create_beneficiary_file' => '',
-                'create_netbanking_refund' => '',
-                'create_settlement_initiate' => '',
-                'delete_terminal' => '',
-                'edit_terminal' => '',
-                'create_settlements_reconcile' => '',
-                'create_reconciliate' => '',
-                'view_activation_form' => '',
-                'edit_merchant_confirm' => '',
-                'edit_merchant_lock_activation' => '',
-                'edit_merchant_unlock_activation' => '',
-                'edit_merchant_hold_funds' => '',
-                'edit_merchant_release_funds' => '',
-                'edit_merchant_enable_receipt' => '',
-                'edit_merchant_disable_receipt' => '',
-                'assign_merchant_terminal' => '',
-                'assign_merchant_banks' => '',
-                'add_merchant_adjustment' => '',
-                'edit_merchant_email' => '',
-                'merchant_autofill_form' => '',
-                'edit_merchant_mark_referred' => '',
-                'view_as_entity' => '',
-                'view_merchant_referrer' => '',
-                'view_merchant_balance_test' => '',
-                'view_merchant_balance_live' => '',
-                'add_reconciliation_file' => '',
-                'add_settlement_reconciliation' => '',
-                'send_newsletter' => '',
-                'trigger_dummy_error' => '',
-                'make_api_call' => '',
-                'schedule_create' => '',
-                'schedule_fetch' => '',
-                'schedule_fetch_multiple' => '',
-                'schedule_delete' => '',
-                'schedule_update' => '',
-                'schedule_assign' => '',
-                'schedule_migration' => '',
-                'view_actions' => '',
-                'view_merchant_stats' => '',
-            ],
-
-            'entity' => [
-                'view_all_entity' => 'View all entities data'
-            ],
-
-            // UAM
-
-            // ORG
-            'org' => [
-                'view_all_org'  => 'View all organizations',
-                'view_org'      => 'View organization detail',
-                'create_org'    => 'Create organization',
-                'edit_org'      => 'Edit organization',
-                'delete_org'    => 'Delete organization',
-            ],
-
-            // Roles
-            'role' => [
-                'view_all_role' => 'View all roles',
-                'view_role'     => 'View role detail',
-                'create_role'   => 'Create role',
-                'edit_role'     => 'Edit role',
-                'delete_role'   => 'Delete role',
-            ],
-
-            // Groups
-            'group' => [
-                'view_all_group'    => 'View all groups',
-                'view_group'        => 'View group detail',
-                'create_group'      => 'Create group',
-                'edit_group'        => 'Edit group',
-                'delete_group'      => 'Delete group',
-                'group_get_allowed_groups' => 'Get allowed groups',
-            ],
-
-            // Admin
-            'admin' => [
-                'view_all_admin'    => 'View all admins',
-                'view_admin'        => 'View admin detail',
-                'create_admin'      => 'Create admin',
-                'edit_admin'        => 'Edit admin',
-                'delete_admin'      => 'Delete admin',
-                'logout_admin'      => 'Logout Admin',
-            ],
-
-            // Permissions
-            'permission' => [
-                'view_all_permission' => 'View all permissions',
-            ],
-
-            'auditlog' => [
-                'view_auditlog'     => 'View auditlog for activities',
-            ],
-        ];
-
-        // trimmed down which an HDFC manager would have
-        // This array must be a **strict** subset of the one above
-        $trimmedDownPermissions = [
-            'merchant' => [
-                'view_all_merchants'    => 'View all merchants in merchant lists',
-                'view_merchant'         => 'View a particular merchant details',
-            ],
-
-            'merchant_detail' => [
-                'create_merchant_lock' => '',
-                'create_merchant_unlock' => '',
-                'edit_merchant' => '',
-                'edit_activate_merchant' => '',
-                'edit_merchant_enable_live' => '',
-                'edit_merchant_disable_live' => '',
-                'edit_merchant_archive' => '',
-                'edit_merchant_unarchive' => '',
-
-                'view_activation_form' => '',
-                'edit_merchant_confirm' => '',
-                'edit_merchant_lock_activation' => '',
-                'edit_merchant_unlock_activation' => '',
-                'edit_merchant_hold_funds' => '',
-                'edit_merchant_release_funds' => '',
-
-                'view_merchant_balance_test' => '',
-                'view_merchant_balance_live' => '',
-            ],
-
-            // UAM
-
-            // Roles
-            'role' => [
-                'view_all_role' => 'View all roles',
-                'view_role'     => 'View role detail',
-                'create_role'   => 'Create role',
-                'edit_role'     => 'Edit role',
-                'delete_role'   => 'Delete role',
-            ],
-
-            // Groups
-            'group' => [
-                'view_all_group'    => 'View all groups',
-                'view_group'        => 'View group detail',
-                'create_group'      => 'Create group',
-                'edit_group'        => 'Edit group',
-                'delete_group'      => 'Delete group',
-                'group_get_allowed_groups' => 'Get allowed groups',
-            ],
-
-            // Admin
-            'admin' => [
-                'view_all_admin'    => 'View all admins',
-                'view_admin'        => 'View admin detail',
-                'create_admin'      => 'Create admin',
-                'edit_admin'        => 'Edit admin',
-                'delete_admin'      => 'Delete admin',
-                'logout_admin'      => 'Logout admin',
-            ],
-
-            // Permissions
-            'permission' => [
-                'view_all_permission' => 'View all permissions',
-            ],
-
-            'auditlog' => [
-                'view_auditlog'     => 'View auditlog for activities',
-            ],
-        ];
+        $trimmedDownPermissions = self::$trimmedDownPermissions;
 
         DB::transaction(function() use ($permissions, $trimmedDownPermissions)
         {
+            $index = 0;
+
             foreach ($permissions as $category => $details)
             {
-
                 foreach ($details as $permission => $description)
                 {
-                    $id = str_random(14);
+                    if (isset(self::$permissionIds[$index]) === true)
+                    {
+                        $id = self::$permissionIds[$index];
+                    }
+                    else
+                    {
+                        $id = str_random(14);
+
+                        self::$permissionIds[] = $id;
+                    }
+
+                    $index = $index + 1;
 
                     DB::table(Table::PERMISSION)->insert([
                         'id'          => $id,
