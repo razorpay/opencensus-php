@@ -277,6 +277,22 @@ trait Capture
                 throw $ex;
             }
 
+            if ($ex instanceof Exception\GatewayTimeoutException)
+            {
+                $curlMessage = $ex->getData()['message'];
+
+                //
+                // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
+                // We want to mark the refund as successful only if the error
+                // message says that the operation timed out.
+                //
+
+                if (strpos($curlMessage, 'operation timed out') === false)
+                {
+                    throw $ex;
+                }
+            }
+
             //
             // We need to use the old payment
             // because the recordCapture would have made some changes
