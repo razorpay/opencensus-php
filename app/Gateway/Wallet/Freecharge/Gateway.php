@@ -182,8 +182,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         $response = $this->sendGatewayRequest($request);
 
         $this->handleRequestFailed($response);
@@ -215,8 +213,6 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
-
-        $this->traceGatewayPaymentRequest($request, $input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -557,10 +553,14 @@ class Gateway extends Base\Gateway
 
         $content = array(
             RequestFields::OTP_ID                  => $wallet['reference1'],
-            RequestFields::OTP                     => $input['gateway']['otp'],
+            RequestFields::OTP                     => '',
             RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
             RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
         );
+
+        $this->traceGatewayPaymentRequest($content, $input);
+
+        $content[RequestFields::OTP] = $input['gateway']['otp'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
