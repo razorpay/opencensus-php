@@ -111,9 +111,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://pay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'checkoutjs';
 
@@ -136,8 +136,6 @@ class AnalyticsTest extends TestCase
 
     public function testHttpRequestDataForOtpBasedPayment()
     {
-        $this->markTestSkipped('Disabling Mobikwik');
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -151,9 +149,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://pay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'checkoutjs';
 
@@ -179,9 +177,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://api.razorpay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://api.razorpay.com/demo'
+        ];
 
         $payment['_']['browser'] = 'safari';
 
@@ -230,8 +228,8 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac androidos 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac androidos 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        ];
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 

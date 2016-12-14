@@ -212,12 +212,7 @@ class Entity extends Base\PublicEntity
 
     public function isMobikwikEnabled()
     {
-        if ($this->getAttribute(self::MERCHANT_ID) === '4izmfM9TFCAgFN')
-        {
-            return true;
-        }
-
-        return false;
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isEmiEnabled()
