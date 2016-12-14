@@ -100,9 +100,10 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
+        // Currently doing it for only HDFC and Billdesk. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        assert (($payment->getGateway() === Payment\Gateway::HDFC) or
+                ($payment->getGateway() === Payment\Gateway::BILLDESK));
 
         // The refund should have already been successful and everything on the api side.
         assert ($refund->getTransactionId() !== null);
@@ -368,6 +369,19 @@ trait Refund
             //
 
             if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
+            {
+                throw $ex;
+            }
+
+            $curlMessage = $ex->getData()['message'];
+
+            //
+            // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
+            // We want to mark the refund as successful only if the error
+            // message says that the operation timed out.
+            //
+
+            if (strpos($curlMessage, 'operation timed out') === false)
             {
                 throw $ex;
             }

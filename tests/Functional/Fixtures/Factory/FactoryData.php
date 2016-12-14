@@ -444,5 +444,8 @@ final class FactoryData
             'contact_email' => $faker->email,
         ]);
 
+        $factory(\RZP\Models\Offer\Entity::class, [
+            'id'    => $faker->uniqueid,
+        ]);
     }
 }

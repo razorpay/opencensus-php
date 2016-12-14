@@ -537,6 +537,23 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesWithOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $content = $this->startTest();
+
+        $countCardOffers = count($content['offers']['card']['items']);
+
+        $countWalletOffers = count($content['offers']['wallet']['items']);
+
+        $this->assertEquals(1, $countCardOffers);
+
+        $this->assertEquals(0, $countWalletOffers);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();
@@ -883,6 +900,27 @@ class MerchantTest extends TestCase
         {
             $merchantValidator->validateLogo($imageDetails);
         });
+    }
+
+    public function testGetMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantUnEditableFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
 }
