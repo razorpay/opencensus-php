@@ -24,9 +24,6 @@ class Server extends Base\Mock\Server
 
         $response = $this->createResponse($decryptedData);
 
-        // for test cases
-        $this->content($response);
-
         $callbackUrl = $input[RequestFields::RETURN_URL] . '?' .
                         http_build_query($response);
 
@@ -73,6 +70,9 @@ class Server extends Base\Mock\Server
             ResponseFields::FLAG                        => Constants::SUCCESS,
         ];
 
+        // for test cases
+        $this->content($response);
+
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
 
@@ -95,6 +95,9 @@ class Server extends Base\Mock\Server
             // ResponseFields::BANK_REFERENCE_ID          => $input[RequestFields::BANK_REFERENCE_ID],
             ResponseFields::PAYMENT_STATUS             => Constants::SUCCESS,
         ];
+
+        // for test cases
+        $this->content($response);
 
         $response = array_flip($response);
 

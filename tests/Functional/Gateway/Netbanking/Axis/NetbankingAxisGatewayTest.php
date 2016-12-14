@@ -122,4 +122,58 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($data['netbanking_axis']['file'][0], 1000);
         $this->assertTrue(file_exists($data['netbanking_axis']['file'][1]));
     }
+
+    public function testFailedAuthPayment()
+    {
+        $this->mockPaymentFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function(){
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testVerifyMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockVerifyFailure();
+
+        $this->runRequestResponseFlow($data, function() use ($payment){
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
+    // Auth fails but verify shows success
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testFailedAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow($data, function() use ($payment){
+            $this->verifyPayment($payment['id']);
+        });
+    }
+
+    protected function mockPaymentFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['PAID'] = 'N';
+        });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['PaymentStatus'] = 'F';
+        });
+    }
 }
