@@ -182,6 +182,12 @@ class Gateway extends Base\Gateway
     {
         $canManualRefund = $this->canForceRefund($input);
 
+        $this->trace->info(
+            TraceCode::BILLDESK_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
         if ($canManualRefund)
         {
             $this->refund($input);
@@ -240,9 +246,19 @@ class Gateway extends Base\Gateway
 
         if (($gatewayAction !== Action::AUTHORIZE) or
             (($gatewayReceived !== true) and
-             ($gatewayCreatedAt !== $gatewayUpdatedAt)) or
+             ($gatewayCreatedAt === $gatewayUpdatedAt)) or
             ($gatewayAuthStatus !== AuthStatus::SUCCESS))
         {
+            $this->trace->warning(
+                TraceCode::BILLDESK_REFUND_UNEXPECTED_STATE,
+                [
+                    'action'        => $gatewayAction,
+                    'received'      => $gatewayReceived,
+                    'created_at'    => $gatewayCreatedAt,
+                    'updated_at'    => $gatewayUpdatedAt,
+                    'auth_status'   => $gatewayAuthStatus,
+                ]);
+
             return false;
         }
 
