@@ -520,6 +520,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOffers(string $mid)
+    {
+        $data = (new Merchant\Service)->getOffers($mid);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateMerchantFeatures($id)
     {
         $input = Request::all();

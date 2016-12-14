@@ -433,6 +433,11 @@ class TraceCode
     const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
     const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
 
+    // Trace codes for offers
+    const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
+    const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
