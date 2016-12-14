@@ -39,6 +39,8 @@ class Service extends Base\Service
         {
             $adminId = $input['admin_id'];
 
+            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
+
             unset($input['admin_id']);
         }
 
@@ -48,7 +50,19 @@ class Service extends Base\Service
         // the admin referral
         if (isset($adminId) === true)
         {
-            $this->attachAdmin($merchant->getKey(), $adminId);
+            // Check if $adminId is valid
+            $admin = $this->repo->admin->findOrFailPublic($adminId);
+
+            if ($admin)
+            {
+                // Attach merchant to admin
+                $this->attachAdmin($merchant->getKey(), $adminId);
+
+                // Update merchant org
+                $merchant->org()->associate($admin->org);
+
+                $this->repo->saveOrFail($merchant);
+            }
         }
 
         return $merchant->toArrayPublic();
@@ -56,19 +70,13 @@ class Service extends Base\Service
 
     protected function attachAdmin($merchantId, $adminId)
     {
-        // Check if $adminId is valid
-        $admin = $this->repo->admin->findByPublicId($adminId);
-
-        if ($admin)
-        {
-            DB::table('merchant_map')->insert(
-                [
-                    'merchant_id' => $merchantId,
-                    'entity_id'   => $adminId,
-                    'entity_type' => 'admin'
-                ]
-            );
-        }
+        DB::table('merchant_map')->insert(
+            [
+                'merchant_id' => $merchantId,
+                'entity_id'   => $adminId,
+                'entity_type' => 'admin'
+            ]
+        );
 
         return null;
     }
