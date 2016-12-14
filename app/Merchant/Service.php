@@ -898,4 +898,38 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    public function fetchMerchantFeatures($merchantId)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->fetchFeatures($merchantId);
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function updateMerchantFeatures($merchantId, $input)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->updateFeatures($merchantId, $input);
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }

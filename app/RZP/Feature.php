@@ -27,5 +27,4 @@ class Feature extends Entity
 
         return $this->request('DELETE', $relativeUrl)->toArray();
     }
-
 }
