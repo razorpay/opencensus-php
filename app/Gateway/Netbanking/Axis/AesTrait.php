@@ -1,8 +1,8 @@
 <?php
 
-namespace Rzp\Gateway\Netbanking\Axis;
+namespace RZP\Gateway\Netbanking\Axis;
 
-use phpseclib\Crypt\Aes;
+use phpseclib\Crypt\AES;
 
 trait AesTrait
 {
@@ -11,6 +11,7 @@ trait AesTrait
         $aes = new AES(self::MODE_ECB);
         $aes->setKey($masterKey);
 
+        // returning Encrypted String
         return base64_encode($aes->encrypt($string));
     }
 
@@ -21,6 +22,7 @@ trait AesTrait
 
         $encryptedString = base64_decode($string);
 
+        // returning Decrypted String
         return $aes->decrypt($encryptedString);
     }
 }

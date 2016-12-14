@@ -1,0 +1,95 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Axis;
+
+use Carbon\Carbon;
+use RZP\Gateway\Base;
+use RZP\Models\FileStore;
+
+class RefundFile extends Base\RefundFile
+{
+    // Have to check this
+    protected static $fileToWriteName = '-IConnect_Refund_Razorpay';
+
+    const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
+
+    protected static $headers = [
+        RefundFileFields::SERIAL_NO,
+        RefundFileFields::PAYEE_ID,
+        RefundFileFields::PAYEE_NAME,
+        RefundFileFields::BANK_ID,
+        RefundFileFields::PAYMENT_REFERENCE_NO,
+        RefundFileFields::AMOUNT,
+        RefundFileFields::DATETIME,
+        RefundFileFields::REFUND_AMOUNT,
+    ];
+
+    public function generate($input)
+    {
+        list($txt, $totalAmount) = $this->getRefundData($input);
+
+        $fileName = $this->getNetbankingAxisFileToWriteName();
+
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::AXIS_NETBANKING_REFUND
+        );
+
+        $file = $creator->get();
+
+        return [$totalAmount, $file['local_file_path']];
+    }
+
+    protected function getRefundData($input)
+    {
+        $totalAmount = 0;
+
+        foreach ($input['data'] as $index => $row)
+        {
+            $date = Carbon::createFromTimestamp(
+            $row['payment']['created_at'], 'Asia/Kolkata')->format('Y/m/d');
+
+            // Make sure this is correct
+            $data[] = [
+                $index + 1,
+                $row['terminal']['gateway_merchant_id'],
+                Constants::PAYEE_NAME,
+                $row['gateway']['bank_payment_id'],
+                $row['payment']['id'], // check
+                $row['payment']['amount'] /100,
+                $date,
+                $row['refund']['amount'] /100
+            ];
+
+            $totalAmount += $row['refund']['amount'] /100;
+        }
+
+        $initialLine = $this->getInitialLine();
+
+        $txt = $this->getTextData($data, $initialLine);
+
+        return [$txt, $totalAmount];
+    }
+
+    protected function getInitialLine()
+    {
+        $data = self::$headers;
+
+        $line = implode('~~', $data) . "\r\n";
+
+        return $line;
+    }
+
+    protected function getTextData($data, $prependLine = '')
+    {
+        $ignoreLastNewline = true;
+
+        $txt = $this->generateText($data, '~~', $ignoreLastNewline);
+
+        $txt = $prependLine.$txt;
+
+        return $txt;
+    }
+}

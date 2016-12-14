@@ -11,6 +11,7 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+// use RZP\Gateway\Netbanking\Icici\AesTrait;
 
 class Gateway extends Base\Gateway
 {

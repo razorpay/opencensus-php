@@ -834,6 +834,21 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function generateRefundsFileForAxisNB()
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank' => 'UTIB'
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultNetbankingPaymentArray($bank = null)
     {
         $payment = $this->getDefaultPaymentArray();

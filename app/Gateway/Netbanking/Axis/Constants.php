@@ -10,4 +10,5 @@ class Constants
     const YES          = 'Y';
     const NO           = 'N';
     const SUCCESS      = 'S';
+    const PAYEE_NAME   = 'RAZORPAY';
 }
