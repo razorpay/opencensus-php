@@ -34,6 +34,8 @@ trait PaymentNetbankingTrait
                 'method' => 'get');
         }
 
+        sd($data);
+
         if (filter_var($data, FILTER_VALIDATE_URL))
         {
             return $this->submitPaymentCallbackRedirect($data);
