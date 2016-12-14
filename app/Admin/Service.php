@@ -1729,14 +1729,14 @@ class Service extends Base\Service
 
         foreach ($keys as $key)
         {
-            $filename = "$id/screenshots/$key.jpg";
-            $links[$key] = $s3->getObjectUrl(
-                $bucket,
-                $filename,
-                '+10 minutes', [
-                    'https'     => true
-                ]
-            );
+            $cmd = $s3->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key'    => "$id/screenshots/$key.jpg"
+            ]);
+
+            $request = $s3->createPresignedRequest($cmd, '+30 minutes');
+
+            $links[$key] = (string) $request->getUri();
         }
 
         return $links;
