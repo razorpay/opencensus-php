@@ -38,8 +38,8 @@ app.controller('ConfirmCtrl', [
     });
 
     organization.fetchCurrentOrg().then(function (data) {
-      if (data.main_logo_url) {
-        $scope.confirm_logo = data.main_logo_url
+      if (data.login_logo_url) {
+        $scope.confirm_logo = data.login_logo_url
       }
       else {
         $scope.confirm_logo = 'img/logo_black.png';
