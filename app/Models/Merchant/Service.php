@@ -15,6 +15,7 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Schedule;
@@ -721,6 +722,15 @@ class Service extends Base\Service
         $response['failedIds'] = $failedIds;
 
         return $response;
+    }
+
+    public function getOffers(string $mid)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $offers = (new Offer\Core)->fetchOffers($merchant);
+
+        return $offers->toArrayAdmin();
     }
 
     public function getMerchantFeatures()

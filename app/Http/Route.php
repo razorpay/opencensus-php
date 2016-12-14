@@ -117,6 +117,7 @@ final class Route
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
+        'merchant_get_offers'                     => ['get',      'merchants/{mid}/offers',                         'MerchantController@getOffers'                                      ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
@@ -302,6 +303,10 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
+        'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
+        'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
     );
 
@@ -432,6 +437,7 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
+        'merchant_get_offers',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_fetch_webhooks',
@@ -540,6 +546,10 @@ final class Route
         'transaction_create_fees_breakup',
         'adj_add_reverse',
         'merchant_activation_lock',
+        'offers_update_merchants',
+        'offer_create',
+        'offer_update',
+        'offer_delete',
     );
 
     public static $proxy = array(

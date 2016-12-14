@@ -281,4 +281,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
+    const BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING                       = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required to calculate an offer';
+    const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
+    const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
+    const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
 }
