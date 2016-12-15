@@ -419,6 +419,46 @@ class AdminTest extends TestCase
         $this->assertEquals($admin->isSuperAdmin(), true);
     }
 
+    public function testForgotPasswordSuccess()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $admin->setPassword('M!2#uWd');
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        $this->assertNotNull($result['token']);
+    }
+
+    public function testForgotPasswordInvalidUser()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+    }
+
     public function testPasswordResetSuccess()
     {
         $admin = $this->fixtures->create(

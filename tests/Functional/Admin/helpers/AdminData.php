@@ -306,9 +306,39 @@ return [
         ],
     ],
 
+    'testForgotPasswordSuccess' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/forgot_password',
+            'method' => 'post',
+            'content' => [
+                'email' => 'abc@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testForgotPasswordInvalidUser' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/forgot_password',
+            'method' => 'post',
+            'content' => [
+                'email' => 'xyz@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+        ],
+    ],
+
     'testPasswordResetSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -325,7 +355,7 @@ return [
 
     'testPasswordResetMismatch' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -349,7 +379,7 @@ return [
 
     'testPasswordResetInvalid' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -373,7 +403,7 @@ return [
 
     'testPasswordResetInvalidAuthType' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
