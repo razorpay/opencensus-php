@@ -65,19 +65,41 @@ class CaptureTest extends TestCase
 
     public function testCaptureWithFeeBreakupException()
     {
-        $this->payment = $this->defaultAuthPayment();
+        $payment = $this->fixtures->create('payment:card_authorized');
 
         $merchant = $this->getLastEntity('merchant', true);
 
+        $merchant['id'] = $payment['merchant_id'];
+
         $merchantEntity = (new Merchant\Entity)->fill($merchant);
 
-        $this->ba->privateAuth();
+        $class = Payments\Processor\Processor::class;
 
-        $this->mockDashboardRequest();
+        $processor = Mockery::mock($class, [$merchantEntity])
+                        ->makePartial();
 
-        $this->mockProcessorRequest($merchantEntity);
+        $processor->shouldReceive('saveFeeDetails')
+            ->times(1)
+            ->withAnyArgs()
+            ->andThrow(new Exception\LogicException(
+                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED));
 
-        $this->startTest();
+        $params = ['amount' => 1000000];
+
+        try
+        {
+            $processor->capture('pay_' .$payment['id'], $params);
+        }
+        catch (Exception\LogicException $ex)
+        {
+            $this->assertEquals("BAD_REQUEST_API_CAPTURE_FAILED", $ex->getCode());
+
+            $this->assertEquals("Error while recording capture on API side", $ex->getMessage());
+
+            return;
+        }
+
+        $this->fail();
     }
 
     public function testCaptureTwice()
