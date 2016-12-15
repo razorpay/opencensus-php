@@ -176,9 +176,4 @@ class Entity extends Base\PublicEntity
 
         $this->attributes[self::EMAIL_DOMAINS] = $emailDomains;
     }
-
-    public function isSignUpAllowed()
-    {
-        return $this->getAllowSignUp();
-    }
 }
