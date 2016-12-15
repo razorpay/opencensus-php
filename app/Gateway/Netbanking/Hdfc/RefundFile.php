@@ -52,7 +52,7 @@ class RefundFile extends Base\RefundFile
 
         $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['Directpay.Refunds@hdfcbank.com','settlements@razorpay.com'];
 
             $message->from('refunds@razorpay.com', 'Hdfc Netbanking refunds');
 
@@ -63,6 +63,10 @@ class RefundFile extends Base\RefundFile
             $message->to($emails);
 
             $message->attach($fileData['file_path']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
         });
     }
 

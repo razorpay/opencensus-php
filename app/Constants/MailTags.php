@@ -8,7 +8,7 @@ class MailTags
      * Defines tags associated with emails
      */
     const KOTAK_BENEFICIARY_MAIL                = 'kotak_beneficiary_mail';
-    const HDFC_NETBANKING_REFUNDS               = 'hdfc_netbanking_refunds';
+    const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
 
     /**
      * Email tags that should respond to the mailgun failure webhook
@@ -17,6 +17,6 @@ class MailTags
      */
     public static $notifyTags = [
         self::KOTAK_BENEFICIARY_MAIL,
-        self::HDFC_NETBANKING_REFUNDS
+        self::HDFC_NETBANKING_REFUNDS_MAIL
     ];
 }
