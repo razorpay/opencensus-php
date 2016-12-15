@@ -108,7 +108,7 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
         ],
     ],
 

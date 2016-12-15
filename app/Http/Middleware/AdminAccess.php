@@ -5,6 +5,7 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
+use Request;
 use RZP\Http\Route;
 use RZP\Models\Admin;
 use RZP\Exception;
@@ -35,6 +36,8 @@ class AdminAccess
 
             $admin = $this->ba->getAdmin();
 
+            $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
+
             $merchant = $this->getMerchant($request);
 
             $authorized = $this->policyChecker($routeName, $admin, $merchant);
@@ -46,6 +49,82 @@ class AdminAccess
         }
 
         return $next($request);
+    }
+
+    private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
+    {
+        // Fetch public org Id from uri
+        $orgIdFromUri = $this->getOrgIdFromUri($request->getRequestUri());
+
+        // Fetch orgId from request input
+        $orgIdFromData = $this->getOrgIdFromRequestData($request->input());
+
+        if ((empty($orgIdFromUri) === false) and
+            ($orgIdFromUri !== $admin->getPublicOrgId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
+        if ((empty($orgIdFromData) === false) and
+            ($orgIdFromData !== $admin->getPublicOrgId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
+        if ((empty($orgIdFromUri) === false) and
+            (empty($orgIdFromData) === false) and
+            ($orgIdFromUri !== $orgIdFromData))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
+        if ((empty($orgIdFromData) === true) and
+            (empty($orgIdFromUri) === true) and
+            (in_array($routeName, self::getExcludedRoutes()) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+    }
+
+    /*
+     * Routes excluded form orgId check
+     */
+    private static function getExcludedRoutes()
+    {
+        return [
+            'org_create',
+            'org_get_multiple',
+            // Permission API are not exposed and org agnostic
+            'permission_get',
+            'permission_create',
+            'permission_get_multiple',
+            'permission_delete',
+            'permission_edit',
+        ];
+    }
+
+    private function getOrgIdFromUri(string $url)
+    {
+        $urlTokens = explode('/', $url);
+
+        if ((isset($urlTokens[1]) === true) and
+            ($urlTokens[1] === 'orgs') and
+            (isset($urlTokens[2]) === true))
+        {
+            return $urlTokens[2];
+        }
+    }
+
+    private function getOrgIdFromRequestData(array $input)
+    {
+        if (isset($input['org_id']) === true)
+        {
+            return $input['org_id'];
+        }
     }
 
     private function getMerchant($request)
