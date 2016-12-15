@@ -90,12 +90,12 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $orgId = $this->getOrgFromCache($domain);
+        $org = $this->getOrgFromCache($domain);
 
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($orgId, $input)->toArray();
+            $data = $this->api->admin->passwordLogin($org['id'], $input)->toArray();
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -2430,14 +2430,20 @@ class Service extends Base\Service
 
     protected function getOrgFromCache($domain)
     {
-        $cacheKey = $domain;
+        list($error, $data) = $this->getOrg($domain);
 
-        if ($this->cache->has($cacheKey) === false)
-        {
-            $this->getOrg($domain);
-        }
+        return $data;
 
-        return $this->cache->get($cacheKey);
+        // Disabling cache for now
+
+        // $cacheKey = $domain;
+        //
+        // if ($this->cache->has($cacheKey) === false)
+        // {
+        //     $this->getOrg($domain);
+        // }
+        //
+        // return $this->cache->get($cacheKey);
     }
 
     /**
