@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
@@ -36,6 +37,8 @@ class Checkout
         $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+
+        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 

@@ -143,10 +143,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
             return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages);
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -198,8 +198,9 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
-            'invoice' => Invoice\Entity::class,
-            'merchant'  => Merchant\Entity::class,
+            'invoice'           => Invoice\Entity::class,
+            'merchant'          => Merchant\Entity::class,
+            'merchant_detail'   => Merchant\MerchantDetail\Entity::class,
         ]);
     }
 }

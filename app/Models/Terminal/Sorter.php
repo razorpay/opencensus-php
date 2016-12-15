@@ -4,7 +4,9 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 
+use App;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 

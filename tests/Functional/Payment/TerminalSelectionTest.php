@@ -27,6 +27,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('billdesk', $payment['gateway']);
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
+
     public function testChooseGatewayWithDirectTerminals()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
@@ -39,6 +40,64 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
         $this->assertEquals('10BillDirTrmnl', $payment['terminal_id']);
+    }
+
+    /**
+     * Assign Direct Terminal To Another Merchant
+     * Assign That Direct Terminal to Test Merchant also
+     * Unassign that terminal from test merchant and test if payment fails
+     */
+    public function testMultipleMerchantForTerminal()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
+
+        $mid = Merchant\Account::TEST_ACCOUNT;
+
+        $tid = '10BillDirTrmn2';
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($tid, $payment['terminal_id']);
+
+        $request = [
+            'url'    => $url,
+            'method' => 'DELETE'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
 
     public function testChooseTerminalWithCategory()
@@ -178,10 +237,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 86 to 95 should give Cybersource
-            [ 'chanceValue' => 95, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 80 to 85 should give First Data
-            [ 'chanceValue' => 81,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 76 to 100 should give AxisMigs
+            [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            // Chance from 66 to 75 should give Cybersource
+            [ 'chanceValue' => 69, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 60 to 65 should give First Data
+            [ 'chanceValue' => 63,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
@@ -413,26 +474,38 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'shared' => 0]);
+            [
+                'id'          => 'DrctNbBdkTmnl1',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'tpv'         => 1,
+                'shared'      => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl2',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'network_category' => 'ecommerce',
-              'shared' => 0]);
+            [
+                'id'               => 'DrctNbBdkTmnl2',
+                'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
+                'network_category' => 'ecommerce',
+                'tpv'              => 1,
+                'shared'           => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'DrctNbBdkTmnl3',
-              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-              'network_category' => 'securities',
-              'shared' => 0]);
+            [
+                'id'               => 'DrctNbBdkTmnl3',
+                'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
+                'network_category' => 'securities',
+                'tpv'              => 1,
+                'shared'           => 0
+            ]);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'securities']);
+            [
+                'id'               => 'SharNbBdkTmnl1',
+                'merchant_id'      => Merchant\Account::SHARED_ACCOUNT,
+                'tpv'              => 1,
+                'network_category' => 'securities'
+            ]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 

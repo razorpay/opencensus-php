@@ -42,6 +42,14 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function removeApprovalCodeFailRc()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['approval_code'] = null;
+        });
+    }
+
     protected function getUnknownErrorInAuth()
     {
         $this->mockServerContentFunction(function (& $content)
@@ -83,5 +91,19 @@ trait PaymentFirstDataTrait
         {
             throw new Exception\GatewayTimeoutException('Gateway request timed out');
         });
+    }
+
+    protected function setInvalidAuthField($field)
+    {
+        $server = $this->mockServer()
+                       ->shouldReceive('request')
+                       ->andReturnUsing(
+                        function (& $request) use ($field)
+                        {
+                            $request[$field] = 'invld_' . $field;
+                        })
+                       ->mock();
+
+        $this->setMockServer($server);
     }
 }

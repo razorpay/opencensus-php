@@ -18,6 +18,20 @@ class Server extends Base\Mock\Server
 
         $input = $this->getContentFromInput($input);
 
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['CustomerID'], Action::AUTHORIZE);
+
+        $payment = $this->repo->payment->findOrFailPublic($gatewayPayment->getPaymentId());
+
+        $accountNo = $input['AccountNumber'];
+
+        $requestTpv = true;
+
+        if ($accountNo === 'NA')
+        {
+            $requestTpv = false;
+        }
+
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -54,6 +68,10 @@ class Server extends Base\Mock\Server
         $msg = $this->getGatewayInstance()
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);
+
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment);
+
+        assertTrue($gatewayTpv === $requestTpv);
 
         // // Uncomment below to mock s2s callback
         // $headers = array(

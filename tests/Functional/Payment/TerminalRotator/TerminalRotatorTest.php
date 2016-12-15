@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment;
 use RZP\Models\Merchant\Account;
 
@@ -54,20 +54,22 @@ class TerminalRotatorTest extends TestCase
         // only a checkout id, ensure the payment goes through
         // the other terminal
 
-        $payment1 = $this->getPaymentArray();
+        $payment1 = $this->getDefaultPaymentArray();
 
         $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
-        $payment1['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment1['_'][Analytics\Entity::CHECKOUT_ID] = $checkoutId;
 
-        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
+        // $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
+        $this->doAuthPayment($payment1);
+        $payment = $this->getLastPayment(true);
+        $this->fixtures->payment->edit($payment['id'], ['authorized_at' => null, 'status' => 'failed']);
+        $terminalsUsed[] = $payment['terminal_id'];
 
-        $payment2 = $this->getPaymentArray();
-
-        $payment2['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment2 = $this->getDefaultPaymentArray();
+        $payment2['_'][Analytics\Entity::CHECKOUT_ID] = $checkoutId;
 
         $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment2);
-
 
         $intersection = array_intersect($terminalsUsed, $newTerminalsUsed);
 
@@ -80,23 +82,26 @@ class TerminalRotatorTest extends TestCase
         // only a order id, ensure the payment goes through
         // the other terminal
 
+        $this->config['app.throw_exception_in_testing'] = false;
+
         $order = $this->createTestOrder();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
-
         $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
 
-        $payment1 = $this->getPaymentArray();
+        $payment1 = $this->getDefaultPaymentArray();
 
         $payment1['order_id'] = $order['id'];
 
         $this->ba->publicAuth();
 
-        $terminalsUsed = $this->doPaymentAndFetchUsedTerminals($payment1);
+        // This card number will cause signature validation failure.
+        $payment1['card']['number'] = '4012001036853337';
+        $this->doAuthPayment($payment1);
+        $payment = $this->getLastPayment(true);
+        $terminalsUsed[] = $payment['terminal_id'];
 
-        $payment = $this->getLastPayment();
-
-        $payment2 = $this->getPaymentArray();
+        $payment2 = $this->getDefaultPaymentArray();
 
         $payment2['order_id'] = $order['id'];
 

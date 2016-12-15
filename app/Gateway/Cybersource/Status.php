@@ -12,11 +12,16 @@ class Status
      * So, store either ENROLLED or NOT_ENROLLED or ENROLL_FAILED
      */
 
-    const AUTHORIZED                = 'authorized';
-    const AUTHORIZE_FAILED          = 'authorize_failed';
-    const CAPTURED                  = 'captured';
-    const CAPTURE_FAILED            = 'capture_failed';
-    const CREATED                   = 'created';
-    const REFUNDED                  = 'refunded';
-    const REFUND_FAILED             = 'refund_failed';
+    const AUTHORIZED       = 'authorized';
+    const AUTHORIZE_FAILED = 'authorize_failed';
+    const ENROLL_FAILED    = 'enroll_failed';
+    const CAPTURED         = 'captured';
+    const CAPTURE_FAILED   = 'capture_failed';
+    const CREATED          = 'created';
+    const REFUNDED         = 'refunded';
+    const REFUND_FAILED    = 'refund_failed';
+    const REVERSED         = 'reversed';
+    const REVERSED_FAILED  = 'reversed_failed';
+    const VOIDED           = 'voided';
+    const VOID_FAILED      = 'void_failed';
 }
