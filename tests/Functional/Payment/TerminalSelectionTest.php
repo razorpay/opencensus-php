@@ -489,49 +489,40 @@ class TerminalSelectionTest extends TestCase
         });
     }
 
-    public function testOlderTPVMerchantTerminalSelection()
+    public function testSecuritiesMerchantOnKKBKTerminalSelection()
     {
-        $this->markTestSkipped('Not required now, users migrated.');
+        $this->fixtures->merchant->enableTPV();
 
-        $this->fixtures->merchant->setCategory('6211');
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'DrctNbKtkTmnl1',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'shared' => 0]);
 
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl1',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'DrctNbKtkTmnl2',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'ecommerce',
+              'shared' => 0]);
 
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl2',
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'DrctNbKtkTmnl3',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'securities',
+              'shared' => 0]);
+
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+             ['id' => 'SharNbKtkTmnl1',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'category' => '1234']);
+              'network_category' => 'securities']);
 
-        $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'SharNbBdkTmnl3',
-              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'category' => '6211']);
-
-        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+        $payment = $this->getPaymentForTPV(['bank' => 'KKBK']);
 
         $this->doAuthAndCapturePayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('SharNbBdkTmnl3', $payment1['terminal_id']);
-
-        $this->fixtures->terminal->edit('SharNbBdkTmnl3',['network_category' => 'securities']);
-
-        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
-
-        // TPV payment should not be routed through either ecommerce or null terminal
-        $this->makeRequestAndCatchException(function () use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-
-        $this->fixtures->merchant->editCategory2('securities');
-
-        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
-
-        $this->doAuthAndCapturePayment($payment);
+        // Payment should go through drct tpv terminals
+        $this->assertEquals('DrctNbKtkTmnl3', $payment1['terminal_id']);
     }
 
     public function testCorporateMerchantsBilldeskICICI()
