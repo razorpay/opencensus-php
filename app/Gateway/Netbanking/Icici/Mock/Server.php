@@ -51,13 +51,13 @@ class Server extends Base\Mock\Server
 
     protected function createPostData($input)
     {
-        $response = array(
+        $response = [
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
             RequestFields::ITEM_CODE                => strtoupper($input[RequestFields::ITEM_CODE]),
             RequestFields::AMOUNT                   => $input[RequestFields::AMOUNT],
             RequestFields::CURRENCY_CODE            => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::STATUS                  => 'Y',
-        );
+        ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {

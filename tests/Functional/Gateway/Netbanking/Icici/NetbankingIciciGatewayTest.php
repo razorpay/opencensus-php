@@ -121,7 +121,8 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         // Hitting the refunds route on API - goes to RefundFile.php
-        $data = $this->generateRefundsExcelForIciciNB();
+        $bank = 'ICIC';
+        $data = $this->generateRefundsExcelForNB($bank);
 
         // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
         $this->assertEquals($data['netbanking_icici']['count'], 3);
