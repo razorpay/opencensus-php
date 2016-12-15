@@ -56,4 +56,56 @@
       </div>
     </footer>
   </div>
+    <div class="panel panel-default" ng-controller="FeaturesCtrl">
+    <div class="panel-heading">
+      Flash Checkout
+    </div>
+    <div class="panel-body">
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Flash Checkout</label>
+          <div class="col-sm-10">
+            <span class="help-block m-b-none">To know more about Flash Checkout, <a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">click here <i class="fa fa-external-link"></i></a></span>
+            <label ng-if="fcOpted" class="i-switch m-t-xs m-r">
+              <input type="checkbox" name="fcEnabled" ng-click="fcToggle()" ng-model="fcEnabled"><i></i>
+            </label>
+            <div ng-if="!fcOpted">
+              <span class="help-block m-b-none">Flash Checkout feature will be automatically enabled on your account on 30 Dec, 2016.</span>
+              <span class="help-block m-b-none">
+                <li>To opt-out right now out of Flash Checkout, click the 'OPT OUT' button</li>
+                <li>To enable Flash Checkout with immediate effect, click the 'ENABLE FLASH CHECKOUT' button</li>
+              </span>
+            </div>
+          </div>
+          <div ng-if="fcOpted" class="m-t m-b text-center prev-next">
+            <button ng-click="updateFeatures()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+          </div>
+          <div ng-if="!fcOpted" class="m-t m-b text-center prev-next">
+            <button ng-click="optOutFc()" type="submit" class="btn btn-save btn-default btn-rounded">Opt Out</button>
+            <button ng-click="optInFc()" type="submit" class="btn btn-save btn-default btn-rounded">Enable Flash Checkout</button>
+          </div>
+          
+        </div>
+      </form>
+    </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+    </footer>
+  </div>
 </div>
+<script type="text/ng-template" id="optOutReasonModal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Please enter reason to disable Flash Checkout</h3>
+  </div>
+  <div class="modal-body roll-key-modal">
+      <form>
+        <input type="textarea" name="optOutReason" ng-model="optOutReason" class="form-control" value="">
+      </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok btn-roll-key-ok" ng-disabled="!optOutReason" ng-click="ok(optOutReason)">OK</button>
+  </div>
+</script>

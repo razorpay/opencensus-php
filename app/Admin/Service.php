@@ -23,6 +23,7 @@ use Queue;
 use Session;
 use Crypt;
 use Cache;
+use Uuid;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -1838,14 +1839,14 @@ class Service extends Base\Service
 
         foreach ($keys as $key)
         {
-            $filename = "$id/screenshots/$key.jpg";
-            $links[$key] = $s3->getObjectUrl(
-                $bucket,
-                $filename,
-                '+10 minutes', [
-                    'https'     => true
-                ]
-            );
+            $cmd = $s3->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key'    => "$id/screenshots/$key.jpg"
+            ]);
+
+            $request = $s3->createPresignedRequest($cmd, '+30 minutes');
+
+            $links[$key] = (string) $request->getUri();
         }
 
         return $links;
@@ -2494,7 +2495,7 @@ class Service extends Base\Service
     {
         $formData = json_encode($input);
 
-        $id = str_random(14);
+        $id = Uuid::generate();
 
         $leadId = \DB::table('admin_leads')->insertGetId(
             [

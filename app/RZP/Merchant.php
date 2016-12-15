@@ -363,4 +363,21 @@ class Merchant extends Entity
 
         return $res;
     }
+
+    public function fetchFeatures($merchantId)
+    {
+        $relativeUrl = $this->getEntityUrl() . $merchantId . '/features';
+
+        return $this->request('GET', $relativeUrl)->toArray();
+    }
+
+
+    public function updateFeatures($merchantId, $params)
+    {
+        $relativeUrl = $this->getEntityUrl() . $merchantId . '/features';
+
+        $res = $this->request('POST', $relativeUrl, $params)->toArray();
+
+        return $res;
+    }
 }

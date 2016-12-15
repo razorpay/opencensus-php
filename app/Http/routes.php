@@ -37,6 +37,8 @@ Route::group([], function()
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
         Route::post('/user/password/reset', 'PasswordController@postRemind');
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
+
+        Route::post('/user/track_lead', 'UserController@trackLead');
     });
 });
 
@@ -150,21 +152,9 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     // Registers a sub-merchant account
     Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
-});
 
-Route::group([], function()
-{
-    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
-    Route::group([], function()
-    {
-        Route::post('/user/signin', 'UserController@postSignin');
-        Route::post('/user/register', 'UserController@postRegister');
-        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
-        Route::post('/user/password/reset', 'PasswordController@postRemind');
-        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
-
-        Route::post('/user/track_lead', 'UserController@trackLead');
-    });
+    Route::get('/features', 'MerchantController@getMerchantFeatures');
+    Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
 });
 
 Route::group(['middleware'  =>  'slack'], function ()
