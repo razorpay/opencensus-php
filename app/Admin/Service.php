@@ -2153,7 +2153,14 @@ class Service extends Base\Service
 
     protected function fetchPaymentsToAggregate($input, $mode)
     {
-        $dateFrom = Carbon::parse($input['date'])->timestamp;
+        if (isset($input['date']) === false)
+        {
+            $dateFrom = Carbon::today()->timestamp;
+        }
+        else
+        {
+            $dateFrom = Carbon::parse($input['date'])->timestamp;
+        }
 
         $dateTo = $dateFrom + TransactionService::TIME_INTERVALS['day'];
 
