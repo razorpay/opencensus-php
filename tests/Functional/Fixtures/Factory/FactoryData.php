@@ -380,6 +380,7 @@ final class FactoryData
         // Admin Roles related fixtures
         $factory(\RZP\Models\Admin\Org\Entity::class, [
             'id'            => $faker->uniqueid,
+            'allow_sign_up' => false,
             'email_domains' => 'razorpay.com,rzp.io',
             'email'         => $faker->rzpEmail,
             'display_name'  => 'Razorpay',

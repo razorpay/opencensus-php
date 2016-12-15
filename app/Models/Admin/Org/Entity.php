@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const DISPLAY_NAME      = 'display_name';
     const EMAIL             = 'email';
     const EMAIL_DOMAINS     = 'email_domains';
+    const ALLOW_SIGN_UP     = 'allow_sign_up';
     const LOGIN_LOGO_URL    = 'login_logo_url';
     const MAIN_LOGO_URL     = 'main_logo_url';
     const INVOICE_LOGO_URL  = 'invoice_logo_url';
@@ -41,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
+        self::ALLOW_SIGN_UP,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
@@ -53,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::AUTH_TYPE,
         self::EMAIL_DOMAINS,
+        self::ALLOW_SIGN_UP,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
@@ -68,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_NAME,
         self::EMAIL,
         self::EMAIL_DOMAINS,
+        self::ALLOW_SIGN_UP,
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
@@ -77,6 +81,10 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = [
         self::ID
+    ];
+
+    protected $casts = [
+        self::ALLOW_SIGN_UP => 'bool'
     ];
 
     protected static function boot()
@@ -130,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function permissions()
     {
         return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
+    }
+
+    public function getAllowSignUp()
+    {
+        return $this->getAttribute(self::ALLOW_SIGN_UP);
     }
 
     public function getEmailDomains()
