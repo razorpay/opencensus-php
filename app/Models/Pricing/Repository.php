@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Action;
 
 class Repository extends Base\Repository
 {
@@ -114,6 +115,8 @@ class Repository extends Base\Repository
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
 
+        $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
+
         $count = $rule->feesBreakup->count();
 
         if ($count === 0)
@@ -133,6 +136,8 @@ class Repository extends Base\Repository
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
+
+        $rule->setAuditLogAction(Action::DELETE_PRICING_PLAN_RULE);
 
         $count = $rule->feesBreakup->count();
 

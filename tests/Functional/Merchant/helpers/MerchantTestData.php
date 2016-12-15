@@ -1153,6 +1153,18 @@ return [
         ],
     ],
 
+    'testEditMerchantEditGroups' => [
+        'request' => [
+            'url'       => '/merchants/%s',
+            'method'    => 'put',
+            'content'   => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testGetMerchantFeatures' => [
         'request' => [
             'url' => '/merchants/10000000000000/features',
