@@ -16,10 +16,10 @@
         <label class="control-label"><strong>Theme Color</strong></label>
         <div class="m-t">
           <div class="col-sm-2">
-            <input type="color" class="form-control brand-color-picker" ng-model="config.brand_color" >
+            <input type="color" class="form-control brand-color-picker m-l-neg" ng-model="config.brand_color" >
           </div>
           <div class="col-sm-3">
-            <input type="text" class="form-control brand-color-input" ng-show="config.brand_color" ng-model="config.brand_color" >
+            <input type="text" class="form-control brand-color-input m-l-neg" ng-show="config.brand_color" ng-model="config.brand_color" >
           </div>
           <div class="clearfix"></div>
           <span class="help-block m-t m-b-none">Choose a theme color to customize the checkout form. The default theme color will be used if none is specified. <strong>Use the color picker or enter the hexadecimal color code.</strong></span>
@@ -33,7 +33,7 @@
           <div ng-show="!showImageSelector" class="pull-left m-r" >
             <img src="{{config.logo_url}}" width="72" height="72">
           </div>
-          <div class="pull-left col-sm-4 file-upload-container">
+          <div class="pull-left col-sm-4 file-upload-container m-l-neg">
             <input class="m-b" ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default btn-primary" data-classInput="form-control inline v-middle input-s hide" name="logo" ng-file-select="onFileSelect($files, 'logo')">
             <i class="m-t">Max file size: 1MB</i>
           </div>
@@ -111,11 +111,13 @@
       <div class="form-group">
         <div class="">
           <div class="help-block m-b">Enter email addresses that will receive email notifications regarding payments, settlements, daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)</div>
-          <input type="text" class="form-control help-block" maxlength="255" ng-model="config.transaction_report_email">
         </div>
       </div>
       <div class="m-t m-b text-center prev-next">
-        <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded pull-right">Save Changes</button>
+        <div class="col-sm-10">
+          <input type="text" class="form-control m-l-neg" maxlength="255" ng-model="config.transaction_report_email">
+        </div>
+        <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded col-sm-2">Save Changes</button>
       </div>
     </div>
     <footer class="panel-footer">
