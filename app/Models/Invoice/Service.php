@@ -94,7 +94,6 @@ class Service extends Base\Service
             'image' => $merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'name'  => $merchant->getBillingLabelElseName(),
             'id'    => $merchant->getId(),
-            'organization' => $merchant->org->toArray(),
         ];
 
         // This is required so that the mode and the db connection are set.
