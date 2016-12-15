@@ -20,7 +20,7 @@
               <input type="color" class="form-control brand-color-picker" ng-model="config.brand_color" >
             </div>
             <div class="col-sm-3">
-              <input type="text" class="form-control" ng-show="config.brand_color" ng-model="config.brand_color" >
+              <input type="text" class="form-control brand-color-input" ng-show="config.brand_color" ng-model="config.brand_color" >
             </div>
             <div class="clearfix"></div>
             <span class="help-block m-b-none">Choose a theme color to customize the checkout form. The default theme color will be used if none is specified. <strong>Use the color picker or enter the hexadecimal color code.</strong></span>
@@ -29,20 +29,20 @@
         <!--Upload logo image file 2-->
         <div class="">
           <label class="control-label"><strong>Your Logo</strong></label>
-          <div class="clearfix"></div>
           <div class="help-block">
             <div ng-show="!showImageSelector" class="pull-left m-r" >
               <img src="{{config.logo_url}}" width="72" height="72">
             </div>
-            <span class="help-block m-b-none ">
-            Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px. Max file size 1 MB.
-            </span>
+            <div class="pull-left col-sm-4 file-upload-container">
+              <input class="m-b" ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default btn-primary" data-classInput="form-control inline v-middle input-s hide" name="logo" ng-file-select="onFileSelect($files, 'logo')">
+              <i class="m-t">Max file size: 1MB</i>
+            </div>
+            <div class="clearfix"></div>
           </div>
+          <span class="help-block m-b-none ">Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px.</span>
           <div class="clearfix"></div>
           <div class="m-t">
-            <div class="pull-left col-sm-2 file-upload-container">
-              <input ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default btn-primary" data-classInput="form-control inline v-middle input-s hide" name="logo" ng-file-select="onFileSelect($files, 'logo')">
-            </div>
+
             <div class=" text-center prev-next">
               <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded pull-right">Save Changes</button>
             </div>
@@ -70,9 +70,8 @@
         <div class="">
           <label class="control-label"><strong>Flash Checkout</strong></label>
           <div class="">
-            <div ng-if="!fcOpted">
-              <span class="help-block m-b-none">Securely save the card details of your customers, with Razorpay's Flash Checkout. Flash Checkout feature will be <strong>automatically enabled on your account on 30 Dec, 2016</strong>. You can opt out right now from this automatic update and enable this feature later.</span>
-            </div>
+            <span class="help-block m-b-none">Securely save the card details of your customers, with Razorpay's Flash Checkout. </span>
+            <span ng-if="!fcOpted">Flash Checkout feature will be <strong>automatically enabled on your account on 30 Dec, 2016</strong>. You can opt out right now from this automatic update and enable this feature later.</span>
           </div>
           <div class="clearfix"></div>
           <div class="m-t">
