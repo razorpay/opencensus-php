@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
@@ -10,19 +12,25 @@ class Gateway extends \RZP\Gateway\Base\Gateway
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
-        $payment->setAction($this->action);
+        $gatewayPayment->setAction($this->action);
 
-        $payment->setBank($this->input['payment']['bank']);
+        $gatewayPayment->setBank($this->input['payment']['bank']);
 
-        $payment->fill($attr);
+        if (($this->action === Action::AUTHORIZE) and
+            ($this->input['merchant']->isTPVRequired()))
+        {
+            $gatewayPayment->setAccountNumber($this->input['order']['account_number']);
+        }
 
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attr);
 
-        return $payment;
+        $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function getNewGatewayPaymentEntity()
@@ -35,5 +43,20 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         $gateway = 'netbanking';
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function setTpv(Entity $gatewayPayment)
+    {
+        $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function isPaymentTpvEnabled(Entity $gatewayPayment, Merchant\Entity $merchant)
+    {
+        if (($gatewayPayment->isTpv()) or ($merchant->isTPVRequired()))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

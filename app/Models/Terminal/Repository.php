@@ -44,20 +44,46 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($mid)
     {
-        return $this->newQuery()
-                    ->withTrashed()
-                    ->merchantId($mid)
-                    ->get();
+        $query = $this->newQuery()
+                      ->withTrashed();
+
+        $this->addMerchantWhereCondition($query, [$mid]);
+
+        return $query->get();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant($mid)
     {
         $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
 
-        return $this->newQuery()
-                    ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
-                    ->enabled()
-                    ->get();
+        $query = $this->newQuery()
+                      ->enabled();
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
+    protected function addMerchantWhereCondition($query, array $merchantIds)
+    {
+        $query->where(
+            function ($query) use ($merchantIds)
+            {
+                // Condition for the merchant id being directly in the terminal
+                $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+
+                //
+                // Condition for getting terminals where merchant id is
+                // associated through the many-to-many association in
+                // merchant-terminal table.
+                //
+                $query->orWhereHas(
+                    'merchants',
+                    function ($query) use ($merchantIds)
+                    {
+                        $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+                    });
+            });
     }
 
     public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
@@ -73,18 +99,22 @@ class Repository extends Base\Repository
 
     public function getByIdAndMerchantId($mid, $tid)
     {
-        return $this->newQuery()
-                    ->withTrashed()
-                    ->merchantId($mid)
-                    ->findOrFailPublic($tid);
+        $query = $this->newQuery()
+                      ->withTrashed();
+
+        $this->addMerchantWhereCondition($query, [$mid]);
+
+        return $query->findOrFailPublic($tid);
     }
 
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
-        return $this->newQuery()
-                    ->merchantId($mid)
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->first();
+        $query = $this->newQuery()
+                      ->where(Terminal\Entity::GATEWAY, '=', $gateway);
+
+        $this->addMerchantWhereCondition($query, [$mid]);
+
+        return $query->first();
     }
 
     public function getSharedTerminalForGateway($gateway)
@@ -108,14 +138,16 @@ class Repository extends Base\Repository
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
-        return $this->newQuery()
-                    ->merchantId($mId)
+        $query = $this->newQuery()
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->shared()
                     ->where(Terminal\Entity::EMI, '=', '1')
                     ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
-                    ->enabled()
-                    ->first();
+                    ->enabled();
+
+        $this->addMerchantWhereCondition($query, [$mId]);
+
+        return $query->first();
     }
 
     public function getSharedTerminalsOnCommonAccount()
@@ -178,5 +210,15 @@ class Repository extends Base\Repository
         return (new Payment\Entity)->newQuery()
                     ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
                     ->count();
+    }
+
+    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    {
+        $terminal->merchants()->attach($merchantId);
+    }
+
+    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    {
+        $terminal->merchants()->detach($merchantId);
     }
 }
