@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 
@@ -44,6 +45,11 @@ class Entity extends Base\PublicEntity
     const MAX_TERMINALS_COUNT           = 25;
 
     const ENABLED                       = 'enabled';
+
+    /**
+     * Used for column name in merchant terminal pivot table
+     */
+    const TERMINAL_ID                   = 'terminal_id';
 
     //const PRIORITY                      = 'priority';
 
@@ -107,9 +113,9 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal';
 
-    protected static $generators = array('method');
+    protected static $generators = ['method'];
 
-    protected static $modifiers = array('inputRemoveBlanks');
+    protected static $modifiers = ['inputRemoveBlanks'];
 
     protected $defaults = [
         self::CATEGORY                  => null,
@@ -355,7 +361,10 @@ class Entity extends Base\PublicEntity
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
-        $methods = array(self::CARD, self::NETBANKING);
+        $methods = [
+            self::CARD,
+            self::NETBANKING
+        ];
 
         foreach ($methods as $method)
         {
@@ -370,7 +379,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function edit(array $input = array(), $operation = 'edit')
+    public function edit(array $input = [], $operation = 'edit')
     {
         if ($this->getUsedCount() === 0)
         {
@@ -389,7 +398,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function editUsedTerminal($input)
+    protected function editUsedTerminal(array $input)
     {
         assert ($this->getUsedCount() !== 0);
 
@@ -408,6 +417,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function merchants()
+    {
+        return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
     }
 
     public function toArrayWithPassword()
@@ -453,7 +467,7 @@ class Entity extends Base\PublicEntity
 
     public function isNotTpv()
     {
-        return ($this->getAttribute(self::TPV) === false);
+        return ($this->isTpv() === false);
     }
 
     public function isRecurringAuthTerminal()

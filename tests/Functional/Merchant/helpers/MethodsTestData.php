@@ -18,7 +18,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [
 //                    'paytm' => false,

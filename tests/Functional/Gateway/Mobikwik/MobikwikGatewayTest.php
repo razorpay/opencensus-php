@@ -14,8 +14,6 @@ class MobikwikGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Disabling mobikwik');
-
         $this->testDataFilePath = __DIR__ . '/MobikwikGatewayTestData.php';
 
         parent::setUp();

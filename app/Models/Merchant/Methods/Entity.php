@@ -212,7 +212,7 @@ class Entity extends Base\PublicEntity
 
     public function isMobikwikEnabled()
     {
-        return false;
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isEmiEnabled()
