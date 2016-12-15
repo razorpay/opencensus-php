@@ -32,12 +32,7 @@ app.controller('ForgotPasswordCtrl', [
 
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
-      if (data.login_logo_url) {
-        $scope.login_logo = data.login_logo_url
-      }
-      else {
-        $scope.login_logo = 'img/logo_black.png';
-      }
+      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
     });
   }
 ]);

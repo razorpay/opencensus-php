@@ -183,12 +183,7 @@ app.controller('AdminCtrl', [
     }
 
     organization.fetchCurrentOrg().then(function (data) {
-      if (data.main_logo_url) {
-        $scope.logo_full = data.main_logo_url;
-      }
-      else {
-        $scope.logo_full = 'img/logo_full.png';
-      }
+      $scope.logo_full = data.main_logo_url || 'img/logo_full.png';
     });
   }
 ]).controller('passwordModalCtrl', [
