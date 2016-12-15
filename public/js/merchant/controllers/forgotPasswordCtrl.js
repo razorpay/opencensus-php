@@ -13,7 +13,6 @@ app.controller('ForgotPasswordCtrl', [
       var request = $http({
         method: 'post',
         url: '/user/password/reset',
-        transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });
       request.success(function (data) {
@@ -30,10 +29,10 @@ app.controller('ForgotPasswordCtrl', [
       });
     };
 
-    // Change logo
     organization.fetchCurrentOrg().then(function (data) {
       if (data.login_logo_url) {
-        $scope.login_logo = data.login_logo_url
+        $scope.login_logo = data.login_logo_url;
+        $scope.data.hostname = data.hostname;
       }
       else {
         $scope.login_logo = 'img/logo_black.png';

@@ -17,6 +17,15 @@ app.controller('ConfirmCtrl', [
       $state.go('access.signin');
     }
 
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.login_logo_url) {
+        $scope.confirm_logo = data.login_logo_url;
+      }
+      else {
+        $scope.confirm_logo = 'img/logo_black.png';
+      }
+    });
+
     $scope.alerts.resetAlerts();
 
     var request = $http({
@@ -35,15 +44,6 @@ app.controller('ConfirmCtrl', [
       }
     }).error(function () {
       $scope.alerts.addAlert('danger', null, true);
-    });
-
-    organization.fetchCurrentOrg().then(function (data) {
-      if (data.login_logo_url) {
-        $scope.confirm_logo = data.login_logo_url
-      }
-      else {
-        $scope.confirm_logo = 'img/logo_black.png';
-      }
     });
   }
 ]);
