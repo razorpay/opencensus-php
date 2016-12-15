@@ -9,15 +9,20 @@ app.controller('ForgotPasswordCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.data = {};
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.logo_url = data.main_logo_url || 'img/logo_black.png'
+    });
+
     $scope.submit = function () {
       var request = $http({
         method: 'post',
         url: '/user/password/reset',
+        transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email from Razorpay.', true);
+          $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email.', true);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (error, key) {
@@ -28,11 +33,5 @@ app.controller('ForgotPasswordCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-
-    organization.fetchCurrentOrg().then(function (data) {
-      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
-
-      $scope.data.hostname = data.hostname;
-    });
   }
 ]);

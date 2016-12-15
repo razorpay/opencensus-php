@@ -18,6 +18,7 @@ app.controller('RegisterCtrl', [
     $scope.data = {};
     $scope.yo = true;
     $scope.login_logo;
+    $scope.invite = $location.search().merchant_invitation;
 
     if ($location.search().email) {
 

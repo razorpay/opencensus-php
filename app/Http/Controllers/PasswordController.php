@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
 use Hash;
+use App\Merchant;
+use App\Generic;
+use App\Admin;
 
 class PasswordController extends Controller
 {
@@ -18,6 +21,14 @@ class PasswordController extends Controller
      */
     public function postRemind()
     {
+        list($error, $org) = (new Admin\Service)->getOrg(Input::get('hostname'));
+
+        view()->composer('emails.auth.reminder', function($view) use($org) {
+            $view->with([
+                'org'   =>  $org
+            ]);
+        });
+
         $response = Password::sendResetLink(Input::only('email'), function($message){
             $message->subject('Razorpay - Password Reset Request');
         });

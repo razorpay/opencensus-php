@@ -88,6 +88,8 @@ app.controller('SigninCtrl', [
 
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
+      $scope.organization = data;
+
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
     });
   }
