@@ -29,7 +29,7 @@ app.controller('AdminPwdResetCtrl', [
       $scope.alerts.resetAlerts();
       var request = $http({
         method: 'post',
-        url: '/user/password/reset/' + $scope.data.token,
+        url: '/admin/password/reset/' + $scope.data.token,
         transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });

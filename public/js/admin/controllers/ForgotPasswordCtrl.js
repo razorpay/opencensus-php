@@ -16,7 +16,7 @@ app.controller('ForgotPasswordCtrl', [
     $scope.submit = function () {
       var request = $http({
         method: 'post',
-        url: '/user/password/reset',
+        url: '/admin/password/reset',
         transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });
