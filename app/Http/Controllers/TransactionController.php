@@ -294,7 +294,15 @@ class TransactionController extends Controller
     {
         $input = Input::all();
 
-        $timestamp = Carbon::parse($input['date'])->timestamp;
+        if (isset($input['date']) === false)
+        {
+            $timestamp = Carbon::today()->timestamp;
+        }
+        else
+        {
+            $timestamp = Carbon::parse($input['date'])->timestamp;
+        }
+
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
         $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null;
