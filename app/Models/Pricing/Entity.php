@@ -2,13 +2,10 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
-
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';
     const PLAN_NAME             = 'plan_name';

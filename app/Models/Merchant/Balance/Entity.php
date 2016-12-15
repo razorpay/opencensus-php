@@ -2,14 +2,11 @@
 
 namespace RZP\Models\Merchant\Balance;
 
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
-
     const ID             = 'id';
     const BALANCE        = 'balance';
     const ON_HOLD        = 'on_hold';
