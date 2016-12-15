@@ -266,7 +266,23 @@ trait Capture
                 $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
             }
 
-            $this->recordCapture();
+            try
+            {
+                $this->recordCapture();
+            }
+            catch (Exception\BaseException $ex)
+            {
+                $this->trace->traceException($ex);
+
+                throw new Exception\LogicException(
+                    'Error while recording capture on API side',
+                    ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED,
+                    [
+                        'payment' => $this->payment->getId(),
+                        'message' => $ex->getMessage()
+                    ]);
+            }
+
         }
         catch (Exception\BaseException $ex)
         {
@@ -278,18 +294,22 @@ trait Capture
             }
 
             //
+            // We should not mark the payment as failed if the capture has failed
+            // on the API side for any reason at all, while recording it.
+            // Hence, we throw the exception from here directly.
+            //
+
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED)
+            {
+                throw $ex;
+            }
+
+            //
             // We need to use the old payment
             // because the recordCapture would have made some changes
             // to payment entity but not committed due to which payment
             // entity will have corrupted data
             //
-
-            if (($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) or
-                ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED))
-            {
-                // If pricing rule is not found, we should not mark capture as failed ever.
-                throw $ex;
-            }
 
             $this->payment = $paymentCopy;
 
