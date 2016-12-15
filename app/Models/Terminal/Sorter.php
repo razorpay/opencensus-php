@@ -8,9 +8,9 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
+use RZP\Models\Base as ModelBase;
 
-class Sorter extends Base\Core
+class Sorter extends ModelBase\Core
 {
     /**
      * This should be overridden in the child class with the respective sorter properties
