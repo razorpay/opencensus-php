@@ -4,6 +4,9 @@ namespace RZP\Models\Admin\Admin;
 
 use Hash;
 use Event;
+use Cache;
+use Str;
+use App;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -21,6 +24,10 @@ use RZP\Models\Base\EsDao;
 
 class Service extends Base\Service
 {
+    const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_admin_%s';
+
+    const TOKEN = 'token';
+
     public function authenticate(string $orgId, array $input)
     {
         \Database\DefaultConnection::set('live');
@@ -124,9 +131,70 @@ class Service extends Base\Service
         //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
-    public function passwordReset(string $orgId, array $input)
+    public function forgotPassword(string $orgId, array $input)
     {
-        $this->core()->passwordReset($orgId, $input);
+        $email = $input['email'];
+
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        if ($admin === null)
+        {
+            return ["success" => false];
+        }
+
+        $token = $this->setPasswordResetToken($admin, $input);
+
+        return ["success" => true, "token" => $input[self::TOKEN]];
+    }
+
+    protected function generateToken()
+    {
+        $app = App::getFacadeRoot();
+
+        $secret = $app->config->get('app.key');
+
+        $token =  hash_hmac('sha256', Str::random(40), $secret);
+
+        return $token;
+    }
+
+    public function setPasswordResetToken(Entity $admin, array & $input)
+    {
+        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $admin->getId());
+
+        $expiresAt = Carbon::now()->addMinutes(30);
+
+        $token = $this->generateToken($input);
+
+        Cache::put($key, $token, $expiresAt);
+
+        $input[self::TOKEN] = $token;
+    }
+
+    public function resetPassword(string $orgId, array $input)
+    {
+        $email = $input['email'];
+
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        if ($admin === null)
+        {
+            return ["success" => false];
+        }
+
+        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $admin->getId());
+
+        $resetToken = Cache::get($key);
+
+        if ($resetToken === null)
+        {
+            return [
+                        "success"   => false,
+                        "errors"    => ['The password-reset link has expired.']
+                    ];
+        }
+
+        $this->core()->resetPassword($admin, $input, true);
 
         return ["success" => true];
     }

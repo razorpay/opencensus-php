@@ -93,19 +93,14 @@ class Core extends Base\Core
         $this->repo->sync($admin, 'groups', $groups);
     }
 
-    public function passwordReset(
-        string $orgId,
+    public function resetPassword(
+        Entity $admin,
         array $input,
         bool $forgotPassword = true)
     {
         $validator = new Validator();
 
         $validator->validateInput('reset', $input);
-
-        $email = $input['email'];
-
-        $admin = $this->repo->admin->findByOrgIdAndEmail(
-            $orgId, $email, ['org']);
 
         $admin->getValidator()->validateOrgSupportsPasswordReset(
             $admin->org->getAuthType());
@@ -114,6 +109,7 @@ class Core extends Base\Core
 
         // Check if the pwd follows the auth policy guidelines
         $authPolicy = new AuthPolicy\Service;
+
         $authPolicy->validate($admin, $input['password']);
 
         // In case of forgotten passwords, oldPassword is not present.

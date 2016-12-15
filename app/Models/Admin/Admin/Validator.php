@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Admin\Action;
 
 class Validator extends Base\Validator
 {

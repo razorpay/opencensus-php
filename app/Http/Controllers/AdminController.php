@@ -282,6 +282,7 @@ class AdminController extends Controller
     /**
     * Admin related functons
     */
+
     public function postAuthenticate(string $orgId, Admin\Admin\Service $adminService)
     {
         $input = Request::all();
@@ -291,11 +292,20 @@ class AdminController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postPasswordReset(string $orgId, Admin\Admin\Service $adminService)
+    public function postForgotPassword(string $orgId, Admin\Admin\Service $adminService)
     {
         $input = Request::all();
 
-        $response = $adminService->passwordReset($orgId, $input);
+        $response = $adminService->forgotPassword($orgId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postResetPassword(string $orgId, Admin\Admin\Service $adminService)
+    {
+        $input = Request::all();
+
+        $response = $adminService->resetPassword($orgId, $input);
 
         return ApiResponse::json($response);
     }
