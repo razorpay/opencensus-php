@@ -15,22 +15,6 @@ return [
         ],
     ],
 
-    'testCaptureWithFeeBreakupException' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins',
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR
-        ],
-    ],
-
     'testCaptureTwice' => [
         'response' => [
             'content' => [
