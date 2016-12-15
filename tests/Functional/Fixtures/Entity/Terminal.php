@@ -673,7 +673,7 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingIciciTerminal(array $attributes = array())
+    public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 

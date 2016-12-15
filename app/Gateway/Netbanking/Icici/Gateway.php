@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
+use RZP\Lib\AesTrait;
 use Carbon\Carbon;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
@@ -208,7 +209,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getMasterKey();
 
-        return $this->encryptString($queryString, $masterKey);
+        return base64_encode($this->encryptString($queryString, $masterKey));
     }
 
     protected function getAuthorizeRequestData($input)
@@ -291,7 +292,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getMasterKey();
 
-        $decryptedString = $this->decryptString($data['ES'], $masterKey);
+        $decryptedString = $this->decryptString(base64_decode($data['ES']), $masterKey);
 
         parse_str($decryptedString, $content);
 

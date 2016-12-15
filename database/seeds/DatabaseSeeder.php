@@ -690,7 +690,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '22nP3sEf2tQ123',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'netbanking_kotak',
+                'gateway'               => Gateway::NETBANKING_KOTAK,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_kotak',
@@ -706,7 +706,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::NETBANKING_KOTAK_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'netbanking_kotak',
+                'gateway'               => Gateway::NETBANKING_KOTAK,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
@@ -725,7 +725,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id'                        =>  Terminal\Shared::NETBANKING_ICICI_TERMINAL,
                 'merchant_id'               =>  Account::TEST_ACCOUNT,
-                'gateway'                   =>  'netbanking_icici',
+                'gateway'                   =>  Gateway::NETBANKING_ICICI,
                 'card'                      =>  '0',
                 'netbanking'                =>  '1',
                 'gateway_merchant_id'       =>  'test_pid',

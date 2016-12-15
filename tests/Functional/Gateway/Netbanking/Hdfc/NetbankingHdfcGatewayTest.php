@@ -116,8 +116,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     protected function doNetbankingHdfcAuthAndCapturePayment()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'HDFC';
+        $bank = 'HDFC';
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;

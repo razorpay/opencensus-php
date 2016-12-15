@@ -10,7 +10,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base as ModelBase;
 
-class Sorter extends ModelBase\Core
+class Sorter
 {
     /**
      * This should be overridden in the child class with the respective sorter properties
@@ -68,7 +68,9 @@ class Sorter extends ModelBase\Core
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
+            $trace = Trace::getFacadeRoot();
+
+            $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }
 }

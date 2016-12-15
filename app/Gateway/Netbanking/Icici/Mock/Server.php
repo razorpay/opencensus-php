@@ -3,12 +3,11 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-
+use RZP\Lib\AesTrait;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
-use RZP\Gateway\Netbanking\Icici\AesTrait;
 
 class Server extends Base\Mock\Server
 {
@@ -75,7 +74,7 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $content['ES'] = $this->encryptString($httpQuery, $masterKey);
+        $content['ES'] = base64_encode($this->encryptString($httpQuery, $masterKey));
 
         return $content;
     }
@@ -84,7 +83,7 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getMasterKey();
 
-        $decryptedString = $this->decryptString($input['ES'], $masterKey);
+        $decryptedString = $this->decryptString(base64_decode($input['ES']), $masterKey);
 
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);

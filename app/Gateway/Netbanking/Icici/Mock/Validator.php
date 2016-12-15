@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Gateway\Netbanking\Icici\AesTrait;
+use RZP\Lib\AesTrait;
 use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 
@@ -46,7 +46,7 @@ class Validator extends Base\Validator
     {
         $masterKey = $this->getGatewayMasterKey();
 
-        $decryptedString = $this->decryptString($input['ES'], $masterKey);
+        $decryptedString = $this->decryptString(base64_decode($input['ES']), $masterKey);
 
         if ($decryptedString === false)
         {
