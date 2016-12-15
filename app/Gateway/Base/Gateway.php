@@ -475,7 +475,7 @@ class Gateway
     protected function getPaymentToVerify($verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $gatewayPayment;
 
