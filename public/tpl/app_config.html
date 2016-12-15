@@ -11,35 +11,36 @@
       Checkout Theme
     </div>
     <div class="panel-body">
-      <form class="form-horizontal col-sm-12">
+      <form class="form-horizontal ">
 
-        <div class="form-group ">
+        <div class="m-b">
           <label class="control-label"><strong>Theme Color</strong></label>
-          <div class="">
+          <div class="help-block">
             <div class="col-sm-2">
-              <input type="color" class="form-control " ng-model="config.brand_color" ng-show="showColorPicker">
+              <input type="color" class="form-control brand-color-picker" ng-model="config.brand_color" >
             </div>
             <div class="col-sm-3">
-              <input type="text" class="form-control" ng-model="config.brand_color" ng-show="showColorPicker">
+              <input type="text" class="form-control" ng-show="config.brand_color" ng-model="config.brand_color" >
             </div>
-            <button ng-click="showColorPicker = true" ng-show="!showColorPicker">Select a color</button>
             <div class="clearfix"></div>
             <span class="help-block m-b-none">Choose a theme color to customize the checkout form. The default theme color will be used if none is specified. <strong>Use the color picker or enter the hexadecimal color code.</strong></span>
           </div>
         </div>
         <!--Upload logo image file 2-->
-        <div class="form-group ">
+        <div class="">
           <label class="control-label"><strong>Your Logo</strong></label>
           <div class="clearfix"></div>
-          <div class="pull-left" >
-            <img src="{{config.logo_url}}" width="72" height="72">
+          <div class="help-block">
+            <div ng-show="!showImageSelector" class="pull-left m-r" >
+              <img src="{{config.logo_url}}" width="72" height="72">
+            </div>
+            <span class="help-block m-b-none ">
+            Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px. Max file size 1 MB.
+            </span>
           </div>
-          <span class="help-block m-b-none col-sm-10">
-          Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px. Max file size 1 MB.
-          </span>
           <div class="clearfix"></div>
           <div class="m-t">
-            <div class="pull-left col-sm-2 form-group">
+            <div class="pull-left col-sm-2 file-upload-container">
               <input ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default btn-primary" data-classInput="form-control inline v-middle input-s hide" name="logo" ng-file-select="onFileSelect($files, 'logo')">
             </div>
             <div class=" text-center prev-next">
