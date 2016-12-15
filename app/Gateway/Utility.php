@@ -18,7 +18,7 @@ class Utility
         $msg = strtolower($msg);
 
         //
-        // check if timeout has occured
+        // check if timeout has occurred
         //
         if ((strpos($msg, 'operation timed out')  !== false) or
             (strpos($msg, 'network is unreachable') !==false) or

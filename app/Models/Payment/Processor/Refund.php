@@ -372,7 +372,7 @@ trait Refund
                 throw $ex;
             }
 
-            $curlMessage = $ex->getData()['message'];
+            $curlMessage = strtolower($ex->getData()['message']);
 
             //
             // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
