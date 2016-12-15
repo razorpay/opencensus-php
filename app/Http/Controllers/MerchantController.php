@@ -520,6 +520,29 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOffers(string $mid)
+    {
+        $data = (new Merchant\Service)->getOffers($mid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateMerchantFeatures($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->addOrRemoveMerchantFeatures($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)

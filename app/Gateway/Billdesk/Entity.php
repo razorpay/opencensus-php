@@ -80,6 +80,16 @@ class Entity extends Base\Entity
 
     protected $appends = array('status', 'refund_status');
 
+    public function getRefundAmount()
+    {
+        return $this->getAttribute('RefAmount');
+    }
+
+    public function getAuthStatus()
+    {
+        return $this->getAttribute('AuthStatus');
+    }
+
     protected function getStatusAttribute()
     {
         $code = $this->attributes['AuthStatus'];
