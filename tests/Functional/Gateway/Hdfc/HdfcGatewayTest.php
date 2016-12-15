@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -61,6 +62,20 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
+
+        $this->assertEquals(TwoFactorAuth::PASSED, $payment['two_factor_auth']);
+    }
+
+    public function testTwoFaNotApplicable()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001037411127';
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(TwoFactorAuth::NOT_APPLICABLE, $payment['two_factor_auth']);
     }
 
     public function testRupayCard()
@@ -72,6 +87,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
+        $this->assertEquals($payment['two_factor_auth'], 'passed');
 
         $this->verifyPayment($payment['id']);
         $this->capturePayment($payment['id'], $payment['amount']);

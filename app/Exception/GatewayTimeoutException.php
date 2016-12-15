@@ -13,7 +13,9 @@ class GatewayTimeoutException extends GatewayRequestException
 
         $this->error = new Error($code);
 
-        $this->message = $curlErrorMessage;
+        $this->message = 'Gateway request timed out';
+
+        $this->data['message'] = $curlErrorMessage;
 
         $this->safeRetry = $safeRetry;
 

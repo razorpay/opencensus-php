@@ -3,12 +3,14 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Constants\Mode;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Requests;
+use RZP\Exception;
 use RZP\Models\Payment\Status;
-use Symfony\Component\DomCrawler\Crawler;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+
+use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use App;
 
 class Gateway
@@ -17,7 +19,7 @@ class Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     /**
      * Default payment timeout duration in mins.
@@ -257,6 +259,23 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function getCallbackResponseData(array $input)
+    {
+        if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
+        {
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
+        }
+
+        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+    }
+
+    public function setInput(array $input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     protected function getHashValueFromContent(array $content)
     {
         return $content[static::CHECKSUM_ATTRIBUTE];
@@ -383,7 +402,7 @@ class Gateway
     {
         // This payment is the gateway entity payment.
         // Also sets this gateway payment in the verify object's payment.
-        $gatewayPayment = $this->getPaymentToVerify($verify->input, $verify);
+        $gatewayPayment = $this->getPaymentToVerify($verify);
 
         if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
@@ -453,14 +472,14 @@ class Gateway
             ]);
     }
 
-    protected function getPaymentToVerify($input, $verify)
+    protected function getPaymentToVerify($verify)
     {
-        $payment = $this->repo->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
 
-        $verify->payment = $payment;
+        $verify->payment = $gatewayPayment;
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function getNamespace()
@@ -722,12 +741,12 @@ class Gateway
 
         if ($payment['otp_attempts'] >= $limit)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
     }
 
-    protected function getGatewayCertDirPath()
+    public function getGatewayCertDirPath()
     {
         $certificatePath = $this->app['config']->get('gateway.certificate_path');
 

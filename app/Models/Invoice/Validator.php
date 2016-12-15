@@ -23,16 +23,87 @@ class Validator extends Base\Validator
         Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
-        Entity::REF_NUM             => 'sometimes|string|min:1|max:14',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
-        Entity::CUSTOMER            => 'sometimes',
-        Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
-        Entity::LINE_ITEMS          => 'required|custom',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'required_with:description|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'required_with:amount|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
     ];
+
+    protected static $createValidators = [
+        Entity::LINE_ITEMS,
+        Entity::CURRENCY,
+    ];
+
+    /**
+     * Validates: - Either line_items or amount, description should exists in input
+     *            - But not both
+     *            - If line_items exists then count should be between 1-10
+     */
+    public function validateLineItems(array $input)
+    {
+        $lineItemsExists = isset($input[Entity::LINE_ITEMS]);
+
+        $amountExists    = isset($input[Entity::AMOUNT]);
+        $descExists      = isset($input[Entity::DESCRIPTION]);
+
+        if (($lineItemsExists) ^ ($amountExists and $descExists) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Provide either line_items or amount, description.'
+            );
+        }
+
+        if (isset($input[Entity::LINE_ITEMS]) === false)
+        {
+            return;
+        }
+
+        $lineItemsCount = count($input[Entity::LINE_ITEMS]);
+
+        if ($lineItemsCount === 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice must contain at least one line item.'
+            );
+        }
+
+        if ($lineItemsCount > 10)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice cannot have more than 10 line items.'
+            );
+        }
+    }
+
+    /**
+     * Currency is optional (defaults to INR) but in laravel 5.2, if sent null
+     * no other validations would happen and will attempt to flush null in db.
+     * Ref: https://laravel.com/docs/5.2/validation#rule-string
+     * To avoid that, adding validator to be run by spine here.
+     */
+    public function validateCurrency(array $input)
+    {
+        if (array_key_exists(Entity::CURRENCY, $input) === false)
+        {
+            return;
+        }
+
+        if (empty($input[Entity::CURRENCY]))
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency must not be empty.',
+                Entity::CURRENCY,
+                $input
+            );
+        }
+    }
 
     public function validateSource($attribute, $value)
     {
@@ -42,25 +113,6 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
-    }
-
-    public function validateLineItems($attribute, $value)
-    {
-        $itemsCount = count($value);
-
-        if ($itemsCount === 0)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice must contain at least one line item.'
-            );
-        }
-
-        if ($itemsCount > 10)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice cannot have more than 10 line items.'
-            );
-        }
     }
 
     public function validateMerchantHasKeys(Merchant\Entity $merchant)

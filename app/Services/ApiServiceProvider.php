@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -92,7 +94,7 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerApiMutex();
 
         $this->registerMaxMind();
-        
+
         $this->registerBitly();
 
         $this->registerValidatorResolver();
@@ -100,16 +102,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
-    }
-
-    /**
-     * Defines string to className map for polymorphic associations
-     */
-    public function boot()
-    {
-        Relation::morphMap([
-            'merchant' => Constants\Entity::getEntityClass(Constants\Entity::MERCHANT),
-        ]);
     }
 
     /**
@@ -151,10 +143,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
             return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages);
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -172,18 +164,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new MaxMind($app);
         });
     }
-    
+
     protected function registerBitly()
     {
         $this->app->singleton('bitly', function($app)
         {
             $bitlyMock = $app['config']->get('applications.bitly.mock');
-            
+
             if ($bitlyMock === true)
             {
                 return new Mock\Bitly($app);
             }
-            
+
             return new Bitly($app);
         });
     }
@@ -206,7 +198,9 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
-            'invoice' => \RZP\Models\Invoice\Entity::class,
+            'invoice'           => Invoice\Entity::class,
+            'merchant'          => Merchant\Entity::class,
+            'merchant_detail'   => Merchant\MerchantDetail\Entity::class,
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\FileStore;
 
 use Crypt;
+use RZP\Constants;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -164,11 +165,9 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Relations -----------------------------------------
 
-    public function entityAssociate($entity)
+    public function entity()
     {
-        $this->setEntityType($entity->getEntityName());
-
-        $this->source()->associate($entity);
+        return $this->morphTo();
     }
 
     public function merchant()
@@ -208,6 +207,16 @@ class Entity extends Base\PublicEntity
     public function getMime()
     {
         return $this->getAttribute(self::MIME);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
 
     // ----------------------- Getters Ends----------------------------------------

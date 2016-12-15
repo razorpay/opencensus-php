@@ -14,21 +14,32 @@ class Format
     const TXT   = 'txt';
     const XLS   = 'xls';
     const XLSX  = 'xlsx';
+    const ZIP   = 'zip';
 
     const EXCEL_COLUMN_TEXT = '@';
 
     const SUPPORTED_EXTENSION_TYPES = [
         self::CSV,
+        self::JPG,
+        self::JPEG,
+        self::PDF,
+        self::PNG,
         self::TXT,
         self::XLS,
         self::XLSX,
+        self::ZIP,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
+        self::JPG   => ['image/jpeg'],
+        self::JPEG  => ['image/jpeg'],
+        self::PDF   => ['application/pdf', 'application/x-pdf'],
+        self::PNG   => ['image/png'],
         self::TXT   => ['text/plain'],
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
+        self::ZIP   => ['application/zip'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [
@@ -52,8 +63,7 @@ class Format
         // TODO : Fix content checking
         if (in_array($extension, self::SUPPORTED_EXTENSION_TYPES) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Content type not valid for file extension specified.');
+            throw new Exception\BadRequestValidationFailureException('Invalid Extension');
         }
     }
 

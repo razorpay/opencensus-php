@@ -3,6 +3,7 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Gateway\AxisMigs;
+use RZP\Models\Payment\TwoFactorAuth;
 
 class ThreeDSecureStatus
 {
@@ -32,5 +33,19 @@ class ThreeDSecureStatus
     public static function is3DSecureSuccess($status)
     {
         return ($status === self::Y);
+    }
+
+    public static function getThreeDSstatus($status)
+    {
+        switch ($status) {
+            case self::Y:
+                return TwoFactorAuth::PASSED;
+
+            case self::N:
+                return TwoFactorAuth::FAILED;
+
+            default:
+                return TwoFactorAuth::UNKNOWN;
+        }
     }
 }

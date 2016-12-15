@@ -11,7 +11,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'ref_num'       => "00000000000001",
+                'receipt'       => "00000000000001",
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -29,7 +29,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'ref_num'       => "00000000000001",
+                'receipt'       => "00000000000001",
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
@@ -81,13 +81,14 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => null,
                 'type' => 'ecod',
                 'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
             'content' => [
-                'ref_num'       => null,
+                'receipt'       => null,
                 'customer_details' => [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
@@ -104,6 +105,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => null,
                 'view_less' => true,
                 'amount' => 100000,
                 //'user_id'  => 'abcdefghij1234',
@@ -125,6 +127,7 @@ return [
                     ]
                 ],
                 'currency' => 'INR',
+                'date' => 1480666664,
             ],
         ],
         'response' => [
@@ -146,6 +149,7 @@ return [
                 'status' => 'issued',
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
+                'date' => 1480666664,
                 'view_less' => true,
                 'amount' => 100000
             ],
@@ -379,7 +383,7 @@ return [
             'method' => 'post',
             'content' => [
                 'customer_id'     => 'cust_100000customer',
-                'ref_num'         => '00000000000001',
+                'receipt'         => '00000000000001',
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
@@ -400,14 +404,183 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Duplicate value for ref_num in invoice',
+                    'description' => 'Duplicate value for receipt in invoice',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_REF_NUM,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
+        ],
+    ],
+
+    'testCreateInvoiceWithoutLineItemsWithAmountAndDesc' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'amount'        => 1000,
+                'description'   => 'For special service'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '9999999999',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items'   => [],
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+                'amount'       => 1000,
+                'description'  => 'For special service',
+                'currency'     => 'INR',
+                'payment_id'   => null,
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceWithoutLineItemsWithAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'amount'        => 1000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The description field is required when amount is present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithoutLineItemsAmountAndDesc' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Provide either line_items or amount, description.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithLineItemsAmountAndDesc' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'amount'        => 1000,
+                'description'   => 'For some special service'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Provide either line_items or amount, description.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithNullCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'currency'      => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency must not be empty.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -441,6 +614,42 @@ return [
                 'sms_status' => 'sent',
                 'email_status' => 'sent',
                 'view_less' => true,
+            ],
+        ],
+    ],
+
+    'testGetInvoiceByReceipt' => [
+        'request' => [
+            'url' => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'receipt' => '00000000000002'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'               => 'inv_1000002invoice',
+                        'receipt'          => '00000000000002',
+                        'customer_id'      => 'cust_100000customer',
+                        'customer_details' => [
+                            'customer_email'   => 'test@razorpay.com',
+                            'customer_contact' => '1234567890',
+                            'customer_name'    => 'test',
+                            'customer_address' => null,
+                        ],
+                        'line_items'       => [],
+                        'customer_id'      => 'cust_100000customer',
+                        'short_url'        => 'http://bitly.dev/2eZ11Vn',
+                        'notes'            => [],
+                        'status'           => 'issued',
+                        'sms_status'       => 'sent',
+                        'email_status'     => 'sent',
+                        'view_less'        => true,
+                    ],
+                ],
             ],
         ],
     ],
@@ -489,6 +698,51 @@ return [
                         'status' => 'issued',
                     ]
                 ]
+            ],
+        ],
+    ],
+
+    'testGetInvoicesOfCapturedPaymentId' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_100000000order',
+                        'line_items' => [
+                            [
+                                'id' => 'li_100000lineitem',
+                            ]
+                        ],
+                        'status' => 'paid',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetInvoicesAfterCreatingMultipleInvoicesAndPaying' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'status' => 'paid',
+                        'customer_id' => 'cust_100000customer',
+                    ],
+                ],
             ],
         ],
     ],
