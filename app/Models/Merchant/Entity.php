@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Trace;
@@ -342,6 +344,11 @@ class Entity extends Base\PublicEntity
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
+    }
+
+    public function offers()
+    {
+        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
     }
 
     protected function getMaxPaymentAmountAttribute()

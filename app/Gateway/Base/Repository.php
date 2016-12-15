@@ -9,6 +9,13 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID          => 'sometimes|string|min:14|max:18');
 
+    public function findByPaymentId($id)
+    {
+        return $this->newQuery()
+                    ->where('payment_id', '=', $id)
+                    ->get();
+    }
+
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
         return $this->newQuery()

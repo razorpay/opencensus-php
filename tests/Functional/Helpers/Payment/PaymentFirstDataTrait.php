@@ -42,12 +42,11 @@ trait PaymentFirstDataTrait
         });
     }
 
-    protected function removeApprovalCodeInSucessfulAuth()
+    protected function removeApprovalCodeFailRc()
     {
         $this->mockServerContentFunction(function (& $content)
         {
             $content['approval_code'] = null;
-            $content['status']        = 'APPROVED';
         });
     }
 

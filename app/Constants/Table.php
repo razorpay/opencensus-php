@@ -38,6 +38,9 @@ class Table
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const OFFER                 = 'offers';
+    const COUPON                = 'coupons';
+    const MERCHANT_OFFER        = 'merchant_offer';
 
     // Gateway related
     const EBS                   = 'ebs';

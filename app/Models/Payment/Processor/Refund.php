@@ -100,9 +100,10 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
+        // Currently doing it for only HDFC and Billdesk. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        assert (($payment->getGateway() === Payment\Gateway::HDFC) or
+                ($payment->getGateway() === Payment\Gateway::BILLDESK));
 
         // The refund should have already been successful and everything on the api side.
         assert ($refund->getTransactionId() !== null);

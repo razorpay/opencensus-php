@@ -326,6 +326,7 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                              = 'BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED';
@@ -386,4 +387,8 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
+    const BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING                           = 'BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING';
+    const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
+    const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
+    const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
 }
