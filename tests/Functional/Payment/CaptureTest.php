@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use Dashboard\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Payment as Payments;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -60,6 +61,23 @@ class CaptureTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['gateway_captured']);
+    }
+
+    public function testCaptureWithFeeBreakupException()
+    {
+        $this->payment = $this->defaultAuthPayment();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $merchantEntity = (new Merchant\Entity)->fill($merchant);
+
+        $this->ba->privateAuth();
+
+        $this->mockDashboardRequest();
+
+        $this->mockProcessorRequest($merchantEntity);
+
+        $this->startTest();
     }
 
     public function testCaptureTwice()
@@ -360,5 +378,20 @@ class CaptureTest extends TestCase
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
               ->with('payment', Mockery::type('RZP\Models\\Base\\PublicEntity'));
+    }
+
+    protected function mockProcessorRequest(Merchant\Entity $merchant, $times = 1)
+    {
+        $class = Payments\Processor\Processor::class;
+
+        $processor = Mockery::mock($class, [$merchant])
+                        ->makePartial();
+
+        $processor->shouldReceive('saveFeeDetails')
+            ->times($times)
+            ->withAnyArgs()
+            ->andThrow(new Exception\LogicException(
+                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED));
+
     }
 }
