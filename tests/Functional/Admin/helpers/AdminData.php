@@ -312,6 +312,7 @@ return [
             'method' => 'post',
             'content' => [
                 'email' => 'abc@razorpay.com',
+                'reset_password_url' => 'hello.com'
             ],
         ],
         'response' => [
@@ -327,12 +328,42 @@ return [
             'method' => 'post',
             'content' => [
                 'email' => 'xyz@razorpay.com',
+                'reset_password_url' => 'hello.com'
             ],
         ],
-        'response' => [
-            'content' => [
-                'success' => false,
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testForgotPasswordResetUrlBlank' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/forgot_password',
+            'method' => 'post',
+            'content' => [
+                'email' => 'xyz@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

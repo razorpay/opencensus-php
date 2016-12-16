@@ -16,6 +16,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
 use Mail;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
@@ -24,7 +25,7 @@ use RZP\Models\Base\EsDao;
 
 class Service extends Base\Service
 {
-    const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_admin_%s';
+    const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_org_%s_admin_%s';
 
     const TOKEN = 'token';
 
@@ -133,18 +134,58 @@ class Service extends Base\Service
 
     public function forgotPassword(string $orgId, array $input)
     {
-        $email = $input['email'];
+        $validator = new Validator();
 
-        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+        $validator->validateInput('forgot', $input);
 
-        if ($admin === null)
-        {
-            return ["success" => false];
-        }
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
 
-        $token = $this->setPasswordResetToken($admin, $input);
+        // Validate if admin's org allows password reset
+        $admin->getValidator()->validateOrgSupportsPasswordReset(
+            $admin->org->getAuthType());
 
-        return ["success" => true, "token" => $input[self::TOKEN]];
+        $this->setPasswordResetToken($admin, $input);
+
+        $this->sendAdminForgotPasswordEmail($admin, $input);
+
+        return ['success' => true];
+    }
+
+    protected function sendAdminForgotPasswordEmail(Entity $admin, $input)
+    {
+        $org = $admin->org;
+
+        $from       = 'support@razorpay.com';
+        $replyTo    = 'support@razorpay.com';
+        $fromHeader = 'Team Razorpay';
+        $to         = $admin->getEmail();
+        $subject    = 'Reset your password for' . $org->getDisplayName() . ' dashboard';
+
+        // ask selva
+        $view = [
+            'html' => 'emails.admin.user',
+            'text' => 'emails.admin.user_text'
+        ];
+
+        $template = [
+            'user' => [
+                'email' => $admin->getEmail(),
+                'org' => $org->getDisplayName(),
+                'url' => $input['reset_password_url'] . '?' . http_build_query([$input[self::TOKEN]])
+            ]
+        ];
+
+        Mail::queue(
+            $view,
+            $template,
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
+            {
+                $message->to($to);
+                $message->from($from, $fromHeader);
+                $message->subject($subject);
+                $message->replyTo($replyTo);
+            }
+        );
     }
 
     protected function generateToken()
@@ -158,11 +199,13 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function setPasswordResetToken(Entity $admin, array & $input)
+    protected function setPasswordResetToken(Entity $admin, array & $input)
     {
-        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $admin->getId());
+        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
+            $admin->org->getId(),
+            $admin->getId());
 
-        $expiresAt = Carbon::now()->addMinutes(30);
+        $expiresAt = Carbon::now()->addHours(1);
 
         $token = $this->generateToken($input);
 
@@ -173,30 +216,42 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
-        $email = $input['email'];
+        $validator = new Validator();
 
-        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+        $validator->validateInput('reset', $input);
 
-        if ($admin === null)
-        {
-            return ["success" => false];
-        }
+        // Get admin
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
 
-        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $admin->getId());
+        $org = $admin->org;
+
+        // Validate if admin's org allows password reset
+        $admin->getValidator()->validateOrgSupportsPasswordReset($org->getAuthType());
+
+        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $org->getId(), $admin->getId());
 
         $resetToken = Cache::get($key);
 
-        if ($resetToken === null)
+        if (($resetToken === null) or ($resetToken !== $input['token']))
         {
-            return [
-                        "success"   => false,
-                        "errors"    => ['The password-reset link has expired.']
-                    ];
+            throw new Exception\InvalidArgumentException('The password-reset link has expired.');
         }
 
         $this->core()->updatePassword($admin, $input, true);
 
-        return ["success" => true];
+        return ['success' => true];
+    }
+
+    protected function getAdminFromEmail($orgId, $email)
+    {
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email, ['org']);
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        return $admin;
     }
 
     public function loginWithOAuth($input)

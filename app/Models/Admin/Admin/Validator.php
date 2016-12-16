@@ -56,7 +56,12 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email|max:255',
         Entity::PASSWORD              => 'required|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'required|string',
-        Entity::OLD_PASSWORD          => 'sometimes',
+        'token'                       => 'required|string',
+    ];
+
+    protected static $forgotRules = [
+        Entity::EMAIL                 => 'required|email|max:255',
+        'reset_password_url'          => 'required|string'
     ];
 
     protected static $createValidators = [
