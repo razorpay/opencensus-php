@@ -1310,7 +1310,6 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
-<<<<<<< HEAD
 --- Pre code deployment / PR: https://github.com/razorpay/api/pull/1620
 
 ALTER TABLE invoices MODIFY COLUMN order_id CHAR(14) DEFAULT NULL;
