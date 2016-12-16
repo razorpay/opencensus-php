@@ -249,7 +249,7 @@ class Service extends Base\Service
 
         if ($admin === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID);
         }
 
         return $admin;

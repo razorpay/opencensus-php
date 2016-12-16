@@ -341,7 +341,7 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_ERROR,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
         ],
     ],
 
