@@ -599,7 +599,7 @@ final class Route
         'org_get_self',
         'org_get_by_hostname',
         'admin_lock_old_accounts',
-        'merchant_activation_update'
+        'merchant_activation_update',
         'admin_password_reset',
         'offers_update_merchants',
         'offer_create',
