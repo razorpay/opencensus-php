@@ -22,4 +22,6 @@ storage/
 Thumbs.db
 tmp*.blade.php
 tmp/
+public/js/themes/*.js
+!public/js/themes/init.js
 public/react/dist/
