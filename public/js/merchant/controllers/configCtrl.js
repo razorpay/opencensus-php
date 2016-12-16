@@ -14,7 +14,6 @@ app.controller('ConfigCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.config = {};
 
-    $scope.showColorPicker = false;
     $scope.showImageSelector = false;
 
     $scope.onFileSelect = saveFile;
@@ -48,9 +47,6 @@ app.controller('ConfigCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.setConfig(data.data);
-          if ($scope.config.brand_color !== null) {
-            $scope.showColorPicker = true;
-          }
 
           if ($scope.config.logo_url === null) {
             $scope.showImageSelector = true;

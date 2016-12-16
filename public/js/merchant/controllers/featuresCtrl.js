@@ -11,8 +11,33 @@ app.controller('FeaturesCtrl', [
     $scope.fcEnabled; // true for only M1
     $scope.fcOpted = false; // true for M1 and M3
 
-    $scope.fcToggle = function (evt) {
+    $scope.optOutFirstFc = function () {
+      // case when merchant is opting out for first time
+      var modalInstance = $modal.open({
+        templateUrl: 'optOutReasonModal.html',
+        controller: 'optOutReasonModalCtrl',
+        resolve: {
+          optOutReason: ''
+        }
+      });
+      modalInstance.result.then(function (optOutReason) {
+        $scope.fcOpted = true;
+        $scope.fcEnabled = false;
+        updateFeatures(optOutReason);
+      }, function () {
+      });
+    }
+
+    $scope.optInFc = function () {
+      $scope.fcOpted = true;
+      $scope.fcEnabled = true;
+      updateFeatures();
+    }
+
+    $scope.toggleFc = function () {
+      $scope.fcOpted = true;
       $scope.fcEnabled = !$scope.fcEnabled;
+      updateFeatures();
     }
 
     function parseAndSetFeatures (features) {
@@ -53,7 +78,7 @@ app.controller('FeaturesCtrl', [
       });
     }
 
-    $scope.updateFeatures = function (optOutReason) {
+    function updateFeatures (optOutReason) {
       var flashCheckout = $scope.fcEnabled ? 1 : 0;
       var noFlashCheckout = !$scope.fcEnabled ? 1 : 0;
 
@@ -67,34 +92,6 @@ app.controller('FeaturesCtrl', [
       if (optOutReason) {
         featureData.optout_reason = optOutReason;
       }
-      return updateFeatures(featureData);
-    };
-
-    $scope.optOutFc = function () {
-      // case when merchant is opting out for first time
-      var modalInstance = $modal.open({
-        templateUrl: 'optOutReasonModal.html',
-        controller: 'optOutReasonModalCtrl',
-        resolve: {
-          optOutReason: ''
-        }
-      });
-      modalInstance.result.then(function (optOutReason) {
-        $scope.fcOpted = true;
-        $scope.fcEnabled = false;
-        $scope.updateFeatures(optOutReason);
-      }, function () {
-        // modal cancelled -> todo
-      });
-    }
-
-    $scope.optInFc = function () {
-      $scope.fcOpted = true;
-      $scope.fcEnabled = true;
-      $scope.updateFeatures();
-    }
-
-    function updateFeatures (featureData) {
       var request = $http({
         url: '/features',
         method: 'POST',
@@ -117,11 +114,7 @@ app.controller('FeaturesCtrl', [
       });
     }
 
-    function init() {
-      fetchFeatures();
-    }
-
-    init();
+    fetchFeatures();
   }
 ]).controller('optOutReasonModalCtrl', [
   '$scope',
