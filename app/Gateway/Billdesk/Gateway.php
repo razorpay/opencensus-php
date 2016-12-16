@@ -182,6 +182,12 @@ class Gateway extends Base\Gateway
     {
         $canManualRefund = $this->canForceRefund($input);
 
+        $this->trace->info(
+            TraceCode::BILLDESK_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
         if ($canManualRefund)
         {
             $this->refund($input);
@@ -211,7 +217,7 @@ class Gateway extends Base\Gateway
         // kind of bug.
         //
 
-        if ($gatewayEntities !== 1)
+        if ($gatewayEntitiesCount !== 1)
         {
             $this->trace->error(
                 TraceCode::MULTIPLE_GATEWAY_ENTITIES_FOUND,
@@ -226,15 +232,33 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $gatewayEntities->first();
 
         $gatewayAction = $gatewayEntity->getAction();
-
         $gatewayReceived = $gatewayEntity->getReceived();
-
         $gatewayAuthStatus = $gatewayEntity->getAuthStatus();
+        $gatewayCreatedAt = $gatewayEntity->getCreatedAt();
+        $gatewayUpdatedAt = $gatewayEntity->getUpdatedAt();
+
+        //
+        // The received attribute should be true always.
+        // But in case of late authorizations, received attribute will be false.
+        // For this, we check that the created_at and updated_at are different,
+        // since on verify, we update some fields in Billdesk if received is false.
+        //
 
         if (($gatewayAction !== Action::AUTHORIZE) or
-            ($gatewayReceived !== true) or
+            (($gatewayReceived !== true) and
+             ($gatewayCreatedAt === $gatewayUpdatedAt)) or
             ($gatewayAuthStatus !== AuthStatus::SUCCESS))
         {
+            $this->trace->warning(
+                TraceCode::BILLDESK_REFUND_UNEXPECTED_STATE,
+                [
+                    'action'        => $gatewayAction,
+                    'received'      => $gatewayReceived,
+                    'created_at'    => $gatewayCreatedAt,
+                    'updated_at'    => $gatewayUpdatedAt,
+                    'auth_status'   => $gatewayAuthStatus,
+                ]);
+
             return false;
         }
 
@@ -822,16 +846,16 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment->setPaymentId($attributes['CustomerID']);
 
-        $payment->fill($attributes);
-        $payment->setAction($this->action);
-        $this->repo->saveOrFail($payment);
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->setAction($this->action);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        $this->setTpv($payment);
+        $this->setTpv($gatewayPayment);
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function getMessageStringWithHash($content)

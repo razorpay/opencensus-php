@@ -2,14 +2,11 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
-
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
     const NETBANKING        = 'netbanking';
@@ -136,7 +133,7 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return ($this->isDebitCardEnabled() || $this->isCreditCardEnabled());
+        return ($this->isDebitCardEnabled() or $this->isCreditCardEnabled());
     }
 
     public function isDebitCardEnabled()
