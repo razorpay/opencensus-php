@@ -27,6 +27,45 @@ return [
         ],
     ],
 
+    'testSubmit' => [
+        'request' => [
+            'content' =>[
+                "submit"=> true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "submitted" => 1,
+                "verification" => [
+                    "status" => "pending"
+                ],
+                "can_submit" => true,
+            ],
+        ],
+    ],
+
+    'testSubmitWithInvalidFields' => [
+        'request' => [
+            'content' =>[
+                "submit"=> true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "submitted" => 0,
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testUpdateIFSCCodeWithFailure' => [
         'request' => [
             'content' =>[
