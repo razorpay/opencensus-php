@@ -71,7 +71,7 @@ class MerchantDetail extends Entity
                 ];
 
         // Creates a request instance
-        $request = $client->createRequest('POST', 'merchant/activation/upload_file', $options);
+        $request = $client->createRequest('POST', 'merchant/activation/upload', $options);
 
         // Creates an object to insert post body data
         $postBody = $request->getBody();
