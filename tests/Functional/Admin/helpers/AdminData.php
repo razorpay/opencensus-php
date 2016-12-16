@@ -375,7 +375,6 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'Heimdall!4#2',
                 'password_confirmation' => 'Heimdall!4#2',
-                'token'                 => 'dummytoken'
             ],
         ],
         'response' => [
@@ -418,7 +417,6 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'Heimdall!4#2',
                 'password_confirmation' => 'Heimdall!4#28',
-                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -443,7 +441,6 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'p',
                 'password_confirmation' => 'p',
-                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -468,7 +465,6 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'M!2#uWdx',
                 'password_confirmation' => 'M!2#uWdx',
-                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -493,7 +489,6 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'M!2#uWdx',
                 'password_confirmation' => 'M!2#uWdx',
-                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [

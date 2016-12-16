@@ -146,7 +146,8 @@ class Service extends Base\Service
 
         $this->setPasswordResetToken($admin, $input);
 
-        $this->sendAdminForgotPasswordEmail($admin, $input);
+        // Uncomment after selva creats templates
+        // $this->sendAdminForgotPasswordEmail($admin, $input);
 
         return ['success' => true];
     }

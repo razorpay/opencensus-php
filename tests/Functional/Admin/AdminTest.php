@@ -433,6 +433,8 @@ class AdminTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->startTest();
+
         return $admin;
     }
 
@@ -470,23 +472,19 @@ class AdminTest extends TestCase
 
     public function testPasswordResetSuccess()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
-        Cache::shouldReceive('get')
-                ->once()
-                ->with($key)
-                ->andReturn('dummytoken');
-
-        Cache::makePartial();
+        $token = Cache::get($key);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
@@ -505,15 +503,9 @@ class AdminTest extends TestCase
 
     public function testPasswordResetTokenMismatch()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
-
-        Cache::shouldReceive('get')
-                ->once()
-                ->with($key)
-                ->andReturn('blah');
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -532,20 +524,19 @@ class AdminTest extends TestCase
 
     public function testPasswordResetPasswordMismatch()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
-        Cache::shouldReceive('get')
-                ->with($key)
-                ->andReturn('dummytoken');
+        $token = Cache::get($key);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $this->ba->appAuth();
 
@@ -558,21 +549,19 @@ class AdminTest extends TestCase
 
     public function testPasswordResetInvalid()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
-        Cache::shouldReceive('get')
-                ->once()
-                ->with($key)
-                ->andReturn('dummytoken');
+        $token = Cache::get($key);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $this->ba->appAuth();
 
@@ -585,15 +574,11 @@ class AdminTest extends TestCase
 
     public function testPasswordResetMaxRetain()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
-        Cache::shouldReceive('get')
-                ->once()
-                ->with($key)
-                ->andReturn('dummytoken');
+        $token = Cache::get($key);
 
         $oldPwd = 'M!2#uWdx';
 
@@ -606,6 +591,8 @@ class AdminTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $this->ba->appAuth();
 
