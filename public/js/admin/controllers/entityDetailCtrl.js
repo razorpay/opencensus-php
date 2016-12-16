@@ -256,7 +256,7 @@ app.controller('EntityDetailCtrl', [
           }
         });
         modalInstance.result.then(function (input) {
-            $scope.terminal.addMerchant(input.id, input.terminal_id);
+            $scope.terminal.addMerchant(input.id, input.merchant_id);
         }, function() {
         });
       }
@@ -379,7 +379,7 @@ app.controller('EntityDetailCtrl', [
     // This is the current terminal current
     $scope.terminal = {
         id: current.id,
-        terminal_id : current.terminal_id
+        merchant_id : current.merchant_id
     };
     $scope.ok = function (terminal) {
         $modalInstance.close(terminal);
