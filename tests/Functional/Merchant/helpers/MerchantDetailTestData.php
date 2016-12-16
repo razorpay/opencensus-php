@@ -56,7 +56,6 @@ return [
         ],
         'response' => [
             'content' => [
-                "submitted" => 0,
                 "verification" => [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
@@ -79,6 +78,72 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid IFSC Code',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateEmail' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email"=>"a.b@c.com,a.c@d.com"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "transaction_report_email"=>"a.b@c.com,a.c@d.com",
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testUpdateEmails' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email"=>"a.b@c.com,a.c"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: a.c',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateEmailWithFailure' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email" =>"a.b"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: a.b',
                 ],
             ],
             'status_code' => 400,
