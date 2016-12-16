@@ -60,4 +60,9 @@ class P2pController extends Controller
     {
         return $this->service->fetchCollectRequests();
     }
+
+    public function fetchCollectRequestsPrivate($id)
+    {
+        return $this->service->fetchCollectRequestsForCustomer($id);
+    }
 }

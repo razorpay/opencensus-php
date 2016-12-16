@@ -94,6 +94,11 @@ class Service extends Base\Service
     {
         $customerId = $this->app['basicauth']->getDevice()->getCustomerId();
 
+        return $this->fetchCollectRequestsForCustomer($customerId);
+    }
+
+    public function fetchCollectRequestsForCustomer($customerId)
+    {
         $p2ps = $this->repo->p2p->fetchPendingCollectRequests($customerId);
 
         return $p2ps->toArrayPublic();

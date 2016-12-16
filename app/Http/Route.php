@@ -300,6 +300,9 @@ final class Route
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                        'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                          'AdminController@postMailgunCallback'                               ],
         // UPI
+        'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                         'P2pController@getP2p'                                              ],
+        'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                         'UpiController@getVpa'                                              ],
+        'customer_collect_request_fetch_private'  => ['get',      'customers/{customer_id}/requests/collect',         'P2pController@fetchCollectRequestsPrivate'                         ],
         'device_create'                           => ['post',     'upi/devices',                                      'DeviceController@createDevice'                                     ],
         'device_refresh_token'                    => ['put',      'upi/device/upi_token',                             'DeviceController@refreshUpiToken'                                  ],
         'device_verify'                           => ['post',     'upi/devices/verify',                               'DeviceController@verifyDevice'                                     ],
@@ -456,6 +459,9 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'p2p_fetch_private',
+        'vpa_fetch_private',
+        'customer_collect_request_fetch_private',
     );
 
     public static $internal = array(
