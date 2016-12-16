@@ -1,0 +1,208 @@
+<?php
+
+namespace RZP\Tests\Functional\Admin;
+
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+
+class RoleTest extends TestCase
+{
+    use RequestResponseFlowTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/helpers/RoleData.php';
+
+        parent::setUp();
+
+        $this->org = $this->fixtures->create('org');
+
+        $this->ba->adminAuth('test');
+    }
+
+    public function testCreateRole()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        return $this->startTest();
+    }
+
+    public function testCreateRoleWithPermissions()
+    {
+        $totalPermissions = 2;
+
+        $perms = $this->fixtures->times($totalPermissions)->create('permission');
+
+        $permIds = array_map(create_function('$p', 'return $p->getPublicId();'), $perms);
+        ;
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+    }
+
+    public function testEditRoleDeleteAllPermissions()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $perms = $this->fixtures->times(3)->create('permission');
+
+        $permIds = array_map(create_function('$p', 'return $p->getId();'), $perms);
+        ;
+
+        $role->permissions()->sync($permIds);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['name'] = $role->getName();
+
+        $this->startTest();
+
+        $this->assertEquals(0, count($role->permissions->all()));
+    }
+
+    public function testEditRoleEditPermissions()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $oldPerms = $this->fixtures->times(2)->create('permission');
+
+        $oldPermIds = array_map(create_function('$p', 'return $p->getId();'), $oldPerms);
+        ;
+
+        $role->permissions()->sync($oldPermIds);
+
+        $newPerm = $this->fixtures->create('permission');
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $url = $request['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $request['url'] = $url;
+
+        $request['content']['name'] = $role->getName();
+
+        $expectedPermissionIds = [$oldPerms[0]->getPublicId(), $newPerm->getPublicId()];
+
+        $request['content']['permissions'] = $expectedPermissionIds;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest();
+
+        $savedPermissions = $role->permissions->all();
+        $savedPermissionIds = array_map(create_function('$p', 'return $p->getPublicId();'),
+                                                        $savedPermissions);
+
+        $this->assertEquals(count(array_intersect($savedPermissionIds, $expectedPermissionIds)),
+                            count(array_intersect($expectedPermissionIds, $savedPermissionIds)));
+    }
+
+    public function testGetRole()
+    {
+        $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG, $role['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $result = $this->startTest();
+
+        $this->assertEquals(count($result['permissions']), 110);
+    }
+
+    public function testDeleteRole()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+    }
+
+    public function testEditRole()
+    {
+        $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditSuperAdminRole()
+    {
+        $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
+
+        $orgId = 'org_' . Org::RZP_ORG;
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $orgId, $role['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleRoles()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['count'], 2);
+    }
+
+    public function testDuplicateRole()
+    {
+        $name = 'asd';
+        $role = $this->fixtures->create(
+            'role',
+            ['org_id' => $this->org->getId(), 'name' => $name]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
+
+        return $this->startTest();
+    }
+}

@@ -92,6 +92,10 @@ class OlamoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['two_factor_auth']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);
@@ -195,7 +199,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 

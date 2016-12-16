@@ -26,6 +26,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = false;
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
     protected $casts = [
         self::AMOUNT_CREDITS => 'integer',
         self::FEE_CREDITS    => 'integer',

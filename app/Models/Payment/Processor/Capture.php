@@ -51,6 +51,11 @@ trait Capture
 
         $amount = $payment->getAmount();
 
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $amount -= $payment->getFee();
+        }
+
         // set auto-capture 1
         $payment->setAutoCapturedTrue();
 
@@ -67,8 +72,10 @@ trait Capture
         {
             $this->trace->error(
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
-                ['auto_capture' => 1,
-                'payment_id' => $payment->getPublicId()]);
+                [
+                    'auto_capture' => true,
+                    'payment_id' => $payment->getPublicId()
+                ]);
 
             $customProperties = [
                 'error' => $e->getError(),
@@ -184,8 +191,7 @@ trait Capture
                     'payment_id' => $payment->getId(),
                     'amount' => $amount,
                     'message' => 'Adds fee to the amount because fee bearer is customer',
-                ]
-            );
+                ]);
         }
 
         $payment->getValidator()->captureValidate($payment, $amount);
@@ -225,6 +231,12 @@ trait Capture
             try
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+                $this->payment->setGatewayCaptured(true);
+
+                // Saving this here itself because recordCapture will perform other actions too,
+                // in a transaction, which could fail and end up rolling back.
+                $this->repo->saveOrFail($this->payment);
             }
             catch (Exception\GatewayTimeoutException $ex)
             {
@@ -232,7 +244,7 @@ trait Capture
                 // We are currently doing capture queue for HDFC, as we don't want to mark
                 // the captured payment on gateway as failed on API
                 // Note: Capture shouldn't be done again for Cybersource
-                // as cybersource settles the amount from CH account again
+                // as Cybersource settles the amount from CH account again
                 //
                 if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
                 {
@@ -247,7 +259,11 @@ trait Capture
                     TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
                 );
 
-                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
+                // Adding a delay here because some gateways return back an error if a capture request
+                // is sent within a few seconds of the first capture request.
+                // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
+                // previous capture request.
+                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
             }
 
             $this->recordCapture();

@@ -228,6 +228,11 @@ class Server extends Base\Core
         return $content;
     }
 
+    public function request(& $content)
+    {
+        return $content;
+    }
+
     protected function makeResponse($msg)
     {
         $response = \Response::make($msg);
