@@ -67,8 +67,8 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
-                //Save to API
-                $input = ['submit' => true];
+                // Save to API
+                $input = ['submit' => true]; // mark submitted
                 $this->saveDetailsOnAPI($input);
 
                 $this->fireActivationTrigger($merchantDetails);
@@ -114,7 +114,7 @@ class Service extends Base\Service
         {
             $merchantDetails->saveOrFail();
 
-            //Save to API
+            // Save to API
             $this->saveDetailsOnAPI($input);
         }
 
@@ -151,17 +151,17 @@ class Service extends Base\Service
      * @param  string $email New Transaction report email
      * @return array Errors
      */
-    public function changeTransactionEmail($id, $email)
+    public function changeTransactionEmail($id, $csvEmail)
     {
         $merchantDetails = Entity::findorfail($id);
 
-        $error = $merchantDetails->changeTransactionEmail($email);
+        $error = $merchantDetails->changeTransactionEmail($csvEmail);
 
         if (empty($error))
         {
             $merchantDetails->saveOrFail();
 
-            $input = ['transaction_report_email' => $email];
+            $input = ['transaction_report_email' => $csvEmail];
             $this->saveDetailsOnAPI($input, $id);
         }
 
@@ -323,7 +323,7 @@ class Service extends Base\Service
     {
         if ($merchantId === null)
         {
-            $merchantId = $this->merchant['id'];
+            $merchantId = $this->merchant->id;
         }
 
         $this->setApiCredentials($merchantId);
@@ -339,6 +339,7 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
+
         // return $merchantDetails;
     }
 

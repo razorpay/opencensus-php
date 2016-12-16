@@ -556,6 +556,8 @@ class Service extends Base\Service
                         'trim',
                         explode(',', $input['transaction_report_email'])
                     );
+
+                $csvEmail = implode(',', $input['transaction_report_email']);
             }
 
             $this->logMerchantEdits($id, $input);

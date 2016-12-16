@@ -179,9 +179,11 @@ class Service extends Base\Service
     public function changeEmail($id, $input)
     {
         $merchant = Merchant\Entity::findorfail($id);
+
         $originalEmail = $merchant->email;
 
-        if ($merchant->isTestAccount()) {
+        if ($merchant->isTestAccount())
+        {
             return [[static::EMAIL_CHANGE_FORBIDDEN], null];
         }
 
@@ -192,13 +194,6 @@ class Service extends Base\Service
             $this->handleUserEmailChange($merchant, $originalEmail, $input); //This handles different cases of 'user' email change.
 
             $merchant->saveOrFail();
-            $merchantDetails = $merchant->merchantDetails;
-            $merchantDetails->contact_email = $merchant->email;
-            $merchantDetails->save();
-
-            $params = ['contact_email' => $merchant->email];
-
-            (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
         }
 
         return [$error, null];
