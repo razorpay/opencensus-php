@@ -75,7 +75,11 @@ angular.module('app.services', [])
           }
           else if ($rootScope.toState.data.role === 'guest') {
             if (user.isAuthenticated() === true) {
-              $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+              if ($rootScope.role === 'sellerapp') {
+                $state.go('app.invoices')
+              } else {
+                $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+              }
             }
           }
         });

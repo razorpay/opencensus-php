@@ -104,6 +104,9 @@
           <div class="checkbox" ng-show="showInvoice">
             <label><input ng-model="webhook.events['invoice.paid']" type="checkbox" value="invoice.paid">invoice.paid</label>
           </div>
+          <div class="checkbox">
+            <label><input ng-model="webhook.events['order.paid']" type="checkbox" value="order.paid">order.paid</label>
+          </div>
         </div>
       </div>
     </form>
@@ -155,6 +158,9 @@
           </div>
           <div class="checkbox" ng-show="showInvoice">
             <label><input ng-model="webhook.events['invoice.paid']" type="checkbox" value="invoice.paid">invoice.paid</label>
+          </div>
+          <div class="checkbox">
+            <label><input ng-model="webhook.events['order.paid']" type="checkbox" value="order.paid">order.paid</label>
           </div>
           <!--<div class="checkbox">
             <label><input ng-model="webhook.events['payment.captured']" type="checkbox" value="payment.captured">payment.captured</label>

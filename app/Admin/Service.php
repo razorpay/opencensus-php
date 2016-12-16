@@ -1709,18 +1709,21 @@ class Service extends Base\Service
     {
         $s3 = $this->getS3Client();
 
-        $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
+        $bucket = env('AWS_ACTIVATION_BUCKET');
         $keys = MerchantDetails\Entity::getUrlKeys();
 
         $links = [];
 
         foreach ($keys as $key)
         {
-            $filename = "$id/screenshots/$key.jpg";
-            $links[$key] = $s3->getObjectUrl($bucket, $filename,
-                '+10 minutes', [
-                    'https'     => true
+            $cmd = $s3->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key'    => "$id/screenshots/$key.jpg"
             ]);
+
+            $request = $s3->createPresignedRequest($cmd, '+30 minutes');
+
+            $links[$key] = (string) $request->getUri();
         }
 
         return $links;
@@ -2150,7 +2153,14 @@ class Service extends Base\Service
 
     protected function fetchPaymentsToAggregate($input, $mode)
     {
-        $dateFrom = Carbon::parse($input['date'])->timestamp;
+        if (isset($input['date']) === false)
+        {
+            $dateFrom = Carbon::today()->timestamp;
+        }
+        else
+        {
+            $dateFrom = Carbon::parse($input['date'])->timestamp;
+        }
 
         $dateTo = $dateFrom + TransactionService::TIME_INTERVALS['day'];
 
