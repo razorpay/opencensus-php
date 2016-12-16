@@ -605,6 +605,16 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        list($error, $data) = (new Admin\Service)->assignSubMerchantToTerminal(
+            $mode,
+            $terminalId,
+            $merchantId);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function toggleTerminal($mode, $terminalId)
     {
         $input = Input::all();

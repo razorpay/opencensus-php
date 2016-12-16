@@ -20,18 +20,28 @@ class Terminal extends Entity
     public function delete($id)
     {
         $relativeUrl = $this->getEntityUrl() . $id;
+
         return $this->request('DELETE', $relativeUrl);
     }
 
     public function edit($id, $params)
     {
         $relativeUrl = $this->getEntityUrl() . $id;
+
         return $this->request('PUT', $relativeUrl, $params);
+    }
+
+    public function assignSubMerchant($id, $mid)
+    {
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $mid;
+
+        return $this->request('PUT', $relativeUrl);
     }
 
     public function toggle($id, $params)
     {
         $relativeUrl = $this->getEntityUrl() . $id . '/toggle';
+
         return $this->request('PUT', $relativeUrl, $params);
     }
 }

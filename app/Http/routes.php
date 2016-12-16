@@ -256,6 +256,7 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
     Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
     Route::put('/admin/{mode}/terminal/{id}/toggle', 'AdminController@toggleTerminal');
+    Route::put('/admin/{mode}/terminal/{id}/mercahnt/{mid}', 'AdminController@toggleTerminal');
 
     // Reconcile settlements
     Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
