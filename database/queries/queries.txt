@@ -1363,6 +1363,10 @@ UPDATE payments
         AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
 ----
 
+ALTER TABLE merchants
+ADD COLUMN org_id CHAR(14)
+AFTER category2;
+
 ----------------------------------- TODO ---------------------------------------
 
 ALTER TABLE merchant_banks

@@ -178,6 +178,97 @@ class Gateway extends Base\Gateway
         return $content['CustomerID'];
     }
 
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+
+        $this->trace->info(
+            TraceCode::BILLDESK_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
+
+    protected function canForceRefund(array $input)
+    {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayEntities = $this->repo->findByPaymentId($paymentId);
+
+        $gatewayEntitiesCount = $gatewayEntities->count();
+
+        //
+        // There should be exactly one record for the payment ID.
+        // This one record should be of a successful authorization.
+        // Anything more than one is not expected and could be som
+        // kind of bug.
+        //
+
+        if ($gatewayEntitiesCount !== 1)
+        {
+            $this->trace->error(
+                TraceCode::MULTIPLE_GATEWAY_ENTITIES_FOUND,
+                [
+                    'count' => $gatewayEntitiesCount,
+                    'gateway_entities' => $gatewayEntities->toArrayPublic(),
+                ]);
+
+            return false;
+        }
+
+        $gatewayEntity = $gatewayEntities->first();
+
+        $gatewayAction = $gatewayEntity->getAction();
+        $gatewayReceived = $gatewayEntity->getReceived();
+        $gatewayAuthStatus = $gatewayEntity->getAuthStatus();
+        $gatewayCreatedAt = $gatewayEntity->getCreatedAt();
+        $gatewayUpdatedAt = $gatewayEntity->getUpdatedAt();
+
+        //
+        // The received attribute should be true always.
+        // But in case of late authorizations, received attribute will be false.
+        // For this, we check that the created_at and updated_at are different,
+        // since on verify, we update some fields in Billdesk if received is false.
+        //
+
+        if (($gatewayAction !== Action::AUTHORIZE) or
+            (($gatewayReceived !== true) and
+             ($gatewayCreatedAt === $gatewayUpdatedAt)) or
+            ($gatewayAuthStatus !== AuthStatus::SUCCESS))
+        {
+            $this->trace->warning(
+                TraceCode::BILLDESK_REFUND_UNEXPECTED_STATE,
+                [
+                    'action'        => $gatewayAction,
+                    'received'      => $gatewayReceived,
+                    'created_at'    => $gatewayCreatedAt,
+                    'updated_at'    => $gatewayUpdatedAt,
+                    'auth_status'   => $gatewayAuthStatus,
+                ]);
+
+            return false;
+        }
+
+        // The transaction id for the refund should be present. Otherwise, it means that
+        // the refund should come via normal flow and not via manualGatewayRefund.
+        assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
     /**
      * This only handles for payments which have exactly one refund (either full or partial).
      * Currently, I don't see a way where we can handle this for multiple partial refunds too.
@@ -202,12 +293,14 @@ class Gateway extends Base\Gateway
         {
             $applicable = true;
 
+            $this->action = Action::VERIFY;
             list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
 
             if ($refunded === true)
             {
                 $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
 
+                $this->action = Action::REFUND;
                 $this->createGatewayPaymentEntity($refundContent);
 
                 $success = true;
@@ -753,16 +846,16 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment->setPaymentId($attributes['CustomerID']);
 
-        $payment->fill($attributes);
-        $payment->setAction($this->action);
-        $this->repo->saveOrFail($payment);
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->setAction($this->action);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        $this->setTpv($payment);
+        $this->setTpv($gatewayPayment);
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function getMessageStringWithHash($content)

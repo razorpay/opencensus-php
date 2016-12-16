@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Trace;
@@ -10,6 +12,7 @@ use RZP\Trace;
 class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
+    const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
     const ACTIVATED                 = 'activated';
@@ -47,6 +50,14 @@ class Entity extends Base\PublicEntity
     const ORIGINAL_SIZE             = 'original';
 
     protected $entity = 'merchant';
+
+    protected static $sign = '';
+
+    protected static $delimiter = '';
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);
@@ -109,7 +120,10 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::LOGO_URL
+        self::LOGO_URL,
+        self::ORG_ID,
+        'groups',
+        'admins'
      );
 
     protected $defaults = array(
@@ -127,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
+        self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
     );
 
@@ -280,6 +295,12 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Terminal\Entity');
     }
 
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
+    }
+
     public function transactions()
     {
         return $this->hasMany(
@@ -344,6 +365,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
+    public function offers()
+    {
+        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
+    }
+
     protected function getMaxPaymentAmountAttribute()
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
@@ -360,6 +386,31 @@ class Entity extends Base\PublicEntity
     protected function getFeeBearerAttribute()
     {
         return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
+    protected function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    protected function getReceiptEmailEnabledAttribute()
+    {
+        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
+    protected function getHoldFundsAttribute()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    protected function getCategoryAttribute()
+    {
+        return (int) $this->attributes[self::CATEGORY];
+    }
+
+    protected function getSettlementScheduleAttribute()
+    {
+        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
     }
 
     public function getWebsite()
@@ -404,6 +455,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
     }
 
     public function features()
@@ -475,21 +531,6 @@ class Entity extends Base\PublicEntity
         return $awsLogoUrl;
     }
 
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-        if (empty($features) === true)
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-
-            return array_map('trim', $features);
-        }
-    }
-
     protected function getLogoUrlBasedOnSize($logoUrl, $size)
     {
         // Gets the position of last dot.
@@ -512,6 +553,34 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
+    }
+
+    protected function getFeaturesAttribute()
+    {
+        $features = $this->attributes[self::FEATURES];
+
+        if (empty($features))
+        {
+            return [];
+        }
+        else
+        {
+            $features = explode(Features::DELIMITER, $features);
+            return array_map('trim', $features);
+        }
+    }
+
+    protected function setFeaturesAttribute($features)
+    {
+        if (is_array($features))
+        {
+            $this->attributes[self::FEATURES] =
+                implode(Features::DELIMITER, $features);
+        }
+        else
+        {
+            $this->attributes[self::FEATURES] = $features;
+        }
     }
 
     protected function setEmailAttribute($email)
@@ -695,5 +764,26 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
+    }
+
+    public function groups()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function admins()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function toArrayPublic()
+    {
+         $merchant = parent::toArrayPublic();
+
+         $groups = $this->groups;
+
+         $merchant['groups'] = $groups->toArrayPublicEmbedded();
+
+         return $merchant;
     }
 }

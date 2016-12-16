@@ -31,6 +31,10 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'methods';
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
     protected $fillable = array(
         self::MERCHANT_ID,
         self::AMEX,
@@ -135,7 +139,7 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return ($this->isDebitCardEnabled() || $this->isCreditCardEnabled());
+        return ($this->isDebitCardEnabled() or $this->isCreditCardEnabled());
     }
 
     public function isDebitCardEnabled()

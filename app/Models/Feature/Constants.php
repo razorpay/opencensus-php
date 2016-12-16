@@ -4,23 +4,22 @@ namespace RZP\Models\Feature;
 
 class Constants
 {
-    const ENTITY_IDS    = 'entity_ids';
-    const NAMES         = 'names';
-
-    const DUMMY         = 'dummy';
-    const WEBHOOKS      = 'webhooks';
-    const AGGREGATOR    = 'aggregator';
-    const TOKENS        = 'tokens';
-    const S2SWALLET     = 's2swallet';
-    const SETL_REPORT   = 'setl_report';
-    const CARD_SAVING   = 'cardsaving';
-    const NOCARDSAVING  = 'nocardsaving';
-    const RECURRING     = 'recurring';
-    const S2S           = 's2s';
-    const INVOICE       = 'invoice';
-    const NOZEROPRICING = 'nozeropricing';
-    const REVERSE       = 'reverse';
-    const B2BWALLET     = 'b2bwallet';
+    const ENTITY_IDS      = 'entity_ids';
+    const NAMES           = 'names';
+    const DUMMY           = 'dummy';
+    const WEBHOOKS        = 'webhooks';
+    const AGGREGATOR      = 'aggregator';
+    const TOKENS          = 'tokens';
+    const S2SWALLET       = 's2swallet';
+    const SETL_REPORT     = 'setl_report';
+    const CARD_SAVING     = 'cardsaving';
+    const NOFLASHCHECKOUT = 'noflashcheckout';
+    const RECURRING       = 'recurring';
+    const S2S             = 's2s';
+    const INVOICE         = 'invoice';
+    const NOZEROPRICING   = 'nozeropricing';
+    const REVERSE         = 'reverse';
+    const B2BWALLET       = 'b2bwallet';
 
     public static $allFeatures = [
         self::DUMMY,
@@ -30,7 +29,7 @@ class Constants
         self::S2SWALLET,
         self::SETL_REPORT,
         self::CARD_SAVING,
-        self::NOCARDSAVING,
+        self::NOFLASHCHECKOUT,
         self::RECURRING,
         self::S2S,
         self::INVOICE,
@@ -38,4 +37,38 @@ class Constants
         self::REVERSE,
         self::B2BWALLET,
     ];
+
+    // TODOL Use this instead of alFeatures once in final code change pr
+    public static $featureValueMap = [
+        self::DUMMY           => true,
+        self::WEBHOOKS        => true,
+        self::AGGREGATOR      => true,
+        self::TOKENS          => true,
+        self::S2SWALLET       => true,
+        self::SETL_REPORT     => true,
+        self::CARD_SAVING     => true,
+        self::NOFLASHCHECKOUT => true,
+        self::RECURRING       => true,
+        self::S2S             => true,
+        self::INVOICE         => true,
+        self::NOZEROPRICING   => false,
+        self::REVERSE         => true,
+        self::B2BWALLET       => true
+    ];
+
+    public static $visibleFeaturesMap = [
+        'flashcheckout' => [
+            'feature'      => self::CARD_SAVING,
+            'display_name' => 'Flash Checkout'
+        ],
+        'noflashcheckout' => [
+            'feature'      => self::NOFLASHCHECKOUT,
+            'display_name' => 'No Flash Checkout'
+        ]
+    ];
+
+    public static function getFeatureValue($featureName)
+    {
+        return self::$featureValueMap[$featureName];
+    }
 }
