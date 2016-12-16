@@ -179,6 +179,11 @@ class Core extends Base\Core
         return $this->vpaService->getById($vpaId);
     }
 
+    public function getVpaPrivate($vpaId)
+    {
+        return $this->vpaService->getByIdPrivate($vpaId);
+    }
+
     public function getVpas()
     {
         return $this->vpaService->getAll();

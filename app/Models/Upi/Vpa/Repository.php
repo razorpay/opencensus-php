@@ -3,6 +3,7 @@
 namespace RZP\Models\Upi\Vpa;
 
 use RZP\Models\Base;
+use RZP\Models\Customer\Repository as CustomerRepo;
 
 class Repository extends Base\Repository
 {
@@ -42,6 +43,20 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ID, '=', $vpaId)
                     ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->firstOrFail();
+    }
+
+    public function findByIdAndMerchantIdOrFail($vpaId, $merchantId)
+    {
+        Entity::verifyIdAndStripSign($vpaId);
+
+        $customers = (new CustomerRepo)->fetchByMerchantId($merchantId);
+
+        sd($customers->getIds(), $vpaId);
+
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $vpaId)
+                    ->whereIn(Entity::CUSTOMER_ID, $customers->getIds())
                     ->firstOrFail();
     }
 }

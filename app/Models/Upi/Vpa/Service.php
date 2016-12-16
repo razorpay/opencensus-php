@@ -54,6 +54,15 @@ class Service extends Base\Service
         return $vpa->toArrayPublic();
     }
 
+    public function getByIdPrivate($vpaId)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $vpa = $this->repo->vpa->findByIdAndMerchantIdOrFail($vpaId, $merchantId);
+
+        return $vpa->toArrayPublic();
+    }
+
     public function getAll()
     {
         $customerId = $this->device->customer->getId();

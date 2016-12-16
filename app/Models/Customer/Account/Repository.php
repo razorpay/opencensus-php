@@ -42,4 +42,11 @@ class Repository extends Base\Repository
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
     }
+
+    public function fetchByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
 }

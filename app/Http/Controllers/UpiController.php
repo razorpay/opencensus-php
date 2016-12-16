@@ -96,6 +96,13 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getVpaPrivate(string $id)
+    {
+        $data = $this->core->getVpaPrivate($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteVpa($id)
     {
         $data = $this->core->deleteVpa($id);

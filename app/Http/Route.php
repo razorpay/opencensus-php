@@ -301,7 +301,7 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                          'AdminController@postMailgunCallback'                               ],
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                         'P2pController@getP2p'                                              ],
-        'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                         'UpiController@getVpa'                                              ],
+        'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                         'UpiController@getVpaPrivate'                                       ],
         'customer_collect_request_fetch_private'  => ['get',      'customers/{customer_id}/requests/collect',         'P2pController@fetchCollectRequestsPrivate'                         ],
         'device_create'                           => ['post',     'upi/devices',                                      'DeviceController@createDevice'                                     ],
         'device_refresh_token'                    => ['put',      'upi/device/upi_token',                             'DeviceController@refreshUpiToken'                                  ],
