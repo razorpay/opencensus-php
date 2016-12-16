@@ -234,7 +234,7 @@ class Service extends Base\Service
 
         if (($resetToken === null) or ($resetToken !== $input['token']))
         {
-            throw new Exception\InvalidArgumentException('The password-reset link has expired.');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
         $this->core()->updatePassword($admin, $input, true);

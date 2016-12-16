@@ -375,6 +375,7 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'Heimdall!4#2',
                 'password_confirmation' => 'Heimdall!4#2',
+                'token'                 => 'dummytoken'
             ],
         ],
         'response' => [
@@ -384,7 +385,32 @@ return [
         ],
     ],
 
-    'testPasswordResetMismatch' => [
+    'testPasswordResetTokenMismatch' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
+                'token'                 => 'dummytoken'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testPasswordResetPasswordMismatch' => [
         'request' => [
             'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
@@ -392,6 +418,7 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'Heimdall!4#2',
                 'password_confirmation' => 'Heimdall!4#28',
+                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -416,6 +443,7 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'p',
                 'password_confirmation' => 'p',
+                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -440,6 +468,7 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'M!2#uWdx',
                 'password_confirmation' => 'M!2#uWdx',
+                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [
@@ -462,8 +491,9 @@ return [
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
-                'password'              => 'p',
-                'password_confirmation' => 'p',
+                'password'              => 'M!2#uWdx',
+                'password_confirmation' => 'M!2#uWdx',
+                'token'                 => 'dummytoken'
             ],
         ],
         'response'  => [

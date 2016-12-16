@@ -470,7 +470,14 @@ class AdminTest extends TestCase
 
     public function testPasswordResetSuccess()
     {
-        $admin = $this->testForgotPasswordSuccess();
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        Cache::shouldReceive('get')
+                ->with($key)
+                ->andReturn('dummytoken');
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -493,9 +500,42 @@ class AdminTest extends TestCase
         }
     }
 
-    public function testPasswordResetMismatch()
+    public function testPasswordResetTokenMismatch()
     {
-        $admin = $this->testForgotPasswordSuccess();
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        Cache::shouldReceive('get')
+                ->with($key)
+                ->andReturn('blah');
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
+    }
+
+    public function testPasswordResetPasswordMismatch()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        Cache::shouldReceive('get')
+                ->with($key)
+                ->andReturn('dummytoken');
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -514,7 +554,14 @@ class AdminTest extends TestCase
 
     public function testPasswordResetInvalid()
     {
-        $admin = $this->testForgotPasswordSuccess();
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        Cache::shouldReceive('get')
+                ->with($key)
+                ->andReturn('dummytoken');
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -525,11 +572,22 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
     public function testPasswordResetMaxRetain()
     {
-        $admin = $this->testForgotPasswordSuccess();
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        Cache::shouldReceive('get')
+                ->with($key)
+                ->andReturn('dummytoken');
 
         $oldPwd = 'M!2#uWdx';
 
@@ -546,25 +604,32 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertTrue(Hash::check($oldPwd, $admin['password']));
     }
 
     public function testPasswordResetInvalidAuthType()
     {
         $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
 
-        $admin = $this->testForgotPasswordSuccess();
-
-        $admin->org()->associate($org);
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $org->getId(), 'email' => 'abc@razorpay.com']);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId());
+        $url = sprintf($url, $org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
     public function testAdminLogout()
