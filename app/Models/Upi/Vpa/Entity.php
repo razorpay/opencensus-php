@@ -117,6 +117,6 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->customer->merchant;
+        return $this->customer->merchant();
     }
 }
