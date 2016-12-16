@@ -162,7 +162,7 @@ class Service extends Base\Service
             $merchantDetails->saveOrFail();
 
             $input = ['transaction_report_email' => $csvEmail];
-            $this->saveDetailsOnAPI($input, $id);
+            $this->updateMerchantByAdminOnAPI($input, $id);
         }
 
         return $error;

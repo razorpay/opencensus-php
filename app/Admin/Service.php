@@ -733,7 +733,7 @@ class Service extends Base\Service
         $merchantDetails->save();
 
         $params = ['comment' => $comment];
-        (new MerchantDetails\Service)->saveDetailsOnAPI($params, $id);
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         return array($error, $comment);
     }
