@@ -570,8 +570,9 @@ class Service extends Base\Service
 
             if (isset($input['transaction_report_email']))
             {
+                $params = ['transaction_report_email' => $csvEmail];
                 // Only when it is changed on API side we update on the dashboard side as well
-                $error = (new MerchantDetails\Service)->changeTransactionEmail($id, $csvEmail);
+                $error = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }
 
             if (isset($input['name']))
@@ -975,7 +976,7 @@ class Service extends Base\Service
 
         $params = ['locked' => true];
 
-        (new MerchantDetails\Service)->lockMerchantOnAPI($params, $id);
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
@@ -999,7 +1000,7 @@ class Service extends Base\Service
 
         $params = ['locked' => false];
 
-        (new MerchantDetails\Service)->lockMerchantOnAPI($params, $id);
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 

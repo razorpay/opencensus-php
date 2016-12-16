@@ -343,23 +343,18 @@ class Service extends Base\Service
         // return $merchantDetails;
     }
 
-    public function lockMerchantOnAPI(array $input, $merchantId = null)
+    public function updateMerchantByAdminOnAPI(array $input, $merchantId)
     {
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant['id'];
-        }
-
-        $this->setApiCredentials($merchantId);
+        $this->setApiCredentials();
 
         list($error, $merchantDetails) = $this->api
                                               ->merchantDetail
-                                              ->lockDetails($merchantId, $input);
+                                              ->updateDetailsByAdmin($merchantId, $input);
 
         if (empty($error) === false)
         {
             Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured locking merchant details on API",
+                    'error'     => "Error occured while updating merchant details on API",
                     'exception' => $error,
             ]);
         }

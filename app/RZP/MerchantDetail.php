@@ -30,13 +30,13 @@ class MerchantDetail extends Entity
         return [ $error, $response ];
     }
 
-    public function lockDetails($merchantId, array $input)
+    public function updateDetailsByAdmin($merchantId, array $input)
     {
         $error = $response = null;
 
         try
         {
-            $relativeUrl = "merchant/activation/$merchantId/lock";
+            $relativeUrl = "merchant/activation/$merchantId/update";
 
             $response = $this->request('POST', $relativeUrl, $input)->toArray();
         }
