@@ -28,6 +28,24 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testSubmit()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testSubmitWithInvalidFields()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:invalid_fields');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
     public function testUpdateIFSCCodeWithFailure()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
