@@ -28,7 +28,7 @@ class Service extends Base\Service
 
         $p2p = $this->core->create($input);
 
-        // $this->eventP2pCreated($p2p);
+        $this->eventP2pCreated($p2p);
 
         return $p2p->toArrayPublic();
     }

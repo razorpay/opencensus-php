@@ -5,6 +5,8 @@ namespace RZP\Models\P2p;
 use RZP\Models\Upi;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -99,12 +101,22 @@ class Core extends Base\Core
     {
         $gatewayInput = [];
 
+        $source = $p2p->source;
+
+        if (is_null($source->bankAccount) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UNMAPPED_VPA,
+                $source->toArrayPublic()
+            );
+        }
+
         $gatewayInput['method'] = 'ReqPay';
         $gatewayInput['params'] = [
             'p2p'          => $p2p->toArray(),
             'customer'     => $p2p->customer->toArray(),
-            'source'       => $p2p->source->toArray(),
-            'bank_account' => $p2p->source->bankAccount->toArray(),
+            'source'       => $source->toArray(),
+            'bank_account' => $source->bankAccount->toArray(),
             'sink'         => $p2p->sink->toArray(),
             'gateway'      => $input,
             'device'       => $this->app['basicauth']->getDevice()
