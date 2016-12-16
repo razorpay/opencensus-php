@@ -67,13 +67,17 @@ class Service extends Base\Service
     {
         // TODO: Fix authorization here
         // Make sure customer owns the VPA before deleting it
-        $this->trace->info(TraceCode::VPA_DELETE_REQUEST, $vpaId);
+        $this->trace->info(TraceCode::VPA_DELETE_REQUEST, [ 'id' => $vpaId]);
 
-        $vpa = $this->repo->vpa->findOrFailPublic($vpaId);
+        $customerId = $this->device->customer->getId();
+
+        $vpa = $this->repo->vpa->findByIdAndCustomerIdOrFail($vpaId, $customerId);
 
         $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
 
         $this->repo->vpa->deleteOrFail($vpa);
+
+        return $vpa->toArrayPublic();
     }
 
     public function edit($vpaId, $input)
