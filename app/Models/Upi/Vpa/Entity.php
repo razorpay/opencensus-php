@@ -68,7 +68,7 @@ class Entity extends Base\PublicEntity
     {
         $addressArray = explode(self::AROBASE, $input[self::ADDRESS]);
 
-        $this->setAttribute(self::USERNAME, $addressArray[0]);
+        $this->setAttribute(self::USERNAME, strtolower($addressArray[0]));
         $this->setAttribute(self::HANDLE, $addressArray[1]);
     }
 

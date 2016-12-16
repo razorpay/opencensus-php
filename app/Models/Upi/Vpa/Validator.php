@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::ADDRESS         => 'required|string|between:3,100',
+        Entity::ADDRESS         => 'required|string|between:3,100|regex:"[a-z0-9][a-z0-9\.-]{2,}@razor"',
         Entity::FREQUENCY       => 'sometimes|string',
         Entity::BANK_ACCOUNT_ID => 'sometimes|string',
         Entity::CUSTOMER_ID     => 'sometimes|string',
