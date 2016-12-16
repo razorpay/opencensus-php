@@ -16,8 +16,9 @@ class Service extends Base\Service
 
     public function getBalance(string $customerId) : array
     {
-        $balance = $this->repo->customer_balance
-                       ->findByCustomerIdAndMerchant($customerId, $this->merchant);
+        $balance = $this->repo
+                        ->customer_balance
+                        ->findByCustomerIdAndMerchant($customerId, $this->merchant);
 
         return $balance->toArrayPublic();
     }
@@ -42,10 +43,5 @@ class Service extends Base\Service
     public function refund(Customer\Entity $customer, int $amount)
     {
         return $this->core->refund($customer->getPublicId(), $amount);
-    }
-
-    public function sendMoney($customerId, array $input)
-    {
-        ;
     }
 }

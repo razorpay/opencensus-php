@@ -20,6 +20,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER);
         }
 
+        // Check usage limits for wallet credits except for refunds
         if ($isRefund === false)
         {
             $this->checkMonthlyUsageLimits($wallet, $newBalance);
@@ -31,7 +32,7 @@ class Validator extends Base\Validator
     {
         $monthlyUsage = $wallet->getMonthlyUsage();
 
-        if ($newBalance + $monthlyUsage > $wallet->getMaxBalance())
+        if (($newBalance + $monthlyUsage) > $wallet->getMaxBalance())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED);

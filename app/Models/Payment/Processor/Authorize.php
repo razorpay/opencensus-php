@@ -398,7 +398,14 @@ trait Authorize
 
         if ($payment->isWallet())
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            if ($payment->isFlashWalletPayment())
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::B2BWALLET);
+            }
+            else
+            {
+                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            }
         }
         else
         {

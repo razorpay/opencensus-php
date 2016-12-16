@@ -1367,3 +1367,6 @@ UPDATE payments
 
 ALTER TABLE merchant_banks
     ADD COLUMN flashwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
+
+ALTER TABLE payments
+    ADD COLUMN amount_transferrred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER amount_refunded;

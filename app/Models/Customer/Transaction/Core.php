@@ -11,13 +11,13 @@ use RZP\Constants;
 class Core extends Base\Core
 {
     /**
-     * Creates a customer_transaction record and a amount debit on the customer wallet balance
+     * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a flashwallet payment.
      *
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity
      */
-    public function createForCustomerDebit(Payment\Entity $payment)
+    public function createForCustomerDebit(Payment\Entity $payment) : Entity
     {
         $amount = $payment->getAmount();
 
@@ -43,7 +43,7 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit(Payment\Entity $payment, $transfer, int $amount, Customer\Entity $customer)
+    public function createFromCustomerCredit(Payment\Entity $payment, $transfer, int $amount, Customer\Entity $customer) : Entity
     {
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $payment->merchant, $amount, $customer);
 
@@ -102,7 +102,7 @@ class Core extends Base\Core
         return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
     }
 
-    protected function createEntityForType(string $type, $merchant, int $amount, Customer\Entity $customer)
+    protected function createEntityForType(string $type, $merchant, int $amount, Customer\Entity $customer) : Entity
     {
         $customerTxn = new Entity;
 

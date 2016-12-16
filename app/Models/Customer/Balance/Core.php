@@ -16,11 +16,13 @@ class Core extends Base\Core
      * @param  string  $customerId
      * @return Entity              Balance Entity
      */
-    protected function create($customerId) : Entity
+    protected function create(string $customerId) : Entity
     {
         $balance = new Entity;
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $customer = $this->repo
+                         ->customer
+                         ->findByPublicIdAndMerchant($customerId, $this->merchant);
 
         $balance->customer()->associate($customer);
 
@@ -83,7 +85,8 @@ class Core extends Base\Core
      */
     public function fetchOrCreate(string $customerId) : Entity
     {
-        $balance = $this->repo->customer_balance
+        $balance = $this->repo
+                        ->customer_balance
                         ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
         if (($balance !== null) and
@@ -106,7 +109,8 @@ class Core extends Base\Core
      */
     public function refund(string $customerId, int $amount) : Entity
     {
-        $balance = $this->repo->customer_balance
+        $balance = $this->repo
+                        ->customer_balance
                         ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
 
         return $this->credit($balance, $amount, true);
@@ -136,7 +140,7 @@ class Core extends Base\Core
         return $balance;
     }
 
-    protected function checkTimestampForReset(Carbon $lastTxnTime)
+    protected function checkTimestampForReset(Carbon $lastTxnTime) : array
     {
         $now = Carbon::now('Asia/Kolkata');
 
@@ -164,7 +168,7 @@ class Core extends Base\Core
         return [$resetDay, $resetWeek, $resetMonth];
     }
 
-    protected function resetAllUsages(Entity $balance, int $amount)
+    protected function resetAllUsages(Entity $balance, int $amount) : Entity
     {
         // $balance->setDailyUsage($amount);
 
@@ -176,7 +180,7 @@ class Core extends Base\Core
     }
 
     // Unused
-    protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay)
+    protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay) : Entity
     {
         if ($resetDay === false)
         {
@@ -189,7 +193,7 @@ class Core extends Base\Core
     }
 
     // Unused
-    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek)
+    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek) : Entity
     {
         if ($resetWeek === false)
         {
@@ -201,7 +205,7 @@ class Core extends Base\Core
         return $balance;
     }
 
-    protected function updateMonthlyUsage(Entity $balance, int $amount, bool $resetMonth)
+    protected function updateMonthlyUsage(Entity $balance, int $amount, bool $resetMonth) : Entity
     {
         if ($resetMonth === false)
         {

@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function getCustomerBalanceLockForUpdate(string $customerId, Merchant\Entity $merchant)
     {
-        assert($this->isTransactionActive());
+        assert ($this->isTransactionActive());
 
         return $this->findByCustomerIdAndMerchant($customerId, $merchant, true);
     }
@@ -26,7 +26,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByCustomerIdAndMerchant(string $customerId, Merchant\Entity $merchant, $lockForUpdate = false)
+    public function findByCustomerIdAndMerchant(string $customerId, Merchant\Entity $merchant, bool $lockForUpdate = false)
     {
         $customerId = Entity::verifyIdAndStripSign($customerId);
 

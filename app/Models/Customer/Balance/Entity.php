@@ -147,7 +147,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $balance);
     }
 
-    public function deductBalance($amount) //@todo: Refactor, change to protected
+    public function deductBalance(int $amount)
     {
         $this->checkNumeric($amount);
 
