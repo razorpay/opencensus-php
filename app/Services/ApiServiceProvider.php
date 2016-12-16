@@ -98,6 +98,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerBitly();
 
+        $this->registerUrlShortner();
+
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
@@ -125,6 +127,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'es',
             'maxmind',
             'bitly',
+            'url_shortner',
             'segment',
         );
     }
@@ -178,6 +181,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Bitly($app);
+        });
+    }
+
+    protected function registerUrlShortner()
+    {
+        $this->app->singleton('url_shortner', function($app)
+        {
+            $mock = $app['config']->get('applications.url_shortner.mock');
+
+            if ($mock)
+            {
+                return new UrlShortner\MockService($app);
+            }
+
+            return new UrlShortner\Service($app);
         });
     }
 

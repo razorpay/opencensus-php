@@ -71,4 +71,15 @@ return array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
     ),
+
+    'url_shortner' => [
+        'mock'     => env('URL_SHORTNER_MOCK', false),
+        'services' => env('URL_SHORTNER_SERVICES', 'gimli,bitly'),
+        'gimli'    => [
+            'secret' => env('GIMLI_SECRET', 'RANDOM_SECRET'),
+        ],
+        'bitly'    => [
+            'access_token' => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
+        ],
+    ],
 );
