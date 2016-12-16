@@ -492,6 +492,15 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function deleteCustomer($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Merchant\Service)->deleteCustomer($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getItems(Request $request, $mode)
     {
         $this->checkMode($mode);

@@ -39,4 +39,11 @@ export default class Customer extends BaseModel {
       return new Customer().deserialize(response.data)
     })
   }
+
+  delete() {
+    return ajax({
+      url: this.getResourceUrl(),
+      method: 'delete'
+    })
+  }
 }

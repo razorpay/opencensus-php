@@ -4,6 +4,7 @@ import { fromJS } from 'immutable'
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
+const CUSTOMER_DELETE = 'CUSTOMER_DELETE'
 const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER'
 const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT'
 
@@ -21,6 +22,17 @@ export const saveCustomer = (params) => {
     return dispatch({
       type: params.id ? CUSTOMER_EDIT : CUSTOMER_CREATE,
       payload: new Customer(params).save()
+    })
+  }
+}
+
+export const deleteCustomer = (params) => {
+  return (dispatch) => {
+    return new Customer(params).delete().then(() => {
+      dispatch({
+        type: CUSTOMER_DELETE,
+        payload: customer
+      })
     })
   }
 }
@@ -77,6 +89,9 @@ export default function (state = fromJS(initialState), action) {
         customers.findIndex((item) => item.get('id') === action.payload.get('id')),
         (item) => item.merge(action.payload)
       ))
+
+    case `${CUSTOMER_DELETE}::SUCCESS`:
+      return state.set('plans', state.get('plans').remove(action.payload))
 
     case HIGHLIGHT_CUSTOMER:
       return state.set('highlightRowId', action.payload.get('id'))

@@ -19,6 +19,7 @@ const CustomersListItem = (props) => {
           </button>
           <button
             class='btn btn-xs btn-default'
+            onClick={props.onDelete}
           >
             <i class='fa fa-trash text-danger'></i>
             <span>delete</span>
@@ -30,7 +31,13 @@ const CustomersListItem = (props) => {
 }
 
 const CustomersList = (props) => {
-  let { customers, isLoading, onEdit, highlightRow } = props
+  let {
+    customers,
+    isLoading,
+    onEdit,
+    onDelete,
+    highlightRow
+  } = props
   let tableRowComponent
 
   if (isLoading) {
@@ -42,6 +49,7 @@ const CustomersList = (props) => {
         customer={customer}
         canHighlightRow={highlightRow(customer)}
         onEdit={() => onEdit(customer)}
+        onDelete={() => onDelete(customer)}
       />
     )
   } else {

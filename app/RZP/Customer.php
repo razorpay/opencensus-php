@@ -10,4 +10,9 @@ class Customer extends Razorpay\Api\Customer
     {
         return parent::all($options);
     }
+
+    public function delete($id)
+    {
+      return parent::request('DELETE', $this->getEntityUrl() . $id);
+    }
 }

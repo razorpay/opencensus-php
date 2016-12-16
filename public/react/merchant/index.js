@@ -3,6 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
+import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider'
 import SessionProvider from './SessionProvider'
 import store from './store'
 
@@ -46,7 +47,11 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         React.createElement(
           SessionProvider,
           { user, modeFactory },
-          React.createElement(component, props)
+          React.createElement(
+            ConfirmModalProvider,
+            null,
+            React.createElement(component, props)
+          )
         )
       )
     )

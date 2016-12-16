@@ -1,21 +1,29 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
-import { fetchCustomers, highlightCustomerRow } from 'merchant/modules/customers'
+import Alert from 'rzp/ui/Forms/Alert'
 import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
+import * as CustomerActions from 'merchant/modules/customers'
 
 @connect(
   (state) => state.customers.toJS(),
-  { fetchCustomers, highlightCustomerRow }
+  CustomerActions
 )
 export default class CustomersListContainer extends ModalContainer {
+  static contextTypes = {
+    confirm: PropTypes.func
+  }
+
   constructor() {
     super(...arguments)
+    this.state.status = {}
+
     this.showCustomerModal = ::this.showCustomerModal
     this.highlightRowAndClose = ::this.highlightRowAndClose
+    this.deleteCustomer = ::this.deleteCustomer
   }
 
   componentWillMount() {
@@ -34,8 +42,29 @@ export default class CustomersListContainer extends ModalContainer {
     this.closeModal()
   }
 
+  deleteCustomer(customer) {
+    this.context.confirm('Are you sure to delete the customer?').then(() => {
+      this.props.deleteCustomer(customer).then((response) => {
+        this.setState({
+          status: {
+            type: 'success',
+            message: 'Customer deleted successfully'
+          }
+        })
+      }).catch((err) => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: err.errors
+          }
+        })
+      })
+    })
+  }
+
   render() {
     let { loading, customers, highlightRowId } = this.props
+    let status = this.state.status
 
     return (
       <div>
@@ -50,14 +79,18 @@ export default class CustomersListContainer extends ModalContainer {
         </Header>
 
         <div class='content-wrapper'>
+          <Alert
+            type={status.type}
+            message={status.message}
+          />
+
           <div class='panel panel-default'>
             <CustomersList
               customers={customers}
               isLoading={loading}
-              highlightRow={(customer) => {
-                return customer.id === highlightRowId
-              }}
+              highlightRow={(customer) => customer.id === highlightRowId}
               onEdit={this.showCustomerModal}
+              onDelete={this.deleteCustomer}
             />
           </div>
         </div>
