@@ -101,7 +101,39 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCommentMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCommentForLockedMerchant()
+    {
+        $params = ['locked' => true];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $params);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -116,7 +148,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -133,7 +165,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -150,7 +182,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 

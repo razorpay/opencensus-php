@@ -147,7 +147,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
-        'merchant_activation_lock'                => ['post',     'merchant/activation/{id}/lock',                  'MerchantController@postLockActivation'                             ],
+        'merchant_activation_update'              => ['post',     'merchant/activation/{id}/update',                'MerchantController@postEditMerchantDetailsAfterLock'               ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -599,7 +599,7 @@ final class Route
         'org_get_self',
         'org_get_by_hostname',
         'admin_lock_old_accounts',
-        'merchant_activation_lock',
+        'merchant_activation_update'
         'admin_password_reset',
         'offers_update_merchants',
         'offer_create',

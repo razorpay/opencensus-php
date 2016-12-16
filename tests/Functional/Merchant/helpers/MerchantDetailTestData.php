@@ -197,9 +197,48 @@ return [
         ],
     ],
 
+    'testCommentMerchant' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testCommentForLockedMerchant' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testLockMerchantWithInvalidParams' => [
         'request' => [
             'content' =>[
+                'contact_name' => 'abcd',
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'POST'
@@ -208,14 +247,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The locked field is required.',
+                    'description' => 'contact_name is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED',
         ],
     ],
 

@@ -615,11 +615,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postLockActivation($id)
+    public function postEditMerchantDetailsAfterLock($id)
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->lockMerchantDetails($id, $input);
+        $response = (new Detail\Service)->editMerchantDetails($id, $input);
 
         return ApiResponse::json($response);
     }

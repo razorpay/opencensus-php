@@ -72,13 +72,13 @@ class Service extends Base\Service
         return $this->createResponse($merchantDetails);
     }
 
-    public function lockMerchantDetails($id, array $input)
+    public function editMerchantDetails($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $merchantDetails->edit($input, 'lock');
+        $merchantDetails->edit($input, 'editAfterLock');
 
         $this->repo->saveOrFail($merchantDetails);
 

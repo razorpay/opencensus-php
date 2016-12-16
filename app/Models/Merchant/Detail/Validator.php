@@ -132,8 +132,10 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
-    protected static $lockRules = [
-        Entity::LOCKED                          => 'required|boolean',
+    protected static $editAfterLockRules = [
+        Entity::LOCKED                          => 'sometimes|boolean',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|max:255|custom',
+        Entity::COMMENT                         => 'sometimes|max:255',
     ];
 
     public function validateTransactionReportEmail($attribute, $value)
