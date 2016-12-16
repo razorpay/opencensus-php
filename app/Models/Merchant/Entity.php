@@ -6,14 +6,11 @@ use Config;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Terminal;
 use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
-
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';

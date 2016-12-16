@@ -2,13 +2,10 @@
 
 namespace RZP\Models\Merchant\Credits;
 
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use RevisionableTrait;
-
     const ID                        = 'id';
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';
