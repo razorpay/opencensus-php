@@ -6,6 +6,11 @@ use RZP\Exception;
 
 class Entity extends \RZP\Base\EloquentEx
 {
+    /**
+     * Keeps the current action value here to be set by the entity updater
+     */
+    protected $auditAction = [];
+
     protected function asDateTime($value)
     {
         //
@@ -105,5 +110,20 @@ class Entity extends \RZP\Base\EloquentEx
     public function getUpdatedAtAttribute()
     {
         return (int) $this->attributes[self::UPDATED_AT];
+    }
+
+    public function setAuditAction(array $action)
+    {
+        $this->auditAction = $action;
+    }
+
+    public function getAuditAction()
+    {
+        return $this->auditAction;
+    }
+
+    public function resetAuditAction()
+    {
+        $this->auditAction = [];
     }
 }

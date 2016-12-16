@@ -474,14 +474,12 @@ class Gateway
 
     protected function getPaymentToVerify($verify)
     {
-        $input = $verify->input;
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
 
-        $payment = $this->repo->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
+        $verify->payment = $gatewayPayment;
 
-        $verify->payment = $payment;
-
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function getNamespace()

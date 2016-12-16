@@ -38,7 +38,11 @@ class PublicEntity extends UniqueIdEntity
 
     public function toArrayPublic()
     {
-        $array = $this->toArray();
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayPublic();
+
+        $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
 
@@ -94,6 +98,40 @@ class PublicEntity extends UniqueIdEntity
 
             $this->$func($array);
         }
+    }
+
+    public function relationsToArrayPublic()
+    {
+        $array = [];
+        $public = array_flip($this->public);
+
+        $relations = $this->relations;
+
+        foreach ($relations as $key => $value)
+        {
+            $newKey = snake_case($key);
+            if ($newKey !== $key)
+            {
+                $relations[$newKey] = $value;
+                unset($relations[$key]);
+            }
+        }
+
+        $publicRelations = array_intersect_key($relations, $public);
+
+        foreach ($publicRelations as $key => $value)
+        {
+            if (($value !== null) and PublicCollection::isPublicCollection($value))
+            {
+                $array[$key] = $value->toArrayPublicEmbedded();
+            }
+            else
+            {
+                $array[$key] = $value;
+            }
+        }
+
+        return $array;
     }
 
     public function setPublicIdAttribute(array & $array)
@@ -202,6 +240,18 @@ class PublicEntity extends UniqueIdEntity
         static::verifyUniqueId($id, true);
 
         return $id;
+    }
+
+    public static function verifyIdAndStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
     }
 
     protected static function stripSignOrFail(& $id)

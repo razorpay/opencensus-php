@@ -76,6 +76,37 @@ return [
         ]
     ],
 
+    'testAdminAuth' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => []
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testPrivateAuthOnAdminRoute' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY
+                ],
+            ],
+            'status_code' => 401,
+        ]
+    ],
+
     'testAppRoutesWithInvalidPrivateAuth' => [
         'response' => [
             'content' => [

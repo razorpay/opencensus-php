@@ -21,6 +21,12 @@ class Account
     const TEST_ACCOUNT_KEY_ID   = '1DP5mmOlF5G5ag';
     const DEMO_ACCOUNT_KEY_ID   = '0wFRWIZnH65uny';
 
+    const TEST_ACCOUNT_ICICI    = '1DP5mmOlF5G5au';
+    const DEMO_ACCOUNT_ICICI    = '0wFRWIZnH65unp';
+
+    const TEST_ACCOUNT_BOB      = '1DP5mmOlF5G5ah';
+    const DEMO_ACCOUNT_BOB      = '0wFRWIZnH65una';
+
     protected static $nodalAccounts = array(
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT);

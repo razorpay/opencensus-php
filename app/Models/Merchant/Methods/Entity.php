@@ -30,6 +30,10 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'methods';
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
     protected $fillable = array(
         self::MERCHANT_ID,
         self::AMEX,
