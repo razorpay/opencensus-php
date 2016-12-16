@@ -1,5 +1,6 @@
 .invoice-creation-container {
   max-width: 900px;
+  margin: auto;
 
   .panel-body {
     padding: 40px;
@@ -21,24 +22,6 @@
       max-width: 80%;
     }
 
-    .table > thead > tr > th {
-      padding: 12px 40px;
-      background-color: #E3F4FE;
-    }
-
-    .table > tbody > tr > td {
-      padding: 15px 20px;
-
-      &:first-child {
-        padding-left: 40px;
-      }
-
-      &:last-child {
-        padding-right: 40px;
-        position: relative
-      }
-    }
-
     .remove-row-action {
       position: absolute;
       top: 0;
@@ -55,17 +38,33 @@
   }
 }
 
+.invoice-lineitem {
+  .table > thead > tr > th {
+    padding: 12px 40px;
+    background-color: #E3F4FE;
+  }
+
+  .table > tbody > tr > td {
+    padding: 15px 20px;
+
+    &:first-child {
+      padding-left: 40px;
+    }
+
+    &:last-child {
+      padding-right: 40px;
+      position: relative
+    }
+  }
+}
+
 .invoice-total {
   font-size: 17px;
 
   .dl-horizontal {
-    padding-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #aaa;
     padding-right: 40px;
-  }
-
-  dt {
-    margin-bottom: 15px;
   }
 }
 
@@ -92,5 +91,44 @@
   small {
     font-size: 11px;
     color: #999;
+  }
+}
+
+.invoice-details {
+  .invoice-header {
+    padding: 20px 0;
+
+    > h3 {
+      margin: 0;
+    }
+  }
+
+  .panel {
+    margin-bottom: 25px;
+  }
+
+  .panel-heading {
+    font-size: 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .dl-horizontal {
+    margin-left: 25px;
+    margin-bottom: 0;
+
+    dt, dd {
+      line-height: 2.5;
+    }
+
+    dt {
+      text-align: left;
+      text-transform: uppercase;
+    }
+  }
+
+  .invoice-lineitem {
+    margin-left: -15px;
+    margin-right: -15px;
   }
 }

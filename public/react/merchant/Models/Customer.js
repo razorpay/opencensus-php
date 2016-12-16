@@ -12,15 +12,15 @@ export default class Customer extends BaseModel {
   ]
 
   get displayName() {
-    if (this.name) {
-      return this.name
+    if (this.get('name')) {
+      return this.get('name')
     }
 
-    if (this.contact) {
-      return `${this.contact} ${this.email ? `(${this.email})` : ''}`
+    if (this.get('contact')) {
+      return `${this.get('contact')} ${this.get('email') ? `(${this.get('email')})` : ''}`
     }
 
-    return this.email
+    return this.get('email')
   }
 
   static fetchAll(params = {}) {

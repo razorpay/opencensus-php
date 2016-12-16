@@ -218,7 +218,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                       onClick={handleSubmit(this.save)}
                     />
                     <a
-                      href='#/app/invoices'
+                      href='#/app/invoices/list'
                       class='btn btn-default btn-rounded'
                     >
                       Cancel
