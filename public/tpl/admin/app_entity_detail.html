@@ -43,6 +43,9 @@
         <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
           Edit Terminal
         </button>
+        <button class="btn btn-info" ng-click="open.terminalMerchantAssign(entity)">
+          Assign Sub Merchants
+        </button>
         <button ng-show="entity.enabled" class="btn btn-warning" ng-click="terminal.disable(entity.id)"
           ng-confirm-click="Are you sure you want to disable this terminal?"
         >
@@ -174,6 +177,25 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="assignMerchantToTerminal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Sub Merchant To Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="merchant_id" class="col-lg-4 control-label">Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="merchant_id" ng-model="terminal.merchant_id" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Are you sure?" ng-click="ok(terminal)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="editIin.html">

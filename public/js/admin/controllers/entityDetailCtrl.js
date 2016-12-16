@@ -130,6 +130,19 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while enabling the terminal');
         });
+      },
+      addMerchant: function(id, merchant_id) {
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchants/' + merchant_id);
+        request.success(function (data) {
+          if (data.success) {
+            alert(' successfully');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while editing the terminal');
+        });
       }
     };
 
@@ -230,6 +243,21 @@ app.controller('EntityDetailCtrl', [
         modalInstance.result.then(function (input) {
           $scope.iin.edit(input);
         }, function () {
+        });
+      },
+      terminalMerchantAssign: function(terminal) {
+        var modalInstance = $modal.open({
+          templateUrl: 'assignMerchantToTerminal.html',
+          controller: 'assignMerchantToTerminalModalCtrl',
+          resolve: {
+            current: function () {
+              return terminal;
+            }
+          }
+        });
+        modalInstance.result.then(function (input) {
+            $scope.terminal.addMerchant(input.id, input.terminal_id);
+        }, function() {
         });
       }
     };
@@ -340,6 +368,24 @@ app.controller('EntityDetailCtrl', [
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('assignMerchantToTerminalModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    // This is the current terminal current
+    $scope.terminal = {
+        id: current.id,
+        terminal_id : current.terminal_id
+    };
+    $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
     };
   }
 ]);
