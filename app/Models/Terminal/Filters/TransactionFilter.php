@@ -237,20 +237,20 @@ class TransactionFilter extends Terminal\Filter
 
     public function amountFilter(Terminal\Entity $terminal, array $input)
     {
-        $filterParams['category'] = $terminal->getNetworkCategory();
+        $method = $input['payment']->getMethod();
 
-        $filterParams['method'] = $input['payment']->getMethod();
+        $gateway = $terminal->getGateway();
 
-        $filterParams['network'] = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $bank = $input['payment']->getBank();
+        $category = $terminal->getNetworkCategory();
 
-        $filterParams['gateway'] = is_null($bank) ? $input['payment']->getGateway() : $bank;
+        $filterParams = [$bank,$method,$network,$gateway,$category];
 
-        $minAmount = Terminal\MinAmount::getMinAmount($filterParams);
+        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
 
         $amount = $input['payment']->getAmount();
 
-        return ($amount > $minAmount);
+        return ($amount >= $minAmount);
     }
 }

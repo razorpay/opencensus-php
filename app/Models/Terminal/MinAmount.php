@@ -4,58 +4,38 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 
 class MinAmount
 {
-
     const MIN_AMOUNT = [
-
-        'netbanking' => [
-            'default' => [
-                'default'   => 100,
-                'utilities' => 100,
-                'grocery'   => 100,
-            ],
-            'billdesk' => [
-                'default'   => 100,
+        Method::NETBANKING => [
+            Gateway::BILLDESK   => [
                 'grocery'   => 100,
                 'utilities' => 100,
             ],
-            'top_six' => [
-                'default'   => 100,
+            self::TOP_SIX_BANKS => [
                 'grocery'   => 100,
                 'ecommerce' => 100,
             ],
-            'kkbk' => [
-                'default'   => 100,
+            Gateway::NETBANKING_KOTAK => [
                 'grocery'   => 100,
                 'ecommerce' => 100,
             ],
         ],
-
-        'card' => [
-            'default' => [
-                'default'           => 100,
-                'utilities'         => 100,
-                'retail_services'   => 100,
-            ],
+        Method::CARD => [
             Network::AMEX => [
-                'default'   => 100,
                 'retail_services' => 100,
                 'utilities'       => 100,
-            ],
-            Network::MC => [
-                'default'   => 100,
-                'education' => 100,
-                'utilities' => 100,
             ],
         ],
     ];
 
+    const TOP_SIX_BANKS = 'TOP_SIX';
+
     const TOP_SIX = [
-        'KKBK',
-        'YESB',
-        'HDFC',
+        Gateway::NETBANKING_KOTAK,
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -67,16 +47,9 @@ class MinAmount
     * @param $filterParams array
     * @return $minAmount from constant(MIN_AMOUNT)
     */
-    public static function getMinAmount(array $filterParams)
+    public static function getMinAmount($method, $gateway, $network, $category)
     {
-        // unwrap filterParams
-        $category = $filterParams['category'];
-
-        $method = $filterParams['method'];
-
-        $network = $filterParams['network'];
-
-        $gateway = $filterParams['gateway'];
+        $minAmount = 0;
 
         // set category
         if (empty($category) === true)
@@ -84,82 +57,37 @@ class MinAmount
             $category = Category::getDefaultForMethodAndNetwork($method, $network);
         }
 
-        if (empty($method) === false)
-        {
-            $minAmount = self::netbankingMinAmount($category, $gateway);
-        }
-
-        else if (empty($network) === false)
-        {
-            $minAmount = self::networkMinAmount($category, $network);
-        }
-
-        if (is_null($minAmount) === true)
-        {
-            $minAmount = 0;
-        }
+        $minAmount = self::minAmount($method, $gateway, $network, $category);
 
         return $minAmount;
     }
 
-    protected static function netbankingMinAmount($category, $gateway)
+    protected static function minAmount($method, $gateway, $network, $category)
     {
-        $netbankingMap = constant('self::MIN_AMOUNT')['netbanking'];
+        $minAmount = 0 ;
 
-        // check gateway exists in top_six
-        if (in_array($gateway, constant('self::TOP_SIX')) === true)
+        switch ($method)
         {
-            $gatewayTag = 'top_six';
+            case Method::NETBANKING:
+                $key = $gateway;
+                break;
+
+            case Method::EMI:
+            case Method::CARD:
+                $key = $network;
+                break;
         }
 
-        // over-write filter for top-6
-        // & billdesk etc specific cases
-        elseif (array_key_exists($gateway, $netbankingMap) === true)
+        if (($method === Method::NETBANKING) and
+            (in_array($gateway, self::TOP_SIX) === true))
         {
-            $gatewayTag = $gateway;
+            $minAmount = self::MIN_AMOUNT[self::TOP_SIX_BANKS][$category];
         }
 
-        else
+        if ((array_key_exists($key, self::MIN_AMOUNT[$method]) === true) and
+            (array_key_exists($category, self::MIN_AMOUNT[$method][$key]) === true))
         {
-            $gatewayTag = 'default';
-        }
-
-        $minAmount = self::minAmountFromArray($netbankingMap, $gatewayTag, $category);
-
-        return $minAmount;
-    }
-
-    protected static function networkMinAmount($category, $network)
-    {
-        $networkMap = constant('self::MIN_AMOUNT')['card'];
-
-        if (array_key_exists($network, $networkMap) === true)
-        {
-            $networkTag = $network;
-        }
-
-        else
-        {
-            $networkTag = 'default';
-        }
-
-        $minAmount = self::minAmountFromArray($networkMap, $networkTag, $category);
-
-        return $minAmount;
-    }
-
-    protected static function minAmountFromArray($amountMap, $tag, $category)
-    {
-        $amountArray = $amountMap[$tag];
-
-        if (array_key_exists($category, $amountArray) === true)
-        {
-            $minAmount = $amountArray[$category];
-        }
-
-        else
-        {
-            $minAmount = $amountArray['default'];
+            $minAmount = self::MIN_AMOUNT[$gateway][$category];
         }
 
         return $minAmount;
