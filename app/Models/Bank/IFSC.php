@@ -4,6 +4,7 @@ namespace RZP\Models\Bank;
 
 class IFSC
 {
+    const AIRP = 'AIRP';
     const APMC = 'APMC';
     const ABHY = 'ABHY';
     const ADCB = 'ADCB';
