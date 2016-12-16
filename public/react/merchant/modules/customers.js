@@ -4,6 +4,8 @@ import { fromJS } from 'immutable'
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
+const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER'
+const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT'
 
 export const fetchCustomers = (params) => {
   return (dispatch) => {
@@ -23,16 +25,35 @@ export const saveCustomer = (params) => {
   }
 }
 
+export const highlightCustomerRow = (customer) => {
+  return (dispatch) => {
+    dispatch({
+      type: HIGHLIGHT_CUSTOMER,
+      payload: customer
+    })
+
+    setTimeout(() => {
+      dispatch({
+        type: REMOVE_HIGHLIGHT
+      })
+    }, 5000)
+  }
+}
+
 let initialState = {
   loading: true,
   customers: [],
-  count: 0
+  count: 0,
+  highlightRowId: null
 }
 
 export default function (state = fromJS(initialState), action) {
   switch(action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
-      return state.set('loading', true)
+      return state.merge({
+        loading: true,
+        highlightRowId: null
+      })
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
       return state.merge({
@@ -56,6 +77,12 @@ export default function (state = fromJS(initialState), action) {
         customers.findIndex((item) => item.get('id') === action.payload.get('id')),
         (item) => item.merge(action.payload)
       ))
+
+    case HIGHLIGHT_CUSTOMER:
+      return state.set('highlightRowId', action.payload.get('id'))
+
+    case REMOVE_HIGHLIGHT:
+      return state.set('highlightRowId', null)
 
     default:
       return state

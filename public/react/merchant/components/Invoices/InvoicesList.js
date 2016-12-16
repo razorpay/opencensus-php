@@ -5,9 +5,9 @@ import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
 
 const InvoiceListItem = (props) => {
-  let { invoice, ...attrs } = props
+  let { invoice, canHighlight } = props
   return (
-    <tr {...attrs}>
+    <tr class={canHighlight ? 'luminate' : ''}>
       <td>
         <a href={`#/app/invoices/${invoice.id}`}>{invoice.id}</a>
       </td>
@@ -64,7 +64,7 @@ export default (props) => {
       <InvoiceListItem
         key={invoice.id}
         invoice={invoice}
-        class={highlightRow(invoice) ? 'luminate' : ''}
+        canHighlight={highlightRow(invoice)}
         onEditClick={() => props.onEdit(invoice)}
       />
     )

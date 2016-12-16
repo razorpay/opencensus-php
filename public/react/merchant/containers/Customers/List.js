@@ -2,19 +2,20 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
-import { fetchCustomers } from 'merchant/modules/customers'
+import { fetchCustomers, highlightCustomerRow } from 'merchant/modules/customers'
 import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
 
 @connect(
   (state) => state.customers.toJS(),
-  { fetchCustomers }
+  { fetchCustomers, highlightCustomerRow }
 )
 export default class CustomersListContainer extends ModalContainer {
   constructor() {
     super(...arguments)
     this.showCustomerModal = ::this.showCustomerModal
+    this.highlightRowAndClose = ::this.highlightRowAndClose
   }
 
   componentWillMount() {
@@ -28,8 +29,13 @@ export default class CustomersListContainer extends ModalContainer {
     this.openModal()
   }
 
+  highlightRowAndClose(customer) {
+    this.props.highlightCustomerRow(customer)
+    this.closeModal()
+  }
+
   render() {
-    let { loading, customers } = this.props
+    let { loading, customers, highlightRowId } = this.props
 
     return (
       <div>
@@ -48,6 +54,9 @@ export default class CustomersListContainer extends ModalContainer {
             <CustomersList
               customers={customers}
               isLoading={loading}
+              highlightRow={(customer) => {
+                return customer.id === highlightRowId
+              }}
               onEdit={this.showCustomerModal}
             />
           </div>
@@ -60,7 +69,7 @@ export default class CustomersListContainer extends ModalContainer {
         >
           <CustomerCreation
             customer={this.state.customerToEdit}
-            onSave={this.closeModal}
+            onSave={this.highlightRowAndClose}
             closeModal={this.closeModal}
           />
         </Modal>
