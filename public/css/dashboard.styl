@@ -306,3 +306,48 @@ a.highlight:hover, a.highlight:focus {
 .border-bottom {
   border-bottom: 1px #edf1f2 solid;
 }
+
+
+// Invoices nav
+
+#invoices-page {
+  position relative;
+
+  .invoicesNav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #ddd;
+
+    > .h3 {
+      flex: 1.2;
+    }
+
+    > .nav.nav-pills {
+      flex: 1;
+
+      > li > a {
+        background: transparent;
+        padding: 24px;
+        border-radius: 0;
+        border-bottom: 2px solid transparent;
+
+        &.active {
+          color: #7266ba;
+          border-color: inherit;
+        }
+      }
+    }
+
+    > div {
+      flex: 1.2;
+    }
+  }
+
+  .react-root > .btn-toolbar {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+  }
+}

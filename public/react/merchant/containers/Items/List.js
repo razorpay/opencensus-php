@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import Modal from 'rzp/ui/Modal'
-import Header from 'rzp/ui/Header'
 import Alert from 'rzp/ui/Forms/Alert'
 import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
@@ -71,8 +70,8 @@ export default class ItemsListContainer extends ModalContainer {
     let status = this.state.status
 
     return (
-      <div>
-        <Header title='Items'>
+      <div class='react-root'>
+        <div class='btn-toolbar'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={() => this.showItemModal()}
@@ -80,7 +79,7 @@ export default class ItemsListContainer extends ModalContainer {
             <i class='fa fa-plus'></i>
             <span>New Item</span>
           </button>
-        </Header>
+        </div>
 
         <div class='content-wrapper'>
           <Alert

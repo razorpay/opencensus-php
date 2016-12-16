@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import Header from 'rzp/ui/Header'
 import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 
@@ -65,25 +64,23 @@ export default class InvoicesListContainer extends ModalContainer {
     let { loading, invoices } = this.props
 
     return (
-      <div>
-        <Header title='Invoices'>
-          <div class='btn-toolbar pull-right'>
-            <button
-              class='btn btn-primary btn-rounded'
-              onClick={() => this.showPaymentLinkModal()}
-            >
-              <i class='fa fa-plus'></i>
-              <span>Create Payment Link</span>
-            </button>
-            <a
-              href='#/app/invoices/new'
-              class='btn btn-primary btn-rounded'
-            >
-              <i class='fa fa-plus'></i>
-              <span>New Invoice</span>
-            </a>
-          </div>
-        </Header>
+      <div class='react-root'>
+        <div class='btn-toolbar'>
+          <button
+            class='btn btn-primary btn-rounded'
+            onClick={() => this.showPaymentLinkModal()}
+          >
+            <i class='fa fa-plus'></i>
+            <span>Create Payment Link</span>
+          </button>
+          <a
+            href='#/app/invoices/new'
+            class='btn btn-primary btn-rounded'
+          >
+            <i class='fa fa-plus'></i>
+            <span>New Invoice</span>
+          </a>
+        </div>
 
         <div class='content-wrapper'>
           <div class='panel panel-default'>

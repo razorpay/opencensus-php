@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 import Alert from 'rzp/ui/Forms/Alert'
 import Modal from 'rzp/ui/Modal'
-import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import PowerSelect from 'rzp/ui/Select/PowerSelect'
@@ -88,7 +87,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   save(props) {
     return this.props.saveInvoice(props).then((invoice) => {
-      this.context.ngRouter.transitionTo('app.invoices').then(() => {
+      this.context.ngRouter.transitionTo('app.invoices.list').then(() => {
         setTimeout(() => {
           this.props.highLightInvoice(invoice.id)
         }, 1500)
@@ -104,12 +103,12 @@ export default class InvoicesNewContainer extends ModalContainer {
     const { handleSubmit } = this.props
 
     return (
-      <div>
-        <Header title={this.props.id ? 'Edit Invoice' : 'New Invoice'}>
-          <a href='#/app/invoices' class='pull-right btn btn-link btn-sm'>
+      <div class='react-root'>
+        <div class='btn-toolbar'>
+          <a href='#/app/invoices/list' class='pull-right btn btn-link btn-sm'>
             <i class='fa fa-close'></i>
           </a>
-        </Header>
+        </div>
 
         <Modal
           isOpen={this.state.isModalOpen}

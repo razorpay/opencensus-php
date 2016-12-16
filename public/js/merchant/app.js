@@ -180,18 +180,21 @@ var app = angular.module('app', [
 
     .state('app.invoices', {
       url: '/invoices',
+      templateUrl: 'tpl/app_invoices.html'
+    }).state('app.invoices.list', {
+      url: '/list',
       templateProvider: reactTemplateProvider('<invoices-list />')
-    }).state('app.invoicesnew', {
-      url: '/invoices/new',
+    }).state('app.invoices.new', {
+      url: '/new',
       templateProvider: reactTemplateProvider('<invoices-new />')
-    }).state('app.invoicesedit', {
-      url: '/invoices/:id/edit',
+    }).state('app.invoices.edit', {
+      url: '/:id/edit',
       controller: ['$scope', '$stateParams', function($scope, $stateParams) {
         $scope.invoiceId = $stateParams.id
       }],
       templateProvider: reactTemplateProvider('<invoices-new id="invoiceId" />')
-    }).state('app.invoicedetails', {
-      url: '/invoices/:id',
+    }).state('app.invoices.details', {
+      url: '/:id/details',
       controller: ['$scope', '$stateParams', function($scope, $stateParams) {
         $scope.invoiceId = $stateParams.id;
       }],
@@ -202,15 +205,15 @@ var app = angular.module('app', [
     }).state('app.subscriptionsnew', {
       url: '/subscriptions/new',
       templateProvider: reactTemplateProvider('<subscriptions-new />')
-    }).state('app.customers', {
+    }).state('app.invoices.customers', {
       url: '/customers',
       templateProvider: reactTemplateProvider('<customers-list />')
+    }).state('app.invoices.items', {
+      url: '/items',
+      templateProvider: reactTemplateProvider('<items-list />')
     }).state('app.plans', {
       url: '/plans',
       templateProvider: reactTemplateProvider('<plans-list />')
-    }).state('app.items', {
-      url: '/items',
-      templateProvider: reactTemplateProvider('<items-list />')
     })
 
 

@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
-import Header from 'rzp/ui/Header'
 import Alert from 'rzp/ui/Forms/Alert'
 import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
@@ -67,8 +66,8 @@ export default class CustomersListContainer extends ModalContainer {
     let status = this.state.status
 
     return (
-      <div>
-        <Header title='Customers'>
+      <div class='react-root'>
+        <div class='btn-toolbar'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={() => this.showCustomerModal()}
@@ -76,7 +75,7 @@ export default class CustomersListContainer extends ModalContainer {
             <i class='fa fa-plus'></i>
             <span>New Customer</span>
           </button>
-        </Header>
+        </div>
 
         <div class='content-wrapper'>
           <Alert
