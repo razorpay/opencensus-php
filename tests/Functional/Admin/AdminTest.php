@@ -480,6 +480,8 @@ class AdminTest extends TestCase
                 ->with($key)
                 ->andReturn('dummytoken');
 
+        Cache::mockPartial();
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
