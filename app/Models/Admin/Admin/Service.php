@@ -235,7 +235,7 @@ class Service extends Base\Service
 
         if (($resetToken === null) or ($resetToken !== $input['token']))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESET_TOKEN);
         }
 
         $this->core()->updatePassword($admin, $input, true);

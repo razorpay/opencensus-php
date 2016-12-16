@@ -89,6 +89,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
+    const BAD_REQUEST_INVALID_RESET_TOKEN                                           = 'BAD_REQUEST_INVALID_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
