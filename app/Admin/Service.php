@@ -1810,6 +1810,22 @@ class Service extends Base\Service
         }
     }
 
+    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->terminal->unassignSubMerchant($terminalId, $merchantId);
+
+            return [null, $response->toArray()];
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
     public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
         $this->setApiCredentials(null, $mode);

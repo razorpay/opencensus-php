@@ -132,7 +132,20 @@ app.controller('EntityDetailCtrl', [
         });
       },
       addMerchant: function(id, merchant_id) {
-        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchants/' + merchant_id);
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
+        request.success(function (data) {
+          if (data.success) {
+            alert(' successfully');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while editing the terminal');
+        });
+      },
+      removeMerchant: function(id, merchant_id) {
+        var request = $http.delete('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
         request.success(function (data) {
           if (data.success) {
             alert(' successfully');
@@ -259,6 +272,21 @@ app.controller('EntityDetailCtrl', [
             $scope.terminal.addMerchant(input.id, input.merchant_id);
         }, function() {
         });
+      },
+      terminalMerchantUnassign: function(terminal) {
+        var modalInstance = $modal.open({
+          templateUrl: 'unassignMerchantToTerminal.html',
+          controller: 'unassignMerchantToTerminalModalCtrl',
+          resolve: {
+            current: function () {
+              return terminal;
+            }
+          }
+        });
+        modalInstance.result.then(function (input) {
+            $scope.terminal.removeMerchant(input.id, input.merchant_id);
+        }, function() {
+        });
       }
     };
     $scope.getKeys = function () {
@@ -371,6 +399,24 @@ app.controller('EntityDetailCtrl', [
     };
   }
 ]).controller('assignMerchantToTerminalModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    // This is the current terminal current
+    $scope.terminal = {
+        id: current.id,
+        merchant_id : current.merchant_id
+    };
+    $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('unassignMerchantToTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
   '$http',
