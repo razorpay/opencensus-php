@@ -300,7 +300,9 @@ class Entity extends Base\PublicEntity
         // $policy = $this->org->policy;
         $policy = new Org\AuthPolicy\Entity;
 
-        $maxPasswordsToRetain = $policy->getMaxPasswordToRetain();
+        $policy = $policy->toArray();
+
+        $maxPasswordsToRetain = $policy[Org\AuthPolicy\Entity::MAX_PASSWORD_RETAIN];
 
         $oldPasswords = $this->getAttribute(self::OLD_PASSWORDS);
 

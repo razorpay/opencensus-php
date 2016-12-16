@@ -537,6 +537,30 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testPasswordResetMaxRetain()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $oldPwd = 'M!2#uWdx';
+
+        $admin->setPassword($oldPwd);
+
+        $admin->setPassword('M!2#uWdx');
+
+        $this->repo->saveOrFail($admin);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testPasswordResetInvalidAuthType()
     {
         $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);

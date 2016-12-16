@@ -401,6 +401,30 @@ return [
         ],
     ],
 
+    'testPasswordResetMaxRetain' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'M!2#uWdx',
+                'password_confirmation' => 'M!2#uWdx',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPasswordResetInvalidAuthType' => [
         'request' => [
             'url' => '/orgs/%s/admin/reset_password',
