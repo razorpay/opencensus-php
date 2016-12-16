@@ -3,7 +3,7 @@ import ajax from 'merchant/utils/ajax'
 
 export default class Customer extends BaseModel {
   resourceIdField = 'id'
-  resourceUrl = '/customer'
+  resourceUrl = '/customers'
   resourceProperties = [
     'id',
     'name',

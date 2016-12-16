@@ -2,9 +2,9 @@ import TableLoader from 'rzp/ui/TableLoader'
 import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 
 const ItemsListItem = (props) => {
-  let { item } = props
+  let { item, canHighlightRow } = props
   return (
-    <tr>
+    <tr class={canHighlightRow ? 'luminate' : ''}>
       <td>{item.name}</td>
       <td>{item.description}</td>
       <td class='text-right'>{item.amountInINR}</td>
@@ -30,7 +30,15 @@ const ItemsListItem = (props) => {
   )
 }
 
-export default ({ items, isLoading, onEdit, onDelete }) => {
+const ItemsList = (props) => {
+  let {
+    items,
+    isLoading,
+    onEdit,
+    onDelete,
+    highlightRow
+  } = props
+
   let tableRowComponent
 
   if (isLoading) {
@@ -40,6 +48,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
       <ItemsListItem
         key={item.id}
         item={item}
+        canHighlightRow={highlightRow(item)}
         onEdit={() => onEdit(item)}
         onDelete={() => onDelete(item)}
       />
@@ -66,3 +75,9 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
     </div>
   )
 }
+
+ItemsList.defaultProps = {
+  highlightRow: () => {}
+}
+
+export default ItemsList

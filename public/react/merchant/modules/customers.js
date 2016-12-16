@@ -31,7 +31,7 @@ export const deleteCustomer = (params) => {
     return new Customer(params).delete().then(() => {
       dispatch({
         type: CUSTOMER_DELETE,
-        payload: customer
+        payload: params
       })
     })
   }
@@ -91,7 +91,7 @@ export default function (state = fromJS(initialState), action) {
       ))
 
     case `${CUSTOMER_DELETE}::SUCCESS`:
-      return state.set('plans', state.get('plans').remove(action.payload))
+      return state.set('customers', state.get('customers').remove(action.payload))
 
     case HIGHLIGHT_CUSTOMER:
       return state.set('highlightRowId', action.payload.get('id'))

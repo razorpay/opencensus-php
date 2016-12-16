@@ -6,7 +6,7 @@ use Razorpay;
 
 class Customer extends Razorpay\Api\Customer
 {
-    public function all($options = array())
+    public function all($options = [])
     {
         return parent::all($options);
     }

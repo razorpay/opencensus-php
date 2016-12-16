@@ -1,25 +1,32 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import Modal from 'rzp/ui/Modal'
 import Header from 'rzp/ui/Header'
-import { fetchItems } from 'merchant/modules/items'
+import Alert from 'rzp/ui/Forms/Alert'
 import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
+import * as ItemActions from 'merchant/modules/items'
 
 @connect(
   (state) => state.items.toJS(),
-  { fetchItems }
+  ItemActions
 )
 @reduxForm({
   form: 'newItem',
 })
 export default class ItemsListContainer extends ModalContainer {
+  static contextTypes = {
+    confirm: PropTypes.func
+  }
+
   constructor() {
     super(...arguments)
-    this.state.itemToEdit = null
+    this.state.status = {}
+
     this.showItemModal = ::this.showItemModal
+    this.highlightRowAndClose = ::this.highlightRowAndClose
     this.deleteItem = ::this.deleteItem
   }
 
@@ -34,12 +41,34 @@ export default class ItemsListContainer extends ModalContainer {
     this.openModal()
   }
 
-  deleteItem() {
+  highlightRowAndClose(item) {
+    this.props.highlightItemRow(item)
+    this.closeModal()
+  }
 
+  deleteItem(item) {
+    this.context.confirm('Are you sure to delete the item?').then(() => {
+      this.props.deleteItem(item).then((response) => {
+        this.setState({
+          status: {
+            type: 'success',
+            message: 'Item deleted successfully'
+          }
+        })
+      }).catch((err) => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: err.errors
+          }
+        })
+      })
+    })
   }
 
   render() {
-    let { loading, items } = this.props
+    let { loading, items, highlightRowId } = this.props
+    let status = this.state.status
 
     return (
       <div>
@@ -54,10 +83,16 @@ export default class ItemsListContainer extends ModalContainer {
         </Header>
 
         <div class='content-wrapper'>
+          <Alert
+            type={status.type}
+            message={status.message}
+          />
+
           <div class='panel panel-default'>
             <ItemsList
               items={items}
               isLoading={loading}
+              highlightRow={(item) => item.id === highlightRowId}
               onEdit={this.showItemModal}
               onDelete={this.deleteItem}
             />
@@ -71,7 +106,7 @@ export default class ItemsListContainer extends ModalContainer {
         >
           <ItemCreation
             item={this.state.itemToEdit}
-            onSave={this.closeModal}
+            onSave={this.highlightRowAndClose}
             closeModal={this.closeModal}
           />
         </Modal>

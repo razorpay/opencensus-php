@@ -146,12 +146,14 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
 
     Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
-    Route::post('/{mode}/customer', 'MerchantController@postCustomer')->name('customer_create');
-    Route::put('/{mode}/customer/{id}', 'MerchantController@putCustomer')->name('customer_edit');
-    Route::delete('/{mode}/customer/{id}', 'MerchantController@deleteCustomer')->name('customer_delete');
+    Route::post('/{mode}/customers', 'MerchantController@postCustomer')->name('customer_create');
+    Route::put('/{mode}/customers/{id}', 'MerchantController@putCustomer')->name('customer_edit');
+    Route::delete('/{mode}/customers/{id}', 'MerchantController@deleteCustomer')->name('customer_delete');
 
     Route::get('/{mode}/items', 'MerchantController@getItems')->name('items_fetch_all');
-    Route::post('/{mode}/item', 'MerchantController@postItem')->name('item_create');
+    Route::post('/{mode}/items', 'MerchantController@postItem')->name('item_create');
+    Route::put('/{mode}/items/{id}', 'MerchantController@putItem')->name('item_edit');
+    Route::delete('/{mode}/items/{id}', 'MerchantController@deleteItem')->name('item_delete');
 
 
     Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');

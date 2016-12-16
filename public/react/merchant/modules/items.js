@@ -4,6 +4,9 @@ import { fromJS } from 'immutable'
 const ITEMS_FETCH = 'ITEMS_FETCH'
 const ITEM_CREATE = 'ITEM_CREATE'
 const ITEM_EDIT = 'ITEM_EDIT'
+const ITEM_DELETE = 'ITEM_DELETE'
+const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM'
+const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT'
 
 export const fetchItems = () => {
   return (dispatch) => {
@@ -23,16 +26,47 @@ export const saveItem = (params) => {
   }
 }
 
+export const deleteItem = (params) => {
+  return (dispatch) => {
+    return new Item(params).delete().then(() => {
+      dispatch({
+        type: ITEM_DELETE,
+        payload: params
+      })
+    })
+  }
+}
+
+export const highlightItemRow = (item) => {
+  return (dispatch) => {
+    dispatch({
+      type: HIGHLIGHT_ITEM,
+      payload: item
+    })
+
+    setTimeout(() => {
+      dispatch({
+        type: REMOVE_ITEM_HIGHLIGHT
+      })
+    }, 5000)
+  }
+}
+
+
 let initialState = {
   loading: true,
   items: [],
-  count: 0
+  count: 0,
+  highlightRowId: null
 }
 
 export default function (state = fromJS(initialState), action) {
   switch(action.type) {
     case `${ITEMS_FETCH}::PENDING`:
-      return state.set('loading', true)
+      return state.merge({
+        loading: true,
+        highlightRowId: null
+      })
 
     case `${ITEMS_FETCH}::SUCCESS`:
       return state.merge({
@@ -57,6 +91,15 @@ export default function (state = fromJS(initialState), action) {
         items.findIndex((item) => item.get('id') === updatedItem.id),
         (item) => item.merge(updatedItem)
       ))
+
+    case `${ITEM_DELETE}::SUCCESS`:
+      return state.set('items', state.get('items').remove(action.payload))
+
+    case HIGHLIGHT_ITEM:
+      return state.set('highlightRowId', action.payload.get('id'))
+
+    case REMOVE_ITEM_HIGHLIGHT:
+      return state.set('highlightRowId', null)
 
     default:
       return state

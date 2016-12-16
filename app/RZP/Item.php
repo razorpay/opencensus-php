@@ -4,13 +4,24 @@ namespace App\RZP;
 
 class Item extends Entity
 {
+    public function all($options = [])
+    {
+        return parent::all($options);
+    }
+
     public function create($params = [])
     {
         return parent::create($params);
     }
 
-    public function all($options = [])
+    public function edit($id, $params = [])
     {
-        return parent::all($options);
+        return parent::request('PUT', $this->getEntityUrl() . $id, $params);
+    }
+
+
+    public function delete($id)
+    {
+      return parent::request('DELETE', $this->getEntityUrl() . $id);
     }
 }

@@ -4,7 +4,7 @@ import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 
 export default class Item extends BaseModel {
   resourceIdField = 'id'
-  resourceUrl = '/item'
+  resourceUrl = '/items'
   resourceProperties = [
     'id',
     'name',
@@ -31,16 +31,23 @@ export default class Item extends BaseModel {
     })
   }
 
+  delete() {
+    return ajax({
+      url: this.getResourceUrl(),
+      method: 'delete'
+    })
+  }
+
   serializeProperty(prop) {
     if (prop === 'amount') {
-      return Number(this.amountInINR) * 100
+      return Number(this.get('amountInINR')) * 100
     }
     return super.serializeProperty(prop)
   }
 
   deserializeProperty(prop, value) {
     if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value)
+      this.set('amountInINR', getFixedINRAmount(value))
     }
     return super.deserializeProperty(prop, value)
   }

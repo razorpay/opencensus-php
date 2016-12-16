@@ -39,7 +39,7 @@ export default class BaseModel extends Map {
   }
 
   serializeProperty(prop) {
-    return this.get(prop)
+    return this.get(prop) || this[prop]
   }
 
   deserialize(json) {
