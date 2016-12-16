@@ -194,7 +194,7 @@ class Service extends Base\Service
                     ];
         }
 
-        $this->core()->resetPassword($admin, $input, true);
+        $this->core()->updatePassword($admin, $input, true);
 
         return ["success" => true];
     }

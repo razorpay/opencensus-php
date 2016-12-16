@@ -93,7 +93,7 @@ class Core extends Base\Core
         $this->repo->sync($admin, 'groups', $groups);
     }
 
-    public function resetPassword(
+    public function updatePassword(
         Entity $admin,
         array $input,
         bool $forgotPassword = true)
