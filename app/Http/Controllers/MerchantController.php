@@ -481,6 +481,17 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function putCustomer(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Merchant\Service)->editCustomer($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getItems(Request $request, $mode)
     {
         $this->checkMode($mode);

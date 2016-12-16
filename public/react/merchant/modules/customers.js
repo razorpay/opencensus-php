@@ -53,7 +53,7 @@ export default function (state = fromJS(initialState), action) {
     case `${CUSTOMER_EDIT}::SUCCESS`:
       let customers = state.get('customers')
       return state.set('customers', customers.update(
-        customers.findIndex((item) => item.get('id') === action.payload.id),
+        customers.findIndex((item) => item.get('id') === action.payload.get('id')),
         (item) => item.merge(action.payload)
       ))
 

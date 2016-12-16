@@ -1,23 +1,25 @@
-export default class BaseModel {
+import { Map } from 'extendable-immutable'
+
+export default class BaseModel extends Map {
   resourceIdField = 'id'
 
-  constructor(props = {}) {
-    Object.assign(this, props)
+  constructor() {
+    super(...arguments)
   }
 
   get isNew() {
-    return !this[this.resourceIdField]
+    return !this.get(this.resourceIdField)
   }
 
   getResourceUrl() {
-    if (this[this.resourceIdField]) {
-      return `${this.resourceUrl}/${this[this.resourceIdField]}`
+    if (this.isNew) {
+      return this.resourceUrl
     }
-    return this.resourceUrl
+    return `${this.resourceUrl}/${this.get(this.resourceIdField)}`
   }
 
   getResourceMethod() {
-    return this[this.resourceIdField] ? 'put' : 'post'
+    return this.isNew ? 'post' : 'put'
   }
 
   getResourceUrlAndMethod() {
@@ -37,17 +39,19 @@ export default class BaseModel {
   }
 
   serializeProperty(prop) {
-    return this[prop]
+    return this.get(prop)
   }
 
   deserialize(json) {
-    for (let prop in json) {
-      this.deserializeProperty(prop, json[prop])
-    }
-    return this
+    let deserializedInstance = this.withMutations((instance) => {
+      for (let prop in json) {
+        instance.deserializeProperty(prop, json[prop])
+      }
+    })
+    return deserializedInstance
   }
 
   deserializeProperty(prop, value) {
-    this[prop] = value
+    this.set(prop, value)
   }
 }

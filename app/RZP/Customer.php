@@ -2,14 +2,11 @@
 
 namespace App\RZP;
 
-class Customer extends Entity
-{
-    public function create($params = [])
-    {
-        return parent::create($params);
-    }
+use Razorpay;
 
-    public function all($options = [])
+class Customer extends Razorpay\Api\Customer
+{
+    public function all($options = array())
     {
         return parent::all($options);
     }

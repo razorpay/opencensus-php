@@ -147,6 +147,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
     Route::post('/{mode}/customer', 'MerchantController@postCustomer')->name('customer_create');
+    Route::put('/{mode}/customer/{id}', 'MerchantController@putCustomer')->name('customer_edit');
 
     Route::get('/{mode}/items', 'MerchantController@getItems')->name('items_fetch_all');
     Route::post('/{mode}/item', 'MerchantController@postItem')->name('item_create');
