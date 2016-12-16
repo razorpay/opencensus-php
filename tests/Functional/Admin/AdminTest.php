@@ -480,6 +480,8 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
+        s($result);
+
         if ((isset($result['success']) === true) and
             ($result['success'] === true))
         {
