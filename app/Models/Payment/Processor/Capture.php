@@ -297,13 +297,17 @@ trait Capture
 
     protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
     {
+        $paymentGateway = $this->payment->getGateway();
+
         //
-        // We are currently doing capture queue for HDFC, as we don't want to mark
-        // the captured payment on gateway as failed on API
-        // Note: Capture shouldn't be done again for Cybersource
-        // as Cybersource settles the amount from CH account again
+        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+        // to a queue. We then try to capture on HDFC.
+        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
-        if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
+        if (($paymentGateway !== Payment\Gateway::HDFC) and
+            ($paymentGateway !== Payment\Gateway::CYBERSOURCE))
         {
             throw $ex;
         }
@@ -327,6 +331,13 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
         );
+
+        // We will be removing this piece of code once the capture queue is written
+        // for Cybersource to handle. Being tracked in the issue #1842
+        if ($paymentGateway === Payment\Gateway::CYBERSOURCE)
+        {
+            return;
+        }
 
         //
         // Adding a delay here because some gateways return back an error if a capture request
