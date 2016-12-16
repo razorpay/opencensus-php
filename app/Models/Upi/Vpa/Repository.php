@@ -52,8 +52,6 @@ class Repository extends Base\Repository
 
         $customers = (new CustomerRepo)->fetchByMerchantId($merchantId);
 
-        sd($customers->getIds(), $vpaId);
-
         return $this->newQuery()
                     ->where(Entity::ID, '=', $vpaId)
                     ->whereIn(Entity::CUSTOMER_ID, $customers->getIds())
