@@ -424,8 +424,6 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $admin->setPassword('M!2#uWd');
-
         $this->repo->saveOrFail($admin);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -439,6 +437,8 @@ class AdminTest extends TestCase
         $result = $this->startTest();
 
         $this->assertNotNull($result['token']);
+
+        return $admin;
     }
 
     public function testForgotPasswordInvalidUser()
@@ -461,12 +461,7 @@ class AdminTest extends TestCase
 
     public function testPasswordResetSuccess()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $admin->setPassword('M!2#uWd');
-
-        $this->repo->saveOrFail($admin);
+        $admin = $this->testForgotPasswordSuccess();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -480,8 +475,6 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        s($result);
-
         if ((isset($result['success']) === true) and
             ($result['success'] === true))
         {
@@ -493,14 +486,7 @@ class AdminTest extends TestCase
 
     public function testPasswordResetMismatch()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $oldPwd = 'M!2#uWd';
-
-        $admin->setPassword($oldPwd);
-
-        $this->repo->saveOrFail($admin);
+        $admin = $this->testForgotPasswordSuccess();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -514,19 +500,12 @@ class AdminTest extends TestCase
 
         $admin = $this->getEntityById('admin', $admin->getId(), true);
 
-        $this->assertTrue(Hash::check($oldPwd, $admin['password']));
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
     public function testPasswordResetInvalid()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $oldPwd = 'M!2#uWd';
-
-        $admin->setPassword($oldPwd);
-
-        $this->repo->saveOrFail($admin);
+        $admin = $this->testForgotPasswordSuccess();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -541,14 +520,11 @@ class AdminTest extends TestCase
 
     public function testPasswordResetMaxRetain()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
         $oldPwd = 'M!2#uWdx';
 
         $admin->setPassword($oldPwd);
-
-        $admin->setPassword('M!2#uWdx');
 
         $this->repo->saveOrFail($admin);
 
@@ -567,14 +543,9 @@ class AdminTest extends TestCase
     {
         $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
 
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->testForgotPasswordSuccess();
 
-        $oldPwd = 'M!2#uWd';
-
-        $admin->setPassword($oldPwd);
-
-        $this->repo->saveOrFail($admin);
+        $admin->org()->associate($org);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 

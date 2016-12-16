@@ -346,7 +346,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
 
-
     /*
      * Setters
      *
@@ -355,7 +354,6 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::PASSWORD, $password);
     }
-
 
     /*
      * Getters
