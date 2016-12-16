@@ -994,8 +994,16 @@ class Processor
         }
         catch (Exception $ex)
         {
-            throw new Exception\LogicException(
-                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED);
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                    'message'           => $ex->getMessage(),
+                ]);
+
+            throw $ex;
         }
     }
 }
