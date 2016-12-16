@@ -476,6 +476,7 @@ class AdminTest extends TestCase
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         Cache::shouldReceive('get')
+                ->once()
                 ->with($key)
                 ->andReturn('dummytoken');
 
@@ -508,6 +509,7 @@ class AdminTest extends TestCase
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         Cache::shouldReceive('get')
+                ->once()
                 ->with($key)
                 ->andReturn('blah');
 
@@ -560,6 +562,7 @@ class AdminTest extends TestCase
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         Cache::shouldReceive('get')
+                ->once()
                 ->with($key)
                 ->andReturn('dummytoken');
 
@@ -586,6 +589,7 @@ class AdminTest extends TestCase
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         Cache::shouldReceive('get')
+                ->once()
                 ->with($key)
                 ->andReturn('dummytoken');
 
