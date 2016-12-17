@@ -17,7 +17,16 @@ class Role extends Base
             'description' => 'test super admin role',
         ]);
 
-        $role->permissions()->attach($perms);
+        $liveRole = clone $role;
+        $testRole = clone $role;
+
+        $testRole->permissions()->sync($perms);
+
+        $this->onLive();
+
+        $liveRole->permissions()->sync($perms);
+
+        $this->fixtures->setDefaultConn();
 
         return $role;
     }

@@ -131,7 +131,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(count($result['permissions']), 110);
+        $this->assertEquals(110, count($result['permissions']));
     }
 
     public function testDeleteRole()
@@ -187,7 +187,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals($result['count'], 1);
+        $this->assertEquals(1, $result['count']);
     }
 
     public function testDuplicateRole()

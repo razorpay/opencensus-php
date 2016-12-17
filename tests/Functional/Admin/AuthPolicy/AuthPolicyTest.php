@@ -204,4 +204,19 @@ class AuthPolicyTest extends TestCase
                     'email_domains' => 'rzp.com',
         ]);
     }
+
+    public function testAccessWithWrongOrg()
+    {
+        // Sign In using razorpay org
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@testemail.com',
+            'email_domains' => 'rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+    }
 }

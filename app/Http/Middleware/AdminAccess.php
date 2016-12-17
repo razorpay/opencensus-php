@@ -54,36 +54,27 @@ class AdminAccess
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
         // Fetch public org Id from uri
-        $orgIdFromUri = $this->getOrgIdFromUri($request->getRequestUri());
+        $orgId = $this->getOrgIdFromUri($request->getRequestUri());
 
-        // Fetch orgId from request input
-        $orgIdFromData = $this->getOrgIdFromRequestData($request->input());
-
-        if ((empty($orgIdFromUri) === false) and
-            ($orgIdFromUri !== $admin->getPublicOrgId()))
+        if ($orgId === null)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+            $orgId = $request->input('org_id');
+
+            if ($orgId === null)
+            {
+                if(in_array($routeName, self::getExcludedRoutes()) === true)
+                {
+                    return;
+                }
+                else
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+                }
+            }
         }
 
-        if ((empty($orgIdFromData) === false) and
-            ($orgIdFromData !== $admin->getPublicOrgId()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
-        }
-
-        if ((empty($orgIdFromUri) === false) and
-            (empty($orgIdFromData) === false) and
-            ($orgIdFromUri !== $orgIdFromData))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
-        }
-
-        if ((empty($orgIdFromData) === true) and
-            (empty($orgIdFromUri) === true) and
-            (in_array($routeName, self::getExcludedRoutes()) === false))
+        if ($orgId !== $admin->getPublicOrgId())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
@@ -114,14 +105,6 @@ class AdminAccess
         if (preg_match('/^org_/', $id) === 1)
         {
             return $id;
-        }
-    }
-
-    private function getOrgIdFromRequestData(array $input)
-    {
-        if (isset($input['org_id']) === true)
-        {
-            return $input['org_id'];
         }
     }
 

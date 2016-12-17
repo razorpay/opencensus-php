@@ -72,6 +72,6 @@ class Permission extends Base
             return $record[0];
         }, $records);
 
-        return (new PermRepo)->findMany($records);
+        return $records;
     }
 }
