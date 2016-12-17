@@ -293,7 +293,7 @@ class Entity extends Base\PublicEntity
 
         if ($cardType === Card\Type::UNKNOWN)
         {
-            $cardType = Card\Type::DEBIT;
+            $cardType = Card\Type::CREDIT;
         }
 
         return $cardType;
@@ -457,7 +457,7 @@ class Entity extends Base\PublicEntity
 
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
-        return (($isCreditCard == true) and ($isSupportedNetwork == true));
+        return (($isCreditCard === true) and ($isSupportedNetwork === true));
     }
 
     public function isBlocked()

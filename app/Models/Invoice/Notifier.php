@@ -115,8 +115,7 @@ class Notifier extends Base\Core
                     'invoice_id' => $this->invoice->getId(),
                     'sent_status' => $sent,
                     'contact' => $contact,
-                ]
-            );
+                ]);
         }
 
         return $sent;
@@ -130,22 +129,37 @@ class Notifier extends Base\Core
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-
-            $this->trace->error(
-                TraceCode::INVOICE_INVALID_CONTACT_NUMBER,
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
                 [
                     'contact' => $contact,
                     'invoice_id' => $this->invoice->getId(),
-                ]
-            );
+                ]);
 
             return false;
         }
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
-        $response = $this->raven->sendSms($request);
+        try
+        {
+            $response = $this->raven->sendSms($request);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
+                [
+                    'contact' => $contact,
+                    'invoice_id' => $this->invoice->getId(),
+                ]);
+
+            return false;
+        }
 
         if (isset($response['sms_id']))
         {

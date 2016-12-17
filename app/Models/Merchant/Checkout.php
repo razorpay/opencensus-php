@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
@@ -37,6 +38,8 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
+        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
+
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
@@ -48,7 +51,8 @@ class Checkout
         return $data;
     }
 
-    protected function checkAndAddDetailsForInvoice(array $input, Entity $merchant, array & $data)
+    protected function checkAndAddDetailsForInvoice(
+        array $input, Merchant\Entity $merchant, array & $data)
     {
         if (empty($input['invoice_id']) === true)
         {
@@ -59,17 +63,21 @@ class Checkout
 
         $invoiceCore = new Invoice\Core;
 
-        $invoiceData = $invoiceCore->getFormattedInvoiceData($merchant, $invoiceId);
+        $invoiceData = $invoiceCore->getFormattedInvoiceData($invoiceId, $merchant);
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        if (isset($data['customer']) === true)
+        // If invoice's customer data is set, merge it to existing data
+        if (isset($invoiceData['customer']))
         {
-            $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
-        }
-        else
-        {
-            $data['customer'] = $invoiceData['customer'];
+            if (isset($data['customer']))
+            {
+                $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
+            }
+            else
+            {
+                $data['customer'] = $invoiceData['customer'];
+            }
         }
     }
 

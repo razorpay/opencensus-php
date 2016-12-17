@@ -7,9 +7,9 @@ use Storage;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore\Storage\Base;
+use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
-class Handler extends Base\Handler
+class Handler extends BaseHandler
 {
     const STORAGE_DIRECTORY = 'files/';
 
@@ -26,7 +26,12 @@ class Handler extends Base\Handler
 
     public function getBucketName($type)
     {
-        $bucketType = Bucket::BUCKET_MAP[$type];
+        $bucketType = Bucket::getBucketConfigName($type);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $bucketType = 'rzp-test-bucket';
+        }
 
         return $bucketType;
     }

@@ -1219,6 +1219,10 @@ ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
 
+ALTER TABLE payments
+    ADD COLUMN two_factor_auth VARCHAR(20) AFTER status;
+
+=======
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
     ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
@@ -1271,3 +1275,113 @@ ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 -- Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
+
+--Queries for updating credit_card, debit_card method
+UPDATE merchant_banks SET credit_card = 0 WHERE card = 0;
+UPDATE merchant_banks SET debit_card = 0 WHERE card = 0;
+
+--- Pre code deployment / https://github.com/razorpay/api/pull/1697
+
+ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
+ALTER TABLE invoices MODIFY COLUMN customer_id CHAR(14) DEFAULT NULL;
+
+---
+
+ALTER TABLE payments
+    ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
+ALTER TABLE payments
+    ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
+
+--- Pre code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
+ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
+--- UPDATE invoices SET receipt = ref_num LIMIT 1000;
+
+--- Post code deployment / Branch: invoices_rename_column
+
+ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
+ALTER TABLE invoices DROP COLUMN ref_num;
+
+---
+
+ALTER TABLE billdesk
+    ADD COLUMN AccountNumber VARCHAR(50) AFTER BankID;
+
+UPDATE billdesk
+    JOIN payments ON payments.id = billdesk.payment_id
+    JOIN orders ON orders.id = payments.order_id
+SET
+    billdesk.AccountNumber = orders.account_number;
+
+--- Pre deployment https://github.com/razorpay/api/pull/910
+ALTER TABLE payments
+    ADD COLUMN gateway_captured TINYINT AFTER auto_captured
+    ADD INDEX payments_gateway_captured_index (gateway_captured);
+---
+
+--- Post code deployment / https://github.com/razorpay/api/pull/1732
+
+UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
+
+---
+
+----
+# Following queries are executed for altering cybersource table
+# These changes have arised because of cybersource refactoring
+ALTER TABLE cybersource
+    ADD COLUMN avsCode CHAR(2) DEFAULT NULL AFTER xid,
+    ADD COLUMN cardCategory CHAR(2) DEFAULT NULL AFTER avsCode,
+    ADD COLUMN cardGroup CHAR(2) DEFAULT NULL AFTER cardCategory,
+    ADD COLUMN cvCode CHAR(2) DEFAULT NULL AFTER cardGroup,
+    ADD COLUMN veresEnrolled CHAR(2) DEFAULT NULL AFTER cvCode,
+    ADD COLUMN authorizationCode CHAR(6) DEFAULT NULL AFTER cavv,
+    ADD COLUMN receiptNumber CHAR(6) DEFAULT NULL AFTER authorizationCode,
+    ADD COLUMN merchantAdviceCode CHAR(30) DEFAULT NULL AFTER capture_ref,
+    ADD COLUMN gatewayTransactionId CHAR(30) DEFAULT NULL AFTER merchantAdviceCode,
+    ADD COLUMN processorResponse CHAR(10) DEFAULT NULL AFTER gatewayTransactionId;
+
+ALTER TABLE cybersource
+    MODIFY COLUMN pares_status CHAR(2) DEFAULT NULL,
+    MODIFY COLUMN eci CHAR(2) DEFAULT NULL,
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL;
+
+ALTER TABLE cybersource
+    ADD COLUMN acquirer CHAR(10) DEFAULT NULL AFTER payment_id;
+
+
+ALTER TABLE cybersource
+    MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
+
+----
+ALTER TABLE terminals
+    ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
+
+UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
+
+----
+ALTER TABLE merchants
+    ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
+
+----
+# Following queries are executed for fixing the error_code for
+# BAD_REQUEST_PAYMENT_TIMED_OUT
+UPDATE payments
+    SET internal_error_code = error_code
+    WHERE internal_error_code = null
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+
+UPDATE payments
+    SET error_code = 'BAD_REQUEST_ERROR'
+    WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+----
+ALTER TABLE merchants
+    ADD COLUMN org_id CHAR(14)
+    AFTER category2;
+
+----
+# Following queries are executed for fixing the length of
+# vpc_Command in axis table
+ALTER TABLE axis
+    MODIFY vpc_Command VARCHAR(20) NOT NULL;

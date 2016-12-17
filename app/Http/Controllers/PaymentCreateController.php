@@ -237,13 +237,6 @@ class PaymentCreateController extends Controller
         return $this->processCoprotoData($data);
     }
 
-    public function postAutoCapture()
-    {
-        $data = $this->payment->autoCaptureOldAuthorizedPayments();
-
-        return ApiResponse::json($data);
-    }
-
     /**
      * It's hit when banks/networks redirect back to gateway
      * on the callback url. Mostly gets hit after two-factor auth.

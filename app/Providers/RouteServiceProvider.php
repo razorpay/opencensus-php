@@ -71,7 +71,7 @@ class RouteServiceProvider extends ServiceProvider
         $routeGroupGlobalParams = array(
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => 'auth');
+            'middleware'    => ['auth', 'admin_access']);
 
         $router->group(
             $routeGroupGlobalParams,
@@ -109,7 +109,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                $this->route->addRouteGroups(['internal', 'private', 'proxy']);
+                $this->route->addRouteGroups(['internal', 'private', 'proxy', 'admin']);
             }
         );
     }

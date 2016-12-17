@@ -1,0 +1,94 @@
+<?php
+
+namespace RZP\Models\Admin\Admin\Token;
+
+use App;
+use Carbon\Carbon;
+
+use RZP\Constants\Table;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+    const ID         = 'id';
+    const ADMIN_ID   = 'admin_id';
+    const TOKEN      = 'token';
+    const EXPIRES_AT = 'expires_at';
+
+    protected $entity = 'admin_token';
+
+    public $incrementing = true;
+
+    protected $fillable = [
+        self::ADMIN_ID,
+        self::TOKEN,
+        self::EXPIRES_AT
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ADMIN_ID,
+        self::TOKEN,
+        self::EXPIRES_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT
+    ];
+
+    protected $public = [
+        self::ID,
+        self::ADMIN_ID,
+        self::TOKEN,
+        self::EXPIRES_AT
+    ];
+
+    protected $publicSetters = array(
+        self::ADMIN_ID,
+    );
+
+    public function setPublicAdminIdAttribute(array & $array)
+    {
+        $array[self::ADMIN_ID] = Admin\Entity::getSignedId(
+            $this->getAttribute(self::ADMIN_ID));
+    }
+
+    public function setExpiresAt(int $timestamp)
+    {
+        $this->setAttribute(self::EXPIRES_AT, $timestamp);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function getAdminId()
+    {
+        return $this->getAttribute(self::ADMIN_ID);
+    }
+
+    public function getExpiresAt()
+    {
+        return $this->getAttribute(self::EXPIRES_AT);
+    }
+
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
+    /*
+     * Returns an unexpired token
+     */
+    public function getValidToken()
+    {
+        $now = Carbon::now()->timestamp;
+
+        if ($now >= $this->getExpiresAt())
+        {
+            return null;
+        }
+
+        return $this->getToken();
+    }
+}
