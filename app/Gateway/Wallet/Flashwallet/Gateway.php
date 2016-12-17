@@ -41,8 +41,8 @@ class Gateway extends Base\Gateway
     {
         try
         {
-            return (new Customer\Transaction\Core)
-                    ->createForCustomerDebit($input);
+            return (new Customer\Transaction\Service)
+                    ->createForDebit($input);
         }
         catch (\Throwable $ex)
         {

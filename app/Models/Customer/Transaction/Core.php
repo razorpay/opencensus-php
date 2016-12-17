@@ -18,7 +18,7 @@ class Core extends Base\Core
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity
      */
-    public function createForCustomerDebit(array $input) : string
+    public function createForCustomerDebit(array $input) : Entity
     {
         $amount = $input['payment']['amount'];
 
@@ -37,11 +37,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customerTxn);
 
-        return $customerTxn->getId();
+        return $customerTxn;
     }
 
     /**
-     * Create customer_transaction on payment capture+transfer.
+     * Create customer_transaction on payment transfer.
      *
      * @param  Payment\Entity   $payment
      * @param  int              $amount
@@ -69,14 +69,20 @@ class Core extends Base\Core
     }
 
     /**
-     * Create entry for a refund transaction
+     * Create entry for a refund transaction, and credits customer wallet
      *
      * @param  string $customerId
      * @param  int    $amount
      * @return Entity
      */
-    public function createFromCustomerRefund(string $customerId, string $refundId, int $amount) : Entity
+    public function createFromCustomerRefund(array $input) : Entity
     {
+        $amount = $input['amount'];
+
+        $customerId = $input['payment']['customer_id'];
+
+        $refundId = $input['refund']['id'];
+
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
 
         $customerTxn->setType(Type::REFUND);
@@ -88,6 +94,8 @@ class Core extends Base\Core
         $balance = (new Customer\Balance\Core)->refund($customerId, $amount);
 
         $customerTxn->setBalance($balance->getBalance());
+
+        $this->repo->saveOrFail($customerTxn);
 
         return $customerTxn;
     }

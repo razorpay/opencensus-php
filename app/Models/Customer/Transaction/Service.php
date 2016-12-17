@@ -28,21 +28,23 @@ class Service extends Base\Service
         return $entities->toArrayPublic();
     }
 
-    public function createForRefund(array $input)
+    public function createForRefund(array $input) : string
     {
         return $this->repo->transaction(function () use ($input)
         {
-            $amount = $input['amount'];
-
-            $customerId = $input['payment']['customer_id'];
-
-            $refundId = $input['refund']['id'];
-
             $customerTxn = $this->core
-                                ->createFromCustomerRefund(
-                                    $customerId, $refundId, $amount);
+                                ->createFromCustomerRefund($input);
 
-            $this->repo->saveOrFail($customerTxn);
+            return $customerTxn->getId();
+        });
+    }
+
+    public function createForDebit(array $input) : string
+    {
+        return $this->repo->transaction(function () use ($input)
+        {
+            $customerTxn = $this->core
+                                ->createForCustomerDebit($input);
 
             return $customerTxn->getId();
         });
