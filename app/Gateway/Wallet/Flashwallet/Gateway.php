@@ -57,9 +57,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $ex->getCode(),
-                $ex->getMessage());
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -112,9 +110,7 @@ class Gateway extends Base\Gateway
                     ]);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $ex->getCode(),
-                $ex->getMessage());
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
     }
 

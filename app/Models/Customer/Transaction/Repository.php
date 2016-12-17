@@ -19,6 +19,14 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID   => 'sometimes|string|size:14',
     ];
 
+    protected $fetchParamRules = [
+        Entity::CUSTOMER_ID         => 'required|string|size:14',
+        'from'                      => 'integer',
+        'to'                        => 'integer',
+        'count'                     => 'integer|min:1',
+        'skip'                      => 'integer'
+    ];
+
     /**
      * Fetches transaction statement for a customer balance account
      * Common pagination params apply (count, skip, from, to)

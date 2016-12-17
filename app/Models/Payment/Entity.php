@@ -444,6 +444,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setAuthorizeAtNull()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, null);
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);

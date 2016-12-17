@@ -18,8 +18,6 @@ class Service extends Base\Service
     {
         $input[Entity::CUSTOMER_ID] = $customerId;
 
-        (new Validator)->validateInput('get_statement', $input);
-
         $entities = $this->repo
                          ->customer_transaction
                          ->fetchCustomerStatement(

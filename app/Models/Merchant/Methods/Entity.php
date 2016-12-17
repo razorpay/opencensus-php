@@ -79,7 +79,6 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD          => false,
         self::AMEX          => false,
         self::PAYTM         => false,
         self::MOBIKWIK      => false,
@@ -112,7 +111,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMEX        => 'bool',
         self::PAYTM       => 'bool',
-        self::CARD        => 'bool',
         self::CREDIT_CARD => 'bool',
         self::DEBIT_CARD  => 'bool',
         self::NETBANKING  => 'bool',
@@ -139,7 +137,8 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return ($this->isDebitCardEnabled() or $this->isCreditCardEnabled());
+        return (($this->isDebitCardEnabled()) or
+                ($this->isCreditCardEnabled()));
     }
 
     public function isDebitCardEnabled()
@@ -385,11 +384,6 @@ class Entity extends Base\PublicEntity
     public function setFlashwallet($value)
     {
         $this->setAttribute(self::FLASHWALLET, $value);
-    }
-
-    public function setCard($card)
-    {
-        $this->setAttribute(self::CARD, $card);
     }
 
     public function setCreditCard($card)

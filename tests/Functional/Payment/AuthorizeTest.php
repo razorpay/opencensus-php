@@ -247,6 +247,21 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testFixAuthorizedAt()
+    {
+        $time = time();
+
+        $payment = $this->fixtures->create('payment', ['status' => 'failed', 'authorized_at' => time()]);
+
+        $this->assertEquals($time, $payment['authorized_at']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'].'/fix_authorized_at';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testTimeoutOldPayment()
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - (60 * 100)]);

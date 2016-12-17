@@ -278,6 +278,29 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fixAuthorizeAt($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        if (($payment->isFailed() === false) or
+            ($payment->hasBeenCaptured() === true))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+            'payment_id' => $id,
+            'old_authorized_at' => $payment->getAuthorizeTimestamp()
+        ]);
+
+        $payment->setAuthorizeAtNull();
+
+        $this->repo->saveOrFail($payment);
+
+        return $payment->toArray();
+    }
+
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);

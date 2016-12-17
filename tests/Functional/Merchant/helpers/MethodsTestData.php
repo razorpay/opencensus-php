@@ -51,7 +51,8 @@ return [
             'content' => [
                 'merchants' => ['10000000000000', '10000000000000'],
                 'methods' => [
-                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => true,
                     'netbanking' => true
                 ],
             ],
