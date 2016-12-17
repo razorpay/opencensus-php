@@ -235,7 +235,7 @@ class UniqueIdEntity extends Entity
 
         // Only 4 base 62 digits are needed, so cutoff any more and pad with
         // 0 if less.
-        if (strlen($rand) != 4)
+        if (strlen($rand) !== 4)
         {
             if (strlen($rand) > 4)
             {
