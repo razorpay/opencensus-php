@@ -109,13 +109,11 @@ class AdminAccess
 
     private function getOrgIdFromUri(string $url)
     {
-        $urlTokens = explode('/', $url);
+        $id = $this->router->current()->getParameter('id');
 
-        if ((isset($urlTokens[1]) === true) and
-            ($urlTokens[1] === 'orgs') and
-            (isset($urlTokens[2]) === true))
+        if (preg_match('/^org_/', $id) === 1)
         {
-            return $urlTokens[2];
+            return $id;
         }
     }
 
