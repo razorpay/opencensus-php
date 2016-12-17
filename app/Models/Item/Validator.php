@@ -29,6 +29,16 @@ class Validator extends Base\Validator
         Entity::ACTIVE,
     ];
 
+    public function validateCurrency(string $itemCurrency, string $invoiceCurrency)
+    {
+        if ($itemCurrency !== $invoiceCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Currency of all items should be the same as of the invoice.'
+            );
+        }
+    }
+
     /**
      * Allows edits if:
      * - Editing fields which are editable always
@@ -47,16 +57,6 @@ class Validator extends Base\Validator
             and $item->lineItems()->count() > 0)
         {
             $this->raiseOperationNotAllowed($item);
-        }
-    }
-
-    public function validateCurrency(string $itemCurrency, string $invoiceCurrency)
-    {
-        if ($itemCurrency !== $invoiceCurrency)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Currency of all items should be same as of the invoice itself'
-            );
         }
     }
 

@@ -66,8 +66,7 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
-    // ------------------------------------------------------------
-    // Add, update and remove line items under given invoice
+    // -------------------------- Line Items --------------------------
 
     public function addLineItem($id)
     {
@@ -94,7 +93,7 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
-    // ------------------------------------------------------------
+    // -------------------------- End Line Items --------------------------
 
     public function sendNotifications()
     {

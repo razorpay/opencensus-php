@@ -355,7 +355,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($merchant, $invoice, $input)
             {
-                $this->generateKeysOnUpdate($invoice, $input);
+                $this->generateAttributesOnUpdate($invoice, $input);
 
                 (new Generator($merchant, $invoice))->updateDraftInvoice($input);
 
@@ -387,12 +387,12 @@ class Core extends Base\Core
 
     /**
      * Invoice/Entity has few generators which are dependent on extra request
-     *     input keys. Those need to be run again in case of put request.
+     * input keys. Those need to be run again in case of put request.
      *
      * @param Entity $invoice
      * @param array  $input
      */
-    protected function generateKeysOnUpdate(Entity $invoice, array $input)
+    protected function generateAttributesOnUpdate(Entity $invoice, array $input)
     {
         if (isset($input[Entity::EMAIL_NOTIFY]))
         {

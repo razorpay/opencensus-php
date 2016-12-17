@@ -850,11 +850,6 @@ final class Route
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        'customer_get_saved_status'     => 'cardsaving',
-        'customer_logout_global'        => 'cardsaving',
-        'app_delete_token'              => 'cardsaving',
-        'otp_post'                      => 'cardsaving',
-        'otp_verify'                    => 'cardsaving',
     );
 
     const RAZORPAYJS_ROUTES = array(

@@ -89,8 +89,21 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $validOperations = [
+        'create',
+        'update',
+        'delete',
+        'addLineItem',
+        'updateLineItem',
+        'removeLineItem',
+    ];
+
     protected $defaults = [
+        // This is null by default because we don't create an order
+        // when the invoice is being generated in a draft state.
         self::ORDER_ID          => null,
+        // For a draft state, it has to be sent explicitly in the request.
+        // It's created in the issued state otherwise.
         self::STATUS            => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
@@ -242,7 +255,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT    => 'int',
         self::DATE      => 'int',
     ];
-
 
     // -------------------------------------- Mutators --------------------------------------
 
@@ -658,4 +670,9 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------------------- Query scopes section ends --------------------------------------
+
+    public function getValidOperations()
+    {
+        return $this->validOperations;
+    }
 }

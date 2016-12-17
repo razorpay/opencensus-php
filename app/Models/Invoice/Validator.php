@@ -216,7 +216,7 @@ class Validator extends Base\Validator
 
         $invoice = $this->entity;
 
-        if ($invoice->lineItems()->count())
+        if ($invoice->lineItems()->count() > 0)
         {
             throw new BadRequestValidationFailureException(
                 'amount cannot be updated if invoice has line_items'
@@ -278,19 +278,22 @@ class Validator extends Base\Validator
 
     public function validateOperation(string $operation)
     {
-        switch ($operation) {
+        assert(in_array($operation, $this->entity->getValidOperations(), true));
+
+        switch ($operation)
+        {
             case 'update':
                 $allowedStatuses = [
                     Status::DRAFT,
                     Status::ISSUED,
                 ];
+
                 break;
 
             default:
                 $allowedStatuses = [
                     Status::DRAFT,
                 ];
-                break;
         }
 
         $invoiceStatus = $this->entity->getStatus();
