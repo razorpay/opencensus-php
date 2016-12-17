@@ -11,7 +11,12 @@ class Repository extends Base\Repository
     protected $entity = 'customer_transaction';
 
     protected $entityFetchParamRules = [
-        'customer_id'  => 'sometimes|string|size:14'
+        Entity::CUSTOMER_ID   => 'sometimes|string|size:14'
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::CUSTOMER_ID   => 'sometimes|string|size:14',
+        Entity::MERCHANT_ID   => 'sometimes|string|size:14',
     ];
 
     /**

@@ -30,7 +30,7 @@ class Service extends Base\Service
 
     public function createForRefund(array $input)
     {
-        $this->repo->transaction(function () use ($input)
+        return $this->repo->transaction(function () use ($input)
         {
             $amount = $input['amount'];
 
@@ -43,6 +43,8 @@ class Service extends Base\Service
                                     $customerId, $refundId, $amount);
 
             $this->repo->saveOrFail($customerTxn);
+
+            return $customerTxn->getId();
         });
     }
 }

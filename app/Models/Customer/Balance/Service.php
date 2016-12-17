@@ -25,16 +25,16 @@ class Service extends Base\Service
 
     public function credit(Customer\Entity $customer, int $amount)
     {
-        $balance = $this->core->fetchOrCreate($customer->getPublicId());
+        $balance = $this->core->fetchOrCreate($customer);
 
         return $this->core->credit($balance, $amount);
     }
 
-    public function debit(Customer\Entity $customer, int $amount)
+    public function debit(string $customerId, int $amount)
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customer->getId());
+                        ->getCustomerBalanceLockForUpdate($customerId);
 
         return $this->core->debit($balance, $amount);
     }

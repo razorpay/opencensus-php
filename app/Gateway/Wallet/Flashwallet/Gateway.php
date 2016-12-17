@@ -16,7 +16,51 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
+        $this->trace->info(
+                TraceCode::GATEWAY_AUTHORIZE_REQUEST,
+                [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                ]);
+
         parent::authorize($input);
+
+        $txnId = $this->walletPayment($input);
+
+        $this->trace->info(
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+                [
+                    'gateway'    => $this->gateway,
+                    'success'    => true,
+                    'payment_id' => $input['payment']['id'],
+                    'ctxn_id'    => $txnId,
+                ]);
+    }
+
+    protected function walletPayment(array $input)
+    {
+        try
+        {
+            return (new Customer\Transaction\Core)
+                    ->createForCustomerDebit($input);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+                [
+                    'gateway'       => $this->gateway,
+                    'payment_id'    => $input['payment']['id'],
+                    'success'       => false,
+                    'error_code'    => $ex->getCode(),
+                    'error_message' => $ex->getMessage(),
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $ex->getCode(),
+                $ex->getMessage());
+        }
     }
 
     /**
@@ -30,23 +74,47 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $input);
+        $this->trace->info(
+                TraceCode::GATEWAY_REFUND_REQUEST,
+                [
+                    'gateway'    => $this->gateway,
+                    'refund_id'  => $input['refund']['id'],
+                ]);
 
-        $this->processCustomerBalanceForRefund($input);
+        $txnId = $this->processCustomerBalanceForRefund($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, []);
+        $this->trace->info(
+                TraceCode::GATEWAY_REFUND_RESPONSE,
+                [
+                    'gateway'       => $this->gateway,
+                    'refund_id'     => $input['refund']['id'],
+                    'ctxn_id'       => $txnId,
+                    'success'       => true,
+                ]);
     }
 
-    protected function processCustomerBalanceForRefund($input)
+    protected function processCustomerBalanceForRefund(array $input)
     {
         try
         {
-            (new Customer\Transaction\Service)->createForRefund($input);
+            return (new Customer\Transaction\Service)->createForRefund($input);
         }
         catch (\Throwable $ex)
         {
+            $this->trace->info(
+                    TraceCode::GATEWAY_REFUND_RESPONSE,
+                    [
+                        'gateway'       => $this->gateway,
+                        'refund_id'     => $input['refund']['id'],
+                        'success'       => false,
+                        'error_code'    => $ex->getCode(),
+                        'error_message' => $ex->getMessage(),
+                    ]);
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $ex->getCode(),
+                $ex->getMessage());
         }
     }
 

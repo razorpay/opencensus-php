@@ -13,16 +13,12 @@ class Core extends Base\Core
     /**
      * Create and save a new customer_balance record for a customer <> merchant
      *
-     * @param  string  $customerId
+     * @param  Customer\Entity $customer
      * @return Entity              Balance Entity
      */
-    protected function create(string $customerId) : Entity
+    protected function create(Customer\Entity $customer) : Entity
     {
         $balance = new Entity;
-
-        $customer = $this->repo
-                         ->customer
-                         ->findByIdAndMerchant($customerId, $this->merchant);
 
         $balance->customer()->associate($customer);
 
@@ -80,24 +76,23 @@ class Core extends Base\Core
     /**
      * Fetches or creates and returns a customer_balance entity for a merchant-customer pair
      *
-     * @param  string $customerId
+     * @param  Customer\Entity $customer
      * @return Entity
      */
-    public function fetchOrCreate(string $customerId) : Entity
+    public function fetchOrCreate(Customer\Entity $customer) : Entity
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByIdAndMerchantSilent($customerId, $this->merchant);
+                        ->findByIdAndMerchantSilent($customer->getId(), $this->merchant);
 
-        if (($balance !== null) and
-            ($balance instanceof Entity))
+        if ($balance !== null)
         {
             return $balance;
         }
 
         // No existing wallet found for the customer ID linked
         // to the current merchant, create one instead
-        return $this->create($customerId);
+        return $this->create($customer);
     }
 
     /**
@@ -118,7 +113,7 @@ class Core extends Base\Core
 
     protected function updateUsages(Entity $balance, int $amount)
     {
-        $lastTxnTime = (new Customer\Transaction\Core)->getLastTransactionTime($balance);
+        $lastTxnTime = (new Customer\Transaction\Core)->getLastCreditTransactionTime($balance);
 
         // No previous transaction on the wallet
         if ($lastTxnTime === null)

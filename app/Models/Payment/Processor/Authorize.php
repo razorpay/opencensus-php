@@ -1736,11 +1736,6 @@ trait Authorize
 
             $this->repo->saveOrFail($payment->terminal);
 
-            if ($payment->isFlashWalletPayment())
-            {
-                $this->processFlashWalletPayment($payment);
-            }
-
             $this->updateTokenOnAuthorized();
 
             // If payment has an associated order
@@ -1753,14 +1748,6 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
-    }
-
-    protected function processFlashWalletPayment(Payment\Entity $payment)
-    {
-        $customerTxn = (new Customer\Transaction\Core)
-                        ->createForCustomerDebit($payment);
-
-        $this->repo->saveOrFail($customerTxn);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)

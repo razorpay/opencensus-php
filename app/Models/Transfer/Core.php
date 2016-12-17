@@ -103,7 +103,8 @@ class Core extends Base\Core
 
     protected function customerTransfer($payment, $transfer)
     {
-        $to = $this->repo->customer
+        $to = $this->repo
+                   ->customer
                    ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $this->merchant);
 
         $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
@@ -111,7 +112,7 @@ class Core extends Base\Core
         $amount = $transfer->transaction->getAmount();
 
         $customerTxn = (new Customer\Transaction\Core)
-                        ->createFromCustomerCredit($payment, $transfer, $amount, $to);
+                        ->createFromCustomerCredit($payment, $transfer, $amount, $to->getId());
 
         $this->repo->saveOrFail($customerTxn);
 

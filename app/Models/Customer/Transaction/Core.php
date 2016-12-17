@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants;
 
 class Core extends Base\Core
@@ -17,22 +18,26 @@ class Core extends Base\Core
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity
      */
-    public function createForCustomerDebit(Payment\Entity $payment) : Entity
+    public function createForCustomerDebit(array $input) : string
     {
-        $amount = $payment->getAmount();
+        $amount = $input['payment']['amount'];
+
+        $customerId = $input['payment']['customer_id'];
 
         $customerTxn = $this->createEntityForType(
-                        Entity::DEBIT, $payment->merchant, $amount, $payment->customer);
+                        Entity::DEBIT, $this->merchant, $amount, $customerId);
 
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
-        $customerTxn->setEntityId($payment->getId());
+        $customerTxn->setEntityId($input['payment']['id']);
 
-        $balance = (new Customer\Balance\Service)->debit($payment->customer, $amount);
+        $balance = (new Customer\Balance\Service)->debit($customerId, $amount);
 
         $customerTxn->setBalance($balance->getBalance());
 
-        return $customerTxn;
+        $this->repo->saveOrFail($customerTxn);
+
+        return $customerTxn->getId();
     }
 
     /**
@@ -43,9 +48,9 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit(Payment\Entity $payment, $transfer, int $amount, Customer\Entity $customer) : Entity
+    public function createFromCustomerCredit(Payment\Entity $payment, $transfer, int $amount, string $customerId) : Entity
     {
-        $customerTxn = $this->createEntityForType(Entity::CREDIT, $payment->merchant, $amount, $customer);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $payment->merchant, $amount, $customerId);
 
         $customerTxn->setEntityType(Constants\Entity::TRANSFER);
 
@@ -56,7 +61,7 @@ class Core extends Base\Core
         $balance = $this->repo
                         ->customer_balance
                         ->findByIdAndMerchant(
-                            $customer->getId(), $payment->merchant);
+                            $customerId, $payment->merchant);
 
         $customerTxn->setBalance($balance->getBalance());
 
@@ -72,9 +77,7 @@ class Core extends Base\Core
      */
     public function createFromCustomerRefund(string $customerId, string $refundId, int $amount) : Entity
     {
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
-
-        $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customer);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
 
         $customerTxn->setType(Type::REFUND);
 
@@ -82,14 +85,14 @@ class Core extends Base\Core
 
         $customerTxn->setEntityId($refundId);
 
-        $balance = (new Customer\Balance\Core)->refund($customer->getId(), $amount);
+        $balance = (new Customer\Balance\Core)->refund($customerId, $amount);
 
         $customerTxn->setBalance($balance->getBalance());
 
         return $customerTxn;
     }
 
-    public function getLastTransactionTime(Customer\Balance\Entity $balance)
+    public function getLastCreditTransactionTime(Customer\Balance\Entity $balance)
     {
         $lastTxn = $this->repo
                         ->customer_transaction
@@ -104,7 +107,7 @@ class Core extends Base\Core
         return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
     }
 
-    protected function createEntityForType(string $type, $merchant, int $amount, Customer\Entity $customer) : Entity
+    protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId) : Entity
     {
         $customerTxn = new Entity;
 
@@ -114,6 +117,7 @@ class Core extends Base\Core
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
             Entity::DESCRIPTION         => 'NA', // @todo - change this to something useful
+            Entity::CUSTOMER_ID         => $customerId
         ];
 
         if ($type === Entity::DEBIT)
@@ -132,8 +136,6 @@ class Core extends Base\Core
         {
             assert (false);
         }
-
-        $customerTxn->customer()->associate($customer);
 
         $customerTxn->merchant()->associate($merchant);
 

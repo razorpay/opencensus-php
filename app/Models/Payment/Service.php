@@ -328,13 +328,20 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * Transfers a payment
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return Collection  Transfer collection
+     */
     public function transfer($id, $input)
     {
-        $payment = $this->getNewProcessor()->transfer($id, $input);
+        $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-        return $payment->toArrayPublic();
+        return $transfers->toArrayPublic();
     }
-
 
     /**
      * If a payment has been captured on gateway but not on the api side,
