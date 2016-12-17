@@ -85,8 +85,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
 
         $this->repo->vpa->deleteOrFail($vpa);
-
-        return $vpa->toArrayPublic();
     }
 
     public function edit($vpaId, $input)
