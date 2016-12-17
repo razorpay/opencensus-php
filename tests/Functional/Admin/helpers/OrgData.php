@@ -17,6 +17,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'rzp',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -54,6 +55,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'rzp',
             ],
         ],
         'response' => [
@@ -178,6 +180,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'rzp',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -215,6 +218,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'rzp',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -252,6 +256,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'invalid_auth',
+                'custom_code' => 'rzp',
             ],
         ],
         'response'  => [

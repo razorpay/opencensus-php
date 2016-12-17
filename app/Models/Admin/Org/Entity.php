@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const INVOICE_LOGO_URL  = 'invoice_logo_url';
     const DELETED_AT        = 'deleted_at';
     const CUSTOM_CODE       = 'custom_code';
+    const ADMIN             = 'admin';
 
     protected static $sign = 'org';
 

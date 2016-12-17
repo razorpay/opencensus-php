@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
-        'admin'                     => 'required|array',
+        Entity::ADMIN               => 'required|array',
         Entity::CUSTOM_CODE         => 'required',
     ];
 
@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
-        'custom_code'               => 'required',
+        Entity::CUSTOM_CODE         => 'required',
     ];
 
     protected function validateEmailDomains($attribute, $domains)
