@@ -183,15 +183,19 @@ class FirstDataGatewayTest extends TestCase
         });
     }
 
-    public function testNoApprovalCodeInSuccessfulAuthResponse()
+    public function testNoApprovalCodeOrFailReason()
     {
-        $this->removeApprovalCodeInSucessfulAuth();
+        $this->removeApprovalCodeFailRc();
 
-        $this->doAuthPayment($this->payment);
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->doAuthPayment($this->payment);
+        });
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['approval_code'], "Y:mocked successful approval code");
+        $this->assertEquals($gatewayPayment['approval_code'], "N:mocked failure approval code");
     }
 
     public function testFailedAuthUnknownError()

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use Config;
 use RZP\Exception;
 
 trait RepositoryUpdateTestAndLive
@@ -40,6 +41,9 @@ trait RepositoryUpdateTestAndLive
                 // Create it's copies for live and test database
                 //
                 $testEntity = clone $entity;
+                // we do not care about audit actions for test entities at this point
+                $testEntity->resetAuditAction();
+
                 $liveEntity = clone $entity;
             }
 
@@ -69,11 +73,115 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
+    public function sync($entity, $relation, $ids = array())
+    {
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
+
+        $changes = [];
+
+        try
+        {
+            //
+            // The relationship hasn't been synced yet.
+            // Create it's copies for live and test database
+            //
+            $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
+            $liveEntity = clone $entity;
+
+            $defaultConnection = Config::get('database.default');
+
+            // Sync the relationship in both live and test databases.
+            // In laravel 5.2 there is no way to use the parent
+            // model connection in relations because of which this
+            // hack is used.
+            // This has been fixed in Laravel 5.4 by #16103.
+            // We'll use the parent connection once we update to
+            // L5.4
+            Config::set('database.default', 'live');
+            $changes = $liveEntity->$relation()->sync($ids);
+
+            Config::set('database.default', 'test');
+            $testEntity->$relation()->sync($ids);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // Some error occurred, rollback now.
+            //
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
+
+            throw $e;
+        }
+        finally
+        {
+            // Revert back the database connection to default.
+            Config::set('database.default', $defaultConnection);
+        }
+
+        // Update finished successfully, commit now.
+        $this->db->connection('live')->commit();
+        $this->db->connection('test')->commit();
+
+        $entity = $liveEntity;
+
+        return $changes;
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
+
+        try
+        {
+            //
+            // The relationship hasn't been attached yet.
+            // Create it's copies for live and test database
+            //
+            $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
+            $liveEntity = clone $entity;
+
+            $defaultConnection = Config::set('database.default');
+
+            // Attach the relationship in both live and test databases.
+            Config::set('database.default', 'live');
+            $liveEntity->$relation()->attach($id);
+
+            Config::set('database.default', 'test');
+            $testEntity->$relation()->attach($id);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // Some error occurred, rollback now.
+            //
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
+
+            throw $e;
+        }
+        finally
+        {
+            Config::set('database.default', $defaultConnection);
+        }
+
+        // Update finished successfully, commit now.
+        $this->db->connection('live')->commit();
+        $this->db->connection('test')->commit();
+
+        $entity = $liveEntity;
+    }
+
     public function delete($entity)
     {
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $res1 = $liveEntity->setConnection('live')->delete();
@@ -97,6 +205,7 @@ trait RepositoryUpdateTestAndLive
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)
         {
             $testEntity = clone $entity;
+            $testEntity->resetAuditAction();
             $liveEntity = clone $entity;
 
             $res1 = $testEntity->forceDelete();
@@ -117,11 +226,18 @@ trait RepositoryUpdateTestAndLive
     {
         $id = $entity->getKey();
 
+        // fetch existing audit action
+        $auditAction = $entity->getAuditAction();
+
         $testEntity = $this->newQueryWithConnection('test')->lockForUpdate()->findOrFail($id);
         $liveEntity = $this->newQueryWithConnection('live')->lockForUpdate()->findOrFail($id);
 
         $testAttributes = $testEntity->getAttributes();
         $liveAttributes = $liveEntity->getAttributes();
+
+        // reset the current entity's audit action with the older one
+        $liveEntity->setAuditAction($auditAction);
+        $testEntity->resetAuditAction();
 
         // Timestamps are allowed to be different
         // Ignore timestamps for similarity.
@@ -139,16 +255,12 @@ trait RepositoryUpdateTestAndLive
 
         if (count($diff1) > 0)
         {
-            ob_start();
-            print_r($diff1);
-            $msg .= ob_get_clean() . PHP_EOL;
+            $msg .= print_r($diff1, true) . PHP_EOL;
             $diff = true;
         }
         if (count($diff2) > 0)
         {
-            ob_start();
-            print_r($diff2);
-            $msg .= ob_get_clean() . PHP_EOL;
+            $msg .= print_r($diff2, true) . PHP_EOL;
             $diff = true;
         }
 

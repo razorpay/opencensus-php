@@ -63,7 +63,7 @@ trait Topup
             $this->checkForRecentFailedPayment($payment);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         //

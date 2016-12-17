@@ -171,6 +171,8 @@ class Gateway extends Base\Gateway
     {
         if (isset($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === true)
         {
+            $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
+
             return;
         }
 
@@ -183,14 +185,30 @@ class Gateway extends Base\Gateway
 
             $mockedApprovalCode = implode(':', ['N', $failCode, $failReason]);
         }
-        // Approval code wasn't returned in a successful transaction
-        // Really shouldn't be happening, but just in case
+        // Approval code wasn't returned, and neither were fail_rc and fail_reason
+        // Assume failure, and mock the failed approval code.
         else
         {
-            $mockedApprovalCode = implode(':', ['Y', Codes::MOCK_SUCCESS_APPROVAL_CODE]);
+            $mockedApprovalCode = implode(':', ['N', Codes::MOCK_FAIL_APPROVAL_CODE]);
         }
 
+        $this->setApproval($mockedApprovalCode);
+
         $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
+    }
+
+    protected function setApproval($approvalCode)
+    {
+        // Request has failed if the first character
+        // of the approval code string isn't 'Y'
+        if ($approvalCode[0] === 'Y')
+        {
+            $this->approval = true;
+        }
+        else
+        {
+            $this->approval = false;
+        }
     }
 
     protected function getSoapResponse($requestContent)
@@ -219,9 +237,7 @@ class Gateway extends Base\Gateway
 
     protected function checkApprovalCode($gatewayEntity)
     {
-        // Request has failed if the first character
-        // of the approval code string isn't 'Y'
-        if ($gatewayEntity->getApprovalCode()[0] !== 'Y')
+        if ($this->approval === false)
         {
             $approvalCode = $this->getActualCodeFromApprovalCode($gatewayEntity->getApprovalCode());
 
@@ -267,17 +283,27 @@ class Gateway extends Base\Gateway
         $attributes = [
             Entity::RECEIVED                => true,
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
-            Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
-            Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
-            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID] ?? null,
         ];
+
+        $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
+                    ConnectResponseFields::STATUS, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TRANSACTION_ID,
+                    ConnectResponseFields::IPG_TRANSACTION_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::ENDPOINT_TRANSACTION_ID,
+                        ConnectResponseFields::ENDPOINT_TRANSACTION_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TERMINAL_ID,
+                        ConnectResponseFields::TERMINAL_ID, $callbackBody);
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
         {
-            $attributes[Entity::STATUS]                  = Status::AUTHORIZED;
-            $attributes[Entity::ENDPOINT_TRANSACTION_ID] = $callbackBody[ConnectResponseFields::ENDPOINT_TRANSACTION_ID];
-            $attributes[Entity::GATEWAY_TERMINAL_ID]     = $callbackBody[ConnectResponseFields::TERMINAL_ID];
-            $attributes[Entity::AUTH_CODE]               = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+            $attributes[Entity::STATUS]    = Status::AUTHORIZED;
+
+            $attributes[Entity::AUTH_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+
+            $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
 
         $this->setErrorMessageIfNeeded($attributes);
@@ -289,7 +315,8 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getCommonResponseFields($response, $input);
 
-        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
 
         return $attributes;
     }
@@ -298,7 +325,8 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getCommonResponseFields($response, $input);
 
-        $attributes[Entity::AUTH_CODE] = $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE];
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
 
         $this->setRefundId($attributes, $input);
 
@@ -320,17 +348,66 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED               => true,
             Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
             Entity::AMOUNT                 => $input['amount'],
-            Entity::TDATE                  => $response[ApiResponseFields::TDATE],
             Entity::STATUS                 => Status::CAPTURED,
-            Entity::TRANSACTION_RESULT     => $response[ApiResponseFields::TRANSACTION_RESULT],
-            Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
-            Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
-            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID] ?? null,
         ];
+
+        $this->setApproval($attributes[Entity::APPROVAL_CODE]);
+
+        $this->setFieldIfPresent($attributes, Entity::TDATE,
+                    ApiResponseFields::TDATE, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
+                    ApiResponseFields::TRANSACTION_RESULT, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_PAYMENT_ID,
+                    ApiResponseFields::ORDER_ID, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TRANSACTION_ID,
+                    ApiResponseFields::IPG_TRANSACTION_ID, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TERMINAL_ID,
+                    ApiResponseFields::TERMINAL_ID, $response);
 
         $this->setErrorMessageIfNeeded($attributes);
 
         return $attributes;
+    }
+
+    protected function setFieldIfPresent(array & $attributes, string $field,
+                                            string $responseField, array $response)
+    {
+        if (isset($response[$responseField]) === true)
+        {
+            $attributes[$field] = $response[$responseField];
+        }
+        else
+        {
+            $attributes[$field] = null;
+
+            if ($this->approval === false)
+            {
+                // Random fields are often missing in FirstData responses
+                // in cases of auth being declined. Raise warning, but chill.
+                $traceLevel = 'warning';
+                $message    = $responseField . ' is missing from response.';
+            }
+            else
+            {
+                // If a random field is missing in a successful response,
+                // then contact FirstData immediately and clear things up.
+                $traceLevel = 'error';
+                $message    = $responseField . ' is missing from a successful preauth response.';
+            }
+
+            $this->trace->$traceLevel(
+                TraceCode::GATEWAY_PAYMENT_MISSING_FIELD,
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'message'    => $message,
+                    'gateway'    => $this->gateway,
+                ]
+            );
+        }
     }
 
     protected function buildTimeoutResponse($exception)
@@ -357,11 +434,9 @@ class Gateway extends Base\Gateway
 
     protected function setErrorMessageIfNeeded(& $attributes)
     {
-        $approvalCode = $attributes[Entity::APPROVAL_CODE];
-
-        if ($approvalCode[0] !== 'Y')
+        if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($approvalCode);
+            $approvalCode = $this->getActualCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
 
             $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
             $attributes[Entity::STATUS]        = Status::FAILED;
@@ -533,7 +608,12 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
-            [$response->body]);
+            [
+                'body'    => $response->body,
+                'headers' => $response->headers,
+                'code'    => $response->status_code,
+            ]
+        );
 
         $xml = simplexml_load_string(trim($response->body));
 

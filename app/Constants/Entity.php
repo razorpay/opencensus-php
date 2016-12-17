@@ -53,7 +53,17 @@ class Entity
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
+
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const OFFER                 = 'offer';
+    const COUPON                = 'coupon';
 
     //
     // Gateway entities
@@ -106,6 +116,8 @@ class Entity
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::OFFER                 => \RZP\Models\Offer::class,
+        self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
@@ -130,6 +142,13 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::ORG                   => \RZP\Models\Admin\Org::class,
+        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ROLE                  => \RZP\Models\Admin\Role::class,
+        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
+        self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
+        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
@@ -145,6 +164,13 @@ class Entity
     );
 
     protected static $syncedInLiveAndTest = array(
+        self::ORG,
+        self::ORG_HOSTNAME,
+        self::ROLE,
+        self::PERMISSION,
+        self::GROUP,
+        self::ADMIN,
+        self::ADMIN_TOKEN,
         self::IIN,
         self::FEATURE,
         self::METHODS,

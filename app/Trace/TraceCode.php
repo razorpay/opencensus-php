@@ -15,6 +15,7 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTHORIZED_NULL                   = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
@@ -81,9 +82,13 @@ class TraceCode
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
+    const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE             = 'CHECKOUT_PREFERENCES_RESPONSE';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const CREATE_GATEWAY_REFUND_RECORD_FAILED       = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
+    const GATEWAY_REFUND_RECORD_CREATED             = 'GATEWAY_REFUND_RECORD_CREATED';
+    const GATEWAY_REFUND_ABSENT                     = 'GATEWAY_REFUND_ABSENT';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST              = 'REFUND_FILE_GENERATE_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
@@ -106,6 +111,10 @@ class TraceCode
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
     const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
+    const CREATE_GATEWAY_REFUND_RECORD_SUMMARY      = 'CREATE_GATEWAY_REFUND_RECORD_SUMMARY';
+    const MULTIPLE_GATEWAY_ENTITIES_FOUND           = 'MULTIPLE_GATEWAY_ENTITIES_FOUND';
+    const BILLDESK_REFUND_UNEXPECTED_STATE          = 'BILLDESK_REFUND_UNEXPECTED_STATE';
+    const BILLDESK_CAN_MANUAL_REFUND                = 'BILLDESK_CAN_MANUAL_REFUND';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -251,6 +260,7 @@ class TraceCode
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
+    const GATEWAY_PAYMENT_MISSING_FIELD             = 'GATEWAY_PAYMENT_MISSING_FIELD';
     const GATEWAY_REVERSE_RESPONSE                  = 'GATEWAY_REVERSE_RESPONSE';
     const GATEWAY_REVERSE_REQUEST                   = 'GATEWAY_REVERSE_REQUEST';
     const GATEWAY_REVERSE_ERROR                     = 'GATEWAY_REVERSE_ERROR';
@@ -269,6 +279,7 @@ class TraceCode
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_ALREADY_REFUNDED                  = 'GATEWAY_ALREADY_REFUNDED';
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
@@ -401,9 +412,8 @@ class TraceCode
      */
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
-    /**
-     * Additional trace codes for Segment integration
-     */
+    // Trace codes for Segment integration
+
     const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
     const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
     const OTP_GENERATE                              = 'OTP_GENERATE';
@@ -420,16 +430,29 @@ class TraceCode
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
     // Trace code for features
+
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
     const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
+    const MERCHANT_FEATURE_UPDATE                   = 'MERCHANT_FEATURE_UPDATE';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
+
+    // Trace codes for Heimdall
+    const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
+    const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
+    const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
+    const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
 
     // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
     const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
+
+    // Trace codes for offers
+    const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
+    const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -471,6 +494,7 @@ class TraceCode
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
+        self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 

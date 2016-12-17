@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
@@ -117,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -376,6 +378,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setTwoFactorAuth($status)
+    {
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
+    }
+
     public function setRefundStatus($status)
     {
         $this->setAttribute(self::REFUND_STATUS, $status);
@@ -427,6 +434,11 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
         }
+    }
+
+    public function setAuthorizeAtNull()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, null);
     }
 
     public function setBank($bank)
@@ -968,6 +980,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFactorAuth()
+    {
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
+    }
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
