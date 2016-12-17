@@ -9,6 +9,9 @@ use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Refund;
+use RZP\Models\Transfer;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -206,6 +209,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'role'            => Admin\Role\Entity::class,
             'permission'      => Admin\Permission\Entity::class,
             'invoice'         => Invoice\Entity::class,
+            'payment'         => Payment\Entity::class,
+            'refund'          => Refund\Entity::class,
+            'transfer'        => Transfer\Entity::class,
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\MerchantDetail\Entity::class,
         ]);

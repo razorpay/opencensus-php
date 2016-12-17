@@ -7,7 +7,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $getStatementRules = [
-        Entity::CUSTOMER_ID         => 'required|string|size:19',
+        Entity::CUSTOMER_ID         => 'required|string|size:14',
         'from'                      => 'integer',
         'to'                        => 'integer',
         'count'                     => 'integer|min:1',

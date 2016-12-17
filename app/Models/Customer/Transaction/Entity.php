@@ -90,6 +90,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function entity()
+    {
+        return $this->morphTo();
+    }
+
     // -------------------- End Relations -----------------------
 
     public function getBalance()

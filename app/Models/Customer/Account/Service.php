@@ -387,4 +387,18 @@ class Service extends Base\Service
 
         return $this->repo->address->findByEntityAndId($addressId, $customer);
     }
+
+    public function getCustomerBalance(string $customerId) : array
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        return (new Customer\Balance\Service)->getBalance($customerId);
+    }
+
+    public function getCustomerBalanceStatement(string $customerId, array $input = []) : array
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        return (new Customer\Transaction\Service)->getStatement($customerId, $input);
+    }
 }

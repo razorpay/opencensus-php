@@ -14,7 +14,7 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function getStatement(string $customerId, array $input)
+    public function getStatement(string $customerId, array $input = []) : array
     {
         $input[Entity::CUSTOMER_ID] = $customerId;
 
@@ -23,18 +23,24 @@ class Service extends Base\Service
         $entities = $this->repo
                          ->customer_transaction
                          ->fetchCustomerStatement(
-                            $input, $customerId, $this->merchant->getId());
+                            $input, $this->merchant->getId());
 
         return $entities->toArrayPublic();
     }
 
-    public function createForRefund(string $customerId, array $input)
+    public function createForRefund(array $input)
     {
-        $this->repo->transaction(function () use ($customerId, $input)
+        $this->repo->transaction(function () use ($input)
         {
+            $amount = $input['amount'];
+
+            $customerId = $input['payment']['customer_id'];
+
+            $refundId = $input['refund']['id'];
+
             $customerTxn = $this->core
                                 ->createFromCustomerRefund(
-                                    $customerId, $input['refund']['id'], $input['amount']);
+                                    $customerId, $refundId, $amount);
 
             $this->repo->saveOrFail($customerTxn);
         });

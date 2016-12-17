@@ -7,7 +7,6 @@ use RZP\Models\Customer;
 
 class Entity extends Base\PublicEntity
 {
-    const ID            = 'id';
     const CUSTOMER_ID   = 'customer_id';
     const MERCHANT_ID   = 'merchant_id';
     const BALANCE       = 'balance';
@@ -16,18 +15,16 @@ class Entity extends Base\PublicEntity
     const MONTHLY_USAGE = 'monthly_usage';
     const MAX_BALANCE   = 'max_balance';
 
-    protected static $sign = 'cust';
-
     protected $entity = 'customer_balance';
 
-    public $incrementing = true;
+    protected $primaryKey = self::CUSTOMER_ID;
 
     protected $fillable = [
         self::BALANCE,
         self::DAILY_USAGE,
         self::WEEKLY_USAGE,
         self::MONTHLY_USAGE,
-        self::MAX_BALANCE
+        self::MAX_BALANCE,
     ];
 
     protected $visible = [
@@ -39,15 +36,12 @@ class Entity extends Base\PublicEntity
         self::MONTHLY_USAGE,
         self::MAX_BALANCE,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
         self::BALANCE,
-        self::MAX_BALANCE,
-        self::MONTHLY_USAGE,
-        self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $defaults = [
@@ -113,35 +107,33 @@ class Entity extends Base\PublicEntity
 
     public function getBalance()
     {
-        return (int) $this->getAttribute(self::BALANCE);
+        return $this->getAttribute(self::BALANCE);
     }
 
     public function getMaxbalance()
     {
-        return (int) $this->getAttribute(self::MAX_BALANCE);
+        return $this->getAttribute(self::MAX_BALANCE);
     }
 
     public function getDailyUsage()
     {
-        return (int) $this->getAttribute(self::DAILY_USAGE);
+        return $this->getAttribute(self::DAILY_USAGE);
     }
 
     public function getWeeklyUsage()
     {
-        return (int) $this->getAttribute(self::WEEKLY_USAGE);
+        return $this->getAttribute(self::WEEKLY_USAGE);
     }
 
     public function getMonthlyUsage()
     {
-        return (int) $this->getAttribute(self::MONTHLY_USAGE);
+        return $this->getAttribute(self::MONTHLY_USAGE);
     }
 
     // -------------------- Helpers ----------------------------
 
     public function addBalance(int $amount)
     {
-        $this->checkNumeric($amount);
-
         $balance = $this->getBalance() + $amount;
 
         $this->setAttribute(self::BALANCE, $balance);
@@ -149,22 +141,11 @@ class Entity extends Base\PublicEntity
 
     public function deductBalance(int $amount)
     {
-        $this->checkNumeric($amount);
-
         $balance = $this->getBalance() - $amount;
 
         assert($balance >= 0);
 
         $this->setAttribute(self::BALANCE, $balance);
-    }
-
-    protected function checkNumeric($arg)
-    {
-        if (is_int($arg) === false)
-        {
-            throw new Exception\InvalidArgumentException('
-                Unsigned integer required. Supplied: ' . $arg);
-        }
     }
 
     // -------------------- End Helpers -------------------------

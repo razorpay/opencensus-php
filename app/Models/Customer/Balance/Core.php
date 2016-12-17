@@ -22,7 +22,7 @@ class Core extends Base\Core
 
         $customer = $this->repo
                          ->customer
-                         ->findByPublicIdAndMerchant($customerId, $this->merchant);
+                         ->findByIdAndMerchant($customerId, $this->merchant);
 
         $balance->customer()->associate($customer);
 
@@ -87,7 +87,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
+                        ->findByIdAndMerchantSilent($customerId, $this->merchant);
 
         if (($balance !== null) and
             ($balance instanceof Entity))
@@ -111,7 +111,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
+                        ->getCustomerBalanceLockForUpdate($customerId);
 
         return $this->credit($balance, $amount, true);
     }

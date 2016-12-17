@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfers\Entity', 'entity');
+    }
+
     public function build(array $input = array())
     {
         $payment = func_get_arg(1);

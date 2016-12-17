@@ -51,10 +51,12 @@ class Core extends Base\Core
 
         $customerTxn->setEntityId($transfer->getId());
 
+        $customerTxn->entity()->associate($transfer);
+
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerIdAndMerchant(
-                            $customer->getPublicId(), $payment->merchant);
+                        ->findByIdAndMerchant(
+                            $customer->getId(), $payment->merchant);
 
         $customerTxn->setBalance($balance->getBalance());
 
@@ -70,7 +72,7 @@ class Core extends Base\Core
      */
     public function createFromCustomerRefund(string $customerId, string $refundId, int $amount) : Entity
     {
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customer);
 
@@ -80,7 +82,7 @@ class Core extends Base\Core
 
         $customerTxn->setEntityId($refundId);
 
-        $balance = (new Customer\Balance\Core)->refund($customer->getPublicId(), $amount);
+        $balance = (new Customer\Balance\Core)->refund($customer->getId(), $amount);
 
         $customerTxn->setBalance($balance->getBalance());
 

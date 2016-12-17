@@ -18,7 +18,7 @@ class Service extends Base\Service
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerIdAndMerchant($customerId, $this->merchant);
+                        ->findByIdAndMerchant($customerId, $this->merchant);
 
         return $balance->toArrayPublic();
     }
@@ -34,8 +34,7 @@ class Service extends Base\Service
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->getCustomerBalanceLockForUpdate(
-                            $customer->getPublicId(), $this->merchant);
+                        ->getCustomerBalanceLockForUpdate($customer->getId());
 
         return $this->core->debit($balance, $amount);
     }

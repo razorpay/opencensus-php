@@ -805,6 +805,11 @@ class Entity extends Base\PublicEntity
         return $this->card->isInternational();
     }
 
+    public function isFlashWalletPayment()
+    {
+        return ($this->getWallet() === Processor\Wallet::FLASHWALLET);
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getAmount()
@@ -1349,6 +1354,11 @@ class Entity extends Base\PublicEntity
     public function emiPlan()
     {
         return $this->belongsTo('RZP\Models\Emi\Entity');
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfers\Entity', 'entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

@@ -399,11 +399,6 @@ trait Authorize
         if ($payment->isWallet())
         {
             $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
-
-            if ($payment->getWallet() === Wallet::FLASHWALLET)
-            {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::B2BWALLET);
-            }
         }
         else
         {
@@ -1713,8 +1708,6 @@ trait Authorize
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
 
-            $isFlashWalletPayment = $payment->getWallet() === Wallet::FLASHWALLET;
-
             $this->trace->info(
                 TraceCode::PAYMENT_STATUS_AUTHORIZED,
                 [
@@ -1743,7 +1736,7 @@ trait Authorize
 
             $this->repo->saveOrFail($payment->terminal);
 
-            if ($isFlashWalletPayment)
+            if ($payment->isFlashWalletPayment())
             {
                 $this->processFlashWalletPayment($payment);
             }

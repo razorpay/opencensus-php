@@ -227,16 +227,16 @@ class CustomerController extends Controller
 
     public function getCustomerWalletBalance($customerId)
     {
-        $wallet = (new Customer\Balance\Service)->getBalance($customerId);
+        $customerBalance = $this->customer->getCustomerBalance($customerId);
 
-        return ApiResponse::json($wallet);
+        return ApiResponse::json($customerBalance);
     }
 
-    public function getCustomerWalletStatement($id)
+    public function getCustomerWalletStatement($customerId)
     {
         $input = Request::all();
 
-        $statement = (new Customer\Transaction\Service)->getStatement($id, $input);
+        $statement = $this->customer->getCustomerBalanceStatement($customerId, $input);
 
         return ApiResponse::json($statement);
     }

@@ -633,13 +633,13 @@ class Core extends Base\Core
             return $this->customerBalance;
         }
 
-        $customerId = $customer->getPublicId();
+        $customerId = $customer->getId();
 
         // Try to create the customer_balance entity first - if not already exists
         $balance = (new Customer\Balance\Core)->fetchOrCreate($customerId);
 
         $balance = $this->repo->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId, $this->merchant);
+                        ->getCustomerBalanceLockForUpdate($customerId);
 
         $this->customerBalance = $balance;
 

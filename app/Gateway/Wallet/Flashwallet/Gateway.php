@@ -39,11 +39,9 @@ class Gateway extends Base\Gateway
 
     protected function processCustomerBalanceForRefund($input)
     {
-        $customerId = Customer\Entity::getSignedId($input['payment']['customer_id']);
-
         try
         {
-            (new Customer\Transaction\Service)->createForRefund($customerId, $input);
+            (new Customer\Transaction\Service)->createForRefund($input);
         }
         catch (\Throwable $ex)
         {

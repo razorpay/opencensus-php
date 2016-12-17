@@ -11,7 +11,7 @@ class Repository extends Base\Repository
     protected $entity = 'customer_transaction';
 
     protected $entityFetchParamRules = [
-        'customer_id'  => 'sometimes|string|size:19'
+        'customer_id'  => 'sometimes|string|size:14'
     ];
 
     /**
@@ -19,11 +19,10 @@ class Repository extends Base\Repository
      * Common pagination params apply (count, skip, from, to)
      *
      * @param  array    $input      Input Params
-     * @param  string   $customerId
      * @param  string   $merchantId
      * @return array
      */
-    public function fetchCustomerStatement($input, $customerId, $merchantId)
+    public function fetchCustomerStatement(array $input, string $merchantId)
     {
         $records = $this->fetch($input, $merchantId);
 
@@ -33,8 +32,6 @@ class Repository extends Base\Repository
     protected function addQueryParamCustomerId($query, $input)
     {
         $customerId = $input[Entity::CUSTOMER_ID];
-
-        Customer\Entity::verifyIdAndStripSign($customerId);
 
         $query->where(Entity::CUSTOMER_ID, $customerId);
     }

@@ -4,42 +4,23 @@ namespace RZP\Models\Customer\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'customer_balance';
 
-    public function getCustomerBalanceLockForUpdate(string $customerId, Merchant\Entity $merchant)
+    public function getCustomerBalanceLockForUpdate(string $customerId)
     {
         assert ($this->isTransactionActive());
 
-        return $this->findByCustomerIdAndMerchant($customerId, $merchant, true);
+        return Entity::lockForUpdate()->findOrFail($customerId);
     }
 
-    public function findByCustomerIdAndMerchantSilent(string $customerId, Merchant\Entity $merchant)
+    public function findByIdAndMerchantSilent(string $customerId, Merchant\Entity $merchant)
     {
-        $customerId = Entity::verifyIdAndSilentlyStripSign($customerId);
-
         return $this->newQuery()
-                    ->where(Entity::CUSTOMER_ID, $customerId)
-                    ->where(Entity::MERCHANT_ID, $merchant->getId())
-                    ->first();
+                    ->merchantId($merchant->getId())
+                    ->find($customerId);
     }
-
-    public function findByCustomerIdAndMerchant(string $customerId, Merchant\Entity $merchant, bool $lockForUpdate = false)
-    {
-        $customerId = Entity::verifyIdAndStripSign($customerId);
-
-        $query = $this->newQuery()
-                      ->where(Entity::CUSTOMER_ID, $customerId)
-                      ->where(Entity::MERCHANT_ID, $merchant->getId());
-
-        if ($lockForUpdate === true)
-        {
-            $query->lockForUpdate();
-        }
-
-        return $query->firstOrFail();
-    }
-
 }
