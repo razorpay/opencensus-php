@@ -88,6 +88,7 @@ class Entity
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
@@ -136,6 +137,7 @@ class Entity
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
@@ -153,14 +155,15 @@ class Entity
     );
 
     protected static $repository = array(
-        self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
-        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
-        self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
+        self::NETBANKING_HDFC     => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AIRTEL   => \RZP\Gateway\Netbanking\Base::class,
+        self::UPI_ICICI           => \RZP\Gateway\Upi\Base::class,
+        self::WALLET_AIRTELMONEY  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP      => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE   => \RZP\Gateway\Wallet\Base::class,
     );
 
     protected static $syncedInLiveAndTest = array(

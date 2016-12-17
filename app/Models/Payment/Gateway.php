@@ -25,7 +25,7 @@ class Gateway
     const SHARP                      = 'sharp';
     const NETBANKING_HDFC            = 'netbanking_hdfc';
     const NETBANKING_KOTAK           = 'netbanking_kotak';
-    const NETBANKING_AIRTELPAYMENTS  = 'netbanking_airtelpayments';
+    const NETBANKING_AIRTEL          = 'netbanking_airtel';
     const UPI_ICICI                  = 'upi_icici';
     const WALLET_OLAMONEY            = 'wallet_olamoney';
     const WALLET_PAYZAPP             = 'wallet_payzapp';
@@ -66,7 +66,7 @@ class Gateway
         self::SHARP                         => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC               => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK              => Settlement\Channel::KOTAK,
-        self::NETBANKING_AIRTELPAYMENTS     => Settlement\Channel::KOTAK,
+        self::NETBANKING_AIRTEL             => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP                => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY              => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY               => Settlement\Channel::KOTAK,
@@ -101,7 +101,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
-            self::NETBANKING_AIRTELPAYMENTS,
+            self::NETBANKING_AIRTEL,
         ),
 
         Method::WALLET => array(
@@ -355,8 +355,8 @@ class Gateway
      */
     public static $netbankingToGatewayMap = array(
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK
-        IFSC::AIRP => Gateway::NETBANKING_AIRTELPAYMENTS);
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::AIRP => Gateway::NETBANKING_AIRTEL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.

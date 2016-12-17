@@ -909,7 +909,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
-        $this->createNetbankingAirtelPaymentsTerminals();
+        $this->createNetbankingAirtelTerminals();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1120,18 +1120,17 @@ class DatabaseSeeder extends Seeder
         );
     }
 
-    protected function createNetbankingAirtelPaymentsTerminals()
+    protected function createNetbankingAirtelTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => Terminal\Shared::NETBANKING_AIRTELPAYMENTS_TERMINAL,
+                'id'                    => Terminal\Shared::NETBANKING_AIRTEL_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::NETBANKING_AIRTELPAYMENTS
+                'gateway'               => Gateway::NETBANKING_AIRTEL,
                 'card'                  => '0',
                 'netbanking'            => '1',
-                'gateway_merchant_id'   => 'test_merchant_netbanking_airtelpayments',
-                'gateway_terminal_id'   => 'test_terminal_netbanking_airtelpayments',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_airtelpayments_terminal_pass'),
+                'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_airtel_terminal_salt'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
