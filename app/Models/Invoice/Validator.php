@@ -74,12 +74,6 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|boolean',
     ];
 
-    protected static $createValidators = [
-        Entity::LINE_ITEMS,
-        Entity::CURRENCY,
-        Entity::AMOUNT,
-    ];
-
     protected static $createIssuedRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
@@ -124,8 +118,14 @@ class Validator extends Base\Validator
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
     ];
 
+    protected static $createValidators =[
+        Entity::AMOUNT,
+        Entity::CURRENCY,
+    ];
+
     protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
+        Entity::CURRENCY,
     ];
 
     protected static $editDraftValidators = [
