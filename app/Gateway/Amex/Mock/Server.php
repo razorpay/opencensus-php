@@ -12,7 +12,7 @@ class Server extends AxisMigs\Mock\Server
         switch ($input['vpc_CardNum'])
         {
             case '345678000000007':
-                $content['vpc_3DSstatus'] = 'U';
+                $content['vpc_3DSstatus'] = 'N';
                 break;
             default:
                 $content['vpc_3DSstatus'] = 'Y';

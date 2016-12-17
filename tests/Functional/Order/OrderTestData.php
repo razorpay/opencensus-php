@@ -187,10 +187,10 @@ return [
                     'netbanking' => [
                         'ALLA'   =>  'Allahabad Bank',
                         'ANDB'   =>  'Andhra Bank',
-                        'CIUB'   =>  'City Union Bank',
+                        'CIUB'   =>  'City Union Bank Ltd',
                         'CORP'   =>  'Corporation Bank',
-                        'IBKL'   =>  'IDBI Bank',
-                        'INDB'   =>  'IndusInd Bank',
+                        'IBKL'   =>  'IDBI Ltd',
+                        'INDB'   =>  'Indusind Bank Ltd',
                         'KVBL'   =>  'Karur Vysya Bank',
                         'LAVB_R' =>  'Lakshmi Vilas Bank - Retail Banking',
                     ],

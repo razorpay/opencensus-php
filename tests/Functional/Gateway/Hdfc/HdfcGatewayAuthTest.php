@@ -104,11 +104,13 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 
     public function testDebitCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 

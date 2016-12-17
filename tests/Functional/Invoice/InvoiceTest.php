@@ -608,6 +608,11 @@ class InvoiceTest extends TestCase
         $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
     }
 
+    public function testCreateInvoiceWithNullCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testGetInvoice()
     {
         $this->createOrder();

@@ -47,11 +47,6 @@ class MobikwikGatewayTest extends TestCase
             $this->testData['testMobikwikWalletEntity'], $this->payment);
     }
 
-//    public function testFailedPayment()
-//    {
-//        $this->markTestIncomplete();
-//    }
-
     public function testPowerWalletPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');

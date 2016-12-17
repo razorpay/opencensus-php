@@ -36,6 +36,7 @@ class Repository extends Base\Repository
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::TWO_FACTOR_AUTH    => 'sometimes|string',
         Entity::BANK               => 'sometimes',
         Entity::METHOD             => 'sometimes',
         Entity::GATEWAY            => 'sometimes',
@@ -159,11 +160,16 @@ class Repository extends Base\Repository
                         );
     }
 
+    /**
+     * Fetches old payments which can be timed-out with respective
+     * merchant relation.
+     */
     public function fetchOldCreatedPaymentsForTimeout($timestamp)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with('merchant')
                     ->get();
     }
 
@@ -567,7 +573,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(30)
+                    ->limit(40)
                     ->get();
     }
 
@@ -594,7 +600,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(30)
+                    ->limit(40)
                     ->get();
     }
 

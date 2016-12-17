@@ -25,8 +25,10 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -206,9 +208,31 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized();
 
+        $this->updateTwoFactorAuthForOneStepPayment();
+
         $payment = $this->payment;
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function updateTwoFactorAuthForOneStepPayment()
+    {
+        $payment = $this->payment;
+
+        // In one step payment, we always set the 2FA as unavailable. Basically, no 2FA done.
+        // Except in the cases of recurring, because, here we know that
+        // we have manually skipped/by-passed the 2FA.
+
+        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
+        }
+        else
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::NOT_APPLICABLE);
+        }
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function autoCapturePaymentIfApplicable($payment)
@@ -1665,6 +1689,8 @@ trait Authorize
 
             $status = $this->payment->getStatus();
 
+            // We do not want the payments which failed captured
+            // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
                 return;

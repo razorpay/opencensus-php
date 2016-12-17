@@ -15,6 +15,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -181,15 +182,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         $response = $this->sendGatewayRequest($request);
 
         $this->handleRequestFailed($response);
 
         $content = $this->jsonToArray($response->body);
 
-        $data = array();
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
@@ -202,7 +201,11 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input);
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function debit(array $input)
@@ -210,8 +213,6 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
-
-        $this->traceGatewayPaymentRequest($request, $input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -552,10 +553,14 @@ class Gateway extends Base\Gateway
 
         $content = array(
             RequestFields::OTP_ID                  => $wallet['reference1'],
-            RequestFields::OTP                     => $input['gateway']['otp'],
+            RequestFields::OTP                     => '',
             RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
             RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
         );
+
+        $this->traceGatewayPaymentRequest($content, $input);
+
+        $content[RequestFields::OTP] = $input['gateway']['otp'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -676,7 +681,9 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $this->handleRequestFailed($response);
+        // Regular error handling cannot be used here because freecharge sends
+        // an error code if the transaction does not exist
+        $this->handleServerTimeouts($response);
 
         $content = $this->jsonToArray($response->body);
 
@@ -970,5 +977,16 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function handleServerTimeouts($response)
+    {
+        // Freecharge servers timeout internally, It is not request timeout.
+        // Handle the timeout errors
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        }
     }
 }
