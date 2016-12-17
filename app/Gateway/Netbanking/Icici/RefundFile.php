@@ -32,7 +32,6 @@ class RefundFile extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        // Gets the path to the excel file
         $urlExcel = $this->writeToExcelFile($data, $fileName);
 
         // Creating a file with excel format
@@ -69,7 +68,7 @@ class RefundFile extends Base\RefundFile
                 RefundFileFields::REFUND_AMOUNT          => $row['refund']['amount'] / 100,
                 RefundFileFields::TRANSACTION_ID         => $row['payment']['id'],
                 RefundFileFields::REFUND_MODE            => 'C',
-                RefundFileFields::REMARKS                => '', // empty
+                RefundFileFields::REMARKS                => '',
             ];
         }
 

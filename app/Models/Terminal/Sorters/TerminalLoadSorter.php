@@ -67,17 +67,16 @@ class TerminalLoadSorter extends Terminal\Sorter
 
     public function getTrialGateways($mode)
     {
-        $testGatways = self::$prodTrialGateways;
+        $trialGatways = self::$prodTrialGateways;
 
         if ($mode === Mode::TEST)
         {
             $testGatways = self::$testTrialGateways;
         }
 
-        return $testGatways;
+        return $trialGatways;
     }
 
-    // Only used for test situations
     public static function setTestTrialGateways($trialGateways)
     {
         self::$testTrialGateways = $trialGateways;
@@ -94,6 +93,7 @@ class TerminalLoadSorter extends Terminal\Sorter
     public function trialGatewaySorter($terminals, array $input, $options)
     {
         $mode = $input['mode'];
+
         $trialGateways = $this->getTrialGateways($mode);
 
         $sortedTerminals = [];

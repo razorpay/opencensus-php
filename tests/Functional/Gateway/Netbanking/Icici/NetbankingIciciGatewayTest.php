@@ -17,8 +17,6 @@ class NetbankingIciciGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
         $this->gateway = 'netbanking_icici';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC');

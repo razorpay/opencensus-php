@@ -11,7 +11,6 @@ trait AesTrait
         $aes = new AES(self::MODE_ECB);
         $aes->setKey($masterKey);
 
-        // returning Encrypted String
         return $aes->encrypt($string);
     }
 
@@ -20,7 +19,6 @@ trait AesTrait
         $aes = new AES(self::MODE_ECB);
         $aes->setKey($masterKey);
 
-        // returning Decrypted String
         return $aes->decrypt($string);
     }
 }

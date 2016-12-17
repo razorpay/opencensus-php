@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use RZP\Lib\AesTrait;
-use Carbon\Carbon;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -11,7 +10,7 @@ use RZP\Models\Payment;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal\Entity;
+use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
 {
@@ -35,10 +34,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        // Create payment entity before passing it to gateway payment entity
         $entity = $this->createPaymentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($entity);
+        $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -51,38 +49,20 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
-        if (empty($content) === true)
-        {
-            // Decryption fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
-        }
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+            $input['payment'][Payment\Entity::ID], GatewayBase\Action::AUTHORIZE);
 
-        // Use maps - Response Fields
         $attrs = $this->getCallbackAttributes($content);
 
         $payment->fill($attrs);
 
         $this->repo->saveOrFail($payment);
 
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Confirmation::YES))
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
+        $this->checkResponseStatus($attrs, $content);
     }
 
     public function verify(array $input)
@@ -128,7 +108,8 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
-        if (isset($xml['STATUS']) and $xml['STATUS'] === Constants::SUCCESS)
+        if (isset($xml[ResponseFields::STATE]) === true and
+            $xml[ResponseFields::STATE] === Constants::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -137,8 +118,8 @@ class Gateway extends Base\Gateway
 
         // If payment status is either failed or created,
         // this is an api failure
-        if (($input['payment']['status'] === 'failed') or
-            ($input['payment']['status'] === 'created'))
+        if (($input['payment'][Payment\Entity::STATUS] === 'failed') or
+            ($input['payment'][Payment\Entity::STATUS] === 'created'))
         {
             $verify->apiSuccess = false;
         }
@@ -159,9 +140,6 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        // Amount not needed for authorize
-        unset($data[RequestFields::AMOUNT]);
-
         $data[RequestFields::ENCRYPTED_STRING] = $encryptedString;
 
         return $data;
@@ -176,23 +154,13 @@ class Gateway extends Base\Gateway
 
         $paymentDate = $this->getPaymentDate($payment);
 
-        // Getting payment date in the specified format
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
         $data[RequestFields::MODE]  = Mode::VERIFY;
 
-        $prn = $input['payment'][Payment\Entity::ID];
+        $additionalData = $this->getPaymentReferenceData($input);
 
-        $additionalData = [
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $prn,
-            RequestFields::ITEM_CODE                => strtoupper($prn),
-            RequestFields::CURRENCY_CODE            => 'INR',
-        ];
-
-        if ($input['merchant']->isTPVRequired())
-        {
-            $additionalData[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
-        }
+        $this->getTpvData($additionalData, $input);
 
         $data = array_merge($data, $additionalData);
 
@@ -216,25 +184,32 @@ class Gateway extends Base\Gateway
     {
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
-        $prn = $input['payment'][Payment\Entity::ID];
-
-        $amount = $input['payment']['amount'] / 100;
-
         $data = [
-            RequestFields::PAYMENT_REFERENCE_NUBER => $prn ,
-            RequestFields::ITEM_CODE               => strtoupper($prn),
-            RequestFields::AMOUNT                  => $amount,
-            RequestFields::CURRENCY_CODE           => 'INR',
             RequestFields::RETURN_URL              => $callbackUrl,
             RequestFields::CONFIRMATION            => Confirmation::YES,
         ];
 
-        if ($input['merchant']->isTPVRequired())
-        {
-            $data[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
-        }
+        $additionalData = $this->getPaymentReferenceData($input);
+
+        $data = array_merge($data, $additionalData);
+
+        $this->getTpvData($data, $input);
 
         return $data;
+    }
+
+    protected function getPaymentReferenceData($input)
+    {
+        $prn = $input['payment'][Payment\Entity::ID];
+
+        $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
+
+        return [
+            RequestFields::PAYMENT_REFERENCE_NUBER => $prn ,
+            RequestFields::ITEM_CODE               => strtoupper($prn),
+            RequestFields::AMOUNT                  => $amount,
+            RequestFields::CURRENCY_CODE           => 'INR',
+        ];
     }
 
     protected function createDefaultRequestData($input)
@@ -243,7 +218,7 @@ class Gateway extends Base\Gateway
 
         $spid = $this->getSpid();
 
-        $amount = $input['payment']['amount'] / 100;
+        $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         $data = [
             RequestFields::OBJ_NAME   => Constants::LOGIN,
@@ -251,10 +226,17 @@ class Gateway extends Base\Gateway
             RequestFields::MODE       => Mode::PAY,
             RequestFields::PAYEE_ID   => $pid,
             RequestFields::SPID       => $spid,
-            RequestFields::AMOUNT     => $amount
         ];
 
         return $data;
+    }
+
+    protected function getTpvData(&$additionalData, $input)
+    {
+        if ($input['merchant']->isTPVRequired())
+        {
+            $additionalData[RequestFields::ACCOUNT_NO] = $input['order']['account_number'];
+        }
     }
 
     protected function createQueryString($data)
@@ -273,7 +255,7 @@ class Gateway extends Base\Gateway
 
     protected function createPaymentArray($input)
     {
-        $amount = $input['payment']['amount'] / 100;
+        $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         return [
             RequestFields::AMOUNT => $amount
@@ -287,7 +269,6 @@ class Gateway extends Base\Gateway
         return date('Y-m-d', $timestamp);
     }
 
-
     protected function getDataFromResponse($data)
     {
         $masterKey = $this->getMasterKey();
@@ -295,6 +276,13 @@ class Gateway extends Base\Gateway
         $decryptedString = $this->decryptString(base64_decode($data['ES']), $masterKey);
 
         parse_str($decryptedString, $content);
+
+        if (empty($content) === true)
+        {
+            // Decryption fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
+        }
 
         return $content;
     }
@@ -308,6 +296,21 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function checkResponseStatus($attrs, $content)
+    {
+        if ((isset($attrs[Constants::STATUS]) === false) or
+            ($attrs[Constants::STATUS] !== Confirmation::YES))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
     protected function getResponseArray($content)
     {
         $xml = (array) simplexml_load_string($content);
@@ -317,8 +320,7 @@ class Gateway extends Base\Gateway
 
     public function getMasterKey()
     {
-        // Terminal Entitiy
-        $masterKey = $this->terminal[Entity::GATEWAY_TERMINAL_PASSWORD];
+        $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
         if ($this->mode === RZPMode::TEST)
         {
@@ -330,7 +332,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        $pid = $this->terminal[Entity::GATEWAY_MERCHANT_ID];
+        $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
         if ($this->mode === RZPMode::TEST)
         {
@@ -342,7 +344,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        $spid = $this->terminal[Entity::GATEWAY_MERCHANT_ID2];
+        $spid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
 
         if ($this->mode === RZPMode::TEST)
         {

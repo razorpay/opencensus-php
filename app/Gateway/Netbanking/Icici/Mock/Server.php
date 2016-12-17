@@ -23,12 +23,11 @@ class Server extends Base\Mock\Server
 
         $decryptedData = $this->decryptData($input);
 
-        $postData = $this->createPostData($decryptedData); // response from icici bank
+        $postData = $this->createPostData($decryptedData);
 
-        // For test cases
         $this->content($postData);
 
-        $content = $this->formatPostData($postData);
+        $content = $this->formatResponseData($postData);
 
         $callbackUrl = $decryptedData['RU'] . '?' . http_build_query($content);
 
@@ -55,20 +54,18 @@ class Server extends Base\Mock\Server
             RequestFields::ITEM_CODE                => strtoupper($input[RequestFields::ITEM_CODE]),
             RequestFields::AMOUNT                   => $input[RequestFields::AMOUNT],
             RequestFields::CURRENCY_CODE            => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::STATUS                  => 'Y',
+            ResponseFields::STATUS                  => Constants::YES,
         ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {
-            $response[ResponseFields::BANK_PAYMENT_ID] = mt_rand(1000000000, 9999999999); // Random 10 digit number
+            $response[ResponseFields::BANK_PAYMENT_ID] = mt_rand(1000000000, 9999999999);
         }
-
-        // Forcing PAID to be Y for the mock server
 
         return $response;
     }
 
-    protected function formatPostData($postData)
+    protected function formatResponseData($postData)
     {
         $masterKey = $this->getGatewayInstance()->getMasterKey();
 
@@ -91,17 +88,16 @@ class Server extends Base\Mock\Server
         parse_str($string, $decryptedData);
 
         return $decryptedData;
-
     }
 
     protected function createXmlResponse($responseArray)
     {
-        // For test cases
         $this->content($responseArray);
 
         $responseArray = array_flip($responseArray);
 
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
+
         array_walk_recursive($responseArray, array ($xml, 'addAttribute'));
 
         $response = $xml->asXML();

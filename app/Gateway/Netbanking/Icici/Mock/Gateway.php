@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Icici;
 
@@ -15,8 +14,8 @@ class Gateway extends Icici\Gateway
         $request = parent::authorize($input);
 
         $url = $this->route->getUrlWithPublicAuth(
-                                'mock_netbanking_payment',
-                                ['bank' => $this->bank]);
+            'mock_netbanking_payment',
+            ['bank' => $this->bank]);
 
         $request['url'] = $url;
 
