@@ -18,5 +18,11 @@ class ServiceTest extends TestCase
     public function testShorten()
     {
         // TODO
+
+        $url = 'http://www.duckduckgo.com';
+
+        $shortUrl = $this->service->shorten($url);
+
+        sd($shortUrl);
     }
 }
