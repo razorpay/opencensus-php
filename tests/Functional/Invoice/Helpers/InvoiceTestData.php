@@ -236,7 +236,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Currency of all items should be same as of the invoice itself',
+                    'description' => 'Currency of all items should be the same as of the invoice.',
                 ],
             ],
             'status_code' => 400,

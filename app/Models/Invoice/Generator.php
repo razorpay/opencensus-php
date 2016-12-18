@@ -224,8 +224,7 @@ class Generator extends Base\Core
                 'invoice_status' => $this->invoice->getStatus(),
                 'short_url'      => $shortenedUrl,
                 'long_url'       => $longUrl,
-            ]
-        );
+            ]);
 
         $this->invoice->setShortUrl($shortenedUrl);
     }

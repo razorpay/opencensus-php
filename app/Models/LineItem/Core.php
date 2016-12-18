@@ -23,11 +23,11 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        list($input, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
+        list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
-        $item = $this->createItemIfNotExists($input, $itemDetails, $merchant, $invoice);
+        $item = $this->createItemIfNotExists($lineItemDetails, $itemDetails, $merchant, $invoice);
 
-        $lineItem = (new Entity)->build($input);
+        $lineItem = (new Entity)->build($lineItemDetails);
 
         $this->setLineItemAssociations($lineItem, $merchant, $invoice, $item);
 
@@ -42,12 +42,13 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        list($input, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
+        list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
-        if (isset($input[Entity::ITEM_ID]) or $itemDetails)
+        if ((isset($lineItemDetails[Entity::ITEM_ID])) or
+            (empty($itemDetails) === false))
         {
             $item = $this->createItemIfNotExists(
-                $input,
+                $lineItemDetails,
                 $itemDetails,
                 $merchant,
                 $invoice
@@ -56,7 +57,7 @@ class Core extends Base\Core
             $lineItem->item()->associate($item);
         }
 
-        $lineItem->edit($input);
+        $lineItem->edit($lineItemDetails);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -83,7 +84,7 @@ class Core extends Base\Core
     // -------------------- Protected methods --------------------
 
     /**
-     * @param array           $input
+     * @param array           $lineItemDetails
      * @param array           $itemDetails
      * @param Merchant\Entity $merchant
      * @param Invoice\Entity  $invoice
@@ -92,22 +93,23 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      */
     protected function createItemIfNotExists(
-        array $input,
+        array $lineItemDetails,
         array $itemDetails,
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        $item = $this->getItemIfIdExistsInInput($input, $merchant);
+        $item = $this->getItemIfIdExistsInInput($lineItemDetails, $merchant);
 
-        if ($item and $item->isNotActive())
+        if (($item !== null) and
+            ($item->isNotActive()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
                 null,
                 [
                     'item_id' => $item->getId(),
-                ]
-            );
+                    'invoice_id' => $invoice->getId(),
+                ]);
         }
 
         if (empty($item))
@@ -123,26 +125,25 @@ class Core extends Base\Core
 
         $item->getValidator()->validateCurrency(
             $item->getCurrency(),
-            $invoice->getCurrency()
-        );
+            $invoice->getCurrency());
 
         return $item;
     }
 
     /**
-     * @param array           $input
+     * @param array           $lineItemDetails
      * @param Merchant\Entity $merchant
      *
      * @return Item\Entity
      */
-    protected function getItemIfIdExistsInInput(array $input, Merchant\Entity $merchant)
+    protected function getItemIfIdExistsInInput(array $lineItemDetails, Merchant\Entity $merchant)
     {
         $item = null;
 
-        if (isset($input[Entity::ITEM_ID]) === true)
+        if (isset($lineItemDetails[Entity::ITEM_ID]) === true)
         {
             $item = $this->repo->item->findByPublicIdAndMerchant(
-                $input[Entity::ITEM_ID],
+                $lineItemDetails[Entity::ITEM_ID],
                 $merchant
             );
         }
@@ -151,7 +152,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Request payload contains flattened linesItemDetails,
+     * Request payload contains flattened lineItemDetails,
      * i.e. It has line item attributes (eg. quantity) and
      * the contained item attributes (eg. name, amount etc.).
      *
@@ -165,9 +166,11 @@ class Core extends Base\Core
     {
         $itemDetails = [];
 
+        $itemFields = Item\Entity::$allFields;
+
         foreach ($lineItemDetails as $key => $value)
         {
-            if (in_array($key, Item\Entity::$allFields, true))
+            if (in_array($key, $itemFields, true))
             {
                 $itemDetails[$key] = $value;
 
@@ -184,10 +187,10 @@ class Core extends Base\Core
         Base\PublicEntity $entity,
         Item\Entity $item)
     {
+        $lineItem->merchant()->associate($merchant);
+
         $lineItem->entity()->associate($entity);
 
         $lineItem->item()->associate($item);
-
-        $lineItem->merchant()->associate($merchant);
     }
 }
