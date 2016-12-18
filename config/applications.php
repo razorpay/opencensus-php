@@ -72,9 +72,9 @@ return array(
         'secret'    => env('LUMBERJACK_SECRET')
     ),
 
-    'url_shortner' => [
-        'mock'     => env('URL_SHORTNER_MOCK', false),
-        'services' => env('URL_SHORTNER_SERVICES', 'gimli,bitly'),
+    'url_shortener' => [
+        'mock'     => env('URL_SHORTENER_MOCK', false),
+        'services' => env('URL_SHORTENER_SERVICES', 'gimli,bitly'),
         'gimli'    => [
             'secret' => env('GIMLI_SECRET', 'RANDOM_SECRET'),
         ],

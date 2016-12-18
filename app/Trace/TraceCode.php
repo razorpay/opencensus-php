@@ -446,7 +446,7 @@ class TraceCode
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
 
-    const URL_SHORTNER_SERVICE_FAIL                 = 'URL_SHORTNER_SERVICE_FAIL';
+    const URL_SHORTENER_SERVICE_FAIL                = 'URL_SHORTENER_SERVICE_FAIL';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

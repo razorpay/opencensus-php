@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortner;
+namespace RZP\Services\UrlShortener;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -21,7 +21,7 @@ class Service extends Impl\Base
     {
         $this->trace    = $app['trace'];
 
-        $this->config   = $app['config']->get('applications.url_shortner');
+        $this->config   = $app['config']->get('applications.url_shortener');
 
         $this->services = explode(',', $this->config['services']);
     }
@@ -48,7 +48,7 @@ class Service extends Impl\Base
             }
         }
 
-        $this->trace->error(TraceCode::URL_SHORTNER_SERVICE_FAIL, ['url' => $url]);
+        $this->trace->error(TraceCode::URL_SHORTENER_SERVICE_FAIL, ['url' => $url]);
 
         if ($fail === false)
         {
@@ -64,7 +64,7 @@ class Service extends Impl\Base
         // Returns instance of implementation of given service
         //
 
-        $impl = 'RZP\\Services\\UrlShortner\\Impl\\' . ucfirst($service);
+        $impl = 'RZP\\Services\\UrlShortener\\Impl\\' . ucfirst($service);
 
         return $impl::instance($this->config[$service]);
     }

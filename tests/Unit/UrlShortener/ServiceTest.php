@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Unit\UrlShortner;
+namespace RZP\Tests\Unit\UrlShortener;
 
 use RZP\Tests\TestCase;
 
@@ -12,17 +12,15 @@ class ServiceTest extends TestCase
 
         $this->app = $this->createApplication();
 
-        $this->service = $this->app['url_shortner'];
+        $this->service = $this->app['url_shortener'];
     }
 
     public function testShorten()
     {
-        // TODO
+        // TODO: Finish this
 
         $url = 'http://www.duckduckgo.com';
 
         $shortUrl = $this->service->shorten($url);
-
-        sd($shortUrl);
     }
 }
