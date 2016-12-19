@@ -166,7 +166,7 @@ capturing it in the dashboard.</p>
                     <table class="three columns">
                       <tr>
                         <td class="darktext center">
-                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('h:i a')}}}
+                          {{{\Carbon\Carbon::createFromTimestamp($payment['authorized_at'], "Asia/Kolkata")->format('jS M, h:i a')}}}
                         </td>
                       </tr>
                     </table>
