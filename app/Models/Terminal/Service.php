@@ -124,6 +124,15 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
+    public function reassignMerchantForTerminal(string $id, string $mid)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        (new Terminal\Core)->reassignMerchantForTerminal($terminal, $mid);
+
+        return $terminal->toArrayPublic();
+    }
+
     public function addMerchantToTerminal(string $id, array $input)
     {
         if (isset($input['merchant_ids']) === false)

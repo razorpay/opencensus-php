@@ -38,6 +38,19 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function reassignMerchantForTerminal(Entity $terminal, string $mid)
+    {
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
+        }
+
+        $terminal->setMerchantId($mid);
+
+        $this->repo->saveOrFail($terminal);
+    }
+
     public function copy($input, $terminal)
     {
         if ($terminal->isShared() === true)
