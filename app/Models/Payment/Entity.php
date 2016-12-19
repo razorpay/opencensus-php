@@ -772,6 +772,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
     }
 
+    public function isTransferred()
+    {
+        return (($this->getAttribute(self::AMOUNT_TRANSFERRED > 0)) === true);
+    }
+
     public function isFailed()
     {
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
