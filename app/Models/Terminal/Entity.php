@@ -254,6 +254,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENABLED, $status);
     }
 
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
     // ---------------------- END SETTERS ----------------------
 
     // ---------------------- ACCESSORS ----------------------

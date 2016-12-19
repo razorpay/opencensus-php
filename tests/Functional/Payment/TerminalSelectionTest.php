@@ -100,6 +100,61 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
 
+    public function testMerchantAssign()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
+
+        $mid = Merchant\Account::TEST_ACCOUNT;
+
+        $tid = '10BillDirTrmn2';
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'POST',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($tid, $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/merchants/1MercShareTerm';
+
+        $request = [
+            'url'    => $url,
+            'method' => 'POST',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
     public function testChooseTerminalWithCategory()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
