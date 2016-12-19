@@ -992,7 +992,7 @@ class Processor
                     ]);
             });
         }
-        catch (Exception $ex)
+        catch (Exception\BaseException $ex)
         {
             $this->trace->info(
                 TraceCode::FEES_BREAKUP_CREATION_FAILED,
