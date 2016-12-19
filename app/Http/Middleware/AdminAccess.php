@@ -53,8 +53,13 @@ class AdminAccess
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
+        if (in_array($routeName, self::getExcludedRoutes()) === true)
+        {
+            return;
+        }
+
         // Fetch public org Id from uri
-        $orgId = $this->getOrgIdFromUri($request->getRequestUri());
+        $orgId = $this->router->current()->getParameter('orgId');
 
         if ($orgId === null)
         {
@@ -62,15 +67,8 @@ class AdminAccess
 
             if ($orgId === null)
             {
-                if(in_array($routeName, self::getExcludedRoutes()) === true)
-                {
-                    return;
-                }
-                else
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
             }
         }
 
@@ -96,16 +94,6 @@ class AdminAccess
             'permission_delete',
             'permission_edit',
         ];
-    }
-
-    private function getOrgIdFromUri(string $url)
-    {
-        $id = $this->router->current()->getParameter('id');
-
-        if (preg_match('/^org_/', $id) === 1)
-        {
-            return $id;
-        }
     }
 
     private function getMerchant($request)
