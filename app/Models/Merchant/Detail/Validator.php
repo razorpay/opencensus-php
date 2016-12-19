@@ -66,7 +66,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|max:255|custom',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
@@ -126,7 +126,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|max:255|custom',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
@@ -134,7 +134,7 @@ class Validator extends Base\Validator
 
     protected static $editAfterLockRules = [
         Entity::LOCKED                          => 'sometimes|boolean',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|max:255|custom',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::COMMENT                         => 'sometimes|max:255',
     ];
 
