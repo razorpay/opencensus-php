@@ -573,6 +573,19 @@ return [
         ]
     ],
 
+    'testFixAuthorizedAt' => [
+        'request' => [
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'authorized_at' => null
+            ],
+        ],
+    ],
+
     'testTimeoutOldPayment' => [
         'request' => [
             'content' => [],
