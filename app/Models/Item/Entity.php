@@ -32,6 +32,13 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
     ];
 
+    //
+    // Fields which are always editable, irrespective of other custom validations
+    //
+    public static $fieldsAlwaysEditable = [
+        self::ACTIVE,
+    ];
+
     protected static $sign      = 'item';
 
     protected $entity           = 'item';

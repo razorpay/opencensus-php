@@ -24,11 +24,6 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
 
-    // Fields which are always editable, irrespective of other custom validations
-    protected static $fieldsAlwaysEditable = [
-        Entity::ACTIVE,
-    ];
-
     public function validateCurrency(string $itemCurrency, string $invoiceCurrency)
     {
         if ($itemCurrency !== $invoiceCurrency)
@@ -51,7 +46,7 @@ class Validator extends Base\Validator
      */
     public function validateEditOperation(Entity $item, array $input = [])
     {
-        $fields = array_diff(array_keys($input), static::$fieldsAlwaysEditable);
+        $fields = array_diff(array_keys($input), Entity::$fieldsAlwaysEditable);
 
         if ((count($fields) > 0)
             and ($item->lineItems()->count() > 0))
