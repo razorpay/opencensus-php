@@ -74,6 +74,15 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findMany($ids, $columns);
     }
 
+    public function findManyByPublicIds($ids)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSignMultiple($ids);
+
+        return $this->findMany($ids);
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         // Gets the attributes which are being newly inserted or updated.
@@ -84,6 +93,20 @@ class Repository extends \Razorpay\Spine\Repository
 
         // [Queue] saves in ES if certain conditions are met.
         $this->saveInEs($entity, $dirty);
+    }
+
+    public function sync($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->sync($ids);
+
+        return $this;
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $entity->$relation()->attach($id, $attributes, $touch);
+
+        return $this;
     }
 
     public function getEntityClass()

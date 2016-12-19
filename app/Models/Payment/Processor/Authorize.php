@@ -1689,6 +1689,8 @@ trait Authorize
 
             $status = $this->payment->getStatus();
 
+            // We do not want the payments which failed captured
+            // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
                 return;

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Carbon\Carbon;
 use Config;
 use Mail;
+use DB;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -23,6 +24,8 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin;
+use RZP\Models\Admin\Group;
 
 class Service extends Base\Service
 {
@@ -34,9 +37,64 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
+        if (isset($input['admin_id']))
+        {
+            $adminId = $input['admin_id'];
+
+            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
+
+            unset($input['admin_id']);
+        }
+
+        if (isset($input['org_id']))
+        {
+            $orgId = $input['org_id'];
+
+            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
+
+            unset($input['org_id']);
+        }
+
         $merchant = (new Merchant\Core)->create($input);
 
+        // Once the merchant is created we must tag him to
+        // the admin referral
+        if (isset($adminId) === true)
+        {
+            // Check if $adminId is valid
+            $admin = $this->repo->admin->findOrFailPublic($adminId);
+
+            if ($admin)
+            {
+                // Attach merchant to admin
+                $this->attachAdmin($merchant->getKey(), $adminId);
+            }
+        }
+
+        if (isset($orgId) === true)
+        {
+            $org = $this->repo->org->findOrFailPublic($orgId);
+
+            // Update merchant org
+            $merchant->org()->associate($org);
+
+            $this->repo->saveOrFail($merchant);
+        }
+
         return $merchant->toArrayPublic();
+    }
+
+    protected function attachAdmin($merchantId, $adminId)
+    {
+        DB::table('merchant_map')->insert(
+            [
+                'merchant_id' => $merchantId,
+                'entity_id'   => $adminId,
+                'entity_type' => 'admin'
+            ]
+        );
+
+        return null;
     }
 
     public function createSubMerchant(array $input)
@@ -54,6 +112,18 @@ class Service extends Base\Service
     public function edit($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input['groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['groups'] as $id)
+            {
+                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['groups'] = $groupIds;
+        }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 

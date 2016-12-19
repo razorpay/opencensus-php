@@ -15,6 +15,7 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTHORIZED_NULL                   = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
@@ -426,6 +427,12 @@ class TraceCode
     const MERCHANT_FEATURE_UPDATE                   = 'MERCHANT_FEATURE_UPDATE';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
+
+    /* Additional Tracecode for HeimDall */
+    const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
+    const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
+    const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
+    const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
 
     // Trace code for item/line_items
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';

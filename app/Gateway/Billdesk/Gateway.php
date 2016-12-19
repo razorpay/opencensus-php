@@ -846,16 +846,16 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment->setPaymentId($attributes['CustomerID']);
 
-        $payment->fill($attributes);
-        $payment->setAction($this->action);
-        $this->repo->saveOrFail($payment);
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->setAction($this->action);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        $this->setTpv($payment);
+        $this->setTpv($gatewayPayment);
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function getMessageStringWithHash($content)

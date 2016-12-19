@@ -18,7 +18,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [
 //                    'paytm' => false,
@@ -51,7 +51,8 @@ return [
             'content' => [
                 'merchants' => ['10000000000000', '10000000000000'],
                 'methods' => [
-                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => true,
                     'netbanking' => true
                 ],
             ],

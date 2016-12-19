@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message'=>$message])
+          <!-- Payment Successfull Header -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper center last">
+                        <center>
+                        <table class="twelve columns bluebg" style="background:#39ACE5;">
+                          <tr>
+                            <td class="center">
+                              <h1>
+                              <center>
+                                Account created
+                              </center>
+                              </h1>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                        </center>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.header_image', ['image'=>'payment_green'], ['message'=>$message])
+          <!-- Customer Information -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="eight columns">
+                  <tr>
+                    <td class="lighttext left-text-pad">
+                      <a class="email">{{$user['email']}}</a>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white last">
+                <table class="four columns">
+                  <tr>
+                    <td class="right-text-pad lighttext" style="text-align: right;">
+                      {{$user['org']}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Contact Us -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="center lighttext">
+                              <hr class="wide">
+                              <center>
+                                If this is correct, you don't need to take any further action.<br>
+                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.footer', ['message'=>$message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
