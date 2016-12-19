@@ -31,6 +31,7 @@ return array(
         'wallet_payumoney',
         'wallet_airtelmoney',
         'wallet_freecharge',
+        'wallet_jiomoney'
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -173,6 +174,12 @@ return array(
     'wallet_freecharge' => array(
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
+    ),
+
+    'wallet_jiomoney' => array(
+        'test_merchant_id'      => env('JIOMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_client_id'        => env('JIOMONEY_WALLET_TEST_CLIENT_ID'),
+        'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
     ),
 
     'netbanking_hdfc' => array(

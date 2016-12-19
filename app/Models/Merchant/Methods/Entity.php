@@ -215,6 +215,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
+    public function isJiomoneyEnabled()
+    {
+        return true;
+    }
+
     public function isEmiEnabled()
     {
         return $this->getAttribute(self::EMI);

@@ -84,6 +84,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
+    const WALLET_JIOMONEY       = 'wallet_jiomoney';
 
     public static $namespace = array(
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
@@ -134,6 +135,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
@@ -146,6 +148,7 @@ class Entity
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
     );
 
     protected static $syncedInLiveAndTest = array(
