@@ -92,9 +92,9 @@ class Service extends Base\Service
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $lineItem = $this->repo->line_item
-                               ->findByPublicIdAndMerchant(
+                               ->findByPublicIdAndMorphEntity(
                                     $lineItemId,
-                                    $this->merchant
+                                    $invoice
                                 );
 
         $invoice = $this->core->updateLineItem(
@@ -113,9 +113,9 @@ class Service extends Base\Service
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $lineItem = $this->repo->line_item
-                               ->findByPublicIdAndMerchant(
+                               ->findByPublicIdAndMorphEntity(
                                     $lineItemId,
-                                    $this->merchant
+                                    $invoice
                                 );
 
         return $this->core->removeLineItem($invoice, $lineItem);

@@ -19,6 +19,11 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const DELETED_AT            = 'deleted_at';
 
+    //
+    // We use this property to pluck all item realated fields from request
+    // payload of line items operations. Yes, that payload contains item related
+    // fields at the same level.
+    //
     public static $allFields    = [
         self::ACTIVE,
         self::NAME,
@@ -71,6 +76,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::ACTIVE    => 'bool',
         self::AMOUNT    => 'int',
     ];
 
@@ -88,7 +94,7 @@ class Entity extends Base\PublicEntity
 
     public function isActive()
     {
-        return $this->getAttribute(self::ACTIVE);
+        return ($this->getAttribute(self::ACTIVE) === true);
     }
 
     public function isNotActive()

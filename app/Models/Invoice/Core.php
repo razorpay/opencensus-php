@@ -249,8 +249,6 @@ class Core extends Base\Core
     {
         $expiredInvoices = $this->repo->invoice->getExpiredInvoices();
 
-        // TODO: Ensure that when the payment is being made,
-        //       the invoice is in `issued` state only.
         foreach ($expiredInvoices as $expiredInvoice)
         {
             $expiredInvoice->setStatus(Status::EXPIRED);

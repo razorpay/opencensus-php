@@ -51,10 +51,10 @@ class Validator extends Base\Validator
      */
     public function validateEditOperation(Entity $item, array $input = [])
     {
-        $inputKeys = array_keys($input);
+        $fields = array_diff(array_keys($input), static::$fieldsAlwaysEditable);
 
-        if (array_diff($inputKeys, static::$fieldsAlwaysEditable)
-            and $item->lineItems()->count() > 0)
+        if ((count($fields) > 0)
+            and ($item->lineItems()->count() > 0))
         {
             $this->raiseOperationNotAllowed($item);
         }

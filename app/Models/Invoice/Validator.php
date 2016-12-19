@@ -254,6 +254,8 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
+        $this->validateOperation('sendNotification');
+
         if (NotifyMedium::isMediumValid($medium) === false)
         {
             throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium.');
@@ -285,6 +287,13 @@ class Validator extends Base\Validator
             case 'update':
                 $allowedStatuses = [
                     Status::DRAFT,
+                    Status::ISSUED,
+                ];
+
+                break;
+
+            case 'sendNotification':
+                $allowedStatuses = [
                     Status::ISSUED,
                 ];
 

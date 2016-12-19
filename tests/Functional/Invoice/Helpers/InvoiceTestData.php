@@ -1639,6 +1639,27 @@ return [
         ],
     ],
 
+    'testSendNotificationWithSmsModeForDraftInvoice' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/invalid',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in draft status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testSendNotificationWithInvalidMode' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/notify/invalid',

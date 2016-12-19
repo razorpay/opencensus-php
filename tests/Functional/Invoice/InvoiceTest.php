@@ -781,6 +781,15 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendNotificationWithSmsModeForDraftInvoice()
+    {
+        $this->ba->publicAuth();
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testSendNotificationWithInvalidMode()
     {
         $this->ba->publicAuth();
