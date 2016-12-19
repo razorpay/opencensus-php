@@ -38,7 +38,7 @@ class MerchantDetail extends Entity
         {
             $relativeUrl = "merchant/activation/$merchantId/update";
 
-            $response = $this->request('POST', $relativeUrl, $input)->toArray();
+            $response = $this->request('PUT', $relativeUrl, $input)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
