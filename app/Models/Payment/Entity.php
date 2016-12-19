@@ -828,6 +828,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
+    public function isTransfer()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);

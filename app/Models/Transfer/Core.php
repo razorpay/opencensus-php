@@ -135,20 +135,39 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    protected function merchantTransfer()
+    protected function merchantTransfer($payment, $transfer)
     {
+        // Merchant Account ID to receive the transfer
+        $accountId = $transfer[ToType::VENDOR];
+
+        $amount = $transfer['amount'];
+
+        // Validate account belongs to marketplace
+
         $vendor = $this->repo
                        ->merchant
-                       ->fetchVendorByIdAndMerchant($transfer[ToType::VENDOR], $this->merchant);
+                       ->fetchVendorByIdAndMerchant($accountId, $this->merchant);
 
-        $vendor->getValidator()->validateVendorForTransfer();
+        // $vendor->getValidator()->validateVendorForTransfer();
 
-        $transfer = $this->createTransfer($vendor, $payment, $transfer['amount']);
+        $transfer = $this->createTransfer($vendor, $payment, $amount);
 
-        $vendorPayment = null;
+        $paymentData = $this->getTransferPaymentData($payment, $amount, $accountId);
 
-        $this->repo->saveOrFail($vendorPayment);
+        (new Payment\Service)->processTransfer($paymentData);
 
         return $transfer;
+    }
+
+    protected function getTransferPaymentData($payment, int $amount, string $accountId) : array
+    {
+        return [
+            'method'        => 'transfer',
+            'amount'        => $amount,
+            'currency'      => 'INR',
+            'account_id'    => $accountId,
+            'contact'       => $payment->getContact(),
+            'email'         => $payment->getEmail(),
+        ];
     }
 }

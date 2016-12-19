@@ -414,6 +414,10 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
+        else if ($payment->isTransfer() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::MARKETPLACE);
+        }
         else
         {
             // If feature is not present, simply throw invalid url error.
@@ -1023,6 +1027,10 @@ trait Authorize
 
             case Payment\Method::UPI:
                 $this->verifyUpiEnabled();
+                break;
+
+            // Marketplace feature check complete. Do nothing here.
+            case Payment\Method::TRANSFER:
                 break;
 
             default:

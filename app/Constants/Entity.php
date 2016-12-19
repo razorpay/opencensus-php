@@ -81,6 +81,7 @@ class Entity
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
+    const MARKETPLACE           = 'marketplace';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -114,6 +115,7 @@ class Entity
         self::ORDER                 => \RZP\Models\Order::class,
         self::PAYTM                 => \RZP\Gateway\Paytm::class,
         self::SHARP                 => \RZP\Gateway\Sharp::class,
+        self::MARKETPLACE           => \RZP\Gateway\Marketplace::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::WALLET                => \RZP\Gateway\Wallet\Base::class,

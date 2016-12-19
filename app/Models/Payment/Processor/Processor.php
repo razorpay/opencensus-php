@@ -634,7 +634,16 @@ class Processor
 
         $this->tracePaymentNewRequest($input);
 
-        $payment->merchant()->associate($this->merchant);
+        $merchant = $this->merchant;
+
+        if (isset($input['account_id']) === true)
+        {
+            $merchant = $this->repo
+                             ->merchant
+                             ->fetchVendorByIdAndMerchant($input['account_id'], $this->merchant);
+        }
+
+        $payment->merchant()->associate($merchant);
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 

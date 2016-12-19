@@ -32,6 +32,22 @@ class Service extends Base\Service
     }
 
     /**
+     * Process a transfer payment
+     * @param  array  $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     */
+    public function processTransfer(array $input)
+    {
+        $input = (new Analytics\Service)->setMetadataForS2SPayment($input);
+
+        $payment = $this->createPaymentEntity($input);
+
+        return $payment;
+    }
+
+    /**
      * Processes a payment.
      * @param array $input
      * @return array|mixed

@@ -54,12 +54,14 @@ class Metadata
     const CHECKOUTJS    = 'checkoutjs';
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
+    const MARKETPLACE   = 'marketplace';
 
-    const LIBRARY_VALUES = array(
+    const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
         self::DIRECT        => 3,
-    );
+        self::MARKETPLACE   => 4,
+    ];
 
     // Browser values
     const CHROME        = 'chrome';

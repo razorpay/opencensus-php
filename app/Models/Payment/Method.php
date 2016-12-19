@@ -11,6 +11,7 @@ class Method
     const WALLET        = 'wallet';
     const EMI           = 'emi';
     const UPI           = 'upi';
+    const TRANSFER      = 'transfer';
 
     protected static $methods = array(
         self::CARD       => 'Card',
@@ -18,6 +19,7 @@ class Method
         self::WALLET     => 'Wallet',
         self::UPI        => 'UPI',
         self::EMI        => 'EMI',
+        self::TRANSFER   => 'Marketplace Transfer',
     );
 
     public static function formatted($method)

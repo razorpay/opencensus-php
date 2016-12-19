@@ -36,6 +36,7 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const MARKETPLACE        = 'marketplace';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -128,6 +129,8 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_IDFC,
         ),
+
+        Method::TRANSFER => [],
     );
 
     /**
@@ -146,6 +149,7 @@ class Gateway
         self::CYBERSOURCE           => [],
         self::FIRST_DATA            => [],
         self::WALLET_OPENWALLET     => [],
+        self::MARKETPLACE           => [],
     ];
 
     /**
