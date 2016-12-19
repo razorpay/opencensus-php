@@ -81,8 +81,6 @@ class Service extends Base\Service
     {
         $currency = strtoupper($currency);
 
-        assert($currency === 'INR');
-
         $data = (new ExchangeRate)->updateRates($currency);
 
         return $data;

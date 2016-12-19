@@ -191,6 +191,27 @@ class Exchange extends BaseExchange
 
         $response['rates'][$base] = 1;
 
-        return $response;
+        return $response['rates'];
+    }
+
+    public function convert($value, $from, $to)
+    {
+        $response = [
+            "disclaimer" => "disclaimer",
+            "license"    => "licence",
+            "request"    => [
+                "query"      => "/convert/1/USD/INR",
+                "amount"     => 1,
+                "from"       => "USD",
+                "to"         => "INR"
+            ],
+            "meta"       => [
+                "timestamp"  => 1449885661,
+                "rate"       => 70
+            ],
+            "response"   => 70
+        ];
+
+        return $response['response'];
     }
 }

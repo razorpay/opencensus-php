@@ -27,7 +27,8 @@ class Exchange
     protected $mode;
 
     const URLS = [
-        'latest' => 'latest.json',
+        'latest'  => "latest.json",
+        'convert' => "convert"
     ];
 
     public function __construct($app)
@@ -42,7 +43,10 @@ class Exchange
 
         $this->appId = $this->config['appId'];
 
-        $this->proxy = $app['config']->get('gateway.proxy_address');
+        $this->proxy = $app['config']->get('app.proxy_address');
+
+        $this->proxyEnabled = $app['config']->get('app.proxy_enabled');
+
     }
 
     public function latest($base)
@@ -56,7 +60,20 @@ class Exchange
 
         $response = $this->sendRequest($url, 'GET', $input);
 
-        return $response;
+        return $response['rates'];
+    }
+
+    public function convert($value, $from, $to)
+    {
+        $url = self::URLS[__FUNCTION__] . "/$value/$from/$to";
+
+        $input = [
+            'app_id' => $this->appId
+        ];
+
+        $response = $this->sendRequest($url, 'GET', $input);
+
+        return $response['response'];
     }
 
     protected function sendRequest($url, $method, $data = null)
@@ -70,10 +87,12 @@ class Exchange
 
         $headers['Accept'] = 'application/json';
 
-        $options = array(
-            'timeout' => self::REQUEST_TIMEOUT,
-//            'proxy' => $this->proxy
-        );
+        $options['timeout'] = self::REQUEST_TIMEOUT;
+
+        if ($this->proxyEnabled === true)
+        {
+            $options['proxy'] = $this->proxy;
+        }
 
         $request = array(
             'url' => $url,

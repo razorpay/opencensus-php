@@ -17,7 +17,7 @@ class ExchangeRate extends Base\Core
 
         $this->exchange = $this->app['exchange'];
 
-        $this->redis = $this->app['redis'];
+        $this->redis = $this->app['cache'];
     }
 
     public function updateRates($currency)
@@ -26,7 +26,7 @@ class ExchangeRate extends Base\Core
 
         $key = self::EXCHANGE_RATE_KEY . $currency;
 
-        $this->redis->set($key, $rates);
+        $this->redis->forever($key, $rates);
 
         return ['success' => true];
     }
