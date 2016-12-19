@@ -48,7 +48,7 @@
     "react-time": "^4.2.0",
     "react-tooltip": "^3.2.1",
     "redux": "^3.6.0",
-    "redux-form": "selvagsz/redux-form#b8be7f8",
+    "redux-form": "selvagsz/redux-form#dist",
     "redux-thunk": "^2.1.0"
   }
 }

@@ -104,12 +104,6 @@ export default class InvoicesNewContainer extends ModalContainer {
 
     return (
       <div class='react-root'>
-        <div class='btn-toolbar'>
-          <a href='#/app/invoices/list' class='pull-right btn btn-link btn-sm'>
-            <i class='fa fa-close'></i>
-          </a>
-        </div>
-
         <Modal
           isOpen={this.state.isModalOpen}
           onRequestClose={this.closeModal}
