@@ -28,7 +28,52 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testSubmit()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testSubmitWithInvalidFields()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:invalid_fields');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
     public function testUpdateIFSCCodeWithFailure()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateEmail()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateEmails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateEmailWithFailure()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -56,7 +101,39 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCommentMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCommentForLockedMerchant()
+    {
+        $params = ['locked' => true];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $params);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -71,7 +148,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -88,7 +165,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
@@ -105,7 +182,7 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/lock";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
 
