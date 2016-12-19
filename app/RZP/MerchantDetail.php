@@ -65,10 +65,10 @@ class MerchantDetail extends Entity
 
         // Sets the options for the request. Auth should be part of this.
         $options = [
-                'auth'      => $this->getApiCredentials($mode, $merchantId),
-                'headers'   => ApiRequest::getHeaders(),
-                'body'      => [],
-                ];
+            'auth'      => $this->getApiCredentials($mode, $merchantId),
+            'headers'   => ApiRequest::getHeaders(),
+            'body'      => [],
+        ];
 
         // Creates a request instance
         $request = $client->createRequest('POST', 'merchant/activation/upload', $options);
@@ -128,10 +128,7 @@ class MerchantDetail extends Entity
         {
             $success = unlink($filePath);
 
-            if ($success === false)
-            {
-                // TODO: What do we do?
-            }
+            return $success;
         }
     }
 

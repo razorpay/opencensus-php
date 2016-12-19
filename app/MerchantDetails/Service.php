@@ -339,8 +339,6 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
-
-        // return $merchantDetails;
     }
 
     public function updateMerchantByAdminOnAPI(array $input, $merchantId)
