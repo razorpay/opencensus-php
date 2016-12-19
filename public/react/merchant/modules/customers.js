@@ -1,5 +1,4 @@
-import Customer from 'merchant/models/Customer'
-import { fromJS } from 'immutable'
+import { set, merge, unshift } from 'rzp/utils/immutable'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
@@ -17,18 +16,18 @@ export const fetchCustomers = (params) => {
   }
 }
 
-export const saveCustomer = (params) => {
+export const saveCustomer = (customer) => {
   return (dispatch) => {
     return dispatch({
-      type: params.id ? CUSTOMER_EDIT : CUSTOMER_CREATE,
-      payload: new Customer(params).save()
+      type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
+      payload: customer.save()
     })
   }
 }
 
 export const deleteCustomer = (params) => {
   return (dispatch) => {
-    return new Customer(params).delete().then(() => {
+    return customer.delete().then(() => {
       dispatch({
         type: CUSTOMER_DELETE,
         payload: params
@@ -59,45 +58,42 @@ let initialState = {
   highlightRowId: null
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
-      return state.merge({
+      return merge(state, {
         loading: true,
         highlightRowId: null
       })
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         customers: action.payload.data.items,
         count: action.payload.data.count
       })
 
     case `${CUSTOMERS_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.error
       })
 
     case `${CUSTOMER_CREATE}::SUCCESS`:
-      return state.set('customers', state.get('customers').unshift(action.payload))
+      return unshift(state, 'customers', action.payload)
 
     case `${CUSTOMER_EDIT}::SUCCESS`:
-      let customers = state.get('customers')
-      return state.set('customers', customers.update(
-        customers.findIndex((item) => item.get('id') === action.payload.get('id')),
-        (item) => item.merge(action.payload)
-      ))
+      let customerIndex = state.customers.findIndex((item) => item.id === action.payload.id)
+      return set(state, `customers.${customerIndex}`, action.payload)
 
     case `${CUSTOMER_DELETE}::SUCCESS`:
-      return state.set('customers', state.get('customers').remove(action.payload))
+      return set(state, 'customers', state.get('customers').remove(action.payload))
 
     case HIGHLIGHT_CUSTOMER:
-      return state.set('highlightRowId', action.payload.get('id'))
+      return set(state, 'highlightRowId', action.payload.id)
 
     case REMOVE_HIGHLIGHT:
-      return state.set('highlightRowId', null)
+      return set(state, 'highlightRowId', null)
 
     default:
       return state

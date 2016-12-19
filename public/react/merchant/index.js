@@ -1,3 +1,4 @@
+import 'rzp/utils/polyfills'
 import 'merchant/styles/layout.styl'
 import React from 'react'
 import ReactDOM from 'react-dom'

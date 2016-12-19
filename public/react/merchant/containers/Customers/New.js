@@ -7,6 +7,7 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import validator from 'rzp/utils/validator'
 import * as CustomerActions from 'merchant/modules/customers'
+import Customer from 'merchant/models/Customer'
 
 @connect(
   null,
@@ -14,6 +15,7 @@ import * as CustomerActions from 'merchant/modules/customers'
 )
 @reduxForm({
   form: 'newCustomer',
+  initialValues: new Customer(),
   validate: validator({
     email: {
       type: 'email',

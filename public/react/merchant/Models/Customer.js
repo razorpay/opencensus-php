@@ -11,18 +11,6 @@ export default class Customer extends BaseModel {
     'contact'
   ]
 
-  get displayName() {
-    if (this.get('name')) {
-      return this.get('name')
-    }
-
-    if (this.get('contact')) {
-      return `${this.get('contact')} ${this.get('email') ? `(${this.get('email')})` : ''}`
-    }
-
-    return this.get('email')
-  }
-
   static fetchAll(params = {}) {
     return ajax('/customers', params).then((response) => {
       response.data.items = response.data.items.map((item) => new Customer().deserialize(item))
@@ -45,5 +33,23 @@ export default class Customer extends BaseModel {
       url: this.getResourceUrl(),
       method: 'delete'
     })
+  }
+
+  didDeserialize() {
+    let email = this.email
+    let name = this.name
+    let contact = this.contact
+    let displayName
+
+    if (name) {
+      displayName = name
+    }
+
+    if (contact) {
+      displayName = `${contact} ${email ? `(${email})` : ''}`
+    }
+
+    displayName = email
+    this.displayName = displayName
   }
 }

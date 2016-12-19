@@ -8,7 +8,7 @@ import ModalContainer from 'merchant/containers/ModalContainer'
 import * as CustomerActions from 'merchant/modules/customers'
 
 @connect(
-  (state) => state.customers.toJS(),
+  (state) => state.customers,
   CustomerActions
 )
 export default class CustomersListContainer extends ModalContainer {
