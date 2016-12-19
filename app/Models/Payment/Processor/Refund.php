@@ -361,10 +361,11 @@ trait Refund
             // We'll run create record later after this is refunded.
 
             $paymentId = $data['payment']['id'];
+            $refAmount = $data['amount'];
 
-            if (($paymentId === '6r72Pb24ejmw1w') or
-                ($paymentId === '6rPm7iBPdyTZxO') or
-                ($paymentId === '6tGk3VAhS4bxMr'))
+            if ((($paymentId === '6r72Pb24ejmw1w') and ($refAmount === 32174))or
+                (($paymentId === '6rPm7iBPdyTZxO') and ($refAmount === 131320)) or
+                (($paymentId === '6tGk3VAhS4bxMr') and ($refAmount === 31320)))
             {
                 return;
             }
