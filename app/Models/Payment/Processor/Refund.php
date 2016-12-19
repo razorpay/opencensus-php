@@ -357,6 +357,18 @@ trait Refund
     {
         try
         {
+            // This has already been refunded on Billdesk.
+            // We'll run create record later after this is refunded.
+
+            $paymentId = $data['payment']['id'];
+
+            if (($paymentId === '6r72Pb24ejmw1w') or
+                ($paymentId === '6rPm7iBPdyTZxO') or
+                ($paymentId === '6tGk3VAhS4bxMr'))
+            {
+                return;
+            }
+
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
