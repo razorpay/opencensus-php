@@ -606,7 +606,6 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
-        'merchant_activation_lock',
         'international_exchange_rates',
     );
 
