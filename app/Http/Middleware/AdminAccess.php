@@ -5,6 +5,7 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
+use Request;
 use RZP\Http\Route;
 use RZP\Models\Admin;
 use RZP\Exception;
@@ -35,6 +36,8 @@ class AdminAccess
 
             $admin = $this->ba->getAdmin();
 
+            $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
+
             $merchant = $this->getMerchant($request);
 
             $authorized = $this->policyChecker($routeName, $admin, $merchant);
@@ -46,6 +49,51 @@ class AdminAccess
         }
 
         return $next($request);
+    }
+
+    private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
+    {
+        if (in_array($routeName, self::getExcludedRoutes()) === true)
+        {
+            return;
+        }
+
+        // Fetch public org Id from uri
+        $orgId = $this->router->current()->getParameter('orgId');
+
+        if ($orgId === null)
+        {
+            $orgId = $request->input('org_id');
+
+            if ($orgId === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
+            }
+        }
+
+        if ($orgId !== $admin->getPublicOrgId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+    }
+
+    /*
+     * Routes excluded form orgId check
+     */
+    private static function getExcludedRoutes()
+    {
+        return [
+            'org_create',
+            'org_get_multiple',
+            // Permission API are not exposed and org agnostic
+            'permission_get',
+            'permission_create',
+            'permission_get_multiple',
+            'permission_delete',
+            'permission_edit',
+        ];
     }
 
     private function getMerchant($request)
