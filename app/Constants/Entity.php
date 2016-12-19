@@ -78,6 +78,7 @@ class Entity
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
+    const UPI_IDFC              = 'upi_idfc';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
@@ -114,6 +115,7 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
@@ -143,6 +145,7 @@ class Entity
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,

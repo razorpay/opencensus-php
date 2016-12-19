@@ -244,7 +244,7 @@ final class Route
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                               'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                                 'MerchantController@getPublicEntityReport'                          ],
         'customer_create'                         => ['post',     'customers',                                        'CustomerController@createLocalCustomer'                            ],
-        'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
+        'customer_update'                         => ['put',      'customers/{id}',                                   'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                   'CustomerController@getCustomer'                                    ],
         'customer_local_customer_device_auth'     => ['get',      'customers/{id}',                                   'CustomerController@getCustomer'                                    ],
         'customer_fetch_multiple'                 => ['get',      'customers',                                        'CustomerController@getCustomers'                                   ],
