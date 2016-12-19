@@ -80,16 +80,14 @@ class Core extends Base\Core
         {
             if (isset($transfer[ToType::CUSTOMER]) === true)
             {
-                $transfer = $this->customerTransfer($payment, $merchant, $transfer);
-
-                $transfers->push($transfer);
+                $transfer = $this->customerTransfer($payment, $transfer);
             }
-            else if (isset($transfer[ToType::VENDOR]) === true)
+            else if (isset($transfer[ToType::ACCOUNT]) === true)
             {
-                $transfer = $this->merchantTransfer($payment, $transfer);
-
-                $transfers->push($transfer);
+                $transfer = $this->accountTransfer($payment, $transfer);
             }
+
+            $transfers->push($transfer);
         }
 
         return $transfers;
@@ -135,26 +133,26 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    protected function merchantTransfer($payment, $transfer)
+    protected function accountTransfer($payment, $transfer)
     {
         // Merchant Account ID to receive the transfer
-        $accountId = $transfer[ToType::VENDOR];
+        $accountId = $transfer[ToType::ACCOUNT];
 
         $amount = $transfer['amount'];
 
         // Validate account belongs to marketplace
 
-        $vendor = $this->repo
-                       ->merchant
-                       ->fetchVendorByIdAndMerchant($accountId, $this->merchant);
+        $account = $this->repo
+                        ->merchant
+                        ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
 
         // $vendor->getValidator()->validateVendorForTransfer();
 
-        $transfer = $this->createTransfer($vendor, $payment, $amount);
+        $transfer = $this->createTransfer($account, $payment, $amount);
 
         $paymentData = $this->getTransferPaymentData($payment, $amount, $accountId);
 
-        (new Payment\Service)->processTransfer($paymentData);
+        (new Payment\Service)->processTransfer($account, $amount, $paymentData);
 
         return $transfer;
     }

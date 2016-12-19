@@ -237,19 +237,18 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetches the merchant entity of a vendor for Transfer
+     * Fetch the entity of a Marketplace account for Transfer
      *
-     * @param  string $vendorId
-     * @param  Entity $parentMerchant Parent Merchant Entity
-     * @return Entity
+     * @param  string $accountId
+     * @param  Entity $parentMerchant   Parent Merchant Entity
+     * @return AccountEntity
      */
-    public function fetchVendorByIdAndMerchant(string $vendorId, Entity $parentMerchant) : Entity
+    public function fetchAccountByIdAndMerchant(string $accountId, Entity $parentMerchant) : Entity
     {
-        $vendorId = Entity::verifyIdAndStripSign($vendorId);
+        AccountEntity::verifyIdAndStripSign($accountId);
 
         return $this->newQuery()
-                    ->where(Entity::ID, $vendorId, $vendorId)
                     ->where(Entity::PARENT_ID, $parentMerchant->getId())
-                    ->firstOrFail();
+                    ->findOrFail($accountId);
     }
 }

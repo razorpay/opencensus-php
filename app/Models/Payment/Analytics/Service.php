@@ -35,13 +35,4 @@ class Service extends Base\Service
 
         return $input;
     }
-
-    public function setMetaDataForTransferPayment(array $input)
-    {
-        $input['_'] = $input['_'] ?? [];
-
-        $input['_'][Entity::LIBRARY] = Metadata::MARKETPLACE;
-
-        return $input;
-    }
 }

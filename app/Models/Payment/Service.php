@@ -38,11 +38,9 @@ class Service extends Base\Service
      * @return array|mixed
      * @throws Exception\BadRequestException
      */
-    public function processTransfer(array $input)
+    public function processTransfer($account, $amount, array $input)
     {
-        $input = (new Analytics\Service)->setMetadataForS2SPayment($input);
-
-        $payment = $this->createPaymentEntity($input);
+        $payment = $this->getNewProcessor($account)->processTransfer($account, $amount, $input);
 
         return $payment;
     }
@@ -397,6 +395,7 @@ class Service extends Base\Service
 
     /**
      * Transfers a payment
+     * /payment/:id/transfer
      *
      * @param string $id
      * @param array  $input

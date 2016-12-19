@@ -38,8 +38,7 @@ class Validator extends Base\Validator
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
-        'account_id'              =>  'required_if:method,transfer|string|size:18',
+        'customer_id'             =>  'required_if:wallet,flashwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes'

@@ -26,7 +26,6 @@ return array(
         'netbanking_kotak',
         'netbanking_axis',
         'sharp',
-        'transfer',
         'wallet_olamoney',
         'upi_idfc',
         'upi_icici',

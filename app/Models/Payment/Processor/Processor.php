@@ -209,6 +209,32 @@ class Processor
         return $data;
     }
 
+    public function processTransfer($account, int $amount, array $input)
+    {
+        $paymentData = [
+            'method'        => Payment\Method::TRANSFER,
+            'amount'        => $amount,
+            'currency'      => 'INR',
+            'contact'       => $input['contact'],
+            'email'         => $input['email'],
+        ];
+
+        $payment = $this->createPaymentEntity($paymentData);
+
+        $this->repo->transaction(function () use ($payment) {
+
+            $this->repo->saveOrFail($payment);
+
+            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->saveFeeDetails($txn, $feesSplit);
+        });
+
+        return $payment;
+    }
+
     protected function checkSignature($input, $payment)
     {
         if (isset($input['signature']) === false)
@@ -634,16 +660,7 @@ class Processor
 
         $this->tracePaymentNewRequest($input);
 
-        $merchant = $this->merchant;
-
-        if (isset($input['account_id']) === true)
-        {
-            $merchant = $this->repo
-                             ->merchant
-                             ->fetchVendorByIdAndMerchant($input['account_id'], $this->merchant);
-        }
-
-        $payment->merchant()->associate($merchant);
+        $payment->merchant()->associate($this->merchant);
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 

@@ -5,10 +5,10 @@ namespace RZP\Models\Transfer;
 class ToType
 {
     const CUSTOMER      = 'customer';
-    const VENDOR        = 'vendor';
+    const ACCOUNT       = 'account';
 
     public static $allowedTypes = [
         self::CUSTOMER,
-        self::VENDOR
+        self::ACCOUNT
     ];
 }

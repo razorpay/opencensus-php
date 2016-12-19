@@ -60,8 +60,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
-    protected static $sign = 'acc';
-
     protected static $delimiter = '';
 
     protected $revisionEnabled = true;

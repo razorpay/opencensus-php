@@ -113,6 +113,33 @@ class Core extends Base\Core
         return true;
     }
 
+    /**
+     * Creates a Transaction record for a Payment transfer to account
+     * Updates Marketplace balance
+     *
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    public function createFromPaymentTransferred(Payment\Entity $payment) : array
+    {
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment); // @todo: check
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION, // @todo: change
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId()
+            ]);
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
+        $this->updateCredits($txn, $payment);
+
+        $this->updateBalances($txn, false);
+
+        return [$txn, $feesSplit];
+    }
+
     public function updateReconciliationData(Entity $transaction)
     {
         $reconciled = $transaction->isReconciled();

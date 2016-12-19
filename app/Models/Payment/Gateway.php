@@ -129,8 +129,6 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_IDFC,
         ),
-
-        Method::TRANSFER => [],
     );
 
     /**
@@ -149,7 +147,6 @@ class Gateway
         self::CYBERSOURCE           => [],
         self::FIRST_DATA            => [],
         self::WALLET_OPENWALLET     => [],
-        self::MARKETPLACE           => [],
     ];
 
     /**
