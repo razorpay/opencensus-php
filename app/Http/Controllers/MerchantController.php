@@ -615,7 +615,7 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postEditMerchantDetailsAfterLock($id)
+    public function putEditMerchantDetailsAfterLock($id)
     {
         $input = Request::all();
 
