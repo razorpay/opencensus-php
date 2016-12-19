@@ -21,6 +21,7 @@ class Constants
     const REVERSE         = 'reverse';
     const OPENWALLET      = 'openwallet';
     const BROKING_REPORT  = 'broking_report';
+    const MARKETPLACE     = 'marketplace';
 
     // TODOL Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
@@ -39,6 +40,7 @@ class Constants
         self::REVERSE         => true,
         self::OPENWALLET      => true,
         self::BROKING_REPORT  => true,
+        self::MARKETPLACE     => true,
     ];
 
     public static $visibleFeaturesMap = [
