@@ -212,13 +212,13 @@ class Repository extends Base\Repository
                     ->count();
     }
 
-    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    public function addMerchantToTerminal(Entity $terminal, array $merchantIds)
     {
-        $terminal->merchants()->attach($merchantId);
+        $terminal->merchants()->attach($merchantIds);
     }
 
-    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    public function removeMerchantFromTerminal(Entity $terminal, array $merchantIds)
     {
-        $terminal->merchants()->detach($merchantId);
+        $terminal->merchants()->detach($merchantIds);
     }
 }

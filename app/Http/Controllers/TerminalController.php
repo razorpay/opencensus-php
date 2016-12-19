@@ -49,16 +49,20 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addMerchant(string $id, string $mid)
+    public function addMerchant(string $id)
     {
-        $data = (new Terminal\Service)->addMerchantToTerminal($id, $mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->addMerchantToTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function removeMerchant(string $id, string $mid)
+    public function removeMerchant(string $id)
     {
-        $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
