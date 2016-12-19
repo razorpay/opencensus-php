@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 class Bucket extends Base\Bucket
 {
     const BUCKET_MAP = [
-        Type::ICICI_NETBANKING_REFUND                   => 'settlement_bucket',
+        Type::ICICI_NETBANKING_REFUND                   => 'netbanking',
         Type::KOTAK_NETBANKING_REFUND                   => 'netbanking',
         Type::HDFC_NETBANKING_REFUND                    => 'netbanking',
         Type::AIRTELMONEY_WALLET_REFUND                 => 'wallet',

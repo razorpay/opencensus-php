@@ -279,6 +279,15 @@ class Gateway extends Base\Gateway
 
         if (empty($content) === true)
         {
+            $errorContent = [
+                'msg' => 'decryption failure',
+                'encryptedString' => $data['ES']
+            ];
+
+            $this->trace->error(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                $errorContent);
+
             // Decryption fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
