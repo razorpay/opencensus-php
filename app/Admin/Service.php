@@ -2187,7 +2187,7 @@ class Service extends Base\Service
     {
         if (isset($input['date']) === false)
         {
-            $dateFrom = Carbon::today()->timestamp;
+            $dateFrom = Carbon::yesterday()->timestamp;
         }
         else
         {
