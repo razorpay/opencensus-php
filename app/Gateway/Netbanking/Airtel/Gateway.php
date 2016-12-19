@@ -39,6 +39,37 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $content = $input['gateway'];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $content);
+
+        $attrs = $this->getCallackAttributes($content);
+
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+
+        $payment->fill($attrs);
+
+        $payment->saveOrFail();
+
+        if ($attrs['status'] !== Constants::SUCCESS)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
     protected function createAuthorizeRequestData($input)
     {
         $defaultData = $this->getEncryptionArray($input);
@@ -101,6 +132,15 @@ class Gateway extends Base\Gateway
         $text = implode('#', $values);
 
         return hash(Constants::HASH_ALGORITHM, $text);
+    }
+
+    protected function getCallackAttributes($content)
+    {
+        // double check
+        return [
+            'received'  => true,
+            'status'    => $content[ResponseFields::STATUS],
+        ];
     }
 
     public function getMerchantId()

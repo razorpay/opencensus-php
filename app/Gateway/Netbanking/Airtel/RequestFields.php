@@ -15,6 +15,6 @@ class RequestFields
     const END_MERCHANT_NAME         = 'END_MID';
     const CUSTOMER_MOBILE           = 'CUST_MOBILE';
     const CUSTOMER_EMAIL            = 'CUST_EMAIL';
-    const SERVICE                   = 'SERVICE';
+    const SERVICE                   = 'service';
     const HASH                      = 'HASH';
 }

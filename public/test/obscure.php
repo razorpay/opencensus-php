@@ -108,7 +108,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td><input type="text" name="amount" size="25" value="1000"></td>
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
