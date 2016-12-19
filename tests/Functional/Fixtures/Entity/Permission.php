@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Admin\Permission\Repository as PermRepo;
 use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 
 class Permission extends Base
@@ -59,6 +60,17 @@ class Permission extends Base
         }
 
         fclose($fileHandle);
+
+        return $records;
+    }
+
+    public function getAllPermissions()
+    {
+        $records = self::getPermissionRecordsFromFile(storage_path().'/permissions/permissions.csv');
+
+        $records = array_map(function ($record) {
+            return $record[0];
+        }, $records);
 
         return $records;
     }
