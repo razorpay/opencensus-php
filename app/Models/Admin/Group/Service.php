@@ -49,10 +49,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($group);
 
-        // @todo: To maintain bc. Remove first two lines later.
-        $ret = $group->toArrayDeleted();
-        $ret = array_merge($ret, ['success' => true]);
-        return $ret;
+        return $group->toArrayDeleted();
     }
 
     public function fetchMultiple(string $orgId, array $input = [])
