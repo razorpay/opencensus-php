@@ -46,7 +46,7 @@ return array(
     'mock_paytm'                => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'      => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'     => env('NETBANKING_KOTAK_MOCK'),
-    'netbanking_airtel'         => env('NETBANKING_AIRTEL_MOCK'),
+    'mock_netbanking_airtel'    => env('NETBANKING_AIRTEL_MOCK'),
     'mock_billdesk'             => env('BILLDESK_MOCK'),
     'mock_ebs'                  => env('EBS_MOCK'),
     'mock_wallet_olamoney'      => env('OLAMONEY_MOCK'),

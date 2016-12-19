@@ -9,4 +9,6 @@ class Constants
     const INDIAN_RUPEE      = 'INR';
     const SUCCESS           = 'SUC';
     const FAILURE           = 'FAL';
+    const CODE              = '000';
+    const SUCCESS_MSG       = "eCommerce transaction successful";
 }

@@ -70,6 +70,39 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new GatewayBase\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $content = $this->getPaymentVerifyData($verify);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
+
+        return $response;
+    }
+
+    public function verifyPayment($verify)
+    {
+        sd($verify->verifyResponseBody);
+    }
+
     protected function createAuthorizeRequestData($input)
     {
         $defaultData = $this->getEncryptionArray($input);
@@ -140,7 +173,37 @@ class Gateway extends Base\Gateway
         return [
             'received'  => true,
             'status'    => $content[ResponseFields::STATUS],
+            'bank_payment_id' => $content[ResponseFields::TRANSACTION_ID]
         ];
+    }
+
+    protected function getPaymentVerifyData($verify)
+    {
+        $input = $verify->input;
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'UTC')
+            ->format('dmYhms');
+
+        $merchantId = $this->getMerchantId();
+
+        $paymentId = $input['payment']['id'];
+
+        $hashArray = [
+            VerifyFields::TRANSACTION_REFERENCE_NO => $paymentId,
+            VerifyFields::TRANSACTION_DATE         => $date,
+            VerifyFields::MERCHANT_ID              => $merchantId,
+            VerifyFields::AMOUNT                   => $input['payment']['amount'] / 100
+        ];
+
+        $hash = $this->getHash($hashArray);
+
+        $data = [
+            VerifyFields::HASH                     => $hash,
+            VerifyFields::SESSION_ID               => strtoupper($paymentId),
+        ];
+
+        return array_merge($data, $hashArray);
     }
 
     public function getMerchantId()
