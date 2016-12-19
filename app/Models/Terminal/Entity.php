@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
      */
     const TERMINAL_ID                   = 'terminal_id';
 
+    const SUB_MERCHANTS                 = 'sub_merchants';
+
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
@@ -98,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::ENABLED
+        self::ENABLED,
+        self::SUB_MERCHANTS,
     ];
 
     protected $hidden = [
@@ -106,6 +109,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_CLIENT_CERTIFICATE,
+    ];
+
+    protected $appends = [
+        self::SUB_MERCHANTS,
     ];
 
     protected $generateIdOnCreate = true;
@@ -203,6 +210,11 @@ class Entity extends Base\PublicEntity
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getSubMerchantsAttribute()
+    {
+        return $this->merchants()->pluck(self::ID);
     }
 
     public function isEnabled()
