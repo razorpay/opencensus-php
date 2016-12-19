@@ -108,6 +108,13 @@ class Service extends Base\Service
 
     public function removeMerchantFromTerminal(string $id, array $input)
     {
+        if (isset($input['merchant_ids']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide Merchant Ids');
+
+        }
+
         $merchantIds = $input['merchant_ids'];
 
         $terminal = $this->repo->terminal->getById($id);
@@ -119,6 +126,13 @@ class Service extends Base\Service
 
     public function addMerchantToTerminal(string $id, array $input)
     {
+        if (isset($input['merchant_ids']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide Merchant Ids');
+
+        }
+
         $merchantIds = $input['merchant_ids'];
 
         $terminal = $this->repo->terminal->getById($id);
