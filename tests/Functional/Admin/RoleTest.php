@@ -2,13 +2,13 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\TestCase;
 
 class RoleTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -18,7 +18,9 @@ class RoleTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
-        $this->ba->adminAuth('test');
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken);
     }
 
     public function testCreateRole()
@@ -129,7 +131,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(count($result['permissions']), 110);
+        $this->assertEquals(110, count($result['permissions']));
     }
 
     public function testDeleteRole()
@@ -179,13 +181,13 @@ class RoleTest extends TestCase
     {
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, 'org_' . Org::RZP_ORG);
+        $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $result = $this->startTest();
 
-        $this->assertEquals($result['count'], 2);
+        $this->assertEquals(1, $result['count']);
     }
 
     public function testDuplicateRole()

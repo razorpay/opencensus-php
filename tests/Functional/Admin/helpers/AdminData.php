@@ -170,7 +170,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
             ],
             'status_code' => 200,
         ],
