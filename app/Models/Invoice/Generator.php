@@ -43,7 +43,7 @@ class Generator extends Base\Core
      */
     protected $lineItemCore;
 
-    protected $bitly;
+    protected $urlShortener;
 
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
@@ -55,7 +55,7 @@ class Generator extends Base\Core
 
         $this->merchant = $merchant;
 
-        $this->bitly = $this->app['bitly'];
+        $this->urlShortener = $this->app['url_shortener'];
 
         $this->lineItemCore = new LineItem\Core;
     }
@@ -182,9 +182,11 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
+        $longUrl = self::getInvoiceLink();
 
-        $shortenedUrl = $this->bitly->shortenUrl($longUrl);
+        // sd($longUrl);
+
+        $shortenedUrl = $this->urlShortener->shorten($longUrl);
 
         $this->trace->info(
             TraceCode::INVOICE_LINKS,
@@ -198,34 +200,18 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    public static function getInvoiceLink(string $invoiceId, string $mode)
+    protected function getInvoiceLink()
     {
-        //
-        // This is required here because this piece of code is a little prone to bugs.
-        // Invoice ID may not be generated at this point due to which we will
-        // get a wrong url. Bitly won't throw an exception because it still gets
-        // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
-        //
-        if (empty($invoiceId) === true)
-        {
-            throw new LogicException(
-                'Invoice ID is empty. Should not have reached here',
-                ErrorCode::SERVER_ERROR_INVOICE_ID_EMPTY
-            );
-        }
-
-        $app = App::getFacadeRoot();
-
-        $baseInvoiceUrl = $app['config']->get('app.invoice');
+        $baseInvoiceUrl = $this->app['config']->get('app.invoice');
 
         $shortMode = self::SHORT_MODE_TEST;
 
-        if ($mode === Mode::LIVE)
+        if ($this->mode === Mode::LIVE)
         {
             $shortMode = self::SHORT_MODE_LIVE;
         }
 
-        $invoiceLink = $baseInvoiceUrl . '/' . $shortMode . '/' . Entity::getSignedId($invoiceId);
+        $invoiceLink = $baseInvoiceUrl . '/' . $shortMode . '/' . $this->invoice->getPublicId();
 
         return $invoiceLink;
     }

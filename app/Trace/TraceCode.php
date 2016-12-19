@@ -144,8 +144,6 @@ class TraceCode
     const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
-    const INVOICE_BITLY_RESPONSE                    = 'INVOICE_BITLY_RESPONSE';
-    const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
