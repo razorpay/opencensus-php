@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class GroupTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -18,9 +19,13 @@ class GroupTest extends TestCase
         // create org, and its hostnames
         $this->org = $this->fixtures->create('org');
 
-        $hostnames = $this->fixtures->times(2)->create('org_hostname', ['org_id' => $this->org->getId()]);
+        $hostnames = $this->fixtures->times(2)->create(
+            'org_hostname',
+            ['org_id' => $this->org->getId()]);
 
-        $this->ba->adminAuth('test');
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken);
     }
 
     public function testCreateGroup()
