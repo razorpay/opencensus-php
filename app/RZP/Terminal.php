@@ -31,19 +31,19 @@ class Terminal extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function unassignSubMerchant($id, $mid)
+    public function unassignSubMerchant($id, $merchantId)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $mid;
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchant/' . $merchantId;
 
         return $this->request('DELETE', $relativeUrl);
     }
 
 
-    public function assignSubMerchant($id, $mid)
+    public function assignSubMerchant($id, $input)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $mid;
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants';
 
-        return $this->request('PUT', $relativeUrl);
+        return $this->request('PUT', $relativeUrl, $input);
     }
 
     public function toggle($id, $params)

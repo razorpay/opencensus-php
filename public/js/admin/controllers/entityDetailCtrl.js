@@ -132,29 +132,19 @@ app.controller('EntityDetailCtrl', [
         });
       },
       addMerchant: function(id, merchant_id) {
-        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
+        var data = { merchant_ids: [ merchant_id ] };
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchants', data);
+
         request.success(function (data) {
           if (data.success) {
-            alert(' successfully');
-            window.location.reload();
+            alert('Merchant added successfully');
+
+            $scope.entity.sub_merchants.unshift(merchant_id);
           } else {
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an error while editing the terminal');
-        });
-      },
-      removeMerchant: function(id, merchant_id) {
-        var request = $http.delete('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
-        request.success(function (data) {
-          if (data.success) {
-            alert(' successfully');
-            window.location.reload();
-          } else {
-            alert(data.errors);
-          }
-        }).error(function () {
-          alert('There was an error while editing the terminal');
+          alert('There was an error while adding the merchant to the terminal');
         });
       }
     };
@@ -265,26 +255,18 @@ app.controller('EntityDetailCtrl', [
           resolve: {
             current: function () {
               return terminal;
+            },
+            subMerchants: function () {
+              return $scope.entity.sub_merchants;
+            },
+            mode: function () {
+              return $scope.mode;
             }
           }
         });
+
         modalInstance.result.then(function (input) {
             $scope.terminal.addMerchant(input.id, input.merchant_id);
-        }, function() {
-        });
-      },
-      terminalMerchantUnassign: function(terminal) {
-        var modalInstance = $modal.open({
-          templateUrl: 'unassignMerchantToTerminal.html',
-          controller: 'unassignMerchantToTerminalModalCtrl',
-          resolve: {
-            current: function () {
-              return terminal;
-            }
-          }
-        });
-        modalInstance.result.then(function (input) {
-            $scope.terminal.removeMerchant(input.id, input.merchant_id);
         }, function() {
         });
       }
@@ -403,26 +385,32 @@ app.controller('EntityDetailCtrl', [
   '$modalInstance',
   '$http',
   'current',
-  function ($scope, $modalInstance, $http, current) {
+  'subMerchants',
+  'mode',
+  function ($scope, $modalInstance, $http, current, subMerchants, mode) {
     // This is the current terminal current
-    $scope.terminal = {
-        id: current.id,
-        merchant_id : current.merchant_id
+    $scope.subMerchants = subMerchants;
+
+    $scope.deleteSubMerchant = function (merchantId) {
+      var request = $http.delete('/admin/' + mode + '/terminal/' + current.id + '/merchant/' + merchantId);
+
+      request.success(function (data) {
+        if (data.success) {
+          alert('Merchant terminal unassigned successfully');
+
+          var index = $scope.subMerchants.indexOf(merchantId);
+          if (index > -1) {
+            $scope.subMerchants.splice(index, 1);
+          }
+        }
+        else {
+          alert(data.errors);
+        }
+      }).error(function () {
+        alert('There was an error while editing the terminal');
+      });
     };
-    $scope.ok = function (terminal) {
-        $modalInstance.close(terminal);
-    };
-    $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-    };
-  }
-]).controller('unassignMerchantToTerminalModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  'current',
-  function ($scope, $modalInstance, $http, current) {
-    // This is the current terminal current
+
     $scope.terminal = {
         id: current.id,
         merchant_id : current.merchant_id
