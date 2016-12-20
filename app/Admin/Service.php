@@ -556,6 +556,8 @@ class Service extends Base\Service
                         'trim',
                         explode(',', $input['transaction_report_email'])
                     );
+
+                $csvEmail = implode(',', $input['transaction_report_email']);
             }
 
             $this->logMerchantEdits($id, $input);
@@ -568,8 +570,9 @@ class Service extends Base\Service
 
             if (isset($input['transaction_report_email']))
             {
+                $params = ['transaction_report_email' => $csvEmail];
                 // Only when it is changed on API side we update on the dashboard side as well
-                $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
+                $error = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }
 
             if (isset($input['name']))
@@ -707,6 +710,8 @@ class Service extends Base\Service
             $merchantDetails->fill($merchantDetailsData);
             $merchantDetails->save();
 
+            (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetailsData, $id);
+
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
 
@@ -726,6 +731,9 @@ class Service extends Base\Service
 
         $merchantDetails->comment = $comment;
         $merchantDetails->save();
+
+        $params = ['comment' => $comment];
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         return array($error, $comment);
     }
@@ -966,6 +974,10 @@ class Service extends Base\Service
         $merchantDetails->locked = 1;
         $merchantDetails->save();
 
+        $params = ['locked' => true];
+
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
+
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
         return $error;
@@ -985,6 +997,10 @@ class Service extends Base\Service
 
         $merchantDetails->locked = 0;
         $merchantDetails->save();
+
+        $params = ['locked' => false];
+
+        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 

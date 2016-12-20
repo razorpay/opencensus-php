@@ -67,6 +67,10 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
+                // Save to API
+                $input = ['submit' => true]; // mark submitted
+                $this->saveDetailsOnAPI($input);
+
                 $this->fireActivationTrigger($merchantDetails);
             }
             else
@@ -109,6 +113,9 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchantDetails->saveOrFail();
+
+            // Save to API
+            $this->saveDetailsOnAPI($input);
         }
 
         return $error;
@@ -144,15 +151,18 @@ class Service extends Base\Service
      * @param  string $email New Transaction report email
      * @return array Errors
      */
-    public static function changeTransactionEmail($id, $email)
+    public function changeTransactionEmail($id, $csvEmail)
     {
         $merchantDetails = Entity::findorfail($id);
 
-        $error = $merchantDetails->changeTransactionEmail($email);
+        $error = $merchantDetails->changeTransactionEmail($csvEmail);
 
         if (empty($error))
         {
             $merchantDetails->saveOrFail();
+
+            $input = ['transaction_report_email' => $csvEmail];
+            $this->updateMerchantByAdminOnAPI($input, $id);
         }
 
         return $error;
@@ -173,6 +183,13 @@ class Service extends Base\Service
         {
             $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
+
+            // If there is error while uploading, we dont send it to API
+            if (empty($error) and env('S3_MOCK') === false)
+            {
+                $params = [ $data['field'] => $data['file'] ];
+                $this->uploadFileToAPI($params);
+            }
         }
 
         return $error;
@@ -222,7 +239,12 @@ class Service extends Base\Service
         catch(\Exception $e)
         {
             $error[] = 'An error occured in file upload.';
-            $error[] = $e->getMessage();
+
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured in file upload",
+                    'exception' => $e->getMessage(),
+            ]);
+
         }
 
         return $error;
@@ -295,5 +317,53 @@ class Service extends Base\Service
         $error[] = 'Form has been locked for editing by admin.';
 
         return $error;
+    }
+
+    public function saveDetailsOnAPI(array $input, $merchantId = null)
+    {
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->id;
+        }
+
+        $this->setApiCredentials($merchantId);
+
+        list($error, $merchantDetails) = $this->api
+                                              ->merchantDetail
+                                              ->submitDetails($input);
+
+        if (empty($error) === false)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured saving merchant details on API",
+                    'exception' => $error,
+            ]);
+        }
+    }
+
+    public function updateMerchantByAdminOnAPI(array $input, $merchantId)
+    {
+        $this->setApiCredentials();
+
+        list($error, $merchantDetails) = $this->api
+                                              ->merchantDetail
+                                              ->updateDetailsByAdmin($merchantId, $input);
+
+        if (empty($error) === false)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while updating merchant details on API",
+                    'exception' => $error,
+            ]);
+        }
+    }
+
+    protected function uploadFileToAPI(array $input)
+    {
+        $this->setApiCredentials($this->merchant['id']);
+
+        $response = $this->api
+                         ->merchantDetail
+                         ->uploadActivationFile($this->merchant['id'], $input);
     }
 }
