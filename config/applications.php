@@ -77,6 +77,7 @@ return array(
         'services' => env('URL_SHORTNER_SERVICES', 'gimli,bitly'),
         'gimli'    => [
             'secret' => env('GIMLI_SECRET', 'RANDOM_SECRET'),
+            'base_url' => env('GIMLI_BASE_URL')
         ],
         'bitly'    => [
             'access_token' => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),

@@ -6,12 +6,17 @@ use Requests;
 
 class Gimli extends Base
 {
-    const API = 'http://gimli.razorpay.dev/v1/shorten';
 
     private $secret;
 
+    private $apiUrl;
+
     public function __construct(array $config)
     {
+        $baseUrl = $config['base_url'];
+
+        $this->apiUrl = $baseUrl + '/shorten';
+
         $this->secret = $config['secret'];
     }
 
@@ -26,7 +31,7 @@ class Gimli extends Base
             'x-signature'  => $this->getSignature($payload),
         ];
 
-        $res = Requests::post(self::API, $headers, [], $payload);
+        $res = Requests::post($this->apiUrl, $headers, [], $payload);
 
         $this->validateResponseHeader($res);
 
