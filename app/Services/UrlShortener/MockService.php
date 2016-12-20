@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortner;
+namespace RZP\Services\UrlShortener;
 
 use RZP\Trace\TraceCode;
 

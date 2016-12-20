@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortner\Impl;
+namespace RZP\Services\UrlShortener\Impl;
 
 use Requests;
 
@@ -26,12 +26,14 @@ class Gimli extends Base
             'url' => $url,
         ];
 
+        $payload = json_encode($payload, JSON_UNESCAPED_UNICODE);
+
         $headers = [
-            'content-type' => 'application/json',
+            'Content-Type' => 'application/json',
             'x-signature'  => $this->getSignature($payload),
         ];
 
-        $res = Requests::post($this->apiUrl, $headers, [], $payload);
+        $res = Requests::post($this->apiUrl, $headers, $payload);
 
         $this->validateResponseHeader($res);
 
@@ -40,10 +42,8 @@ class Gimli extends Base
         return $resBody['hash'];
     }
 
-    protected function getSignature(array $payload)
+    protected function getSignature(string $payload)
     {
-        $payloadString = json_encode($payload, JSON_UNESCAPED_SLASHES);
-
-        return hash_hmac('sha1', $payloadString, $this->secret);
+        return hash_hmac('sha1', $payload, $this->secret);
     }
 }

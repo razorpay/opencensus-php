@@ -61,20 +61,14 @@ return array(
         'secret'    => env('MAXMIND_SECRET')
     ),
 
-    'bitly' => array(
-        'mock'          => env('BITLY_MOCK', false),
-        //'access_token'  => env('BITLY_ACCESS_TOKEN'),
-        'access_token'  => env('BITLY_ACCESS_TOKEN_PUBLIC'),
-    ),
-
     'lumberjack' => array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
     ),
 
-    'url_shortner' => [
-        'mock'     => env('URL_SHORTNER_MOCK', false),
-        'services' => env('URL_SHORTNER_SERVICES', 'gimli,bitly'),
+    'url_shortener' => [
+        'mock'     => env('URL_SHORTENER_MOCK', false),
+        'services' => env('URL_SHORTENER_SERVICES', 'gimli,bitly'),
         'gimli'    => [
             'secret' => env('GIMLI_SECRET', 'RANDOM_SECRET'),
             'base_url' => env('GIMLI_BASE_URL')

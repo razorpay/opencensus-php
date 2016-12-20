@@ -124,6 +124,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                    = 'BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY                            = 'BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY';
     const BAD_REQUEST_PAYMENT_INVALID_FORMAT                                        = 'BAD_REQUEST_PAYMENT_INVALID_FORMAT';
+    const BAD_REQUEST_PAYMENT_INVALID_STATUS                                        = 'BAD_REQUEST_PAYMENT_INVALID_STATUS';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                     = 'BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                               = 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED';
     const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                                   = 'BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED';
@@ -256,7 +257,6 @@ class ErrorCode
     const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                       = 'BAD_REQUEST_CARD_BILL_SHIP_MISMATCH';
     const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                    = 'BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE';
-    const BAD_REQUEST_BITLY_LONG_URL_EMPTY                                          = 'BAD_REQUEST_BITLY_LONG_URL_EMPTY';
     const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                                 = 'BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT';
 
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
@@ -364,7 +364,6 @@ class ErrorCode
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
-    const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';

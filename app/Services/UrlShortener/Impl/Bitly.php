@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortner\Impl;
+namespace RZP\Services\UrlShortener\Impl;
 
 use Requests;
 

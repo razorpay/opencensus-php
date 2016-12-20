@@ -118,10 +118,11 @@ return [
         'request' => [
             'url' => '/orgs',
             'method' => 'delete',
+            'content' => [],
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'deleted' => true,
             ],
             'status_code' => 200,
         ],

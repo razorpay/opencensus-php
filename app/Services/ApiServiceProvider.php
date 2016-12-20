@@ -96,9 +96,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMaxMind();
 
-        $this->registerBitly();
-
-        $this->registerUrlShortner();
+        $this->registerUrlShortener();
 
         $this->registerValidatorResolver();
 
@@ -126,8 +124,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'es',
             'maxmind',
-            'bitly',
-            'url_shortner',
+            'url_shortener',
             'segment',
         );
     }
@@ -169,33 +166,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerBitly()
+    protected function registerUrlShortener()
     {
-        $this->app->singleton('bitly', function($app)
+        $this->app->singleton('url_shortener', function($app)
         {
-            $bitlyMock = $app['config']->get('applications.bitly.mock');
-
-            if ($bitlyMock === true)
-            {
-                return new Mock\Bitly($app);
-            }
-
-            return new Bitly($app);
-        });
-    }
-
-    protected function registerUrlShortner()
-    {
-        $this->app->singleton('url_shortner', function($app)
-        {
-            $mock = $app['config']->get('applications.url_shortner.mock');
+            $mock = $app['config']->get('applications.url_shortener.mock');
 
             if ($mock)
             {
-                return new UrlShortner\MockService($app);
+                return new UrlShortener\MockService($app);
             }
 
-            return new UrlShortner\Service($app);
+            return new UrlShortener\Service($app);
         });
     }
 
@@ -225,7 +207,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'permission'      => Admin\Permission\Entity::class,
             'invoice'         => Invoice\Entity::class,
             'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\MerchantDetail\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
         ]);
     }
 }

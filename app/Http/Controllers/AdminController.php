@@ -252,18 +252,18 @@ class AdminController extends Controller
          return ApiResponse::json($data);
      }
 
-     public function getPermission(string $permissionId)
+     public function getPermission(string $id)
      {
-         $data = (new Admin\Permission\Service)->getPermission($permissionId);
+         $data = (new Admin\Permission\Service)->getPermission($id);
 
          return ApiResponse::json($data);
      }
 
-     public function putPermission(string $permissionId)
+     public function putPermission(string $id)
      {
          $input = Request::all();
 
-         $data = (new Admin\Permission\Service)->editPermission($permissionId, $input);
+         $data = (new Admin\Permission\Service)->editPermission($id, $input);
 
          return ApiResponse::json($data);
      }
@@ -282,25 +282,25 @@ class AdminController extends Controller
     /**
     * Admin related functons
     */
-    public function postAuthenticate(string $orgId, Admin\Admin\Service $adminService)
+    public function postAuthenticate(Admin\Admin\Service $adminService, string $id)
     {
         $input = Request::all();
 
-        $response = $adminService->authenticate($orgId, $input);
+        $response = $adminService->authenticate($id, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postPasswordReset(string $orgId, Admin\Admin\Service $adminService)
+    public function postPasswordReset(Admin\Admin\Service $adminService, string $id)
     {
         $input = Request::all();
 
-        $response = $adminService->passwordReset($orgId, $input);
+        $response = $adminService->passwordReset($id, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function oAuthLogin(string $orgId)
+    public function oAuthLogin(string $id)
     {
         $input = Request::all();
 
@@ -318,9 +318,9 @@ class AdminController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
-    public function getMerchantIds($orgId, $adminId)
+    public function getMerchantIds($id, $adminId)
     {
-        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($orgId, $adminId);
+        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($id, $adminId);
 
         return ApiResponse::json($merchantIds);
     }
@@ -332,16 +332,16 @@ class AdminController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function auditLogSearch($orgId)
+    public function auditLogSearch($id)
     {
         try
         {
             // Indexes use lower case of orgid
-            $orgId = strtolower($orgId);
+            $id = strtolower($id);
 
             $input = Request::all();
 
-            $response = (new Admin\Admin\Service)->searchAuditLogs($orgId, $input);
+            $response = (new Admin\Admin\Service)->searchAuditLogs($id, $input);
 
             return ApiResponse::json($response);
         }
