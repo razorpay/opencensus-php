@@ -50,14 +50,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundRules = [
-        'amount'        => 'sometimes|integer',
-        'notes'         => 'sometimes|notes'
+        'amount'                  => 'sometimes|integer',
+        'notes'                   => 'sometimes|notes',
+        'transfers'               => 'sometimes|array',
+        'transfers.*.payment'     => 'required|string|min:14',
+        'transfers.*.amount'      => 'required|int|min:100',
     ];
 
     protected static $transferRules = [
         'transfers'                  => 'required|array',
         'transfers.*.customer'       => 'sometimes|string|max:19',
-        'transfers.*.vendor'         => 'sometimes|string|max:19',
+        'transfers.*.account'        => 'sometimes|string|max:19',
         'transfers.*.amount'         => 'required|integer|min:100',
     ];
 

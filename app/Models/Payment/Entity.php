@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
+    const ORIGIN_PAYMENT_ID     = 'origin_payment_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -871,6 +872,10 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
+    public function getOriginPaymentId()
+    {
+        return $this->getAttribute(SELF::ORIGIN_PAYMENT_ID);
+    }
 
     public function getAmount()
     {
@@ -1464,6 +1469,11 @@ class Entity extends Base\PublicEntity
     public function billdesk()
     {
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
+    }
+
+    public function originPayment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity', self::ORIGIN_PAYMENT_ID, self::ID);
     }
 
 // --------------- Relation to other entity section ends -----------------------

@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -14,4 +15,16 @@ class Repository extends Base\Repository
         Entity::SOURCE_ID           => 'sometimes|alpha_num|min:14',
         Entity::TO_ID               => 'sometimes|alpha_num|min:14'
     ];
+
+    public function fetchByAccountIdAndMerchant(string $accountId, Merchant\Entity $marketplace) : Entity
+    {
+        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                    ->where(Entity::TO_TYPE, 'merchant')
+                    ->where(Entity::TO_ID, $accountId)
+                    ->where(Entity::MERCHANT_ID, $marketplace->getId())
+                    ->firstOrFail();
+    }
 }

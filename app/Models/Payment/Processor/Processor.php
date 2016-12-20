@@ -225,11 +225,11 @@ class Processor
 
             $payment->setStatus(Status::CAPTURED);
 
-            $this->repo->saveOrFail($payment);
-
             list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
 
             $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($payment);
 
             $this->saveFeeDetails($txn, $feesSplit);
         });

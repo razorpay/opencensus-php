@@ -93,6 +93,11 @@ class Core extends Base\Core
         return $transfers;
     }
 
+    public function createForRefund(Payment\Entity $payment, array $input)
+    {
+
+    }
+
     protected function getTotalTransferAmount(array $input)
     {
         $amount = 0;

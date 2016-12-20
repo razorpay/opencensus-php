@@ -133,6 +133,8 @@ class Core extends Base\Core
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
         $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn, false);
@@ -414,7 +416,8 @@ class Core extends Base\Core
 
     protected function checkIfOldPayment($payment)
     {
-        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+        if (($payment->exists === true) and
+            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {

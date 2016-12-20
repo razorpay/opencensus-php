@@ -1546,3 +1546,6 @@ ALTER TABLE merchants
     ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER email,
     ADD CONSTRAINT merchants_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES merchants(id) ON DELETE RESTRICT;
 
+ALTER TABLE payments
+    ADD COLUMN origin_payment_id CHAR(14) DEFAULT NULL AFTER invoice_id,
+    ADD CONSTRAINT payments_origin_payment_id_foreign FOREIGN KEY (origin_payment_id) REFERENCES payments(id) ON DELETE RESTRICT;

@@ -10,8 +10,9 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'        => 'sometimes|integer|min:100',
-        'notes'         => 'sometimes|notes'
+        'amount'                => 'sometimes|integer|min:100',
+        'notes'                 => 'sometimes|notes',
+        'transfers'             => 'sometimes|array',
     ];
 
     protected static $createValidators = [

@@ -132,7 +132,7 @@ class Service extends Base\Service
 
     /**
      * Refunds a payment
-     *
+     *`
      * @param  string $id
      * @param  array  $input
      *
@@ -140,7 +140,14 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
-        $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
+        if (isset($input['transfers']) === true)
+        {
+            $refund = $this->getNewProcessor()->refundPaymentWithTransfers($id, $input);
+        }
+        else
+        {
+            $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
+        }
 
         return $refund->toArrayPublic();
     }

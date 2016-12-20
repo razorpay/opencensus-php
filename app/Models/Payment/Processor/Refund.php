@@ -230,6 +230,47 @@ trait Refund
         return $this->refundCapturedPayment($payment, $input);
     }
 
+    public function refundPaymentWithTransfers(string $paymentId, array $input)
+    {
+        $payment = $this->retrieve($paymentId);
+
+        return $this->repo->transaction(function () use ($payment, $input)
+        {
+            $this->processRefundTransfers($payment, $input);
+
+            return $this->refundCapturedPayment($payment, $input);
+        });
+    }
+
+    protected function processRefundTransfers(Payment\Entity $payment, array $input)
+    {
+        foreach ($input['transfers'] as $transfer)
+        {
+            $accountId = $transfer['account'];
+
+            $amount = $transfer['amount'];
+
+            $this->refundAndReverseTransferPayment($payment, $accountId, $amount);
+        }
+    }
+
+    protected function refundAndReverseTransferPayment($payment, string $accountId, int $amount)
+    {
+        $splitPayment = $this->repo
+                             ->payment
+                             ->fetchSplitPaymentByOriginPaymentId(
+                                $payment->getId(), $accountId);
+
+        // validate: split_payment merchant is account of markerplace
+
+        $transfer = $this->repo
+                         ->transfer
+                         ->fetchByAccountIdAndMerchant(
+                            $accountId, $this->merchant);
+
+        $refund = $this->refundTransferPayment($splitPayment, $amount);
+    }
+
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
     {
         //
@@ -556,7 +597,11 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
-            if ($payment->getTransactionId() !== null)
+            if ($payment->isTransfer())
+            {
+                ; // Do nothing, Transfer refunds are internal
+            }
+            else if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
 
@@ -687,9 +732,38 @@ trait Refund
         return null;
     }
 
+
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
-        if ($payment->isFullyRefunded())
+        $this->validatePaymentForRefund($payment);
+
+        return $this->refund($payment, $input, $batch);
+    }
+
+    /**
+     * Refund a marketplace payment of method = transfer
+     *
+     * @param  Payment\Entity $payment
+     * @param  int            $amount
+     */
+    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
+    {
+        if ($payment->isTransfer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
+        }
+
+        $this->validatePaymentForRefund($payment);
+
+        $input['amount'] = $amount;
+
+        return $this->refund($payment, $input);
+    }
+
+    protected function validatePaymentForRefund(Payment\Entity $payment)
+    {
+        if ($payment->isFullyRefunded() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
@@ -700,8 +774,6 @@ trait Refund
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
-
-        return $this->refund($payment, $input, $batch);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)

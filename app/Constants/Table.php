@@ -31,7 +31,7 @@ class Table
     const CUSTOMER              = 'customers';
     const EMI_PLAN              = 'emi_plans';
     const TRANSFER              = 'transfers';
-    const REVERSE_TRANSFER      = 'reverser_transfers';
+    const REVERSE_TRANSFER      = 'reverse_transfers';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';

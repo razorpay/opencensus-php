@@ -553,6 +553,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::ADJUSTMENT);
     }
 
+    public function isTypeTransfer()
+    {
+        return ($this->getType() === Type::TRANSFER);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);

@@ -333,7 +333,7 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
-    public function vendors()
+    public function accounts()
     {
         return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }

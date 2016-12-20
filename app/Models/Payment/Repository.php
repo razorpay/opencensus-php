@@ -615,6 +615,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchSplitPaymentByOriginPaymentId($originPaymentId, $accountId)
+    {
+        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+
+        return $this->newQuery()
+                    ->where(Entity::ORIGIN_PAYMENT_ID, $originPaymentId)
+                    ->merchantId($accountId)
+                    ->firstOrFail();
+    }
+
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
