@@ -167,24 +167,38 @@ class PermissionSeeder extends Seeder
         ],
 
         'merchant_detail' => [
-            'create_merchant_lock' => '',
-            'create_merchant_unlock' => '',
-            'edit_merchant' => '',
-            'edit_activate_merchant' => '',
-            'edit_merchant_enable_live' => '',
-            'edit_merchant_disable_live' => '',
-            'edit_merchant_archive' => '',
-            'edit_merchant_unarchive' => '',
+            'view_merchant_balance' => 'View merchant balance in merchant details',
+            'view_merchant_bank_accounts' => '',
 
-            'view_activation_form' => '',
-            'edit_merchant_confirm' => '',
-            'edit_merchant_lock_activation' => '',
-            'edit_merchant_unlock_activation' => '',
-            'edit_merchant_hold_funds' => '',
-            'edit_merchant_release_funds' => '',
+            'view_merchant_screenshot' => '',
 
-            'view_merchant_balance_test' => '',
-            'view_merchant_balance_live' => '',
+            'create_pricing_plan' => '',
+            'set_pricing_rules' => '',
+            'delete_pricing_plan_rules' => '',
+
+            'create_merchant_lock'              => '',
+            'create_merchant_unlock'            => '',
+            'edit_merchant'                     => '',
+            'edit_activate_merchant'            => '',
+            'edit_merchant_enable_live'         => '',
+            'edit_merchant_disable_live'        => '',
+            'edit_merchant_archive'             => '',
+            'edit_merchant_unarchive'           => '',
+
+            'view_merchant_company_info' => '',
+            'edit_merchant_screenshot' => '',
+
+            'view_activation_form'              => '',
+            'edit_merchant_confirm'             => '',
+            'edit_merchant_lock_activation'     => '',
+            'edit_merchant_unlock_activation'   => '',
+            'edit_merchant_hold_funds'          => '',
+            'edit_merchant_release_funds'       => '',
+
+            'view_merchant_balance_test'        => '',
+            'view_merchant_balance_live'        => '',
+
+            'edit_merchant_email' => '',
         ],
 
         // UAM
@@ -282,7 +296,7 @@ class PermissionSeeder extends Seeder
                     DB::table(Table::PERMISSION_MAP)->insert([
                         [
                             'permission_id'     => $id,
-                            'entity_id'         => '6dLbNSpv5XbC5F',
+                            'entity_id'         => '6dLbNSpv5XbC5E',
                             'entity_type'       => 'role',
                         ]
                     ]);
@@ -291,19 +305,19 @@ class PermissionSeeder extends Seeder
                     DB::table(Table::PERMISSION_MAP)->insert([
                         [
                             'permission_id' => $id,
-                            'entity_id'     => '6dLbNSpv5XbCOF',
+                            'entity_id'     => '100000razorpay',
                             'entity_type'   => 'org',
                         ]
                     ]);
 
-                    // For trimmed down ones
+                    // For trimmed down ones (like HDFC)
                     if (isset($trimmedDownPermissions[$category]) and
                         isset($trimmedDownPermissions[$category][$permission]))
                     {
                         DB::table(Table::PERMISSION_MAP)->insert([
                             [
                                 'permission_id'     => $id,
-                                'entity_id'         => '6dLbNSpv5XbC5G',
+                                'entity_id'         => '6dLbNSpv5XbC5F',
                                 'entity_type'       => 'role',
                             ]
                         ]);

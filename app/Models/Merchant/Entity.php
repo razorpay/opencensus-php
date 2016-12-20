@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
+        self::MAX_PAYMENT_AMOUNT,
         self::AUTO_REFUND_DELAY,
         self::BRAND_COLOR,
         self::RISK_RATING,

@@ -221,4 +221,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testAccessWithWrongOrg' => [
+        'request' => [
+            'url' => '/orgs/%s/roles',
+            'method' => 'post',
+            'content' => [
+                'name' => 'manager',
+                'description' => 'Manager of roles',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        ],
+    ],
 ];

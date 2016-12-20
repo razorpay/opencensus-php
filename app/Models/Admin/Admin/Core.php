@@ -50,11 +50,7 @@ class Core extends Base\Core
     {
         $this->repo->deleteOrFail($admin);
 
-        // @todo: To maintain bc. Remove first two lines later.
-        $ret = $admin->toArrayDeleted();
-        $ret = array_merge($ret, ['success' => true]);
-
-        return $ret;
+        return $admin->toArrayDeleted();
     }
 
     public function edit(Entity $admin, array $input)

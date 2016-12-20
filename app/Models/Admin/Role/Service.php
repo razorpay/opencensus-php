@@ -44,10 +44,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($role);
 
-        // @todo: To maintain bc. Remove first two lines later.
-        $ret = $role->toArrayDeleted();
-        $ret = array_merge($ret, ['success' => true]);
-        return $ret;
+        return $role->toArrayDeleted();
     }
 
     public function putRole(string $orgId, string $roleId, array $input)

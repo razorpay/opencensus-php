@@ -511,7 +511,6 @@ trait PaymentTrait
             $this->assertEquals($content['amount'], $amount);
         }
 
-
         $this->assertEquals($content['status'], 'captured');
 
         return $content;
