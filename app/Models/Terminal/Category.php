@@ -9,8 +9,11 @@ use RZP\Models\Payment\Gateway;
 
 class Category
 {
-
     const DEFAULT = 'default';
+
+    // Categories mapped to invalid will not find an
+    // appropriate category to override. Only the category
+    // allowed by default will be chosen
     const INVALID = 'invalid';
 
     /**
@@ -35,7 +38,7 @@ class Category
 
 
     /**
-     * INCOMPATIBLE categories will not allow terminals, that
+     * INCOMPATIBLE categories will not allow terminals that
      * do not match the corresponding categories.
      * The list below is of the category2 on merchant entity.
      * The terminals marked null or default will be filtered
@@ -46,7 +49,7 @@ class Category
         'commodities',
     ];
 
-    // By default I check for the name that is mentioned as is
+    // By default Check for the name that is mentioned as is.
     // If it is renamed, then the new name that is mentioned will be
     // used to check for a network category
     const CATEGORIES = [
@@ -54,14 +57,13 @@ class Category
             self::DEFAULT => 'ecommerce',
         ],
         Method::CARD => [
+            self::DEFAULT => 'ecommerce',
             Network::AMEX => [
                 self::DEFAULT    => 'retail_services',
-                'securities'     => 'incompatible',
-                'commodities'    => 'incompatible',
                 'grocery'        => 'sup_hypermrkt_deptstore',
                 'ecommerce'      => 'retail_services',
                 'govt_education' => 'education',
-                'pvt_education'  => 'education', //confirm this is not education services
+                'pvt_education'  => 'education',
                 'corporate'      => self::INVALID,
                 'insurance'      => 'insurance',
                 'housing'        => 'housing',
@@ -122,12 +124,10 @@ class Category
 
         if (isset(self::CATEGORIES[$method]) === true)
         {
-
             if (isset(self::CATEGORIES[$method][$category2]) === true)
             {
                 $networkCategory = self::CATEGORIES[$method][$category2];
             }
-
 
             if ((isset(self::CATEGORIES[$method][$network]) === true) and
                 (isset(self::CATEGORIES[$method][$network][$category2]) === true))
