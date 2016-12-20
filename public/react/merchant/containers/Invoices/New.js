@@ -16,6 +16,7 @@ import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
+import Invoice from 'merchant/models/Invoice'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -30,19 +31,17 @@ const selector = formValueSelector('newInvoice')
 )
 @reduxForm({
   form: 'newInvoice',
-  initialValues: {
+  initialValues: new Invoice({
     date: Math.ceil(new Date().getTime()/1000),
     draft: 1,
     type: 'invoice',
-    description: '',
-    terms: '',
     line_items: [
       {
         quantity: 1,
         amountInINR: '0.00'
       }
     ]
-  }
+  })
 })
 export default class InvoicesNewContainer extends ModalContainer {
   static contextTypes = {

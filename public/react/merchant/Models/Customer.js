@@ -43,13 +43,12 @@ export default class Customer extends BaseModel {
 
     if (name) {
       displayName = name
-    }
-
-    if (contact) {
+    } else if (contact) {
       displayName = `${contact} ${email ? `(${email})` : ''}`
+    } else {
+      displayName = email
     }
 
-    displayName = email
     this.displayName = displayName
   }
 }

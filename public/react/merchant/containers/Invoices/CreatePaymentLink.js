@@ -7,6 +7,7 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
 import { saveInvoice } from 'merchant/modules/invoices/list'
+import Invoice from 'merchant/models/Invoice'
 
 function validate(values) {
   let errors = {}
@@ -38,11 +39,11 @@ function validate(values) {
 )
 @reduxForm({
   form: 'newPaymentLink',
-  initialValues: {
+  initialValues: new Invoice({
     sms_notify: true,
     email_notify: true,
     type: 'link'
-  },
+  }),
   validate
 })
 export default class CreatePaymentLink extends Component {

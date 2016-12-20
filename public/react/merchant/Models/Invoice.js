@@ -10,6 +10,7 @@ export default class Invoice extends BaseModel {
     'amount',
     'currency',
     'date',
+    'draft',
     'customer_id',
     'customer',
     'sms_notify',
