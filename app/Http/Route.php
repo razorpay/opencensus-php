@@ -138,7 +138,7 @@ final class Route
         'terminal_restore'                        => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
         'terminal_add_merchant'                   => ['put',      'terminals/{id}/merchants',                       'TerminalController@addMerchant'                                    ],
-        'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants',                       'TerminalController@removeMerchant'                                 ],
+        'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchant/{mid}',                  'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['post',     'terminals/{id}/merchants/{mid}',                  'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
