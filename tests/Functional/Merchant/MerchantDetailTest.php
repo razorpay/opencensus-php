@@ -19,6 +19,15 @@ class MerchantDetailTest extends TestCase
         parent::setUp();
     }
 
+    public function testGetMerchantDetails()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testUpdateIFSCCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
