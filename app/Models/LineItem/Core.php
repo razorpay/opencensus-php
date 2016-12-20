@@ -25,13 +25,21 @@ class Core extends Base\Core
     {
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
-        $item = $this->createItemIfNotExists($lineItemDetails, $itemDetails, $merchant, $invoice);
-
         $lineItem = (new Entity)->build($lineItemDetails);
 
-        $this->setLineItemAssociations($lineItem, $merchant, $invoice, $item);
+        $lineItem->merchant()->associate($merchant);
+        $lineItem->entity()->associate($invoice);
 
-        $this->repo->saveOrFail($lineItem);
+        $this->repo->transaction(
+            function() use ($merchant, $invoice, $lineItem, $lineItemDetails, $itemDetails)
+            {
+                $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $invoice);
+
+                $lineItem->item()->associate($item);
+
+                $this->repo->saveOrFail($lineItem);
+            }
+        );
 
         return $lineItem;
     }
@@ -44,22 +52,27 @@ class Core extends Base\Core
     {
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
-        if ((isset($lineItemDetails[Entity::ITEM_ID])) or
-            (empty($itemDetails) === false))
-        {
-            $item = $this->createItemIfNotExists(
-                $lineItemDetails,
-                $itemDetails,
-                $merchant,
-                $invoice
-            );
-
-            $lineItem->item()->associate($item);
-        }
-
         $lineItem->edit($lineItemDetails);
 
-        $this->repo->saveOrFail($lineItem);
+        $this->repo->transaction(
+            function() use ($merchant, $invoice, $lineItem, $lineItemDetails, $itemDetails)
+            {
+                //
+                // Updates item association if item_id or item details are sent
+                // as part of update api call.
+                //
+
+                if ((isset($lineItemDetails[Entity::ITEM_ID])) or
+                    (empty($itemDetails) === false))
+                {
+                    $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $invoice);
+
+                    $lineItem->item()->associate($item);
+                }
+
+                $this->repo->saveOrFail($lineItem);
+            }
+        );
 
         return $lineItem;
     }
@@ -92,13 +105,26 @@ class Core extends Base\Core
      * @return Item\Entity
      * @throws Exception\BadRequestException
      */
-    protected function createItemIfNotExists(
+    protected function createItemOrGetExisting(
         array $lineItemDetails,
         array $itemDetails,
         Merchant\Entity $merchant,
         Invoice\Entity $invoice)
     {
-        $item = $this->getItemIfIdExistsInInput($lineItemDetails, $merchant);
+        $item = null;
+
+        //
+        // If ITEM_ID exists in input, use the existing item for association.
+        // But, chekds if item is active or not.
+        //
+
+        if (isset($lineItemDetails[Entity::ITEM_ID]) === true)
+        {
+            $item = $this->repo->item->findByPublicIdAndMerchant(
+                $lineItemDetails[Entity::ITEM_ID],
+                $merchant
+            );
+        }
 
         if (($item !== null) and
             ($item->isNotActive()))
@@ -111,6 +137,10 @@ class Core extends Base\Core
                     'invoice_id' => $invoice->getId(),
                 ]);
         }
+
+        //
+        // Else creates item with given input
+        //
 
         if (empty($item))
         {
@@ -126,27 +156,6 @@ class Core extends Base\Core
         $item->getValidator()->validateCurrency(
             $item->getCurrency(),
             $invoice->getCurrency());
-
-        return $item;
-    }
-
-    /**
-     * @param array           $lineItemDetails
-     * @param Merchant\Entity $merchant
-     *
-     * @return Item\Entity
-     */
-    protected function getItemIfIdExistsInInput(array $lineItemDetails, Merchant\Entity $merchant)
-    {
-        $item = null;
-
-        if (isset($lineItemDetails[Entity::ITEM_ID]) === true)
-        {
-            $item = $this->repo->item->findByPublicIdAndMerchant(
-                $lineItemDetails[Entity::ITEM_ID],
-                $merchant
-            );
-        }
 
         return $item;
     }
@@ -179,18 +188,5 @@ class Core extends Base\Core
         }
 
         return [$lineItemDetails, $itemDetails];
-    }
-
-    protected function setLineItemAssociations(
-        Entity $lineItem,
-        Merchant\Entity $merchant,
-        Base\PublicEntity $entity,
-        Item\Entity $item)
-    {
-        $lineItem->merchant()->associate($merchant);
-
-        $lineItem->entity()->associate($entity);
-
-        $lineItem->item()->associate($item);
     }
 }
