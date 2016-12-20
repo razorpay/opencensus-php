@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3b839cfdcb154b308db74670c470b4e3",
-    "content-hash": "3acede60ba529aa35dfe669d3508e7c7",
+    "hash": "a248c2599b2afa0b2cd0b7e32b059a90",
+    "content-hash": "a29a3e0ad97c5915e85970cf9252e48b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.20.6",
+            "version": "3.20.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f30cacdedd5cf932d471b13e16a48eeef399c97f"
+                "reference": "0e868349a6d834050f273540a8cb811bb7f6d1b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f30cacdedd5cf932d471b13e16a48eeef399c97f",
-                "reference": "f30cacdedd5cf932d471b13e16a48eeef399c97f",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0e868349a6d834050f273540a8cb811bb7f6d1b7",
+                "reference": "0e868349a6d834050f273540a8cb811bb7f6d1b7",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-12-14 22:06:52"
+            "time": "2016-12-19 23:13:56"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -2545,16 +2545,16 @@
         },
         {
             "name": "php-http/message",
-            "version": "v1.4.0",
+            "version": "v1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/message.git",
-                "reference": "20ffbdc291a127e93f66007742693fbdf020d223"
+                "reference": "bfd895a4e753bdde99bed64d75b999e0c9fa6147"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/message/zipball/20ffbdc291a127e93f66007742693fbdf020d223",
-                "reference": "20ffbdc291a127e93f66007742693fbdf020d223",
+                "url": "https://api.github.com/repos/php-http/message/zipball/bfd895a4e753bdde99bed64d75b999e0c9fa6147",
+                "reference": "bfd895a4e753bdde99bed64d75b999e0c9fa6147",
                 "shasum": ""
             },
             "require": {
@@ -2610,7 +2610,7 @@
                 "message",
                 "psr-7"
             ],
-            "time": "2016-10-20 06:59:05"
+            "time": "2016-12-16 21:09:21"
         },
         {
             "name": "php-http/message-factory",
@@ -3195,16 +3195,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.2.3",
+            "version": "0.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "215707f04050caff057b92af388516178d1dd0e6"
+                "reference": "4e0c5cfcc4104896ecf83adc556f1de0c4ca959b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/215707f04050caff057b92af388516178d1dd0e6",
-                "reference": "215707f04050caff057b92af388516178d1dd0e6",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/4e0c5cfcc4104896ecf83adc556f1de0c4ca959b",
+                "reference": "4e0c5cfcc4104896ecf83adc556f1de0c4ca959b",
                 "shasum": ""
             },
             "type": "library",
@@ -3224,7 +3224,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2016-12-14 11:18:16"
+            "time": "2016-12-16 08:18:29"
         },
         {
             "name": "razorpay/razorpay",
