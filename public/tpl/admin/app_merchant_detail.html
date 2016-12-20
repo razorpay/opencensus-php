@@ -217,6 +217,11 @@
           Fee Credits (Live)
         </div>
 
+        <div class="list-group-item" ng-show="merchant.max_payment_amount !== DEFAULT_MAX_PAYMENT_AMOUNT">
+          <span class="pull-right">{{merchant.details.max_payment_amount/100 | rupee }}</span>
+          Max Payment Amount
+        </div>
+
         <div class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
@@ -894,7 +899,7 @@
   </div>
   <div class="modal-body merchant-modal">
     <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category,
-    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
+    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name, max_payment_amount: current.max_payment_amount/100}">
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >
@@ -905,6 +910,12 @@
         <label for="category" class="col-lg-2 control-label">MCC:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="category" ng-model="merchant.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="max_payment_amount" class="col-lg-2 control-label">Max Payment Amount (INR)</label>
+        <div class="col-lg-10">
+          <input type="text" class="form-control m-b" name="max_payment_amount" ng-model="merchant.max_payment_amount" />
         </div>
       </div>
       <div class="form-group">

@@ -11,6 +11,8 @@ app.controller('MerchantDetailCtrl', [
   '$upload',
   function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, $upload) {
     $scope.riskMap = riskMap;
+    // 5 Lac INR
+    $scope.DEFAULT_MAX_PAYMENT_AMOUNT = 50000000;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       id: $stateParams.id,
@@ -566,7 +568,7 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
- 
+
     // Assign pricing modal
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
@@ -1174,6 +1176,9 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.current = current;
     $scope.ok = function (merchant) {
+
+      // We convert it back from INR to paise.
+      merchant.max_payment_amount = merchant.max_payment_amount * 100;
       $modalInstance.close(merchant);
     };
     $scope.cancel = function () {
