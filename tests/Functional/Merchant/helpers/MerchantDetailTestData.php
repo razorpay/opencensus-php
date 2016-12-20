@@ -251,6 +251,25 @@ return [
         ],
     ],
 
+    'testCommentMerchantWithNoMerchantDetail' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testLockMerchantWithInvalidParams' => [
         'request' => [
             'content' =>[

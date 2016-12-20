@@ -149,6 +149,21 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testCommentMerchantWithNoMerchantDetail()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $merchantId = $merchant['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testLockMerchantWithInvalidParams()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
