@@ -439,9 +439,10 @@ class Gateway extends Base\Gateway
             'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
             'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
             // The below two fields are not sent as part of refund response, but we get it in the verify response.
-            //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
-            //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
-            'ProcessStatus'     => $verifyResponse['ProcessStatus'],
+            // 'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            // 'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            // This is not received in verify response. This indicates whether refund was successful.
+            'ProcessStatus'     => 'Y',
             'TxnDate'           => $txnDate,
             'RefDateTime'       => $refDate,
         ];
