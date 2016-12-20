@@ -217,8 +217,8 @@ class Repository extends Base\Repository
         $terminal->merchants()->attach($merchantIds);
     }
 
-    public function removeMerchantFromTerminal(Entity $terminal, array $merchantIds)
+    public function removeMerchantFromTerminal(Entity $terminal, $merchantId)
     {
-        $terminal->merchants()->detach($merchantIds);
+        $terminal->merchants()->detach($merchantId);
     }
 }

@@ -58,11 +58,11 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function removeMerchant(string $id)
+    public function removeMerchant(string $id, string $merchantId)
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $input);
+        $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $merchantId);
 
         return ApiResponse::json($data);
     }

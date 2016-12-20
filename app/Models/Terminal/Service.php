@@ -106,20 +106,11 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function removeMerchantFromTerminal(string $id, array $input)
+    public function removeMerchantFromTerminal(string $id, string $merchantId)
     {
-        if (isset($input['merchant_ids']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please provide Merchant Ids');
-
-        }
-
-        $merchantIds = $input['merchant_ids'];
-
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantIds);
+        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }
