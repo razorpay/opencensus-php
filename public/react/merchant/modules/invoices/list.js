@@ -1,6 +1,5 @@
+import { set, merge, unshift } from 'rzp/utils/immutable'
 import Invoice from 'merchant/models/Invoice'
-import ajax from 'merchant/utils/ajax'
-import { fromJS } from 'immutable'
 
 const INVOICES_FETCH = 'INVOICES_FETCH'
 const INVOICE_CREATE = 'INVOICE_CREATE'
@@ -16,11 +15,11 @@ export const fetchInvoices = (params) => {
   }
 }
 
-export const saveInvoice = (params) => {
+export const saveInvoice = (invoice) => {
   return (dispatch) => {
     return dispatch({
-      type: params.id ? INVOICE_EDIT : INVOICE_CREATE,
-      payload: new Invoice(params).save()
+      type: invoice.isNew ? INVOICE_EDIT : INVOICE_CREATE,
+      payload: invoice.save()
     })
   }
 }
@@ -39,39 +38,36 @@ let initialState = {
   highLightInvoiceId: null
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${INVOICES_FETCH}::PENDING`:
-      return state.merge({
+      return merge(state, {
         loading: true,
         highLightInvoiceId: null
       })
 
     case `${INVOICES_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         invoices: action.payload.data.items,
         count: action.payload.data.count,
       })
 
     case `${INVOICES_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.error
       })
 
     case `${INVOICE_CREATE}::SUCCESS`:
-      return state.set('invoices', state.get('invoices').unshift(action.payload))
+      return set(state, 'invoices', unshift(state.invoices, action.payload))
 
     case `${INVOICE_EDIT}::SUCCESS`:
-      let invoices = state.get('invoices')
-      return state.set('invoices', invoices.update(
-        invoices.findIndex((invoice) => invoice.get('id') === action.payload.id),
-        (invoice) => invoice.merge(action.payload)
-      ))
+      let invoiceIndex = state.invoices.findIndex((invoice) => invoice.id === action.payload.id)
+      return set(state, `invoices.${invoiceIndex}`, action.payload)
 
     case HIGHLIGHT_INVOICE:
-      return state.set('highLightInvoiceId', action.invoiceId)
+      return set(state, 'highLightInvoiceId', action.invoiceId)
 
     default:
       return state

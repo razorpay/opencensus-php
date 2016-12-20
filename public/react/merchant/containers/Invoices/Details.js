@@ -4,7 +4,7 @@ import { fetchInvoice, notifyCustomer } from 'merchant/modules/invoices/details'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
 
 @connect(
-  (state) => state.invoice.toJS(),
+  (state) => state.invoice,
   { fetchInvoice, notifyCustomer }
 )
 export default class InvoiceDetailContainer extends Component {

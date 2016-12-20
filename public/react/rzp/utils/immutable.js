@@ -44,9 +44,8 @@ export const updateItem = (array, index, value) => {
   return newArray
 }
 
-export const unshift = (state, prop, value) => {
-  let array = getValueFromObject(state, prop)
-  return set(state, prop, insertItem(array, 0, value))
+export const unshift = (array, value) => {
+  return insertItem(array, 0, value)
 }
 
 export const set = (state, prop, value) => {

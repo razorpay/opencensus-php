@@ -1,5 +1,5 @@
+import { set, merge } from 'rzp/utils/immutable'
 import Invoice from 'merchant/models/Invoice'
-import { fromJS } from 'immutable'
 
 const INVOICE_FETCH = 'INVOICE_FETCH'
 const SMS_SEND = 'SMS_SEND'
@@ -32,38 +32,34 @@ let initialState = {
   error: null
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${INVOICE_FETCH}::PENDING`:
-      return state.set('loading', true)
+      return set(state, 'loading', true)
 
     case `${INVOICE_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         invoice: action.payload,
         error: null
       })
 
     case `${INVOICE_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.payload.errors,
         invoice: initialState.invoice
       })
 
     case `${SMS_SEND}::SUCCESS`:
-      var invoice = state.get('invoice')
-      invoice.sms_status = 'sent'
-      return state.set('invoice', invoice)
+      return set(state, 'invoice.sms_status', 'sent')
 
     case `${EMAIL_SEND}::SUCCESS`:
-      var invoice = state.get('invoice')
-      invoice.email_status = 'sent'
-      return state.set('invoice', invoice)
+      return set(state, 'invoice.email_status', 'sent')
 
     case `${SMS_SEND}::ERROR`:
     case `${EMAIL_SEND}::ERROR`:
-      return state.set('error', action.payload.errors)
+      return set(state, 'error', action.payload.errors)
 
     default:
       return state

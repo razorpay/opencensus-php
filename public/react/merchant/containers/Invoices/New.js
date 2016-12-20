@@ -20,12 +20,9 @@ import ModalContainer from 'merchant/containers/ModalContainer'
 const selector = formValueSelector('newInvoice')
 @connect(
   (state) => {
-    let itemsState = state.items.toJS()
-    let customersState = state.customers.toJS()
-
     return {
-      customers: customersState.customers,
-      items: itemsState.items,
+      customers: state.customers.customers,
+      items: state.items.items,
       customer: selector(state, 'customer'),
     }
   },

@@ -54,12 +54,12 @@ export default class Invoice extends BaseModel {
 
   serializeProperty(prop) {
     if (prop === 'sms_notify' || prop === 'email_notify') {
-      return this.get(prop) ? 1 : 0
+      return this[prop] ? 1 : 0
     }
 
     if (prop === 'line_items') {
-      if (this.get('type') === 'link') {
-        return this.get('line_items').map((item) => {
+      if (this.type === 'link') {
+        return this.line_items.map((item) => {
           return {
             name: item.name,
             amount: Number(item.amount) * 100

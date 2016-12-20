@@ -40,14 +40,14 @@ export default class Item extends BaseModel {
 
   serializeProperty(prop) {
     if (prop === 'amount') {
-      return Number(this.get('amountInINR')) * 100
+      return Number(this.amountInINR) * 100
     }
     return super.serializeProperty(prop)
   }
 
   deserializeProperty(prop, value) {
     if (prop === 'amount') {
-      this.set('amountInINR', getFixedINRAmount(value))
+      this.amountInINR = getFixedINRAmount(value)
     }
     return super.deserializeProperty(prop, value)
   }

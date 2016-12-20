@@ -9,7 +9,7 @@ import ModalContainer from 'merchant/containers/ModalContainer'
 import * as ItemActions from 'merchant/modules/items'
 
 @connect(
-  (state) => state.items.toJS(),
+  (state) => state.items,
   ItemActions
 )
 @reduxForm({

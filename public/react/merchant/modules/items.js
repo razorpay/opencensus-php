@@ -1,5 +1,5 @@
 import Item from 'merchant/models/Item'
-import { fromJS } from 'immutable'
+import { set, merge, unshift } from 'rzp/utils/immutable'
 
 const ITEMS_FETCH = 'ITEMS_FETCH'
 const ITEM_CREATE = 'ITEM_CREATE'
@@ -17,18 +17,18 @@ export const fetchItems = () => {
   }
 }
 
-export const saveItem = (params) => {
+export const saveItem = (item) => {
   return (dispatch) => {
     return dispatch({
-      type: params.id ? ITEM_EDIT : ITEM_CREATE,
-      payload: new Item(params).save()
+      type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
+      payload: item.save()
     })
   }
 }
 
-export const deleteItem = (params) => {
+export const deleteItem = (item) => {
   return (dispatch) => {
-    return new Item(params).delete().then(() => {
+    return item.delete().then(() => {
       dispatch({
         type: ITEM_DELETE,
         payload: params
@@ -60,46 +60,42 @@ let initialState = {
   highlightRowId: null
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${ITEMS_FETCH}::PENDING`:
-      return state.merge({
+      return merge(state, {
         loading: true,
         highlightRowId: null
       })
 
     case `${ITEMS_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         items: action.payload.data.items,
         count: action.payload.data.count
       })
 
     case `${ITEMS_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.error
       })
 
     case `${ITEM_CREATE}::SUCCESS`:
-      return state.set('items', state.get('items').unshift(action.payload))
+      return set(state, 'items', unshift(state.items, action.payload))
 
     case `${ITEM_EDIT}::SUCCESS`:
-      let items = state.get('items')
-      let updatedItem = action.payload
-      return state.set('items', items.update(
-        items.findIndex((item) => item.get('id') === updatedItem.id),
-        (item) => item.merge(updatedItem)
-      ))
+      let itemIndex = state.items.findIndex((item) => item.id === action.payload.id)
+      return set(state, `items.${itemIndex}`, action.payload)
 
     case `${ITEM_DELETE}::SUCCESS`:
       return state.set('items', state.get('items').remove(action.payload))
 
     case HIGHLIGHT_ITEM:
-      return state.set('highlightRowId', action.payload.get('id'))
+      return set(state, 'highlightRowId', action.payload.id)
 
     case REMOVE_ITEM_HIGHLIGHT:
-      return state.set('highlightRowId', null)
+      return set(state, 'highlightRowId', null)
 
     default:
       return state

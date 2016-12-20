@@ -1,4 +1,5 @@
 import { set, merge, unshift } from 'rzp/utils/immutable'
+import Customer from 'merchant/models/Customer'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
@@ -80,14 +81,14 @@ export default function (state = initialState, action) {
       })
 
     case `${CUSTOMER_CREATE}::SUCCESS`:
-      return unshift(state, 'customers', action.payload)
+      return set(state, 'customers', unshift(state.customers, action.payload))
 
     case `${CUSTOMER_EDIT}::SUCCESS`:
       let customerIndex = state.customers.findIndex((item) => item.id === action.payload.id)
       return set(state, `customers.${customerIndex}`, action.payload)
 
     case `${CUSTOMER_DELETE}::SUCCESS`:
-      return set(state, 'customers', state.get('customers').remove(action.payload))
+      return set(state, 'customers', state.remove(state.customers, action.payload))
 
     case HIGHLIGHT_CUSTOMER:
       return set(state, 'highlightRowId', action.payload.id)

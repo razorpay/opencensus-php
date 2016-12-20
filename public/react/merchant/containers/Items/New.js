@@ -7,6 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import validator from 'rzp/utils/validator'
 import * as ItemActions from 'merchant/modules/items'
+import Item from 'merchant/models/Item'
 
 @connect(
   null,
@@ -14,6 +15,7 @@ import * as ItemActions from 'merchant/modules/items'
 )
 @reduxForm({
   form: 'newItem',
+  initialValues: new Item(),
   validate: validator({
     name: {
       presence: true

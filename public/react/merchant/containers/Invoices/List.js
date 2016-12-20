@@ -9,7 +9,7 @@ import ModalContainer from 'merchant/containers/ModalContainer'
 import CreatePaymentLink from './CreatePaymentLink'
 
 @connect(
-  (state) => state.invoices.toJS(),
+  (state) => state.invoices,
   { fetchInvoices, highLightInvoice }
 )
 export default class InvoicesListContainer extends ModalContainer {
