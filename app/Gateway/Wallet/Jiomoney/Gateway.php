@@ -14,6 +14,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Entity as BaseGatewayEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -28,6 +29,8 @@ class Gateway extends Base\Gateway
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
     const DEFAULT_CURRENCY_CODE = 'INR';
+
+    const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
 
     protected $gateway = 'wallet_jiomoney';
 
@@ -49,6 +52,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getPurchaseRequestArray($input);
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         $contentToSave = [
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
             RequestFields::PAYMENT_ID   => $input['payment']['id'],
@@ -66,7 +71,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $input['gateway'] = $this->parseGatewayResponse($input['gateway']);
+        $input['gateway'] = $this->parseResponseBody($input['gateway']);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $input['gateway']);
 
         $this->validateResponseChecksum($input['gateway']);
 
@@ -82,26 +89,17 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function capture(array $input)
-    {
-       parent::capture($input);
-
-       // $this->action($input, Action::VERIFY);
-
-       // $requestContent = $this->getCheckPaymentStatusRequestArray($input);
-
-       // $response = $this->getCaptureResponse();
-    }
-
     public function refund(array $input)
     {
         parent::refund($input);
 
         $request = $this->getRefundRequest($input);
 
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->parseResponseBody($response);
+        $content = $this->parseGatewayResponse($response);
 
         $this->validateResponseChecksum($content);
 
@@ -117,12 +115,15 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
+        $date = $this->getEpochTime($content[ResponseFields::DATE], self::FORMAT);
+
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
             ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
             ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            ResponseFields::DATE                 => $content[ResponseFields::DATE]
+            ResponseFields::DATE                 => $date,
+            BaseGatewayEntity::RECEIVED          => true
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -188,7 +189,7 @@ class Gateway extends Base\Gateway
     {
         $refundinfo = [
             $wallet['gateway_payment_id'],
-            $wallet['date'],
+            $this->getFormattedTimeStamp($wallet['date'], self::FORMAT),
             'NA'
         ];
 
@@ -285,26 +286,29 @@ class Gateway extends Base\Gateway
         $amount = $this->getFormattedAmount($payment['amount']);
 
         $content = [
-            RequestFields::MERCHANT_ID                                   => $this->getMerchantId(),
-            RequestFields::CLIENT_ID                                     => $this->getClientId(),
-            RequestFields::CHANNEL                                       => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::CALLBACK_URL                                  => $callbackUrl,
-            RequestFields::TOKEN                                         => '',
-            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID => $payment['public_id'],
-            RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP  => $timestamp,
-            RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE   => Action::PURCHASE,
-            RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT     => $amount,
-            RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY   => self::DEFAULT_CURRENCY_CODE
+            RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
+            RequestFields::CLIENT_ID                                       => $this->getClientId(),
+            RequestFields::CHANNEL                                         => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::CALLBACK_URL                                    => $callbackUrl,
+            RequestFields::TOKEN                                           => '',
+            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment['id'],
+            RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => $timestamp,
+            RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => Action::PURCHASE,
+            RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => $amount,
+            RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => self::DEFAULT_CURRENCY_CODE,
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => self::DEFAULT_CUSTOMER_NAME,
+            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment['email'],
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment['contact']
         ];
 
-        $hashArray = $this->getArrayToHash($content);
+        $hashArray = $this->getPurchaseRequestArrayToHash($content);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($hashArray);
 
         return $content;
     }
 
-    protected function getArrayToHash($content)
+    protected function getPurchaseRequestArrayToHash($content)
     {
         return [
             $content[RequestFields::CLIENT_ID],
@@ -319,7 +323,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function parseGatewayResponse($content)
+    protected function parseResponseBody($content)
     {
         $responseFieldsArray = ResponseFields::getResponseFieldsArray();
 
@@ -328,7 +332,7 @@ class Gateway extends Base\Gateway
         return array_combine($responseFieldsArray, $gatewayResponseArray);
     }
 
-    protected function parseResponseBody(\Requests_Response $response)
+    protected function parseGatewayResponse(\Requests_Response $response)
     {
         if ($response->body === '')
         {
@@ -340,7 +344,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        return $this->parseGatewayResponse($content);
+        return $this->parseResponseBody($content);
     }
 
     protected function getGatewayResponseArray($content)
@@ -358,8 +362,12 @@ class Gateway extends Base\Gateway
 
         $checksumValid = ($checksumCalculated === $responseCheckSum);
 
-        // TODO Throw GATEWAY_EXCEPTION here
-        assertTrue($checksumValid);
+        if ($checksumCalculated !== $responseCheckSum)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED
+            );
+        }
     }
 
     protected function getResponseHashArray($content)
@@ -420,6 +428,11 @@ class Gateway extends Base\Gateway
     protected function getFormattedTimeStamp($timestamp, $format)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
+    }
+
+    protected function getEpochTime(string $date, string $format)
+    {
+        return Carbon::createFromFormat($format, $date)->timestamp;
     }
 
     protected function getFormattedAmount($amount)

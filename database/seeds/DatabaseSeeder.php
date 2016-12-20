@@ -310,6 +310,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'upi'           => '1',
                     'created_at'    =>  $currentTime,
@@ -328,6 +329,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
@@ -1180,6 +1182,38 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_airtelmoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_airtelmoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createJiomoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '6tUImiItg84AzK',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'gateway_terminal_id'       => 'test_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => 'demo_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_jiomoney_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )
