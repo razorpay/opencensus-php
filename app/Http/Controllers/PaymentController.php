@@ -100,6 +100,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postFixAuthorizedAt($id)
+    {
+        $data = $this->payment->fixAuthorizeAt($id);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Captures an authorized payment
      *
@@ -131,7 +138,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * @deprecated 
+     * @deprecated
      * @return mixed
      */
     public function postAutoCapture()

@@ -42,6 +42,20 @@ class Table
     const COUPON                = 'coupons';
     const MERCHANT_OFFER        = 'merchant_offer';
 
+    // organization roles permissions
+    const ORG                   = 'orgs';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'roles';
+    const PERMISSION            = 'permissions';
+    const PERMISSION_MAP        = 'permission_map';
+    const GROUP                 = 'groups';
+    const ADMIN                 = 'admins';
+    const GROUP_MAP             = 'group_map';
+    const MERCHANT_MAP          = 'merchant_map';
+    const ADMIN_TOKEN           = 'admin_tokens';
+    const ROLE_MAP              = 'role_map';
+    const LOGIN_ATTEMPT         = 'login_attempts';
+
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';

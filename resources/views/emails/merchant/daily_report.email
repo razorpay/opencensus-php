@@ -50,7 +50,7 @@
                           <td class="center">
                             <center>
                             <h2 class="center" style="text-align: center;">
-                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
+                              <a href="" style="color:white; text-decoration:none;">{{{$billing_label}}}</a>
                             </h2>
                             </center>
                           </td>
@@ -72,7 +72,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Captured: {{{$captured['payments']['count']}}}<br>
+                            Captured: {{{$captured['count']}}}<br>
                             INR {{{number_format($captured['sum']/100, 2)}}}
                           </center></td>
                         </tr>
@@ -82,7 +82,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Authorized: {{{$authorized['payments']['count']}}}<br>
+                            Authorized: {{{$authorized['count']}}}<br>
                             INR {{{number_format($authorized['sum']/100, 2)}}}
                           </center></td>
                         </tr>
@@ -92,7 +92,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Refunds: {{{$refunds['refunds']['count']}}}<br>
+                            Refunds: {{{$refunds['count']}}}<br>
                             INR {{{number_format($refunds['sum']/100, 2)}}}
                           </center></td>
                         </tr>
