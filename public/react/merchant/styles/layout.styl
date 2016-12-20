@@ -192,3 +192,31 @@ tr:hover .row-action > .btn-group {
 .alert-sm {
   padding: 5px 10px;
 }
+
+.label-required::after {
+  content: '*';
+  position: absolute;
+  top: 7px;
+  color: #e68686;
+}
+
+// List Filter Container
+
+.list-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin: 15px -5px;
+}
+
+.list-filter-item {
+  flex: 1;
+  flex-basis: 185px;
+  flex-grow: 0;
+  margin-left: 25px;
+
+  &.btn-group {
+    margin-top: 25px;
+    flex-basis: initial;
+  }
+}

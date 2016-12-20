@@ -78,6 +78,7 @@ export default class CreatePaymentLink extends Component {
 
   render() {
     const { handleSubmit } = this.props
+    const newForm = true
 
     return (
       <div>
@@ -93,6 +94,52 @@ export default class CreatePaymentLink extends Component {
 
         <form class='form-horizontal payment-link-form'>
           <div class='modal-body'>
+            {
+              newForm &&
+              <div>
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label label-required'>
+                    <div>Amount</div>
+                    <small>(in INR)</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='amountInINR'
+                      component={InputField}
+                      class='form-control'
+                      autoFocus={true}
+                    />
+                  </div>
+                </div>
+
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label label-required'>
+                    Summary
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='description'
+                      component='textarea'
+                      class='form-control'
+                    />
+                  </div>
+                </div>
+
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    Receipt No.
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='receipt'
+                      component='input'
+                      class='form-control'
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+
             <div class='form-group customer'>
               <label class='col-md-3 control-label'>Customer</label>
               <div class='col-md-4'>
@@ -101,7 +148,6 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                   placeholder='Customer phone'
-                  autoFocus={true}
                 />
               </div>
 
@@ -115,6 +161,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
+{/*
             <div class='form-group'>
               <label class='col-md-3 control-label help-label'>
                 <div>Item Name</div>
@@ -153,6 +200,7 @@ export default class CreatePaymentLink extends Component {
                 />
               </div>
             </div>
+*/}
 
             <div class='form-group'>
               <label class='col-md-3 control-label'>Notify Customer</label>

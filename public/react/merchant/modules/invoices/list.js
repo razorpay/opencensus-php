@@ -18,7 +18,7 @@ export const fetchInvoices = (params) => {
 export const saveInvoice = (invoice) => {
   return (dispatch) => {
     return dispatch({
-      type: invoice.isNew ? INVOICE_EDIT : INVOICE_CREATE,
+      type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
       payload: invoice.save()
     })
   }

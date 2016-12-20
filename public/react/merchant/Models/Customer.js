@@ -1,5 +1,6 @@
 import BaseModel from './Base'
 import ajax from 'merchant/utils/ajax'
+import { isBlank } from 'rzp/utils/rzp-utils'
 
 export default class Customer extends BaseModel {
   resourceIdField = 'id'
@@ -11,8 +12,8 @@ export default class Customer extends BaseModel {
     'contact'
   ]
 
-  static fetchAll(params = {}) {
-    return ajax('/customers', params).then((response) => {
+  static fetchAll(data = {}) {
+    return ajax('/customers', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Customer().deserialize(item))
       return response
     })
@@ -36,19 +37,13 @@ export default class Customer extends BaseModel {
   }
 
   didDeserialize() {
-    let email = this.email
-    let name = this.name
-    let contact = this.contact
-    let displayName
+    let displayParts = [
+      this.name,
+      this.contact,
+      this.email
+    ].filter((item) => !isBlank(item))
 
-    if (name) {
-      displayName = name
-    } else if (contact) {
-      displayName = `${contact} ${email ? `(${email})` : ''}`
-    } else {
-      displayName = email
-    }
-
+    let displayName = `${displayParts.join(' / ').replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`
     this.displayName = displayName
   }
 }

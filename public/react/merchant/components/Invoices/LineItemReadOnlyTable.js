@@ -19,7 +19,7 @@ export default ({ line_items }) => {
         <tbody>
           {
             line_items.map((line_item) => (
-              <tr>
+              <tr key={line_item.id}>
                 <td>
                   <p>{line_item.name}</p>
                   <div>{line_item.description}</div>

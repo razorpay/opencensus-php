@@ -26,7 +26,7 @@ export const saveCustomer = (customer) => {
   }
 }
 
-export const deleteCustomer = (params) => {
+export const deleteCustomer = (customer) => {
   return (dispatch) => {
     return customer.delete().then(() => {
       dispatch({

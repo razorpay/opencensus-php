@@ -14,8 +14,8 @@ export default class Item extends BaseModel {
   ]
   currency = 'INR'
 
-  static fetchAll(params = {}) {
-    return ajax('/items', params).then((response) => {
+  static fetchAll(data = {}) {
+    return ajax('/items', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Item().deserialize(item))
       return response
     })

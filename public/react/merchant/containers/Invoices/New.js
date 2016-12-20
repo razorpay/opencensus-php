@@ -57,7 +57,11 @@ export default class InvoicesNewContainer extends ModalContainer {
   }
 
   componentWillMount() {
-    this.props.fetchCustomers()
+    this.props.fetchCustomers({
+      skip: 0,
+      count: 1000
+    })
+
     this.props.fetchItems()
     if (this.props.id) {
       this.setState({

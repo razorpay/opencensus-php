@@ -2,32 +2,35 @@ import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
+import Alert from 'rzp/ui/Forms/Alert'
 
 import { fetchInvoices, highLightInvoice } from 'merchant/modules/invoices/list'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 import ModalContainer from 'merchant/containers/ModalContainer'
 import CreatePaymentLink from './CreatePaymentLink'
+import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
 
 @connect(
   (state) => state.invoices,
   { fetchInvoices, highLightInvoice }
 )
 export default class InvoicesListContainer extends ModalContainer {
+  static skip = 0
+  static count = 25
   static contextTypes = {
     ngRouter: PropTypes.object
   }
 
   constructor() {
     super(...arguments)
-    this.state.skip = 0
-    this.state.count = 25
     this.state.invoiceToEdit = null
     this.fetchInvoices = ::this.fetchInvoices
     this.editInvoice = ::this.editInvoice
+    this.search = ::this.search
   }
 
   componentWillMount() {
-    this.fetchInvoices()
+    this.fetchInvoices(this.getDefaultPageParams())
   }
 
   fetchInvoices(params) {
@@ -35,12 +38,25 @@ export default class InvoicesListContainer extends ModalContainer {
       this.setState(params)
     }
 
-    params = params || {
-      count: this.state.count,
-      skip: this.state.skip
-    }
+    return this.props.fetchInvoices(params).then(() => {
+      this.setState({ errors: null })
+    }).catch(({ errors }) => {
+      this.setState({ errors })
+    })
+  }
 
-    this.props.fetchInvoices(params)
+  getDefaultPageParams() {
+    return {
+      skip: InvoicesListContainer.skip,
+      count: InvoicesListContainer.count
+    }
+  }
+
+  search(params) {
+    return this.fetchInvoices({
+      ...this.getDefaultPageParams(),
+      ...params
+    })
   }
 
   showPaymentLinkModal(invoice = null) {
@@ -54,7 +70,7 @@ export default class InvoicesListContainer extends ModalContainer {
     if (invoice.type === 'link') {
       this.showPaymentLinkModal(invoice)
     } else if (invoice.type === 'invoice') {
-      this.context.ngRouter.transitionTo('app.invoicesedit', {
+      this.context.ngRouter.transitionTo('app.invoices.edit', {
         id: invoice.id
       })
     }
@@ -84,6 +100,22 @@ export default class InvoicesListContainer extends ModalContainer {
 
         <div class='content-wrapper'>
           <div class='panel panel-default'>
+            <div class='panel-heading'>
+              Invoices List
+            </div>
+
+            <div class='panel-body'>
+              <InvoiceListFilter
+                form='InvoiceListFilter'
+                onSubmit={this.search}
+              />
+            </div>
+
+            <Alert
+              type='error'
+              message={this.state.errors}
+            />
+
             <InvoicesList
               invoices={invoices}
               isLoading={loading}

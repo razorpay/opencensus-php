@@ -93,16 +93,32 @@ export default (props) => {
                 <dd>{invoice.customer_details.customer_name || '--'}</dd>
 
                 <dt>Email:</dt>
-                <dd>{invoice.customer_details.customer_email || '--'}</dd>
+                <dd>
+                  {invoice.customer_details.customer_email || '--'}
+                  <span
+                    style={{ marginLeft: '10px' }}
+                    class={`${notificationClassMap[invoice.email_status]}`}
+                  >
+                    {invoice.email_status ? `(${invoice.email_status})` : ''}
+                  </span>
+                </dd>
 
                 <dt>Phone:</dt>
-                <dd>{invoice.customer_details.customer_contact}</dd>
+                <dd>
+                  {invoice.customer_details.customer_contact}
+                  <span
+                    style={{ marginLeft: '10px' }}
+                    class={`${notificationClassMap[invoice.sms_status]}`}
+                  >
+                    {invoice.sms_status ? `(${invoice.sms_status})` : ''}
+                  </span>
+                </dd>
               </dl>
             </div>
           </div>
 
           {
-            invoice.line_items.length &&
+            invoice.line_items.length ?
             <div class='panel panel-default'>
               <div class='panel-heading'>
                 Item Details
@@ -111,7 +127,7 @@ export default (props) => {
               <div class='panel-body'>
                 <LineItemReadOnlyTable line_items={invoice.line_items} />
               </div>
-            </div>
+            </div> : ''
           }
 
           <div class='panel panel-default'>
