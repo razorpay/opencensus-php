@@ -53,7 +53,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
 
-        $mids = ['merchant_ids' => [Merchant\Account::TEST_ACCOUNT]];
+        $mid = Merchant\Account::TEST_ACCOUNT;
 
         $tid = '10BillDirTrmn2';
 
@@ -65,12 +65,11 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
 
-        $url = '/terminals/' . $tid . '/merchants/';
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
 
         $request = [
             'url'    => $url,
             'method' => 'PUT',
-            'content' => $mids,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -86,7 +85,6 @@ class TerminalSelectionTest extends TestCase
         $request = [
             'url'    => $url,
             'method' => 'DELETE',
-            'content' => $mids,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -120,11 +118,11 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
 
-        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+        $url = '/terminals/' . $tid . '/merchants/' . $mid . '/reassign';
 
         $request = [
             'url'    => $url,
-            'method' => 'POST',
+            'method' => 'PUT',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -137,11 +135,11 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($tid, $payment['terminal_id']);
 
-        $url = '/terminals/' . $tid . '/merchants/1MercShareTerm';
+        $url = '/terminals/' . $tid . '/merchants/' . '1MercShareTerm' . '/reassign';
 
         $request = [
             'url'    => $url,
-            'method' => 'POST',
+            'method' => 'PUT',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
