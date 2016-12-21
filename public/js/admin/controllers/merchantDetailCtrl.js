@@ -17,6 +17,8 @@ app.controller('MerchantDetailCtrl', [
     });
 
     $scope.riskMap = riskMap;
+    // 5 Lac INR
+    $scope.DEFAULT_MAX_PAYMENT_AMOUNT = 50000000;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       id: $stateParams.id,
@@ -1201,6 +1203,9 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.current = current;
     $scope.ok = function (merchant) {
+
+      // We convert it back from INR to paise.
+      merchant.max_payment_amount = merchant.max_payment_amount * 100;
       $modalInstance.close(merchant);
     };
     $scope.cancel = function () {

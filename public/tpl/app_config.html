@@ -4,49 +4,94 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md">
+
+<div class="wrapper-md col-sm-8 col-sm-offset-2" >
   <div class="panel panel-default" ng-controller="ConfigCtrl">
     <div class="panel-heading">
-      Merchant Configuration
+      Checkout Theme
     </div>
-    <div class="panel-body">
-      <form class="form-horizontal">
-        <div class="form-group">
-          <label class="col-sm-2 control-label">Transaction Report Email</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" maxlength="255" ng-model="config.transaction_report_email">
-            <span class="help-block m-b-none">Comma-separated email addresses that will receive notifications regarding payments, settlements, daily reports, webhooks etc.</span>
+    <form class="form-horizontal ">
+      <div class="panel-body border-bottom">
+
+        <label class="control-label"><strong>Theme Color</strong></label>
+        <div class="m-t">
+          <div class="col-sm-2">
+            <input type="color" class="form-control brand-color-picker m-l-neg" ng-model="config.brand_color" >
           </div>
-        </div>
-        <div class="form-group">
-          <label class="col-sm-2 control-label">Checkout Theme Color</label>
-          <div class="col-sm-10">
-            <input type="color" class="form-control" ng-model="config.brand_color" ng-show="showColorPicker">
-            <button ng-click="showColorPicker = true" ng-show="!showColorPicker">Select a color</button>
-            <span class="help-block m-b-none">Default theme color which will be used if none
-            is specified at the time of payment. Please use the color picker or specify a color code in hexadecimal (4AA3DF)</span>
+          <div class="col-sm-3">
+            <input type="text" class="form-control brand-color-input m-l-neg" ng-show="config.brand_color" ng-model="config.brand_color" >
           </div>
+          <div class="clearfix"></div>
+          <span class="help-block m-t m-b-none">Choose a theme color to customize the checkout form. The default theme color will be used if none is specified. <strong>Use the color picker or enter the hexadecimal color code.</strong></span>
         </div>
+      </div>
+
         <!--Upload logo image file 2-->
-        <div class="form-group">
-          <label class="col-sm-2 control-label">Logo Image</label>
-          <div class="col-sm-10" ng-show="showImageSelector">
-            <span class="help-block m-b-none">
-              <li>Max image size - 1MB</li>
-              <li>Image should be square (width = height) </li>
-              <li>Minimum image dimensions - 256*256</li>
-              <li>Image types should be either jpg, jpeg or png only</li><br>
-            </span>
-            <input ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="logo" ng-file-select="onFileSelect($files, 'logo')">
+      <div class="panel-body">
+        <label class="control-label"><strong>Your Logo</strong></label>
+        <div class="m-t m-b">
+          <div ng-show="!showImageSelector" class="pull-left m-r" >
+            <img src="{{config.logo_url}}" width="72" height="72">
           </div>
-          <div class="col-sm-10" ng-show="!showImageSelector">
-            <img src="{{config.logo_url}}" wdith="100" height="100"><br>
-            <button ng-click="showImageSelector = true" >Upload new Logo</button>
+          <div class="pull-left col-sm-4 file-upload-container m-l-neg">
+            <input class="m-b" ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default btn-primary" data-classInput="form-control inline v-middle input-s hide" name="logo" ng-file-select="onFileSelect($files, 'logo')">
+            <i class="m-t">Max file size: 1MB</i>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+        <span class="help-block m-b-none ">Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px.</span>
+        <div class="clearfix"></div>
+        <div class="m-t">
+
+          <div class=" text-center prev-next">
+            <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded pull-right">Save Changes</button>
           </div>
         </div>
         <!--End-->
-        <div class="m-t m-b text-center prev-next">
-          <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+      </div>
+    </form>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+    </footer>
+  </div>
+
+  <div class="panel panel-default" ng-controller="FeaturesCtrl">
+    <div class="panel-heading">
+      <span>Flash Checkout</span>
+      <label ng-if="fcOpted" class=" pull-right">
+        <span ng-if="fcEnabled" class="text-success">ENABLED</span>
+        <span ng-if="!fcEnabled" class="text-danger">DISABLED</span>
+      </label>
+    </div>
+    <div class="panel-body">
+      <form class="form-horizontal">
+        <div class="">
+          <div class="">
+            <span class="help-block m-b-none">Securely save the card details of your customers, with Razorpay's Flash Checkout. </span>
+            <span ng-if="!fcOpted">Flash Checkout feature will be <strong>automatically enabled on your account on 5 Jan, 2017</strong>. You can opt out right now from this automatic update and enable this feature later.</span>
+          </div>
+          <div class="clearfix"></div>
+          <div class="m-t">
+            
+            <span class="help-block m-b-none pull-left"><a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">Know more about Flash Checkout <i class="fa fa-external-link"></i></a></span>
+            
+            <div class="pull-right">
+              
+              <div ng-if="fcOpted" class=" text-center prev-next">
+                <button ng-click="toggleFc()" type="submit" class="btn btn-save btn-default btn-rounded ">
+                  <span ng-if="fcEnabled">Disable Flash Checkout</span>
+                  <span ng-if="!fcEnabled">Enable Flash Checkout</span>
+                </button>
+              </div>
+              <div ng-if="!fcOpted" class=" text-center prev-next">
+                <button ng-click="optOutFirstFc()" type="submit" class="btn btn-save btn-default btn-rounded pull-right">Opt Out</button>
+                <button ng-click="optInFc()" type="submit" class="btn btn-save btn-default btn-rounded pull-right m-r">Enable Flash Checkout</button>
+              </div>
+            </div>
+              
+          </div>
         </div>
       </form>
     </div>
@@ -56,37 +101,24 @@
       </div>
     </footer>
   </div>
-    <div class="panel panel-default" ng-controller="FeaturesCtrl">
+
+  <div class="panel panel-default" ng-controller="ConfigCtrl">
     <div class="panel-heading">
-      Flash Checkout
+      Email Notifications
     </div>
     <div class="panel-body">
-      <form class="form-horizontal">
-        <div class="form-group">
-          <label class="col-sm-2 control-label">Flash Checkout</label>
-          <div class="col-sm-10">
-            <span class="help-block m-b-none">To know more about Flash Checkout, <a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">click here <i class="fa fa-external-link"></i></a></span>
-            <label ng-if="fcOpted" class="i-switch m-t-xs m-r">
-              <input type="checkbox" name="fcEnabled" ng-click="fcToggle()" ng-model="fcEnabled"><i></i>
-            </label>
-            <div ng-if="!fcOpted">
-              <span class="help-block m-b-none">Flash Checkout feature will be automatically enabled on your account on 30 Dec, 2016.</span>
-              <span class="help-block m-b-none">
-                <li>To opt-out right now out of Flash Checkout, click the 'OPT OUT' button</li>
-                <li>To enable Flash Checkout with immediate effect, click the 'ENABLE FLASH CHECKOUT' button</li>
-              </span>
-            </div>
-          </div>
-          <div ng-if="fcOpted" class="m-t m-b text-center prev-next">
-            <button ng-click="updateFeatures()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
-          </div>
-          <div ng-if="!fcOpted" class="m-t m-b text-center prev-next">
-            <button ng-click="optOutFc()" type="submit" class="btn btn-save btn-default btn-rounded">Opt Out</button>
-            <button ng-click="optInFc()" type="submit" class="btn btn-save btn-default btn-rounded">Enable Flash Checkout</button>
-          </div>
-          
+
+      <div class="form-group">
+        <div class="">
+          <div class="help-block m-b">Enter email addresses that will receive email notifications regarding payments, settlements, daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)</div>
         </div>
-      </form>
+      </div>
+      <div class="m-t m-b text-center prev-next">
+        <div class="col-sm-10">
+          <input type="text" class="form-control m-l-neg" maxlength="255" ng-model="config.transaction_report_email">
+        </div>
+        <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded col-sm-2">Save Changes</button>
+      </div>
     </div>
     <footer class="panel-footer">
       <div class="text-center m-t m-b">
