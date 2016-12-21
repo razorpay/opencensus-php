@@ -53,13 +53,6 @@
                   ng-model="organization.hostname" ng-required="true">
               </div>
             </div>
-            <!-- <div class="form-group">
-             <label for="logo" class="col-lg-3 control-label">Logo URL</label>
-              <div class="col-lg-8" >
-                <input class="form-control m-b" name="logo_url"
-                  ng-model="organization.logo_url">
-              </div>
-            </div> -->
             <div class="form-group">
              <label for="auth_type" class="col-lg-3 control-label">Auth Type</label>
               <div class="col-lg-8" >
@@ -68,6 +61,13 @@
                   <option value="password">Password</option>
                   <option value="google_auth">Google Auth</option>
                 </select>
+              </div>
+            </div>
+            <div class="form-group">
+             <label for="custom_code" class="col-lg-3 control-label">Custom Code</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="custom_code"
+                  ng-model="organization.custom_code" ng-required="true">
               </div>
             </div>
             <div class="form-group" ng-show=!organization.id>
