@@ -2,16 +2,13 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
-use Carbon\Carbon;
-use RZP\Constants\Mode as RZPMode;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
-// use RZP\Gateway\Netbanking\Icici\AesTrait;
 
 class Gateway extends Base\Gateway
 {
@@ -116,22 +113,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $response);
 
-        $verify->gatewaySuccess = false;
-        $verify->apiSuccess = true;
+        $status = $this->getVerifyStatus($verify, $response);
 
-        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
-        {
-            $verify->gatewaySuccess = true;
-        }
+        return $status;
+    }
 
-        $input = $verify->input;
+    protected function getVerifyStatus($verify, $response)
+    {
+        $this->setApiSuccess($verify);
 
-        if ($input['payment']['status'] === 'failed' or
-            $input['payment']['status'] === 'created')
-        {
-            $verify->apiSuccess = false;
-        }
+        $this->setGatewaySuccess($verify);
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
@@ -141,6 +132,30 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
 
         return $status;
+    }
+
+    protected function setApiSuccess($verify)
+    {
+        $verify->apiSuccess = true;
+
+        $input = $verify->input;
+
+        if ($input['payment']['status'] === 'failed' or
+            $input['payment']['status'] === 'created')
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function setGatewaySuccess($verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
+            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 
     protected function getPaymentVerifyData($verify)
@@ -165,7 +180,7 @@ class Gateway extends Base\Gateway
     {
         $pid = $this->getPid();
 
-        $encryptedString = $this->getEncryptedString($input);
+        $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
             RequestFields::PAYEE_ID         => $pid,
@@ -174,7 +189,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getEncryptedString($input)
+    protected function getAuthorizeEncryptedString($input)
     {
         $masterKey = $this->getMasterKey();
 
@@ -187,7 +202,7 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
-        // if tpv is enabled, add tpv account number
+        // if tpv is enabled, add tpv account number -> next step
 
         $data = array_merge($defaultData, $data);
 
@@ -223,8 +238,6 @@ class Gateway extends Base\Gateway
 
         $queryString = implode('$', $queryArray);
 
-
-
         return $queryString;
     }
 
@@ -232,9 +245,7 @@ class Gateway extends Base\Gateway
     {
         $amount = number_format($input['payment']['amount'] /100, 2, '.', ' ');
 
-        return [
-            RequestFields::AMOUNT => $amount
-        ];
+        return [RequestFields::AMOUNT => $amount];
     }
 
     protected function getDataFromResponse($encryptedResponse)
@@ -279,9 +290,9 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Mode::TEST)
         {
-            $masterKey = $this->config['test_master_key'];
+            $masterKey = $this->config['test_hash_secret'];
         }
 
         return $masterKey;
@@ -291,9 +302,9 @@ class Gateway extends Base\Gateway
     {
         $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Mode::TEST)
         {
-            $pid = $this->config['test_pid'];
+            $pid = $this->config['test_merchant_id'];
         }
 
         return $pid;
