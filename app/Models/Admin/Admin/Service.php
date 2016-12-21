@@ -2,25 +2,26 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use Hash;
-use Event;
-use Cache;
-use Str;
 use App;
-use RZP\Error;
+use Cache;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org\AuthPolicy;
-use RZP\Models\Admin\Action;
+use Event;
+use Hash;
 use Mail;
+use Str;
+
+use RZP\Exception;
+use RZP\Error;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Events\AuditLogEntry;
-use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Action;
+use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Base;
 use RZP\Models\Base\EsDao;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 
 class Service extends Base\Service
@@ -146,8 +147,7 @@ class Service extends Base\Service
 
         $this->setPasswordResetToken($admin, $input);
 
-        // Uncomment after selva creates templates
-        // $this->sendAdminForgotPasswordEmail($admin, $input);
+        $this->sendAdminForgotPasswordEmail($admin, $input);
 
         return ['success' => true];
     }
@@ -162,17 +162,13 @@ class Service extends Base\Service
         $to         = $admin->getEmail();
         $subject    = 'Reset your password for' . $org->getDisplayName() . ' dashboard';
 
-        // TODO ask selva
-        $view = [
-            'html' => 'emails.admin.user',
-            'text' => 'emails.admin.user_text'
-        ];
+        $view = 'emails.auth.admin_password_reset';
 
         $template = [
             'user' => [
-                'email' => $admin->getEmail(),
-                'org' => $org->getDisplayName(),
-                'url' => $input['reset_password_url'] . '?' . http_build_query([$input[self::TOKEN]])
+                'email'    => $admin->getEmail(),
+                'org'      => $org->getDisplayName(),
+                'resetUrl' => $input['reset_password_url'] . '?' . http_build_query([$input[self::TOKEN]])
             ]
         ];
 
