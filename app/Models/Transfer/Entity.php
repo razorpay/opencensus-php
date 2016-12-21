@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID         = 'source_id';
     const SOURCE_TYPE       = 'source_type';
     const AMOUNT            = 'amount';
+    const AMOUNT_REVERSED   = 'amount_reversed';
     const TRANSACTION_ID    = 'transaction_id';
 
     protected static $sign = 'trf';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::AMOUNT,
+        self::AMOUNT_REVERSED,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -63,7 +65,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
+        self::AMOUNT            => 'int',
+        self::AMOUNT_REVERSED   => 'int',
+    ];
+
+    protected $defaults = [
+        self::AMOUNT_REVERSED   => 0,
     ];
 
     // -------------------- Relations ---------------------------
@@ -88,6 +95,36 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAmountReversed()
+    {
+        return $this->getAttribute(self::AMOUNT_REVERSED);
+    }
+
+    public function setAmountReversed(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_REVERSED, $amount);
+    }
+
+    public function getAmountUnreversed()
+    {
+        return $this->getAmount() - $this->getAmountReversed();
+    }
+
+    public function reverseAmount(int $amount)
+    {
+        $amountUnreversed = $this->getAmountUnreversed();
+
+        if ($amount > $amountUnreversed)
+        {
+            throw new Exception\LogicException(
+                'Transfer refund amount should be less than or equal to amount not refunded yet');
+        }
+
+        $amountReversed = $this->getAmountReversed() + $amount;
+
+        $this->setAttribute(self::AMOUNT_REVERSED, $amountReversed);
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)

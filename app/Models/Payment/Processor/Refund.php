@@ -231,38 +231,50 @@ trait Refund
         return $this->refundCapturedPayment($payment, $input);
     }
 
+    /**
+     * Refund a payment with Marketplace transfers
+     *
+     * @param  string $paymentId
+     * @param  array  $input
+     * @return null
+     */
     public function refundPaymentWithTransfers(string $paymentId, array $input)
     {
         $payment = $this->retrieve($paymentId);
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
-            $this->processRefundTransfers($payment, $input);
+            // Refund and reverse_transfer each split-payment
+            foreach ($input['transfers'] as $transfer)
+            {
+                $this->refundAndReverseTransferPayment($payment, $transfer['account'], $transfer['amount']);
+            }
 
+            // Refund the original payment - to customer
             return $this->refundCapturedPayment($payment, $input);
         });
     }
 
-    protected function processRefundTransfers(Payment\Entity $payment, array $input)
+    /**
+     * Refund the split payment and create a reverse_transfer for the
+     * original payment transfer
+     *
+     * @param  Payment\Entity $payment
+     * @param  string         $accountId
+     * @param  int            $amount
+     * @return void
+     */
+    protected function refundAndReverseTransferPayment(Payment\Entity $payment, string $accountId, int $amount)
     {
-        foreach ($input['transfers'] as $transfer)
-        {
-            $accountId = $transfer['account'];
+        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
 
-            $amount = $transfer['amount'];
-
-            $this->refundAndReverseTransferPayment($payment, $accountId, $amount);
-        }
-    }
-
-    protected function refundAndReverseTransferPayment($payment, string $accountId, int $amount)
-    {
         $splitPayment = $this->repo
                              ->payment
                              ->fetchSplitPaymentByOriginPaymentId(
                                 $payment->getId(), $accountId);
 
-        // validate: split_payment merchant is account of markerplace
+        // @todo: DB queried here
+        assert ($this->merchant->accounts->contains($accountId));
 
         $transfer = $this->repo
                          ->transfer
@@ -271,7 +283,7 @@ trait Refund
 
         $refund = $this->refundTransferPayment($splitPayment, $amount);
 
-        $reverseTrf = (new ReverseTransfer\Core)->createForRefund($transfer, $this->merchant, $amount);
+        $reverseTrf = (new ReverseTransfer\Core)->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)

@@ -249,6 +249,6 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::PARENT_ID, $parentMerchant->getId())
-                    ->findOrFail($accountId);
+                    ->findOrFailPublic($accountId); //@todo: Should we throw a custom exception here?
     }
 }

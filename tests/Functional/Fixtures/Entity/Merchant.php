@@ -59,6 +59,31 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createMarketplaceAccount()
+    {
+        $accountId = '10000000000001';
+
+        $merchant = $this->fixtures->create(
+            'merchant',
+            [
+                'id' => $accountId,
+                'parent_id' => '10000000000000',
+                'pricing_plan_id' => '1hDYlICobzOCYt'
+            ]);
+
+        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => '1000000']);
+
+        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => '0']);
+
+        $this->fixtures->on('test')->create('key', ['merchant_id' => $accountId, 'id' => 'AccTestAuthKey'], 'test');
+
+        $this->fixtures->on('live')->create('key', ['merchant_id' => $accountId, 'id' => 'AccLiveAuthKey'], 'live');
+
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId]);
+
+        return $merchant;
+    }
+
     public function createWithBalanceTerminalsStandardPricing()
     {
         $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);

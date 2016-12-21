@@ -18,8 +18,6 @@ class Repository extends Base\Repository
 
     public function fetchByAccountIdAndMerchant(string $accountId, Merchant\Entity $marketplace) : Entity
     {
-        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
-
         return $this->newQuery()
                     ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
                     ->where(Entity::TO_TYPE, 'merchant')

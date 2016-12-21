@@ -11,6 +11,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -122,6 +123,8 @@ class Core extends Base\Core
 
     protected function customerTransfer($payment, $merchant, $transfer)
     {
+        $this->verifyFeatureAllowed(Merchant\Features::B2BWALLET);
+
         $to = $this->repo
                    ->customer
                    ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $merchant);
@@ -140,6 +143,8 @@ class Core extends Base\Core
 
     protected function accountTransfer($payment, $transfer)
     {
+        $this->verifyFeatureAllowed(Merchant\Features::MARKETPLACE);
+
         // Merchant Account ID to receive the transfer
         $accountId = $transfer[ToType::ACCOUNT];
 
@@ -162,6 +167,20 @@ class Core extends Base\Core
         return $transfer;
     }
 
+    protected function verifyFeatureAllowed(string $feature)
+    {
+        $merchant = $this->merchant;
+
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    "$feature is not supported");
+        }
+
+    }
+
+
+    // Unused. @todo remove
     protected function getTransferPaymentData($payment, int $amount, string $accountId) : array
     {
         return [

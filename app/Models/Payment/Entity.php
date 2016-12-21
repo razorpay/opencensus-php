@@ -251,6 +251,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING            => false,
         self::INTERNATIONAL        => null,
         self::VERIFY_BUCKET        => null,
+        self::GATEWAY              => null,
+        self::TERMINAL_ID          => null,
     ];
 
     protected $amounts = [

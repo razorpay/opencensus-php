@@ -617,8 +617,6 @@ class Repository extends Base\Repository
 
     public function fetchSplitPaymentByOriginPaymentId($originPaymentId, $accountId)
     {
-        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
-
         return $this->newQuery()
                     ->where(Entity::ORIGIN_PAYMENT_ID, $originPaymentId)
                     ->merchantId($accountId)

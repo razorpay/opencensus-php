@@ -24,21 +24,9 @@ class PaymentTransferTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testCreateWalletWithNonIndianContact()
-    {
-        $customer = $this->fixtures->create('customer', ['contact' => '+9293003939']);
-
-        $customerPublicId = $customer->getPublicId();
-
-        $amount = $this->payment['amount'];
-
-        $this->capturePayment($this->payment['id'], $amount);
-
-        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
-
-        $this->startTest();
-    }
-
+    //
+    // ----------   B2BWALLET TESTS --------------
+    //
     public function testCaptureAndTransferToInvalidCustomerId()
     {
         $this->payment = $this->doAuthAndCapturePayment();
@@ -100,7 +88,7 @@ class PaymentTransferTest extends TestCase
 
         $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
 
-        $this->testLastTransferEntity($customerId, 'customer', $amount);
+        $this->checkLastTransferEntity($customerId, 'customer', $amount);
     }
 
     public function testTransferCustomerUsageFirstTxn()
@@ -134,7 +122,33 @@ class PaymentTransferTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $customerBalance);
     }
 
-    protected function testLastTransferEntity($toId, $toType, int $amount)
+
+    //
+    // ----------   MARKETPLACE TRANSFERS --------------
+    //
+    public function testAccTransferToInvalidOrUnlinkedId()
+    {
+        $this->payment = $this->doAuthAndCapturePayment();
+
+        $this->startTest();
+    }
+
+    public function testAccTransferWithFeatureNotEnabled()
+    {
+        $this->payment = $this->doAuthAndCapturePayment();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $x = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->startTest();
+    }
+
+
+    //
+    // ----------     Helper methods    --------------
+    //
+    protected function checkLastTransferEntity($toId, $toType, int $amount)
     {
         $testData = [
             'to_id'   => $toId,

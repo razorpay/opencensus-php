@@ -35,6 +35,8 @@ class CreateTransfers extends Migration
             $table->integer(Entity::AMOUNT)
                   ->unsigned();
 
+            $table->integer(Entity::AMOUNT_REVERSED);
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);
