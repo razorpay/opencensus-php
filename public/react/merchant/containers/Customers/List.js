@@ -1,32 +1,27 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
+import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
-import ModalContainer from 'merchant/containers/ModalContainer'
+import ListContainer from 'merchant/containers/ListContainer'
 import * as CustomerActions from 'merchant/modules/customers'
 
 @connect(
   (state) => state.customers,
   CustomerActions
 )
-export default class CustomersListContainer extends ModalContainer {
-  static contextTypes = {
-    confirm: PropTypes.func
-  }
-
+export default class CustomersListContainer extends ListContainer {
   constructor() {
     super(...arguments)
-    this.state.status = {}
-
     this.showCustomerModal = ::this.showCustomerModal
     this.highlightRowAndClose = ::this.highlightRowAndClose
     this.deleteCustomer = ::this.deleteCustomer
   }
 
-  componentWillMount() {
-    this.props.fetchCustomers()
+  fetchEntityList(params) {
+    return this.props.fetchCustomers(params)
   }
 
   showCustomerModal(customer = null) {
@@ -90,6 +85,13 @@ export default class CustomersListContainer extends ModalContainer {
               highlightRow={(customer) => customer.id === highlightRowId}
               onEdit={this.showCustomerModal}
               onDelete={this.deleteCustomer}
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={customers.length}
+              onClick={this.fetchAll}
             />
           </div>
         </div>

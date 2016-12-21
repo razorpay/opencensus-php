@@ -1,11 +1,12 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import Modal from 'rzp/ui/Modal'
+import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
-import ModalContainer from 'merchant/containers/ModalContainer'
+import ListContainer from 'merchant/containers/ListContainer'
 import * as ItemActions from 'merchant/modules/items'
 
 @connect(
@@ -15,22 +16,16 @@ import * as ItemActions from 'merchant/modules/items'
 @reduxForm({
   form: 'newItem',
 })
-export default class ItemsListContainer extends ModalContainer {
-  static contextTypes = {
-    confirm: PropTypes.func
-  }
-
+export default class ItemsListContainer extends ListContainer {
   constructor() {
     super(...arguments)
-    this.state.status = {}
-
     this.showItemModal = ::this.showItemModal
     this.highlightRowAndClose = ::this.highlightRowAndClose
     this.deleteItem = ::this.deleteItem
   }
 
-  componentWillMount() {
-    this.props.fetchItems()
+  fetchEntityList(params) {
+    return this.props.fetchItems(params)
   }
 
   showItemModal(item = null) {
@@ -94,6 +89,13 @@ export default class ItemsListContainer extends ModalContainer {
               highlightRow={(item) => item.id === highlightRowId}
               onEdit={this.showItemModal}
               onDelete={this.deleteItem}
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={items.length}
+              onClick={this.fetchAll}
             />
           </div>
         </div>

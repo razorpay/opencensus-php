@@ -88,7 +88,7 @@ export default function (state = initialState, action) {
       return set(state, `customers.${customerIndex}`, action.payload)
 
     case `${CUSTOMER_DELETE}::SUCCESS`:
-      return set(state, 'customers', state.remove(state.customers, action.payload))
+      // return set(state, 'customers', state.remove(state.customers, action.payload))
 
     case HIGHLIGHT_CUSTOMER:
       return set(state, 'highlightRowId', action.payload.id)

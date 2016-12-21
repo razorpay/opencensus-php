@@ -6,7 +6,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 
 import { fetchInvoices, highLightInvoice } from 'merchant/modules/invoices/list'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
-import ModalContainer from 'merchant/containers/ModalContainer'
+import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
 
@@ -14,49 +14,15 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
   (state) => state.invoices,
   { fetchInvoices, highLightInvoice }
 )
-export default class InvoicesListContainer extends ModalContainer {
-  static skip = 0
-  static count = 25
-  static contextTypes = {
-    ngRouter: PropTypes.object
-  }
-
+export default class InvoicesListContainer extends ListContainer {
   constructor() {
     super(...arguments)
     this.state.invoiceToEdit = null
-    this.fetchInvoices = ::this.fetchInvoices
     this.editInvoice = ::this.editInvoice
-    this.search = ::this.search
   }
 
-  componentWillMount() {
-    this.fetchInvoices(this.getDefaultPageParams())
-  }
-
-  fetchInvoices(params) {
-    if (params) {
-      this.setState(params)
-    }
-
-    return this.props.fetchInvoices(params).then(() => {
-      this.setState({ errors: null })
-    }).catch(({ errors }) => {
-      this.setState({ errors })
-    })
-  }
-
-  getDefaultPageParams() {
-    return {
-      skip: InvoicesListContainer.skip,
-      count: InvoicesListContainer.count
-    }
-  }
-
-  search(params) {
-    return this.fetchInvoices({
-      ...this.getDefaultPageParams(),
-      ...params
-    })
+  fetchEntityList(params) {
+    return this.props.fetchInvoices(params)
   }
 
   showPaymentLinkModal(invoice = null) {
@@ -78,6 +44,7 @@ export default class InvoicesListContainer extends ModalContainer {
 
   render() {
     let { loading, invoices } = this.props
+    let status = this.state.status
 
     return (
       <div class='react-root'>
@@ -112,8 +79,8 @@ export default class InvoicesListContainer extends ModalContainer {
             </div>
 
             <Alert
-              type='error'
-              message={this.state.errors}
+              type={status.type}
+              message={status.message}
             />
 
             <InvoicesList
@@ -127,7 +94,7 @@ export default class InvoicesListContainer extends ModalContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={invoices.length}
-              onClick={this.fetchInvoices}
+              onClick={this.fetchAll}
             />
           </div>
         </div>

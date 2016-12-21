@@ -8,11 +8,11 @@ const ITEM_DELETE = 'ITEM_DELETE'
 const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM'
 const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT'
 
-export const fetchItems = () => {
+export const fetchItems = (params) => {
   return (dispatch) => {
     return dispatch({
       type: ITEMS_FETCH,
-      payload: Item.fetchAll()
+      payload: Item.fetchAll(params)
     })
   }
 }
@@ -89,7 +89,7 @@ export default function (state = initialState, action) {
       return set(state, `items.${itemIndex}`, action.payload)
 
     case `${ITEM_DELETE}::SUCCESS`:
-      return state.set('items', state.get('items').remove(action.payload))
+      // return state.set('items', state.get('items').remove(action.payload))
 
     case HIGHLIGHT_ITEM:
       return set(state, 'highlightRowId', action.payload.id)
