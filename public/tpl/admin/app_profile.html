@@ -30,23 +30,23 @@
           <span class="pull-right">{{admin.created_at | date:'medium'}}</span>
           Creation Date
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="admin.employee_code">
           <span class="pull-right">{{admin.employee_code}}</span>
           Employee Code
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="admin.branch_code">
           <span class="pull-right">{{admin.branch_code}}</span>
           Branch Code
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="admin.department_code">
           <span class="pull-right">{{admin.department_code}}</span>
           Department Code
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="admin.location_code">
           <span class="pull-right">{{admin.location_code}}</span>
           Location Code
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="admin.supervisor_code">
           <span class="pull-right">{{admin.supervisor_code}}</span>
           Supervisor Code
         </a>
@@ -73,7 +73,7 @@
               </div>
             </form>
         </div>
-        <div class="modal-footer">                  
+        <div class="modal-footer">
             <button class="btn btn-default" ng-click="cancel()">Cancel</button>
             <button class="btn btn-primary modal-ok" ng-click="ok(data)">Change Password</button>
         </div>
