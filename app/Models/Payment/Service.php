@@ -38,9 +38,9 @@ class Service extends Base\Service
      * @return array|mixed
      * @throws Exception\BadRequestException
      */
-    public function processTransfer($account, $amount, array $input)
+    public function processTransfer($account, $originPayment, $amount, array $input)
     {
-        $payment = $this->getNewProcessor($account)->processTransfer($account, $amount, $input);
+        $payment = $this->getNewProcessor($account)->processTransfer($account, $originPayment, $amount, $input);
 
         return $payment;
     }
@@ -146,6 +146,11 @@ class Service extends Base\Service
         }
         else
         {
+            // validate:
+            //
+            // If amount is input and refund != full, and payment had transfers - transfers is required
+            // If no amount, and payment had transfers - refund full for all split payments
+            //
             $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
         }
 

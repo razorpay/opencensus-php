@@ -157,7 +157,7 @@ class Core extends Base\Core
 
         $paymentData = $this->getTransferPaymentData($payment, $amount, $accountId);
 
-        (new Payment\Service)->processTransfer($account, $amount, $paymentData);
+        (new Payment\Service)->processTransfer($account, $payment, $amount, $paymentData);
 
         return $transfer;
     }

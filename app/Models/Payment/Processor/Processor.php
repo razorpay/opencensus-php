@@ -209,7 +209,7 @@ class Processor
         return $data;
     }
 
-    public function processTransfer($account, int $amount, array $input)
+    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, int $amount, array $input) : Payment\Entity
     {
         $paymentData = [
             'method'        => Payment\Method::TRANSFER,
@@ -221,13 +221,15 @@ class Processor
 
         $payment = $this->createPaymentEntity($paymentData);
 
-        $this->repo->transaction(function () use ($payment) {
+        $this->repo->transaction(function () use ($payment, $originPayment) {
 
             $payment->setStatus(Status::CAPTURED);
 
             list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
 
             $this->repo->saveOrFail($txn);
+
+            $payment->originPayment()->associate($originPayment);
 
             $this->repo->saveOrFail($payment);
 

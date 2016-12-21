@@ -571,7 +571,7 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
-        $refund->merchant()->associate($this->merchant);
+        $refund->merchant()->associate($payment->merchant);
 
         $refund->setBaseAmount();
 
