@@ -33,17 +33,17 @@ class Terminal extends Entity
 
     public function unassignSubMerchant($id, $merchantId)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchant/' . $merchantId;
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $merchantId;
 
         return $this->request('DELETE', $relativeUrl);
     }
 
 
-    public function assignSubMerchant($id, $input)
+    public function assignSubMerchant($id, $merchantId)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchants';
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants' . $merchantId;
 
-        return $this->request('PUT', $relativeUrl, $input);
+        return $this->request('PUT', $relativeUrl);
     }
 
     public function toggle($id, $params)

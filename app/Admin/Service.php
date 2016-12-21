@@ -1829,7 +1829,7 @@ class Service extends Base\Service
         return [ $error, $response ];
     }
 
-    public function assignSubMerchantToTerminal($mode, $terminalId, $input)
+    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
         $error = $response = null;
 
@@ -1837,7 +1837,7 @@ class Service extends Base\Service
 
         try
         {
-            $response = $this->api->terminal->assignSubMerchant($terminalId, $input)->toArray();
+            $response = $this->api->terminal->assignSubMerchant($terminalId, $merchantId)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
