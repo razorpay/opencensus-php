@@ -17,6 +17,7 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Order;
@@ -200,6 +201,7 @@ trait Authorize
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
+        //
         //
         if ($request !== null)
         {
@@ -396,13 +398,18 @@ trait Authorize
             return;
         }
 
-        if ($payment->isWallet())
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            return;
         }
-        else
+
+        if ($payment->isWallet() === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
     }
 
@@ -418,7 +425,7 @@ trait Authorize
         $merchant = $payment->merchant;
 
         // Ensure that the merchant is allowed to do recurring payments.
-        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
 
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
@@ -607,7 +614,7 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
         }
 
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
@@ -619,11 +626,11 @@ trait Authorize
         {
             if ($payment->isWallet())
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
             }
             else
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2S);
             }
         }
     }

@@ -308,6 +308,30 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SUpiPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/upi',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
