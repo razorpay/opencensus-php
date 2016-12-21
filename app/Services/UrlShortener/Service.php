@@ -2,7 +2,10 @@
 
 namespace RZP\Services\UrlShortener;
 
+use Illuminate\Config\Repository as Config;
+
 use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 //
@@ -14,14 +17,22 @@ use RZP\Trace\TraceCode;
 //
 class Service extends Impl\Base
 {
-    // Comma separated list of services, eg. gimli,bitly
+    //
+    // Comma separated list of service names, eg. gimli,bitly
+    //
+
     private $services;
 
-    function __construct($app)
+    public function __construct(
+        Config $config,
+        Trace $trace,
+        ImplProvider $provider)
     {
-        $this->trace    = $app['trace'];
+        $this->config   = $config->get('applications.url_shortener');
 
-        $this->config   = $app['config']->get('applications.url_shortener');
+        $this->trace    = $trace;
+
+        $this->provider = $provider;
 
         $this->services = explode(',', $this->config['services']);
     }
@@ -32,7 +43,9 @@ class Service extends Impl\Base
         {
             try
             {
-                return $this->getService($service)->shorten($url);
+                $service = $this->provider->get($service, $this->config[$service]);
+
+                return $service->shorten($url);
             }
             catch (Exception\RuntimeException $e)
             {
@@ -43,7 +56,14 @@ class Service extends Impl\Base
 
                 if ($this->shouldTryOtherServices($e->getData()) === false)
                 {
-                    throw $e;
+                    if ($fail === true)
+                    {
+                        throw $e;
+                    }
+                    else
+                    {
+                        return $url;
+                    }
                 }
             }
         }
@@ -58,22 +78,16 @@ class Service extends Impl\Base
         throw new Exception\RuntimeException('Failed to get short url.');
     }
 
-    protected function getService(string $service)
-    {
-        //
-        // Returns instance of implementation of given service
-        //
-
-        $impl = 'RZP\\Services\\UrlShortener\\Impl\\' . ucfirst($service);
-
-        return $impl::instance($this->config[$service]);
-    }
-
-    protected function shouldTryOtherServices(array $data)
+    protected function shouldTryOtherServices($data)
     {
         //
         // Checks if it should continue with other services or just fail.
         //
+
+        if (isset($data['status_code']) === false)
+        {
+            return true;
+        }
 
         $code = $data['status_code'];
 

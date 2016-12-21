@@ -170,14 +170,9 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('url_shortener', function($app)
         {
-            $mock = $app['config']->get('applications.url_shortener.mock');
+            $provider = new UrlShortener\ImplProvider();
 
-            if ($mock)
-            {
-                return new UrlShortener\MockService($app);
-            }
-
-            return new UrlShortener\Service($app);
+            return new UrlShortener\Service($app['config'], $app['trace'], $provider);
         });
     }
 
