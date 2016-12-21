@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(loadType)">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Entity Id: <strong>{{entity.id}}</strong><br>
     </div>
@@ -42,6 +42,9 @@
         </button>
         <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
           Edit Terminal
+        </button>
+        <button class="btn btn-info" ng-click="open.changePrimaryMerchant(entity)">
+          Change Primary Merchant
         </button>
         <button class="btn btn-info" ng-click="open.terminalMerchantAssign(entity)">
           Assign Sub Merchants
@@ -177,6 +180,25 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="changePrimaryMerchant.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Change Primary Merchant for the Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="merchant_id" class="col-lg-4 control-label">Primary Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="merchant_id" ng-model="terminal.merchant_id" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Are you sure?" ng-click="ok(terminal)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="assignMerchantToTerminal.html">

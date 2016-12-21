@@ -636,6 +636,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function changePrimaryMerchant()
+    {
+
+    }
+
     public function toggleTerminal($mode, $terminalId)
     {
         $input = Input::all();

@@ -146,6 +146,9 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while adding the merchant to the terminal');
         });
+      },
+      changePrimaryMerchant: function (terminal_id, merchant_id) {
+        console.log(terminal_id, merchant_id)
       }
     };
 
@@ -248,7 +251,23 @@ app.controller('EntityDetailCtrl', [
         }, function () {
         });
       },
-      terminalMerchantAssign: function(terminal) {
+      changePrimaryMerchant: function (terminal) {
+        var modalInstance = $modal.open({
+          templateUrl: 'changePrimaryMerchant.html',
+          controller: 'changePrimaryMerchantCtrl',
+          resolve: {
+            current: function () {
+              return terminal;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (input) {
+            $scope.terminal.changePrimaryMerchant(input.terminal_id, input.merchant_id);
+        }, function() {
+        });
+      },
+      terminalMerchantAssign: function (terminal) {
         var modalInstance = $modal.open({
           templateUrl: 'assignMerchantToTerminal.html',
           controller: 'assignMerchantToTerminalModalCtrl',
@@ -378,6 +397,25 @@ app.controller('EntityDetailCtrl', [
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('changePrimaryMerchantCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+
+    $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
+
+    $scope.terminal = {
+        terminal_id: current.id,
+        merchant_id: current.merchant_id
     };
   }
 ]).controller('assignMerchantToTerminalModalCtrl', [
