@@ -76,7 +76,6 @@ trait Support
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
 
-
         $this->verifyAndSaveSupportResponse($type, $input);
     }
 

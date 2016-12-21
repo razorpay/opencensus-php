@@ -89,7 +89,7 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new Exception\GatewayTimeoutException('Gateway request timed out');
+            throw new Exception\GatewayTimeoutException('operation timed out');
         });
     }
 

@@ -294,13 +294,11 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['gateway_payment_id'], null);
-
-        $this->assertEquals($gatewayPayment['received'], false);
+        $this->assertEquals('authorize', $gatewayPayment['action']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testInvalidAuthFields()
