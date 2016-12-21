@@ -36,23 +36,16 @@ class DailyReport extends Base\Core
     {
         parent::__construct();
 
-        // date format = 6th July 2015
-        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
-
-        // 00:00 Yesterday
-        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
-
-        // 00:00 Today
-        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
-
         $this->increaseAllowedSystemLimits();
     }
 
     public function sendReportForAllMerchants($input)
     {
-        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
+        $this->setTimestamps($input);
 
-        $to = Carbon::today("Asia/Kolkata")->timestamp;
+        $from = $this->timeLowerLimit;
+
+        $to = $this->timeUpperLimit;
 
         // Trace to indicate start of mailing
         $this->trace->info(
@@ -225,6 +218,25 @@ class DailyReport extends Base\Core
                 ($data['authorized']['count'] === 0) and
                 ($data['refunds']['count'] === 0) and
                 ($data['settlements']['count'] === 0));
+    }
+
+    protected function setTimestamps($input)
+    {
+        if (isset($input['on']) === true)
+        {
+            $on = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+        }
+        else
+        {
+            $on = Carbon::yesterday('Asia/Kolkata');
+        }
+
+        // date format = 6th July 2015
+        $this->date = $on->format('jS F Y');
+
+        $this->timeLowerLimit = $on->timestamp;
+
+        $this->timeUpperLimit = $on->addDay()->timestamp;
     }
 
     protected function increaseAllowedSystemLimits()

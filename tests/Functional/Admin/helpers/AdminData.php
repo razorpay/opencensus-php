@@ -144,7 +144,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'deleted' => true,
             ],
             'status_code' => 200,
         ],
@@ -157,7 +157,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'deleted' => true,
             ],
             'status_code' => 200,
         ],
@@ -170,7 +170,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
             ],
             'status_code' => 200,
         ],

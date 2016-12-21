@@ -8,4 +8,5 @@ class Command
     const CAPTURE   = 'capture';
     const REFUND    = 'refund';
     const QUERYDR   = 'queryDR';
+    const REVERSAL  = 'voidAuthorisation';
 }

@@ -54,6 +54,6 @@ class Core extends Base\Core
 
         $this->repo->deleteOrFail($org);
 
-        return ['success' => true];
+        return $org->toArrayDeleted();
     }
 }

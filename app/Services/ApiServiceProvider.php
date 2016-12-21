@@ -207,7 +207,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'permission'      => Admin\Permission\Entity::class,
             'invoice'         => Invoice\Entity::class,
             'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\MerchantDetail\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
         ]);
     }
 }

@@ -421,4 +421,11 @@ class Entity extends Base\PublicEntity
 
         return Hash::check($password, $expectedPwdHash);
     }
+
+    public function getPublicOrgId()
+    {
+        $orgId = $this->getAttribute(self::ORG_ID);
+
+        return Org\Entity::getSignedId($orgId);
+    }
 }
