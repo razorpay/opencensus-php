@@ -6,7 +6,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Terminal\Shared;
 
 return [
-    'testAccTransferToInvalidOrUnlinkedId' => [
+    'testTransferToInvalidOrUnlinkedId' => [
         'request' => [
             'content' => [
                 'transfers' => [
@@ -31,7 +31,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
-    'testAccTransferWithFeatureNotEnabled' => [
+    'testTransferWithFeatureNotEnabled' => [
         'request' => [
             'content' => [
                 'transfers' => [
@@ -54,6 +54,31 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testMultipleTransfersOnSameAccountId' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount' => 100
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT
         ],
     ],
 ];

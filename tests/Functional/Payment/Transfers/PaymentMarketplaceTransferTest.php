@@ -17,27 +17,36 @@ class PaymentMarketplaceTransferTests extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('payment:authorized');
+        $this->payment = $this->doAuthAndCapturePayment();
 
-        $this->payment = $this->getLastEntity('payment', false);
+        $this->fixtures->create('merchant:marketplace_account');
 
         $this->ba->privateAuth();
     }
 
-    public function testAccTransferToInvalidOrUnlinkedId()
+    public function testTransferToInvalidOrUnlinkedId()
     {
-        $this->payment = $this->doAuthAndCapturePayment();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->startTest();
     }
 
-    public function testAccTransferWithFeatureNotEnabled()
+    public function testTransferWithFeatureNotEnabled()
     {
-        $this->payment = $this->doAuthAndCapturePayment();
+        $this->startTest();
+    }
 
-        $this->fixtures->create('merchant:marketplace_account');
+    public function testMultipleTransfersOnSameAccountId()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->privateAuth();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
 
         $this->startTest();
     }

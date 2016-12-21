@@ -94,11 +94,6 @@ class Core extends Base\Core
         return $transfers;
     }
 
-    public function createForRefund(Payment\Entity $payment, array $input)
-    {
-
-    }
-
     protected function getTotalTransferAmount(array $input)
     {
         $amount = 0;
@@ -145,8 +140,10 @@ class Core extends Base\Core
     {
         $this->verifyFeatureAllowed(Merchant\Features::MARKETPLACE);
 
-        // Merchant Account ID to receive the transfer
+        // Marketplace Account ID to receive the transfer
         $accountId = $transfer[ToType::ACCOUNT];
+
+        $this->checkMultipleMarketplaceTransfer($accountId);
 
         $amount = $transfer['amount'];
 
@@ -179,7 +176,6 @@ class Core extends Base\Core
 
     }
 
-
     // Unused. @todo remove
     protected function getTransferPaymentData($payment, int $amount, string $accountId) : array
     {
@@ -191,5 +187,21 @@ class Core extends Base\Core
             'contact'       => $payment->getContact(),
             'email'         => $payment->getEmail(),
         ];
+    }
+
+    protected function checkMultipleMarketplaceTransfer(string $accountId)
+    {
+        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchByAccountIdAndMerchant(
+                            $accountId, $this->merchant, false);
+
+        if (count($transfers) !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
+        }
     }
 }

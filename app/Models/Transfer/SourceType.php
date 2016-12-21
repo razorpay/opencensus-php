@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Constants\Entity;
+use RZP\Constants\Entity as E;
 
 class SourceType
 {
-    const PAYMENT = Entity::PAYMENT;
+    const PAYMENT = E::PAYMENT;
 }
