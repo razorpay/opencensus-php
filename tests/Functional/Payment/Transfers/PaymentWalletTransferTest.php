@@ -1,17 +1,19 @@
 <?php
 
-namespace RZP\Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Payment\Transfers;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
 
-class PaymentTransferTest extends TestCase
+class PaymentWalletTransferTest extends TestCase
 {
     use PaymentTrait;
+    use TransferTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/PaymentTransferTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/PaymentWalletTransferTestData.php';
 
         parent::setUp();
 
@@ -24,10 +26,31 @@ class PaymentTransferTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    //
-    // ----------   B2BWALLET TESTS --------------
-    //
     public function testCaptureAndTransferToInvalidCustomerId()
+    {
+        $this->payment = $this->doAuthAndCapturePayment();
+
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletWithNonIndianContact()
+    {
+        $customer = $this->fixtures->create('customer', ['contact' => '+9293003939']);
+
+        $customerPublicId = $customer->getPublicId();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
+
+        $this->startTest();
+    }
+
+    public function testCustomerTransferB2bNotEnabled()
     {
         $this->payment = $this->doAuthAndCapturePayment();
 
@@ -38,6 +61,8 @@ class PaymentTransferTest extends TestCase
     {
         $this->payment = $this->doAuthAndCapturePayment();
 
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+
         $amount = $this->payment['amount'];
 
         $this->startTest();
@@ -46,6 +71,8 @@ class PaymentTransferTest extends TestCase
     public function testTransferToExistingCustomerWithNoExistingWallet()
     {
         $customer = $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
 
         $customerPublicId = $customer->getPublicId();
 
@@ -67,6 +94,8 @@ class PaymentTransferTest extends TestCase
     public function testTransferAndVerifyCustomerBalance()
     {
         $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
+
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
 
         $customerPublicId = $customerBalance->customer->getPublicId();
 
@@ -100,6 +129,8 @@ class PaymentTransferTest extends TestCase
 
         $customerBalance = $this->fixtures->create('customer:customer_balance', $customerValues);
 
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+
         $customerPublicId = $customerBalance->customer->getPublicId();
 
         $amount = $this->payment['amount'];
@@ -120,80 +151,5 @@ class PaymentTransferTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expected, $customerBalance);
-    }
-
-
-    //
-    // ----------   MARKETPLACE TRANSFERS --------------
-    //
-    public function testAccTransferToInvalidOrUnlinkedId()
-    {
-        $this->payment = $this->doAuthAndCapturePayment();
-
-        $this->startTest();
-    }
-
-    public function testAccTransferWithFeatureNotEnabled()
-    {
-        $this->payment = $this->doAuthAndCapturePayment();
-
-        $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $x = $this->fixtures->create('merchant:marketplace_account');
-
-        $this->startTest();
-    }
-
-
-    //
-    // ----------     Helper methods    --------------
-    //
-    protected function checkLastTransferEntity($toId, $toType, int $amount)
-    {
-        $testData = [
-            'to_id'   => $toId,
-            'amount'  => $amount
-        ];
-
-        $transfer = $this->getLastEntity('transfer', true);
-
-        $this->assertArraySelectiveEquals($testData, $transfer);
-    }
-
-    protected function setCustomerTransferArray(& $testData, $customerId, $amount)
-    {
-        $transferData = [
-            'customer' => $customerId,
-            'amount'   => $amount,
-        ];
-
-        $testData['request']['content']['transfers'][0] = $transferData;
-    }
-
-    public function startTest($id = null, $amount = null)
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        $this->ba->privateAuth();
-
-        $this->setRequestData($testData['request'], $id, $amount);
-
-        return $this->runRequestResponseFlow($testData);
-    }
-
-    protected function setRequestData(& $request, $id = null, $amount = null)
-    {
-        if ($id === null)
-        {
-            $id = $this->payment['id'];
-        }
-
-        $url = '/payments/' . $id . '/transfer';
-
-        $this->setRequestUrlAndMethod($request, $url, 'POST');
     }
 }
