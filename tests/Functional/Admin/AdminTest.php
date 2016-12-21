@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use Cache;
 use Carbon\Carbon;
 use Hash;
 
