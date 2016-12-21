@@ -1388,6 +1388,6 @@ ALTER TABLE axis
 
 ----
 ALTER TABLE orgs
-    ADD COLUMN custom_code VARCHAR(40)
+    ADD COLUMN custom_code VARCHAR(250)
     UNIQUE NULL
     AFTER invoice_logo_url;

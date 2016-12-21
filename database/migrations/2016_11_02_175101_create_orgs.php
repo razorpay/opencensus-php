@@ -47,7 +47,7 @@ class CreateOrgs extends Migration
             $table->string(Org::INVOICE_LOGO_URL)
                   ->nullable();
 
-            $table->string(Org::CUSTOM_CODE, 40)
+            $table->string(Org::CUSTOM_CODE, 250)
                   ->nullable()
                   ->unique();
 
