@@ -618,6 +618,48 @@ class Core extends Base\Core
         return $txn;
     }
 
+    /**
+     * Create transaction and update balances for a reverse transfer
+     * on a Marketplace payment refund
+     *
+     * @param  ReverseTransfer\Entity   $reverseTrf
+     * @return Entity
+     */
+    public function createFromReverseTransfer($reverseTrf)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $reverseTrf->getAmount();
+
+        $nowTimestamp = time();
+
+        $data = [
+            Transaction\Entity::DEBIT         => 0,
+            Transaction\Entity::CREDIT        => $amount,
+            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::GATEWAY_FEE   => 0,
+            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::RECONCILED_AT => $nowTimestamp,
+            Transaction\Entity::SETTLED       => 0,
+            Transaction\Entity::SETTLED_AT    => $nowTimestamp,
+            Transaction\Entity::FEE           => 0,
+            Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::AMOUNT        => $amount,
+            Transaction\Entity::TYPE          => Transaction\Type::REVERSETRANSFER,
+            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($data);
+
+        $txn->merchant()->associate($reverseTrf->merchant);
+
+        $txn->sourceAssociate($reverseTrf);
+
+        $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
     protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);

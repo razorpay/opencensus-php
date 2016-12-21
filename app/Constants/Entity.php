@@ -133,7 +133,7 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::TRANSFER              => \RZP\Models\Transfer::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
-        self::REVERSE_TRANSFER      => \RZP\Models\ReverserTransfer::class,
+        self::REVERSE_TRANSFER      => \RZP\Models\ReverseTransfer::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,

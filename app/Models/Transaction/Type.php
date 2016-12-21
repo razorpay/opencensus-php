@@ -6,11 +6,12 @@ use RZP\Exception;
 
 class Type
 {
-    const REFUND        = 'refund';
-    const PAYMENT       = 'payment';
-    const TRANSFER      = 'transfer';
-    const ADJUSTMENT    = 'adjustment';
-    const SETTLEMENT    = 'settlement';
+    const REFUND            = 'refund';
+    const PAYMENT           = 'payment';
+    const TRANSFER          = 'transfer';
+    const REVERSETRANSFER   = 'reversetransfer';
+    const ADJUSTMENT        = 'adjustment';
+    const SETTLEMENT        = 'settlement';
 
     public static function validateType($type)
     {

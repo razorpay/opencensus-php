@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
+use RZP\Models\ReverseTransfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -269,6 +270,8 @@ trait Refund
                             $accountId, $this->merchant);
 
         $refund = $this->refundTransferPayment($splitPayment, $amount);
+
+        $reverseTrf = (new ReverseTransfer\Core)->createForRefund($transfer, $this->merchant, $amount);
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
