@@ -9,12 +9,11 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
     use GatewayBase\AuthorizeFailed;
-
-    use AesTrait;
 
     protected $gateway = 'netbanking_axis';
 
@@ -60,16 +59,7 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($payment);
 
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Constants::YES))
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
+        $this->checkResponseStatus($attrs, $content);
     }
 
     public function verify(array $input)
@@ -107,8 +97,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseResponseXml($content);
 
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $response);
@@ -122,7 +110,9 @@ class Gateway extends Base\Gateway
     {
         $this->setApiSuccess($verify);
 
-        $this->setGatewaySuccess($verify);
+        $this->setGatewaySuccess($verify, $response);
+
+        $status = GatewayBase\VerifyResult::STATUS_MATCH;
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
@@ -147,7 +137,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function setGatewaySuccess($verify)
+    protected function setGatewaySuccess($verify, $response)
     {
         $verify->gatewaySuccess = false;
 
@@ -169,7 +159,6 @@ class Gateway extends Base\Gateway
 
         $pid = $this->getPid();
 
-        // These two could be wrong
         $data[RequestFields::DATE] = $paymentDate;
         $data[RequestFields::PAYEE_ID] = $pid;
 
@@ -218,7 +207,7 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment']['id'];
 
-        $amount = number_format($input['payment']['amount'] /100, 2, '.', ' ');
+        $amount = $input['payment']['amount'] /100;
 
         return [
             RequestFields::MERCHANT_UNIQUE_REFERENCE => $paymentId,
@@ -241,13 +230,6 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function createPaymentArray($content)
-    {
-        $amount = number_format($input['payment']['amount'] /100, 2, '.', ' ');
-
-        return [RequestFields::AMOUNT => $amount];
-    }
-
     protected function getDataFromResponse($encryptedResponse)
     {
         $masterKey = $this->getMasterKey();
@@ -258,7 +240,36 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $response);
 
+        $this->checkDecryptionFailure($encryptedString, $response);
+
         return $response;
+    }
+
+    protected function checkDecryptionFailure($encryptedString, $content)
+    {
+        if (empty($content) ===  true)
+        {
+            $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [$encryptedString]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
+        }
+    }
+
+
+    protected function checkResponseStatus($attrs, $content)
+    {
+        if ((isset($attrs['status']) === false) or
+            ($attrs['status'] !== Constants::YES))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function getCallbackAttributes($content)
@@ -284,6 +295,26 @@ class Gateway extends Base\Gateway
         // Lets assume we verify only one payment at a time
         // So the response will contain just 1 table at a time
         return (array) $responseArray['Table1'];
+    }
+
+    public function encryptString(string $string, string $masterKey)
+    {
+        $aes = new AES(self::MODE_ECB);
+        $aes->setKey($masterKey);
+
+        // returning Encrypted String
+        return base64_encode($aes->encrypt($string));
+    }
+
+    public function decryptString(string $string, string $masterKey)
+    {
+        $aes = new AES(self::MODE_ECB);
+        $aes->setKey($masterKey);
+
+        $encryptedString = base64_decode($string);
+
+        // returning Decrypted String
+        return $aes->decrypt($encryptedString);
     }
 
     public function getMasterKey()

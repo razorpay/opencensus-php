@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Axis\AesTrait;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
@@ -11,8 +10,6 @@ use RZP\Gateway\Netbanking\Axis\ResponseFields;
 class Server extends Base\Mock\Server
 {
     const MODE_ECB = 1;
-
-    use AesTrait;
 
     public function authorize($input)
     {
@@ -45,7 +42,7 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getMasterKey();
 
-        $decryptedString = $this->decryptString(
+        $decryptedString = $this->getGatewayInstance()->decryptString(
             $input[RequestFields::ENCRYPTED_STRING], $masterKey);
 
         $toReplace   = ['~', '$'];
@@ -78,7 +75,8 @@ class Server extends Base\Mock\Server
 
         $masterKey = $this->getGatewayInstance()->getMasterKey();
 
-        $content['qs'] = $this->encryptString($query, $masterKey);
+        $content['qs'] = $this->getGatewayInstance()->encryptString(
+            $query, $masterKey);
 
         return $content;
     }

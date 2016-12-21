@@ -15,10 +15,10 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::PAYEE_ID                   => 'required|string',
-        RequestFields::MERCHANT_UNIQUE_REFERENCE  => 'required|string',
-        RequestFields::ITEM_CODE                  => 'required|string',
+        RequestFields::MERCHANT_UNIQUE_REFERENCE  => 'required|string|size:14',
+        RequestFields::ITEM_CODE                  => 'required|string|size:14',
         RequestFields::PAYEE_ID                   => 'required|string',
-        RequestFields::AMOUNT                     => 'required|string',
+        RequestFields::AMOUNT                     => 'required|numeric',
         RequestFields::DATE                       => 'required',
     ];
 }
