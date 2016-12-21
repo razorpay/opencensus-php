@@ -124,20 +124,11 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function addMerchantToTerminal(string $id, array $input)
+    public function addMerchantToTerminal(string $id, string $mid)
     {
-        if (isset($input['merchant_ids']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please provide Merchant Ids');
-
-        }
-
-        $merchantIds = $input['merchant_ids'];
-
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->addMerchantToTerminal($terminal, $merchantIds);
+        (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
 
         return $terminal->toArrayPublic();
     }
