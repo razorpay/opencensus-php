@@ -106,7 +106,7 @@ class Validator extends Base\Validator
         'date' => 'sometimes|date_format:Y-m-d',
     );
 
-    protected static $sendInvitationRules = array(
+    protected static $sendInvitationRules = [
         'contact_email' => 'required|max:255|email',
         'channel_code' => 'required',
         'crm_next_no' => 'required',
@@ -124,5 +124,5 @@ class Validator extends Base\Validator
         'merchant_name' => 'required',
         'contact_name' => 'required',
         'dba_name' => 'required'
-    );
+    ];
 }
