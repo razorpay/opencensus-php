@@ -8,25 +8,33 @@ use RZP\Models\Payment\Gateway;
 
 class MinAmount
 {
+    /**
+     * Map of min amount for network categories.
+     *
+     * The map uses a gateway level seperation for
+     * netbanking and a network level segregation
+     * for cards.
+     *
+     * Minimums can be defined on a method level
+     * or on a gateway level.
+     * */
     const MIN_AMOUNT = [
         Method::NETBANKING => [
             Gateway::BILLDESK   => [
-                'grocery'   => 100,
-                'utilities' => 100,
+                'govt_education' => 200000,
+                'pvt_education'  => 200000,
+                'corporate'      => 200000,
             ],
             self::TOP_SIX_BANKS => [
-                'grocery'   => 100,
-                'ecommerce' => 100,
             ],
             Gateway::NETBANKING_KOTAK => [
-                'grocery'   => 100,
-                'ecommerce' => 100,
+                'govt_education' => 200000,
+                'pvt_education'  => 200000,
+                'corporate'      => 200000,
             ],
         ],
         Method::CARD => [
             Network::AMEX => [
-                'retail_services' => 100,
-                'utilities'       => 100,
             ],
         ],
     ];
@@ -64,6 +72,8 @@ class MinAmount
 
     protected static function minAmount($method, $gateway, $network, $category)
     {
+        $key = '';
+
         $minAmount = 0 ;
 
         switch ($method)
@@ -78,16 +88,22 @@ class MinAmount
                 break;
         }
 
-        if (($method === Method::NETBANKING) and
-            (in_array($gateway, self::TOP_SIX) === true))
+        if (isset(self::MIN_AMOUNT[$method][$category]) === true)
         {
-            $minAmount = self::MIN_AMOUNT[self::TOP_SIX_BANKS][$category];
+            $minAmount = self::MIN_AMOUNT[$method][$category];
         }
 
-        if ((array_key_exists($key, self::MIN_AMOUNT[$method]) === true) and
-            (array_key_exists($category, self::MIN_AMOUNT[$method][$key]) === true))
+        if (($method === Method::NETBANKING) and
+            (in_array($gateway, self::TOP_SIX) === true) and
+            (isset(self::MIN_AMOUNT[$method][self::TOP_SIX_BANKS][$category]) === true))
         {
-            $minAmount = self::MIN_AMOUNT[$gateway][$category];
+            $minAmount = self::MIN_AMOUNT[$method][self::TOP_SIX_BANKS][$category];
+        }
+
+        if ((isset(self::MIN_AMOUNT[$method][$key]) === true) and
+            (isset(self::MIN_AMOUNT[$method][$key][$category]) === true))
+        {
+            $minAmount = self::MIN_AMOUNT[$method][$key][$category];
         }
 
         return $minAmount;
