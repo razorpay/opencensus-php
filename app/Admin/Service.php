@@ -2538,6 +2538,7 @@ class Service extends Base\Service
 
         $leads = \DB::table('admin_leads')
                     ->where('admin_id', $admin->id)
+                    ->orderBy('created_at', 'desc')
                     ->get();
 
         return [ null, $leads ];
