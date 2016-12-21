@@ -378,8 +378,7 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
-        // default KKBK terminal
-        // since corporate category isn't set
+        // KKBK corporate category terminal
         $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 
