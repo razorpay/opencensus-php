@@ -613,8 +613,6 @@ class AdminController extends Controller
 
     public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
-        $input = Input::all();
-
         list($error, $data) = (new Admin\Service)->unassignSubMerchantToTerminal(
             $mode,
             $terminalId,
@@ -624,21 +622,24 @@ class AdminController extends Controller
     }
 
 
-    public function assignSubMerchantToTerminal($mode, $terminalId)
+    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
-        $input = Input::all();
-
         list($error, $data) = (new Admin\Service)->assignSubMerchantToTerminal(
             $mode,
             $terminalId,
-            $input);
+            $merchantId);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function changePrimaryMerchant()
+    public function changePrimaryMerchant($mode, $terminalId, $merchantId)
     {
+        list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
+            $mode,
+            $terminalId,
+            $merchantId);
 
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function toggleTerminal($mode, $terminalId)

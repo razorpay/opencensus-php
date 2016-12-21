@@ -148,7 +148,22 @@ app.controller('EntityDetailCtrl', [
         });
       },
       changePrimaryMerchant: function (terminal_id, merchant_id) {
-        console.log(terminal_id, merchant_id)
+        var url = '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/merchant/' + merchant_id + '/reassign';
+        var request = $http.put(url);
+
+        request.success(function (data) {
+          if (data.success) {
+            alert('Primary merchant changed successfully');
+
+            // Page refresh
+            window.location.reload();
+          }
+          else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an issue while changing the primary merchant');
+        });
       }
     };
 

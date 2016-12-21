@@ -41,7 +41,14 @@ class Terminal extends Entity
 
     public function assignSubMerchant($id, $merchantId)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchants' . $merchantId;
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $merchantId;
+
+        return $this->request('PUT', $relativeUrl);
+    }
+
+    public function changePrimaryMerchant($id, $merchantId)
+    {
+        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $merchantId . '/reassign';
 
         return $this->request('PUT', $relativeUrl);
     }
