@@ -23,6 +23,10 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
     }
 
+    // ------------------------------------------------------------
+    // Tests around creation and payment of invoice
+    // ------------------------------------------------------------
+
     public function testCreateInvoiceWithNewCustomer()
     {
         $response = $this->startTest();
@@ -184,6 +188,70 @@ class InvoiceTest extends TestCase
 
         $this->makePaymentForInvoiceAndAssert($response);
     }
+
+    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('item', ['currency' => 'USD']);
+
+        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateDraftInvoiceWithAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithAmountAndDesc()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDraftInvoiceWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithoutLineItemsAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateDraftInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateIssuedInvoiceWithLineItemsAndAmount()
+    {
+        $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
+    }
+
+    public function testCreateInvoiceWithNullCurrency()
+    {
+        $this->startTest();
+    }
+
+    // ------------------------------------------------------------
+    // Tests around updation of invoice
+    // ------------------------------------------------------------
 
     public function testUpdateDraftInvoiceWithBasicFields()
     {
@@ -553,65 +621,38 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    public function testSendNotificationWithSmsMode()
     {
+        $this->ba->publicAuth();
+
         $this->createOrder();
-
-        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+        $this->fixtures->create('invoice');
 
         $this->startTest();
     }
 
-    public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
+    public function testSendNotificationWithSmsModeForDraftInvoice()
     {
+        $this->ba->publicAuth();
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testSendNotificationWithInvalidMode()
+    {
+        $this->ba->publicAuth();
+
         $this->createOrder();
-
-        $this->fixtures->create('item', ['currency' => 'USD']);
-
-        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+        $this->fixtures->create('invoice');
 
         $this->startTest();
     }
 
-    public function testCreateDraftInvoiceWithAmountAndDesc()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateIssuedInvoiceWithAmountAndDesc()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateDraftInvoiceWithAmount()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateIssuedInvoiceWithAmount()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateIssuedInvoiceWithoutLineItemsAmount()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateDraftInvoiceWithLineItemsAndAmount()
-    {
-        $this->startTest();
-    }
-
-    public function testCreateIssuedInvoiceWithLineItemsAndAmount()
-    {
-        $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
-    }
-
-    public function testCreateInvoiceWithNullCurrency()
-    {
-        $this->startTest();
-    }
+    // ------------------------------------------------------------
+    // Tests around get invoice
+    // ------------------------------------------------------------
 
     public function testGetInvoice()
     {
@@ -769,35 +810,6 @@ class InvoiceTest extends TestCase
 
         // Clear the mock.
         Carbon::setTestNow();
-    }
-
-    public function testSendNotificationWithSmsMode()
-    {
-        $this->ba->publicAuth();
-
-        $this->createOrder();
-        $this->fixtures->create('invoice');
-
-        $this->startTest();
-    }
-
-    public function testSendNotificationWithSmsModeForDraftInvoice()
-    {
-        $this->ba->publicAuth();
-
-        $this->createDraftInvoice();
-
-        $this->startTest();
-    }
-
-    public function testSendNotificationWithInvalidMode()
-    {
-        $this->ba->publicAuth();
-
-        $this->createOrder();
-        $this->fixtures->create('invoice');
-
-        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------
