@@ -128,8 +128,8 @@ class Service extends Base\Service
         {
             $admin = $admin->toArrayPublic();
         }
+
         event(new AuditLogEntry($admin, $action, $customProperties));
-        //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function forgotPassword(string $orgId, array $input)
@@ -146,7 +146,7 @@ class Service extends Base\Service
 
         $this->setPasswordResetToken($admin, $input);
 
-        // Uncomment after selva creats templates
+        // Uncomment after selva creates templates
         // $this->sendAdminForgotPasswordEmail($admin, $input);
 
         return ['success' => true];
@@ -162,7 +162,7 @@ class Service extends Base\Service
         $to         = $admin->getEmail();
         $subject    = 'Reset your password for' . $org->getDisplayName() . ' dashboard';
 
-        // ask selva
+        // TODO ask selva
         $view = [
             'html' => 'emails.admin.user',
             'text' => 'emails.admin.user_text'
@@ -233,9 +233,11 @@ class Service extends Base\Service
 
         $resetToken = Cache::get($key);
 
-        if (($resetToken === null) or ($resetToken !== $input['token']))
+        if (($resetToken === null) or
+            ($resetToken !== $input['token']))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESET_TOKEN);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_RESET_TOKEN);
         }
 
         $this->core()->updatePassword($admin, $input, true);
@@ -249,7 +251,8 @@ class Service extends Base\Service
 
         if ($admin === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID);
         }
 
         return $admin;
@@ -276,7 +279,10 @@ class Service extends Base\Service
         {
             $admin->incrementFailedAttempts();
 
-            $this->fireAdminAction($admin, Action::LOGIN_FAIL_OAUTH, ['failed_attempts' => $admin->getFailedAttempts()]);
+            $this->fireAdminAction(
+                $admin,
+                Action::LOGIN_FAIL_OAUTH,
+                ['failed_attempts' => $admin->getFailedAttempts()]);
 
             $this->repo->saveOrFail($admin);
 

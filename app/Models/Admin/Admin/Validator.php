@@ -10,6 +10,9 @@ use RZP\Models\Admin\Action;
 
 class Validator extends Base\Validator
 {
+    const TOKEN = 'token';
+    const RESET_PASSWORD_URL = 'reset_password_url';
+
     protected static $createRules = [
         // One problem with this uniqueness if what if an admin
         // wants to belong to 2 org or is moved from 1 to another
@@ -27,9 +30,9 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -42,9 +45,9 @@ class Validator extends Base\Validator
         Entity::LOCATION_CODE         => 'sometimes|string',
         Entity::EMPLOYEE_CODE         => 'sometimes|string',
         Entity::DISABLED              => 'sometimes|in:0,1',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
     ];
 
     protected static $loginRules = [
@@ -56,12 +59,12 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email|max:255',
         Entity::PASSWORD              => 'required|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'required|string',
-        'token'                       => 'required|string',
+        self::TOKEN                   => 'required|string',
     ];
 
     protected static $forgotRules = [
         Entity::EMAIL                 => 'required|email|max:255',
-        'reset_password_url'          => 'required|string'
+        self::RESET_PASSWORD_URL      => 'required|string'
     ];
 
     protected static $createValidators = [

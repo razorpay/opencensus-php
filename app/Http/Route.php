@@ -344,8 +344,7 @@ final class Route
         'oauth_login'                             => ['post',     'admin/oauth_login',                              'AdminController@oAuthLogin'                                        ],
         'auditlog_search'                         => ['get',      'orgs/{id}/auditlog/search',                      'AdminController@auditLogSearch'                                    ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'AdminController@oAuthLogin'                                        ],
-        'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',                     'AdminController@postForgotPassword'                                  ],
-
+        'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'AdminController@postForgotPassword'                                ],
         'admin_reset_password'                    => ['post',     'orgs/{orgId}/admin/reset_password',              'AdminController@postResetPassword'                                 ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'AdminController@logoutAdmin'                                       ],
         'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],

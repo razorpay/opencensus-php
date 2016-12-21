@@ -44,6 +44,9 @@ class Entity extends Base\PublicEntity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
+    const ROLES                 = 'roles';
+    const MERCHANTS             = 'merchants';
+    const GROUPS                = 'groups';
 
     protected $dontKeepRevisionOf = [
         self::PASSWORD,
