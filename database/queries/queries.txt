@@ -1386,6 +1386,10 @@ ALTER TABLE merchants
 ALTER TABLE axis
     MODIFY vpc_Command VARCHAR(20) NOT NULL;
 
+------
+# Following query was executed to add a new column to admin table
+ALTER TABLE admins ADD COLUMN allow_all_merchants BOOLEAN DEFAULT 0;
+
 ----
 ALTER TABLE orgs
     ADD COLUMN custom_code VARCHAR(250)
