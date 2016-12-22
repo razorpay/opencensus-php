@@ -128,13 +128,19 @@ class Gateway extends Base\Gateway
 
         $refundedEntities = $this->repo->findByPaymentIdAndCommand($id, Command::REFUND);
 
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $verifyContent = $this->sendPaymentVerifyRequest($verify);
+
         // If the payment transaction id is present, we assume that the payment
         // has been captured on the gateway
         // We also check for the refund entities, if present. If refund entity is present
         // we assume that the payment has been refunded on gateway and refund should
         // not be called again.
         if (($input['payment']['transaction_id'] === null) or
-            ($refundedEntities->count() > 0))
+            ($refundedEntities->count() > 0) or
+            ((isset($verifyContent['vpc_RefundedAmount']) === true) and
+             ($verifyContent['vpc_RefundedAmount'] !== '0')))
         {
             return false;
         }
