@@ -235,7 +235,8 @@ class Admin extends Entity
 
     public function updateAdmin($orgId, $adminId, $params)
     {
-        $relativeUrl = "orgs/$orgId/admins/$adminId";
+        // $relativeUrl = "orgs/$orgId/admins/$adminId";
+        $relativeUrl = "orgs/$orgId/admin-app-auth/$adminId";
 
         return $this->request('PUT', $relativeUrl, $params);
     }
