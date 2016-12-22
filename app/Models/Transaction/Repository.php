@@ -117,19 +117,13 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
     {
-
-        $query = $this->newQuery();
-
-        $txns = $query->merchantId($merchantId)
-                      ->where(function($query) use ($from, $to)
-                      {
-                        $query->betweenTime($from, $to);
-
-                        $query->whereIn(Entity::TYPE, ['payment', 'refund']);
-                      })
-                      ->with('merchant', 'feesBreakup')
-                      ->latest()
-                      ->get();
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->betweenTime($from, $to)
+                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
+                     ->with('merchant', 'feesBreakup')
+                     ->latest()
+                     ->get();
 
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -140,7 +134,11 @@ class Repository extends Base\Repository
         return $txns;
     }
 
-     public function fetchAssociatedRelationsWithLoadedEntities($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
+    public function fetchAssociatedRelationsWithLoadedEntities(
+        $entities,
+        $relation,
+        $idCol = 'entity_id',
+        $typeCol = 'type')
     {
         $relationships = array();
         $objects = array();
@@ -156,11 +154,11 @@ class Repository extends Base\Repository
 
             if ($type === 'payment')
             {
-                $eagerLoadRelations = ['card', 'netbanking', 'billdesk'];
+                $eagerLoadRelations = ['netbanking', 'billdesk', 'order'];
             }
-            elseif ($type === 'refund')
+            else if ($type === 'refund')
             {
-                $eagerLoadRelations = ['netbanking', 'billdesk'];
+                $eagerLoadRelations = ['payment', 'payment.netbanking', 'payment.billdesk'];
             }
 
             $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
