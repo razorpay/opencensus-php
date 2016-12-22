@@ -293,7 +293,10 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['permissions'] = $permissions->all();
+        if (! empty($permissions))
+        {
+            $admin['permissions'] = $permissions->all();
+        }
 
         $admin['roles'] = $roleNames;
 
@@ -337,15 +340,17 @@ class Service extends Base\Service
         {
             return $admins['items'][0];
         }
+
+        return [];
     }
 
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $authAdmin = $this->app['basicauth']->getAdmin();
+        // $authAdmin = $this->app['basicauth']->getAdmin();
 
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
+        // $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
         $admin = $this->core()->edit($admin, $input);
 

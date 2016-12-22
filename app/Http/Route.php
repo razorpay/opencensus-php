@@ -344,7 +344,7 @@ final class Route
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
-        'oauth_login'                             => ['post',     'admin/oauth_login',                              'OrganizationController@oAuthLogin'                                 ],
+        // 'oauth_login'                             => ['post',     'admin/oauth_login',                              'OrganizationController@oAuthLogin'                                 ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'OrganizationController@postPasswordReset'                          ],
@@ -597,7 +597,7 @@ final class Route
         'adj_add_reverse',
         'admin_get_app_auth',
         'admin_authentication',
-        'oauth_login',
+        // 'oauth_login',
         'admin_oauth_authenticate',
         'admin_get_by_attr',
         'org_get_self',
@@ -609,6 +609,7 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
+        'admin_edit',
     );
 
     public static $proxy = array(
@@ -678,7 +679,7 @@ final class Route
         'role_delete',
         'admin_get_multiple',
         'admin_get',
-        'admin_edit',
+        // 'admin_edit',
         'admin_delete',
         'group_create',
         'group_edit',
@@ -709,7 +710,7 @@ final class Route
         'role_delete'                => ['delete_role'],
         'admin_get_multiple'         => ['view_all_admin'],
         'admin_get'                  => ['view_admin'],
-        'admin_edit'                 => ['edit_admin'],
+        // 'admin_edit'                 => ['edit_admin'],
         'admin_delete'               => ['delete_admin'],
         'admin_roles_create'         => ['create_admin', 'create_role'],
         'admin_roles_revoke'         => ['create_admin', 'create_role'],

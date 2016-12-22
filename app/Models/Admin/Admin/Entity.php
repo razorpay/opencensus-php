@@ -124,6 +124,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::REMEMBER_TOKEN,
+        self::OAUTH_ACCESS_TOKEN,
+        self::OAUTH_PROVIDER_ID,
         self::ORG_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
