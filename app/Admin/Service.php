@@ -107,13 +107,13 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function oAuthLogin($input)
+    public function oAuthLogin($input, $orgId)
     {
         $error = $data = null;
 
         $this->setApiCredentials();
 
-        $data = $this->api->admin->oAuthLogin($input)->toArray();
+        $data = $this->api->admin->oAuthLogin($input, $orgId)->toArray();
 
         return $data;
     }
@@ -141,7 +141,7 @@ class Service extends Base\Service
                       ->admin
                       ->getByEmail($orgId, ['email' => $result->email])
                       ->toArray();
-sd($result->email);
+
         if ($admin)
         {
             $updateData = [
@@ -164,7 +164,7 @@ sd($result->email);
 
             try
             {
-                $data = $this->oAuthLogin($oAuthLoginInput);
+                $data = $this->oAuthLogin($oAuthLoginInput, $orgId);
 
                 // Auth::guard('admin')->loginUsingId($admin->id);
                 // We have the data now, just need to login the user

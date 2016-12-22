@@ -217,16 +217,18 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function oAuthLogin(array $params)
+    public function oAuthLogin(array $params, $orgId)
     {
-        $relativeUrl = $this->getEntityUrl().'oauth_login';
+        // $relativeUrl = $this->getEntityUrl().'oauth_login';
+        $relativeUrl = "orgs/$orgId/admin/oauth_login";
 
         return $this->request('POST', $relativeUrl, $params);
     }
 
     public function getByEmail($orgId, $options)
     {
-        $relativeUrl = "orgs/$orgId/admins/get_by_attr";
+        // $relativeUrl = "orgs/$orgId/admins/get_by_attr";
+        $relativeUrl = "admins/get-multiple-app-auth";
 
         return $this->request('GET', $relativeUrl, $options);
     }

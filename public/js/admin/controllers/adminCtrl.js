@@ -12,6 +12,7 @@ app.controller('AdminCtrl', [
   function ($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive, organization) {
     admin.identity().then(function (data) {
       $scope.admin = data;
+      // console.log(data);
 
       Rollbar.configure({
         payload: {
