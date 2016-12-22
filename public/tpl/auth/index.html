@@ -15,13 +15,11 @@
       <div class="auth-main-container" ng-class="{'right-align': right}">
         <div class="overflow-container">
           <div class="translate-container">
-            <div class="auth-signup-container">
-              Sign up here
+            <div class="auth-signup-container" ng-include="'tpl/auth/signup.html'">
+              
             </div>
-            <div class="auth-signin-container">
-              <div class="btn btn-default" ng-click="goToSigninLayout()">
-                Login
-              </div>
+            <div class="auth-signin-container" ng-include="'tpl/auth/signin.html'">
+              
             </div>
           </div>
         </div>
