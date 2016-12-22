@@ -115,6 +115,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'roles' => [],
             ],
         ],
         'response' => [
@@ -129,6 +130,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'groups' => [],
             ],
         ],
         'response' => [

@@ -327,6 +327,7 @@ final class Route
         'admin_get_app_auth'                      => ['post',     'orgs/{orgId}/current_admin',                     'OrganizationController@getAdminByAppAuth'                          ],
         'admin_get'                               => ['get',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@getAdmin'                                   ],
         'admin_edit'                              => ['put',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@editAdmin'                                  ],
+        'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
         'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
@@ -603,11 +604,11 @@ final class Route
         'admin_lock_old_accounts',
         'merchant_activation_update',
         'admin_password_reset',
+        'admin_edit_app_auth',
         'offers_update_merchants',
         'offer_create',
         'offer_update',
         'offer_delete',
-        'admin_edit',
     );
 
     public static $proxy = array(
@@ -677,7 +678,7 @@ final class Route
         'role_delete',
         'admin_get_multiple',
         'admin_get',
-        // 'admin_edit',
+        'admin_edit',
         'admin_delete',
         'group_create',
         'group_edit',
@@ -708,7 +709,7 @@ final class Route
         'role_delete'                => ['delete_role'],
         'admin_get_multiple'         => ['view_all_admin'],
         'admin_get'                  => ['view_admin'],
-        // 'admin_edit'                 => ['edit_admin'],
+        'admin_edit'                 => ['edit_admin'],
         'admin_delete'               => ['delete_admin'],
         'admin_roles_create'         => ['create_admin', 'create_role'],
         'admin_roles_revoke'         => ['create_admin', 'create_role'],

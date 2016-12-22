@@ -143,7 +143,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->groups->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['roles']));
     }
 
     public function testDeleteAllGroupsAdmin()
@@ -162,7 +167,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->roles->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['groups']));
     }
 
     public function testDeleteAdmin()
