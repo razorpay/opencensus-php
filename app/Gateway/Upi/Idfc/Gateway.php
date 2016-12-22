@@ -5,7 +5,6 @@ namespace RZP\Gateway\Upi\Idfc;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
-// use SoapClient as BaseSoapClient;
 use RZP\Gateway\Upi\Idfc\SoapClient;
 
 class Gateway extends Base\Gateway
@@ -65,7 +64,7 @@ class Gateway extends Base\Gateway
 
     public function merchantAddBank(array $input)
     {
-        $content = $this->getMerchantGenerateOtpContent($input);
+        $content = $this->getMerchantAddBankContent($input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -76,7 +75,7 @@ class Gateway extends Base\Gateway
 
     public function merchantListPublicKeys(array $input)
     {
-        $content = $this->getMerchantGenerateOtpContent($input);
+        $content = $this->getMerchantListPublicKeysContent($input);
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -120,7 +119,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantListBankAccContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -155,7 +154,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantCheckRegVirAddrContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -184,7 +183,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantListPublicKeysContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -217,7 +216,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantAddBankContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -245,7 +244,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantGenerateOtpContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -274,7 +273,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantViewRegVirAddrContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -303,7 +302,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantViewRegProfileContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -331,7 +330,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantProfileCreationContent(array $input)
     {
-        $input['gateway']['msg_id'] = upi_uuid(false);
+        $input['gateway']['msg_id'] = $this->generateMsgId();
 
         $content = [
             'req' => [
@@ -366,8 +365,8 @@ class Gateway extends Base\Gateway
                     // 'AppVersion'          => '1.0.1',
                     'MerchantID'             => $this->getMerchantId($input['terminal']),
                     'TerminalID'             => $this->getTerminalId($input['terminal']),
-                    'SubMerchantID'       => '123456',
-                    'MerchantCredentials' => $this->getMerchantCredentials($input)
+                    'SubMerchantID'          => '123456',
+                    'MerchantCredentials'    => $this->getMerchantCredentials($input)
                 ]
             ]
         ];
@@ -377,22 +376,24 @@ class Gateway extends Base\Gateway
 
     protected function getGenerateMerchantDEKContent(array $input)
     {
+        $input['gateway']['msg_id'] = $this->generateMsgId();
+
         $content = [
             'req' => [
                 'UPI' => [
                     'TimeStamp'              => time(),
-                    'MsgId'                  => upi_uuid(false),//$input['gateway']['msg_id'],
+                    'MsgId'                  => $input['gateway']['msg_id'],
                     'DeviceID'               => \Str::random(20),
                     'Channel'                => '06',
                     'MobileNo'               => '8199080070',//$input['customer']['contact'],
                     'PayerType'              => 'PERSON',
                     'OrgId'                  => $this->getOrgId($input),
                     'BankId'                 => $this->getBankId(),
-                    // 'Remarks'             => 'Send Money Request',
-                    // 'AppVersion'          => '1.0.1',
+                    'Remarks'                => 'Send Money Request',
+                    'AppVersion'             => '1.0.1',
                     'MerchantID'             => $this->getMerchantId($input['terminal']),
                     'TerminalID'             => $this->getTerminalId($input['terminal']),
-                    // 'SubMerchantID'       => '123456',
+                    'SubMerchantID'          => '123456',
                     // 'MerchantCredentials' => $this->getMerchantCredentials($input['terminal'])
                 ]
             ]
@@ -562,60 +563,6 @@ class Gateway extends Base\Gateway
     protected function generateMerchantCredentials(string $msgId)
     {
         // Need to rewrite from java to PHP
-    }
-
-    protected function createSoapRequestBody(string $type, string $upiReq)
-    {
-        return <<<EOT
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:upi="http://com/fss/upi" xmlns:java="java:com.fss.upi.req">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <upi:$type>
-        $upiReq
-      </upi:$type>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOT;
-    }
-
-    public function getUpiReq(array $attribs, string &$str = '')
-    {
-        foreach ($attribs as $key => $value)
-        {
-            $str .= "<java:$key>";
-
-            if (is_array($value))
-            {
-                $str .= $this->getUpiReq($value, $str);
-            }
-            else
-            {
-                $str .= $value;
-            }
-
-            $str .= "</java:$key>";
-        }
-
-        return "<upi:req>$str</upi:req>";
-    }
-
-    protected function getDefaults()
-    {
-            // TODO: Do this properly
-        return [
-            // 'UPI'   =>  [
-                'BankId'            => '401613',
-                'OrgId'             => '400054',
-                'MerchantID'        => '12345',
-                'TerminalID'        => '01',
-                'Channel'           => '06',
-                'SubMerchantID'     => '123456',
-                'password'          => '11111',
-                'PayerType'         => 'PERSON',
-                'TimeStamp'         => time(),
-                'MsgId'             => $this->generateMsgId(),
-            // ]
-        ];
     }
 
     /**

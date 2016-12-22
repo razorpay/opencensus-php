@@ -12,8 +12,6 @@ class SoapClient extends BaseSoapClient
 
     public function __doRequest($request, $location, $action, $version, $one_way = null)
     {
-        $location = 'http://idfcupitest.fssnet.co.in/UPIUATService';
-
         if (in_array($action, $this->hmacActions) === true)
         {
             $request = $this->addHmac($request);
