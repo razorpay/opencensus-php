@@ -1657,8 +1657,9 @@ trait Authorize
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    "$feature is not supported");
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 

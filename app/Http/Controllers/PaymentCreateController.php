@@ -176,9 +176,7 @@ class PaymentCreateController extends Controller
 
         $data = $this->payment->processUpi($input);
 
-        $response = [
-            'razorpay_payment_id' => $data['payment_id']
-        ];
+        $response = ['razorpay_payment_id' => $data['payment_id']];
 
         return ApiResponse::json($response);
     }
