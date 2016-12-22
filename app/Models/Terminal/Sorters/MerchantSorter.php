@@ -39,11 +39,6 @@ class MerchantSorter extends Terminal\Sorter
 
         $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork($method, $network, $category2);
 
-        if ($merchantTerminalCategory === null)
-        {
-            $merchantTerminalCategory = $category2;
-        }
-
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)

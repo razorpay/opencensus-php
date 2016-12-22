@@ -120,7 +120,7 @@ class Category
 
     public static function getCategoryForMethodAndNetwork($method, $network, $category2)
     {
-        $networkCategory = null;
+        $networkCategory = self::getDefaultNetworkCategory($category2);
 
         if (isset(self::CATEGORIES[$method]) === true)
         {
@@ -134,6 +134,18 @@ class Category
             {
                 $networkCategory = self::CATEGORIES[$method][$network][$category2];
             }
+        }
+
+        return $networkCategory;
+    }
+
+    protected static function getDefaultNetworkCategory($category2)
+    {
+        $networkCategory = null;
+
+        if ($category2 !== self::DEFAULT)
+        {
+            $networkCategory = $category2;
         }
 
         return $networkCategory;

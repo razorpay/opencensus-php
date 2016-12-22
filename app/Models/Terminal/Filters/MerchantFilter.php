@@ -111,12 +111,6 @@ class MerchantFilter extends Terminal\Filter
                                                                         $network,
                                                                         $category2);
 
-        // i.e not present in array
-        if ($merchantTerminalCategory === null)
-        {
-            return ($category === $category2);
-        }
-
         return ($category === $merchantTerminalCategory);
     }
 
