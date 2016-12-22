@@ -106,8 +106,6 @@ EOT;
 
         $response = $this->doS2SUpiPayment($payment);
 
-        sd($response);
-
         $paymentId = $response['razorpay_payment_id'];
 
         $this->checkPaymentStatus($paymentId, 'created');
