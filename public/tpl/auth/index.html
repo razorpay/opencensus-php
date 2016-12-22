@@ -3,6 +3,8 @@
     <div class="auth-header">
       <div class="rzp-logo">
         <img class="logo" src="img/logo_full.png" alt='Razorpay' height="">
+        <button ng-if="!right" class="btn pull-right btn-layout-change" ng-click="goToSigninLayout()">Login</button>
+        <button ng-if="right" class="btn pull-right btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
       </div>
 
     </div>
@@ -11,9 +13,17 @@
         Hi this is Punit Soni
       </div>
       <div class="auth-main-container" ng-class="{'right-align': right}">
-        Sign up here
-        <div class="btn btn-default" ng-click="goToSigninLayout()">
-          Login
+        <div class="overflow-container">
+          <div class="translate-container">
+            <div class="auth-signup-container">
+              Sign up here
+            </div>
+            <div class="auth-signin-container">
+              <div class="btn btn-default" ng-click="goToSigninLayout()">
+                Login
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

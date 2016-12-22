@@ -22,13 +22,21 @@
   bottom: 0;
   left: 0;
   right: 0;
-  position: fixed;
-  padding-top 50px
   
   .logo {
-    height 40px
+    height 32px
   }
 }
+
+.auth-header 
+  margin-bottom 60px
+  .btn-layout-change
+    color white
+    border-radius 5px
+    background-color rgba(255, 255, 255, 0.05)
+    border solid 1px rgba(255, 255, 255, 0.5)
+    font-weight bold
+    width 72px
 
 .auth-inner {
   margin 0 auto
@@ -49,18 +57,40 @@
 
 .auth-main-container {
   height 540px
-  width 320px
+  width 360px
   border-radius: 4px;
   background-color: #fafafa;
   box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15), 0 0 2px 0 rgba(0, 0, 0, 0.2);
   position absolute
   top -30px
   left 30px
+  padding 40px
   transition left .2s ease-in
   &.right-align {
     left 430px
+    .translate-container{
+      transform: translateX(-280px)
+    }
   }
 }
+
+.translate-container
+  width 560px
+  transition transform .2s ease-in
+
+.overflow-container
+  overflow hidden
+
+.auth-signup-container 
+  width 280px
+  height 460px
+  float left
+
+.auth-signin-container 
+  width 280px
+  height 460px
+  float left
+  
 
 /* old styles */
 

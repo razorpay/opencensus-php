@@ -23,8 +23,8 @@ app.controller('AuthCtrl', [
       });
     }
     $scope.goToSignupLayout = function () {
-      $scope.right = true;
-      const toRoute = 'access.signin';
+      $scope.right = false;
+      const toRoute = 'access.signup';
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
