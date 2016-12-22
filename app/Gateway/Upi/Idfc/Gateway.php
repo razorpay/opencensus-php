@@ -12,6 +12,13 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'upi_idfc';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->crypto = new Crypto($this->config);
+    }
+
     public function generateMerchantDEK(array $input)
     {
         $content = $this->getGenerateMerchantDEKContent($input);
