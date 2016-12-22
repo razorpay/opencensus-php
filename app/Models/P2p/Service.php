@@ -3,11 +3,12 @@
 namespace RZP\Models\P2p;
 
 use RZP\Exception;
-use RZP\Error;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Upi\Vpa;
 
 class Service extends Base\Service
 {
@@ -35,11 +36,53 @@ class Service extends Base\Service
 
     protected function setVpaFields(& $input, $field)
     {
+        if ($this->isExternalVpa($input[$field]) === true)
+        {
+            $this->createVpaIfNeeded($input, $field);
+        }
+
         $source = $this->repo->vpa->findByAddressOrFail($input[$field]);
 
         $input[$field . '_id'] = $source->getPublicId();
 
         unset($input[$field]);
+    }
+
+    protected function isExternalVpa($address)
+    {
+        list($username, $handle) = explode(Vpa\Entity::AROBASE, $address);
+
+        return ($handle !== 'razor');
+    }
+
+    protected function createVpaIfNeeded($input, $field)
+    {
+        if ((($field === 'sink') and
+             ($input[Entity::TYPE] === Type::SEND)) or
+            (($field === 'source') and
+             ($input[Entity::TYPE] === Type::COLLECT)))
+        {
+            $vpa = $this->repo->vpa->findByAddress($input[$field]);
+
+            if ($vpa === null)
+            {
+                $body = [
+                    Vpa\Entity::ADDRESS => $input[$field],
+                ];
+
+                $vpa = (new Vpa\Core)->createVpa($body);
+            }
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                 ErrorCode::BAD_REQUEST_INVALID_P2P,
+                 [
+                    'message'=> "Invalid $field in p2p",
+                    'input'=> $input,
+                 ]
+            );
+        }
     }
 
     public function reject($id)

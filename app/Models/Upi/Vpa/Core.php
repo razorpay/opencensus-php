@@ -9,7 +9,7 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-    public function createVpa($input, $customer, $bankAccount)
+    public function createVpa($input, $customer = null, $bankAccount = null)
     {
         $vpa = (new Entity)->build($input);
 
