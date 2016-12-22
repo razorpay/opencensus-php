@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
         $this->seed();
 
         $this->call('IinsTableSeeder');
+        $this->call('PermissionSeeder');
+        $this->call('GroupMapSeeder');
     }
 
     private function seed()
@@ -34,8 +36,111 @@ class DatabaseSeeder extends Seeder
         {
             $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
 
+            $todayTime = strtotime('today');
+            $currentTime = time();
+
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => '100000razorpay',
+                    'auth_type'         => 'google_auth',
+                    'business_name'     => 'Razorpay',
+                    'display_name'      => 'Razorpay Software Private Ltd',
+                    'email'             => 'admin@razorpay.com',
+                    'email_domains'     => 'razorpay.com',
+                    'allow_sign_up'     => true,
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => '6dLbNSpv5XbCOG',
+                    'auth_type'         => 'password',
+                    'business_name'     => 'HDFC',
+                    'display_name'      => 'HDFC Bank Pvt Ltd',
+                    'email'             => 'hdfc@bank.rzp.in',
+                    'email_domains'     => 'hdfcbank.in',
+                    'allow_sign_up'     => false,
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'dashboard.razorpay.com',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'beta-dashboard.razorpay.com',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'dashboard.razorpay.dev',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'org_id'            => '6dLbNSpv5XbCOG',
+                    'hostname'          => 'dashboard-hdfc.razorpay.dev',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            // DB::table(Table::ORG)->insert(
+            //     [
+            //         'id'                => 'org_6lFupOxpf36BY3',
+            //         'auth_type'         => 'password',
+            //         'business_name'     => 'ICICI',
+            //         'display_name'      => 'ICICI Bank Pvt Ltd',
+            //         'email'             => 'icici@icici.in',
+            //         'email_domains'     => 'icici.in',
+            //         'hostname'          => 'icici.in',
+            //         'login_logo_url'    => null,
+            //         'main_logo_url'     => null,
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
+            //     ]
+            // );
+
+            // DB::table(Table::ORG)->insert(
+            //     [
+            //         'id'                => 'org_6dLbNSpv5XbCOI',
+            //         'auth_type'         => 'password',
+            //         'business_name'     => 'BOB',
+            //         'display_name'      => 'BOB Pvt Ltd',
+            //         'email'             => 'bob@bob.in',
+            //         'email_domains'     => 'bob.in',
+            //         'hostname'          => 'bob.in',
+            //         'login_logo_url'    => null,
+            //         'main_logo_url'     => null,
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
+            //     ]
+            // );
 
             DB::table(Table::MERCHANT)->insert(
                 array(
@@ -43,20 +148,21 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Nodal Account',
                     'email'         =>  'nodal@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -66,20 +172,21 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Atom Account',
                     'email'         =>  'atom@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::ATOM_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -89,20 +196,21 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Fee Account',
                     'email'         =>  'fees@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'fees@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::API_FEE_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -113,20 +221,21 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'test@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'test@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::TEST_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'balance'       =>  100000,
                     'credits'       =>  50000,
                     'on_hold'       =>  10000,
@@ -140,20 +249,21 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'shared@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'shared@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::SHARED_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -164,20 +274,21 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'demo@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'demo@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::DEMO_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -201,8 +312,8 @@ class DatabaseSeeder extends Seeder
                     'airtelmoney'   => '1',
                     'card'          => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -220,8 +331,8 @@ class DatabaseSeeder extends Seeder
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -233,10 +344,176 @@ class DatabaseSeeder extends Seeder
                     'rate'          => 1400,
                     'min_amount'    => 300000,
                     'methods'       => 'card',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 )
             );
+
+            DB::table(Table::ADMIN)->insert([
+                [
+                    'id'            => '6dLbNSpv5Ybbbb',
+                    'email'         => 'rzp@hdfcbank.in',
+                    'name'          => 'Test HDFC Account',
+                    'username'      => 'rzp',
+                    // Hash::make(123456)
+                    'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'employee_code' => '010',
+                    'department_code'=> 'ADMIN',
+                    'branch_code'   => 'HDFC010',
+                    'supervisor_code' => '001',
+                    'location_code' => 'BLR',
+                    'last_login_at' => $todayTime,
+                    'created_at'    => $todayTime,
+                    'updated_at'    => $todayTime,
+                ],
+                // [
+                //     'id'            => '6dLbNSpv5Ybbbc',
+                //     'email'         => 'test@hdfcbank.in',
+                //     'name'          => 'Test HDFC Account',
+                //     'username'      => 'test',
+                //     // Hash::make(123456)
+                //     'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
+                //     'org_id'        => '6dLbNSpv5XbCOG',
+                //     'employee_code' => '011',
+                //     'department_code'=> 'ADMIN',
+                //     'branch_code'   => 'HDFC010',
+                //     'supervisor_code' => '001',
+                //     'location_code' => 'BLR',
+                //     'last_login_at' => $todayTime,
+                //     'created_at'    => $todayTime,
+                //     'updated_at'    => $todayTime,
+                // ]
+            ]);
+
+            DB::table(Table::ADMIN)->insert([
+                [
+                    'id'            => '6dLbNSpv5Ycccc',
+                    'email'         => 'harshil@razorpay.com',
+                    'name'          => 'Harshil Mathur',
+                    'username'      => 'harshil',
+                    'org_id'        => '100000razorpay',
+                    'employee_code' => '001',
+                    'branch_code'   => 'RZP001',
+                    'department_code'=> 'ADMIN',
+                    'supervisor_code' => '001',
+                    'location_code'   => 'BLR',
+                    'last_login_at' => null,
+                    'created_at'    => $todayTime,
+                    'updated_at'    => $todayTime,
+                ]
+            ]);
+
+            DB::table(Table::ROLE)->insert([
+                // RZP
+                [
+                    'id'            => '6dLbNSpv5XbC5E',
+                    'name'          => 'SuperAdmin',
+                    'description'   => 'Super Administrator',
+                    'org_id'        => '100000razorpay',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                // HDFC
+                [
+                    'id'            => '6dLbNSpv5XbC5F',
+                    'name'          => 'SuperAdmin',
+                    'description'   => 'Super Administrator',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                // [
+                //     'id'            => '6dLbNSpv5XbC5G',
+                //     'name'          => 'Admin',
+                //     'description'   => 'Administrator',
+                //     'org_id'        => '6dLbNSpv5XbCOG',
+                //     'created_at'    => $currentTime,
+                //     'updated_at'    => $currentTime,
+                // ]
+            ]);
+
+            DB::table(Table::ROLE_MAP)->insert([
+                // RZP
+                [
+                    'role_id'       => '6dLbNSpv5XbC5E',
+                    'entity_id'     => '6dLbNSpv5Ycccc',
+                    'entity_type'   => 'admin',
+                ],
+                // HDFC
+                [
+                    'role_id'       => '6dLbNSpv5XbC5F',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin',
+                ],
+                // [
+                //     'role_id'       => '6dLbNSpv5XbC5G',
+                //     'entity_id'     => '6dLbNSpv5Ybbbc',
+                //     'entity_type'   => 'admin',
+                // ]
+            ]);
+
+            DB::table(Table::GROUP)->insert([
+                [
+                    'id'            => '6euDnqS4zQR4ke',
+                    'name'          => 'Karnataka',
+                    'description'   => 'Karnataka Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kf',
+                    'name'          => 'Bangalore',
+                    'description'   => 'Bangalore Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kg',
+                    'name'          => 'Indiranagar',
+                    'description'   => 'Indiranagar Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ]
+            ]);
+
+            DB::table(Table::GROUP_MAP)->insert([
+                // G1 -> A1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin',
+                ],
+                // G2 -> G1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6euDnqS4zQR4kf',
+                    'entity_type'   => 'group',
+                ],
+                // G3 -> G2
+                [
+                    'group_id'      => '6euDnqS4zQR4kf',
+                    'entity_id'     => '6euDnqS4zQR4kg',
+                    'entity_type'   => 'group',
+                ],
+                // G2 -> A2
+                // [
+                //     'group_id'      => '6euDnqS4zQR4kf',
+                //     'entity_id'     => '6dLbNSpv5Ybbbc',
+                //     'entity_type'   => 'admin',
+                // ]
+            ]);
+
+            DB::table(Table::MERCHANT_MAP)->insert([
+                [
+                    'merchant_id'   => '10000000000000',
+                    'entity_id'     => '6dLbNSpv5Ycccc',
+                    'entity_type'   => 'admin',
+                ]
+            ]);
         });
     }
 

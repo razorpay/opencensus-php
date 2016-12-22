@@ -80,6 +80,19 @@ class AnalyticsTest extends TestCase
         // $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
+    public function testAttemptsWithoutCheckoutIdOrOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
     public function testAttemptsWithoutCheckoutIdOrderId()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -98,9 +111,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://pay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'checkoutjs';
 
@@ -136,9 +149,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://pay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'checkoutjs';
 
@@ -164,9 +177,9 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://api.razorpay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://api.razorpay.com/demo'
+        ];
 
         $payment['_']['browser'] = 'safari';
 
@@ -208,6 +221,21 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
+    }
+
+    public function testOs1()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac androidos 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        ];
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals(Metadata::ANDROID,$paymentAnalytic[AnalyticsEntity::OS]);
     }
 
     public function testHttpRefer1()

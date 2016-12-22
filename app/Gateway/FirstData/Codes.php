@@ -11,5 +11,5 @@ class Codes
 
     const DATE_TIME_FORMAT = 'Y:m:d-H:i:s';
 
-    const MOCK_SUCCESS_APPROVAL_CODE = "mocked successful approval code";
+    const MOCK_FAIL_APPROVAL_CODE = "mocked failure approval code";
 }

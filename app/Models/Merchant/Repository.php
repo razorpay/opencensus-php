@@ -116,8 +116,8 @@ class Repository extends Base\Repository
             $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
@@ -199,6 +199,17 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
+    }
+
+    /**
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
                     ->get();
     }
 }

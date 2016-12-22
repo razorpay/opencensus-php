@@ -61,6 +61,8 @@ class GenerateEmailTemplates extends Command {
             'emails/payment/merchant',
 
             'emails/refund/common',
+
+            'emails/admin/user',
         ];
 
         $view_directory = app_path().'/../resources/views/';

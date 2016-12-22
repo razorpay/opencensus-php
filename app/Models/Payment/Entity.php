@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -26,6 +27,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
@@ -63,6 +65,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
@@ -115,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -147,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
         self::CALLBACK_URL,
         self::RECURRING,
@@ -217,6 +222,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED   => 0,
         self::SIGNED            => 0,
         self::VERIFIED          => null,
+        self::GATEWAY_CAPTURED  => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
         self::SAVE              => false,
@@ -250,7 +256,12 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX       => 'int',
         self::SAVE              => 'bool',
         self::INTERNATIONAL     => 'bool',
+        self::GATEWAY_CAPTURED  => 'bool',
+        self::LATE_AUTHORIZED   => 'bool',
     ];
+
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
 
 // --------------------- Generators --------------------------------------------
 
@@ -367,6 +378,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setTwoFactorAuth($status)
+    {
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
+    }
+
     public function setRefundStatus($status)
     {
         $this->setAttribute(self::REFUND_STATUS, $status);
@@ -420,6 +436,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setAuthorizeAtNull()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, null);
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
@@ -448,6 +469,11 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setGatewayCaptured($gatewayCaptured)
+    {
+        $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
     }
 
     public function setServiceTax($serviceTax)
@@ -655,7 +681,12 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
-        return ($this->isAttributeNull(self::AUTHORIZED_AT) === false);
+        return ($this->isAttributeNotNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasNotBeenAuthorized()
+    {
+        return ($this->isAttributeNull(self::AUTHORIZED_AT));
     }
 
     public function hasTransaction()
@@ -717,6 +748,11 @@ class Entity extends Base\PublicEntity
     public function hasBeenCaptured()
     {
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
+    }
+
+    public function isGatewayCaptured()
+    {
+        return ($this->getAttribute(self::GATEWAY_CAPTURED) === true);
     }
 
     public function isCard()
@@ -926,7 +962,7 @@ class Entity extends Base\PublicEntity
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
 
-        return floor($diff / (60*24*24));
+        return floor($diff / (60 * 24 * 24));
     }
 
     public function getEmiPlanId()
@@ -949,6 +985,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFactorAuth()
+    {
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
+    }
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1371,5 +1411,20 @@ class Entity extends Base\PublicEntity
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(null);
+    }
+
+    /**
+     * List of all features based on various conditions
+     */
+    public function getPricingFeatures()
+    {
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        return $features;
     }
 }

@@ -837,7 +837,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->repo->saveOrFail($feeSplit);
         }
 
-        $this->trace->info(
+        $this->app['trace']->info(
             TraceCode::FEES_BREAKUP_CREATED,
             [
                 'transaction_id'    => $txn->getId(),

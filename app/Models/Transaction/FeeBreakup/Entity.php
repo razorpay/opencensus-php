@@ -3,7 +3,6 @@
 namespace RZP\Models\Transaction\FeeBreakup;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -15,8 +14,6 @@ class Entity extends Base\PublicEntity
     const AMOUNT                       = 'amount';
 
     const NAME_LENGTH                  = 100;
-
-    protected $table = Table::FEE_BREAKUP;
 
     protected static $sign = 'fees';
 

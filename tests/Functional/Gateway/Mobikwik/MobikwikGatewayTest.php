@@ -47,11 +47,6 @@ class MobikwikGatewayTest extends TestCase
             $this->testData['testMobikwikWalletEntity'], $this->payment);
     }
 
-//    public function testFailedPayment()
-//    {
-//        $this->markTestIncomplete();
-//    }
-
     public function testPowerWalletPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
@@ -143,7 +138,7 @@ class MobikwikGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 
@@ -240,7 +235,30 @@ class MobikwikGatewayTest extends TestCase
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
         $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
+    }
 
+    public function testOtpResendOnFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'mobikwik',
+                            'gateway'       => 'mobikwik',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->getId()
+                        ]);
+
+        $url = $this->getOtpResendUrl($payment->getPublicId());
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
     }
 
     public function testRefundPayment()

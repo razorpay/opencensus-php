@@ -10,7 +10,9 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
@@ -20,7 +22,10 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'billdesk';
 
+    protected $response;
     const CHECKSUM_ATTRIBUTE = 'Checksum';
+
+    protected $tpv;
 
     public function authorize(array $input)
     {
@@ -28,7 +33,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $request = $this->getRequestArrayForAuthorize($content);
 
@@ -49,19 +54,24 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
         // We should ensure once that AuthStatus is 0300 and
         // RefundStatus is null.
 
         // assert ($payment['RefStatus'] === null);
-        assert ($payment['AuthStatus'] === AuthStatus::SUCCESS);
+        assert ($gatewayPayment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input
+        );
 
         $msg = $input['gateway']['msg'];
 
@@ -76,12 +86,12 @@ class Gateway extends Base\Gateway
                     '');
         }
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
         $content['received'] = 1;
-        $payment->fill($content);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($content);
+        $this->repo->saveOrFail($gatewayPayment);
 
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
@@ -93,43 +103,45 @@ class Gateway extends Base\Gateway
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
-        $payment = $this->repo->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $content = $this->getPaymentRefundRequestContent($payment, $input);
+        $this->setTpv($gatewayPayment);
 
-        $content = $this->postRequest($content);
+        $requestContent = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
 
-        $content['refund_id'] = $input['refund']['id'];
-        $content['CurrencyType'] = 'INR';
-        $content['received'] = 1;
-        $refund = $this->createGatewayPaymentEntity($content);
+        // This may throw a gateway timeout exception or
+        // gateway request exception. These exceptions bubble up to api's
+        // refund processor and are handled there.
+        $response = $this->postRequest($requestContent);
 
-        if ($content['ProcessStatus'] !== 'Y')
+        $response['refund_id'] = $input['refund']['id'];
+        $response['CurrencyType'] = 'INR';
+        $response['received'] = 1;
+
+        $refund = $this->createGatewayPaymentEntity($response);
+
+        if ($response['ProcessStatus'] !== 'Y')
         {
-            //
-            // For very very few transactions, the payment status on billdesk changes
-            // after 1 whole day. These are automatically refunded by billdesk.
-            // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
-            // In that case, we need to let the refund go ahead.
+            $alreadyRefunded = $this->checkIfAlreadyRefunded($response, $input);
 
-            $refundAmount = (int) ($payment['RefAmount'] * 100);
-
-            if (($content['ErrorCode'] === 'ERR_REF009') and
-                ($payment['RefStatus'] === RefundStatus::CANCELLED) and
-                ($refundAmount === $input['payment']['amount']))
+            if ($alreadyRefunded === true)
             {
-                $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_REFUND,
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ALREADY_REFUNDED,
                     [
-                        'message' => 'Payment was already cancelled at this point by billdesk',
-                        'payment_id' => $input['payment']['id']
+                        'error_code'        => $response['ErrorCode'],
+                        'process_status'    => $response['ProcessStatus'],
+                        'response'          => $response,
+                        'input'             => $input,
                     ]);
 
                 return;
@@ -137,7 +149,7 @@ class Gateway extends Base\Gateway
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content]);
+                $response);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
@@ -166,6 +178,345 @@ class Gateway extends Base\Gateway
         return $content['CustomerID'];
     }
 
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+
+        $this->trace->info(
+            TraceCode::BILLDESK_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
+
+    protected function canForceRefund(array $input)
+    {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayEntities = $this->repo->findByPaymentId($paymentId);
+
+        $gatewayEntitiesCount = $gatewayEntities->count();
+
+        //
+        // There should be exactly one record for the payment ID.
+        // This one record should be of a successful authorization.
+        // Anything more than one is not expected and could be som
+        // kind of bug.
+        //
+
+        if ($gatewayEntitiesCount !== 1)
+        {
+            $this->trace->error(
+                TraceCode::MULTIPLE_GATEWAY_ENTITIES_FOUND,
+                [
+                    'count' => $gatewayEntitiesCount,
+                    'gateway_entities' => $gatewayEntities->toArrayPublic(),
+                ]);
+
+            return false;
+        }
+
+        $gatewayEntity = $gatewayEntities->first();
+
+        $gatewayAction = $gatewayEntity->getAction();
+        $gatewayReceived = $gatewayEntity->getReceived();
+        $gatewayAuthStatus = $gatewayEntity->getAuthStatus();
+        $gatewayCreatedAt = $gatewayEntity->getCreatedAt();
+        $gatewayUpdatedAt = $gatewayEntity->getUpdatedAt();
+
+        //
+        // The received attribute should be true always.
+        // But in case of late authorizations, received attribute will be false.
+        // For this, we check that the created_at and updated_at are different,
+        // since on verify, we update some fields in Billdesk if received is false.
+        //
+
+        if (($gatewayAction !== Action::AUTHORIZE) or
+            (($gatewayReceived !== true) and
+             ($gatewayCreatedAt === $gatewayUpdatedAt)) or
+            ($gatewayAuthStatus !== AuthStatus::SUCCESS))
+        {
+            $this->trace->warning(
+                TraceCode::BILLDESK_REFUND_UNEXPECTED_STATE,
+                [
+                    'action'        => $gatewayAction,
+                    'received'      => $gatewayReceived,
+                    'created_at'    => $gatewayCreatedAt,
+                    'updated_at'    => $gatewayUpdatedAt,
+                    'auth_status'   => $gatewayAuthStatus,
+                ]);
+
+            return false;
+        }
+
+        // The transaction id for the refund should be present. Otherwise, it means that
+        // the refund should come via normal flow and not via manualGatewayRefund.
+        assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
+    /**
+     * This only handles for payments which have exactly one refund (either full or partial).
+     * Currently, I don't see a way where we can handle this for multiple partial refunds too.
+     * And since timeouts are a rare case, I think this is fine.
+     * The worst that can happen is we don't have a corresponding entity in the gateway.
+     *
+     * @param array $input
+     * @return array
+     */
+    public function createRefundRecord(array $input)
+    {
+        $refundId = $input['refund'][Payment\Refund\Entity::ID];
+
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
+
+        $applicable = false;
+        $success = null;
+
+        if ($gatewayRefundEntity === null)
+        {
+            $applicable = true;
+
+            $this->action = Action::VERIFY;
+            list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
+
+            if ($refunded === true)
+            {
+                $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
+
+                $this->action = Action::REFUND;
+                $this->createGatewayPaymentEntity($refundContent);
+
+                $success = true;
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_REFUND_RECORD_CREATED,
+                    [
+                        'payment_id' => $paymentId,
+                        'refund_id'  => $refundId
+                    ]);
+            }
+            else
+            {
+                $success = false;
+
+                // It should have been refunded on the gateway side also. But, verify returned
+                // false in the verify response for refund.
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_REFUND_ABSENT,
+                    [
+                        'refund_id'         => $refundId,
+                        'payment_id'        => $paymentId,
+                        'verify_response'   => $verifyResponse,
+                    ]);
+            }
+        }
+
+        return [
+            'applicable'    => $applicable,
+            'success'       => $success,
+            'refund_id'     => $refundId,
+            'payment_id'    => $input['payment'][Payment\Entity::ID]
+        ];
+    }
+
+    protected function checkIfAlreadyRefunded(array $response, array $input)
+    {
+        //
+        // NOTE: Billdesk is NOT going to throw this error if the
+        // attempted refund is less than [transaction_amount - {refunds so far}]
+        // It will, instead, do an actual refund.
+        // This error is thrown only when the total refund
+        // equals/exceeds the total payment.
+        //
+        if ($response['ErrorCode'] === 'ERR_REF010')
+        {
+            return $this->validateAlreadyRefundedByApi($input);
+        }
+
+        if ($response['ErrorCode'] === 'ERR_REF009')
+        {
+            return $this->validateAutoRefundedByBilldesk($response, $input);
+        }
+
+        return false;
+    }
+
+    /**
+     * Conditions which we use to determine if a payment has been refunded by Billdesk
+     * If the query status is not Y, return false.
+     * If auth status is not success, return false.
+     * If ref status is neither refunded nor cancelled, return false.
+     * If ref amount is not equal to api's ref amount, return false.
+     *
+     * DISCLAIMER: Will not work as expected in the following case:
+     * There are 3 partial refunds with amounts 5, 10 and 15.
+     * The refunds with 5 and 10 go through successfully and
+     * the one with 15 fails due to some server issue on Billdesk side and that times out (db lock) on our end.
+     * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
+     * This below function will return back with TRUE because the refund amount totals 15. We will end up
+     * creating a refund entity on the gateway side even when we are not supposed to!
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function verifyIfRefunded(array $input)
+    {
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $verify->payment = $this->repo->findByPaymentIdAndAction(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
+
+        $verifyResponse = $this->sendPaymentVerifyRequest($verify);
+
+        if (($verifyResponse['QueryStatus'] !== QueryStatus::Y) or
+            ($verifyResponse['AuthStatus'] !== AuthStatus::SUCCESS) or
+            (($verifyResponse['RefStatus'] !== RefundStatus::REFUNDED) and
+             ($verifyResponse['RefStatus'] !== RefundStatus::CANCELLED)) or
+            ($verifyResponse['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
+        {
+            return [false, $verifyResponse];
+        }
+
+        $gatewayRefundAmount = (int) ($verifyResponse['RefAmount'] * 100);
+
+        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED];
+
+        return [($gatewayRefundAmount === $totalApiRefundAmount), $verifyResponse];
+    }
+
+    /**
+     * Constructs the refund data, whatever is available from the input and the verifyResponse.
+     *
+     * NOTE: We do not have any way to get the Billdesk Refund ID currently. Verify response
+     * does not contain the refund ID. Same with ErrorCode and ErrorReason.
+     *
+     * @param array $input
+     * @param array $verifyResponse
+     * @return array
+     */
+    protected function getRefundContentForGatewayEntity(array $input, array $verifyResponse)
+    {
+        $refStatus = $verifyResponse['RefStatus'];
+
+        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], 'Asia/Kolkata');
+        $txnDate = $txnDate->format('Ymd');
+
+        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], 'Asia/Kolkata');
+        $refDate = $refDate->format('YmdHis');
+
+        $refundContent = [
+            'payment_id'        => $input['payment'][Payment\Entity::ID],
+            'refund_id'         => $input['refund'][Payment\Refund\Entity::ID],
+            'received'          => 0,
+            'CurrencyType'      => 'INR',
+            'CustomerID'        => $verifyResponse['CustomerID'],
+            'MerchantID'        => $verifyResponse['MerchantID'],
+            'refund_status'     => RefundStatus::$statusMap[$refStatus],
+            'RefStatus'         => $refStatus,
+            // The refund request's request type is 0400. But, when we get the response back,
+            // it's 0410. We store that in the normal refund flow.
+            'RequestType'       => '0410',
+            'TxnAmount'         => $verifyResponse['TxnAmount'],
+            'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
+            'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
+            // The below two fields are not sent as part of refund response, but we get it in the verify response.
+            // 'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            // 'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            // This is not received in verify response. This indicates whether refund was successful.
+            'ProcessStatus'     => 'Y',
+            'TxnDate'           => $txnDate,
+            'RefDateTime'       => $refDate,
+        ];
+
+        return $refundContent;
+    }
+
+    /**
+     * It is possible that a refund was successful on Billdesk and
+     * we even created a record in the Billdesk Entity, but, due to some reason,
+     * it failed on the API side and we don't have a record of it.
+     * Billdesk sends an error code of ERR_REF010 when we try to refund it again.
+     *
+     * @param array $input
+     * @return bool
+     */
+    protected function validateAlreadyRefundedByApi(array $input)
+    {
+        $refundAmount = $input['amount'];
+
+        // We check whether we have a refund record for this particular
+        // payment already in the Billdesk entity.
+
+        $refundRecords = $this->repo->getSuccessfulRefundRecordForThePayment(
+            $input['payment'][Payment\Entity::ID]);
+
+        if (empty($refundRecords) === true)
+        {
+            return false;
+        }
+
+        foreach ($refundRecords as $refundRecord)
+        {
+            $recordedRefundAmount = $refundRecord->getRefundAmount() * 100;
+
+            if ($recordedRefundAmount === $refundAmount)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * For very very few transactions, the payment status on billdesk changes
+     * after 1 whole day. These are automatically refunded by billdesk.
+     * So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
+     * In that case, we need to let the refund go ahead.
+     *
+     * @param array $response
+     * @param array $input
+     * @return bool
+     */
+    protected function validateAutoRefundedByBilldesk(array $response, array $input)
+    {
+        $refundAmount = (int) ($response['RefAmount'] * 100);
+
+        if (($response['RefStatus'] === RefundStatus::CANCELLED) and
+            ($refundAmount === $input['amount']))
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_REFUND,
+                [
+                    'message' => 'Payment was already cancelled at this point by billdesk',
+                    'payment_id' => $input['payment']['id']
+                ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
@@ -175,7 +526,7 @@ class Gateway extends Base\Gateway
 
         if ($content['QueryStatus'] !== QueryStatus::Y)
         {
-            $this->verifyPaymentNonExistentCase($content, $verify, $payment);
+            $this->verifyPaymentNonExistentCase($verify, $payment);
         }
         else if ($content['AuthStatus'] === AuthStatus::SUCCESS)
         {
@@ -199,13 +550,13 @@ class Gateway extends Base\Gateway
                 $content['ItemCode']);
 
             $payment->fill($content);
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
         }
 
         return $status;
     }
 
-    protected function verifyPaymentNonExistentCase($content, $verify, $payment)
+    protected function verifyPaymentNonExistentCase($verify, $payment)
     {
         // Could be the case where the transaction didn't even hit billdesk
         if (($payment['received'] === false) and
@@ -296,7 +647,7 @@ class Gateway extends Base\Gateway
         $content = $this->getPaymentVerifyRequestContentArray($verify);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $content);
 
         $content = $this->postRequest($content);
@@ -304,7 +655,7 @@ class Gateway extends Base\Gateway
         unset($content['Checksum']);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $content);
 
         $verify->verifyResponse = $this->response;
@@ -321,17 +672,19 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $content = array(
+        $content = [
             'RequestType'   => '0122',
             'Merchant ID'   => $input['terminal']['gateway_merchant_id'],
             'Customer ID'   => $input['payment']['id'],
             'Current Date/ Timestamp' => $now,
-        );
+        ];
 
         if ($this->mode === Mode::TEST)
         {
             $content['Merchant ID'] = $this->getTestMerchantId();
         }
+
+        $this->setTpv($verify->payment);
 
         return $content;
     }
@@ -352,7 +705,7 @@ class Gateway extends Base\Gateway
         $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
         $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
 
-        $content = array(
+        $content = [
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
@@ -365,7 +718,7 @@ class Gateway extends Base\Gateway
             'Filler1'           => 'NA',
             'Filler2'           => 'NA',
             'Filler3'           => 'NA',
-        );
+        ];
 
         if ($this->mode === Mode::TEST)
         {
@@ -394,11 +747,11 @@ class Gateway extends Base\Gateway
 
         $method = $form->getMethod();
 
-        $request = array(
-            'url' => $form->getUri(),
-            'method' => strtolower($method),
+        $request = [
+            'url'     => $form->getUri(),
+            'method'  => strtolower($method),
             'content' => $form->getValues(),
-        );
+        ];
 
         return $request;
     }
@@ -415,36 +768,11 @@ class Gateway extends Base\Gateway
     protected function postRequest($content)
     {
         $request = $this->getRequestArrayWithProxy($content);
-        $request['options']['timeout'] = 30;
+        $request['options']['timeout'] = 60;
 
-        try
-        {
-            $response = $this->sendGatewayRequest($request);
-        }
-        catch (\Requests_Exception $e)
-        {
-            throw new Exception\RuntimeException(
-                'Billdesk payment verification request failed.', null, $e);
-        }
+        $this->response = $this->sendGatewayRequest($request);
 
-        $this->response = $response;
-
-        $statusCode = $response->status_code;
-        if ($statusCode !== 200)
-        {
-            if ($statusCode === 504)
-            {
-                throw new Exception\GatewayTimeoutException(
-                    'Http status code - 504');
-            }
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                '',
-                'Wrong status code: ' . $response->status_code);
-        }
-
-        $content = $this->getContentAfterChecksumVerification($response->body);
+        $content = $this->getContentAfterChecksumVerification($this->response->body);
 
         return $content;
     }
@@ -474,7 +802,7 @@ class Gateway extends Base\Gateway
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
 
-        $content = array(
+        $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
             'AccountNumber'             => 'NA',
@@ -497,11 +825,17 @@ class Gateway extends Base\Gateway
             'Unknown10'                 => 'NA',
             'Unknown11'                 => 'NA',
             'RU'                        => $input['callbackUrl'],
-        );
+        ];
 
         // Change Content for Merchants with TPV Required
-        if ($input['merchant']->isTPVRequired())
+        if ($this->isTPVEnabled())
         {
+            if (isset($input['order']['account_number']) === false)
+            {
+                throw new Exception\LogicException(
+                    'Bank account number should have been present');
+            }
+
             $content['AccountNumber'] = $input['order']['account_number'];
         }
 
@@ -517,14 +851,16 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment->setPaymentId($attributes['CustomerID']);
 
-        $payment->fill($attributes);
-        $payment->setAction($this->action);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->setAction($this->action);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        return $payment;
+        $this->setTpv($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     public function getMessageStringWithHash($content)
@@ -570,7 +906,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content)
+    protected function getRequestArray(array $content)
     {
         $msg = $this->getMessageStringWithHash($content);
 
@@ -578,18 +914,18 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_CHECKSUM_VERIFY_REQUEST,
             [$msg]);
 
-        $request = array(
-            'url' => $this->getUrl($this->action),
-            'method' => 'post',
+        $request = [
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
             'content' => ['msg' => $msg],
-        );
+        ];
 
         return $request;
     }
 
     protected function getSecurityId()
     {
-        if ($this->input['merchant']->isTPVRequired())
+        if ($this->isTPVEnabled())
         {
             return $this->config['live_access_code_sec'];
         }
@@ -597,13 +933,53 @@ class Gateway extends Base\Gateway
         return $this->config['live_access_code'];
     }
 
-    protected function getLiveSecret()
+    public function getSecret()
     {
-        if ($this->input['merchant']->isTPVRequired())
+        if ($this->isTPVEnabled())
         {
+            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+
             return $this->config['live_hash_secret_sec'];
         }
 
         return $this->config['live_hash_secret'];
+    }
+
+    protected function isTPVEnabled()
+    {
+        if ($this->tpv === true)
+        {
+            return true;
+        }
+        else if (isset($this->input['merchant']))
+        {
+            // If merchant is tpv then terminal should also be tpv
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                assert ($this->input['terminal']->isTpv() === true);
+
+                return true;
+            }
+
+            // If merchant is not tpv then terminal should also not be tpv
+            assert ($this->input['terminal']->isNotTpv() === true);
+        }
+
+        return false;
+    }
+
+    protected function setTpv(Entity $gatewayPayment)
+    {
+        $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
+    {
+        if (($gatewayPayment->isTpv()))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
