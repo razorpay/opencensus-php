@@ -1385,3 +1385,6 @@ ALTER TABLE merchants
 # vpc_Command in axis table
 ALTER TABLE axis
     MODIFY vpc_Command VARCHAR(20) NOT NULL;
+------
+# Following query was executed to add a new column to admin table
+alter table admins add column allow_all_merchants boolean default 0;
