@@ -369,10 +369,14 @@ class Gateway extends Base\Gateway
      * DISCLAIMER: Will not work as expected in the following case:
      * There are 3 partial refunds with amounts 5, 10 and 15.
      * The refunds with 5 and 10 go through successfully and
-     * the one with 15 fails due to some server issue on Billdesk side and that times out on our end.
+     * the one with 15 fails due to some server issue on Billdesk side and that times out (db lock) on our end.
      * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
      * This below function will return back with TRUE because the refund amount totals 15. We will end up
      * creating a refund entity on the gateway side even when we are not supposed to!
+     *
+     * @param array $input
+     *
+     * @return array
      */
     protected function verifyIfRefunded(array $input)
     {
@@ -394,7 +398,7 @@ class Gateway extends Base\Gateway
 
         $gatewayRefundAmount = (int) ($verifyResponse['RefAmount'] * 100);
 
-        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED] + $input['refund'][Payment\Refund\Entity::AMOUNT];
+        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED];
 
         return [($gatewayRefundAmount === $totalApiRefundAmount), $verifyResponse];
     }
@@ -435,9 +439,10 @@ class Gateway extends Base\Gateway
             'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
             'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
             // The below two fields are not sent as part of refund response, but we get it in the verify response.
-            //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
-            //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
-            'ProcessStatus'     => $verifyResponse['ProcessStatus'],
+            // 'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            // 'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            // This is not received in verify response. This indicates whether refund was successful.
+            'ProcessStatus'     => 'Y',
             'TxnDate'           => $txnDate,
             'RefDateTime'       => $refDate,
         ];

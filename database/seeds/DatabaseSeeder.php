@@ -292,156 +292,6 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_ICICI,
-            //         'name'          =>  'Razorpay Nodal Account',
-            //         'email'         =>  'icici1@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'icici1@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6lFupOxpf36BY3',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_ICICI,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime
-            //         )
-            //     );
-
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'name'          =>  'Razorpay Atom Account',
-            //         'email'         =>  'icici2@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'icici2@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6lFupOxpf36BY3',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime
-            //         )
-            //     );
-
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'name'          =>  'Razorpay Fee Account',
-            //         'email'         =>  'icici3@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'icici3@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6lFupOxpf36BY3',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_ICICI,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime
-            //         )
-            //     );
-
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'name'          =>  'Test Account',
-            //         'email'         =>  'bob1@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'bob1@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6dLbNSpv5XbCOI',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'balance'       =>  100000,
-            //         'credits'       =>  50000,
-            //         'on_hold'       =>  10000,
-            //     )
-            // );
-
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'name'          =>  'Shared Account',
-            //         'email'         =>  'bob2@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'bob2@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6dLbNSpv5XbCOI',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::TEST_ACCOUNT_BOB,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         )
-            //     );
-
-            // DB::table(Table::MERCHANT)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_BOB,
-            //         'name'          =>  'Demo Account',
-            //         'email'         =>  'bob3@razorpay.com',
-            //         'category'      =>  '1234',
-            //         'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         'transaction_report_email'=>'bob3@razorpay.com',
-            //         'settlement_schedule' => 3,
-            //         'risk_rating'   => 3,
-            //         'fee_bearer'    => 0,
-            //         'org_id'        => '6dLbNSpv5XbCOI',
-            //         )
-            //     );
-
-            // DB::table(Table::BALANCE)->insert(
-            //     array(
-            //         'id'            =>  Account::DEMO_ACCOUNT_BOB,
-            //         'created_at'    =>  $currentTime,
-            //         'updated_at'    =>  $currentTime,
-            //         )
-            //     );
-
             if ($name === Mode::TEST)
             {
                 $this->createTestTerminals();
@@ -501,56 +351,41 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ADMIN)->insert([
                 [
-                    'id'            => '6dLbNSpv5Ybbbb',
-                    'email'         => 'rzp@hdfcbank.in',
-                    'name'          => 'Test HDFC Account',
-                    'username'      => 'rzp',
+                    'id'                  => '6dLbNSpv5Ybbbb',
+                    'email'               => 'rzp@hdfcbank.in',
+                    'name'                => 'Test HDFC Account',
+                    'username'            => 'rzp',
                     // Hash::make(123456)
-                    'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
-                    'org_id'        => '6dLbNSpv5XbCOG',
-                    'employee_code' => '010',
-                    'department_code'=> 'ADMIN',
-                    'branch_code'   => 'HDFC010',
-                    'supervisor_code' => '001',
-                    'location_code' => 'BLR',
-                    'last_login_at' => $todayTime,
-                    'created_at'    => $todayTime,
-                    'updated_at'    => $todayTime,
+                    'password'            => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
+                    'org_id'              => '6dLbNSpv5XbCOG',
+                    'employee_code'       => '010',
+                    'department_code'     => 'ADMIN',
+                    'branch_code'         => 'HDFC010',
+                    'supervisor_code'     => '001',
+                    'location_code'       => 'BLR',
+                    'last_login_at'       => $todayTime,
+                    'created_at'          => $todayTime,
+                    'updated_at'          => $todayTime,
+                    'allow_all_merchants' => true,
                 ],
-                // [
-                //     'id'            => '6dLbNSpv5Ybbbc',
-                //     'email'         => 'test@hdfcbank.in',
-                //     'name'          => 'Test HDFC Account',
-                //     'username'      => 'test',
-                //     // Hash::make(123456)
-                //     'password'      => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
-                //     'org_id'        => '6dLbNSpv5XbCOG',
-                //     'employee_code' => '011',
-                //     'department_code'=> 'ADMIN',
-                //     'branch_code'   => 'HDFC010',
-                //     'supervisor_code' => '001',
-                //     'location_code' => 'BLR',
-                //     'last_login_at' => $todayTime,
-                //     'created_at'    => $todayTime,
-                //     'updated_at'    => $todayTime,
-                // ]
             ]);
 
             DB::table(Table::ADMIN)->insert([
                 [
-                    'id'            => '6dLbNSpv5Ycccc',
-                    'email'         => 'harshil@razorpay.com',
-                    'name'          => 'Harshil Mathur',
-                    'username'      => 'harshil',
-                    'org_id'        => '100000razorpay',
-                    'employee_code' => '001',
-                    'branch_code'   => 'RZP001',
-                    'department_code'=> 'ADMIN',
-                    'supervisor_code' => '001',
-                    'location_code'   => 'BLR',
-                    'last_login_at' => null,
-                    'created_at'    => $todayTime,
-                    'updated_at'    => $todayTime,
+                    'id'                  => '6dLbNSpv5Ycccc',
+                    'email'               => 'rishabh.pugalia@razorpay.com',
+                    'name'                => 'Rishabh Pugalia',
+                    'username'            => 'rishabhp',
+                    'org_id'              => '100000razorpay',
+                    'employee_code'       => '001',
+                    'branch_code'         => 'RZP001',
+                    'department_code'     => 'ADMIN',
+                    'supervisor_code'     => '001',
+                    'location_code'       => 'BLR',
+                    'last_login_at'       => null,
+                    'created_at'          => $todayTime,
+                    'updated_at'          => $todayTime,
+                    'allow_all_merchants' => true,
                 ]
             ]);
 

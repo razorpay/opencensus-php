@@ -758,6 +758,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
+    public function isGatewayCaptured()
+    {
+        return ($this->getAttribute(self::GATEWAY_CAPTURED) === true);
+    }
+
     public function isCard()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
@@ -980,7 +985,7 @@ class Entity extends Base\PublicEntity
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
 
-        return floor($diff / (60*24*24));
+        return floor($diff / (60 * 24 * 24));
     }
 
     public function getEmiPlanId()

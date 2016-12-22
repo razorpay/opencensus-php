@@ -213,7 +213,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'refund'          => Refund\Entity::class,
             'transfer'        => Transfer\Entity::class,
             'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\MerchantDetail\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
         ]);
     }
 }

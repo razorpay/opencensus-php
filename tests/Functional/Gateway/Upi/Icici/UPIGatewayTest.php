@@ -98,6 +98,21 @@ EOT;
         return $paymentId;
     }
 
+    public function testPaymentS2S()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        return $paymentId;
+    }
+
     public function testPaymentWithRandomResponseCode()
     {
         $this->payment['vpa'] = 'unknownresponse@icici';

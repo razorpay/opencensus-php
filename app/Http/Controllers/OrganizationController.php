@@ -2,126 +2,118 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use App;
-use Redirect;
 use Request;
+use ApiResponse;
 use RZP\Models\Admin;
+use RZP\Models\Admin\Org;
 
-class AdminController extends Controller
+class OrganizationController extends Controller
 {
-    public function getEntityMultiple($type)
+    public function postOrganization(Org\Service $orgService)
     {
         $input = Request::all();
 
-        $data = (new Admin\Service)->fetchMultipleEntities($type, $input);
+        $data = $orgService->create($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getEntityById($type, $id)
+    public function getOrganization(Org\Service $orgService, $id)
     {
-        $data = (new Admin\Service)->fetchEntityById($type, $id);
+        $data = $orgService->fetch($id);
 
         return ApiResponse::json($data);
     }
 
-    public function postSendTestNewsletter()
+    public function getOrganizationByHostname(Org\Service $orgService, $hostname)
     {
-        $input = Request::all();
-
-        $data = (new Admin\Service)->sendTestNewsletter($input);
+        $data = $orgService->fetchByHostname($hostname);
 
         return ApiResponse::json($data);
     }
 
-    public function postSendNewsletter()
+    public function getOrganizations(Org\Service $orgService)
     {
         $input = Request::all();
 
-        $data = (new Admin\Service)->sendNewsletter($input);
+        $data = $orgService->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getTransparentRedirect()
+    public function putOrganization(Org\Service $orgService, string $id)
     {
         $input = Request::all();
 
-        if (isset($input['url']))
-        {
-            $url = $input['url'];
-            unset($input['url']);
+        $data = $orgService->edit($id, $input);
 
-            $query = http_build_query($input);
-            $url .= '?'.$query;
-
-            return Redirect::to($url);
-        }
+        return ApiResponse::json($data);
     }
 
-    public function postTransparentRedirect()
+    public function deleteOrganization(Org\Service $orgService, string $id)
     {
-        $input = Request::all();
-    }
-
-    public function getScorecard()
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Scorecard)->generateScorecard($input);
+        $data = $orgService->delete($id);
 
         return ApiResponse::json($data);
     }
 
 // --------------------- CRUD for Admins   ---------------------------------------
 
-    public function getAdmin($orgId, $id)
+    public function getAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->getAdmin($orgId, $id);
+        $data = (new Admin\Admin\Service)->getAdmin($id, $adminId);
 
         return ApiResponse::json($data);
     }
 
-    public function getAdminByAppAuth(string $orgId)
+    public function getAdminByAppAuth(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->getAdminByAppAuth($orgId, $input);
+        $data = (new Admin\Admin\Service)->getAdminByAppAuth($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function createAdmin($orgId)
+    public function createAdmin($id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->createAdmin($orgId, $input);
+        $data = (new Admin\Admin\Service)->createAdmin($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteAdmin($orgId, $adminId)
+    public function deleteAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->deleteAdmin($orgId, $adminId);
+        $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchAdminMultiple(string $orgId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->fetchMultiple($orgId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function editAdmin(string $orgId, string $id)
+    public function fetchAdminMultiple(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->editAdmin($orgId, $id, $input);
+        $data = (new Admin\Admin\Service)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAdminMultipleOnAppAuth()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->fetchMultipleOnAppAuth($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function editAdmin(string $id, string $adminId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->editAdmin($id, $adminId, $input);
 
         return ApiResponse::json($data);
     }
@@ -133,78 +125,44 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantIds($orgId, $id)
-    {
-        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($orgId, $id);
-
-        return ApiResponse::json($merchantIds);
-    }
-
-    public function postAuthenticate(Admin\Admin\Service $adminService, string $orgId)
-    {
-        $input = Request::all();
-
-        $response = $adminService->authenticate($orgId, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function postPasswordReset(Admin\Admin\Service $adminService, string $orgId)
-    {
-        $input = Request::all();
-
-        $response = $adminService->passwordReset($orgId, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function oAuthLogin(string $orgId)
-    {
-        $input = Request::all();
-
-        $data = (new Admin\Admin\Service)->loginWithOAuth($input);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
-    public function createRole(string $orgId)
+    public function createRole(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->create($orgId, $input);
+        $data = (new Admin\Role\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getRole(string $orgId, string $id)
+    public function getRole(string $id, string $roleId)
     {
-        $data = (new Admin\Role\Service)->getRole($orgId, $id);
+        $data = (new Admin\Role\Service)->getRole($id, $roleId);
 
         return ApiResponse::json($data);
     }
 
-    public function getMultipleRoles(string $orgId)
+    public function getMultipleRoles(string $id)
     {
-        $data = (new Admin\Role\Service)->getMultipleRoles($orgId);
+        $data = (new Admin\Role\Service)->getMultipleRoles($id);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteRole(string $orgId, string $id)
+    public function deleteRole(string $id, string $roleId)
     {
-        $data = (new Admin\Role\Service)->deleteRole($orgId, $id);
+        $data = (new Admin\Role\Service)->deleteRole($id, $roleId);
 
         return ApiResponse::json($data);
     }
 
-    public function putRole(string $orgId, string $id)
+    public function putRole(string $id, string $roleId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->putRole($orgId, $id, $input);
+        $data = (new Admin\Role\Service)->putRole($id, $roleId, $input);
 
         return ApiResponse::json($data);
     }
@@ -212,28 +170,27 @@ class AdminController extends Controller
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------
-
-    public function createGroup(string $orgId)
+    public function createGroup(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->createGroup($orgId, $input);
+        $data = (new Admin\Group\Service)->createGroup($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getGroup(string $orgId, string $id)
+    public function getGroup(string $id, string $groupId)
     {
-        $data = (new Admin\Group\Service)->getGroup($orgId, $id);
+        $data = (new Admin\Group\Service)->getGroup($id, $groupId);
 
         return ApiResponse::json($data);
     }
 
-    public function getGroupsMultiple(string $orgId)
+    public function getGroupsMultiple(string $id)
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->fetchMultiple($orgId, $input);
+        $data = (new Admin\Group\Service)->fetchMultiple($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -242,27 +199,27 @@ class AdminController extends Controller
         We'll fetch all the groups eligible to be the "parent"
         of the incoming groupID
     */
-    public function getAllowedGroups(string $orgId, string $id)
+    public function getAllowedGroups(string $id, string $groupId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->fetchEligibleParents($orgId, $id, $input);
+        $data = (new Admin\Group\Service)->fetchEligibleParents($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function putGroup(string $orgId, string $id)
+    public function putGroup(string $id, string $groupId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->editGroup($orgId, $id, $input);
+        $data = (new Admin\Group\Service)->editGroup($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteGroup(string $orgId, string $id)
+    public function deleteGroup(string $id, string $groupId)
     {
-        $data = (new Admin\Group\Service)->deleteGroup($orgId, $id);
+        $data = (new Admin\Group\Service)->deleteGroup($id, $groupId);
 
         return ApiResponse::json($data);
     }
@@ -314,6 +271,35 @@ class AdminController extends Controller
 
 // --------------------- END CRUD for Permissions ----------------------------------------
 
+    /**
+    * Admin related functons
+    */
+    public function postAuthenticate(Admin\Admin\Service $adminService, string $id)
+    {
+        $input = Request::all();
+
+        $response = $adminService->authenticate($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postPasswordReset(Admin\Admin\Service $adminService, string $id)
+    {
+        $input = Request::all();
+
+        $response = $adminService->passwordReset($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function oAuthLogin(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Admin\Service)->loginWithOAuth($input);
+
+        return ApiResponse::json($data);
+    }
 
     public function postMailgunCallback($type)
     {
@@ -322,6 +308,13 @@ class AdminController extends Controller
         $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
 
         return ApiResponse::json([], $responseStatus);
+    }
+
+    public function getMerchantIds($id, $adminId)
+    {
+        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($id, $adminId);
+
+        return ApiResponse::json($merchantIds);
     }
 
     public function postLockBulkAccounts(Admin\Admin\Service $adminService)
