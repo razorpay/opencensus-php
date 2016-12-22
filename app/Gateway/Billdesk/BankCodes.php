@@ -29,7 +29,6 @@ class BankCodes
         IFSC::IBKL => 'IDB',
         IFSC::INDB => 'IDS',
         IFSC::IDIB => 'INB',
-        // IFSC::VYSA => 'ING',
         IFSC::IOBA => 'IOB',
         IFSC::JAKA => 'JKB',
         IFSC::KARB => 'KBL',
