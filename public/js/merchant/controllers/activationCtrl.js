@@ -84,6 +84,20 @@ app.controller('ActivationCtrl', [
         if (data.data.locked === 1) {
           $scope.locked = true;
         }
+
+        // ====
+        // Heimdall specific
+        // ====
+
+        if ($scope.org === 'hdfc') {
+          if (!$scope.data[4].bank_branch_ifsc) {
+            $scope.data[4].bank_branch_ifsc = 'HDFC';
+          }
+
+          if (!$scope.data[4].bank_account_type) {
+            $scope.data[4].bank_account_type = 'Current';
+          }
+        }
       });
     }
     function saveStep(step) {
@@ -202,5 +216,12 @@ app.controller('ActivationCtrl', [
         $scope.check[step] = false;
       });
     }
+
+    // =====
+    // Heidmall specific changes
+    // =====
+
+    // Get org details for certain display things
+    $scope.org = location.hostname.indexOf('wl') !== -1 ? 'hdfc' : localStorage.getItem('theme');
   }
 ]);

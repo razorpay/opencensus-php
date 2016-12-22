@@ -8,8 +8,14 @@ app.controller('MerchantDetailCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'riskMap',
+  'admin',
   '$upload',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, $upload) {
+  'organization',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization) {
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
+
     $scope.riskMap = riskMap;
     // 5 Lac INR
     $scope.DEFAULT_MAX_PAYMENT_AMOUNT = 50000000;
@@ -21,6 +27,9 @@ app.controller('MerchantDetailCtrl', [
         live: 0
       }
     };
+
+    $scope.groups = organization.fetchGroups();
+    $scope.selected_groups = {};
 
     generateMerchant();
     $scope.lockForm = function () {
@@ -432,7 +441,7 @@ app.controller('MerchantDetailCtrl', [
      * Sends the final edit merchant ajax call
      * @param  Object merchant
      */
-    $scope.editMerchant = function (merchant) {
+    $scope.editMerchant = function (merchant, selected_groups) {
 
       var dropUnchangedFields = function(merchant) {
         for (var i in merchant) {
@@ -453,6 +462,7 @@ app.controller('MerchantDetailCtrl', [
       };
 
       dropUnchangedFields(merchant);
+      merchant['groups'] = Object.keys(selected_groups);
 
       var request = $http({
         method: 'post',
@@ -699,11 +709,17 @@ app.controller('MerchantDetailCtrl', [
             // Return a copy of current merchant details
             // instead of returning a reference
             return jQuery.extend({}, $scope.merchant.details);
-          }
+          },
+          groups: function () {
+            return jQuery.extend({}, $scope.groups);
+          },
+          selected_groups: function () {
+            return $scope.selected_groups;
+          },
         }
       });
       modalInstance.result.then(function (merchant) {
-        $scope.editMerchant(merchant);
+        $scope.editMerchant(merchant, $scope.selected_groups);
       }, $.noop);
     };
     $scope.openEditMerchantEmail = function () {
@@ -897,6 +913,10 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           $scope.referer = getReferer($scope.merchant.details.tags);
           $scope.merchant.details.international = data.data.details.international;
+          var merchantGroups = data.data.groups || [];
+          merchantGroups.map(function(group){
+            $scope.selected_groups[group.id] = true;
+          });
           fetchBalance();
           getMerchantFeatures();
 
@@ -1160,9 +1180,13 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   'riskMap',
-  function ($scope, $modalInstance, current, riskMap) {
+  'groups',
+  'selected_groups',
+  function ($scope, $modalInstance, current, riskMap, groups, selected_groups) {
 
     $scope.riskMap = riskMap;
+    $scope.groups = groups;
+    $scope.selected_groups = selected_groups;
 
     if (!current.website) {
       current.website = current.merchant_details.business_website;
@@ -1173,6 +1197,9 @@ app.controller('MerchantDetailCtrl', [
     if (!current.transaction_report_email) {
       current.transaction_report_email = current.merchant_details.transaction_report_email;
     }
+    angular.forEach(current.groups, function (group) {
+      $scope.selected_groups[group.id] = true;
+    });
 
     $scope.current = current;
     $scope.ok = function (merchant) {

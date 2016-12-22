@@ -4,7 +4,8 @@ app.controller('ForgotPasswordCtrl', [
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.data = {};
@@ -12,7 +13,6 @@ app.controller('ForgotPasswordCtrl', [
       var request = $http({
         method: 'post',
         url: '/user/password/reset',
-        transformRequest: transformRequestAsFormPost,
         data: $scope.data
       });
       request.success(function (data) {
@@ -28,5 +28,11 @@ app.controller('ForgotPasswordCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+
+      $scope.data.hostname = data.hostname;
+    });
   }
 ]);

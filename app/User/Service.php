@@ -16,6 +16,8 @@ use App\Merchant;
 use App\MerchantDetails;
 use App\User;
 use App\Lead;
+use App\AdminLead;
+use App\Generic;
 
 use Queue;
 
@@ -86,9 +88,8 @@ class Service extends Base\Service
         // in the meantime. $user will be equal to the user with the same email
         // as the invited user
         if ($invitationToken)
-
         {
-            list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
+            list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
             // the invitation
             $input['email'] = $invitation->email;
@@ -102,6 +103,7 @@ class Service extends Base\Service
         {
             $user = $this->buildUserEntity($input);
 
+            // For Drip marketing. Where URL has ?email=abc@xyz.com
             $this->updateLeadIfExists($user);
         }
 
@@ -117,10 +119,10 @@ class Service extends Base\Service
                 'business_name' =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
+
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
-
-        elseif ($invitationToken)
+        else if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
             $data['login'] = true;
@@ -170,6 +172,21 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        Auth::guard('user')->login($user);
+    }
+
+    protected function attachMerchantToAdmin(Merchant\Entity $merchant, User\Entity $user, AdminLead\Entity $invitation)
+    {
+        $input = ['body' => ['admin_id' => $invitation->admin_id], 'method' => 'post'];
+
+        $route = 'merchants/'.$merchant->id.'/admins';
+
+        (new Merchant\Service)->confirm($merchant->confirm_token);
+
+        $response = (new Generic\Service)->makeRawApiCallInternal($input, $route);
 
         $this->subscribeToMailingList($user);
 

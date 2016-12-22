@@ -76,7 +76,9 @@ abstract class Mailer
      */
     public function queue()
     {
-        $this->queue = true;
+        // TODO: IMPORTANT HAVE TO CHANGE THIS
+        // $this->queue = true;
+        $this->queue = false;
         return $this;
     }
 

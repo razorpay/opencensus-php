@@ -162,28 +162,38 @@ angular.module('app.services', [])
 .factory('alertsFactory', function () {
   var handler = function() {
     this.alerts = [];
+
     this.getAlerts = function () {
       return this.alerts;
     };
+
     this.closeAlert = function (index) {
       this.alerts.splice(index, 1);
     };
+
     this.addAlert = function ($type, $message, reset) {
       $message = $message || 'An error occured.';
-      if (reset)
+      if (reset) {
         this.alerts = [];
+      }
       this.alerts.push({
         type: $type,
         msg: $message
       });
+
+      window.scrollTo(0, 0)
     };
+
     this.resetAlerts = function (last) {
-      if (!last)
+      if (!last) {
         this.alerts = [];
-      else
+      }
+      else {
         this.alerts.pop();
+      }
     };
   };
+
   return {
     getHandler: function () {
       return new handler();
@@ -262,6 +272,267 @@ angular.module('app.services', [])
     };
   }
 ])
+//Organization
+.factory('organization', [
+  '$q',
+  '$http',
+  '$timeout',
+  '$idle',
+  function ($q, $http, $timeout, $idle) {
+
+    var _org
+      , _roles;
+
+    return {
+      fetchCurrentOrg: function () {
+        var deferred = $q.defer();
+
+        if (angular.isDefined(_org)) {
+          deferred.resolve(_org);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/org')
+          .success(function (data) {
+            if (data.success) {
+              _org = data.data;
+            }
+
+            deferred.resolve(_org);
+          });
+
+        return deferred.promise;
+      },
+      addOrEditRole: function (role) {
+        var deferred = $q.defer();
+        var _this = this;
+        var roleId = role.id;
+
+        delete role.id;
+
+        // Request for creating
+        var request_data = {
+          url: '/admin/generic',
+          method: 'POST',
+          params: {
+            route_name: 'role_create'
+          },
+          data: {
+            body: role
+          }
+        }
+
+        if (roleId) {
+          request_data = $.extend(request_data, {
+            method: 'PUT',
+            params: {
+              route_name: 'role_edit',
+              url_params: {
+                '{roleId}': roleId
+              }
+            },
+
+          });
+        }
+
+        $http(request_data)
+        .success(function (data) {
+          if (data.success) {
+            _roles = undefined;
+            deferred.resolve(data.data);
+          } else {
+            deferred.reject(data.errors);
+          }
+        })
+        .error(function(data) {
+          deferred.reject(data.errors);
+        });
+
+        return deferred.promise;
+      },
+      fetchRoles: function () {
+        var deferred = $q.defer();
+        var _this = this;
+
+        if (angular.isDefined(_roles)){
+          deferred.resolve(_roles);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/generic', {
+            ignoreErrors: true,
+            params: {
+              route_name: 'role_get_multiple'
+            }
+          })
+          .success(function (data) {
+            if (data.success) {
+              _roles = data.data.items;
+              deferred.resolve(_roles);
+            } else {
+              deferred.reject(data.errors);
+            }
+          })
+          .error(function(data) {
+            deferred.reject(data.errors);
+          });
+
+        return deferred.promise;
+      },
+      // No caching implemented
+      fetchGroups: function () {
+        var deferred = $q.defer();
+
+        var groups = [];
+
+        $http.get('/admin/generic', {
+          params: {
+            route_name: 'group_get_multiple',
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (group) {
+                var groupObj = {
+                  id: group.id,
+                  name: group.name,
+                  description: group.description
+                };
+
+                groups.push(groupObj);
+              });
+
+              deferred.resolve(groups);
+            }
+          }
+          else {
+            groups = [];
+          }
+        }).error(function () {
+          return data.errors
+        });
+
+        return deferred.promise;
+      },
+      fetchAllowedGroups: function (groupId) {
+        var deferred = $q.defer();
+
+        var allowed_groups = [];
+
+        $http.get('/admin/generic', {
+          params: {
+            route_name: 'group_get_allowed_groups',
+            url_params: {
+              '{groupId}': groupId  //TODO Add actual ids
+            }
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data) {
+              angular.forEach(data.data, function (group) {
+                var groupObj = {
+                  id: group.id,
+                  name: group.name,
+                  description: group.description
+                };
+
+                allowed_groups.push(groupObj);
+              });
+
+              deferred.resolve(allowed_groups);
+            }
+          }
+          else {
+            allowed_groups = [];
+          }
+        }).error(function () {
+
+        });
+
+        return deferred.promise;
+      },
+      fetchPermissions: function () {
+        if (this.permissions) {
+          return this.permissions;
+        }
+
+        var perms = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'permission_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (perm) {
+                perms.push(perm);
+              });
+            }
+          }
+          else {
+            perms = {};
+          }
+        }).error(function () {
+        });
+        return this.permissions = perms;
+      },
+      fetchUsers: function () {
+        if (this.users) {
+          return this.users;
+        }
+
+        var users = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'admin_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (user) {
+                users.push(user);
+              });
+            }
+          }
+          else {
+            users = {};
+          }
+        }).error(function () {
+        });
+        return this.users = users;
+      }
+    };
+  }
+])
+.factory('theme', [
+  '$rootScope',
+  '$state',
+  'admin',
+  '$location',
+  '$http',
+  function ($rootScope, $state, admin, $location) {
+    return {
+      apply: function (themeVars) {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+
+        var rules = themes.theme(themeVars);
+
+        if (style.styleSheet) {
+          style.styleSheet.cssText = rules;
+        } else {
+          style.appendChild(document.createTextNode(rules));
+        }
+        document.getElementsByTagName('head')[0].appendChild(style);
+      }
+    }
+  }
+])
+
 //Authorisation service
 //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('adminAuthorization', [
@@ -269,13 +540,35 @@ angular.module('app.services', [])
   '$state',
   'admin',
   '$location',
-  function ($rootScope, $state, admin) {
+  '$http',
+  function ($rootScope, $state, admin, $location) {
     return {
       authorize: function () {
-        return admin.identity().then(function () {
+
+        var promise = admin.identity().then(function () {
+
+          // Direct access to /admin (w/o hash) should always trigger auth
+          // if the admin is not logged in
+          if (!$rootScope.toState) {
+            if (admin.isAuthenticated()) {
+              $state.go('app.dashboard');
+            }
+            else {
+              window.location.href = '/admin/auth';
+            }
+
+            return;
+          }
+
+          // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
-            if (admin.isAuthenticated() === false)
-              location.reload();
+
+            // If you are not logged in and not on the signin page
+            if (admin.isAuthenticated() === false) {
+              // Will cause redirect
+              window.location.href = '/admin/auth';
+            }
+
             // user is signed in but not authorized for desired state
             if ($rootScope.toState.data.superadmin) {
               admin.identity().then(function (data) {
@@ -283,11 +576,16 @@ angular.module('app.services', [])
                   $state.go('app.dashboard');
               });
             }
-          } else if ($rootScope.toState.data.role === 'guest') {
-            if (admin.isAuthenticated() === true)
+          }
+          // Don't need auth!
+          else if ($rootScope.toState.data.role === 'guest') {
+            if (admin.isAuthenticated() === true) {
               $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+            }
           }
         });
+
+        return promise;
       }
     };
   }
@@ -390,5 +688,30 @@ angular.module('app.services', [])
     next: $.noop,
     prev: $.noop,
     stop: $.noop
+  };
+})
+.factory('permissionsFactory', function () {
+  var _permissions = {};
+  return {
+    getPermissions: function () {
+      return _permissions;
+    },
+    setPermissions: function(permissions) {
+      console.log("Setting Permissions", permissions);
+      _permissions = permissions;
+    }
+  };
+})
+.factory('utils', function () {
+  return {
+    humanize: function (str) {
+      var frags = str.split('_');
+
+      for (var i = 0; i < frags.length; i++) {
+        frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+      }
+
+      return frags.join(' ');
+    }
   };
 });

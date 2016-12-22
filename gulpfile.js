@@ -6,6 +6,9 @@ const through = require('through')
 const plumber = require('gulp-plumber')
 const run = require('run-sequence')
 const lazypipe = require('lazypipe')
+
+const dot = require('dot')
+
 const stylus = require('gulp-stylus')
 const cssnano = require('gulp-cssnano')
 const bootstrap = require('bootstrap-styl')
@@ -68,6 +71,14 @@ gulp.task('css:prod', ()=> {
     .pipe(through(revReference))
 })
 
+gulp.task('compileThemes', () => {
+  dot.process({
+    path: 'public/js/themes/',
+    destination: 'public/js/themes/',
+    global: 'themes'
+  });
+})
+
 const concatJs = lazypipe()
   .pipe(concatMulti, {
     'js/generated/pre.js': [
@@ -90,7 +101,9 @@ const concatJs = lazypipe()
       'public/js/libs/angulartics-segmentio.min.js',
       'public/js/libs/filesaver.min.js',
       'public/js/libs/jquery-tourbus.js',
-      'public/js/libs/select2.min.js'
+      'public/js/themes/init.js',
+      'public/js/themes/theme.js',
+      'public/js/libs/select2.min.js',
     ],
 
     'js/generated/merchant.js': [
@@ -135,6 +148,10 @@ gulp.task('tmpl', ()=> {
       this.emit('data', file)
     }))
     .pipe(gulp.dest('resources/views'))
+})
+
+gulp.task('dev', ()=> {
+  run('compileThemes', ['css', 'js'], 'tmpl')
 })
 
 gulp.task('reactRevReplace', () => {
@@ -183,7 +200,7 @@ gulp.task('webpack:prod', (cb) => {
 })
 
 gulp.task('default', (cb) => {
-  run('webpack:prod', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
+  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
 })
 
 gulp.task('dev', (cb) => {
@@ -196,6 +213,7 @@ gulp.task('dev:webpack', (cb) => {
 
 gulp.task('watch:full', ['dev:webpack'], () => {
   gulp.watch('public/css/*.styl', ['css'])
+  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js'])
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',

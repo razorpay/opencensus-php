@@ -11,9 +11,37 @@
 */
 Route::get('/', 'UserController@getIndex')->name('dashboard');
 Route::get('/admin', 'AdminController@getIndex');
+
 // This is for enabling CORS support on contact form submissions
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
+
+Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
+
+// Org
+Route::group(['prefix' => 'admin'], function () {
+    Route::get('/auth', 'AdminController@initiateAuth');
+
+    Route::get('/org', 'AdminController@getOrg');
+    Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
+    Route::post('/signin', 'AdminController@postSignin');
+});
+
+Route::group([], function()
+{
+    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
+    Route::group([], function()
+    {
+        Route::post('/user/signin', 'UserController@postSignin');
+        Route::post('/user/register', 'UserController@postRegister');
+        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
+        Route::post('/user/password/reset', 'PasswordController@postRemind');
+        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
+
+        Route::post('/user/track_lead', 'UserController@trackLead');
+    });
+});
+
 Route::group(['middleware'  =>  'auth:user'], function()
 {
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
@@ -127,20 +155,6 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     Route::get('/features', 'MerchantController@getMerchantFeatures');
     Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
-});
-Route::group([], function()
-{
-    Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
-    Route::group([], function()
-    {
-        Route::post('/user/signin', 'UserController@postSignin');
-        Route::post('/user/register', 'UserController@postRegister');
-        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
-        Route::post('/user/password/reset', 'PasswordController@postRemind');
-        Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
-
-        Route::post('/user/track_lead', 'UserController@trackLead');
-    });
 });
 
 Route::group(['middleware'  =>  'slack'], function ()
@@ -285,9 +299,21 @@ Route::group(['middleware'  =>  'admin'], function()
             ->where('format', 'csv');
     // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
+
+    // Upload logos for orgs
+    Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
+
+    Route::get('/admin/generic', 'GenericController@getGeneric');
+    Route::post('/admin/generic', 'GenericController@postGeneric');
+    Route::put('/admin/generic', 'GenericController@putGeneric');
+    Route::delete('/admin/generic', 'GenericController@deleteGeneric');
+    Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
+    Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
+
+    Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
+    Route::get('admin/get_current');
 });
 
-Route::post('/admin/signin', 'AdminController@postSignin');
 Route::group(['middleware' => ['auth.internal']], function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');

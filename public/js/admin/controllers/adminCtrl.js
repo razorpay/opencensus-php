@@ -8,9 +8,12 @@ app.controller('AdminCtrl', [
   'alertsFactory',
   '$idle',
   '$keepalive',
-  function ($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive) {
+  'organization',
+  function ($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive, organization) {
     admin.identity().then(function (data) {
       $scope.admin = data;
+      // console.log(data);
+
       Rollbar.configure({
         payload: {
           person: {
@@ -64,7 +67,8 @@ app.controller('AdminCtrl', [
       });
     };
     $scope.goToSignIn = function () {
-      location.reload();
+      // location.reload();
+      location.href = location.pathname;
     };
     $scope.$on('$keepalive', function () {
       $http({
@@ -178,6 +182,10 @@ app.controller('AdminCtrl', [
         $scope.timedout = null;
       }
     }
+
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.logo_full = data.main_logo_url || 'img/logo_full.png';
+    });
   }
 ]).controller('passwordModalCtrl', [
   '$scope',

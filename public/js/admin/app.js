@@ -24,16 +24,20 @@ var app = angular.module('app', [
   '$stateParams',
   'admin',
   'adminAuthorization',
-  function ($rootScope, $state, $stateParams, admin, adminAuthorization) {
+  'organization',
+  function ($rootScope, $state, $stateParams, admin, adminAuthorization, organization) {
     $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
       // track the state the user wants to go to; authorization service needs this
       $rootScope.toState = toState;
       $rootScope.toStateParams = toStateParams;
-      // if the user is resolved, do an authorization check immediately. otherwise,
-      // it'll be done when the state it resolved.
-      if (admin.isIdentityResolved())
-        adminAuthorization.authorize();
+      // $rootScope.currentAdmin = organization.fetchCurrentAdmin();
     });
+
+    // Auth
+    if (!admin.isIdentityResolved()) {
+      adminAuthorization.authorize();
+    }
+
     $rootScope.$on('$stateChangeError', function (event) {
       $state.go('500');
     });
@@ -55,7 +59,10 @@ var app = angular.module('app', [
     app.service = $provide.service;
     app.constant = $provide.constant;
     app.value = $provide.value;
-    $urlRouterProvider.otherwise('/app/dashboard');
+
+    // Default route
+    // $urlRouterProvider.otherwise('/app/dashboard');
+
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,
@@ -82,6 +89,9 @@ var app = angular.module('app', [
     }).state('app.merchants.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_merchants.html'
+    }).state('app.merchants.invite', {
+      url: '/invite',
+      templateUrl: 'tpl/admin/app_merchant_invite.html'
     }).state('app.merchants.detail', {
       url: '/:id/detail',
       templateUrl: 'tpl/admin/app_merchant_detail.html'
@@ -119,7 +129,79 @@ var app = angular.module('app', [
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/admin/app_profile.html'
-    })  //Guest Routes
+    }).state('app.auditlogs', {
+      url: '/auditlogs',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.auditlogs.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_auditlogs_list.html'
+    }).state('app.orgs', {
+      url: '/orgs',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.orgs.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_orgs_list.html'
+    }).state('app.orgs.detail', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_orgs_detail.html'
+    }).state('app.orgs.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_add_org.html'
+    }).state('app.orgs.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_add_org.html'
+    }).state('app.users', {
+      url: '/users',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.users.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_orgs_users.html',
+    }).state('app.users.add', {
+      url: '/add',
+      templateUrl: 'tpl/admin/app_orgs_user_add.html',
+    }).state('app.users.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_orgs_user_add.html'
+    }).state('app.roles', {
+      url: '/roles',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.roles.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_roles_list.html'
+    }).state('app.roles.add', {
+      url: '/add',
+      templateUrl: 'tpl/admin/app_orgs_role_add.html'
+    }).state('app.roles.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_orgs_role_add.html'
+    }).state('app.groups', {
+      url: '/groups',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.groups.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_groups_list.html'
+    }).state('app.groups.detail', {
+      url: '/:id/detail',
+      templateUrl: 'tpl/admin/app_group_detail.html'
+    }).state('app.groups.add', {
+      url: '/add',
+      templateUrl: 'tpl/admin/app_add_group.html'
+    }).state('app.groups.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_add_group.html'
+    }).state('app.permissions', {
+      url: '/permissions',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.permissions.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_permissions_list.html'
+    }).state('app.invitations', {
+      url: '/invitations',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.invitations.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_invitations_list.html'
+    }) //Guest Routes
 .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',
@@ -132,17 +214,29 @@ var app = angular.module('app', [
         ]
       },
       data: { role: 'guest' }
-    }).state('access.signin', {
-      url: '/signin',
-      templateUrl: 'tpl/admin/page_signin.html'
+    }).state('access.auth', {
+      url: '/auth',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('access.auth.password', {
+      url: '/password',
+      templateUrl: 'tpl/admin/page_signin.html',
+      data: { role: 'guest' }
     }).state('access.lockme', {
       url: '/lockme/:username',
       templateUrl: 'tpl/page_lockme.html'
     }).state('access.logout', {
       url: '/logout',
       templateUrl: 'tpl/admin/page_logout.html'
-    }) //other
-.state('404', {
+    }).state('access.forgotpwd', {
+      url: '/forgotpwd',
+      templateUrl: 'tpl/admin/forgot_pwd.html'
+    }).state('access.resetpwd', {
+      url: '/resetpwd/:token',
+      templateUrl: 'tpl/admin/password_reset.html'
+    })
+
+    //other
+    .state('404', {
       url: '/404',
       templateUrl: 'tpl/page_404.html'
     })  //500

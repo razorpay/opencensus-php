@@ -9,8 +9,11 @@ use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Transaction;
 use App\User;
+use App\Mailers\MiscMailer;
 use App\Session as SessionTable;
+use App\Providers\ApiGuard;
 use App\Schedules;
+use App\Generic;
 
 use Auth;
 use Config;
@@ -19,6 +22,8 @@ use Requests;
 use Queue;
 use Session;
 use Crypt;
+use Cache;
+use Uuid;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -42,38 +47,81 @@ class Service extends Base\Service
     const SELF_DELETE_ERROR = 'You can not delete yourself.';
     const PAGE_SIZE = 1000;
 
+    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
+
     // This is the Admin\Logger trait
     use Logger;
 
     public function __construct()
     {
         $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
         $this->trace = $app['trace'];
+
+        $this->cache = $app['cache'];
     }
 
-    public function login(array $input)
+    // public function login(array $input)
+    // {
+    //     $error = (new Admin\Validator)->validateInput('login', $input)->messages();
+    //
+    //     $verify = false;
+    //
+    //     if (empty($error))
+    //     {
+    //         $verify = Auth::guard('admin')->attempt($input);
+    //
+    //         if ($verify)
+    //         {
+    //             Session::put('timeout', time());
+    //         }
+    //     }
+    //
+    //     $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
+    //
+    //     return [$error, null];
+    // }
+
+    public function passwordLogin($domain, array $input)
     {
-        $error = (new Admin\Validator)->validateInput('login', $input)->messages();
+        $error = $data = null;
 
-        $verify = false;
+        $this->setApiCredentials();
 
-        if (empty($error))
+        $org = $this->getOrgFromCache($domain);
+
+        try
         {
-            $verify = Auth::guard('admin')->attempt($input);
+            // This is password based login
+            $data = $this->api->admin->passwordLogin($org['id'], $input)->toArray();
 
-            if ($verify)
-            {
-                Session::put('timeout', time());
-            }
+            Session::put(config('auth.guards.api.session_key'), $data);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
         }
 
-        $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
-
-        return [$error, null];
+        return [$error, $data];
     }
 
-    public function loginWithGoogle($code, $googleService)
+    public function oAuthLogin($input, $orgId)
     {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        $data = $this->api->admin->oAuthLogin($input, $orgId)->toArray();
+
+        return $data;
+    }
+
+    public function loginWithGoogle($code, $googleService, $orgId)
+    {
+        $this->setApiCredentials();
+
         $error = [];
         $token = $googleService->requestAccessToken($code);
 
@@ -86,17 +134,47 @@ class Service extends Base\Service
             return App::abort(404);
         }
 
-        $admin = Admin\Entity::where('email', $result->email)->first();
+        // Fetch the admin with the email
+        // $admin = Admin\Entity::where('email', $result->email)->first();
+        // TODO: can throw exception
+        $admin = $this->api
+                      ->admin
+                      ->getByEmail($orgId, ['email' => $result->email])
+                      ->toArray();
 
         if ($admin)
         {
-            $admin->access_token = $token->getAccessToken();
-            $admin->google_id = $result->id;
-            $admin->password = '';
+            $updateData = [
+                'oauth_access_token'    => $token->getAccessToken(),
+                'oauth_provider_id'     => $result->id
+            ];
 
-            $admin->save();
+            // 1. Save the data (oauth token and provider) to API
 
-            Auth::guard('admin')->loginUsingId($admin->id);
+            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin['id'], $updateData);
+
+            // 2. Login the user to dashboard. Have to make an API call
+            // to login the user and get an admin_token
+
+            $oAuthLoginInput = [
+                'email'                 => $updatedAdmin['email'],
+                'oauth_access_token'    => $updatedAdmin['oauth_access_token'],
+                'oauth_provider_id'     => $updatedAdmin['oauth_provider_id']
+            ];
+
+            try
+            {
+                $data = $this->oAuthLogin($oAuthLoginInput, $orgId);
+
+                // Auth::guard('admin')->loginUsingId($admin->id);
+                // We have the data now, just need to login the user
+                // $data['token']
+                Session::put(config('auth.guards.api.session_key'), $data);
+            }
+            catch (\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getMessage();
+            }
         }
         else
         {
@@ -209,19 +287,48 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
+        $user = Auth::guard('api')->user();
+
+        $adminId = $user->id;
+
+        $orgId = $user->org_id;
+
+        try
+        {
+            $merchantIds = $this->getMerchantIdsToList($orgId, $adminId)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            // something went wrong
+        }
+
+        // $merchantIdsToList = [];
+        //
+        // // Need to understand how it can be passed better and change. This is temp
+        // foreach($merchantIds as $value)
+        // {
+        //     $merchantIdsToList[] = $value;
+        // }
+
+        // $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
+
+        $selectFields = [
+            'merchants.id',
+            'merchants.name',
+            'merchants.email',
+            'merchants.confirm_token',
+            'merchants.activated',
+            'merchant_details.steps_finished',
+            'merchants.created_at',
+            'merchants.updated_at',
+            'merchant_details.submitted_at',
+            'merchants.archived_at'
+        ];
+
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-            ->select([
-                'id',
-                'name',
-                'email',
-                'confirm_token',
-                'activated',
-                'steps_finished',
-                'merchants.created_at',
-                'merchant_details.updated_at',
-                'submitted_at',
-                'archived_at'
-        ])->with('tagged');
+            ->select($selectFields)
+            ->with('tagged')
+            ->whereIn('merchants.id', array_keys($merchantIds));
 
 
         if (isset($input['tags']))
@@ -229,15 +336,16 @@ class Service extends Base\Service
             $data = $data->withAllTags($input['tags']);
         }
 
-
         if (isset($input['archived']))
         {
-            $data = $data->whereNotNull('archived_at')->get();
+            $data = $data->whereNotNull('archived_at');
         }
         else
         {
-            $data = $data->whereNull('archived_at')->get();
+            $data = $data->whereNull('archived_at');
         }
+
+        $data = $data->get();
 
         // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
@@ -293,7 +401,22 @@ class Service extends Base\Service
 
         $response = $response->toArray();
 
-        return ['count'=>count($response), 'data'=>$response];
+        foreach ($response as $key => $res)
+        {
+            $response[$key]['referrer'] = $merchantIds[$res['id']];
+        }
+
+        return [
+            'count' => count($response),
+            'data'  => $response
+        ];
+    }
+
+    public function getMerchantIdsToList(string $orgId, string $adminId)
+    {
+        $this->setAdminCredentials();
+
+        return $this->api->admin->fetchMerchantIds($orgId, $adminId);
     }
 
     public function getAdmins()
@@ -2297,6 +2420,55 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+
+    public function getOrg($domain)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->org->fetchByDomain($domain)->toArray();
+
+            $this->setOrgInCache($data);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
+    protected function setOrgInCache($org)
+    {
+        $cacheKey = $org['hostname'];
+
+        if ($this->cache->has($cacheKey) === false)
+        {
+            $this->cache->put($cacheKey, $org['id'], 10);
+        }
+    }
+
+    protected function getOrgFromCache($domain)
+    {
+        list($error, $data) = $this->getOrg($domain);
+
+        return $data;
+
+        // Disabling cache for now
+
+        // $cacheKey = $domain;
+        //
+        // if ($this->cache->has($cacheKey) === false)
+        // {
+        //     $this->getOrg($domain);
+        // }
+        //
+        // return $this->cache->get($cacheKey);
+    }
+
     /**
     * Gets Schedule list
     * Uses admin auth on the API
@@ -2316,6 +2488,115 @@ class Service extends Base\Service
         catch (BadRequestError $e)
         {
             $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function sendInvitation($input)
+    {
+        $errors = [];
+        $data = null;
+
+        $validation = (new Validator)->validateInput('sendInvitation', $input);
+
+        if ($validation->fails())
+        {
+            return array($validation->messages(), null);
+        }
+
+        $admin = Auth::guard('api')->user();
+
+        if ($admin->email === $input['contact_email'])
+        {
+            $errors[] = static::SELF_INVITE_NOT_ALLOWED;
+        }
+
+        if (empty($errors))
+        {
+            $this->createInviteAndSendEmail($admin, $input);
+        }
+
+        return [$errors, $data];
+    }
+
+    protected function createInviteAndSendEmail($admin, $input)
+    {
+        $invitation = $this->saveLead($input, $admin);
+
+        $this->sendInvitationEmail($invitation, $admin);
+    }
+
+    protected function saveLead($input, $admin)
+    {
+        $formData = json_encode($input);
+
+        $id = Uuid::generate();
+
+        $leadId = \DB::table('admin_leads')->insertGetId(
+            [
+                'id'         => $id,
+                'admin_id'   => $admin->id,
+                'email'      => $input['contact_email'],
+                'token'      => str_random(40),
+                'form_data'  => $formData,
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]
+        );
+
+        $lead = \DB::table('admin_leads')
+                    ->select('*')
+                    ->where('id', $id)
+                    ->first();
+
+        return $lead;
+    }
+
+    protected function sendInvitationEmail($invitation, $admin)
+    {
+        $mailer = new MiscMailer();
+
+        $mailer
+            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+            ->queueAndDeliver();
+    }
+
+    public function getAdminLeads()
+    {
+        $admin = Auth::guard('api')->user();
+
+        $leads = \DB::table('admin_leads')
+                    ->where('admin_id', $admin->id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+        return [ null, $leads ];
+    }
+
+    public function getAdminData($admin)
+    {
+        $error = $data = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $orgId = $admin->org_id;
+
+            $params = [
+                'token' => $admin->token
+            ];
+
+            $data = $this->api->admin->getAdminData($orgId, $params)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+        catch (\Razorpay\Api\Errors\ServerError $e)
+        {
+            $error[] = $e->getMessage();
         }
 
         return [$error, $data];
@@ -2342,6 +2623,49 @@ class Service extends Base\Service
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function uploadOrgLogo($orgId, $input)
+    {
+        // This is pretty useless in our case
+        // since we won't make any request to API in RZP\Admin.
+        // We just need access to ->api->admin and hence we're doing it.
+        $this->setApiCredentials();
+
+        $error = $data = null;
+
+        $type = $input['type'];
+
+        $file = $input["{$type}_logo"];
+
+        $s3Client = $this->getS3Client();
+
+        $filePath = $file->getPathname();
+        $fileName = $file->getFilename();
+
+        // org_id/login_logo/file_name
+        $keyName = "$orgId/{$type}_logo/$fileName";
+
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $keyName,
+            'SourceFile'    => $filePath,
+            'ContentType'   => 'image/png',
+            'ACL'           => 'public-read',
+        ];
+
+        try
+        {
+            $result = $s3Client->putObject($s3Obj);
+
+            $data = $result['ObjectURL'];
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
         }
 
         return [$error, $data];

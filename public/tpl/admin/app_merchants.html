@@ -19,11 +19,11 @@
       </div>
       <div class="col-md-4">
         <div class="input-group">
-          <select class="input-sm form-control merchant_type" name="merchant_type" ng-model="merchant_type" ng-init="merchant_type='1'">
+          <select class="input-sm form-control merchant_type" name="merchant_type" ng-model="merchant_type" ng-init="merchant_type='0'">
             <option value="0">All</option>
             <option value="1">Activated</option>
             <option value="2">Not Activated</option>
-            <option value="3">Pending Activation</option>
+            <!-- <option value="3">Pending Activation</option> -->
             <option value="4">Confirmed</option>
             <option value="5">Dead</option>
             <option value="6">Archived</option>
@@ -35,25 +35,27 @@
         </div>
       </div>
     </div>
-    <div>
+    <div class="table-responsive">
       <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
+            <th>Referrer</th>
             <th>Name</th>
             <th>Email</th>
             <th data-type="numeric">Confirmed</th>
-            <th data-hide="phone,tablet" data-type="numeric">Activation Progress (%)</th>
+            <th data-type="numeric">Activation Progress (%)</th>
             <th data-type="numeric">Activated</th>
-            <th data-hide="phone,tablet" data-type="numeric">Registration Date</th>
-            <th data-hide="phone,tablet" data-type="numeric">Submission Date</th>
-            <th ng-show="merchant_type==6" data-hide="phone,tablet" data-type="numeric">Archival Date</th>
-            <th data-hide="phone,tablet">Tags</th>
+            <th data-type="numeric">Registration Date</th>
+            <th data-type="numeric">Submission Date</th>
+            <th ng-show="merchant_type==6" data-type="numeric">Archival Date</th>
+            <th>Tags</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in merchants" class="merchants-table-body">
             <td><a ui-sref="app.merchants.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
+            <td>{{row.referrer}}</td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
             <td data-value="{{row.confirm_token == null ? 1 : 0}}">

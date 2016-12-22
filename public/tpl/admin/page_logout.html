@@ -1,4 +1,12 @@
 <div ng-controller="AdminCtrl">
-	<span>You are successfully logged out</span>
-	<button ng-click="goToSignIn()">Log in</button>
+
+  <div class="container w-xxl w-auto-xs">
+    <h3 class="m-b">You are successfully logged out</h3>
+
+    <button ng-click="goToSignIn()" type="submit" name="submit" class="btn btn-lg btn-primary btn-block">
+      Log in
+    </button>
+
+    <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
+  </div>
 </div>
