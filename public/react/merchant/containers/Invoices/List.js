@@ -74,6 +74,7 @@ export default class InvoicesListContainer extends ListContainer {
             <div class='panel-body'>
               <InvoiceListFilter
                 form='InvoiceListFilter'
+                count={this.state.count}
                 onSubmit={this.search}
               />
             </div>

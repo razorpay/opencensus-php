@@ -4,6 +4,15 @@ import AsyncButton from 'react-async-button'
 
 @reduxForm()
 export default class ListFilter extends Component {
+  componentWillMount() {
+    let count = this.props.count
+    if (count) {
+      this.props.initialize({
+        count
+      })
+    }
+  }
+
   render() {
     let { handleSubmit, onSubmit, reset } = this.props
     return (
