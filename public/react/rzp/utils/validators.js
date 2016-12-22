@@ -2,7 +2,8 @@ import {
   isPresent,
 } from './rzp-utils'
 
-export const isEmail = (email = '') => {
+export const isEmail = (email) => {
+  email = email || ''
   let emailRegExp = new RegExp(/^$|[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/)
   return emailRegExp.test(email)
 }

@@ -1,5 +1,5 @@
 import { Children, cloneElement, Component } from 'react'
-import Dropdown, { DropdownTrigger, DropdownContent } from '@selvagsz/react-simple-dropdown'
+import Dropdown, { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
 import MenuItem from './MenuItem'
 import Spinner from 'rzp/ui/Spinner'
 import './Dropdown.styl'
