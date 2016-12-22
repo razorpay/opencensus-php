@@ -2498,6 +2498,13 @@ sd($result->email);
         $errors = [];
         $data = null;
 
+        $validation = (new Validator)->validateInput('sendInvitation', $input);
+
+        if ($validation->fails())
+        {
+            return array($validation->messages(), null);
+        }
+
         $admin = Auth::guard('api')->user();
 
         if ($admin->email === $input['contact_email'])
