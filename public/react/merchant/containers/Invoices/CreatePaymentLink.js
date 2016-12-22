@@ -22,6 +22,19 @@ function validate(values) {
       }
     }
   }
+
+  if (values.sms_notify && (isBlank(customer) || isBlank(customer.contact))) {
+    errors.customer = {
+      contact: 'Please provide contact'
+    }
+  }
+
+  if (values.email_notify && (isBlank(customer) || isBlank(customer.email))) {
+    errors.customer = {
+      email: 'Please provide email'
+    }
+  }
+
   return errors
 }
 
@@ -32,8 +45,6 @@ function validate(values) {
 @reduxForm({
   form: 'newPaymentLink',
   initialValues: new Invoice({
-    sms_notify: true,
-    email_notify: true,
     type: 'link'
   }),
   validate
@@ -188,6 +199,19 @@ export default class CreatePaymentLink extends Component {
                       component={InputField}
                       class='form-control'
                       validate={required('Please provide the amount')}
+                    />
+                  </div>
+                </div>
+
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    Receipt No.
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='receipt'
+                      component='input'
+                      class='form-control'
                     />
                   </div>
                 </div>
