@@ -552,7 +552,7 @@ class Entity extends Base\PublicEntity
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
     }
 
-    public function getStateForReport()
+    public function getState()
     {
         if ($this->isTypePayment())
         {
@@ -584,22 +584,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getMethodDetails()
+    public function getPaymentMethodDetails()
     {
-        $methodDetails = [];
+        $paymentMethodDetails = [];
 
-        if ($this->isTypeRefund())
+        if ($this->isTypePayment())
         {
-            return $methodDetails;
+            $payment = $this->source;
+
+            $paymentMethodDetails[Payment\Method::CARD] = $payment->card;
+
+            $paymentMethodDetails[Payment\Method::NETBANKING] = $payment->getBankName();
         }
 
-        $payment = $this->source;
-
-        $methodDetails[Payment\Method::CARD] = $payment->card;
-
-        $methodDetails[Payment\Method::NETBANKING] = $payment->getBankName();
-
-        return $methodDetails;
+        return $paymentMethodDetails;
     }
 
     public function getFeesBreakupDetails()
@@ -608,17 +606,15 @@ class Entity extends Base\PublicEntity
 
         $feesBreakup = $this->feesBreakup;
 
-        if ($feesBreakup === null)
+        if ($feesBreakup !== null)
         {
-            return $feesBreakupDetails;
+            $feesBreakupDetails = $feesBreakup->flatMap(function ($fee)
+                {
+                    return [$fee->getName() => $fee->getAmount()];
+                })->toArray();
         }
 
-        $feesBreakupDetails = $feesBreakup->flatMap(function ($fee)
-        {
-            return [$fee->getName() => $fee->getAmount()];
-        });
-
-        return $feesBreakupDetails->toArray();
+        return $feesBreakupDetails;
     }
 
     public function getOrderId()
