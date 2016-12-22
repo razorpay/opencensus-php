@@ -1070,7 +1070,7 @@ class Entity extends Base\PublicEntity
      * that ends with `_order_id`
      * We will shift to a standard field called `merchant_order_id`
      * as our ecommerce plugins are migrated
-     * @return String order_id for the paymetn
+     * @return String order_id for the payment
      */
     public function getOrderId()
     {
@@ -1336,6 +1336,16 @@ class Entity extends Base\PublicEntity
     public function emiPlan()
     {
         return $this->belongsTo('RZP\Models\Emi\Entity');
+    }
+
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

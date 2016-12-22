@@ -115,6 +115,72 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    {
+
+        $query = $this->newQuery();
+
+        $txns = $query->merchantId($merchantId)
+                      ->where(function($query) use ($from, $to)
+                      {
+                        $query->betweenTime($from, $to);
+
+                        $query->whereIn(Entity::TYPE, ['payment', 'refund']);
+                      })
+                      ->with('merchant', 'feesBreakup')
+                      ->latest()
+                      ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source');
+
+        return $txns;
+    }
+
+     public function fetchAssociatedRelationsWithLoadedEntities($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
+    {
+        $relationships = array();
+        $objects = array();
+
+        foreach ($entities as $entity)
+        {
+            $relationships[$entity->$typeCol][] = $entity->$idCol;
+        }
+
+        foreach ($relationships as $type => $ids)
+        {
+            $eagerLoadRelations = [];
+
+            if ($type === 'payment')
+            {
+                $eagerLoadRelations = ['card', 'netbanking', 'billdesk'];
+            }
+            elseif ($type === 'refund')
+            {
+                $eagerLoadRelations = ['netbanking', 'billdesk'];
+            }
+
+            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
+        }
+
+        foreach ($entities as $entity)
+        {
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
+        }
+
+        return $entities;
+    }
+
     public function fetchDataForInvoice($merchantId, $from, $to)
     {
         $fee = $this->newQuery()

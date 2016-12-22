@@ -468,6 +468,13 @@ class MerchantController extends Controller
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
+    public function getBrokerTransactionReport()
+    {
+        $input = Request::all();
+
+        return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, 'transaction');
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();

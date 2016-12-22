@@ -162,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+    }
+
     public function getCredit()
     {
         return (int) $this->getAttribute(self::CREDIT);
@@ -545,5 +550,115 @@ class Entity extends Base\PublicEntity
         $entityId = [self::ENTITY_ID => $this->getEntityId()];
 
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
+    }
+
+    public function getStateForReport()
+    {
+        if ($this->isTypePayment())
+        {
+            return 'SALE';
+        }
+        elseif ($this->isTypeRefund())
+        {
+            return 'REFUND';
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public function getPaymentStatus()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->source->getStatus();
+        }
+        elseif ($this->isTypeRefund())
+        {
+            return 'processed';
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public function getMethodDetails()
+    {
+        $methodDetails = [];
+
+        if ($this->isTypeRefund())
+        {
+            return $methodDetails;
+        }
+
+        $payment = $this->source;
+
+        $methodDetails[Payment\Method::CARD] = $payment->card;
+
+        $methodDetails[Payment\Method::NETBANKING] = $payment->getBankName();
+
+        return $methodDetails;
+    }
+
+    public function getFeesBreakupDetails()
+    {
+        $feesBreakupDetails = [];
+
+        $feesBreakup = $this->feesBreakup;
+
+        if ($feesBreakup === null)
+        {
+            return $feesBreakupDetails;
+        }
+
+        $feesBreakupDetails = $feesBreakup->flatMap(function ($fee)
+        {
+            return [$fee->getName() => $fee->getAmount()];
+        });
+
+        return $feesBreakupDetails->toArray();
+    }
+
+    public function getOrderId()
+    {
+        if ($this->isTypePayment() === false)
+        {
+            return null;
+        }
+
+        return $this->source->getOrderId();
+    }
+
+    public function getBankReferenceNo()
+    {
+        if (($this->isTypePayment() === false) or ($this->isTypeRefund() === false))
+        {
+            return null;
+        }
+
+        $source = $this->source;
+
+        if ($source->netbanking !== null)
+        {
+            return $source->netbanking->getAttribute('bank_payment_id');
+        }
+        elseif ($source->billdesk !== null)
+        {
+            return $source->billdesk->getAttribute('BankReferenceNo');
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public function getRefundStatus()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->source->getAttribute(Payment\Entity::REFUND_STATUS);
+        }
     }
 }
