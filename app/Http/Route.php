@@ -27,6 +27,7 @@ final class Route
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_create_upi'                      => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -415,6 +416,7 @@ final class Route
         'payment_create_private_old',
         'payment_create_recurring',
         'payment_create_wallet',
+        'payment_create_upi',
         'payment_refund',
         'payment_capture',
         'payment_fetch_by_id',
@@ -835,6 +837,7 @@ final class Route
         'customer_delete_token'         => 'tokens',
         'customer_fetch_tokens'         => 'tokens',
         'payment_create_wallet'         => 's2swallet',
+        'payment_create_upi'            => 's2supi',
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
@@ -868,6 +871,7 @@ final class Route
         'payment_create_ajax',
         'payment_create_fees',
         'payment_create_wallet',
+        'payment_create_upi',
         'payment_callback_post',
         'payment_callback_get',
         'payment_callback_with_key_post',
@@ -1032,7 +1036,8 @@ final class Route
             'v1/payments/create/jsonp',
             'v1/payments/create/ajax',
             'v1/payments/create/fees',
-            'v1/payments/create/wallet'
+            'v1/payments/create/wallet',
+            'v1/payments/create/upi'
         );
 
         return $doNotLogUrls;
