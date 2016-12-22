@@ -137,6 +137,8 @@ app.controller('RegisterCtrl', [
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+
+      $scope.organization = data;
     });
   }
 ]);
