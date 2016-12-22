@@ -41,9 +41,19 @@ class Service extends Base\Service
             $this->createVpaIfNeeded($input, $field);
         }
 
-        $source = $this->repo->vpa->findByAddressOrFail($input[$field]);
+        $vpa = $this->repo->vpa->findByAddress($input[$field]);
 
-        $input[$field . '_id'] = $source->getPublicId();
+        if ($vpa === null)
+        {
+            throw new Exception\BadRequestException(
+                 ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST,
+                 [
+                    'vpa'=> $input[$field],
+                 ]
+            );
+        }
+
+        $input[$field . '_id'] = $vpa->getPublicId();
 
         unset($input[$field]);
     }

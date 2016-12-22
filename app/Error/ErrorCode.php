@@ -101,6 +101,7 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_VPA                                                 = 'BAD_REQUEST_DUPLICATE_VPA';
     const BAD_REQUEST_UNMAPPED_VPA                                                  = 'BAD_REQUEST_UNMAPPED_VPA';
     const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
+    const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
 
 // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
