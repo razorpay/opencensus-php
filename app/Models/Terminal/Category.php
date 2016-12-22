@@ -11,9 +11,11 @@ class Category
 {
     const DEFAULT = 'default';
 
-    // Categories mapped to invalid will not find an
-    // appropriate category to override. Only the category
-    // allowed by default will be chosen
+    /**
+     * Categories mapped to invalid will not find an
+     * appropriate category to override. Only the category
+     * allowed by default will be chosen
+     */
     const INVALID = 'invalid';
 
     /**
@@ -43,15 +45,17 @@ class Category
      * The list below is of the category2 on merchant entity.
      * The terminals marked null or default will be filtered
      * out.
-     **/
+     */
     const INCOMPATIBLE = [
         'securities',
         'commodities',
     ];
 
-    // By default Check for the name that is mentioned as is.
-    // If it is renamed, then the new name that is mentioned will be
-    // used to check for a network category
+    /**
+     * By default Check for the name that is mentioned as is.
+     * If it is renamed, then the new name that is mentioned will be
+     * used to check for a network category
+     */
     const CATEGORIES = [
         Method::NETBANKING => [
             self::DEFAULT => 'ecommerce',
