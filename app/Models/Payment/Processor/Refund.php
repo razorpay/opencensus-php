@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
+use RZP\Models\Transfer;
 use RZP\Models\ReverseTransfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
@@ -228,7 +229,42 @@ trait Refund
     {
         $payment = $this->retrieve($paymentId);
 
+        if ($this->shouldRefundWithTransfers($payment, $input) === true)
+        {
+            $this->refundPaymentWithTransfers($payment, $input);
+        }
+
         return $this->refundCapturedPayment($payment, $input);
+    }
+
+    /**
+     * Check if the refund should happen along with Marketplace transfers/reversals
+     *
+     * @param  Payment\Entity   $payment
+     * @param  array            $input
+     * @return bool
+     */
+    protected function shouldRefundWithTransfers(Payment\Entity $payment, array $input) : bool
+    {
+        // Skipping till validations are complete
+        return true;
+
+        $hasTransfers = ($payment->getAmountTransferred() > 0);
+
+        $reverseAllTransfers = false;
+
+        $transferCount = $this->repo
+                              ->payment
+                              ->getSplitPaymentCountForOriginPaymentId($payment->getId());
+
+        if ($transferCount === 1)
+        {
+            $transferAll = true;
+        }
+        else
+        {
+            (new Refund\Validator)->validateTransfersRequired($input);
+        }
     }
 
     /**
@@ -238,16 +274,16 @@ trait Refund
      * @param  array  $input
      * @return null
      */
-    public function refundPaymentWithTransfers(string $paymentId, array $input)
+    public function refundPaymentWithTransfers(Payment\Entity $payment, array $input)
     {
-        $payment = $this->retrieve($paymentId);
+        (new Payment\Validator)->validateInput('refund', $input);
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
             // Refund and reverse_transfer each split-payment
             foreach ($input['transfers'] as $transfer)
             {
-                $this->refundAndReverseTransferPayment($payment, $transfer['account'], $transfer['amount']);
+                $this->refundAndReverseTransferPayment($payment, $transfer['transfer'], $transfer['amount']);
             }
 
             // Refund the original payment - to customer
@@ -264,9 +300,13 @@ trait Refund
      * @param  int            $amount
      * @return void
      */
-    protected function refundAndReverseTransferPayment(Payment\Entity $payment, string $accountId, int $amount)
+    protected function refundAndReverseTransferPayment(Payment\Entity $payment, string $transferId, int $amount)
     {
-        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+        $transfer = $this->repo
+                         ->transfer
+                         ->findByPublicIdAndMerchant($transferId, $this->merchant);
+
+        $accountId = $transfer->getToId();
 
         $splitPayment = $this->repo
                              ->payment
@@ -275,11 +315,6 @@ trait Refund
 
         // @todo: DB queried here
         assert ($this->merchant->accounts->contains($accountId));
-
-        $transfer = $this->repo
-                         ->transfer
-                         ->fetchByAccountIdAndMerchant(
-                            $accountId, $this->merchant);
 
         $refund = $this->refundTransferPayment($splitPayment, $amount);
 
@@ -373,6 +408,15 @@ trait Refund
         }
 
         return null;
+    }
+
+    protected function getPaymentRefundType(Payment\Entity $payment, array $input)
+    {
+        if (isset($input['amount']) === false and
+            (isset($input['transfers']) === false))
+        {
+            return Payment\Refund\Status::FULL;
+        }
     }
 
     protected function callGatewayForVerifyRefund($data)

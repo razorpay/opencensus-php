@@ -140,19 +140,7 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
-        if (isset($input['transfers']) === true)
-        {
-            $refund = $this->getNewProcessor()->refundPaymentWithTransfers($id, $input);
-        }
-        else
-        {
-            // validate:
-            //
-            // If amount is input and refund != full, and payment had transfers - transfers is required
-            // If no amount, and payment had transfers - refund full for all split payments
-            //
-            $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
-        }
+        $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();
     }

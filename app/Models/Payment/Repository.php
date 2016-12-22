@@ -615,12 +615,27 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSplitPaymentByOriginPaymentId($originPaymentId, $accountId)
+    public function fetchSplitPaymentByOriginPaymentId(string $originPaymentId, string $accountId)
     {
         return $this->newQuery()
                     ->where(Entity::ORIGIN_PAYMENT_ID, $originPaymentId)
                     ->merchantId($accountId)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
+    }
+
+    /**
+     * Get the count of Marketplace split_payments created
+     * for a payment
+     *
+     * @param  string   $originPaymentId
+     * @return int
+     */
+    public function getSplitPaymentCountForOriginPaymentId(string $originPaymentId) : int
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORIGIN_PAYMENT_ID, $originPaymentId)
+                    ->where(Entity::METHOD, METHOD::TRANSFER)
+                    ->count();
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)

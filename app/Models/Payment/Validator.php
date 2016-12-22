@@ -53,8 +53,8 @@ class Validator extends Base\Validator
         'amount'                  => 'sometimes|integer',
         'notes'                   => 'sometimes|notes',
         'transfers'               => 'sometimes|array',
-        'transfers.*.payment'     => 'required|string|min:14',
-        'transfers.*.amount'      => 'required|int|min:100',
+        'transfers.*.transfer'    => 'required_with:transfers|string|min:14',
+        'transfers.*.amount'      => 'required_with:transfers|integer|min:100',
     ];
 
     protected static $transferRules = [

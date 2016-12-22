@@ -103,4 +103,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
     }
+
+    public function validateTransfersRequired()
+    {
+        if (isset($transfers) === false)
+        {
+            throw new Exception\BadRequestException(
+                    'asd'
+                );
+        }
+    }
 }

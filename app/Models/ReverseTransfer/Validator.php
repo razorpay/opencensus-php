@@ -11,4 +11,9 @@ use RZP\Models\Merchant;
 class Validator extends Base\Validator
 {
 
+    public function validateReverseTransfers()
+    {
+
+    }
+
 }

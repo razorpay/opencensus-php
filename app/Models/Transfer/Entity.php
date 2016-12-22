@@ -97,6 +97,16 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::AMOUNT);
     }
 
+    public function getToId()
+    {
+        return $this->getAttribute(self::TO_ID);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getAmountReversed()
     {
         return $this->getAttribute(self::AMOUNT_REVERSED);
