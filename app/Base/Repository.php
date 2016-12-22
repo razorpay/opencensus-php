@@ -80,7 +80,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         if (count($relations) > 0)
         {
-            $query->with(...$relations);
+            $query->with($relations);
         }
 
         return $query->findMany($ids, $columns);
