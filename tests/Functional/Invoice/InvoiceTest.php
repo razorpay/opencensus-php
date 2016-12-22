@@ -209,39 +209,39 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateDraftInvoiceWithAmountAndDesc()
+    public function testCreateDraftLinkWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateIssuedInvoiceWithAmountAndDesc()
+    public function testCreateIssuedLinkWithAmountAndDesc()
     {
         $this->startTest();
     }
 
-    public function testCreateDraftInvoiceWithAmount()
+    public function testCreateDraftLinkWithAmount()
     {
         $this->startTest();
     }
 
-    public function testCreateIssuedInvoiceWithAmount()
+    public function testCreateIssuedLinkWithAmount()
     {
         $this->startTest();
     }
 
-    public function testCreateIssuedInvoiceWithoutLineItemsAmount()
+    public function testCreateIssuedLinkWithoutLineItemsAmount()
     {
         $this->startTest();
     }
 
-    public function testCreateDraftInvoiceWithLineItemsAndAmount()
+    public function testCreateDraftLinkWithLineItemsAndAmount()
     {
         $this->startTest();
     }
 
     public function testCreateIssuedInvoiceWithLineItemsAndAmount()
     {
-        $this->startTest($this->testData['testCreateDraftInvoiceWithLineItemsAndAmount']);
+        $this->startTest($this->testData['testCreateDraftLinkWithLineItemsAndAmount']);
     }
 
     public function testCreateInvoiceWithNullCurrency()
@@ -249,9 +249,23 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithAmount()
+    {
+        $this->startTest();
+    }
+
+
+
     // ------------------------------------------------------------
     // Tests around updation of invoice
     // ------------------------------------------------------------
+
+    public function testUpdateDraftInvoiceWithAmount()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
 
     public function testUpdateDraftInvoiceWithBasicFields()
     {
@@ -262,7 +276,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['type' => 'link']);
 
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
@@ -332,10 +346,11 @@ class InvoiceTest extends TestCase
         $this->fixtures->create(
             'invoice',
             [
-                'status'    => 'draft',
-                'order_id'  => null,
-                'short_url' => null,
-                'description' => 'For test item'
+                'status'      => 'draft',
+                'order_id'    => null,
+                'short_url'   => null,
+                'description' => 'For test item',
+                'type'        => 'link',
             ]
         );
 
@@ -375,9 +390,24 @@ class InvoiceTest extends TestCase
         $this->assertEquals(200000, $order['amount']);
     }
 
-    public function testIssueInvoiceWithFailingData()
+    public function testIssueInvoiceWithoutLineItems()
     {
         $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testIssueInvoiceWithoutCustomer()
+    {
+        $this->createDraftInvoice([
+                'customer_id'      => null,
+                'customer_name'    => null,
+                'customer_email'   => null,
+                'customer_contact' => null,
+            ]);
+
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item', ['quantity' => 2]);
 
         $this->startTest();
     }
@@ -828,18 +858,22 @@ class InvoiceTest extends TestCase
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 
-    protected function createDraftInvoice()
+    protected function createDraftInvoice(array $overrideWith = [])
     {
         $this->fixtures->create(
             'invoice',
-            [
-                'status'       => 'draft',
-                'order_id'     => null,
-                'short_url'    => null,
-                'amount'       => 0,
-                'sms_status'   => 'pending',
-                'email_status' => 'pending',
-            ]
+            array_merge(
+                [
+                    'type'         => 'invoice',
+                    'status'       => 'draft',
+                    'order_id'     => null,
+                    'short_url'    => null,
+                    'amount'       => 0,
+                    'sms_status'   => 'pending',
+                    'email_status' => 'pending',
+                ],
+                $overrideWith
+            )
         );
     }
 

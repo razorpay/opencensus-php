@@ -4,9 +4,9 @@ namespace RZP\Models\Invoice;
 
 class Type
 {
-    const ECOD = 'ecod';
+    const ECOD    = 'ecod';
     const INVOICE = 'invoice';
-    const LINK  = 'link';
+    const LINK    = 'link';
 
     public static function isTypeValid($type)
     {

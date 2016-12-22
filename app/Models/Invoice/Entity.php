@@ -117,7 +117,7 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
-        self::TYPE              => null,
+        self::TYPE              => Type::INVOICE,
         self::USER_ID           => null,
         self::AMOUNT            => null,
         self::CURRENCY          => 'INR',

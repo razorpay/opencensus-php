@@ -129,16 +129,39 @@ class Validator extends Base\Validator
     ];
 
     protected static $editDraftValidators = [
-        self::EDIT_DRAFT . Entity::AMOUNT,
+        Entity::AMOUNT,
+        self::EDIT_DRAFT . Entity::AMOUNT, // Amount should not be updated by
+                                           // via input if line items exists
+                                           // already for the invoice.
     ];
 
     public function validateAmount(array $input)
     {
-        //
+        // Amount should only be sent, if type is not invoice as invoice must
+        // have line items and amount gets calculated from there.
+
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        if ($type === null)
+        {
+            $type = Type::INVOICE;
+        }
+
+        if ($type === Type::INVOICE)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount should not be sent in input for type invoice.'
+            );
+        }
+
         // If amount is set, input should not contain line_items.
-        //
-        if ((isset($input[Entity::AMOUNT]) === true) and
-            (isset($input[Entity::LINE_ITEMS]) === true))
+
+        if (isset($input[Entity::LINE_ITEMS]) === true)
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
@@ -326,25 +349,55 @@ class Validator extends Base\Validator
         $invoice = $this->entity;
 
         $invoiceAmount          = $invoice->getAmount();
-        $invoiceDesc            = $invoice->getDescription();
-        $invoiceLineItemsCount  = $invoice->lineItems()->count();
-
-        // Checks:
-        // - amount must be set (directly/ via line_items)
-        // - If directly then description must be set
 
         if ($invoiceAmount === null)
         {
             throw new BadRequestValidationFailureException(
-                'amount or line_items is required'
-            );
+                'amount cannot be empty.');
         }
 
-        if (($invoiceLineItemsCount === 0) and ($invoiceDesc === null))
+        $type = $invoice->getType();
+
+        switch ($type)
+        {
+            case Type::INVOICE:
+                $this->validateInvoiceIssueForDefaultType($invoice);
+                break;
+
+            default:
+                $this->validateInvoiceIssueForOtherTypes($invoice);
+                break;
+        }
+    }
+
+    protected function validateInvoiceIssueForDefaultType(Entity $invoice)
+    {
+        $lineItemsCount = $invoice->lineItems()->count();
+
+        if ($lineItemsCount === 0)
         {
             throw new BadRequestValidationFailureException(
-                'description is required with amount'
-            );
+                'line_items is required.');
+        }
+
+        $customer = $invoice->customer;
+
+        if (empty($customer))
+        {
+            throw new BadRequestValidationFailureException(
+                'customer is required.');
+        }
+    }
+
+    protected function validateInvoiceIssueForOtherTypes(Entity $invoice)
+    {
+        $lineItemsCount = $invoice->lineItems()->count();
+        $description    = $invoice->getDescription();
+
+        if (($lineItemsCount === 0) and ($description === null))
+        {
+            throw new BadRequestValidationFailureException(
+                'Either line_items or description is required.');
         }
     }
 

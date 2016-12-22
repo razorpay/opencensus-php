@@ -36,26 +36,27 @@ return [
             'content' => [
                 'receipt'       => '00000000000001',
                 'customer_details' => [
-                    'customer_email' => 'test@razorpay.com',
+                    'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
-                    'customer_name' => 'test',
+                    'customer_name'    => 'test',
                     'customer_address' => null,
                 ],
                 'line_items' => [
                     [
-                        'name' => 'Some item name',
+                        'name'        => 'Some item name',
                         'description' => 'Some item description',
-                        'amount' => 100000,
-                        'quantity' => 1,
+                        'amount'      => 100000,
+                        'quantity'    => 1,
                     ]
                 ],
-                'status' => 'issued',
-                'sms_status' => 'sent',
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
                 'email_status' => 'sent',
-                'view_less' => true,
-                'amount' => 100000,
-                'currency' => 'INR',
-                'payment_id' => null,
+                'view_less'    => true,
+                'amount'       => 100000,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'invoice',
             ],
         ],
     ],
@@ -70,10 +71,10 @@ return [
                     'contact'   => '9999999999',
                     'name'      => 'test',
                     'shipping_address' => [
-                        'line1' => 'Line One Etc',
-                        'line2' => 'Line Two Etc',
-                        'city'  => 'Bangalore',
-                        'state' => 'Karnataka',
+                        'line1'   => 'Line One Etc',
+                        'line2'   => 'Line Two Etc',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
                         'zipcode' => '560078',
                         'country' => 'India',
                     ],
@@ -95,25 +96,25 @@ return [
             'content' => [
                 'receipt'       => null,
                 'customer_details' => [
-                    'customer_email' => 'test@razorpay.com',
+                    'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
-                    'customer_name' => 'test',
+                    'customer_name'    => 'test',
                 ],
                 'line_items' => [
                     [
-                        'name' => 'Some item name',
+                        'name'        => 'Some item name',
                         'description' => 'Some item description',
-                        'amount' => 100000,
-                        'quantity' => 1,
+                        'amount'      => 100000,
+                        'quantity'    => 1,
                     ]
                 ],
-                'status' => 'issued',
-                'sms_status' => 'sent',
+                'status'       => 'issued',
+                'sms_status'   => 'sent',
                 'email_status' => 'sent',
-                'date' => null,
-                'view_less' => true,
-                'amount' => 100000,
-                //'user_id'  => 'abcdefghij1234',
+                'date'         => null,
+                'type'         => 'ecod',
+                'view_less'    => true,
+                'amount'       => 100000,
             ],
         ],
     ],
@@ -368,7 +369,7 @@ return [
                 'sms_status'           => 'pending',
                 'email_status'         => 'pending',
                 'view_less'            => true,
-                'type'                 => null,
+                'type'                 => 'invoice',
                 'amount'               => null,
                 'currency'             => 'INR',
                 'description'          => null,
@@ -431,7 +432,7 @@ return [
                 'currency'         => 'INR',
                 'short_url'        => null,
                 'view_less'        => true,
-                'type'             => null,
+                'type'             => 'invoice',
             ],
         ],
     ],
@@ -504,7 +505,7 @@ return [
                 'notes'                => [],
                 'currency'             => 'INR',
                 'view_less'            => true,
-                'type'                 => null,
+                'type'                 => 'invoice',
             ]
         ]
     ],
@@ -547,7 +548,7 @@ return [
         ],
     ],
 
-    'testCreateDraftInvoiceWithAmountAndDesc' => [
+    'testCreateDraftLinkWithAmountAndDesc' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -561,6 +562,7 @@ return [
                 'amount'        => 1000,
                 'description'   => 'For special service',
                 'draft'         => '1',
+                'type'          => 'link',
             ],
         ],
         'response' => [
@@ -585,7 +587,7 @@ return [
         ],
     ],
 
-    'testCreateIssuedInvoiceWithAmountAndDesc' => [
+    'testCreateIssuedLinkWithAmountAndDesc' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -597,7 +599,8 @@ return [
                     'name'      => 'test',
                 ],
                 'amount'        => 1000,
-                'description'   => 'For special service'
+                'description'   => 'For special service',
+                'type'          => 'link',
             ],
         ],
         'response' => [
@@ -622,7 +625,7 @@ return [
         ],
     ],
 
-    'testCreateDraftInvoiceWithAmount' => [
+    'testCreateDraftLinkWithAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -635,6 +638,7 @@ return [
                 ],
                 'amount'        => 1000,
                 'draft'         => '1',
+                'type'          => 'link'
             ],
         ],
         'response' => [
@@ -659,7 +663,7 @@ return [
         ],
     ],
 
-    'testCreateIssuedInvoiceWithAmount' => [
+    'testCreateIssuedLinkWithAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -671,13 +675,14 @@ return [
                     'name'      => 'test',
                 ],
                 'amount'        => 1000,
+                'type'          => 'link',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'description is required with amount',
+                    'description' => 'Either line_items or description is required.',
                 ],
             ],
             'status_code' => 400,
@@ -688,7 +693,7 @@ return [
         ],
     ],
 
-    'testCreateIssuedInvoiceWithoutLineItemsAmount' => [
+    'testCreateIssuedLinkWithoutLineItemsAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -700,13 +705,14 @@ return [
                     'name'      => 'test',
                 ],
                 'description'   => 'Just an invoice summary',
+                'type'          => 'link',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount or line_items is required',
+                    'description' => 'amount cannot be empty.',
                 ],
             ],
             'status_code' => 400,
@@ -717,7 +723,7 @@ return [
         ],
     ],
 
-    'testCreateDraftInvoiceWithLineItemsAndAmount' => [
+    'testCreateDraftLinkWithLineItemsAndAmount' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'post',
@@ -737,7 +743,8 @@ return [
                     ]
                 ],
                 'amount'        => 1000,
-                'description'   => 'For some special service'
+                'description'   => 'For some special service',
+                'type'          => 'link',
             ],
         ],
         'response' => [
@@ -792,9 +799,70 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'amount'        => 1000,
+                'currency'      => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount should not be sent in input for type invoice.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     // ------------------------------------------------------------
     // Updation of invoice
     // ------------------------------------------------------------
+
+    'testUpdateDraftInvoiceWithAmount' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'put',
+            'content'   => [
+                'amount' => 1000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount should not be sent in input for type invoice.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testUpdateDraftInvoiceWithBasicFields' => [
         'request' => [
@@ -809,7 +877,6 @@ return [
                 'notes'        => [
                     'new_key'  => 'new_value'
                 ],
-                'amount'       => 100001,
             ],
         ],
         'response' => [
@@ -834,7 +901,7 @@ return [
                 'email_status'         => null,
                 'date'                 => 1480506888,
                 'terms'                => 'Updated terms & conditions',
-                'amount'               => 100001,
+                'amount'               => 0,
                 'description'          => null,
                 'notes'                => [
                     'new_key'          => 'new_value'
@@ -842,7 +909,7 @@ return [
                 'currency'             => 'INR',
                 'short_url'            => null,
                 'view_less'            => true,
-                'type'                 => null,
+                'type'                 => 'invoice',
             ]
         ]
     ],
@@ -1099,7 +1166,7 @@ return [
         ]
     ],
 
-    'testIssueInvoiceWithFailingData' => [
+    'testIssueInvoiceWithoutLineItems' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/issue',
             'method'    => 'post',
@@ -1109,7 +1176,28 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'description is required with amount',
+                    'description' => 'line_items is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testIssueInvoiceWithoutCustomer' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/issue',
+            'method'    => 'post',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'customer is required.',
                 ],
             ],
             'status_code' => 400,
