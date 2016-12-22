@@ -5,14 +5,12 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Lib\AesTrait;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 
 class Validator extends Base\Validator
 {
-    use AesTrait;
-
     const MODE_ECB = 1;
 
     protected static $authRules = [
@@ -73,6 +71,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 $field . ' not specified');
         }
+    }
+
+    protected function decryptString(string $string, string $masterKey)
+    {
+        $aes = new AES(self::MODE_ECB);
+        $aes->setKey($masterKey);
+
+        return $aes->decrypt($string);
     }
 
     protected function getGatewayMasterKey()

@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
-use RZP\Lib\AesTrait;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -11,12 +10,11 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
     use GatewayBase\AuthorizeFailed;
-
-    use AesTrait;
 
     protected $gateway = 'netbanking_icici';
 
@@ -97,22 +95,38 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseBody;
 
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
-
         $xml = $this->getResponseArray($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             (array) $xml);
 
-        $verify->apiSuccess = true;
-        $verify->gatewaySuccess = false;
+        $status = $this->getVerifyStatus($verify, $xml);
 
-        if (isset($xml[ResponseFields::STATE]) === true and
-            $xml[ResponseFields::STATE] === Constants::SUCCESS)
+        return $status;
+    }
+
+    protected function getVerifyStatus($verify, $xml)
+    {
+        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+
+        $this->getApiSuccess($verify);
+
+        $this->getGatewaySuccess($verify, $xml);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $verify->gatewaySuccess = true;
+            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
         }
+
+        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
+
+        return $status;
+    }
+
+    protected function getApiSuccess($verify)
+    {
+        $verify->apiSuccess = true;
 
         $input = $verify->input;
 
@@ -123,15 +137,17 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
         }
+    }
 
-        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+    protected function getGatewaySuccess($verify, $xml)
+    {
+        $verify->gatewaySuccess = false;
+
+        if (isset($xml[ResponseFields::STATE]) === true and
+            $xml[ResponseFields::STATE] === Constants::SUCCESS)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $verify->gatewaySuccess = true;
         }
-
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
-
-        return $status;
     }
 
     protected function getPaymentRequestData($input)
@@ -160,7 +176,7 @@ class Gateway extends Base\Gateway
 
         $additionalData = $this->getPaymentReferenceData($input);
 
-        $this->getTpvData($additionalData, $input);
+        $this->setTpvFieldIfNeeded($additionalData, $input);
 
         $data = array_merge($data, $additionalData);
 
@@ -193,7 +209,7 @@ class Gateway extends Base\Gateway
 
         $data = array_merge($data, $additionalData);
 
-        $this->getTpvData($data, $input);
+        $this->setTpvFieldIfNeeded($data, $input);
 
         return $data;
     }
@@ -231,7 +247,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getTpvData(&$additionalData, $input)
+    protected function setTpvFieldIfNeeded(&$additionalData, $input)
     {
         if ($input['merchant']->isTPVRequired())
         {
@@ -273,7 +289,8 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getMasterKey();
 
-        $decryptedString = $this->decryptString(base64_decode($data['ES']), $masterKey);
+        $decryptedString = $this->decryptString(
+            base64_decode($data['ES']), $masterKey);
 
         parse_str($decryptedString, $content);
 
@@ -325,6 +342,22 @@ class Gateway extends Base\Gateway
         $xml = (array) simplexml_load_string($content);
 
         return $xml['@attributes'];
+    }
+
+    public function encryptString(string $string, string $masterKey)
+    {
+        $aes = new AES(self::MODE_ECB);
+        $aes->setKey($masterKey);
+
+        return $aes->encrypt($string);
+    }
+
+    public function decryptString(string $string, string $masterKey)
+    {
+        $aes = new AES(self::MODE_ECB);
+        $aes->setKey($masterKey);
+
+        return $aes->decrypt($string);
     }
 
     public function getMasterKey()
