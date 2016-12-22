@@ -1,24 +1,62 @@
-<div class="signup-step">
-  <div class="signup-heading">
-    Signing Up...
-  </div>
-  <div class="btn btn-primary" ng-click="goToSigninLayout()">
-    Create Account
-  </div>
-</div>
-<div class="signup-step">
-  <div class="signup-heading">
-    Account Created
-  </div>
-  <div class="btn btn-default" ng-click="goToSigninLayout()">
-    Create Account
-  </div>
-</div>
+<div class="signup-overflow-container">
+  <div class="signup-translate-container" style="transform: translateX({{-(240)*signup.currentStep}}px)">
+    <div class="signup-step">
+      <div class="auth-heading">
+        Signing Up...
+      </div>
+      <div class="auth-text">
+        Create a password to continue
+      </div>
 
-
-
-
-Sign up here from signup.html
-<div class="btn btn-default" ng-click="goToSigninLayout()">
-  Login
+      <form class="signup-form" name="signupForm" ng-submit="goToStep(1)" xng-submit="createAccount(signupForm.$valid)">
+        <label class="form-label auth-subheading" for="email">Your Office Email</label>
+        <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required>
+        <label class="form-label auth-subheading" for="password">Create a Password</label>
+        <input type="password" placeholder="••••••••" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
+        <div class="google-captcha" 
+          no-captcha
+          g-recaptcha-response="data.signup.captcha"
+          theme='light'
+          control="noCaptchaControl"
+          site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+        </div>
+        <div class="signup-subtext">
+          By signing up you agree to our <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> and <a class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>.
+        </div>
+        <button class="btn btn-primary form-control " type="submit">
+          Create Account
+        </button>
+      </form>
+      
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+    </div>
+    <div class="signup-step">
+      <div class="auth-heading">
+        Account Created
+      </div>
+      <div class="auth-text">
+        Your Razorpay account is created. We’ll need a few more details to customise your experience
+      </div>
+      <button class="btn btn-primary form-control btn-step-2" ng-click="goToStep(2)">
+        Next
+      </button>
+      
+    </div>
+    <div class="signup-step">
+      <div class="auth-heading">
+        Account Created
+      </div>
+      <div class="btn btn-default" ng-click="goToSigninLayout()">
+        Create Account
+      </div>
+    </div>
+    <div class="signup-step">
+      <div class="auth-heading">
+        Account Created
+      </div>
+      <div class="btn btn-default" ng-click="goToSigninLayout()">
+        Create Account
+      </div>
+    </div>
+  </div>
 </div>
