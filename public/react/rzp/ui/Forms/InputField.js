@@ -1,6 +1,11 @@
-export default ({ input, meta: { touched, error }, ...otherProps }) => (
+export default ({ tagName = 'input', input, meta: { touched, error }, ...otherProps }) => (
   <div>
-    <input {...input} {...otherProps} />
+    {
+      tagName === 'textarea' ?
+      <textarea {...input} {...otherProps} /> :
+      <input {...input} {...otherProps} />
+    }
+
     {touched && error && <div class='text-danger'><small>{error}</small></div>}
   </div>
 )

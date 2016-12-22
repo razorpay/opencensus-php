@@ -22,6 +22,10 @@ export function isBlank(obj) {
   return !obj
 }
 
+export function isPresent(obj) {
+  return !isBlank(obj)
+}
+
 export const findBy = (array, prop, value) => {
   return array.find((item) => {
     return item[prop] === value
@@ -47,16 +51,6 @@ export const pipe = (...funcs) => {
       return currentFn(returnVal)
     }, first(...args))
   }
-}
-
-export const isEmail = (email) => {
-  let emailRegExp = new RegExp(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/)
-  return emailRegExp.test(email)
-}
-
-export const isValidPhone = (phone) => {
-  let phoneRegExp = new RegExp(/^\+?[0-9]{8,15}$/)
-  return phoneRegExp.test(phone)
 }
 
 export const normalizeDate = date => (moment(date).format('D/M/Y'))

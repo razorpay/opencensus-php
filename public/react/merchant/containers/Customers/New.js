@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
-import validator from 'rzp/utils/validator'
+import { required, email, phone } from 'rzp/utils/validators'
 import * as CustomerActions from 'merchant/modules/customers'
 import Customer from 'merchant/models/Customer'
 
@@ -15,18 +15,7 @@ import Customer from 'merchant/models/Customer'
 )
 @reduxForm({
   form: 'newCustomer',
-  initialValues: new Customer(),
-  validate: validator({
-    email: {
-      type: 'email',
-      messages: {
-        type: 'Email is invalid'
-      }
-    },
-    contact: {
-      presence: true
-    }
-  })
+  initialValues: new Customer()
 })
 export default class AddCustomer extends Component {
   constructor() {
@@ -90,18 +79,23 @@ export default class AddCustomer extends Component {
                   component={InputField}
                   type='email'
                   class='form-control'
+                  validate={email('Please provide a valid email')}
                 />
               </div>
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Contact No.</label>
+              <label class='col-md-3 control-label label-required'>Contact No.</label>
               <div class='col-md-9'>
                 <Field
                   name='contact'
                   component={InputField}
                   class='form-control'
                   type='tel'
+                  validate={[
+                    required('Please provide the contact number'),
+                    phone('Invalid Contact')
+                  ]}
                 />
               </div>
             </div>

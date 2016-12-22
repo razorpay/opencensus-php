@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import validator from 'rzp/utils/validator'
+import { required } from 'rzp/utils/validators'
 import * as ItemActions from 'merchant/modules/items'
 import Item from 'merchant/models/Item'
 
@@ -15,15 +15,7 @@ import Item from 'merchant/models/Item'
 )
 @reduxForm({
   form: 'newItem',
-  initialValues: new Item(),
-  validate: validator({
-    name: {
-      presence: true
-    },
-    amountInINR: {
-      presence: true
-    }
-  })
+  initialValues: new Item()
 })
 export default class AddItem extends Component {
   constructor() {
@@ -69,19 +61,20 @@ export default class AddItem extends Component {
         <form class='form-horizontal'>
           <div class='modal-body'>
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Name</label>
+              <label class='col-md-3 control-label label-required'>Name</label>
               <div class='col-md-9'>
                 <Field
                   name='name'
                   component={InputField}
                   class='form-control'
                   autoFocus={true}
+                  validate={required()}
                 />
               </div>
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Rate</label>
+              <label class='col-md-3 control-label label-required'>Rate</label>
               <div class='col-md-9'>
                 <div class='input-group'>
                   <span class='input-group-addon'>INR</span>
@@ -89,6 +82,7 @@ export default class AddItem extends Component {
                     name='amountInINR'
                     component={InputField}
                     class='form-control'
+                    validate={required()}
                   />
                 </div>
               </div>

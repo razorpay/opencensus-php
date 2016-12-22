@@ -8,28 +8,20 @@ import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
 import { saveInvoice } from 'merchant/modules/invoices/list'
 import Invoice from 'merchant/models/Invoice'
+import { required, phone, email } from 'rzp/utils/validators'
 
 function validate(values) {
   let errors = {}
   let customer = values.customer
-  let item = values.line_items ? values.line_items[0] : null
-  let lineItemError = {}
+  let isNewForm = isBlank(values.line_items)
 
-  if (isBlank(customer) || (isBlank(customer.contact) && isBlank(customer.email))) {
-    errors.customer = {
-      contact: 'Please provide contact or email'
+  if (!isNewForm) {
+    if (isBlank(customer) || (isBlank(customer.contact) && isBlank(customer.email))) {
+      errors.customer = {
+        contact: 'Please provide contact or email'
+      }
     }
   }
-
-  if (isBlank(item) || isBlank(item.amount)) {
-    lineItemError.amount = 'Please provide the amount'
-  }
-
-  if (isBlank(item) || isBlank(item.name)) {
-    lineItemError.name = 'Please provide product/service name'
-  }
-
-  errors.line_items = [lineItemError]
   return errors
 }
 
@@ -78,7 +70,7 @@ export default class CreatePaymentLink extends Component {
 
   render() {
     const { handleSubmit } = this.props
-    const newForm = true
+    let isNewForm = !(this.props.invoice && !isBlank(this.props.invoice.line_items))
 
     return (
       <div>
@@ -95,7 +87,7 @@ export default class CreatePaymentLink extends Component {
         <form class='form-horizontal payment-link-form'>
           <div class='modal-body'>
             {
-              newForm &&
+              isNewForm &&
               <div>
                 <div class='form-group'>
                   <label class='col-md-3 control-label help-label label-required'>
@@ -108,6 +100,7 @@ export default class CreatePaymentLink extends Component {
                       component={InputField}
                       class='form-control'
                       autoFocus={true}
+                      validate={required('Please provide the amount')}
                     />
                   </div>
                 </div>
@@ -119,8 +112,11 @@ export default class CreatePaymentLink extends Component {
                   <div class='col-md-8'>
                     <Field
                       name='description'
-                      component='textarea'
+                      component={InputField}
+                      tagName='textarea'
+                      type='textarea'
                       class='form-control'
+                      validate={required('Please provide the description')}
                     />
                   </div>
                 </div>
@@ -148,6 +144,7 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                   placeholder='Customer phone'
+                  validate={phone('Please provide valid contact number')}
                 />
               </div>
 
@@ -157,50 +154,45 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                   placeholder='Customer email'
+                  validate={email('Please provide valid email')}
                 />
               </div>
             </div>
 
-{/*
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>
-                <div>Item Name</div>
-                <small>Product/Service</small>
-              </label>
-              <div class='col-md-8'>
-                <Field
-                  name='line_items[0][name]'
-                  component={InputField}
-                  class='form-control'
-                />
-              </div>
-            </div>
+            {
+              !isNewForm &&
+              <div>
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    <div>Item Name</div>
+                    <small>Product/Service</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='line_items[0][name]'
+                      component={InputField}
+                      class='form-control'
+                      validate={required('Please provide product/service name')}
+                    />
+                  </div>
+                </div>
 
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>
-                <div>Amount</div>
-                <small>(in INR)</small>
-              </label>
-              <div class='col-md-8'>
-                <Field
-                  name='line_items[0][amount]'
-                  component={InputField}
-                  class='form-control'
-                />
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    <div>Amount</div>
+                    <small>(in INR)</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='line_items[0][amount]'
+                      component={InputField}
+                      class='form-control'
+                      validate={required('Please provide the amount')}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>Receipt</label>
-              <div class='col-md-8'>
-                <Field
-                  name='receipt'
-                  component={InputField}
-                  class='form-control'
-                />
-              </div>
-            </div>
-*/}
+            }
 
             <div class='form-group'>
               <label class='col-md-3 control-label'>Notify Customer</label>

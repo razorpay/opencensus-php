@@ -25,7 +25,11 @@ export default (props) => {
           <Alert type={statusMsg.type} message={statusMsg.message} />
 
           <div class='invoice-header'>
-            <DropdownButton title='Send' class='pull-right' btnTriggerClass='btn-primary btn-sm'>
+            <DropdownButton
+              title='Send'
+              class='pull-right'
+              btnTriggerClass='btn-primary btn-sm'
+            >
               <MenuItem onClick={() => props.onNotify('sms')}>Send via SMS</MenuItem>
               <MenuItem onClick={() => props.onNotify('email')}>Send via Email</MenuItem>
             </DropdownButton>
