@@ -76,7 +76,7 @@ class EntityReportTest extends TestCase
         $this->assertEquals(count($combinedReport), 3);
 
         $expectedContent = [
-            'Merchant Name' => 'ut',
+            // 'Merchant Name' => 'ut',
             'Merchant ID' => '10000000000000',
             // 'Txn Id' => 'pay_6w6bmFIqLiOGVj',
             'Txn State' => 'Sale',
