@@ -73,12 +73,12 @@ class Category
 
     public static function isMerchantCategoryIncompatible($category)
     {
-        return in_array($category, self::INCOMPATIBLE);
+        return in_array($category, self::INCOMPATIBLE, true);
     }
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, self::CATEGORIES_ALL);
+        return in_array($category, self::CATEGORIES_ALL, true);
     }
 
     public static function isNetworkCategoryValid($input)
@@ -110,7 +110,7 @@ class Category
         // No need to worry about duplicates. we only need values
         $values = array_values($checkArray);
 
-        return in_array($category, $values);
+        return in_array($category, $values, true);
     }
 
     public static function getDefaultForMethodAndNetwork($method, $network)
