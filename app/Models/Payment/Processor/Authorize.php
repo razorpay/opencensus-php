@@ -411,6 +411,12 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
+        else
+        {
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
     }
 
     protected function validateRecurringIfApplicable(Payment\Entity $payment, array $input)
