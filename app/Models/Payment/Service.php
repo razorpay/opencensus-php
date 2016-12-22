@@ -66,6 +66,23 @@ class Service extends Base\Service
         return $this->getNewProcessor()->process($input);
     }
 
+    /**
+     * Processes a upi payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processUpi(array $input)
+    {
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'upi';
+
+        return $this->getNewProcessor()->process($input);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         return $this->getNewProcessor()->processAndReturnFees($input);

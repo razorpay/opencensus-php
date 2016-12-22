@@ -93,9 +93,9 @@ class Service extends Base\Service
         {
             $this->trace->info(
                 TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id'    => $this->merchant->getId() ]);
+                [ 'merchant_id'    => $merchant->getId() ]);
 
-            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
+            $merchantDetails = $this->createMerchantDetails($merchant, $input);
         }
 
         return $merchantDetails;

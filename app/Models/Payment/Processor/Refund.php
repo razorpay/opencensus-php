@@ -359,13 +359,10 @@ trait Refund
         {
             // This has already been refunded on Billdesk.
             // We'll run create record later after this is refunded.
-
             $paymentId = $data['payment']['id'];
             $refAmount = $data['amount'];
 
-            if ((($paymentId === '6r72Pb24ejmw1w') and ($refAmount === 32174))or
-                (($paymentId === '6rPm7iBPdyTZxO') and ($refAmount === 131320)) or
-                (($paymentId === '6tGk3VAhS4bxMr') and ($refAmount === 31320)))
+            if ((($paymentId === '6sr04lbicLKzxV') and ($refAmount === 12000)))
             {
                 return;
             }
@@ -386,7 +383,7 @@ trait Refund
                 throw $ex;
             }
 
-            $curlMessage = $ex->getData()['message'];
+            $curlMessage = strtolower($ex->getData()['message']);
 
             //
             // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).

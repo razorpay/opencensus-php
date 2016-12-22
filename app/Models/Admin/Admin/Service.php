@@ -293,7 +293,10 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['permissions'] = $permissions->all();
+        if (! empty($permissions))
+        {
+            $admin['permissions'] = $permissions->all();
+        }
 
         $admin['roles'] = $roleNames;
 
@@ -324,13 +327,34 @@ class Service extends Base\Service
         return $admins->toArrayPublic();
     }
 
+    public function fetchMultipleOnAppAuth(array $input)
+    {
+        $admins = $this->repo->admin->fetch($input);
+
+        $admins = $admins->toArrayPublic();
+
+        // heimdall dashboard has a custom parser which is not compatible with
+        // collections. If dashboard needs a single entity and passes a unique
+        // key return the only collection
+        if ($admins['count'] === 1)
+        {
+            return $admins['items'][0];
+        }
+
+        return [];
+    }
+
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $authAdmin = $this->app['basicauth']->getAdmin();
-
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
+        // making impromptu changes to make editAdmin work on appAuth
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $authAdmin = $this->app['basicauth']->getAdmin();
+
+            $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
+        }
 
         $admin = $this->core()->edit($admin, $input);
 
@@ -341,76 +365,89 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $adminGroups = $admin->groups->toArray();
-
-        $adminMerchants = $admin->merchants->toArray();
-
-        // Get entire children hierarchy for each group
-        // that the admin belongs to
-
-        $childrenGroups = [];
-
-        $childrenAdmins = [];
-
-        foreach ($adminGroups as $group)
+        // If the admin has special priv to fetch/view all the merchants
+        // of his org
+        if ($admin->canSeeAllMerchants())
         {
-            $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
+            $merchants = $this->repo->merchant->fetchMerchantsByOrgId($admin->org->id)->toArray();
 
-            $childrenGroups = array_merge($childrenGroups, $groupChildren);
+            $merchantIds = array_column($merchants, 'id');
 
-            foreach ($groupChildren as $group)
+            // sd($merchantIds);
+        }
+        else
+        {
+            $adminGroups = $admin->groups->toArray();
+
+            $adminMerchants = $admin->merchants->toArray();
+
+            // Get entire children hierarchy for each group
+            // that the admin belongs to
+
+            $childrenGroups = [];
+
+            $childrenAdmins = [];
+
+            foreach ($adminGroups as $group)
             {
-                $group = new Group\Entity($group);
+                $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
 
-                $childrenAdmins = array_merge($childrenAdmins, $group->admins->toArray());
+                $childrenGroups = array_merge($childrenGroups, $groupChildren);
+
+                foreach ($groupChildren as $group)
+                {
+                    $group = new Group\Entity($group);
+
+                    $childrenAdmins = array_merge($childrenAdmins, $group->admins->toArray());
+                }
             }
+
+            // An admin could belong to multiple groups
+            // so we need to select unique admins from $childrenAdmins
+
+            $adminIds = array_unique( array_column($childrenAdmins, 'id') );
+
+            $childrenAdmins = array_filter($childrenAdmins, function ($value, $key) use ($adminIds)
+            {
+                return in_array($key, array_keys($adminIds));
+            }, ARRAY_FILTER_USE_BOTH);
+
+            // Loop over all the groups and get their merchants
+            // TODO: this can be placed in the previous inner foreach as well
+
+            $merchants = [];
+
+            foreach ($childrenGroups as $group)
+            {
+                $groupId = Group\Entity::getSignedId($group['id']);
+
+                $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+
+                $merchants = array_merge($merchants, $group->merchants->toArray());
+            }
+
+            // Loop over all the admins and get their merchants
+            //
+            // Note: currently a merchant can belong to only 1 admin
+            // not by DB design but by code constraints so we don't
+            // need to run the list of merchants through a uniqueness check
+
+            foreach ($childrenAdmins as $admin)
+            {
+                $adminId = Entity::getSignedId($admin['id']);
+
+                $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+                $merchants = array_merge($merchants, $admin->merchants->toArray());
+            }
+
+            // Finally merging the admin's merchants with the list
+            // of merchants resolved from his hierarchy
+            $merchants = array_merge($merchants, $adminMerchants);
+
+            // ... and we'll return all the merchant IDs to the dashboard client
+            $merchantIds = array_column($merchants, 'id');
         }
-
-        // An admin could belong to multiple groups
-        // so we need to select unique admins from $childrenAdmins
-
-        $adminIds = array_unique( array_column($childrenAdmins, 'id') );
-
-        $childrenAdmins = array_filter($childrenAdmins, function ($value, $key) use ($adminIds)
-        {
-            return in_array($key, array_keys($adminIds));
-        }, ARRAY_FILTER_USE_BOTH);
-
-        // Loop over all the groups and get their merchants
-        // TODO: this can be placed in the previous inner foreach as well
-
-        $merchants = [];
-
-        foreach ($childrenGroups as $group)
-        {
-            $groupId = Group\Entity::getSignedId($group['id']);
-
-            $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-            $merchants = array_merge($merchants, $group->merchants->toArray());
-        }
-
-        // Loop over all the admins and get their merchants
-        //
-        // Note: currently a merchant can belong to only 1 admin
-        // not by DB design but by code constraints so we don't
-        // need to run the list of merchants through a uniqueness check
-
-        foreach ($childrenAdmins as $admin)
-        {
-            $adminId = Entity::getSignedId($admin['id']);
-
-            $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-            $merchants = array_merge($merchants, $admin->merchants->toArray());
-        }
-
-        // Finally merging the admin's merchants with the list
-        // of merchants resolved from his hierarchy
-        $merchants = array_merge($merchants, $adminMerchants);
-
-        // ... and we'll return all the merchant IDs to the dashboard client
-        $merchantIds = array_column($merchants, 'id');
 
         // Get all the admins of the merchant IDs
         // TODO: This can be moved in one of the foreach blocks above
@@ -422,7 +459,16 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $responseHash[$merchant->id] = $merchant->admins->first()->name;
+            $admin = $merchant->admins->first();
+
+            if (! empty($admin))
+            {
+                $responseHash[$merchant->id] = $merchant->admins->first()->name;
+            }
+            else
+            {
+                $responseHash[$merchant->id] = null;
+            }
         }
 
         return $responseHash;
