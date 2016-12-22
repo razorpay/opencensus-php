@@ -141,7 +141,7 @@ class Service extends Base\Service
                       ->admin
                       ->getByEmail($orgId, ['email' => $result->email])
                       ->toArray();
-
+sd($result->email);
         if ($admin)
         {
             $updateData = [
