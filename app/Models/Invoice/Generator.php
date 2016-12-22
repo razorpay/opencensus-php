@@ -45,6 +45,12 @@ class Generator extends Base\Core
 
     protected $urlShortener;
 
+    /**
+     * Base invoice url from which invoice link is generated.
+     * @var string
+     */
+    protected $baseInvoiceUrl;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -58,6 +64,8 @@ class Generator extends Base\Core
         $this->urlShortener = $this->app['url_shortener'];
 
         $this->lineItemCore = new LineItem\Core;
+
+        $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
     public function generate(array $input)
@@ -182,9 +190,7 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = self::getInvoiceLink();
-
-        // sd($longUrl);
+        $longUrl = $this->getInvoiceLink();
 
         $shortenedUrl = $this->urlShortener->shorten($longUrl);
 
@@ -200,10 +206,15 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
+    /**
+     * Invoice long url is of the following format:
+     * <base invoice url>/(t|l)/<Invoice public id>
+     * Here t or l is short form for test or live mode.
+     *
+     * @return string
+     */
     protected function getInvoiceLink()
     {
-        $baseInvoiceUrl = $this->app['config']->get('app.invoice');
-
         $shortMode = self::SHORT_MODE_TEST;
 
         if ($this->mode === Mode::LIVE)
@@ -211,7 +222,9 @@ class Generator extends Base\Core
             $shortMode = self::SHORT_MODE_LIVE;
         }
 
-        $invoiceLink = $baseInvoiceUrl . '/' . $shortMode . '/' . $this->invoice->getPublicId();
+        $invoiceId = $this->invoice->getPublicId();
+
+        $invoiceLink = $this->baseInvoiceUrl . '/' . $shortMode . '/' . $invoiceId;
 
         return $invoiceLink;
     }
