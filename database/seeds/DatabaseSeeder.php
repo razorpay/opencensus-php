@@ -373,9 +373,9 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ADMIN)->insert([
                 [
                     'id'                  => '6dLbNSpv5Ycccc',
-                    'email'               => 'harshil@razorpay.com',
-                    'name'                => 'Harshil Mathur',
-                    'username'            => 'harshil',
+                    'email'               => 'rishabh.pugalia@razorpay.com',
+                    'name'                => 'Rishabh Pugalia',
+                    'username'            => 'rishabhp',
                     'org_id'              => '100000razorpay',
                     'employee_code'       => '001',
                     'branch_code'         => 'RZP001',
