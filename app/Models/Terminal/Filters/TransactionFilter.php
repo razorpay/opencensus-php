@@ -245,8 +245,6 @@ class TransactionFilter extends Terminal\Filter
 
         $category = $terminal->getNetworkCategory();
 
-        $filterParams = [$method,$network,$gateway,$category];
-
         $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
 
         $amount = $input['payment']->getAmount();
