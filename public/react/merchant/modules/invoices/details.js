@@ -57,10 +57,6 @@ export default function (state = initialState, action) {
     case `${EMAIL_SEND}::SUCCESS`:
       return set(state, 'invoice.email_status', 'sent')
 
-    case `${SMS_SEND}::ERROR`:
-    case `${EMAIL_SEND}::ERROR`:
-      return set(state, 'error', action.payload.errors)
-
     default:
       return state
   }

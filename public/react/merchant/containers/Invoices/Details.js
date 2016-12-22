@@ -39,14 +39,8 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   render() {
-    let { loading, invoice, error } = this.props
+    let { loading, invoice } = this.props
     let statusMsg = this.state.statusMsg
-    if (error) {
-      statusMsg = {
-        type: 'error',
-        message: error
-      }
-    }
 
     return (
       <div class='react-root'>

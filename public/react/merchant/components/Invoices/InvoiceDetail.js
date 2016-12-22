@@ -1,4 +1,5 @@
 import AsyncButton from 'react-async-button'
+import { DropdownButton, MenuItem } from 'rzp/ui/Dropdown'
 import Amount from 'rzp/ui/Amount'
 import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
@@ -24,6 +25,10 @@ export default (props) => {
           <Alert type={statusMsg.type} message={statusMsg.message} />
 
           <div class='invoice-header'>
+            <DropdownButton title='Send' class='pull-right' btnTriggerClass='btn-primary btn-sm'>
+              <MenuItem onClick={() => props.onNotify('sms')}>Send via SMS</MenuItem>
+              <MenuItem onClick={() => props.onNotify('email')}>Send via Email</MenuItem>
+            </DropdownButton>
             <h3>{invoice.id}</h3>
           </div>
 
