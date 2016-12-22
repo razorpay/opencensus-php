@@ -310,6 +310,7 @@ final class Route
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
+        'admin_get_by_attr'                       => ['get',      'admins/get-multiple-app-auth',                   'OrganizationController@getAdminMultipleOnAppAuth'                  ],
         'org_get'                                 => ['get',      'orgs/{orgId}',                                   'OrganizationController@getOrganization'                            ],
         'org_get_self'                            => ['get',      'orgs/{id}/self',                                 'OrganizationController@getOrganization'                            ],
         'org_get_by_hostname'                     => ['get',      'orgs/hostname/{hostname}',                       'OrganizationController@getOrganizationByHostname'                  ],
@@ -598,6 +599,7 @@ final class Route
         'admin_authentication',
         'oauth_login',
         'admin_oauth_authenticate',
+        'admin_get_by_attr',
         'org_get_self',
         'org_get_by_hostname',
         'admin_lock_old_accounts',
@@ -706,7 +708,6 @@ final class Route
         'role_edit'                  => ['edit_role'],
         'role_delete'                => ['delete_role'],
         'admin_get_multiple'         => ['view_all_admin'],
-        'admin_get_by_attr'          => ['view_all_admin'],
         'admin_get'                  => ['view_admin'],
         'admin_edit'                 => ['edit_admin'],
         'admin_delete'               => ['delete_admin'],

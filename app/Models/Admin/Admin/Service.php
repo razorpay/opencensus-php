@@ -324,6 +324,21 @@ class Service extends Base\Service
         return $admins->toArrayPublic();
     }
 
+    public function fetchMultipleOnAppAuth(array $input)
+    {
+        $admins = $this->repo->admin->fetch($input);
+
+        $admins = $admins->toArrayPublic();
+
+        // heimdall dashboard has a custom parser which is not compatible with
+        // collections. If dashboard needs a single entity and passes a unique
+        // key return the only collection
+        if ($admins['count'] === 1)
+        {
+            return $admins['items'][0];
+        }
+    }
+
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
         $authAdmin = $this->app['basicauth']->getAdmin();

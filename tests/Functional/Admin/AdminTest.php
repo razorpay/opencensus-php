@@ -556,4 +556,17 @@ class AdminTest extends TestCase
 
         $this->startTest();
      }
+
+     public function testGetAdminByEmailOnAppAuth()
+     {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
+            Admin\Entity::NAME    => 'test admin app auth',
+        ]);
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+     }
 }
