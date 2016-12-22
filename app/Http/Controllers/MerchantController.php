@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
@@ -464,6 +465,11 @@ class MerchantController extends Controller
     public function getPublicEntityReport($entity)
     {
         $input = Request::all();
+
+        if (($entity === E::TRANSACTION) and $this->merchant->isFeatureEnabled('broker_report'))
+        {
+            return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, 'transaction');
+        }
 
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }

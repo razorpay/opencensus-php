@@ -21,6 +21,7 @@ class Constants
     const INVOICE         = 'invoice';
     const NOZEROPRICING   = 'nozeropricing';
     const REVERSE         = 'reverse';
+    const BROKER_REPORT   = 'broker_report';
 
     public static $allFeatures = [
         self::DUMMY,
@@ -37,6 +38,7 @@ class Constants
         self::INVOICE,
         self::NOZEROPRICING,
         self::REVERSE,
+        self::BROKER_REPORT
     ];
 
     // TODOL Use this instead of alFeatures once in final code change pr
@@ -55,6 +57,7 @@ class Constants
         self::INVOICE         => true,
         self::NOZEROPRICING   => false,
         self::REVERSE         => true,
+        self::BROKER_REPORT   => true
     ];
 
     public static $visibleFeaturesMap = [
