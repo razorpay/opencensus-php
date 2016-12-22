@@ -130,9 +130,11 @@ class Validator extends Base\Validator
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
-        self::EDIT_DRAFT . Entity::AMOUNT, // Amount should not be updated by
-                                           // via input if line items exists
-                                           // already for the invoice.
+
+        // Amount should not be updated by
+        // via input if line items exists
+        // already for the invoice.
+        self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
     public function validateAmount(array $input)
@@ -155,7 +157,7 @@ class Validator extends Base\Validator
         if ($type === Type::INVOICE)
         {
             throw new BadRequestValidationFailureException(
-                'amount should not be sent in input for type invoice.'
+                'amount can be only sent for ecod or link types'
             );
         }
 
@@ -202,6 +204,10 @@ class Validator extends Base\Validator
      * no other validations would happen and will attempt to flush null in db.
      * Ref: https://laravel.com/docs/5.2/validation#rule-string
      * To avoid that, adding validator to be run by spine here.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
      */
     public function validateCurrency(array $input)
     {
@@ -348,7 +354,7 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        $invoiceAmount          = $invoice->getAmount();
+        $invoiceAmount = $invoice->getAmount();
 
         if ($invoiceAmount === null)
         {
