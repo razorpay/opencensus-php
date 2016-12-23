@@ -272,8 +272,7 @@ class Validator extends Base\Validator
         //
         //
 
-        if (($currency !== "INR") and
-            ($currency !== "USD"))
+        if (in_array($currency, Payment\Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
