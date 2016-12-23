@@ -11,8 +11,6 @@ use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
@@ -32,15 +30,7 @@ class Core extends Base\Core
             $input
         );
 
-        $operation = Validator::CREATE_ISSUED;
-
-        if ((isset($input[Entity::DRAFT])) and
-            ($input[Entity::DRAFT]) === '1')
-        {
-            $operation = Validator::CREATE_DRAFT;
-        }
-
-        $invoice = (new Generator($merchant))->generate($input, $operation);
+        $invoice = (new Generator($merchant))->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -63,6 +53,16 @@ class Core extends Base\Core
 
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
+        //
+        // Once basic fill by edit call on entity is done, Based on invoice status,
+        // it calls either updateDraftInvoice|updateIssuedInvoice.
+        //
+        // This was done to maintain flow clean. Because if not now, there are chances
+        // we want to handle different things in different case.
+        //
+        // This is neat base code for that.
+        //
+
         $operation = 'edit' . studly_case($status);
 
         try
@@ -75,20 +75,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            // Check if is Mysql duplicate on unique index error
-            if (($e instanceof \Illuminate\Database\QueryException) and
-                ($e->errorInfo[1] === 1062))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
-                    null,
-                    [
-                        'invoice_id'    => $invoice->getId(),
-                        'input'         => $input,
-                    ]);
-            }
-
-            throw $e;
+            ExceptionHandler::handle($e, $invoice, $input);
         }
 
         return $invoice;
@@ -358,8 +345,7 @@ class Core extends Base\Core
                 (new Generator($merchant, $invoice))->updateDraftInvoice($input);
 
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
     }
 
     protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)

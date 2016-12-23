@@ -8,7 +8,6 @@ use Config;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
@@ -55,18 +54,18 @@ class Generator extends Base\Core
         $this->lineItemCore = new LineItem\Core;
     }
 
-    public function generate(array $input, string $operation)
+    public function generate(array $input)
     {
-        $this->generateInvoiceSkeleton($input, $operation);
+        $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($input, $operation)
+                function() use ($input)
                 {
                     $this->preProcessGeneration($input);
 
-                    if ($operation === Validator::CREATE_ISSUED)
+                    if ($this->invoice->getStatus() === Status::ISSUED)
                     {
                         $this->issueInvoice();
                     }
@@ -77,20 +76,7 @@ class Generator extends Base\Core
         }
         catch (\Exception $e)
         {
-            // Check if is Mysql duplicate on unique index error
-            if (($e instanceof \Illuminate\Database\QueryException) and
-                ($e->errorInfo[1] === 1062))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
-                    null,
-                    [
-                        'invoice_id'    => $this->invoice->getId(),
-                        'input'         => $input,
-                    ]);
-            }
-
-            throw $e;
+            ExceptionHandler::handle($e, $this->invoice, $input);
         }
 
         //
@@ -123,9 +109,12 @@ class Generator extends Base\Core
     }
 
     /**
-     * Updates associations of existing invoice
+     * This method updates all associations of invoice in update request.
+     * Eg. In case of draft invoice, one can update customer details.
      *
      * @param array $input
+     *
+     * @return null
      */
     public function updateDraftInvoice(array $input)
     {
@@ -164,8 +153,20 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function generateInvoiceSkeleton(array $input, string $operation)
+    protected function generateInvoiceSkeleton(array $input)
     {
+        //
+        // If draft=1 in input, validate against createDraftRules else createIssuedRules.
+        //
+
+        $operation = 'createIssued';
+
+        if ((isset($input[Entity::DRAFT])) and
+            ($input[Entity::DRAFT]) === '1')
+        {
+            $operation = 'createDraft';
+        }
+
         $invoice = new Entity;
 
         $invoice->build($input);
@@ -194,10 +195,12 @@ class Generator extends Base\Core
     }
 
     /**
-     * At the time when invoice is to be issued:
-     * - validate if it can be issued
-     * - create it's order and set the short URL
-     * - save the invoice
+     * This method does following:
+     * - Validates if invoice can be issued
+     * - Create it's order
+     * - Set the short URL
+     * - Update invoice status
+     * - Save the invoice
      */
     public function issueInvoice()
     {
@@ -260,7 +263,6 @@ class Generator extends Base\Core
 
         $orderCurrency = $this->invoice->getCurrency();
 
-        // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';
 
         $orderInput = [

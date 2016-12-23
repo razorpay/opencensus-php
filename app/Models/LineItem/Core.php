@@ -14,26 +14,30 @@ class Core extends Base\Core
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant
-     * @param Invoice\Entity  $invoice
+     * @param Base\Entity     $morphEntity
      *
      * @return Entity
      */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        Invoice\Entity $invoice)
+        Base\Entity $morphEntity)
     {
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         $lineItem = (new Entity)->build($lineItemDetails);
 
         $lineItem->merchant()->associate($merchant);
-        $lineItem->entity()->associate($invoice);
+        $lineItem->entity()->associate($morphEntity);
 
         $this->repo->transaction(
-            function() use ($merchant, $invoice, $lineItem, $lineItemDetails, $itemDetails)
+            function() use ($merchant, $morphEntity, $lineItem, $lineItemDetails, $itemDetails)
             {
-                $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $invoice);
+                //
+                // Create or get item(if id exists in input) and associate with line item.
+                //
+
+                $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $morphEntity);
 
                 $lineItem->item()->associate($item);
 
@@ -48,24 +52,24 @@ class Core extends Base\Core
         Entity $lineItem,
         array $input,
         Merchant\Entity $merchant,
-        Invoice\Entity $invoice)
+        Base\Entity $morphEntity)
     {
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         $lineItem->edit($lineItemDetails);
 
         $this->repo->transaction(
-            function() use ($merchant, $invoice, $lineItem, $lineItemDetails, $itemDetails)
+            function() use ($merchant, $morphEntity, $lineItem, $lineItemDetails, $itemDetails)
             {
                 //
                 // Updates item association if item_id or item details are sent
-                // as part of update api call.
+                // as part of update input.
                 //
 
                 if ((isset($lineItemDetails[Entity::ITEM_ID])) or
                     (empty($itemDetails) === false))
                 {
-                    $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $invoice);
+                    $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $morphEntity);
 
                     $lineItem->item()->associate($item);
                 }
@@ -100,7 +104,7 @@ class Core extends Base\Core
      * @param array           $lineItemDetails
      * @param array           $itemDetails
      * @param Merchant\Entity $merchant
-     * @param Invoice\Entity  $invoice
+     * @param Base\Entity     $morphEntity
      *
      * @return Item\Entity
      * @throws Exception\BadRequestException
@@ -109,33 +113,20 @@ class Core extends Base\Core
         array $lineItemDetails,
         array $itemDetails,
         Merchant\Entity $merchant,
-        Invoice\Entity $invoice)
+        Base\Entity $morphEntity)
     {
         $item = null;
 
         //
-        // If ITEM_ID exists in input, use the existing item for association.
-        // But, chekds if item is active or not.
+        // If ITEM_ID exists in input, use the existing active item for association.
         //
 
         if (isset($lineItemDetails[Entity::ITEM_ID]) === true)
         {
-            $item = $this->repo->item->findByPublicIdAndMerchant(
+            $item = $this->repo->item->findActiveByPublicIdAndMerchantOrFail(
                 $lineItemDetails[Entity::ITEM_ID],
                 $merchant
             );
-        }
-
-        if (($item !== null) and
-            ($item->isNotActive()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
-                null,
-                [
-                    'item_id' => $item->getId(),
-                    'invoice_id' => $invoice->getId(),
-                ]);
         }
 
         //
@@ -144,10 +135,13 @@ class Core extends Base\Core
 
         if (empty($item))
         {
-            // Use invoice currency if item's currency not in input
+            //
+            // Use morphEntity's currency if item's currency not in input
+            //
+
             if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
             {
-                $itemDetails[Item\Entity::CURRENCY] = $invoice->getCurrency();
+                $itemDetails[Item\Entity::CURRENCY] = $morphEntity->getCurrency();
             }
 
             $item = (new Item\Core)->create($itemDetails, $merchant);
@@ -155,7 +149,7 @@ class Core extends Base\Core
 
         $item->getValidator()->validateCurrency(
             $item->getCurrency(),
-            $invoice->getCurrency());
+            $morphEntity->getCurrency());
 
         return $item;
     }

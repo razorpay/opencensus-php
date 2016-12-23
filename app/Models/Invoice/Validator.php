@@ -10,11 +10,17 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-
-    const CREATE_DRAFT  = 'createDraft';
-    const CREATE_ISSUED = 'createIssued';
-    const EDIT_DRAFT    = 'editDraft';
-    const EDIT_ISSUED   = 'editIssued';
+    //
+    // We have rules on create and update for the two status: DRAFT, ISSUED.
+    // Eg. In ISSUED state, you cannot update amount of the invoice. There are
+    //     rules to accomodate such requirements. This way it's good to manage and
+    //     is easy to understand.
+    //
+    // - Create invoice in DRAFT status
+    // - Create invoice in ISSUED status
+    // - Update invoice when it's in DRAFT status
+    // - Update invoice when it's in ISSUED status
+    //
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -44,8 +50,11 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|boolean',
     ];
 
-    // This is redundant and same as $createRules but keeping it as it keeps code
+    //
+    // Following is redundant and same as $createRules but keeping it as it keeps code
     // at other places clean
+    //
+
     protected static $createDraftRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
@@ -118,6 +127,10 @@ class Validator extends Base\Validator
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
     ];
 
+    //
+    // Custom validators.
+    //
+
     protected static $createValidators =[
         Entity::AMOUNT,
         Entity::CURRENCY,
@@ -130,15 +143,17 @@ class Validator extends Base\Validator
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
-        self::EDIT_DRAFT . Entity::AMOUNT, // Amount should not be updated by
-                                           // via input if line items exists
-                                           // already for the invoice.
+        'editDraft' . Entity::AMOUNT, // Amount should not be updated by
+                                      // via input if line items exists
+                                      // already for the invoice.
     ];
 
     public function validateAmount(array $input)
     {
+        //
         // Amount should only be sent, if type is not invoice as invoice must
         // have line items and amount gets calculated from there.
+        //
 
         if (isset($input[Entity::AMOUNT]) === false)
         {
