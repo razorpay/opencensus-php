@@ -513,12 +513,17 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $verifyAmount = 0, $currency='INR')
     {
         $request = array(
             'method' => 'POST',
             'url' => "/payments/".$id.'/capture',
             'content' => array('amount' => $amount));
+
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
 
         $this->ba->privateAuth();
         $content = $this->makeRequestAndGetContent($request);

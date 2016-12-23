@@ -63,7 +63,7 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
 
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount'], 0, 'USD');
 
         $txn = $this->getLastTransaction(true);
         $this->assertArraySelectiveEquals(

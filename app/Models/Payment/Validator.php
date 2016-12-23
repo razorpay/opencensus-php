@@ -331,7 +331,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function captureCurrencyValidate()
+    protected function captureCurrencyValidate($payment, $currency)
     {
         if ($currency !== $payment->getCurrency())
         {
