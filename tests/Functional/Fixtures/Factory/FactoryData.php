@@ -14,6 +14,7 @@ final class FactoryData
     {
         $factory(\RZP\Models\Merchant\Entity::class, [
             'id' => $faker->uniqueid,
+            'org_id' => 'RazorpayOrgnId',
             'name' => $faker->word,
             'email' => $faker->email,
             'activated' => 0,
@@ -310,6 +311,14 @@ final class FactoryData
             'quantity' => 1,
         ]);
 
+        $factory(\RZP\Gateway\FirstData\Entity::class, [
+            'id' => '0',
+            'action' => 'authorize',
+            'payment_id' => null,
+            'amount' => null,
+            'received' => true,
+        ]);
+
         $factory(\RZP\Models\Customer\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => '10000000000000',
@@ -365,6 +374,78 @@ final class FactoryData
         $factory(\RZP\Models\Feature\Entity::class, [
             'id'                => $faker->uniqueid,
             'entity_type'       => 'merchant'
+        ]);
+
+        // Admin Roles related fixtures
+        $factory(\RZP\Models\Admin\Org\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'allow_sign_up' => false,
+            'email_domains' => 'razorpay.com,rzp.io',
+            'email'         => $faker->rzpEmail,
+            'display_name'  => 'Razorpay',
+            'business_name' => 'Razorpay Software Pvt Ltd',
+            'auth_type'     => 'password',
+        ]);
+
+        $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
+            'id'            => $faker->randomNumber(6),
+            'org_id'        => $faker->uniqueid,
+            'hostname'      => $faker->rzpSubdomain,
+        ]);
+
+        $factory(\RZP\Models\Admin\Permission\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'name'          => $faker->name,
+            'category'      => 'test category',
+            'description'   => 'test description',
+        ]);
+
+        $factory(\RZP\Models\Admin\Role\Entity::class, [
+            'id' => $faker->uniqueid,
+            'name' => 'manager',
+            'description' => 'Manager of roles',
+        ]);
+
+        $factory(\RZP\Models\Admin\Group\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'name'        => $faker->name,
+            'description' => 'This is a test group',
+        ]);
+
+        $factory(\RZP\Models\Admin\Admin\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'org_id'             => 'factory:\RZP\Models\Admin\Org\Entity',
+            'name'               => 'test admin',
+            'email'              => $faker->rzpEmail,
+            'username'           => 'harshil',
+            'password'           => 'test123456',
+            'remember_token'     => 'yes',
+            'oauth_access_token' => 'oauth123',
+            'oauth_provider_id'  => 'google',
+            'employee_code'      => 'rzp_1',
+            'branch_code'        => 'krmgla',
+            'supervisor_code'    => 'shk',
+            'location_code'      => '560030',
+            'department_code'    => 'tech',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp
+        ]);
+
+        $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
+            'id'            => $faker->randomNumber(6),
+            'admin_id'      => 'RazorpayUserId',
+            'token'         => $faker->name(20),
+            'created_at'    => $faker->timestamp,
+            'expires_at'    => $faker->timestamp
+        ]);
+
+        $factory(\RZP\Models\Merchant\Detail\Entity::class, [
+            'merchant_id'   => $faker->uniqueid,
+            'contact_email' => $faker->email,
+        ]);
+
+        $factory(\RZP\Models\Offer\Entity::class, [
+            'id'    => $faker->uniqueid,
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [

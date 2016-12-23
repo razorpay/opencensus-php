@@ -28,9 +28,6 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-    // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
-
     protected $entity = 'payment_analytics';
 
     public $incrementing = true;

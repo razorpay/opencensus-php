@@ -4,9 +4,10 @@ namespace RZP\Http\BasicAuth;
 
 class Type
 {
-    const PUBLIC_AUTH       = 'public';
+    const ADMIN_AUTH        = 'admin';
+    const DIRECT_AUTH       = 'direct';
     const PRIVATE_AUTH      = 'private';
     const PRIVILEGE_AUTH    = 'privilege';
-    const DIRECT_AUTH       = 'direct';
     const DEVICE_AUTH       = 'device';
+    const PUBLIC_AUTH       = 'public';
 }

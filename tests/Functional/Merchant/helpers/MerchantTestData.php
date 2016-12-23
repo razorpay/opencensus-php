@@ -382,6 +382,68 @@ return [
         ],
     ],
 
+    'testEditMerchantInvalidAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '40 days',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Auto refund delay should be between 1 and 5 days',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantInvalidDurationAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '3 weeeks',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Auto refund delay should be in mins, hours or days',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantAutoRefundDelay' => [
+        'request' => [
+            'content' => [
+                'auto_refund_delay' => '3 hours',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'auto_refund_delay' => 10800
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],
@@ -716,8 +778,8 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank',
-                    'ICIC' => 'ICICI Bank',
+                    'HDFC' => 'HDFC Bank Ltd',
+                    'ICIC' => 'ICICI Bank Ltd',
                 ],
                 'disabled' => [],
             ],
@@ -736,8 +798,8 @@ return [
             'content' => [
                 'enabled' => [],
                 'disabled' => [
-                    'HDFC' => 'HDFC Bank',
-                    'ICIC' => 'ICICI Bank',
+                    'HDFC' => 'HDFC Bank Ltd',
+                    'ICIC' => 'ICICI Bank Ltd',
                 ],
             ],
         ]
@@ -754,8 +816,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'HDFC' => 'HDFC Bank',
-                'ICIC' => 'ICICI Bank',
+                'HDFC' => 'HDFC Bank Ltd',
+                'ICIC' => 'ICICI Bank Ltd',
             ],
         ],
         'jsonp' => true
@@ -769,11 +831,11 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank',
-                    'ICIC' => 'ICICI Bank',
+                    'HDFC' => 'HDFC Bank Ltd',
+                    'ICIC' => 'ICICI Bank Ltd',
                 ],
                 'disabled' => [
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                     'VIJB' => 'Vijaya Bank',
                 ]
             ],
@@ -792,7 +854,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [
                     'paytm' => true,
@@ -802,6 +864,17 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithNetbankingDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithOffer' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
@@ -996,7 +1069,7 @@ return [
     'testAddInvalidCategory2' => [
         'request' => [
             'content' => [
-                'category2'=>'education2'
+                'category2' => 'education2'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -1077,6 +1150,92 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
+        ],
+    ],
+
+    'testEditMerchantEditGroups' => [
+        'request' => [
+            'url'       => '/merchants/%s',
+            'method'    => 'put',
+            'content'   => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetMerchantFeatures' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature' => "flashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "Flash Checkout"
+                    ],
+                    [
+                        'feature' => "noflashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "No Flash Checkout"
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantFeatures' => [
+        'request' => [
+            'content' => [
+                "features" => [
+                    "flashcheckout" => "0",
+                ],
+                "optout_reason" => "some reason"
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature' => "flashcheckout",
+                        'value' => FALSE,
+                        'display_name' => "Flash Checkout"
+                    ]
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantUnEditableFeatures' => [
+        'request' => [
+            'content' => [
+                "features" => [
+                    "dummy" => "1"
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
     ]
 ];

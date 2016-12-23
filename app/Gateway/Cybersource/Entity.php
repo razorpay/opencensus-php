@@ -68,6 +68,7 @@ class Entity extends Base\Entity
         self::CARD_GROUP,
         self::CV_CODE,
         self::CAVV,
+        self::AUTH_DATA,
         self::COMMERCE_INDICATOR,
         self::MERCHANT_ADVICE_CODE,
         self::GATEWAY_TRANSACTION_ID,
@@ -163,9 +164,19 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PARES_STATUS);
     }
 
+    public function getVeresEnrolled()
+    {
+        return $this->getAttribute(self::VERES_ENROLLED);
+    }
+
     public function getReasonCode()
     {
         return $this->getAttribute(self::REASON_CODE);
+    }
+
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTHORIZATION_CODE);
     }
 
     public function setStatus($status)

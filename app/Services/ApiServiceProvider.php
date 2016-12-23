@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Invoice;
@@ -148,10 +149,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
             return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages);
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -203,8 +204,15 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
-            'invoice' => Invoice\Entity::class,
-            'merchant'  => Merchant\Entity::class,
+            // heimdall
+            'org'             => Admin\Org\Entity::class,
+            'group'           => Admin\Group\Entity::class,
+            'admin'           => Admin\Admin\Entity::class,
+            'role'            => Admin\Role\Entity::class,
+            'permission'      => Admin\Permission\Entity::class,
+            'invoice'         => Invoice\Entity::class,
+            'merchant'        => Merchant\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
         ]);
     }
 }

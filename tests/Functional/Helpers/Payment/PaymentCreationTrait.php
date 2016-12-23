@@ -84,6 +84,7 @@ trait PaymentCreationTrait
             '/payments/create/checkout',
             '/payments/create/redirect',
             '/payments/create/recurring',
+            '/payments/create/upi',
             '/payments');
 
         return in_array($url, $urls, true);

@@ -76,11 +76,13 @@ class BilldeskGatewayTest extends TestCase
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertTestResponse($refund);
     }
 

@@ -10,6 +10,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'authorized',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
@@ -43,7 +44,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
@@ -59,7 +60,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
         ],
     ],
@@ -88,7 +89,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
     ],
@@ -121,7 +122,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
     ],
@@ -181,7 +182,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
         ],
     ],
@@ -198,7 +199,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
         ],
     ],
@@ -254,7 +255,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FAILED,
         ],
     ],
@@ -280,7 +281,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\PaymentVerificationException',
+            'class'               => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],

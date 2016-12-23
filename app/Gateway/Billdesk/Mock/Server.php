@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);
 
-        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment->merchant);
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment);
 
         assertTrue($gatewayTpv === $requestTpv);
 

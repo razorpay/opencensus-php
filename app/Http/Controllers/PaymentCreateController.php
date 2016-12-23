@@ -168,6 +168,20 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates a upi payment
+     */
+    public function postCreateUpiPayment()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->processUpi($input);
+
+        $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Creates a dummy payment and
      * returns corresponding fees and service_tax
      * Used where customer is the fee-bearer and the
@@ -235,13 +249,6 @@ class PaymentCreateController extends Controller
         $data = $this->payment->topup($id, $input);
 
         return $this->processCoprotoData($data);
-    }
-
-    public function postAutoCapture()
-    {
-        $data = $this->payment->autoCaptureOldAuthorizedPayments();
-
-        return ApiResponse::json($data);
     }
 
     /**

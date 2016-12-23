@@ -49,6 +49,8 @@ class Fixtures
     {
         $this->base->connection('test');
 
+        $this->org->setUp();
+
         $this->merchant->setUp();
 
         $merchantData = [
@@ -62,6 +64,8 @@ class Fixtures
 
         $this->create('pricing:default_plan');
         // $this->create('pricing:zero_pricing_plan');
+
+        $this->create('org:default_test_organization');
 
         $entities = $this->create('merchant:default_test_merchant');
 
@@ -160,7 +164,7 @@ class Fixtures
     {
         list($entity, $method) = $this->getEntityAndMethod($resource, $action);
 
-        $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);;
+        $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);
 
         $obj = $this->getEntityFixtureInstance($class, $entity);
 

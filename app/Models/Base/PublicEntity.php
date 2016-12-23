@@ -243,6 +243,18 @@ class PublicEntity extends UniqueIdEntity
         return $id;
     }
 
+    public static function verifyIdAndStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
+    }
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)

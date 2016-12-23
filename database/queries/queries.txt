@@ -1219,6 +1219,10 @@ ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,
     ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements(id);
 
+ALTER TABLE payments
+    ADD COLUMN two_factor_auth VARCHAR(20) AFTER status;
+
+=======
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
     ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
@@ -1310,6 +1314,12 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
+--- Pre deployment https://github.com/razorpay/api/pull/910
+ALTER TABLE payments
+    ADD COLUMN gateway_captured TINYINT AFTER auto_captured
+    ADD INDEX payments_gateway_captured_index (gateway_captured);
+---
+
 --- Post code deployment / https://github.com/razorpay/api/pull/1732
 
 UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
@@ -1342,3 +1352,46 @@ ALTER TABLE cybersource
 
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
+
+----
+ALTER TABLE terminals
+    ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
+
+UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
+
+----
+ALTER TABLE merchants
+    ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
+
+----
+# Following queries are executed for fixing the error_code for
+# BAD_REQUEST_PAYMENT_TIMED_OUT
+UPDATE payments
+    SET internal_error_code = error_code
+    WHERE internal_error_code = null
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+
+UPDATE payments
+    SET error_code = 'BAD_REQUEST_ERROR'
+    WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
+        AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+----
+ALTER TABLE merchants
+    ADD COLUMN org_id CHAR(14)
+    AFTER category2;
+
+----
+# Following queries are executed for fixing the length of
+# vpc_Command in axis table
+ALTER TABLE axis
+    MODIFY vpc_Command VARCHAR(20) NOT NULL;
+
+------
+# Following query was executed to add a new column to admin table
+ALTER TABLE admins ADD COLUMN allow_all_merchants BOOLEAN DEFAULT 0;
+
+----
+ALTER TABLE orgs
+    ADD COLUMN custom_code VARCHAR(250)
+    UNIQUE NULL
+    AFTER invoice_logo_url;

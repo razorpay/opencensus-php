@@ -22,9 +22,11 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'hdfc';
 
+    protected $tpv;
+
     protected $sortRequestContent = false;
 
-    protected $fields = array(
+    protected $fields = [
         'ClientCode',
         'MerchantCode',
         'TxnCurrency',
@@ -34,9 +36,9 @@ class Gateway extends Base\Gateway
         'SuccessStatifFlag',
         'FailureStaticFlag',
         'Date',
-    );
+    ];
 
-    protected $map = array(
+    protected $map = [
         'ClientCode'    => 'client_code',
         'MerchantCode'  => 'merchant_code',
         'TxnAmount'     => 'amount',
@@ -44,11 +46,12 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
-    );
+    ];
 
     /**
-     * @param  array  $input
-     * @return void
+     * @param  array $input
+     *
+     * @return array
      */
     public function authorize(array $input)
     {
@@ -56,7 +59,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -77,7 +80,11 @@ class Gateway extends Base\Gateway
      * We recieve callback from atom after bank net-banking
      * transaction is complete
      *
-     * @param  array    $input
+     * @param  array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
@@ -93,7 +100,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $bankRefNo = $input['gateway']['BankRefNo'];
@@ -102,8 +109,9 @@ class Gateway extends Base\Gateway
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
 
-        $payment->fill($attrs);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -114,6 +122,8 @@ class Gateway extends Base\Gateway
                     '',
                     $message);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -154,15 +164,26 @@ class Gateway extends Base\Gateway
             'SuccessStaticFlag' => 'N',
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
-            'DynamicUrl'        => $input['callbackUrl'],
         );
 
         if ($this->mode === Mode::TEST)
         {
             $data['MerchantCode'] = 'RAZORPAY';
-//            $data['ClientCode'] = random_alpha_string(10);
         }
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['ClientAccNum'] = $input['order']['account_number'];
+
+            if ($this->mode === Mode::TEST)
+            {
+                $data['MerchantCode'] = 'RAZORPAY1';
+            }
+        }
+
+        // Moving this as the HDFC TPV requires the ClientAccCode to
+        // be moved in between the Date and the DynamicUrl
+        $data['DynamicUrl'] = $input['callbackUrl'];
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
@@ -374,7 +395,38 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::LIVE);
 
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_cug'];
+            }
+        }
+
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->tpv === true)
+        {
+            return $this->config['test_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['test_hash_secret_cug'];
+            }
+        }
+
+        return $this->config['test_hash_secret'];
     }
 
     protected function buildQueryString($data)
