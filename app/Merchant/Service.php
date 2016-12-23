@@ -304,6 +304,11 @@ class Service extends Base\Service
         // This also calls the mailing list subscription for the user email
         $merchant->confirm();
 
+        // Save complete merchant details on api side
+        $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
+
+        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails);
+
         return array();
     }
 
@@ -902,5 +907,19 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function savePreSignupDetails($merchantId, $input)
+    {
+        $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
+
+        $error = $merchantDetail->edit($input, 'preSignup');
+
+        if (empty($error))
+        {
+            $merchantDetail->saveOrFail();
+        }
+
+        return [$error, $merchantDetail];
     }
 }

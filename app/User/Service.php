@@ -16,6 +16,8 @@ use App\Merchant;
 use App\MerchantDetails;
 use App\User;
 use App\Lead;
+use App\AdminLead;
+use App\Generic;
 
 use Queue;
 
@@ -102,29 +104,29 @@ class Service extends Base\Service
         {
             $user = $this->buildUserEntity($input);
 
+            // For Drip marketing. Where URL has ?email=abc@xyz.com
             $this->updateLeadIfExists($user);
         }
 
         // These two branches are exclusive
         // You cannot accept an invite and create a merchant account
         // at the same time
-        if (isset($input['business_name']))
+        if ($invitationToken)
+        {
+            $this->attachUserToInvite($user, $invitation);
+            $data['login'] = true;
+        }
+        else
         {
             // See HACKING.md in the root of the repo for a detailed note
-            assert(! $invitationToken);
 
             $data = [
-                'business_name' =>  $input['business_name'],
+                'business_name'  =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
 
-        elseif ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-            $data['login'] = true;
-        }
 
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
@@ -170,6 +172,21 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        Auth::guard('user')->login($user);
+    }
+
+    protected function attachMerchantToAdmin(Merchant\Entity $merchant, User\Entity $user, AdminLead\Entity $invitation)
+    {
+        $input = ['body' => ['admin_id' => $invitation->admin_id], 'method' => 'post'];
+
+        $route = 'merchants/'.$merchant->id.'/admins';
+
+        (new Merchant\Service)->confirm($merchant->confirm_token);
+
+        $response = (new Generic\Service)->makeRawApiCallInternal($input, $route);
 
         $this->subscribeToMailingList($user);
 
