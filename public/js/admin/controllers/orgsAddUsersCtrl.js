@@ -84,7 +84,7 @@ app.controller('OrgsAddUsersCtrl', [
         disabled: user.disabled + 0,
         roles: getSelectedRoles(),
         groups: getSelectedGroups(),
-        allow_all_merchants: user.allow_all_merchants ? "1" : "0";
+        allow_all_merchants: user.allow_all_merchants ? "1" : "0"
       };
 
       var request = $http.put('/admin/generic', data, {
