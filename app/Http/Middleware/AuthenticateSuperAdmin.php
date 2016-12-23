@@ -2,6 +2,7 @@
 
 use Closure;
 use Auth;
+use App\Admin;
 
 class AuthenticateSuperAdmin {
     /**
@@ -13,10 +14,25 @@ class AuthenticateSuperAdmin {
      */
     public function handle($request, Closure $next)
     {
-        if(!Auth::guard('admin')->user()->isSuperAdmin())
+        $admin = Auth::guard('api')->user();
+
+        list($error, $data) = (new Admin\Service)->getAdminData($admin);
+
+        if (empty($error))
         {
-            return response()->json(array('success' => false, 'errors' => ['Unauthorised']));
+            $roles = $data['roles'];
+
+            if (in_array('SuperAdmin', $roles, true))
+            {
+                return $next($request);
+            }
         }
-        return $next($request);
+
+        return response()->json([
+            'success' => false,
+            'errors' => [
+                'Unauthorised'
+            ]
+        ]);
     }
 }

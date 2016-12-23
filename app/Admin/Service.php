@@ -166,9 +166,6 @@ class Service extends Base\Service
             {
                 $data = $this->oAuthLogin($oAuthLoginInput, $orgId);
 
-                // Auth::guard('admin')->loginUsingId($admin->id);
-                // We have the data now, just need to login the user
-                // $data['token']
                 Session::put(config('auth.guards.api.session_key'), $data);
             }
             catch (\Razorpay\Api\Errors\BadRequestError $e)

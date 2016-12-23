@@ -167,8 +167,6 @@ class AdminController extends Controller
 
     public function getAdmin()
     {
-        // $admin = Auth::guard('api')->user();
-        //
         // We are not caching admin data in session because permissions,
         // roles, etc. might change
         //

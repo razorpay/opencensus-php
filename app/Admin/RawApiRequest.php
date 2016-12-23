@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use Config;
 use Input;
+use Auth;
 
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
@@ -81,7 +82,8 @@ class RawApiRequest
                 break;
 
             case 'admin':
-                $this->setAdminCredentials($input['token'], $input['mode']);
+                $token = Auth::guard('api')->user()->token;
+                $this->setAdminCredentials($token, $input['mode']);
                 break;
 
             case 'internal':
