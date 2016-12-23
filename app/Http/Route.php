@@ -844,6 +844,7 @@ final class Route
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
+        'reports_transaction_v2'        => 'broking_report'
     );
 
     const RAZORPAYJS_ROUTES = array(

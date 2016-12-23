@@ -466,11 +466,6 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        if (($entity === E::TRANSACTION) and $this->merchant->isFeatureEnabled('broker_report'))
-        {
-            return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, 'transaction');
-        }
-
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 

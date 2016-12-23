@@ -59,6 +59,7 @@ class EntityReportTest extends TestCase
     public function testBrokingReport()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures(['broking_report']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $this->doAuthAndCapturePayment($payment);
@@ -71,7 +72,7 @@ class EntityReportTest extends TestCase
             'month' => $dt->month,
             'day' => $dt->day);
 
-        $combinedReport = $this->fetchReport('broking', $input);
+        $combinedReport = $this->fetchBrokingReport($input);
 
         $this->assertEquals(count($combinedReport), 3);
 
@@ -104,5 +105,17 @@ class EntityReportTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedContent, $combinedReport[0]);
+    }
+
+    protected function fetchBrokingReport($content)
+    {
+        $request = array(
+            'url' => '/reports/transaction/v2',
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
