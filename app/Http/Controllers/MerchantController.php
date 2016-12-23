@@ -470,6 +470,17 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getCustomersForAutocomplete($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = array('skip' => 0, 'count' => 100);
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($input, $mode, 'customer');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postCustomer(Request $request, $mode)
     {
         $this->checkMode($mode);
@@ -508,6 +519,17 @@ class MerchantController extends Controller
         $input = $request->all();
 
         list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'item');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getItemsForAutocomplete($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = array('skip' => 0, 'count' => 100);
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($input, $mode, 'item');
 
         return AppResponse::jsonResponse($error, $data);
     }

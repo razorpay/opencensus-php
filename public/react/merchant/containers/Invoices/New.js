@@ -10,8 +10,8 @@ import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import Spinner from 'rzp/ui/Spinner'
 
 import LineItemTable from './LineItemTable'
-import { fetchCustomers } from 'merchant/modules/customers'
-import { fetchItems } from 'merchant/modules/items'
+import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
+import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
@@ -27,7 +27,13 @@ const selector = formValueSelector('newInvoice')
       customer: selector(state, 'customer'),
     }
   },
-  { fetchCustomers, fetchItems, saveInvoice, highLightInvoice, fetchInvoice }
+  {
+    fetchCustomersForAutocomplete,
+    fetchItemsForAutocomplete,
+    saveInvoice,
+    highLightInvoice,
+    fetchInvoice
+  }
 )
 @reduxForm({
   form: 'newInvoice',
@@ -57,12 +63,8 @@ export default class InvoicesNewContainer extends ModalContainer {
   }
 
   componentWillMount() {
-    this.props.fetchCustomers({
-      skip: 0,
-      count: 1000
-    })
-
-    this.props.fetchItems()
+    this.props.fetchCustomersForAutocomplete()
+    this.props.fetchItemsForAutocomplete()
     if (this.props.id) {
       this.setState({
         isLoading: true

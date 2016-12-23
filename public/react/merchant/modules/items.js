@@ -2,6 +2,7 @@ import Item from 'merchant/models/Item'
 import { set, merge, unshift } from 'rzp/utils/immutable'
 
 const ITEMS_FETCH = 'ITEMS_FETCH'
+const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH'
 const ITEM_CREATE = 'ITEM_CREATE'
 const ITEM_EDIT = 'ITEM_EDIT'
 const ITEM_DELETE = 'ITEM_DELETE'
@@ -13,6 +14,15 @@ export const fetchItems = (params) => {
     return dispatch({
       type: ITEMS_FETCH,
       payload: Item.fetchAll(params)
+    })
+  }
+}
+
+export const fetchItemsForAutocomplete = () => {
+  return (dispatch) => {
+    return dispatch({
+      type: ITEMS_AUTOCOMPLETE_FETCH,
+      payload: Item.fetchForAutocomplete()
     })
   }
 }
@@ -63,12 +73,14 @@ let initialState = {
 export default function (state = initialState, action) {
   switch(action.type) {
     case `${ITEMS_FETCH}::PENDING`:
+    case `${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`:
       return merge(state, {
         loading: true,
         highlightRowId: null
       })
 
     case `${ITEMS_FETCH}::SUCCESS`:
+    case `${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
         items: action.payload.data.items,
@@ -76,6 +88,7 @@ export default function (state = initialState, action) {
       })
 
     case `${ITEMS_FETCH}::ERROR`:
+    case `${ITEMS_AUTOCOMPLETE_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.error

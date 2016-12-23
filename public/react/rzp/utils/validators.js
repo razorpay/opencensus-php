@@ -9,7 +9,8 @@ export const isEmail = (email) => {
 }
 
 export const isPhone = (phone) => {
-  let phoneRegExp = new RegExp(/^\+?[0-9]{8,15}$/)
+  phone = phone || ''
+  let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/)
   return phoneRegExp.test(phone)
 }
 

@@ -21,6 +21,14 @@ export default class Item extends BaseModel {
     })
   }
 
+  // This will be replaced with the ES autocomplete api
+  static fetchForAutocomplete(data = {}) {
+    return ajax('/items/autocomplete', { data }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Item().deserialize(item))
+      return response
+    })
+  }
+
   save() {
     let params = this.serialize()
     let { id, ...data } = params

@@ -2,6 +2,7 @@ import { set, merge, unshift } from 'rzp/utils/immutable'
 import Customer from 'merchant/models/Customer'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
+const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
 const CUSTOMER_DELETE = 'CUSTOMER_DELETE'
@@ -13,6 +14,15 @@ export const fetchCustomers = (params) => {
     return dispatch({
       type: CUSTOMERS_FETCH,
       payload: Customer.fetchAll(params)
+    })
+  }
+}
+
+export const fetchCustomersForAutocomplete = () => {
+  return (dispatch) => {
+    return dispatch({
+      type: CUSTOMERS_AUTOCOMPLETE_FETCH,
+      payload: Customer.fetchForAutocomplete()
     })
   }
 }
@@ -62,12 +72,14 @@ let initialState = {
 export default function (state = initialState, action) {
   switch(action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`:
       return merge(state, {
         loading: true,
         highlightRowId: null
       })
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
         customers: action.payload.data.items,
@@ -75,6 +87,7 @@ export default function (state = initialState, action) {
       })
 
     case `${CUSTOMERS_FETCH}::ERROR`:
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.error
