@@ -76,17 +76,17 @@
           </div>
         </div>
         <div class="form-group">
+          <label class="col-lg-2 control-label">Allow all Merchants</label>
+          <div class="col-lg-10">
+            <input type="checkbox" name="allow_all_merchants" class="form-control m-b" ng-model="user.allow_all_merchants" />
+          </div>
+        </div>
+        <div class="form-group">
           <label class="col-lg-2 control-label">Role</label>
           <div class="col-lg-10" >
             <select class="form-control m-b" ng-model="role">
                <option ng-repeat="(key, value) in roles" value='{{key}}'>{{value}}</option>
             </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label">Allow all Merchants</label>
-          <div class="col-lg-10">
-            <input type="checkbox" name="allow_all_merchants" class="form-control m-b" ng-model="user.allow_all_merchants" /> Allow access to all merchants.
           </div>
         </div>
         <div class="form-group">

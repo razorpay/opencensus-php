@@ -139,7 +139,7 @@ class Service extends Base\Service
         // TODO: can throw exception
         $admin = $this->api
                       ->admin
-                      ->getByEmail($orgId, ['email' => 'harshil@razorpay.com'])
+                      ->getByEmail($orgId, ['email' => $result->email])
                       ->toArray();
 
         if ($admin)
