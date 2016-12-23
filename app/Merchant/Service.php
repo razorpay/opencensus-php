@@ -307,7 +307,7 @@ class Service extends Base\Service
         // Save complete merchant details on api side
         $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails);
+        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails->toArray());
 
         return array();
     }
@@ -920,6 +920,13 @@ class Service extends Base\Service
             $merchantDetail->saveOrFail();
         }
 
-        return [$error, $merchantDetail];
+        return [ $error, $merchantDetail->getPreSignupFields()];
+    }
+
+    public function getPreSignupDetails($merchantId)
+    {
+        $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
+
+        return [ null, $merchantDetail->getPreSignupFields()];
     }
 }

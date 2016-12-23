@@ -42,6 +42,11 @@ class UserController extends Controller
         try
         {
             list($error, $data) = (new User\Service)->register($input);
+
+            if (empty($error))
+            {
+                $this->postSignin();
+            }
         }
         catch (User\RecoverableException $e)
         {

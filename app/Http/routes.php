@@ -34,6 +34,7 @@ Route::group([], function()
         Route::post('/user/signin', 'UserController@postSignin');
         Route::post('/user/register', 'UserController@postRegister');
         Route::post('/user/pre_signup', 'MerchantController@postSignup');
+        Route::get('/user/pre_signup', 'MerchantController@getSignup');
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
         Route::post('/user/password/reset', 'PasswordController@postRemind');
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
