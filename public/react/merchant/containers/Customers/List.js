@@ -37,8 +37,11 @@ export default class CustomersListContainer extends ListContainer {
   }
 
   deleteCustomer(customer) {
-    this.context.confirm('Are you sure to delete the customer?').then(() => {
-      this.props.deleteCustomer(customer).then((response) => {
+    this.context.confirm({
+      message: 'Are you sure to delete the customer?',
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () => this.props.deleteCustomer(customer).then(() => {
         this.setState({
           status: {
             type: 'success',

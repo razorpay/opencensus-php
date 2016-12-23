@@ -5,7 +5,7 @@ const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
 const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH'
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
-const CUSTOMER_DELETE = 'CUSTOMER_DELETE'
+const CUSTOMER_DELETED = 'CUSTOMER_DELETED'
 const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER'
 const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT'
 
@@ -40,7 +40,7 @@ export const deleteCustomer = (customer) => {
   return (dispatch) => {
     return customer.delete().then(() => {
       dispatch({
-        type: CUSTOMER_DELETE,
+        type: CUSTOMER_DELETED,
         payload: customer
       })
     })
@@ -100,7 +100,7 @@ export default function (state = initialState, action) {
       let customerIndex = state.customers.findIndex((item) => item.id === action.payload.id)
       return set(state, `customers.${customerIndex}`, action.payload)
 
-    case `${CUSTOMER_DELETE}::SUCCESS`:
+    case CUSTOMER_DELETED:
       var customersList = remove(state.customers, (customer) => customer.id === action.payload.id)
       return set(state, 'customers', customersList)
 

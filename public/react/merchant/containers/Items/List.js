@@ -41,8 +41,11 @@ export default class ItemsListContainer extends ListContainer {
   }
 
   deleteItem(item) {
-    this.context.confirm('Are you sure to delete the item?').then(() => {
-      this.props.deleteItem(item).then((response) => {
+    this.context.confirm({
+      message: 'Are you sure to delete the item?',
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () => this.props.deleteItem(item).then((response) => {
         this.setState({
           status: {
             type: 'success',

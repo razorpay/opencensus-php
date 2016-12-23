@@ -1,11 +1,21 @@
-export default ({ tagName = 'input', input, meta: { touched, error }, ...otherProps }) => (
-  <div>
-    {
-      tagName === 'textarea' ?
-      <textarea {...input} {...otherProps} /> :
-      <input {...input} {...otherProps} />
-    }
+export default (props) => {
+  let {
+    input,
+    validate,
+    tagName = 'input',
+    meta: { touched, error },
+    ...otherProps
+  } = props
 
-    {touched && error && <div class='text-danger'><small>{error}</small></div>}
-  </div>
-)
+  return (
+    <div>
+      {
+        tagName === 'textarea' ?
+        <textarea {...input} {...otherProps} /> :
+        <input {...input} {...otherProps} />
+      }
+
+      {touched && error && <div class='text-danger'><small>{error}</small></div>}
+    </div>
+  )
+}

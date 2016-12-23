@@ -17,8 +17,9 @@ const ConfirmModal = (props, context) => {
       <Modal
         isOpen={props.show}
         style={confirmModelStyle}
-        shouldCloseOnOverlayClick={false}
-        closeTimeoutMS={300} >
+        onRequestClose={props.onAbort}
+        closeTimeoutMS={300}
+      >
 
         <div class='modal-header'>
           <h3 class='modal-title'>{props.options.header || 'Alert'}</h3>
@@ -29,10 +30,16 @@ const ConfirmModal = (props, context) => {
         </div>
 
         <div class='modal-footer'>
-          <button type='button' class='btn btn-default' onClick={props.onAbort}>Cancel</button>
+          <button
+            type='button'
+            class='btn btn-default btn-rounded'
+            onClick={props.onAbort}
+          >
+            Cancel
+          </button>
           <AsyncButton
             type='button'
-            class='btn btn-primary'
+            class='btn btn-primary btn-rounded'
             onClick={props.onAffirm}
             text={props.options.affirmativeLabel}
             pendingText={props.options.affirmativePendingLabel}

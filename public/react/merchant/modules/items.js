@@ -5,7 +5,7 @@ const ITEMS_FETCH = 'ITEMS_FETCH'
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH'
 const ITEM_CREATE = 'ITEM_CREATE'
 const ITEM_EDIT = 'ITEM_EDIT'
-const ITEM_DELETE = 'ITEM_DELETE'
+const ITEM_DELETED = 'ITEM_DELETED'
 const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM'
 const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT'
 
@@ -40,8 +40,8 @@ export const deleteItem = (item) => {
   return (dispatch) => {
     return item.delete().then(() => {
       dispatch({
-        type: ITEM_DELETE,
-        payload: params
+        type: ITEM_DELETED,
+        payload: item
       })
     })
   }
@@ -101,7 +101,7 @@ export default function (state = initialState, action) {
       let itemIndex = state.items.findIndex((item) => item.id === action.payload.id)
       return set(state, `items.${itemIndex}`, action.payload)
 
-    case `${ITEM_DELETE}::SUCCESS`:
+    case ITEM_DELETED:
       var itemsList = remove(state.items, (item) => item.id === action.payload.id)
       return set(state, 'items', itemsList)
 
