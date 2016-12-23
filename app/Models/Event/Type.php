@@ -20,4 +20,5 @@ class Type
     const VPA_EDITED         = 'vpa.edited';
     const P2P_CREATED        = 'p2p.created';
     const P2P_REJECTED       = 'p2p.rejected';
+    const P2P_TRANSFERRED    = 'p2p.transferred';
 }

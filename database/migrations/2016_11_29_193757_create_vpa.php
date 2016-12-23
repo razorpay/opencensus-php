@@ -41,8 +41,6 @@ class CreateVpa extends Migration
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
-            $table->index(Entity::CUSTOMER_ID);
-
             $table->foreign(Entity::BANK_ACCOUNT_ID)
                   ->references(BankAccount::ID)
                   ->on(Table::BANK_ACCOUNT)

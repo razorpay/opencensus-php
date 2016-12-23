@@ -161,7 +161,14 @@ class ApiEventSubscriber
 
     protected function onP2pRejected($p2p)
     {
-        $payload = $this->getP2pPayload($vpa);
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pTransferred($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
 
         $this->prepareAndDispatchWebhook($payload);
     }

@@ -20,6 +20,7 @@ class Event
     const VPA_EDITED                = 'vpa.edited';
     const P2P_CREATED               = 'p2p.created';
     const P2P_REJECTED              = 'p2p.rejected';
+    const P2P_TRANSFERRED           = 'p2p.transferred';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
@@ -30,6 +31,7 @@ class Event
         self::VPA_EDITED,
         self::P2P_CREATED,
         self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
 
     protected static $bitMap = array(
@@ -56,6 +58,7 @@ class Event
         self::VPA_EDITED,
         self::P2P_CREATED,
         self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
 
     protected static $bitPosition = array(
@@ -67,6 +70,7 @@ class Event
         self::VPA_EDITED            => 6,
         self::P2P_CREATED           => 7,
         self::P2P_REJECTED          => 8,
+        self::P2P_TRANSFERRED       => 9,
     );
 
     /**
@@ -82,6 +86,7 @@ class Event
         self::VPA_EDITED,
         self::P2P_CREATED,
         self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
 
     /**

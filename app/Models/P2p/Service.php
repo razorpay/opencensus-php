@@ -122,7 +122,15 @@ class Service extends Base\Service
 
     public function authorize(string $id, array $input)
     {
-        return $this->core->authorize($id, $input);
+        $response = $this->core->authorize($id, $input);
+
+        Entity::stripSignWithoutValidation($id);
+
+        $p2p = $this->repo->p2p->findOrFail($id);
+
+        $this->eventP2pTransferred($p2p);
+
+        return $response;
     }
 
     protected function eventP2pCreated($p2p)
@@ -133,6 +141,11 @@ class Service extends Base\Service
     protected function eventP2pRejected($p2p)
     {
         $this->app['events']->fire('api.p2p.rejected', array($p2p));
+    }
+
+    protected function eventP2pTransferred($p2p)
+    {
+        $this->app['events']->fire('api.p2p.transferred', array($p2p));
     }
 
     public function completeAuthorization(string $id, array $input)
