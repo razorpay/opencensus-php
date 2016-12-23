@@ -132,7 +132,7 @@ class Service extends Base\Service
 
     /**
      * Refunds a payment
-     *`
+     *
      * @param  string $id
      * @param  array  $input
      *
@@ -422,6 +422,8 @@ class Service extends Base\Service
         $transfers = $this->repo
                           ->transfer
                           ->fetchBySourcePaymentIdAndMerchant($id, $this->merchant);
+
+                          sd($transfers->toArrayPublic());
 
         return $transfers->toArrayPublic();
     }

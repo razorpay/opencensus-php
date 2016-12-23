@@ -143,19 +143,19 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateForVendorTransfer(Entity $vendor)
+    public function validateForVendorTransfer(Entity $account)
     {
-        if ($vendor->isVendor() === false)
+        if ($account->isAccount() === false)
         {
             ;
         }
 
-        if ($vendor->isActivated() === false)
+        if ($account->isActivated() === false)
         {
             ;
         }
 
-        if ($vendor->isLive() === false)
+        if ($account->isLive() === false)
         {
             ;
         }

@@ -117,7 +117,7 @@ class PaymentWalletTransferTest extends TestCase
 
         $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
 
-        $this->checkLastTransferEntity($customerId, 'customer', $amount);
+        $this->checkLastTransferEntity('cust_' . $customerId, 'customer', $amount);
     }
 
     public function testTransferCustomerUsageFirstTxn()

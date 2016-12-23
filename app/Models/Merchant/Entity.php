@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
+    protected static $sign = '';
+
     protected static $delimiter = '';
 
     protected $revisionEnabled = true;
@@ -223,9 +225,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    public function isVendor()
+    public function isAccount()
     {
-        return $this->parent !== null;
+        return ($this->getParentId() !== NULL);
     }
 
     public function isEducationCategory()

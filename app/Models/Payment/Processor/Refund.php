@@ -353,7 +353,7 @@ trait Refund
      */
     public function refundPaymentWithTransfers(Payment\Entity $payment, array $input)
     {
-        (new Payment\Validator)->validateInput('refund', $input);
+        (new Payment\Refund\Validator)->validateTransfersRequired($input);
 
         // Refund and reverse_transfer each split-payment
         foreach ($input['transfers'] as $transfer)

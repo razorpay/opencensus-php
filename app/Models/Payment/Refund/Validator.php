@@ -104,13 +104,31 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTransfersRequired()
+    public function validateTransfersRequired(array $input)
     {
-        if (isset($transfers) === false)
+        if (isset($input['transfers']) === false)
         {
-            throw new Exception\BadRequestException(
-                    'asd'
-                );
+            throw new Exception\BadRequestValidationFailureException(
+                    'transfers attribute required');
+        }
+
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
+
+        $transferSum = 0;
+
+        foreach ($input['transfers'] as $transfer)
+        {
+            $transferSum += $transfer['amount'];
+        }
+
+        if ($transferSum > $input['amount'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Sum of transfers provided is greater than the refund amount value',
+                'amount');
         }
     }
 }
