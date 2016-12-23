@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         'roles'                       => 'sometimes|array',
         'merchants'                   => 'sometimes|array',
         'groups'                      => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $editRules = [
@@ -46,6 +47,7 @@ class Validator extends Base\Validator
         'roles'                       => 'sometimes|array',
         'merchants'                   => 'sometimes|array',
         'groups'                      => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $loginRules = [
