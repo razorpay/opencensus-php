@@ -24,6 +24,14 @@ use RZP\Models\Feature\Constants as Feature;
 trait Refund
 {
     /**
+     * Determine if the refund request should handled
+     * Marketplace reversals
+     *
+     * @var boolean
+     */
+    protected $processReversals = false;
+
+    /**
      * Refunds a payment
      * @param  Payment\Entity   $payment     Payment Id
      * @param  array            $input  Refund input params
@@ -35,7 +43,7 @@ trait Refund
     {
         $refund = $this->buildRefundEntity($payment, $input, $batch);
 
-        $this->processRefund($refund);
+        $this->processRefund($refund, $input);
 
         return $refund;
     }
@@ -229,10 +237,7 @@ trait Refund
     {
         $payment = $this->retrieve($paymentId);
 
-        if ($this->shouldRefundWithTransfers($payment, $input) === true)
-        {
-            $this->refundPaymentWithTransfers($payment, $input);
-        }
+        $this->processReversals = $this->shouldRefundWithTransfers($payment, $input);
 
         return $this->refundCapturedPayment($payment, $input);
     }
@@ -240,31 +245,98 @@ trait Refund
     /**
      * Check if the refund should happen along with Marketplace transfers/reversals
      *
+     * @todo CLEAN UP
+     *
      * @param  Payment\Entity   $payment
      * @param  array            $input
      * @return bool
      */
-    protected function shouldRefundWithTransfers(Payment\Entity $payment, array $input) : bool
+    protected function shouldRefundWithTransfers(Payment\Entity $payment, array & $input) : bool
     {
-        // Skipping till validations are complete
-        return true;
-
         $hasTransfers = ($payment->getAmountTransferred() > 0);
+
+        if ($hasTransfers === false)
+        {
+            return false;
+        }
+
+        $transfers = null;
+
+        list($reverseAllTransfers, $reversalsReqd) = $this->checkReversalsOnRefundType($payment, $transfers);
+
+        if (isset($input['transfers']) === false)
+        {
+            if ($reversalsReqd === true)
+            {
+                throw new Exception\BadRequestException('transfers input required');
+            }
+
+            if ($reverseAllTransfers === true)
+            {
+                $this->implicitAddReversalsForFullRefund($transfers, $payment, $input);
+            }
+        }
+
+        return true;
+    }
+
+    protected function checkReversalsOnRefundType($payment, & $transfers)
+    {
+        $refundType = $this->getPaymentRefundType($payment);
 
         $reverseAllTransfers = false;
 
-        $transferCount = $this->repo
-                              ->payment
-                              ->getSplitPaymentCountForOriginPaymentId($payment->getId());
+        $reversalsReqd = false;
 
-        if ($transferCount === 1)
+        if ($refundType === Payment\Refund\Status::FULL)
         {
-            $transferAll = true;
+            $reverseAllTransfers = true;
         }
-        else
+        else if ($refundType === Payment\Refund\Status::PARTIAL)
         {
-            (new Refund\Validator)->validateTransfersRequired($input);
+            $transfers = $this->repo
+                              ->transfer
+                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+
+            assert (count($transfers) !== 0);
+
+            if (count($transfers) > 1)
+            {
+                $reversalsReqd = true;
+            }
         }
+
+        return [$reverseAllTransfers, $reversalsReqd];
+    }
+
+    /**
+     * For a full-refund, fetch and implicitly add reversals
+     *
+     * @param  [type] $transfers [description]
+     * @param  [type] $payment   [description]
+     * @param  [type] $input     [description]
+     * @return [type]            [description]
+     */
+    protected function implicitAddReversalsForFullRefund($transfers, $payment, array & $input)
+    {
+        if ($transfers === null)
+        {
+            $transfers = $this->repo
+                              ->transfer
+                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+        }
+
+        $reversals = [];
+
+        foreach ($transfers as $transfer)
+        {
+            $reversals[] = [
+                'transfer'  => $transfer->getPublicId(),
+                'amount'    => $transfer->getAmountUnreversed()
+            ];
+        }
+
+        $input['transfers'] = $reversals;
     }
 
     /**
@@ -278,17 +350,11 @@ trait Refund
     {
         (new Payment\Validator)->validateInput('refund', $input);
 
-        return $this->repo->transaction(function () use ($payment, $input)
+        // Refund and reverse_transfer each split-payment
+        foreach ($input['transfers'] as $transfer)
         {
-            // Refund and reverse_transfer each split-payment
-            foreach ($input['transfers'] as $transfer)
-            {
-                $this->refundAndReverseTransferPayment($payment, $transfer['transfer'], $transfer['amount']);
-            }
-
-            // Refund the original payment - to customer
-            return $this->refundCapturedPayment($payment, $input);
-        });
+            $this->refundAndReverseTransferPayment($payment, $transfer['transfer'], $transfer['amount']);
+        }
     }
 
     /**
@@ -412,11 +478,20 @@ trait Refund
 
     protected function getPaymentRefundType(Payment\Entity $payment, array $input)
     {
-        if (isset($input['amount']) === false and
-            (isset($input['transfers']) === false))
+        if (isset($input['amount']) === false)
         {
-            return Payment\Refund\Status::FULL;
+            $type = Payment\Refund\Status::FULL;
         }
+        else if ($input['amount'] === $payment->getAmountUnrefunded())
+        {
+            $type = Payment\Refund\Status::FULL;
+        }
+        else
+        {
+            $type = Payment\Refund\Status::PARTIAL;
+        }
+
+        return $type;
     }
 
     protected function callGatewayForVerifyRefund($data)
@@ -602,11 +677,16 @@ trait Refund
 
     protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
     {
-        $this->repo->transaction(function() use ($forceRefundTransaction)
+        $this->repo->transaction(function() use ($forceRefundTransaction, $input)
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
+
+            if ($this->processReversals === true)
+            {
+                $this->refundPaymentWithTransfers($payment, $input);
+            }
 
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
@@ -643,7 +723,7 @@ trait Refund
         return $refund;
     }
 
-    protected function  processRefund(Payment\Refund\Entity $refund)
+    protected function processRefund(Payment\Refund\Entity $refund, array $input)
     {
         $payment = $refund->payment;
 
@@ -654,7 +734,7 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund, $input)
         {
             if ($payment->isTransfer())
             {

@@ -112,14 +112,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_REVERSED);
     }
 
-    public function setAmountReversed(int $amount)
-    {
-        $this->setAttribute(self::AMOUNT_REVERSED, $amount);
-    }
-
     public function getAmountUnreversed()
     {
         return $this->getAmount() - $this->getAmountReversed();
+    }
+
+    public function setAmountReversed(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_REVERSED, $amount);
     }
 
     public function reverseAmount(int $amount)

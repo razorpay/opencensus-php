@@ -39,4 +39,14 @@ class Repository extends Base\Repository
 
         return $data;
     }
+
+    public function fetchBySourcePaymentIdAndMerchant($paymentId, Merchant\Entity $marketplace)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                    ->where(Entity::SOURCE_ID, $paymentId)
+                    ->where(Entity::TO_TYPE, 'merchant')
+                    ->where(Entity::MERCHANT_ID, $marketplace->getId())
+                    ->get();
+    }
 }
