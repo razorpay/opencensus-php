@@ -5,7 +5,6 @@ namespace RZP\Models\Base;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Base\JitValidator;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
@@ -13,8 +12,34 @@ use RZP\Models\Transaction\FeeBreakup;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
-class BrokerTransactionReport extends Base\Report
+class BrokerTransactionReport extends Report
 {
+    const MERCHANT_NAME     = 'Merchant Name';
+    const MERCHANT_ID       = 'Merchant ID';
+    const TXN_ID            = 'Txn Id';
+    const TXN_STATE         = 'Txn State';
+    const TXN_DATE          = 'Txn Date';
+    const CLIENT_CODE       = 'Client Code';
+    const MERCHANT_TXN_ID   = 'Merchant Txn Id';
+    const PRODUCT           = 'Product';
+    const DISCRIMINATOR     = 'Discriminator';
+    const BANK_NAME         = 'Bank Name';
+    const CARD_TYPE         = 'Card Type';
+    const CARD_NUMBER       = 'Card No';
+    const CARD_ISSUING_BANK = 'Card Issuing Bank';
+    const BANK_REF_NO       = 'Bank Ref No';
+    const GROSS_TXN_AMOUNT  = 'Gross Txn Amount';
+    const TXN_CHARGES       = 'Txn Charges';
+    const SERVICE_TAX       = 'Service Tax';
+    const SB_CESS           = 'SB Cess';
+    const KK_CESS           = 'Krishi Kalyan Cess';
+    const TOTAL_CHARGEABLE  = 'Total Chargeable';
+    const NET_AMOUNT        = 'Net Amount';
+    const PAYMENT_STATUS    = 'Payment Status';
+    const SETTLEMENT_DATE   = 'Settlement Date';
+    const REFUND_REFERENCE  = 'Refund Reference';
+    const REFUND_STATUS     = 'Refund Status';
+
     protected $allowed = [
         E::TRANSACTION
     ];
@@ -48,31 +73,31 @@ class BrokerTransactionReport extends Base\Report
             }
 
             $row = [
-                'Merchant Name'      => $name,
-                'Merchant ID'        => $merchantId,
-                'Txn Id'             => $txn->source->getPublicId(),
-                'Txn State'          => $this->getTxnState($txn),
-                'Txn Date'           => $this->getTxnDate($txn),
-                'Client Code'        => $clientCode,
-                'Merchant Txn Id'    => $merchantTxnId,
-                'Product'            => 'NSE',
-                'Discriminator'      => 'NB',
-                'Bank Name'          => $this->getTxnBankName($txn),
-                'Card Type'          => null,
-                'Card No'            => null,
-                'Card Issuing Bank'  => null,
-                'Bank Ref No'        => $this->getTxnBankReferenceNo($txn),
-                'Gross Txn Amount'   => ($txn->getAmount() / 100),
-                'Txn Charges'        => $feesBreakup['Txn Charges'],
-                'Service Tax'        => $feesBreakup['Service Tax'],
-                'SB Cess'            => $feesBreakup['SB Cess'],
-                'Krishi Kalyan Cess' => $feesBreakup['Krishi Kalyan Cess'],
-                'Total Chargeable'   => $feesBreakup['Total Chargeable'],
-                'Net Amount'         => $this->getTxnNetAmount($txn),
-                'Payment Status'     => $this->getTxnPaymentStatus($txn),
-                'Settlement Date'    => $setlDate,
-                'Refund Reference'   => null,
-                'Refund Status'      => null,
+                self::MERCHANT_NAME      => $name,
+                self::MERCHANT_ID        => $merchantId,
+                self::TXN_ID             => $txn->source->getPublicId(),
+                self::TXN_STATE          => $this->getTxnState($txn),
+                self::TXN_DATE           => $this->getTxnDate($txn),
+                self::CLIENT_CODE        => $clientCode,
+                self::MERCHANT_TXN_ID    => $merchantTxnId,
+                self::PRODUCT            => 'NSE',
+                self::DISCRIMINATOR      => 'NB',
+                self::BANK_NAME          => $this->getTxnBankName($txn),
+                self::CARD_TYPE          => null,
+                self::CARD_NUMBER        => null,
+                self::CARD_ISSUING_BANK  => null,
+                self::BANK_REF_NO        => $this->getTxnBankReferenceNo($txn),
+                self::GROSS_TXN_AMOUNT   => ($txn->getAmount() / 100),
+                self::TXN_CHARGES        => $feesBreakup['Txn Charges'],
+                self::SERVICE_TAX        => $feesBreakup['Service Tax'],
+                self::SB_CESS            => $feesBreakup['SB Cess'],
+                self::KK_CESS            => $feesBreakup['Krishi Kalyan Cess'],
+                self::TOTAL_CHARGEABLE   => $feesBreakup['Total Chargeable'],
+                self::NET_AMOUNT         => $this->getTxnNetAmount($txn),
+                self::PAYMENT_STATUS     => $this->getTxnPaymentStatus($txn),
+                self::SETTLEMENT_DATE    => $setlDate,
+                self::REFUND_REFERENCE   => null,
+                self::REFUND_STATUS      => null,
             ];
 
             $data[] = $row;
@@ -86,7 +111,7 @@ class BrokerTransactionReport extends Base\Report
         $merchantTxnId = null;
 
         if (($txn->isTypePayment()) and
-                ($txn->source->getApiOrderId() !== null))
+            ($txn->source->getApiOrderId() !== null))
         {
             $merchantTxnId = $txn->source->order->getReceipt();
         }
@@ -102,7 +127,7 @@ class BrokerTransactionReport extends Base\Report
         {
             $notes = $txn->source->getNotes();
 
-            if (isset($notes['clientid']))
+            if (isset($notes['clientid']) === true)
             {
                 $clientCode = $notes['clientid'];
             }
@@ -117,10 +142,8 @@ class BrokerTransactionReport extends Base\Report
         {
             return $txn->source->getBankName();
         }
-        else
-        {
-            return $txn->source->payment->getBankName();
-        }
+
+        return $txn->source->payment->getBankName();
     }
 
     protected function getTxnNetAmount($txn)
