@@ -826,7 +826,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount should not be sent in input for type invoice.',
+                    'description' => 'amount can be only sent for ecod or link types.',
                 ],
             ],
             'status_code' => 400,
@@ -853,7 +853,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount should not be sent in input for type invoice.',
+                    'description' => 'amount can be only sent for ecod or link types.',
                 ],
             ],
             'status_code' => 400,
