@@ -322,7 +322,8 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admins = $this->repo->admin->fetchByOrgId($orgId);
+        $admins = $this->repo->admin->fetchByOrgId(
+            $orgId, $relations=['groups', 'roles']);
 
         return $admins->toArrayPublic();
     }
