@@ -72,11 +72,6 @@ app.controller('OrgsAddUsersCtrl', [
     }
 
     $scope.editUser = function(user) {
-      if (user.allow_all_merchants == false) {
-        user.allow_all_merchants = "0";
-      } else {
-        user.allow_all_merchants = "1";
-      }
       var data = {};
       data.body = {
         name: user.name,
@@ -89,7 +84,7 @@ app.controller('OrgsAddUsersCtrl', [
         disabled: user.disabled + 0,
         roles: getSelectedRoles(),
         groups: getSelectedGroups(),
-        allow_all_merchants: user.allow_all_merchants
+        allow_all_merchants: user.allow_all_merchants ? "1" : "0";
       };
 
       var request = $http.put('/admin/generic', data, {
