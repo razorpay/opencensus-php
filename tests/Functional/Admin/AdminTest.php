@@ -579,4 +579,42 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
      }
+
+     public function testEditAdminOnAppAuth()
+     {
+        $this->ba->appAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $managerRole = Role\Entity::getSignedId(Org::MANAGER_ROLE);
+
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $managerRole;
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['roles'][0]['id'], $managerRole);
+
+        $this->assertEquals($result['groups'][0]['id'], $group);
+     }
 }
