@@ -30,5 +30,6 @@ class AlterMerchantDetailsTable extends Migration
         {
             $table->dropColumn('role');
             $table->dropColumn('department');
+        });
     }
 }
