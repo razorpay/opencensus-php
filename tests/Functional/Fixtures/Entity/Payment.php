@@ -190,6 +190,10 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = parent::create($attributes);
+        $merchant = (new \RZP\Models\Merchant\Repository)->find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+        $payment->setRelation('card', $card);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(

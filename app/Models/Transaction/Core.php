@@ -55,7 +55,7 @@ class Core extends Base\Core
 
     public function updateOnCapture(Payment\Entity $payment)
     {
-        $txn = $payment->transaction;
+        $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
@@ -282,7 +282,7 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        assert ($payment->transaction !== null);
+        assert ($payment->hasTransaction() === true);
 
         $settledAt = 1;
 

@@ -55,7 +55,8 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($refund->payment);
+            $data['card'] = $card->toArray();
         }
 
         $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
@@ -494,7 +495,8 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($refund->payment);
+            $data['card'] = $card->toArray();
         }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
@@ -591,12 +593,12 @@ trait Refund
         // For [authAndCapture] gateways, we check for capture timestamp.
 
         $networkCode = null;
-        $paymentCard = $payment->card;
 
-        // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
+        if ($payment->hasCard())
         {
-            $networkCode = $paymentCard->getNetworkCode();
+            $card = $this->repo->card->fetchForPayment($payment);
+
+            $networkCode = $card->getNetworkCode();
         }
 
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
@@ -605,11 +607,14 @@ trait Refund
             ($supportsAuthAndCapture === false) or
             ($forceRefundTransaction === true))
         {
-            if ($payment->transaction === null)
+            if ($payment->hasTransaction() === false)
             {
                 throw new Exception\LogicException(
                     'Transaction expected but not present for payment: ' . $payment->getId());
             }
+
+            // Load payment's txn
+            $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
 
             $txn = (new Transaction\Core)->createFromRefund($refund);
 

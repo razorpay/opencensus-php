@@ -141,9 +141,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
 
@@ -206,9 +204,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->verify($payment);
 
@@ -231,7 +227,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
@@ -286,9 +282,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
@@ -333,22 +327,18 @@ class Service extends Base\Service
 
     public function getCardForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $card = $payment->card;
+        $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
     }
 
     public function retrieveRefundsForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
+        $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
@@ -416,9 +406,7 @@ class Service extends Base\Service
 
     public function s2sCallback($id, $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findOrFailPublic($id);
+        $payment = $this->repo->payment->findByPublicId($id);
 
         $merchant = $payment->merchant;
 

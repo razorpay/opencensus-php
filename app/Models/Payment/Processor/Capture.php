@@ -203,7 +203,8 @@ trait Capture
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($payment);
+            $data['card'] = $card->toArray();
         }
 
         $this->captureOnGateway($data);
@@ -476,7 +477,7 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->transaction === null);
+        $auth = ($payment->hasTransaction() === false);
 
         $feesSplit = new PublicCollection;
 
@@ -517,25 +518,27 @@ trait Capture
 
     protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
         $order = $payment->order;
 
-        if (isset($order) === true)
+        $order->setStatus(Order\Status::PAID);
+
+        $this->trace->info(
+            TraceCode::ORDER_STATUS_PAID,
+            [
+                'payment_id' => $payment->getId(),
+                'order_id' => $order->getId(),
+            ]);
+
+        $this->repo->saveOrFail($order);
+
+        if ($order->invoice !== null)
         {
-            $order->setStatus(Order\Status::PAID);
-
-            $this->trace->info(
-                TraceCode::ORDER_STATUS_PAID,
-                [
-                    'payment_id' => $payment->getId(),
-                    'order_id' => $order->getId(),
-                ]);
-
-            $this->repo->saveOrFail($order);
-
-            if ($order->invoice !== null)
-            {
-                $this->updatePaidInvoiceStatus($order, $payment);
-            }
+            $this->updatePaidInvoiceStatus($order, $payment);
         }
     }
 

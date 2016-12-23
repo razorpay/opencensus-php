@@ -176,6 +176,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getCardId()
+    {
+        return $this->getAttribute(self::CARD_ID);
+    }
+
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);

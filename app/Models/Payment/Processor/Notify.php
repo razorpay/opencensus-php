@@ -576,7 +576,7 @@ class Notify
             ],
         ];
 
-        if ($this->payment->card !== null)
+        if ($this->payment->hasCard())
         {
             $card = $this->payment->card;
 

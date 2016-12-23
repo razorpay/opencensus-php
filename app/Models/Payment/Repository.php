@@ -320,6 +320,7 @@ class Repository extends Base\Repository
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];

@@ -334,6 +334,11 @@ trait Authorize
                 'Can force authorize only on axis migs gateway');
         }
 
+        if ($payment->hasCard())
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+        }
+
         $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
@@ -484,7 +489,7 @@ trait Authorize
 
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
-        if ($payment->order)
+        if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
@@ -571,7 +576,7 @@ trait Authorize
 
             if ($payment->isMethodCardOrEmi())
             {
-                $data['card'] = $payment->card->toArray();
+                $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
@@ -1161,10 +1166,10 @@ trait Authorize
 
     protected function updateAuthorizedOrderStatus($payment)
     {
-        $order = $payment->order;
-
-        if (isset($order))
+        if ($payment->hasOrder())
         {
+            $order = $payment->order;
+
             $order->setAuthorized(true);
 
             $this->trace->info(
@@ -1535,6 +1540,7 @@ trait Authorize
      */
     protected function createCardEntityFromSavedToken($token, array & $input)
     {
+        $card = $this->repo->card->fetchForToken($token);
         $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -1770,12 +1776,11 @@ trait Authorize
         $gateway = $payment->getGateway();
 
         $networkCode = null;
-        $paymentCard = $payment->card;
 
         // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
+        if ($payment->hasCard())
         {
-            $networkCode = $paymentCard->getNetworkCode();
+            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);

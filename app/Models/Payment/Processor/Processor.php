@@ -110,13 +110,12 @@ class Processor
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
         $this->mode = $this->app['rzp.mode'];
+        $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $merchant->methods;
+        $this->methods = $this->getMethodsForMerchant($merchant);
 
         $this->checkMerchantPermissions();
-
-        $this->repo = $this->app['repo'];
 
         $this->paymentRepo = $this->repo->payment;
 
@@ -579,7 +578,7 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->payment->terminal;
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
         if ($terminal === null)
         {
@@ -914,7 +913,7 @@ class Processor
         }
 
         // If payment order was marked as auto capture
-        if (($payment->order !== null) and
+        if (($payment->hasOrder()) and
             ($payment->order->getPaymentCapture() === true))
         {
             return true;
@@ -989,5 +988,15 @@ class Processor
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
         });
+    }
+
+    protected function getMethodsForMerchant($merchant)
+    {
+        if ($merchant->hasRelation('methods') === false)
+        {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        return $merchant->methods;
     }
 }

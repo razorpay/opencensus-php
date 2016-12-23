@@ -27,9 +27,15 @@ class Repository extends Base\Repository
         Entity::FREECHARGE  => 'sometimes|in:0,1',
     );
 
-    public function getMerchantMethods($id)
+    public function getMethodsForMerchant(Merchant\Entity $merchant)
     {
-        return $this->find($id);
+        $methods = $this->find($merchant->getId());
+
+        $methods->merchant()->associate($merchant);
+
+        $merchant->setRelation('methods', $methods);
+
+        return $methods;
     }
 
     protected function addQueryOrder($query)

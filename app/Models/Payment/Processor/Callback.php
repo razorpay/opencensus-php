@@ -162,9 +162,10 @@ trait Callback
             $input['token'] = $payment->globalToken->toArray();
         }
 
-        if ($payment->card !== null)
+        if ($payment->hasCard())
         {
-            $input['card'] = $payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($payment);
+            $input['card'] = $card->toArray();
         }
 
         try

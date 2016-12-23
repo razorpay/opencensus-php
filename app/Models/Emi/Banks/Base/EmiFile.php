@@ -6,9 +6,10 @@ use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use Str;
 
-class EmiFile
+class EmiFile extends Base\Core;
 {
     use FileHandlerTrait;
 
@@ -19,13 +20,9 @@ class EmiFile
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->mail = \Mail::getFacadeRoot();
-
-        $this->app = \App::getFacadeRoot();
-
-        $this->trace = $this->app['trace'];
-
-        $this->repo = $this->app['repo'];
     }
 
     public function generate($input)
