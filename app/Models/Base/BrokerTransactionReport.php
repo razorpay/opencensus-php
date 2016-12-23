@@ -205,7 +205,7 @@ class BrokerTransactionReport extends Report
         }
         else
         {
-            throw new Exception\LogicException('Should not reach here');
+            return null;
         }
     }
 
