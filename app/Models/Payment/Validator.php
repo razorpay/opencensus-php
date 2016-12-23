@@ -39,9 +39,10 @@ class Validator extends Base\Validator
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');
 
-    protected static $captureRules = array(
+    protected static $captureRules = [
         'amount'        => 'required|integer',
-        'currency'      => 'sometimes|in:INR,USD');
+        'currency'      => 'required|in:INR,USD',
+    ];
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|integer',
@@ -297,13 +298,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $amount)
+    public function captureValidate($payment, $amount, $currency)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
         $this->captureAmountValidate($payment, $amount);
+
+        $this->captureCurrencyValidate($payment, $currency);
     }
 
     public function cancelValidate($payment)
@@ -311,7 +314,7 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $amount)
+    protected function captureAmountValidate($payment, $amount)
     {
         $amount = (int) $amount;
 
@@ -326,6 +329,22 @@ class Validator extends Base\Validator
                     'payment_id'     => $payment->getId(),
                 ]);
         }
+    }
+
+    protected function captureCurrencyValidate()
+    {
+        if ($currency !== $payment->getCurrency())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
+                Payment\Entity::CURRENCY,
+                [
+                    'capture_currency' => $currency,
+                    'payment_currency' => $payment->getCurrency(),
+                    'payment_id'       => $payment->getId(),
+                ]);
+        }
+
     }
 
     protected function failIfNotCreated($payment)

@@ -34,9 +34,16 @@ trait Capture
 
         $payment = $this->retrieve($id);
 
+        // set the input currency if missing and payment currency is INR
+        if ((isset($input['currency']) === false) and
+            ($payment->getCurrency() === Payment\Currency::INR))
+        {
+            $input['currency'] = Payment\Currency::INR;
+        }
+
         $payment->getValidator()->validateInput('capture', $input);
 
-        return $this->capturePayment($payment, $input['amount']);
+        return $this->capturePayment($payment, $input['amount'], $input['currency']);
     }
 
     /**
@@ -64,9 +71,11 @@ trait Capture
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
 
+        $currency = $payment->getCurrency();
+
         try
         {
-            $payment = $this->capturePayment($payment, $amount);
+            $payment = $this->capturePayment($payment, $amount, $currency);
         }
         catch (Exception\RecoverableException $e)
         {
@@ -175,7 +184,7 @@ trait Capture
      * @param  integer          $amount
      * @return Payment\Entity
      */
-    protected function capturePayment($payment, $amount)
+    protected function capturePayment($payment, $amount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -189,8 +198,8 @@ trait Capture
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
                     'payment_id' => $payment->getId(),
-                    'amount' => $amount,
-                    'message' => 'Adds fee to the amount because fee bearer is customer',
+                    'amount'     => $amount,
+                    'message'    => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
