@@ -88,7 +88,6 @@ class Service extends Base\Service
         // in the meantime. $user will be equal to the user with the same email
         // as the invited user
         if ($invitationToken)
-
         {
             list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
@@ -114,16 +113,17 @@ class Service extends Base\Service
         if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
+
             $data['login'] = true;
         }
         else
         {
             // See HACKING.md in the root of the repo for a detailed note
-
             $data = [
                 'business_name'  =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
+
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
 
