@@ -669,7 +669,6 @@ final class Route
         'group_get',
         'group_get_multiple',
         'group_get_allowed_groups',
-        'admin_get',
         'org_create',
         'org_edit',
         'org_delete',
