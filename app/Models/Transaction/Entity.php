@@ -500,6 +500,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_CREDITS);
     }
 
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();

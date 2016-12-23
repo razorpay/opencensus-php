@@ -249,7 +249,7 @@ final class Route
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
-        'reports_transaction_v2'                  => ['get',      'reports/transaction/v2',                         'MerchantController@getBrokerTransactionReport'                             ],
+        'reports_transaction_v2'                  => ['get',      'reports/transaction/v2',                         'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -844,17 +844,6 @@ final class Route
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        // 'invoice_create'                => 'invoice',
-        // 'invoice_fetch'                 => 'invoice',
-        // 'invoice_fetch_multiple'        => 'invoice',
-        // 'invoice_send_notification'     => 'invoice',
-        // 'invoice_notification_update'   => 'invoice',
-        // 'invoice_get_status'            => 'invoice',
-        // 'item_create'                   => 'invoice',
-        // 'item_fetch'                    => 'invoice',
-        // 'item_fetch_multiple'           => 'invoice',
-        // 'item_update'                   => 'invoice',
-        // 'item_delete'                   => 'invoice',
     );
 
     const RAZORPAYJS_ROUTES = array(

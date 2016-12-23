@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\JitValidator;
 use RZP\Models\Payment;
@@ -14,188 +15,219 @@ use RZP\Trace\TraceCode;
 
 class BrokerTransactionReport extends Base\Report
 {
-    protected static $fileToWriteName = 'Transaction_Broker_Report';
-
     protected $allowed = [
         E::TRANSACTION
     ];
 
-    protected $reportFormat = [
-        'Merchant Name'      => null,
-        'Merchant ID'        => null,
-        'Txn Id'             => null,
-        'Txn State'          => null,
-        'Client Code'        => null,
-        'Merchant Txn Id'    => null,
-        'Product'            => 'NSE',
-        'Discriminator'      => 'NB',
-        'Bank Name'          => null,
-        'Card Type'          => null,
-        'Card No'            => null,
-        'Card Issuing Bank'  => null,
-        'Bank Ref No'        => null,
-        'Gross Txn Amount'   => null,
-        'Txn Charges'        => null,
-        'Service Tax'        => null,
-        'SB Cess'            => null,
-        'Krishi Kalyan Cess' => null,
-        'Total Chargeable'   => null,
-        'Net Amount'         => null,
-        'Payment Status'     => null,
-        'Settlement Date'    => null,
-        'Refund Reference'   => null,
-        'Refund Status'      => null
-    ];
-
-    public function __construct()
+    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
     {
-        parent::__construct();
+        $repo = $this->repo->$entity;
+
+        return $repo->fetchEntitiesForBrokerReport($merchantId, $from, $to);
     }
 
-    public function getReport($input, $entity)
+    protected function fetchFormattedDataForReport($entities)
     {
-        $this->checkAllowedEntity($entity);
+        $data = [];
 
-        $this->increaseAllowedSystemLimits();
-
-        $begin = time();
-
+        $name = $this->merchant->getName();
         $merchantId = $this->merchant->getId();
 
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        date_default_timezone_set('Asia/Kolkata');
-
-        list($from, $to) = $this->getTimestamps($input);
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_started'  => $begin
-            ]);
-
-        $repo = $this->repo->$entity;
-        $entities = $repo->fetchEntitiesForBrokerReport($merchantId, $from, $to);
-        $timeTaken = time() - $begin;
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_taken'    => $timeTaken
-            ]);
-
-        $timeTaken = time() - $begin;
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_taken'    => $timeTaken
-            ]);
-
-        return $this->getDataForReport($entities);
-    }
-
-    protected function getDataForReport($entities)
-    {
-        $data = $entities->map(function ($transaction)
+        foreach ($entities as $txn)
         {
-            $paymentMethodDetails = $transaction->getPaymentMethodDetails();
+            $feesBreakup = $this->getFeesBreakupDetails($txn);
 
-            $feesBreakupDetails = $transaction->getFeesBreakupDetails();
+            $merchantTxnId = $this->getMerchantTxnId($txn);
 
-            $reportData = [];
+            $clientCode = $this->getClientCode($txn);
 
-            $reportData['Merchant Name'] = $transaction->merchant->getName();
-            $reportData['Merchant ID'] = $transaction->merchant->getId();
-
-            $reportData['Txn Id'] = $transaction->source->getPublicId();
-            $reportData['Txn State'] = $transaction->getState();
-
-            $reportData['Merchant Txn Id'] = $transaction->getOrderId();
-
-            $reportData['Bank Name'] = $this->getBankNameForPayment($paymentMethodDetails);
-
-            $reportData = array_merge($reportData, $this->getCardDetails($paymentMethodDetails));
-
-            $reportData['Gross Txn Amount'] = $this->getFormattedAmount($transaction->getAmount());
-
-            if (count($feesBreakupDetails) > 0)
+            $setlDate = null;
+            if ($txn->isSettled())
             {
-                $reportData = array_merge($reportData, $this->getFeeDetails($feesBreakupDetails));
+                $setlDate = $txn->getDateInFormat(Transaction\Entity::SETTLED_AT, 'Y-m-d');
             }
 
-            $reportData['Total Chargeable'] = $this->getFormattedAmount($transaction->getFee());
-            $reportData['Net Amount'] = $this->getNetAmountForReport($transaction);
+            $row = [
+                'Merchant Name'      => $name,
+                'Merchant ID'        => $merchantId,
+                'Txn Id'             => $txn->source->getPublicId(),
+                'Txn State'          => $this->getTxnState($txn),
+                'Txn Date'           => $this->getTxnDate($txn),
+                'Client Code'        => $clientCode,
+                'Merchant Txn Id'    => $merchantTxnId,
+                'Product'            => 'NSE',
+                'Discriminator'      => 'NB',
+                'Bank Name'          => $this->getTxnBankName($txn),
+                'Card Type'          => null,
+                'Card No'            => null,
+                'Card Issuing Bank'  => null,
+                'Bank Ref No'        => $this->getTxnBankReferenceNo($txn),
+                'Gross Txn Amount'   => ($txn->getAmount() / 100),
+                'Txn Charges'        => $feesBreakup['Txn Charges'],
+                'Service Tax'        => $feesBreakup['Service Tax'],
+                'SB Cess'            => $feesBreakup['SB Cess'],
+                'Krishi Kalyan Cess' => $feesBreakup['Krishi Kalyan Cess'],
+                'Total Chargeable'   => $feesBreakup['Total Chargeable'],
+                'Net Amount'         => $this->getTxnNetAmount($txn),
+                'Payment Status'     => $this->getTxnPaymentStatus($txn),
+                'Settlement Date'    => $setlDate,
+                'Refund Reference'   => null,
+                'Refund Status'      => null,
+            ];
 
-            $reportData['Payment Status'] = $transaction->getPaymentStatus();
+            $data[] = $row;
+        }
 
-            $reportData['Settlement Date'] = $transaction->getDateInFormatDMY(Transaction\Entity::SETTLED_AT);
+        return $data;
+    }
 
-            $reportData = array_merge($this->reportFormat, $reportData);
+    protected function getMerchantTxnId($txn)
+    {
+        $merchantTxnId = null;
 
-            return $reportData;
+        if (($txn->isTypePayment()) and
+                ($txn->source->getApiOrderId() !== null))
+        {
+            $merchantTxnId = $txn->source->order->getReceipt();
+        }
+
+        return $merchantTxnId;
+    }
+
+    protected function getClientCode($txn)
+    {
+        $clientCode = null;
+
+        if ($txn->isTypePayment())
+        {
+            $notes = $txn->source->getNotes();
+
+            if (isset($notes['clientid']))
+            {
+                $clientCode = $notes['clientid'];
+            }
+        }
+
+        return $clientCode;
+    }
+
+    protected function getTxnBankName($txn)
+    {
+        if ($txn->isTypePayment())
+        {
+            return $txn->source->getBankName();
+        }
+        else
+        {
+            return $txn->source->payment->getBankName();
+        }
+    }
+
+    protected function getTxnNetAmount($txn)
+    {
+        if ($txn->isTypeRefund())
+        {
+            return ($txn->getDebit() / 100);
+        }
+        elseif ($txn->isTypePayment())
+        {
+            return ($txn->getCredit() / 100);
+        }
+    }
+
+    protected function getTxnState($txn)
+    {
+        if ($txn->isTypePayment())
+        {
+            return 'Sale';
+        }
+        elseif ($txn->isTypeRefund())
+        {
+            return 'Refund';
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    protected function getTxnDate($txn)
+    {
+        $ts = $txn->source->getCreatedAt();
+
+        // Format yyyy-mm-dd hh:mm,
+        // hh is in 24 hrs
+        $txnDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
+                         ->format('Y-m-d H:i');
+
+        return $txnDate;
+    }
+
+    protected function getTxnBankReferenceNo($txn)
+    {
+        if ($txn->isTypePayment() === false)
+        {
+            return null;
+        }
+
+        $payment = $txn->source;
+
+        if ($payment->getGateway() === 'billdesk')
+        {
+            return $payment->billdesk->getBankReferenceNo();
+        }
+        else if ($payment->getRelation('netbanking') !== null)
+        {
+            return $payment->netbanking->getBankPaymentId();
+        }
+        else
+        {
+            throw new Exception\LogicException('Should not reach here');
+        }
+    }
+
+    protected function getTxnPaymentStatus($txn)
+    {
+        if ($txn->isSettled())
+        {
+            return 'PAYMENT GIVEN';
+        }
+    }
+
+    protected function getFeesBreakupDetails($txn)
+    {
+        $fees = [];
+
+        if ($txn->isTypePayment() === false)
+        {
+            $fees = [
+                'Txn Charges'        => '0.0',
+                'Service Tax'        => '0.0',
+                'SB Cess'            => '0.0',
+                'Krishi Kalyan Cess' => '0.0',
+                'Total Chargeable'   => '0.0',
+            ];
+
+            return $fees;
+        }
+
+        $feesBreakup = $txn->feesBreakup;
+
+        $feesBreakupDetails = $feesBreakup->flatMap(function ($fee)
+        {
+            return [$fee->getName() => $fee->getAmount()];
         });
 
-        return $data->toArray();
-    }
+        $feesBreakupDetails = $feesBreakupDetails->toArray();
 
-    protected function getBankNameForPayment($paymentMethodDetails)
-    {
-        return $paymentMethodDetails[Payment\Method::NETBANKING] ?? null;
-    }
-
-    protected function getCardDetails($paymentMethodDetails)
-    {
-        $cardDetails = [];
-
-        if (isset($paymentMethodDetails[Payment\Method::CARD]) === true)
-        {
-            $card = $paymentMethodDetails[Payment\Method::CARD];
-
-            $cardDetails['Card Type'] = $card->getType();
-            $cardDetails['Card No'] = $card->getFormatted();
-            $cardDetails['Card Issuing Bank'] = $card->getIssuer();
-        }
-
-        return $cardDetails;
-    }
-
-    protected function getFeeDetails(array $feesBreakupDetails)
-    {
-        return [
-            'Txn Charges'        => $this->getFormattedAmount($feesBreakupDetails[FeeBreakup\Name::PAYMENT]),
-            'Service Tax'        => $this->getFormattedAmount($feesBreakupDetails[FeeBreakup\Name::SERVICE_TAX]),
-            'SB Cess'            => $this->getFormattedAmount($feesBreakupDetails[FeeBreakup\Name::SWACHH_BHARAT_CESS]),
-            'Krishi Kalyan Cess' => $this->getFormattedAmount($feesBreakupDetails[FeeBreakup\Name::KRISHI_KALYAN_CESS])
+        $fees = [
+            'Txn Charges'        => ($feesBreakupDetails[FeeBreakup\Name::PAYMENT] ?? 0) / 100,
+            'Service Tax'        => ($feesBreakupDetails[FeeBreakup\Name::SERVICE_TAX] ?? 0) / 100,
+            'SB Cess'            => ($feesBreakupDetails[FeeBreakup\Name::SWACHH_BHARAT_CESS] ?? 0) / 100,
+            'Krishi Kalyan Cess' => ($feesBreakupDetails[FeeBreakup\Name::KRISHI_KALYAN_CESS] ?? 0) / 100,
+            'Total Chargeable'   => ($txn->getFee() / 100),
         ];
-    }
 
-    protected function getFormattedAmount(int $amount)
-    {
-        return ($amount / 100);
-    }
-
-    protected function getNetAmountForReport($transaction)
-    {
-        if ($transaction->isTypeRefund())
-        {
-            return $this->getFormattedAmount($transaction->getDebit());
-        }
-        elseif ($transaction->isTypePayment())
-        {
-            return $this->getFormattedAmount($transaction->getCredit());
-        }
+        return $fees;
     }
 }
