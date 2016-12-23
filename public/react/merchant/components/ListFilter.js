@@ -18,14 +18,14 @@ export default class ListFilter extends Component {
     return (
       <form onSubmit={handleSubmit(onSubmit)} class='list-filter-container'>
         {this.props.children}
-        <div class='form-group list-filter-item btn-group'>
+        <div class='form-group list-filter-item btn-toolbar'>
           <AsyncButton
             class='btn btn-sm btn-default'
             onClick={handleSubmit(onSubmit)}
             text='Search'
           />
           <AsyncButton
-            class='btn btn-sm btn-default'
+            class='btn btn-sm btn-link'
             onClick={reset}
             text='Clear'
           />

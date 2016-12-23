@@ -44,8 +44,11 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   deleteInvoice(invoice) {
-    this.context.confirm('Are you sure to delete the invoice?').then(() => {
-      this.props.deleteInvoice(invoice).then((response) => {
+    this.context.confirm({
+      message: 'Are you sure to delete the invoice ?',
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () => this.props.deleteInvoice(invoice).then(() => {
         this.setState({
           status: {
             type: 'success',
@@ -110,6 +113,7 @@ export default class InvoicesListContainer extends ListContainer {
               isLoading={loading}
               highlightRow={(invoice) => invoice.id === this.props.highLightInvoiceId}
               onEdit={this.editInvoice}
+              onDelete={this.deleteInvoice}
             />
 
             <Pager

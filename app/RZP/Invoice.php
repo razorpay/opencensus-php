@@ -25,6 +25,12 @@ class Invoice extends Entity
         return parent::all($options);
     }
 
+    public function delete($id)
+    {
+        $entityUrl = $this->getEntityUrl().$id;
+        return $this->request('DELETE', $entityUrl);
+    }
+
     /**
      * The API decides to return only a subset
      * of invoices if the role of a user

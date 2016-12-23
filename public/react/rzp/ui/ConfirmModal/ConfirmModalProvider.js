@@ -35,6 +35,9 @@ export default class ConfirmModalProvider extends Component {
       }
     }
 
+    options.message = options.message || 'Are you sure to continue ?'
+    options.affirmativeLabel = options.affirmativeLabel || 'OK'
+
     this.setState({
       show: true,
       options
@@ -44,6 +47,17 @@ export default class ConfirmModalProvider extends Component {
   }
 
   affirm() {
+    let action = this.state.options.action
+    let returnFn = action && action()
+    if (returnFn && typeof returnFn.then === 'function') {
+      return returnFn.then(() => {
+        this.close()
+      }).catch((err) => {
+        this.close()
+        throw err
+      })
+    }
+
     this.close()
     return this.state.confirmResolve()
   }

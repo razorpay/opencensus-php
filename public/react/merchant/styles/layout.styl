@@ -220,8 +220,12 @@ tr:hover .row-action > .btn-group {
     flex-basis: 70px;
   }
 
-  &.btn-group {
+  &.btn-toolbar {
     margin-top: 25px;
     flex-basis: initial;
+
+    > .btn:first-child {
+      margin-left: 0;
+    }
   }
 }

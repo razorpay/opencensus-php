@@ -1,5 +1,6 @@
 import { PropTypes } from 'react'
 import Modal from 'react-modal'
+import AsyncButton from 'react-async-button'
 
 const ConfirmModal = (props, context) => {
   let confirmModelStyle = {
@@ -29,7 +30,13 @@ const ConfirmModal = (props, context) => {
 
         <div class='modal-footer'>
           <button type='button' class='btn btn-default' onClick={props.onAbort}>Cancel</button>
-          <button type='button' class='btn btn-primary' onClick={props.onAffirm}>Ok</button>
+          <AsyncButton
+            type='button'
+            class='btn btn-primary'
+            onClick={props.onAffirm}
+            text={props.options.affirmativeLabel}
+            pendingText={props.options.affirmativePendingLabel}
+          />
         </div>
       </Modal>
     </div>
@@ -37,10 +44,7 @@ const ConfirmModal = (props, context) => {
 }
 
 ConfirmModal.defaultProps = {
-  show: false,
-  options: {
-    message: 'Are you sure to continue ?'
-  }
+  show: false
 }
 
 ConfirmModal.propTypes = {
