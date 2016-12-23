@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
@@ -466,6 +467,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
+    }
+
+    public function getBrokerTransactionReport()
+    {
+        $input = Request::all();
+
+        return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, E::TRANSACTION);
     }
 
     public function getInvoiceReport()

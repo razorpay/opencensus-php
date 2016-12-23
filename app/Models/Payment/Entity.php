@@ -1098,7 +1098,7 @@ class Entity extends Base\PublicEntity
      * that ends with `_order_id`
      * We will shift to a standard field called `merchant_order_id`
      * as our ecommerce plugins are migrated
-     * @return String order_id for the paymetn
+     * @return String order_id for the payment
      */
     public function getOrderId()
     {
@@ -1369,6 +1369,17 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany('RZP\Models\Transfers\Entity', 'entity');
+    }
+
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

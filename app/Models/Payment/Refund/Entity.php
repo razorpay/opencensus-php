@@ -96,6 +96,16 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfers\Entity', 'entity');
     }
 
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
+    }
+
     public function build(array $input = array())
     {
         $payment = func_get_arg(1);
