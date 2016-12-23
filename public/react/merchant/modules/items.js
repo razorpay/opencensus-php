@@ -1,5 +1,5 @@
 import Item from 'merchant/models/Item'
-import { set, merge, unshift } from 'rzp/utils/immutable'
+import { set, merge, unshift, remove } from 'rzp/utils/immutable'
 
 const ITEMS_FETCH = 'ITEMS_FETCH'
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH'
@@ -102,7 +102,8 @@ export default function (state = initialState, action) {
       return set(state, `items.${itemIndex}`, action.payload)
 
     case `${ITEM_DELETE}::SUCCESS`:
-      // return state.set('items', state.get('items').remove(action.payload))
+      var itemsList = remove(state.items, (item) => item.id === action.payload.id)
+      return set(state, 'items', itemsList)
 
     case HIGHLIGHT_ITEM:
       return set(state, 'highlightRowId', action.payload.id)

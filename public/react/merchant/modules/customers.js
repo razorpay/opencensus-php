@@ -1,4 +1,4 @@
-import { set, merge, unshift } from 'rzp/utils/immutable'
+import { set, merge, unshift, remove } from 'rzp/utils/immutable'
 import Customer from 'merchant/models/Customer'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
@@ -41,7 +41,7 @@ export const deleteCustomer = (customer) => {
     return customer.delete().then(() => {
       dispatch({
         type: CUSTOMER_DELETE,
-        payload: params
+        payload: customer
       })
     })
   }
@@ -101,7 +101,8 @@ export default function (state = initialState, action) {
       return set(state, `customers.${customerIndex}`, action.payload)
 
     case `${CUSTOMER_DELETE}::SUCCESS`:
-      // return set(state, 'customers', state.remove(state.customers, action.payload))
+      var customersList = remove(state.customers, (customer) => customer.id === action.payload.id)
+      return set(state, 'customers', customersList)
 
     case HIGHLIGHT_CUSTOMER:
       return set(state, 'highlightRowId', action.payload.id)

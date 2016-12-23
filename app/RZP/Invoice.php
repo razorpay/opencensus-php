@@ -12,6 +12,13 @@ class Invoice extends Entity
         return parent::create($params);
     }
 
+    public function edit($id, $params = [])
+    {
+        $this->appendUserId($params);
+        $entityUrl = $this->getEntityUrl().$id;
+        return $this->request('PUT', $entityUrl, $params);
+    }
+
     public function all($options = [])
     {
         $this->appendUserId($options);

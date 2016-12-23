@@ -4,6 +4,7 @@ import Invoice from 'merchant/models/Invoice'
 const INVOICES_FETCH = 'INVOICES_FETCH'
 const INVOICE_CREATE = 'INVOICE_CREATE'
 const INVOICE_EDIT = 'INVOICE_EDIT'
+const INVOICE_DELETE = 'INVOICE_DELETE'
 const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
 
 export const fetchInvoices = (params) => {
@@ -20,6 +21,17 @@ export const saveInvoice = (invoice) => {
     return dispatch({
       type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
       payload: invoice.save()
+    })
+  }
+}
+
+export const deleteInvoice = (invoice) => {
+  return (dispatch) => {
+    return invoice.delete().then(() => {
+      dispatch({
+        type: INVOICE_DELETE,
+        payload: invoice
+      })
     })
   }
 }
@@ -65,6 +77,10 @@ export default function (state = initialState, action) {
     case `${INVOICE_EDIT}::SUCCESS`:
       let invoiceIndex = state.invoices.findIndex((invoice) => invoice.id === action.payload.id)
       return set(state, `invoices.${invoiceIndex}`, action.payload)
+
+    case `${INVOICE_DELETE}::SUCCESS`:
+      var invoicesList = remove(state.invoices, (invoice) => invoice.id === action.payload.id)
+      return set(state, 'invoices', invoicesList)
 
     case HIGHLIGHT_INVOICE:
       return set(state, 'highLightInvoiceId', action.invoiceId)

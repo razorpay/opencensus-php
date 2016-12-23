@@ -607,6 +607,45 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function editInvoice($mode, $id, $input)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->edit($id, $input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function deleteInvoice($mode, $id)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->delete($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];

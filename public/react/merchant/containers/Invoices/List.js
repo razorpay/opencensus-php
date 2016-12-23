@@ -4,21 +4,22 @@ import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 
-import { fetchInvoices, highLightInvoice } from 'merchant/modules/invoices/list'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
+import * as InvoiceActions from 'merchant/modules/invoices/list'
 
 @connect(
   (state) => state.invoices,
-  { fetchInvoices, highLightInvoice }
+  InvoiceActions
 )
 export default class InvoicesListContainer extends ListContainer {
   constructor() {
     super(...arguments)
     this.state.invoiceToEdit = null
     this.editInvoice = ::this.editInvoice
+    this.deleteInvoice = ::this.deleteInvoice
   }
 
   fetchEntityList(params) {
@@ -40,6 +41,26 @@ export default class InvoicesListContainer extends ListContainer {
         id: invoice.id
       })
     }
+  }
+
+  deleteInvoice(invoice) {
+    this.context.confirm('Are you sure to delete the invoice?').then(() => {
+      this.props.deleteInvoice(invoice).then((response) => {
+        this.setState({
+          status: {
+            type: 'success',
+            message: 'Invoice deleted successfully'
+          }
+        })
+      }).catch((err) => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: err.errors
+          }
+        })
+      })
+    })
   }
 
   render() {

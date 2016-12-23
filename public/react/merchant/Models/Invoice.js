@@ -53,6 +53,13 @@ export default class Invoice extends BaseModel {
     })
   }
 
+  delete() {
+    return ajax({
+      url: this.getResourceUrl(),
+      method: 'delete'
+    })
+  }
+
   serializeProperty(prop) {
     if (prop === 'sms_notify' || prop === 'email_notify') {
       return this[prop] ? 1 : 0

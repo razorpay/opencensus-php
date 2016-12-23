@@ -237,6 +237,26 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function putInvoice(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->editInvoice($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deleteInvoice($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Merchant\Service)->deleteInvoice($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         list($error, $data)  = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);

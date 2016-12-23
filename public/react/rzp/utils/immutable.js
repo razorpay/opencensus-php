@@ -69,3 +69,11 @@ export const merge = (state, obj) => {
     ...obj
   }
 }
+
+export const remove = (array, itemToRemove) => {
+  if (typeof itemToRemove === 'function') {
+    return removeItem(array, array.findIndex(itemToRemove))
+  }
+
+  return removeItem(array, array.findIndex((ele) => ele === itemToRemove))
+}

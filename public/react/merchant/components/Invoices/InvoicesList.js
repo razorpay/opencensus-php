@@ -42,6 +42,7 @@ const InvoiceListItem = (props) => {
             </button>
             <button
               class='btn btn-xs btn-default'
+              onClick={props.onDeleteClick}
             >
               <i class='fa fa-trash text-danger'></i>
               <span>delete</span>
@@ -66,6 +67,7 @@ export default (props) => {
         invoice={invoice}
         canHighlight={highlightRow(invoice)}
         onEditClick={() => props.onEdit(invoice)}
+        onDeleteClick={() => props.onDelete(invoice)}
       />
     )
   } else {

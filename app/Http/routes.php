@@ -143,6 +143,8 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoices_fetch_all');
     Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoices_fetch_single');
     Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoices_create');
+    Route::put('/{mode}/invoices/{id}', 'MerchantController@putInvoice')->name('invoices_edit');
+    Route::delete('/{mode}/invoices/{id}', 'MerchantController@deleteInvoice')->name('invoices_delete');
     Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
 
     Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customers_fetch_all');
