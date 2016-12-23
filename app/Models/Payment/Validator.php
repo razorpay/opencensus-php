@@ -41,7 +41,7 @@ class Validator extends Base\Validator
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
-        'currency'      => 'sometimes|in:INR');
+        'currency'      => 'sometimes|in:INR,USD');
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|integer',
@@ -267,10 +267,12 @@ class Validator extends Base\Validator
         $currency = $input['currency'];
 
         //
-        // Right now only INR is supported.
+        // Right now only INR and USD is supported.
+        //
         //
 
-        if ($currency !== "INR")
+        if (($currency !== "INR") and
+            ($currency !== "USD"))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,

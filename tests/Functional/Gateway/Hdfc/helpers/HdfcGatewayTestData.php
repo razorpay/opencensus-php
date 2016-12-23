@@ -32,6 +32,32 @@ return [
         'entity' => 'payment',
     ],
 
+    'testInternationalUSDPayment' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'card',
+        'status'            => 'captured',
+        'two_factor_auth'   => TwoFactorAuth::NOT_APPLICABLE,
+        'captured'          => true,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'USD',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hdfc',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+    ],
+
     'testTransactionAfterCapture' => [
         'type' => 'payment',
         'merchant_id' => '10000000000000',
