@@ -1393,5 +1393,5 @@ ALTER TABLE orgs
     AFTER invoice_logo_url;
 
 # Adds Currency Code to terminals
-ALTER TABLLE terminals
+ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
