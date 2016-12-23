@@ -920,6 +920,13 @@ class Service extends Base\Service
             $merchantDetail->saveOrFail();
         }
 
-        return [$error, $merchantDetail];
+        return [ $error, $merchantDetail->getPreSignupFields()];
+    }
+
+    public function getPreSignupDetails($merchantId)
+    {
+        $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
+
+        return [ null, $merchantDetail->getPreSignupFields()];
     }
 }
