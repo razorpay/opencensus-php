@@ -14,6 +14,15 @@ export default (props) => {
       </div>
 
       <div class='form-group list-filter-item'>
+        <label>Receipt</label>
+        <Field
+          name='receipt'
+          component='input'
+          class='form-control input-sm'
+        />
+      </div>
+
+      <div class='form-group list-filter-item'>
         <label>Customer Contact</label>
         <Field
           name='customer_contact'

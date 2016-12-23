@@ -54,6 +54,9 @@ export default (props) => {
                   <Time value={invoice.date} />
                 </dd>
 
+                <dt>Receipt:</dt>
+                <dd>{invoice.receipt || '--'}</dd>
+
                 <dt>Payment Link:</dt>
                 <dd>{invoice.short_url}</dd>
 
