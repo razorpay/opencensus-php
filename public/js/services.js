@@ -393,19 +393,17 @@ angular.module('app.services', [])
           }
         }).success(function (data) {
           if (data.success === true) {
-            if (data.data.items.length > 0) {
-              angular.forEach(data.data.items, function (group) {
-                var groupObj = {
-                  id: group.id,
-                  name: group.name,
-                  description: group.description
-                };
+            angular.forEach(data.data.items, function (group) {
+              var groupObj = {
+                id: group.id,
+                name: group.name,
+                description: group.description
+              };
 
-                groups.push(groupObj);
-              });
+              groups.push(groupObj);
+            });
 
-              deferred.resolve(groups);
-            }
+            deferred.resolve(groups);
           }
           else {
             groups = [];

@@ -28,7 +28,9 @@ app.controller('MerchantDetailCtrl', [
       }
     };
 
-    $scope.groups = organization.fetchGroups();
+    organization.fetchGroups().then(function (groups) {
+      $scope.groups = groups;
+    });
     $scope.selected_groups = {};
 
     generateMerchant();
