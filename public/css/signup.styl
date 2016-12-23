@@ -144,15 +144,96 @@
 .btn-step-2
   margin-top 96px
 
+.steps-dots 
+  margin-top 32px
+
 .step-dot {
   float: left;
   width: 8px;
   height: 8px;
-  background: grey;
-  margin-right: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  margin-right: 4px;
   border-radius: 4px;
-  width: 12px;
+  &.active{
+    width: 12px;
+    background-color: #7266ba;
+    border: none;
+  }
 }
+
+.signup-details-translate-container 
+  width 1200px
+
+.signup-details-overflow-container
+  margin-top 12px
+  height 360px
+  width 240px
+
+.signup-details-question
+  width 240px
+  float left
+
+.signup-details-button
+  margin-top 18px
+  
+.select-one {
+  margin-top 12px
+  
+  .select-one-option {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: 1px solid #eaeaea;
+    margin-top: -1px;
+    overflow: hidden;
+
+    &:first-child {
+      border-radius: 4px 4px 0 0;
+    }
+    &:last-child {
+      border-radius: 0 0 4px 4px;
+    }
+  }
+
+  label {
+    background: #ffffff;
+    width: 100%;
+    display: block;
+    padding: 9px 16px;
+    margin: 0;
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+      background: #fafafa;
+    }
+  }
+
+  .fa-check {
+    color: #f1f1f1;
+    line-height: 22px;
+    transition: 0.3s;
+  }
+  .fa-ellipsis-h {
+    line-height: 22px;
+  }
+
+  input[type=radio] {
+    display: none;
+
+    &:checked + label {
+      background: #fffaea;
+      .fa-check{
+        color: #00bb55;
+      }
+    }
+  }
+
+  input[type=checkbox] {
+    display: none;
+  }
+}
+
 
 /* old styles */
 
