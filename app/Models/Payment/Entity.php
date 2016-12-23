@@ -699,6 +699,11 @@ class Entity extends Base\PublicEntity
         return $this->metadata;
     }
 
+    public function getRefundStatus()
+    {
+        return $this->getAttribute(self::REFUND_STATUS);
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()

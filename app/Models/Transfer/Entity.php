@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::TO_ID,
         self::AMOUNT,
+        self::AMOUNT_REVERSED,
         self::CREATED_AT,
     ];
 
@@ -155,7 +156,6 @@ class Entity extends Base\PublicEntity
 
         $entity = E::getEntityClass($toType);
 
-        // @todo: check for a better way
         if ($toType === 'merchant')
         {
             $entity = 'RZP\Models\Merchant\AccountEntity';

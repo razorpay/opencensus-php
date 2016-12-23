@@ -402,9 +402,26 @@ class Service extends Base\Service
      *
      * @return Collection  Transfer collection
      */
-    public function transfer($id, $input)
+    public function transfer(string $id, array $input) : array
     {
         $transfers = $this->getNewProcessor()->transfer($id, $input);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Get Transfers for a payment_id
+     *
+     * @param  string $id   Payment ID
+     * @return array
+     */
+    public function getTransfers(string $id) : array
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourcePaymentIdAndMerchant($id, $this->merchant);
 
         return $transfers->toArrayPublic();
     }
