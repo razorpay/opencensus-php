@@ -144,7 +144,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->groups->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['roles']));
     }
 
     public function testDeleteAllGroupsAdmin()
@@ -163,7 +168,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->roles->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['groups']));
     }
 
     public function testDeleteAdmin()
@@ -659,5 +669,18 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+     }
+
+     public function testGetAdminByEmailOnAppAuth()
+     {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
+            Admin\Entity::NAME    => 'test admin app auth',
+        ]);
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
      }
 }
