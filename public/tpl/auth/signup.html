@@ -44,8 +44,41 @@
     </div>
     <div class="signup-step">
       <div class="auth-heading">
-        Account Created
+        Almost There...
       </div>
+      <div class="auth-text">
+        Just need a few more details.
+      </div>
+
+      <div class="signup-detail-form">
+        <div class="steps-dots">
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+        </div>
+        <div class="auth-subheading">
+          Your Business Type?
+        </div>
+
+        <div class="select-one">
+          <div class="select-one-option" ng-repeat="key in toArray(signup.details.business_type)" ng-show='$index < 3 || signup.showMore === true'>
+            <input type="radio" name="business_type" value="{{key}}" id="{{key}}" ng-model='signup.data.business_type'/>
+            <label for='{{key}}'>
+              {{signup.details.business_type[key]}}
+              <i class="pull-right fa fa-check"></i>
+            </label>
+          </div>
+          <div class="select-one-option" ng-show='signup.showMore === false'>
+            <input type="checkbox" name="business_type" value="true" id="more" ng-model='signup.showMore'/>
+            <label for='more'>
+              More
+              <i class="pull-right fa fa-ellipsis-h"></i>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
       <div class="btn btn-default" ng-click="goToSigninLayout()">
         Create Account
       </div>
