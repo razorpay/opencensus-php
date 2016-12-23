@@ -418,17 +418,17 @@ class Service extends Base\Service
         if (Auth::attempt($credentials, false, false))
         {
             // And user is not confirmed
-            if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
-            {
-                // TODO: Use single error message to avoid info leak
-                // @see https://github.com/razorpay/dashboard/issues/216
-                $error = ['User account not confirmed'];
-            }
-            else
-            {
+            // if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
+            // {
+            //     // TODO: Use single error message to avoid info leak
+            //     // @see https://github.com/razorpay/dashboard/issues/216
+            //     $error = ['User account not confirmed'];
+            // }
+            // else
+            // {
                 // Login the user
-                Auth::attempt($credentials, false, true);
-            }
+            Auth::attempt($credentials, false, true);
+            // }
         }
         else
         {
