@@ -772,7 +772,7 @@ class Processor
             return;
         }
 
-        $invoice = $this->repo->invoice->fetchForOrder($order);
+        $invoice = $this->repo->invoice->fetchForOrder($this->order);
 
         if ($invoice === null)
         {

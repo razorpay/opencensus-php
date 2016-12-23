@@ -31,9 +31,12 @@ class Repository extends Base\Repository
     {
         $methods = $this->find($merchant->getId());
 
-        $methods->merchant()->associate($merchant);
+        if ($methods !== null)
+        {
+            $methods->merchant()->associate($merchant);
 
-        $merchant->setRelation('methods', $methods);
+            $merchant->setRelation('methods', $methods);
+        }
 
         return $methods;
     }

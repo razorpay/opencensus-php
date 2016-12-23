@@ -82,7 +82,8 @@ class Core extends Base\Core
 
         try
         {
-            $app = $this->repo->app_token->findByIdAndMerchantId($appTokenId, $merchant->getId());
+            $appToken = $this->repo->app_token->findByIdAndMerchantId(
+                                            $appTokenId, $merchant->getId());
 
             // Fetches customer and associates with app token
             $customer = $this->repo->customer->fetchByAppToken($appToken);
