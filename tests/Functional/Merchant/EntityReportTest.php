@@ -110,7 +110,7 @@ class EntityReportTest extends TestCase
     protected function fetchBrokingReport($content)
     {
         $request = array(
-            'url' => '/reports/transaction/v2',
+            'url' => '/reports/transaction/broking',
             'method' => 'get',
             'content' => $content);
 

@@ -249,7 +249,7 @@ final class Route
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
-        'reports_transaction_v2'                  => ['get',      'reports/transaction/v2',                         'MerchantController@getBrokerTransactionReport'                     ],
+        'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -631,7 +631,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'balance_fetch',
-        'reports_transaction_v2',
+        'reports_transaction_broking',
         'reports_monthly_invoice',
         'reports_monthly_invoice_v2',
         'reports_public_entity',
@@ -844,7 +844,7 @@ final class Route
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        'reports_transaction_v2'        => 'broking_report'
+        'reports_transaction_broking'   => 'broking_report'
     );
 
     const RAZORPAYJS_ROUTES = array(
