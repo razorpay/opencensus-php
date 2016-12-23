@@ -26,6 +26,21 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
+    public function fetchForOrder($order)
+    {
+        $invoice = $this->newQuery()
+                        ->where(Entity::ORDER_ID, '=', $order->getId())
+                        ->first();
+
+        if ($invoice !== null)
+        {
+            $order->setRelation('invoice', $invoice);
+            $invoice->order()->associate($order);
+        }
+
+        return $invoice;
+    }
+
     public function getInvoicesForNotification($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

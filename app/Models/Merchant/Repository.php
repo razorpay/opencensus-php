@@ -163,7 +163,7 @@ class Repository extends Base\Repository
                     ->where(Entity::LIVE, '=', 1);
     }
 
-    public function getMerchantFromEntity($entity)
+    public function fetchMerchantFromEntity($entity)
     {
         $merchantId = $entity->getMerchantId();
 

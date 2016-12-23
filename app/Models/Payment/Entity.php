@@ -1120,11 +1120,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->localToken;
+            $token = $this->getRelation('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->globalToken;
+            $token = $this->getRelation('globalToken');
         }
 
         return $token;

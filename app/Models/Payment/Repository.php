@@ -388,6 +388,7 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->skip($skip)
                     ->take(10)
+                    ->with('merchant', 'card')
                     ->get();
     }
 

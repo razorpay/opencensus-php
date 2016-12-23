@@ -45,7 +45,7 @@ class EmiFile extends Base\EmiFile
         {
             $emiTenure = $emiPayment->emiPlan['duration'];
 
-            $merchant = $this->repo->merchant->getMerchantFromEntity($emiPayment);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
 
             $txn = $this->repo->transaction->fetchForPayment($payment);
 

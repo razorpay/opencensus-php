@@ -31,16 +31,13 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
-    public function getOrderForPayment($payment)
+    public function fetchForPayment($payment)
     {
         $orderId = $payment->getApiOrderId();
 
-        $order = $this->find($orderId);
+        $order = $this->findOrFail($orderId);
 
-        if ($order !== null)
-        {
-            $payment->order()->associate($order);
-        }
+        $payment->order()->associate($order);
 
         return $order;
     }

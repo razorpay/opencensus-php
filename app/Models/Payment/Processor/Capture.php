@@ -506,13 +506,15 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        $order = $this->repo->order->getOrderForPayment($payment);
-
-        if ((empty($order) === false) and
-            ($order->getStatus() === Order\Status::PAID))
+        if ($payment->hasOrder())
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Corresponding order already has a captured payment.');
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            if ($order->getStatus() === Order\Status::PAID)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Corresponding order already has a captured payment.');
+            }
         }
     }
 

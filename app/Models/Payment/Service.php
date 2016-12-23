@@ -204,7 +204,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->verify($payment);
 
@@ -227,7 +227,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
@@ -282,7 +282,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->getMerchantFromEntity($payment);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
@@ -408,7 +408,7 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicId($id);
 
-        $merchant = $payment->merchant;
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         // TODO: Hack to prevent S2S callback processing for TPV Merchants.
         // All TPV Merchant transactions will be made through BILLDESK.

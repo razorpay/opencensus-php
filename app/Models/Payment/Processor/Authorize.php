@@ -1120,7 +1120,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
@@ -1512,7 +1512,7 @@ trait Authorize
      */
     protected function associateAndGetCardArrayForSavedToken($token, array & $input)
     {
-        $card = $token->card;
+        $card = $this->repo->card->fetchForToken($token);
 
         $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
 

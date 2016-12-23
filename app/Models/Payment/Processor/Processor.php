@@ -384,6 +384,8 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
+        $order = $this->getOrderForPayment($payment);
+
         $gateway = $payment->getGateway();
 
         // If the gateway is not async we just give a generic
@@ -692,9 +694,7 @@ class Processor
 
     protected function fetchOrderFromInput($input)
     {
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-        $order = $this->orderRepo->find($orderId);
+        $order = $this->orderRepo->findbyPublicId($input['order_id']);
 
         if ($order === null)
         {
@@ -709,6 +709,8 @@ class Processor
             throw new Exception\BadRequestValidationFailureException(
                 'Order id not found');
         }
+
+        $order->merchant()->associate($this->merchant);
 
         return $order;
     }
@@ -770,12 +772,12 @@ class Processor
             return;
         }
 
-        if ($this->order->invoice === null)
+        $invoice = $this->repo->invoice->fetchForOrder($order);
+
+        if ($invoice === null)
         {
             return;
         }
-
-        $invoice = $this->order->invoice;
 
         $payment->invoice()->associate($invoice);
     }
@@ -817,6 +819,16 @@ class Processor
                                                 $id, $this->merchant);
 
         return $this->payment;
+    }
+
+    protected function getOrderForPayment($payment)
+    {
+        if ($payment->hasOrder())
+        {
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            return $order;
+        }
     }
 
     /**

@@ -30,12 +30,37 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getGlobalOrLocalTokenEntityOfPayment($payment)
+    {
+        $token = null;
+
+        if ($payment->getTokenId() !== null)
+        {
+            $token = $this->findOrFail($payment->getTokenId());
+            $payment->localToken()->associate($token);
+        }
+        else if ($payment->getGlobalTokenId() !== null)
+        {
+            $token = $this->findOrFail($payment->getGlobalTokenId());
+            $payment->globalToken()->associate($token);
+        }
+
+        return $token;
+    }
+
     public function getByTokenIdAndCustomer($tokenId, Customer\Entity $customer)
     {
-        return $this->newQuery()
+        $token = $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Token\Entity::TOKEN, '=', $tokenId)
                     ->first();
+
+        if ($token !== null)
+        {
+            $token->customer()->associate($customer);
+        }
+
+        return $token;
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
