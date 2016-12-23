@@ -82,7 +82,9 @@ class Entity extends Base\Entity
         'locked',
         'comment',
         'submitted_at',
-        'transaction_report_email'
+        'transaction_report_email',
+        'role',
+        'department'
     );
 
     const AJAX_FIELDS = array(
