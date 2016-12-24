@@ -1388,7 +1388,7 @@ ALTER TABLE axis
 ALTER TABLE admins ADD COLUMN allow_all_merchants BOOLEAN DEFAULT 0;
 
 ALTER TABLE orgs
-    ADD COLUMN custom_code VARCHAR(250)
+    ADD COLUMN custom_code VARCHAR(255)
     UNIQUE NULL
     AFTER invoice_logo_url;
 
