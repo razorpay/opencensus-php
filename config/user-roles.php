@@ -57,9 +57,22 @@ return [
     'balance_get'               => $allButSellerApp,
     'bank_account_fetch'        => $allButSellerApp,
     'submerchant_register'      => $writers,
-    'invoices_fetch_all'        => $all,
-    'invoices_fetch_single'     => $all,
+    'invoice_fetch_all'         => $all,
+    'invoice_fetch_single'      => $all,
     // Support role can't create invoices, but sellerapp role can
-    'invoices_create'           => array_merge($writers, ['sellerapp']),
-    'customers_fetch_all'       => $all,
+    'invoice_create'            => array_merge($writers, ['sellerapp']),
+    'invoice_edit'              => array_merge($writers, ['sellerapp']),
+    'invoice_delete'            => array_merge($writers, ['sellerapp']),
+
+    'customer_fetch_all'        => $allButSellerApp,
+    'customer_autocomplete'     => $allButSellerApp,
+    'customer_create'           => $writers,
+    'customer_edit'             => $writers,
+    'customer_delete'           => $writers,
+
+    'item_fetch_all'            => $allButSellerApp,
+    'item_fetch_autocomplete'   => $allButSellerApp,
+    'item_create'               => $writers,
+    'item_edit'                 => $writers,
+    'item_delete'               => $writers,
 ];
