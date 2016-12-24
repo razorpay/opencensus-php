@@ -71,4 +71,10 @@ return array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
     ),
+
+    'exchange'  => [
+        'mock'      => env('EXCHANGE_MOCK', false),
+        'url'       => env('EXCHANGE_URL'),
+        'appId'     => env('EXCHANGE_APP_ID')
+    ],
 );
