@@ -17,6 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'  => 'customer',
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
