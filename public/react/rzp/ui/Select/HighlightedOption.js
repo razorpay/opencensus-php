@@ -11,6 +11,8 @@ const createHighlighedOption = (label, searchTerm) => {
 export default ({ option, select, optionLabelPath }) => {
   let highlightedLabel = option[optionLabelPath]
   return (
-    <span dangerouslySetInnerHTML={createHighlighedOption(highlightedLabel, select.searchTerm)} />
+    <span
+      dangerouslySetInnerHTML={createHighlighedOption(highlightedLabel, select.searchTerm)}
+    />
   )
 }

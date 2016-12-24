@@ -65,7 +65,7 @@ export default class CustomersListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <div class='btn-toolbar'>
+        <Role notMyRole='support' class='btn-toolbar'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={() => this.showCustomerModal()}
@@ -73,7 +73,7 @@ export default class CustomersListContainer extends ListContainer {
             <i class='fa fa-plus'></i>
             <span>New Customer</span>
           </button>
-        </div>
+        </Role>
 
         <div class='content-wrapper'>
           <Alert

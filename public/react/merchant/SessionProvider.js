@@ -11,10 +11,9 @@ export default class SessionProvider extends Component {
   componentWillMount() {
     let user = this.props.user
     let modeFactory = this.props.modeFactory
-    let identity = user.getIdentity()
 
     this.session = session.initialize({
-      identity,
+      user,
       modeFactory
     })
   }

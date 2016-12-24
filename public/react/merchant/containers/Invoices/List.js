@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
-
+import Role from 'merchant/components/Role'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
@@ -72,7 +72,7 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <div class='btn-toolbar'>
+        <Role notMyRole='support' class='btn-toolbar'>
           <button
             class='btn btn-primary btn-rounded'
             onClick={() => this.showPaymentLinkModal()}
@@ -87,7 +87,7 @@ export default class InvoicesListContainer extends ListContainer {
             <i class='fa fa-plus'></i>
             <span>New Invoice</span>
           </a>
-        </div>
+        </Role>
 
         <div class='content-wrapper'>
           <div class='panel panel-default'>

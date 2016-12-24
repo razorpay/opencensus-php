@@ -69,7 +69,7 @@ export default class ItemsListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <div class='btn-toolbar'>
+        <Role notMyRole='support' class='btn-toolbar'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={() => this.showItemModal()}
@@ -77,7 +77,7 @@ export default class ItemsListContainer extends ListContainer {
             <i class='fa fa-plus'></i>
             <span>New Item</span>
           </button>
-        </div>
+        </Role>
 
         <div class='content-wrapper'>
           <Alert

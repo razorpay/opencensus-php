@@ -11,7 +11,7 @@ class Session {
   }
 
   get isAuthenticated() {
-    return !!this.session.identity
+    return !!this.session.user
   }
 
   get currentMode() {
@@ -20,6 +20,11 @@ class Session {
 
   get isLiveMode() {
     return this.currentMode === 'live'
+  }
+
+  get userRole() {
+    let user = this.session.user
+    return user.merchants[user.id].pivot.role
   }
 }
 
