@@ -1395,3 +1395,6 @@ ALTER TABLE orgs
 # Adds Currency Code to terminals
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
+
+ALTER TABLE hdfc
+    ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after amount;
