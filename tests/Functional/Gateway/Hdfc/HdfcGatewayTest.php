@@ -55,6 +55,8 @@ class HdfcGatewayTest extends TestCase
 
     public function testInternationalUSDPayment()
     {
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['currency' => 'USD']);
+
         $payment = $this->defaultAuthPayment(['currency' => 'USD']);
 
         $txn = $this->getEntities('transaction', [], true);
