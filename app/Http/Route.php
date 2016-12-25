@@ -358,6 +358,7 @@ final class Route
         'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'international_exchange_rates'            => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
     );
 
     public static $public = array(
@@ -616,6 +617,7 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
+        'international_exchange_rates',
     );
 
     public static $proxy = array(
@@ -812,6 +814,7 @@ final class Route
             'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
+            'international_exchange_rates',
         ),
 
         'mailgun' => array(
