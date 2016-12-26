@@ -70,7 +70,9 @@ class TransactionFilter extends Terminal\Filter
 
     public function currencyFilter($terminal, $input)
     {
-        $paymentCurrency = $input['payment']->getCurrency();
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
 
         if ($payment->merchant->convertOnApi() === true)
         {
