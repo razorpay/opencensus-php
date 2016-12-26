@@ -280,6 +280,7 @@ class Gateway
                     ['action' => $this->action]);
         }
 
+        $amount = $input[$entity]['amount'];
 
         $currency = $input[$entity]['currency'];
 
