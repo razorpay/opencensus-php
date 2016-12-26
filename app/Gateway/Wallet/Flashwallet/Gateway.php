@@ -14,6 +14,12 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
+    /**
+     * Pay from wallet: flashwallet
+     *
+     * @param  array  $input
+     * @return void
+     */
     public function authorize(array $input)
     {
         $this->trace->info(
@@ -47,18 +53,19 @@ class Gateway extends Base\Gateway
         catch (\Throwable $ex)
         {
             $this->trace->info(
-                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
-                [
-                    'gateway'       => $this->gateway,
-                    'payment_id'    => $input['payment']['id'],
-                    'success'       => false,
-                    'error_code'    => $ex->getCode(),
-                    'error_message' => $ex->getMessage(),
-                ]);
+                    TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+                    [
+                        'gateway'       => $this->gateway,
+                        'payment_id'    => $input['payment']['id'],
+                        'success'       => false,
+                        'error_code'    => $ex->getCode(),
+                        'error_message' => $ex->getMessage(),
+                    ]);
 
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw $ex;
         }
+
+        return NULL;
     }
 
     /**
@@ -79,7 +86,7 @@ class Gateway extends Base\Gateway
                     'refund_id'  => $input['refund']['id'],
                 ]);
 
-        $txnId = $this->processCustomerBalanceForRefund($input);
+        $txnId = $this->walletRefund($input);
 
         $this->trace->info(
                 TraceCode::GATEWAY_REFUND_RESPONSE,
@@ -91,7 +98,7 @@ class Gateway extends Base\Gateway
                 ]);
     }
 
-    protected function processCustomerBalanceForRefund(array $input)
+    protected function walletRefund(array $input)
     {
         try
         {
@@ -109,9 +116,10 @@ class Gateway extends Base\Gateway
                         'error_message' => $ex->getMessage(),
                     ]);
 
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+            throw $ex;
         }
+
+        return NULL;
     }
 
 }
