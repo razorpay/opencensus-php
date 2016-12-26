@@ -1396,5 +1396,11 @@ ALTER TABLE orgs
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
 
-ALTER TABLE hdfc
-    ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after amount;
+ALTER TABLE merchants
+    ADD COLUMN convert_currency TINYINT(1) DEFAULT 1 AFTER auto_refund_delay;
+
+ALTER TABLE payments
+    ADD COLUMN base_amount INTEGER UNSIGNED DEFAULT 0 AFTER currency;
+
+ALTER TABLE refunds
+    ADD COLUMN base_amount INTEGER UNSIGNED DEFAULT 0 AFTER currency;
