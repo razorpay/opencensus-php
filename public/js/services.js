@@ -777,6 +777,9 @@ angular.module('app.services', [])
       if (value && isTimestamp(key)) {
         return 'timestamp';
       }  // All other entity links are considered here
+      else if (key.substr(-6) === 'amount') {
+        return 'amount';
+      }
       else if (isId(key)) {
         if (specialEntities.indexOf(key) > -1) {
           return getEntity(key);
@@ -796,7 +799,7 @@ angular.module('app.services', [])
     return function (key, value) {
       var type = getType(key, value);
       // Set timezone to IST
-      moment().zone(5.5);
+      moment().utcOffset(5.5);
       switch (type) {
       case 'timestamp':
         return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';

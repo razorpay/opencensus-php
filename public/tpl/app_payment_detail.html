@@ -88,6 +88,15 @@
             <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
             Total Fees
           </div>
+          <!-- These are the extra fields that were not nicely formatted above -->
+          <div class="list-group-item" ng-repeat="key in keysNotShown()"
+            ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
+            ng-show="value!==null">
+            <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
+              {{displayValue(key, value)}}
+            </span>
+            {{key|titlecase}}
+          </div>
           <div class="list-group-item" ng-show="entity.error_code">
             <span class="pull-right">
               {{entity.error_code}}
