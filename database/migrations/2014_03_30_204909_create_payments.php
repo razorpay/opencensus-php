@@ -33,7 +33,7 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT)
                   ->unsigned();
 
-            $table->integer(Payment::TOTAL_AMOUNT)
+            $table->integer(Payment::BASE_AMOUNT)
                   ->unsigned()
                   ->default(0);
 

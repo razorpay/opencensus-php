@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
-    const TOTAL_AMOUNT          = 'total_amount';
+    const BASE_AMOUNT           = 'base_amount';
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
@@ -115,7 +115,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::METHOD,
         self::AMOUNT,
-        self::TOTAL_AMOUNT,
+        self::BASE_AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
@@ -171,7 +171,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
-        self::TOTAL_AMOUNT,
+        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -242,7 +242,7 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
-        self::TOTAL_AMOUNT,
+        self::BASE_AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::FEE,
@@ -251,7 +251,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::RECURRING         => 'bool',
-        self::TOTAL_AMOUNT      => 'int',
+        self::BASE_AMOUNT      => 'int',
         self::AMOUNT_AUTHORIZED => 'int',
         self::AMOUNT_REFUNDED   => 'int',
         self::AUTO_CAPTURED     => 'bool',
@@ -371,9 +371,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setTotalAmount($amount)
+    public function setBaseAmount($amount)
     {
-        $this->setAttribute(self::TOTAL_AMOUNT, $amount);
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
     }
 
     public function setAmountAuthorized()
@@ -824,9 +824,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getTotalAmount()
+    public function getBaseAmount()
     {
-        return $this->getAttribute(self::TOTAL_AMOUNT);
+        return $this->getAttribute(self::BASE_AMOUNT);
     }
 
     public function getAmountRefunded()

@@ -36,7 +36,7 @@ class Payment extends Base
 
         if (isset($attributes['amount']))
         {
-            $attributes['total_amount'] = $attributes['amount'];
+            $attributes['base_amount'] = $attributes['amount'];
         }
 
         return parent::create($attributes);

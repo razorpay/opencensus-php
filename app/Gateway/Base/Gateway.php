@@ -267,7 +267,7 @@ class Gateway
 
         if ($input['merchant']['currency_conversion'] === '1')
         {
-            $amount = $input['payment']['total_amount'];
+            $amount = $input['payment']['base_amount'];
 
             $currency = Payment\Currency::INR;
         }

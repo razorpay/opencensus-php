@@ -59,7 +59,7 @@ class FeeCalculator
 
         $this->getRelevantPricingRule($pricing);
 
-        $amount = $entity->getTotalAmount();
+        $amount = $entity->getBaseAmount();
 
         if ($entity->merchant->isFeeBearerCustomer())
         {
@@ -230,7 +230,7 @@ class FeeCalculator
     {
         $payment = $this->entity;
 
-        $amount = $payment->getTotalAmount();
+        $amount = $payment->getBaseAmount();
 
         $filters = [
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]

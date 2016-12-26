@@ -104,7 +104,7 @@ final class FactoryData
             'card_id' => null,
             'bank' => null,
             'amount' => 1000000,
-            'total_amount' => 1000000,
+            'base_amount' => 1000000,
             'amount_authorized' => 1000000,
             'amount_refunded' => 0,
             'currency' => 'INR',
