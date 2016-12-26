@@ -25,4 +25,21 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, '=', $morphEntity->getEntity())
                     ->findOrFailPublic($id);
     }
+
+    public function findManyByPublicIdsAndMorphEntity($ids, Base\Entity $morphEntity)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSignMultiple($ids);
+
+        return $this->findManyByIdsAndMorphEntity($ids, $morphEntity);
+    }
+
+    public function findManyByIdsAndMorphEntity($ids, Base\Entity $morphEntity)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $morphEntity->getId())
+                    ->where(Entity::ENTITY_TYPE, '=', $morphEntity->getEntity())
+                    ->findMany($ids);
+    }
 }

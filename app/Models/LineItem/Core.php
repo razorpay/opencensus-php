@@ -11,17 +11,7 @@ use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
-    /**
-     * @param array           $input
-     * @param Merchant\Entity $merchant
-     * @param Base\Entity     $morphEntity
-     *
-     * @return Entity
-     */
-    public function create(
-        array $input,
-        Merchant\Entity $merchant,
-        Base\Entity $morphEntity)
+    public function create(array $input, Merchant\Entity $merchant, Base\Entity $morphEntity)
     {
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
@@ -42,10 +32,23 @@ class Core extends Base\Core
                 $lineItem->item()->associate($item);
 
                 $this->repo->saveOrFail($lineItem);
-            }
-        );
+            });
 
         return $lineItem;
+    }
+
+    public function createMany(array $input, Merchant\Entity $merchant, Base\Entity $morphEntity)
+    {
+        (new Validator)->validateInput('create_many', $input);
+
+        $this->repo->transaction(
+            function() use ($merchant, $morphEntity, $input)
+            {
+                foreach ($input[Entity::LINE_ITEMS] as $singleLineItemInput)
+                {
+                    $this->create($singleLineItemInput, $merchant, $morphEntity);
+                }
+            });
     }
 
     public function update(
@@ -84,6 +87,18 @@ class Core extends Base\Core
     public function delete(Entity $lineItem)
     {
         return $this->repo->line_item->deleteOrFail($lineItem);
+    }
+
+    public function deleteMany(Base\PublicCollection $lineItems)
+    {
+        $this->repo->transaction(
+            function() use ($lineItems)
+            {
+                foreach ($lineItems as $lineItem)
+                {
+                    $this->repo->line_item->deleteOrFail($lineItem);
+                }
+            });
     }
 
     public function getInvoiceAmountForLineItems(Base\PublicCollection $lineItems)

@@ -146,6 +146,34 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function addManyLineItems(
+        Entity $invoice,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'input'          => $input,
+            ]);
+
+        $this->repo->transaction(
+            function() use ($invoice, $input, $merchant)
+            {
+                $this->lineItemCore->createMany($input, $merchant, $invoice);
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            }
+        );
+
+        return $invoice;
+    }
+
     public function updateLineItem(
         Entity $invoice,
         LineItem\Entity $lineItem,
@@ -182,9 +210,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function removeLineItem(
-        Entity $invoice,
-        LineItem\Entity $lineItem)
+    public function removeLineItem(Entity $invoice, LineItem\Entity $lineItem)
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
@@ -201,6 +227,32 @@ class Core extends Base\Core
             function() use ($lineItem, $invoice)
             {
                 $this->lineItemCore->delete($lineItem);
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            }
+        );
+
+        return $invoice;
+    }
+
+    public function removeManyLineItems(Entity $invoice, Base\PublicCollection $lineItems)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_ids'  => $lineItems->pluck('id')->toArray(),
+            ]
+        );
+
+        $this->repo->transaction(
+            function() use ($lineItems, $invoice)
+            {
+                $this->lineItemCore->deleteMany($lineItems);
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);

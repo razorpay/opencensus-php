@@ -21,6 +21,13 @@ class Entity extends Base\PublicEntity
 
     const ITEM             = 'item';
 
+    //
+    // Input keys
+    //
+
+    const LINE_ITEMS       = 'line_items';
+    const LINE_ITEM_IDS    = 'line_item_ids';
+
     protected static $sign = 'li';
 
     protected $entity      = 'line_item';

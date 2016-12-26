@@ -77,6 +77,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    public function addManyLineItems($id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->addManyLineItems($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function updateLineItem($id, $lineItemId)
     {
         $input = Request::all();
@@ -89,6 +98,16 @@ class InvoiceController extends Controller
     public function removeLineItem($id, $lineItemId)
     {
         $invoice = $this->service->removeLineItem($id, $lineItemId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function removeManyLineItems($id)
+    {
+        $input = Request::all();
+
+
+        $invoice = $this->service->removeManyLineItems($id, $input);
 
         return ApiResponse::json($invoice);
     }

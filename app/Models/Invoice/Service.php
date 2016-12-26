@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
 use RZP\Exception;
 
+use RZP\Models\LineItem;
+
 class Service extends Base\Service
 {
     protected $core;
@@ -86,6 +88,16 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
+    public function addManyLineItems(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->addManyLineItems($invoice, $input, $this->merchant);
+
+        return $invoice->toArrayPublic();
+    }
+
     public function updateLineItem(string $id, string $lineItemId, array $input)
     {
         $invoice  = $this->repo->invoice
@@ -119,6 +131,22 @@ class Service extends Base\Service
                                 );
 
         return $this->core->removeLineItem($invoice, $lineItem);
+    }
+
+    public function removeManyLineItems(string $id, array $input)
+    {
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new LineItem\Validator)->validateInput('remove_many', $input);
+
+        $lineItems = $this->repo->line_item
+                               ->findManyByPublicIdsAndMorphEntity(
+                                    $input[LineItem\Entity::LINE_ITEM_IDS],
+                                    $invoice
+                                );
+
+        return $this->core->removeManyLineItems($invoice, $lineItems);
     }
 
     public function sendNotification($id, $medium)
