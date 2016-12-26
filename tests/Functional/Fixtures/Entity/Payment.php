@@ -34,6 +34,11 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        if (isset($attributes['amount']))
+        {
+            $attributes['total_amount'] = $attributes['amount'];
+        }
+
         return parent::create($attributes);
     }
 
@@ -189,7 +194,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(
@@ -228,7 +233,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:purchased',
             array(
@@ -257,7 +262,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         return $payment;
     }
@@ -272,7 +277,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         return $payment;
     }
