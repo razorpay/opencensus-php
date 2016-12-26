@@ -162,7 +162,8 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
-        $feesArray = $this->testFees($payment);
+        $feesArray = $this->validateFees($payment);
+
         $this->ba->privateAuth();
 
         $amount = $payment['amount'];
@@ -322,7 +323,7 @@ class OrderTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function testFees($payment)
+    protected function validateFees($payment)
     {
         $feesArray = $this->createAndGetFeesForPayment($payment);
 

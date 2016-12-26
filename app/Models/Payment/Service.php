@@ -66,6 +66,23 @@ class Service extends Base\Service
         return $this->getNewProcessor()->process($input);
     }
 
+    /**
+     * Processes a upi payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processUpi(array $input)
+    {
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'upi';
+
+        return $this->getNewProcessor()->process($input);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         return $this->getNewProcessor()->processAndReturnFees($input);
@@ -276,6 +293,29 @@ class Service extends Base\Service
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
+    }
+
+    public function fixAuthorizeAt($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        if (($payment->isFailed() === false) or
+            ($payment->hasBeenCaptured() === true))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+            'payment_id' => $id,
+            'old_authorized_at' => $payment->getAuthorizeTimestamp()
+        ]);
+
+        $payment->setAuthorizeAtNull();
+
+        $this->repo->saveOrFail($payment);
+
+        return $payment->toArray();
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)

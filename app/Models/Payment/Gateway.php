@@ -145,7 +145,8 @@ class Gateway
      */
     public static $reverse = [
         self::CYBERSOURCE,
-        self::FIRST_DATA
+        self::FIRST_DATA,
+        self::AXIS_MIGS,
     ];
 
 

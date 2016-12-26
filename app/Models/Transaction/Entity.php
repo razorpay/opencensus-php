@@ -93,7 +93,20 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::GRATIS    => false,
+        self::GRATIS                => false,
+        self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_FEE           => null,
+        self::GATEWAY_SERVICE_TAX   => null,
+        self::BALANCE               => null,
+        self::API_FEE               => null,
+        self::FEE_CREDITS           => 0,
+        self::ESCROW_BALANCE        => null,
+        self::SETTLED_AT            => null,
+        self::SETTLEMENT_ID         => null,
+        self::RECONCILED_AT         => null,
+        self::SETTLED               => 0,
+        self::PRICING_RULE_ID       => null,
+        self::SERVICE_TAX           => null,
     );
 
     protected $amounts = array(
@@ -160,6 +173,11 @@ class Entity extends Base\PublicEntity
     public function settlement()
     {
         return $this->belongsTo('RZP\Models\Settlement\Entity');
+    }
+
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
     }
 
     public function getCredit()
@@ -480,6 +498,11 @@ class Entity extends Base\PublicEntity
     public function isFeeCredits()
     {
         return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
     }
 
     public function toArrayReport()

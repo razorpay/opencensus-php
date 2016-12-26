@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $refund->fill($content);
-        $refund->saveOrFail();
+        $this->repo->saveOrFail($refund);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REFUND,
@@ -104,6 +104,36 @@ class Gateway extends Base\Gateway
             'refund' => $input['refund']]);
 
         $this->verifyAmaTransactionResponse($content, $input);
+    }
+
+    public function reverse(array $input)
+    {
+        parent::reverse($input);
+
+        $payment = $this->repo->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentReversalRequestContent($input, $payment);
+
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+        $toSaveContent['terminal_id'] = $input['terminal']['id'];
+        $toSaveContent['vpc_Amount'] = $input['refund']['amount'];
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $content['received'] = 1;
+        $refund->fill($content);
+        $this->repo->saveOrFail($refund);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_RESPONSE,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
     }
 
     public function forceAuthorizeFailed($input)
@@ -478,6 +508,18 @@ class Gateway extends Base\Gateway
         $content = array(
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        return $content;
+    }
+
+    protected function getPaymentReversalRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => AxisMigs\Command::REVERSAL,
+            'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );

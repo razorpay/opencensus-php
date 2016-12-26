@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
@@ -17,6 +18,8 @@ class Core extends Base\Core
         }
 
         $creditsLog = (new Credits\Entity)->build($input);
+
+        $creditsLog->setAuditAction(Action::CREATE_MERCHANT_CREDITS);
 
         $creditsLog->merchant()->associate($merchant);
 
@@ -75,6 +78,8 @@ class Core extends Base\Core
         // from merchant balance.
         // Transaction is rolled back if merchant credit balance is less than zero.
         //
+        $creditsLog->setAuditAction(Action::EDIT_MERCHANT_CREDITS);
+
         $creditsLog->getValidator()->validateNewCreditsValue($creditsLog, (int) $creditsValue);
 
         return $this->repo->transaction(function() use ($creditsLog, $creditsValue)
@@ -96,6 +101,8 @@ class Core extends Base\Core
      */
     public function deleteCredits($creditsLog)
     {
+        $creditsLog->setAuditAction(Action::DELETE_MERCHANT_CREDITS);
+
         return $this->repo->transaction(function() use ($creditsLog)
         {
             $type = $creditsLog->getType();
