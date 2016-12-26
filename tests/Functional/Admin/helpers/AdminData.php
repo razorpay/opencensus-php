@@ -109,6 +109,24 @@ return [
         ],
     ],
 
+    'testEditAdminOnAppAuth' => [
+        'request' => [
+            'url' => '/orgs/%s/admin-app-auth/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+                'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAllRolesAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',

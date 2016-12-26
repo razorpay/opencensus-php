@@ -671,7 +671,6 @@ final class Route
         'group_get',
         'group_get_multiple',
         'group_get_allowed_groups',
-        'admin_get',
         'org_create',
         'org_edit',
         'org_delete',
@@ -749,7 +748,7 @@ final class Route
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
         'auditlog_search'            => ['view_auditlog'],
-        'admin_logout'               => ['logout_admin'],
+        'admin_logout'               => ['*'],
     ];
 
     public static $direct = array(
