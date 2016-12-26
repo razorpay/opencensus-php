@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Plan;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Exception;
 
 class Validator extends Base\Validator

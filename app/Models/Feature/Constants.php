@@ -38,10 +38,10 @@ class Constants
         self::INVOICE,
         self::NOZEROPRICING,
         self::REVERSE,
-        self::BROKING_REPORT
+        self::BROKING_REPORT,
     ];
 
-    // TODOL Use this instead of alFeatures once in final code change pr
+    // TODO: Use this instead of al;Features once in final code change pr
     public static $featureValueMap = [
         self::DUMMY           => true,
         self::WEBHOOKS        => true,
@@ -57,7 +57,7 @@ class Constants
         self::INVOICE         => true,
         self::NOZEROPRICING   => false,
         self::REVERSE         => true,
-        self::BROKING_REPORT  => true
+        self::BROKING_REPORT  => true,
     ];
 
     public static $visibleFeaturesMap = [

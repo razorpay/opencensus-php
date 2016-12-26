@@ -528,7 +528,7 @@ trait Capture
         }
 
         $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_ORDER_UPDATE,
+            TraceCode::ORDER_STATUS_PAID,
             [
                 'payment_id' => $payment->getId(),
                 'order_id' => $order->getId(),
@@ -537,6 +537,11 @@ trait Capture
         $order->setStatus(Order\Status::PAID);
 
         $this->repo->saveOrFail($order);
+
+        if ($order->invoice !== null)
+        {
+            $this->updatePaidInvoiceStatus($order, $payment);
+        }
     }
 
     protected function updatePaidInvoiceStatus(Order\Entity $order, Payment\Entity $payment)

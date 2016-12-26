@@ -466,7 +466,9 @@ class Entity extends Base\PublicEntity
     public function features()
     {
         return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
-                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
+                    ->get()
+                    ->pluck(\RZP\Models\Feature\Entity::NAME)
+                    ->toArray();
     }
 
     public function getBrandColor()
