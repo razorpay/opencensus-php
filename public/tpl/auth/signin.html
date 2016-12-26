@@ -1,23 +1,71 @@
-<div class="login-overflow-container">
+<div class="auth-overflow-container">
   <div class="login-translate-container" style="transform: translateX({{-(240)*login.currentStep}}px)">
-    <div class="login-step">
+    <div class="auth-step">
       <div class="auth-heading">
         Login to Dashboard
       </div>
+      <div class="login-details-overflow-container">
+        <div class="login-details-translate-container" style="transform: translateX({{-(240)*login.currentSubStep}}px)">
+          <div class="auth-substep">
+            <div class="auth-text">
+              Enter your Razorpay Credentials
+            </div>
+
+            <form class="auth-form" name="loginForm" ng-submit="goToLoginStep(0, 1)" xng-submit="sendLoginCredentials(loginForm.$valid)">
+              <label class="form-label auth-subheading" for="email">Email</label>
+              <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+              <label class="form-label auth-subheading" for="password">Password</label>
+              <input type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
+              <div class="highlight-clickable-text" ng-click="goToForgotPwd()">
+                Forgot Password?
+              </div>
+              <button class="btn btn-primary form-control login-btn" type="submit">
+                Login
+              </button>
+            </form>
+            
+            <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+          </div>
+          <div class="auth-substep">
+            <div class="auth-text">
+              Email <strong>{{login.data.email}}</strong> (<span class="highlight-clickable-text" ng-click="goToLoginStep(0, 0)">Edit</span>)
+            </div>
+            <form class="auth-form" name="otpForm" xng-submit="goToStep(1)" ng-submit="sendOtp(otpForm.$valid)">
+              <label class="form-label auth-subheading" for="otp">Enter OTP</label>
+              <input type="number" placeholder="6 digit code" name="otp" id="otp" ng-model="login.data.otp" class="form-control auth-form-input" required>
+
+              <div class="auth-subtext">
+                Enter the OTP received as SMS on your mobile number ********{{login.last2digits}} 
+                <div class="">
+                <span class="highlight-clickable-text" ng-click="resendOtp()">
+                  Resend OTP
+                </span>
+                |
+                <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">Need Help?</a>
+                </div>
+              </div>
+              <button class="btn btn-primary form-control login-btn" type="submit">
+                Login
+              </button>
+            </form>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-step">
+      <div class="auth-heading">
+        Forgot Password
+      </div>
       <div class="auth-text">
-        Enter your Razorpay Credentials
+        Enter your email and we will send you a password reset link
       </div>
 
-      <form class="auth-form" name="loginForm" xng-submit="goToStep(1)" ng-submit="login(loginForm.$valid)">
+      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
         <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
-        <label class="form-label auth-subheading" for="password">Password</label>
-        <input type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
-        <div class="highlight-clickable-text">
-          Forgot Password?
-        </div>
         <button class="btn btn-primary form-control login-btn" type="submit">
-          Login
+          Send Reset Link
         </button>
       </form>
       

@@ -13,9 +13,6 @@ app.controller('AuthCtrl', [
   '$cookies',
   function ($scope, $http, $state, $stateParams, $location, alertsFactory, user, 
     transformRequestAsFormPost, $analytics, $window, $cookies) {
-    
-    // todo check route and go to login/signup/forgotpwd layout
-
 
     $scope.toArray = function (obj) {
       if (!obj) {
@@ -25,7 +22,9 @@ app.controller('AuthCtrl', [
     }
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
-    $scope.right = false;
+    $scope.right = false; // login layout ? right is true : right is false
+    
+    // signup state container
     $scope.signup = {
       currentStep: 0, // 0, 1, 2, 3
       currentSubStep: 0, // 0, 1, 2, 3, 4
@@ -92,6 +91,13 @@ app.controller('AuthCtrl', [
       }
     }
 
+    $scope.goToLoginStep = function (step, subStep) {
+      $scope.login.currentStep = step;
+      if (typeof subStep !== undefined) {
+        $scope.login.currentSubStep = subStep;
+      }
+    }
+
     $scope.createAccount = function ($valid) {
       if (!$valid) {
         $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
@@ -149,22 +155,16 @@ app.controller('AuthCtrl', [
     }
 
     $scope.goToSigninLayout = function (noTransition) {
-      if (noTransition) {
-        $('.auth-container').addClass('no-transition')
-      }
+      $scope.goToSignupStep(0); // reset signup step
       $scope.right = true;
       const toRoute = 'access.signin';
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
-      if (noTransition) {
-        setTimeout(function () {
-          $('.auth-container').removeClass('no-transition')
-        }, 200)
-      }
     }
 
     $scope.goToSignupLayout = function () {
+      $scope.goToLoginStep(0); // reset login step
       $scope.right = false;
       const toRoute = 'access.signup';
       $state.transitionTo(toRoute, {}, {
@@ -172,11 +172,7 @@ app.controller('AuthCtrl', [
       });
     }
 
-    // debugger
-    if ($state.current.name === 'access.signin') {
-      $scope.goToSigninLayout(true)
-    }
-
+    // login state container
     $scope.login = {
       data: {
         email: '',
@@ -184,6 +180,25 @@ app.controller('AuthCtrl', [
       },
       currentStep: 0, // 0 -> login/otp, 1 -> forgotpwd
       currentSubStep: 0, // 0 -> email+pwd, 1 -> otp
+    }
+
+    if (['access.signin', 'access.forgotpwd'].indexOf($state.current.name) !== -1) {
+      $('.auth-container').addClass('no-transition')
+      $scope.right = true;
+      setTimeout(function () {
+        $('.auth-container').removeClass('no-transition')
+      }, 200)
+      if ($state.current.name === 'access.forgotpwd') {
+        $scope.login.currentStep = 1;
+      }
+    }
+
+    $scope.goToForgotPwd = function () {
+      const toRoute = 'access.forgotpwd';
+      $state.transitionTo(toRoute, {}, {
+        notify: false,
+      });
+      $scope.login.currentStep = 1;  
     }
 
   }

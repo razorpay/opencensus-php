@@ -1,6 +1,6 @@
-<div class="signup-overflow-container">
+<div class="auth-overflow-container">
   <div class="signup-translate-container" style="transform: translateX({{-(240)*signup.currentStep}}px)">
-    <div class="signup-step">
+    <div class="auth-step">
       <div class="auth-heading">
         Signing Up...
       </div>
@@ -20,7 +20,7 @@
           control="noCaptchaControl"
           site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
         </div>
-        <div class="signup-subtext">
+        <div class="auth-subtext">
           By signing up you agree to our <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> and <a class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>.
         </div>
         <button class="btn btn-primary form-control " type="submit">
@@ -30,7 +30,7 @@
       
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
     </div>
-    <div class="signup-step">
+    <div class="auth-step">
       <div class="auth-heading">
         Account Created
       </div>
@@ -42,7 +42,7 @@
       </button>
       
     </div>
-    <div class="signup-step">
+    <div class="auth-step">
       <div class="auth-heading">
         Almost There...
       </div>
@@ -59,7 +59,7 @@
         
         <div class="signup-details-overflow-container">
           <div class="signup-details-translate-container" style="transform: translateX({{-(240)*signup.currentSubStep}}px)">
-            <div class="signup-details-question">
+            <div class="auth-substep">
               <div class="auth-subheading">
                 Type of Business
               </div>
@@ -83,7 +83,7 @@
                 Next
               </div>
             </div>
-            <div class="signup-details-question">
+            <div class="auth-substep">
               <div class="auth-subheading">
                 Monthly Transaction Volume (INR)
               </div>
@@ -101,7 +101,7 @@
                 Next
               </div>
             </div>
-            <div class="signup-details-question">
+            <div class="auth-substep">
               <div class="auth-subheading">
                 Your Role
               </div>
@@ -119,7 +119,7 @@
                 Next
               </div>
             </div>
-            <div class="signup-details-question">
+            <div class="auth-substep">
               <div class="auth-subheading">
                 Your Department
               </div>
@@ -137,7 +137,7 @@
                 Next
               </div>
             </div>
-            <div class="signup-details-question">
+            <div class="auth-substep">
               <div class="auth-subheading">
                 Account Info
               </div>
@@ -161,7 +161,7 @@
 
 
     </div>
-    <div class="signup-step">
+    <div class="auth-step">
       <div class="auth-heading">
         Check your Inbox
       </div>
