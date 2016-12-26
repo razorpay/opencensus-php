@@ -122,4 +122,16 @@ class Gateway extends Base\Gateway
         return NULL;
     }
 
+    /**
+     * Reverse a customer wallet payment
+     *
+     * @param  array    $input
+     * @return void
+     */
+    public function reverse(array $input)
+    {
+        parent::reverse($input);
+
+        $this->refund($input);
+    }
 }

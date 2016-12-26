@@ -152,6 +152,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::WALLET_FLASHWALLET,
     ];
 
 
