@@ -1363,7 +1363,6 @@ UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l')
 ALTER TABLE merchants
     ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
 
-----
 # Following queries are executed for fixing the error_code for
 # BAD_REQUEST_PAYMENT_TIMED_OUT
 UPDATE payments
@@ -1375,23 +1374,24 @@ UPDATE payments
     SET error_code = 'BAD_REQUEST_ERROR'
     WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
         AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
-----
+
 ALTER TABLE merchants
     ADD COLUMN org_id CHAR(14)
     AFTER category2;
 
-----
 # Following queries are executed for fixing the length of
 # vpc_Command in axis table
 ALTER TABLE axis
     MODIFY vpc_Command VARCHAR(20) NOT NULL;
 
-------
 # Following query was executed to add a new column to admin table
 ALTER TABLE admins ADD COLUMN allow_all_merchants BOOLEAN DEFAULT 0;
 
-----
 ALTER TABLE orgs
     ADD COLUMN custom_code VARCHAR(255)
     UNIQUE NULL
     AFTER invoice_logo_url;
+
+# Adds Currency Code to terminals
+ALTER TABLE terminals
+    ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;

@@ -362,7 +362,7 @@ trait Refund
             $paymentId = $data['payment']['id'];
             $refAmount = $data['amount'];
 
-            if ((($paymentId === '6sr04lbicLKzxV') and ($refAmount === 12000)))
+            if ((($paymentId === '6wGoozP7uG0uNE') and ($refAmount === 60000)))
             {
                 return;
             }
