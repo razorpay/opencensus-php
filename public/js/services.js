@@ -709,7 +709,6 @@ angular.module('app.services', [])
       return _permissions;
     },
     setPermissions: function(permissions) {
-      console.log("Setting Permissions", permissions);
       _permissions = permissions;
     }
   };

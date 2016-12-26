@@ -8,7 +8,8 @@
     "angular": true,
     "$": true,
     "jQuery": true,
-    "doT": true
+    "doT": true,
+    "require": true
   },
   "strict": "global",
   "undef": true,
