@@ -105,5 +105,10 @@ class Currency
         self::TRY => '949',
         self::AED => '784',
     ];
+
+    const DENOMINATION_FACTOR = [
+        self::INR  => 100,
+        self::USD  => 100,
+    ];
 }
 
