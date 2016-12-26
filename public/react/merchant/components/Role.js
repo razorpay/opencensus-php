@@ -1,20 +1,29 @@
-import { PropTypes } from 'react'
+import { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
 
-export default function Role(props, context) {
-  let { notMyRole, children, className } = props
-  let roles = notMyRole.split(' ')
+@connect(
+  (state) => state.session,
+  null
+)
+export default class Role extends Component {
+  render() {
+    let { notMyRole, children, className } = this.props
+    let roles = notMyRole.split(' ')
+    let user = this.props.user
+    let userRole
 
-  if(roles.indexOf(context.session.userRole) > -1) {
-    return null;
+    if (user) {
+      userRole = user.merchants[user.id].pivot.role
+    }
+
+    if(roles.indexOf(userRole) > -1) {
+      return null;
+    }
+
+    return (
+      <div class={className}>
+        {children}
+      </div>
+    )
   }
-
-  return (
-    <div class={className}>
-      {children}
-    </div>
-  )
-}
-
-Role.contextTypes = {
-  session: PropTypes.object
 }

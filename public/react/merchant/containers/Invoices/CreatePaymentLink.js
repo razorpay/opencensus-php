@@ -39,7 +39,7 @@ function validate(values) {
 }
 
 @connect(
-  null,
+  (state) => state.session,
   { saveInvoice }
 )
 @reduxForm({
@@ -81,6 +81,7 @@ export default class CreatePaymentLink extends Component {
 
   render() {
     const { handleSubmit } = this.props
+    let isLiveMode = this.props.mode === 'live'
     let isNewForm = !(this.props.invoice && !isBlank(this.props.invoice.line_items))
 
     return (
@@ -240,7 +241,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
             {
-              !this.context.session.isLiveMode &&
+              !isLiveMode &&
               <div class='row'>
                 <div class='col-md-8 col-md-offset-3'>
                   <div class='alert-sm alert-warning'>

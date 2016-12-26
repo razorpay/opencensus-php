@@ -1,31 +1,27 @@
-class Session {
-  session = null
+import { merge } from 'rzp/utils/immutable'
 
-  constructor(data) {
-    this.initialize(data)
-  }
+const UPDATE_SESSION = 'UPDATE_SESSION'
 
-  initialize(data = {}) {
-    this.session = data
-    return this
-  }
-
-  get isAuthenticated() {
-    return !!this.session.user
-  }
-
-  get currentMode() {
-    return this.session.modeFactory.getMode()
-  }
-
-  get isLiveMode() {
-    return this.currentMode === 'live'
-  }
-
-  get userRole() {
-    let user = this.session.user
-    return user.merchants[user.id].pivot.role
+export const updateSession = (payload) => {
+  return (dispatch) => {
+    return dispatch({
+      type: UPDATE_SESSION,
+      payload
+    })
   }
 }
 
-export default new Session()
+let initialState = {
+  user: null,
+  mode: 'test'
+}
+
+export default (state = initialState, action) => {
+  switch (action.type) {
+    case UPDATE_SESSION:
+      return merge(state, action.payload)
+
+    default:
+      return state;
+  }
+}

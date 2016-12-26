@@ -4,6 +4,7 @@ import { reduxForm } from 'redux-form'
 import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
+import Role from 'merchant/components/Role'
 import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
 import ListContainer from 'merchant/containers/ListContainer'
@@ -69,7 +70,7 @@ export default class ItemsListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support' class='btn-toolbar'>
+        <Role notMyRole='owner' class='btn-toolbar'>
           <button
             class='pull-right btn btn-primary btn-rounded'
             onClick={() => this.showItemModal()}

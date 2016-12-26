@@ -72,7 +72,7 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support' class='btn-toolbar'>
+        <Role notMyRole='owner' class='btn-toolbar'>
           <button
             class='btn btn-primary btn-rounded'
             onClick={() => this.showPaymentLinkModal()}

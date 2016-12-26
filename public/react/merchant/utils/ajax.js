@@ -1,5 +1,5 @@
 import ajax from 'rzp/utils/ajax'
-import session from 'merchant/modules/session'
+import store from '../store'
 
 export default (url, params = {}) => {
   if (typeof url === 'object') {
@@ -8,7 +8,8 @@ export default (url, params = {}) => {
     params.url = url
   }
 
-  params.url = normalizeUrl(`/${session.currentMode}/${params.url}`)
+  let currentMode = store.getState().session.mode
+  params.url = normalizeUrl(`/${currentMode}/${params.url}`)
   return ajax(params)
 }
 

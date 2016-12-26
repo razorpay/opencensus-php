@@ -70,7 +70,7 @@ function createNgDirective(directiveName, component, ...args) {
         component,
         ngRouter: $state,
         store,
-        user: user.getIdentity(),
+        user,
         modeFactory,
       }), ...args)
     }
