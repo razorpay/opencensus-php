@@ -11,6 +11,17 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    /**
+     * This should be set to true if you expect a unique id to be
+     * generated when the entity is being saved. Note that if a unique id
+     * is present then it won't be created.
+     *
+     * Also, if the entity is synced between test and live then it needs
+     * to be created before save is called and this cannot be true
+     * in those cases.
+     *
+     * @var boolean
+     */
     protected $generateIdOnCreate = false;
 
     const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -222,9 +233,15 @@ class UniqueIdEntity extends Entity
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
 
-        // Only 4 base 62 digits are needed, so cutoff any more.
+        // Only 4 base 62 digits are needed, so cutoff any more and pad with
+        // 0 if less.
+
         if (strlen($rand) > 4)
+        {
             $rand = substr($rand, -4);
+        }
+
+        $rand = str_pad($rand, 4, '0', STR_PAD_LEFT);
 
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier
@@ -289,8 +306,7 @@ class UniqueIdEntity extends Entity
 
     public static function nanotimeToBase62($nanotime)
     {
-        // Timestmap of 1st Jan 2014!!
-        // 1388534400
+        // Timestamp of 1st Jan 2014
         $ts1stJan2014 = 1388534400;
 
         // Subtract nanotime of 1st Jan 2014

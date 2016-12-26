@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal_analytics';
 
+    public $incrementing = true;
+
     protected $fillable = array(
         self::PAYMENT_ID,
         self::TERMINAL_ID,

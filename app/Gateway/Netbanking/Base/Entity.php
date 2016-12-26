@@ -9,6 +9,7 @@ class Entity extends Base\Entity
     const CAPS_PAYMENT_ID   = 'caps_payment_id';
     const BANK_PAYMENT_ID   = 'bank_payment_id';
     const INT_PAYMENT_ID    = 'int_payment_id';
+    const ACCOUNT_NUMBER    = 'account_number';
 
     protected $entity = 'netbanking';
 
@@ -26,6 +27,7 @@ class Entity extends Base\Entity
         'date',
         'refund_id',
         'reference1',
+        'account_number',
         'int_payment_id',
         'caps_payment_id',
     );
@@ -42,6 +44,7 @@ class Entity extends Base\Entity
         'status',
         'refund_id',
         'reference1',
+        'account_number',
         'int_payment_id',
     );
 
@@ -60,5 +63,27 @@ class Entity extends Base\Entity
         parent::setPaymentId($paymentId);
 
         $this->attributes['caps_payment_id'] = strtoupper($paymentId);
+    }
+
+    public function setAccountNumber($accountNumber)
+    {
+        $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function isTpv()
+    {
+        $accountNumber = $this->getAttribute(self::ACCOUNT_NUMBER);
+
+        if (is_null($accountNumber) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getBankPaymentId()
+    {
+        return $this->getAttribute('bank_payment_id');
     }
 }

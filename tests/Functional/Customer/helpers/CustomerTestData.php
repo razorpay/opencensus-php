@@ -17,6 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'  => 'customer',
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
@@ -135,6 +136,27 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS,
         ],
+    ],
+
+    'testCreateCustomerDuplicateDontFail' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name' => 'testc',
+                'email' => 'test@razorpay.com',
+                'contact' => '1234567890',
+                'fail_existing' => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'cust_100000customer',
+                'name' => 'test',
+                'contact' => '1234567890',
+                'email' => 'test@razorpay.com'
+            ]
+        ]
     ],
 
     'testUpdateCustomer' => [

@@ -18,6 +18,20 @@ class Server extends Base\Mock\Server
 
         $input = $this->getContentFromInput($input);
 
+        $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['CustomerID'], Action::AUTHORIZE);
+
+        $payment = $this->repo->payment->findOrFailPublic($gatewayPayment->getPaymentId());
+
+        $accountNo = $input['AccountNumber'];
+
+        $requestTpv = true;
+
+        if ($accountNo === 'NA')
+        {
+            $requestTpv = false;
+        }
+
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -27,7 +41,7 @@ class Server extends Base\Mock\Server
             'MerchantID'        => $input['MerchantID'],
             'CustomerID'        => $input['CustomerID'],
             'TxnReferenceNo'    => random_alpha_string(10),
-            'BankReferenceNo'   => 'NA',
+            'BankReferenceNo'   => strtoupper(random_alphanum_string(10)),
             'TxnAmount'         => $input['TxnAmount'],
             'BankID'            => $input['BankID'],
             'BankMerchantID'    => $input['BankID'],
@@ -51,7 +65,13 @@ class Server extends Base\Mock\Server
             'ErrorDescription'  => 'NA',
         );
 
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+        $msg = $this->getGatewayInstance()
+                    // ->setInput($gatewayInput)
+                    ->getMessageStringWithHash($content);
+
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment);
+
+        assertTrue($gatewayTpv === $requestTpv);
 
         // // Uncomment below to mock s2s callback
         // $headers = array(

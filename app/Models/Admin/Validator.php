@@ -19,4 +19,15 @@ class Validator extends Base\Validator
         'lists'   => 'required|max:100',
         'template'=> 'required|max:255'
     ];
+
+    protected static $mailgunWebhookRules = [
+        'token'             => 'required|string|size:50',
+        'signature'         => 'required|string',
+        'timestamp'         => 'required|integer',
+        'recipient'         => 'required|email',
+        'event'             => 'sometimes|string',
+        'domain'            => 'sometimes|string',
+        'message-headers'   => 'sometimes|string',
+        'reason'            => 'sometimes|string',
+    ];
 }

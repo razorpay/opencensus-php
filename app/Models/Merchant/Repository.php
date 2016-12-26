@@ -29,6 +29,9 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
+        Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
 
     public function getSharedAccount()
@@ -82,9 +85,21 @@ class Repository extends Base\Repository
 
     public function fetchBySettlementScheduleId($settlementScheduleIds)
     {
+        if (is_array($settlementScheduleIds) === false)
+        {
+            $settlementScheduleIds = [$settlementScheduleIds];
+        }
+
         return $this->newQuery()
                     ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
                     ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
+                    ->get();
+    }
+
+    public function fetchMerchantsWithSettlementScheduleIdNull()
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
                     ->get();
     }
 
@@ -101,8 +116,8 @@ class Repository extends Base\Repository
             $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
@@ -184,6 +199,24 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
+    }
+
+    /**
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
+                    ->get();
+    }
+
+    public function fetchMerchantsByOrgId($orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
     }
 }

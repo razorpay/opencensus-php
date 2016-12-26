@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use RZP\Constants\Mode;
 use GuzzleHttp\Client;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -33,7 +34,7 @@ class SegmentClient extends Base\Core
     /**
      * Guzzle timeout for posting to lumberjack
      */
-    const CONNECT_TIMEOUT = 1;
+    const CONNECT_TIMEOUT = 5;
 
     /**
      * seperator for array flattening
@@ -213,11 +214,6 @@ class SegmentClient extends Base\Core
 
     protected function sendLumberjackRequest($headers, $url, $events)
     {
-        if ($this->mock)
-        {
-            return;
-        }
-
         // TODO: make this async using guzzler async events
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
@@ -225,9 +221,15 @@ class SegmentClient extends Base\Core
         {
             $options = ['json' => $events, 'connect_timeout' => self::CONNECT_TIMEOUT];
 
+            if (($this->mock) or
+                ($this->mode === Mode::TEST))
+            {
+                return;
+            }
+
             $response = $client->request('POST', $url, $options);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
         }

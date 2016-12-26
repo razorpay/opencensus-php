@@ -11,7 +11,7 @@ use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
@@ -30,20 +30,23 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::RECURRING                   => 'sometimes|in:0,2',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
-    );
+    ];
 
-    protected static $editTerminalGateways = array(
+    protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
-    );
+        Payment\Gateway::BILLDESK,
+    ];
 
-    protected static $createValidators = array(
-        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY);
+    protected static $createValidators = [
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
+    ];
 
-    protected static $hdfcTerminalRules = array(
+    protected static $hdfcTerminalRules = [
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
@@ -51,39 +54,39 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
-    );
+    ];
 
-    protected static $billdeskTerminalRules = array(
+    protected static $billdeskTerminalRules = [
         Entity::GATEWAY                     => 'required|in:billdesk',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
-    );
+    ];
 
-    protected static $ebsTerminalRules = array(
+    protected static $ebsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:ebs',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|max:5',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
-    );
+    ];
 
-    protected static $axisGeniusTerminalRules = array(
+    protected static $axisGeniusTerminalRules = [
         Entity::GATEWAY                     => 'required|in:axis_genius',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:15',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
-    );
+    ];
 
-    protected static $firstDataTerminalRules = array(
+    protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|min:5',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|min:5',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
-    );
+    ];
 
-    protected static $amexTerminalRules = array(
+    protected static $amexTerminalRules = [
         Entity::GATEWAY                     => 'required|in:amex',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
@@ -92,47 +95,52 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
-    );
+    ];
 
-    protected static $axisMigsTerminalRules = array(
+    protected static $axisMigsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:axis_migs',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
-    );
+    ];
 
-    protected static $cybersourceTerminalRules = array(
+    protected static $cybersourceTerminalRules = [
         Entity::GATEWAY                     => 'required|in:cybersource',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|string|size:13',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string|min:10',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
         Entity::RECURRING                   => 'sometimes|in:0,1,2',
-    );
+    ];
 
-    protected static $axisMigsEditTerminalRules = array(
+    protected static $axisMigsEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:axis_migs',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
-    );
+    ];
 
-    protected static $hdfcEditTerminalRules = array(
+    protected static $billdeskEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:billdesk',
+        Entity::TPV                         => 'sometimes|boolean|in:0,1',
+    ];
+
+    protected static $hdfcEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
-    );
+    ];
 
-    protected static $upiIciciEditTerminalRules = array(
+    protected static $upiIciciEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:upi_icici',
         Entity::UPI                         => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
-    );
+    ];
 
-    protected static $walletPayzappTerminalRules = array(
+    protected static $walletPayzappTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|integer|digits:8',
@@ -140,34 +148,34 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
         Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
-    );
+    ];
 
-    protected static $walletPayumoneyTerminalRules = array(
+    protected static $walletPayumoneyTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_payumoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
-    );
+    ];
 
-    protected static $walletOlamoneyTerminalRules = array(
+    protected static $walletOlamoneyTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_olamoney',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-    );
+    ];
 
-    protected static $walletAirtelmoneyTerminalRules = array(
+    protected static $walletAirtelmoneyTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-    );
+    ];
 
-    protected static $walletFreechargeTerminalRules = array(
+    protected static $walletFreechargeTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_freecharge',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-    );
+    ];
 
     protected function validateGateway($input)
     {
@@ -184,6 +192,7 @@ class Validator extends Base\Validator
             $input['netbanking'],
             $input['merchant_id'],
             $input['category'],
+            $input['tpv'],
             $input[Entity::NETWORK_CATEGORY]);
 
         $op = $input['gateway'] . '_terminal';
@@ -272,6 +281,7 @@ class Validator extends Base\Validator
         // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
             ($new->getId() !== $existing->getId()) and
+            ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getRecurring() === $existing->getRecurring()) and

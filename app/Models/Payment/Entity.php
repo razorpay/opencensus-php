@@ -10,7 +10,9 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -27,7 +29,9 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
+    const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -63,6 +67,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
@@ -118,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -146,9 +152,11 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
         self::CALLBACK_URL,
         self::RECURRING,
@@ -169,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
@@ -195,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::CARD_ID,
         self::CUSTOMER_ID,
         self::TOKEN_ID,
@@ -220,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED   => 0,
         self::SIGNED            => 0,
         self::VERIFIED          => null,
+        self::GATEWAY_CAPTURED  => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
         self::SAVE              => false,
@@ -253,7 +264,12 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX       => 'int',
         self::SAVE              => 'bool',
         self::INTERNATIONAL     => 'bool',
+        self::GATEWAY_CAPTURED  => 'bool',
+        self::LATE_AUTHORIZED   => 'bool',
     ];
+
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
 
 // --------------------- Generators --------------------------------------------
 
@@ -370,6 +386,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setTwoFactorAuth($status)
+    {
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
+    }
+
     public function setRefundStatus($status)
     {
         $this->setAttribute(self::REFUND_STATUS, $status);
@@ -411,7 +432,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
@@ -421,6 +442,11 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
         }
+    }
+
+    public function setAuthorizeAtNull()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, null);
     }
 
     public function setBank($bank)
@@ -451,6 +477,11 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setGatewayCaptured($gatewayCaptured)
+    {
+        $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
     }
 
     public function setServiceTax($serviceTax)
@@ -658,6 +689,11 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
+        return ($this->isAttributeNotNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasNotBeenAuthorized()
+    {
         return ($this->isAttributeNull(self::AUTHORIZED_AT));
     }
 
@@ -669,6 +705,11 @@ class Entity extends Base\PublicEntity
     public function hasOrder()
     {
         return ($this->isAttributeNotNull(self::ORDER_ID));
+    }
+
+    public function hasInvoice()
+    {
+        return ($this->isAttributeNotNull(self::INVOICE_ID));
     }
 
     public function isCaptured()
@@ -715,6 +756,11 @@ class Entity extends Base\PublicEntity
     public function hasBeenCaptured()
     {
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
+    }
+
+    public function isGatewayCaptured()
+    {
+        return ($this->getAttribute(self::GATEWAY_CAPTURED) === true);
     }
 
     public function isCard()
@@ -924,7 +970,7 @@ class Entity extends Base\PublicEntity
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
 
-        return floor($diff / (60*24*24));
+        return floor($diff / (60 * 24 * 24));
     }
 
     public function getEmiPlanId()
@@ -947,6 +993,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFactorAuth()
+    {
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
+    }
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1033,7 +1083,7 @@ class Entity extends Base\PublicEntity
      * that ends with `_order_id`
      * We will shift to a standard field called `merchant_order_id`
      * as our ecommerce plugins are migrated
-     * @return String order_id for the paymetn
+     * @return String order_id for the payment
      */
     public function getOrderId()
     {
@@ -1062,6 +1112,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
+    }
+
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
@@ -1083,6 +1138,14 @@ class Entity extends Base\PublicEntity
         if (isset($array[self::ORDER_ID]))
         {
             $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
+        }
+    }
+
+    public function setPublicInvoiceIdAttribute(array & $array)
+    {
+        if (isset($array[self::INVOICE_ID]))
+        {
+            $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($array[self::INVOICE_ID]);
         }
     }
 
@@ -1209,11 +1272,17 @@ class Entity extends Base\PublicEntity
 
         $data['card_type'] = null;
         $data['card_network'] = null;
+        $data['invoice_id'] = null;
 
         if ($this->isMethodCardOrEmi())
         {
             $data['card_type'] = $this->card->getType();
             $data['card_network'] = $this->card->getNetwork();
+        }
+
+        if ($this->getInvoiceId() !== null)
+        {
+            $data['invoice_id'] = $this->getInvoiceId();
         }
 
         return $data;
@@ -1261,6 +1330,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
     }
 
+    public function invoice()
+    {
+        return $this->belongsTo('RZP\Models\Invoice\Entity');
+    }
+
     public function analytics()
     {
         return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
@@ -1294,6 +1368,17 @@ class Entity extends Base\PublicEntity
     public function emiPlan()
     {
         return $this->belongsTo('RZP\Models\Emi\Entity');
+    }
+
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -1359,15 +1444,25 @@ class Entity extends Base\PublicEntity
         return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
-    public function scopeCreatedAtLessThan($query, $ts)
-    {
-        return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
-    }
-
 // --------------------- Query scopes section ends -----------------------------
 
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(null);
+    }
+
+    /**
+     * List of all features based on various conditions
+     */
+    public function getPricingFeatures()
+    {
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        return $features;
     }
 }

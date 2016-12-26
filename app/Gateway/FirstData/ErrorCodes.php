@@ -90,6 +90,12 @@ class ErrorCodes
         'N:T2'     => 'Invalid transaction date',
         'N:T5'     => 'CAF status = 0 or 9',
         'N:T8'     => 'Invalid account',
+
+        // Not part of originally provided list of error codes
+        // Added by us to handle unexpected behaviour
+
+        'N:100'    => 'Internal Error',
+        'N:5003'   => 'The order already exists in the database.',
         'N:tmout'  => 'Gateway timed out',
     ];
 
@@ -136,13 +142,13 @@ class ErrorCodes
         'N:12'     => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         'N:13'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
         'N:14'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
-        'N:2'      => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED,
+        'N:2'      => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
         'N:200'    => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
         'N:2006'   => ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_HASH,
         'N:2010'   => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         'N:2012'   => ErrorCode::BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING,
         'N:2013'   => ErrorCode::BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING,
-        'N:2015'   => ErrorCode::BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE,
+        'N:2015'   => ErrorCode::BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE,
         'N:3'      => ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
         'N:30'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
         'N:33'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
@@ -171,12 +177,18 @@ class ErrorCodes
         'N:94'     => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         'N:96'     => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED,
         'N:CI'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT,
-        'N:N0'     => ErrorCode::BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE,
+        'N:N0'     => ErrorCode::BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE,
         'N:P9'     => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH,
         'N:Q1'     => ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         'N:T2'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE,
         'N:T5'     => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+
+        // Not part of originally provided list of error codes
+        // Added by us to handle unexpected behaviour
+
+        'N:100'    => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:5003'   => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 

@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Admin Auth
+     * rzp_mode_admin:auth_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -65,6 +68,12 @@ class BasicAuth
      * @var Merchant\Entity
      */
     private $merchant = null;
+
+    /**
+     * Admin who is authenticating himself
+     * through adminAuth
+     */
+    private $isAdmin = null;
 
     /**
      * During app authentication, the app
@@ -143,10 +152,12 @@ class BasicAuth
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
      * 3 + 1 + 4 + 1 + 14
+     * 3 + 1 + 4 + 1 + 5 (rzp_$mode_admin)
      * @var array
      */
-    protected static $validKeyLengths = array(
-        8, 23, 33);
+    protected static $validKeyLengths = [
+        8, 23, 33, 14
+    ];
 
     public function __construct($app)
     {
@@ -164,6 +175,7 @@ class BasicAuth
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
+        $this->merchant = null;
     }
 
     public function setCredentials()
@@ -232,6 +244,37 @@ class BasicAuth
         {
             $this->setProxyTrue();
 
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    public function adminAuth()
+    {
+        $this->setType(Type::ADMIN_AUTH);
+
+        $res = $this->setCredentials();
+
+        // null is the good value here
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->getKey() !== 'admin')
+        {
+            return $this->invalidApiKey();
+        }
+
+        $this->setAdminTrue();
+
+        $token = $this->getSecret();
+
+        $admin = $this->fetchAdminOfToken($token);
+
+        if ($admin !== null)
+        {
             return;
         }
 
@@ -691,6 +734,11 @@ class BasicAuth
         return $this->merchant;
     }
 
+    public function getAdmin()
+    {
+        return $this->admin;
+    }
+
     public function getMerchantId()
     {
         return $this->merchant->getKey();
@@ -721,6 +769,11 @@ class BasicAuth
         return $this->type;
     }
 
+    public function getInternalApp()
+    {
+        return $this->internalApp;
+    }
+
     public function isCron()
     {
         $cron = ($this->internalApp === 'cron');
@@ -741,6 +794,11 @@ class BasicAuth
     protected function setType($type)
     {
         $this->type = $type;
+    }
+
+    protected function setAdminTrue()
+    {
+        $this->isAdmin = true;
     }
 
     protected function setProxyTrue()
@@ -765,6 +823,11 @@ class BasicAuth
     public function isAppAuth()
     {
         return $this->appAuth;
+    }
+
+    public function isAdminAuth()
+    {
+        return ($this->type === Type::ADMIN_AUTH);
     }
 
     public function isPublicAuth()
@@ -831,6 +894,13 @@ class BasicAuth
         $this->checkMerchantActivatedForLive();
 
         return $this->merchant;
+    }
+
+    protected function fetchAdminOfToken($token)
+    {
+        $this->admin = $this->repo->admin_token->findOrFailToken($token)->admin;
+
+        return $this->admin;
     }
 
     protected function checkMerchantActivatedForLive()

@@ -47,11 +47,19 @@ class Service
      */
     protected $slack;
 
+    /**
+     * Instance of 'core' class of the respective namespace entity.
+     */
+    protected $core;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->merchant = $this->app['basicauth']->getMerchant();
 
@@ -65,5 +73,22 @@ class Service
     public static function getNewInstance()
     {
         return new static;
+    }
+
+    public function core()
+    {
+        if ($this->core !== null)
+        {
+            return $this->core;
+        }
+
+        $class = get_class($this);
+
+        // Remove end '\Service' from class name.
+        $class = substr($class, 0, -7) . 'Core';
+
+        $this->core = new $class;
+
+        return $this->core;
     }
 }

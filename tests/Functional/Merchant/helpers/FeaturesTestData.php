@@ -74,34 +74,6 @@ return [
         ]
     ],
 
-    'testMigrateMerchantFeature' => [
-        'request' => [
-            'content' => [
-            ],
-            'url' => '/features/migrate',
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name'          => 'dummy',
-                    'entity_id'     => '10000000000001',
-                    'entity_type'   => "merchant"
-                ],
-                [
-                    'name'          => 'dummy',
-                    'entity_id'     => '10000000000002',
-                    'entity_type'   => "merchant"
-                ],
-                [
-                    'name'          => 'dummy',
-                    'entity_id'     => '10000000000003',
-                    'entity_type'   => "merchant"
-                ],
-            ]
-        ]
-    ],
-
     'testMultiAssignFeature' => [
         'request' => [
             'content' => [
@@ -190,8 +162,10 @@ return [
                     "aggregator",
                     "tokens",
                     "s2swallet",
+                    "s2supi",
                     "setl_report",
                     "cardsaving",
+                    "noflashcheckout",
                     "recurring",
                     "s2s"
                 ]

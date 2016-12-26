@@ -8,6 +8,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
 
 class TransactionFilter extends Terminal\Filter
@@ -15,9 +16,11 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
         'maestro',
+        'icici_billdesk',
         'recurring',
     ];
 
@@ -65,6 +68,15 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    public function currencyFilter($terminal, $input)
+    {
+        $paymentCurrency = $input['payment']->getCurrency();
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
+    }
+
     public function internationalFilter($terminal, $input)
     {
         if ($input['payment']->isMethodCardOrEmi() === false)
@@ -109,7 +121,9 @@ class TransactionFilter extends Terminal\Filter
 
             $terminalGateway = $terminal->getGateway();
 
-            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $isTPV = $input['merchant']->isTPVRequired();
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
         }
@@ -134,6 +148,44 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    public function iciciBilldeskFilter($terminal, $input)
+    {
+        $bank = $input['payment']->getBank();
+
+        $gateway = $terminal->getGateway();
+
+        $category2 = $input['merchant']->getCategory2();
+
+        $networkCategory = $terminal->getNetworkCategory();
+
+        if (($input['payment']->isNetbanking()) and
+            ($bank === IFSC::ICIC) and
+            ($gateway === Gateway::BILLDESK))
+        {
+            // Two rules to be checked
+            switch ($category2)
+            {
+                // If securities or commodities then the shared terminal
+                // should not be used, i.e on the shared terminal return
+                // false.
+                case 'securities' :
+                case 'commodities' :
+                    return ($terminal->isShared() === false);
+                    break;
+
+                // If corporate or mutual_funds then the corresponding
+                // terminal should not be used, as ICIC is not being allowed
+                // on that terminal
+                case 'corporate':
+                case 'mutual_funds':
+                    return ($networkCategory !== $category2);
+                    break;
+            }
+        }
+
+        return true;
+    }
+
     public function recurringFilter($terminal, $input)
     {
         $payment = $input['payment'];
@@ -144,13 +196,17 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isRecurring() === true)
         {
             // for recurring payment, terminal must be cybersource
-            if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+            if (($terminal->getGateway() !== Gateway::CYBERSOURCE) or
+                ($terminal->getGatewayAcquirer() !== 'hdfc'))
             {
                 return false;
             }
 
+            $ba = app('basicauth');
+
             if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true))
+                ($payment->localToken->isRecurring() === true) and
+                ($ba->isPrivateAuth() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }

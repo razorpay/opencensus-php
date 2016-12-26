@@ -42,6 +42,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayReport();
     }
 
+    public function toArrayPublicEmbedded()
+    {
+        return $this->itemsToArrayPublic();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -153,5 +158,10 @@ class PublicCollection extends Collection
             return $item->toArrayReport();
 
         }, $this->items);
+    }
+
+    public static function isPublicCollection($object)
+    {
+        return get_class($object) === static::class;
     }
 }

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -37,13 +38,19 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment);
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
+            [
+                'payment_id' => $payment->getId()
+            ]);
+
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateOnCapture(Payment\Entity $payment)
@@ -71,7 +78,7 @@ class Core extends Base\Core
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
@@ -88,7 +95,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -114,7 +121,7 @@ class Core extends Base\Core
         $txn = new Transaction\Entity;
         $txn->generateId();
 
-        $this->fillTxnFeesAndAmount($txn, $payment);
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
@@ -131,7 +138,14 @@ class Core extends Base\Core
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
 
-        return $txn;
+        $this->trace->info(
+            TraceCode::TRANSACTION_CREATED,
+            [
+                'payment_id' => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]);
+
+        return [$txn, $feesSplit];
     }
 
     protected function fillTxnFeesAndAmount($txn, $payment)
@@ -148,7 +162,21 @@ class Core extends Base\Core
 
         $oldTransaction = $this->checkIfOldPayment($payment);
 
+        $feesSplit = new Base\PublicCollection;
+
         if ($oldTransaction === true)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if (($this->app->runningUnitTests() === false) and
+                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+                 ($payment->isCard() === true) and
+                 ($payment->card->isInternational() === false) and
+                 ($payment->card->isDebit() === true))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
@@ -178,13 +206,13 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
             $credit = $amount - $fee;
         }
         else
         {
-            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
             if ($feeCredits >= $fee)
             {
@@ -206,7 +234,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setServiceTax($serviceTax);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     protected function checkIfOldPayment($payment)
@@ -410,7 +438,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateAmountCredits($txn, $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -457,7 +485,7 @@ class Core extends Base\Core
         $this->repo->balance->updateBalance($nodalBalance);
     }
 
-    public function updateFeeCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateFeeCredits(Transaction\Entity $txn)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -556,11 +584,11 @@ class Core extends Base\Core
     {
         if ($txn->isGratis() === true)
         {
-            return $this->updateAmountCredits($txn, $payment);
+            $this->updateAmountCredits($txn, $payment);
         }
         else if ($txn->getFeeCredits() > 0)
         {
-            return $this->updateFeeCredits($txn, $payment);
+            $this->updateFeeCredits($txn);
         }
     }
 }

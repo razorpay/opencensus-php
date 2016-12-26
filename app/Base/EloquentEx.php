@@ -87,6 +87,13 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 
+    public function scopeOrgId($query, $orgId)
+    {
+        $orgIdColumn = $this->getAttributeWithTableName('org_id');
+
+        $query->where($orgIdColumn, '=', $orgId);
+    }
+
     public function scopeMerchantId($query, $merchantId)
     {
         $merchantIdColumn = $this->getAttributeWithTableName(Common::MERCHANT_ID);
@@ -99,6 +106,18 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $desc = ($desc) ? 'desc' : 'asc';
 
         $query->orderBy(Common::CREATED_AT, $desc);
+    }
+
+    public function scopeCreatedAtLessThan($query, $createdAt)
+    {
+        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        return $query->where($createdAtColumn, '<', $createdAt);
+    }
+
+    public function scopeCreatedAtGreaterThan($query, $createdAt)
+    {
+        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        return $query->where($createdAtColumn, '>', $createdAt);
     }
 
     public static function createOrFail(array $attributes)

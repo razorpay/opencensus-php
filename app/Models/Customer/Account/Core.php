@@ -14,19 +14,27 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createLocalCustomer($input, $merchant)
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createLocalCustomer(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
-        return $this->create($input, $merchant);
+        return $this->create($input, $merchant, $failOnDuplicate);
     }
 
-    public function createGlobalCustomer($input)
+    public function createGlobalCustomer(array $input)
     {
         assertTrue(isset($input[Customer\Entity::CONTACT]));
 
         return $this->create($input, $this->getSharedAccount());
     }
 
-    protected function create($input, $merchant, $failOnDuplicate = true)
+    protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
 
@@ -38,7 +46,7 @@ class Core extends Base\Core
         {
             if ($failOnDuplicate === false)
             {
-                $existingCustomer->merchant->associate($merchant);
+                $existingCustomer->merchant()->associate($merchant);
 
                 return $existingCustomer;
             }
@@ -264,10 +272,8 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
+    protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
-        $customers = null;
-
         if ($customer->merchant->isShared() === true)
         {
             $customer = $this->repo->customer->findByContactAndMerchant(

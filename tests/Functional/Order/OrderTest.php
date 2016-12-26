@@ -20,11 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->gateway = 'billdesk';
+        $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->setMockGatewayTrue();
     }
@@ -155,6 +151,30 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertAutoCaptureResponse($response, $payment, $order);
+    }
+
+    public function testAutoCaptureFeeBearerCustomer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $feesArray = $this->validateFees($payment);
+
+        $this->ba->privateAuth();
+
+        $amount = $payment['amount'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $order = $this->testCreateAutoCaptureOrder();
+
+        $payment['order_id'] = $order['id'];
+
         $response = $this->doAuthPayment($payment);
 
         $this->assertAutoCaptureResponse($response, $payment, $order);
@@ -301,5 +321,19 @@ class OrderTest extends TestCase
         );
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function validateFees($payment)
+    {
+        $feesArray = $this->createAndGetFeesForPayment($payment);
+
+        if ($payment['amount'] === 50000)
+        {
+            $this->assertEquals(1173, $feesArray['input']['fee']);
+
+            $this->assertEquals(1.49, $feesArray['display']['service_tax']);
+        }
+
+        return $feesArray;
     }
 }

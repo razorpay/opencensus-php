@@ -13,7 +13,6 @@ class Validator extends Base\Validator
         Entity::NAME                => 'sometimes|alpha_space_num|max:50',
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
-        // TODO: Should we add a custom validator for this?
         Entity::SHIPPING_ADDRESS    => 'sometimes',
     );
 

@@ -159,11 +159,15 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        $methods->setCard(true);
+        $methods->setCreditCard(true);
+        $methods->setDebitCard(true);
         $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
         $methods->setPayumoney(true);
+        $methods->setOlamoney(true);
+        $methods->setFreecharge(true);
+        $methods->setAirtelmoney(true);
 
         $this->setAllPaymentBanks($methods);
 

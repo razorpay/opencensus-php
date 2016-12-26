@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
-        Entity::PERIOD   => 'required|alpha',
+        Entity::PERIOD   => 'required|string',
         Entity::TYPE     => 'required|string|in:settlement',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
@@ -62,10 +62,9 @@ class Validator extends Base\Validator
 
     protected function validateWeeklyAnchor($input)
     {
-        $weekend = [Carbon::SATURDAY, Carbon::SUNDAY];
-
         if ((isset($input[Entity::ANCHOR]) === true) and
-            (in_array(intval($input[Entity::ANCHOR]), $weekend, true) === true))
+            ((intval($input[Entity::ANCHOR]) < Carbon::MONDAY) or
+             (intval($input[Entity::ANCHOR]) > Carbon::FRIDAY)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);

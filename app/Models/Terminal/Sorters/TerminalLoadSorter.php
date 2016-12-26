@@ -3,8 +3,9 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
-use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class TerminalLoadSorter extends Terminal\Sorter
 {
@@ -15,7 +16,22 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected static $rules = [
         '6UF3c6ZxiamtJA' => [
             'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 0,
+            'load'       => 5,
+        ],
+
+        '1000AxisMigsTl' => [
+            'gateway'    => Gateway::AXIS_MIGS,
+            'load'       => 25,
+        ],
+
+        '5yKTyCuDne8eiz' => [
+            'gateway'    => Gateway::CYBERSOURCE,
+            'load'       => 1,
+        ],
+
+        '6qJd4PFKxZwFbL' => [
+            'gateway'    => Gateway::CYBERSOURCE,
+            'load'       => 5,
         ],
 
         // Test terminals, won't be used on prod.
@@ -59,7 +75,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
 
-            if (is_null($boostedTerminalId) == false)
+            if (is_null($boostedTerminalId) === false)
             {
                 foreach ($sortedTerminals as $key => $terminal)
                 {
@@ -90,7 +106,13 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $cumulativeProbabity += $rule['load'];
 
-            $this->validateRules($cumulativeProbabity);
+            $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
+
+            if ($valid === false)
+            {
+                // Rules are invalid. Don't boost any terminal.
+                return null;
+            }
 
             // Checking >100-p, rather than simply <p
             // because in test cases we're always setting
@@ -125,14 +147,24 @@ class TerminalLoadSorter extends Terminal\Sorter
         return $applicableRules;
     }
 
-    protected function validateRules($cumulativeProbability)
+    protected function validateRules($cumulativeProbability, $applicableRules)
     {
         // Cumulative probability for all applicable rules
-        // can't possibly be above 100
+        // can't possibly be above 100. In this case, don't
+        // boost any terminal.
         if ($cumulativeProbability > 100)
         {
-            throw new Exception\LogicException("Cumulative probability is " .
-                $cumulativeProbability . ", shouldn't be above 100");
+            $this->trace->error(
+                TraceCode::TERMINAL_BOOST_INVALID,
+                [
+                    'cumulative_probabity' => $cumulativeProbability,
+                    'applicable_rules'     => $applicableRules,
+                ]
+            );
+
+            return false;
         }
+
+        return true;
     }
 }

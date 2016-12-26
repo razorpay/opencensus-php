@@ -19,26 +19,24 @@ class Service extends Base\Service
      */
     public function createLocalCustomer($input)
     {
-        // Not being used currently. Will uncomment when required.
+        $failOnDuplicate = true;
 
-        // $failOnDuplicate = true;
-        //
-        // if ((isset($input['flag'])) and
-        //     ($input['flag'] === '1'))
-        // {
-        //     $failOnDuplicate = false;
-        // }
+        if ((isset($input[Entity::FAIL_EXISTING])) and
+            ($input[Entity::FAIL_EXISTING] === '0'))
+        {
+            $failOnDuplicate = false;
+        }
 
-        unset($input['flag']);
+        unset($input[Entity::FAIL_EXISTING]);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
 
         return $customer->toArrayPublic();
     }
 
     /**
      * Creates Global customer entity for shared merchant
-     * @param  array customer data
+     * @param  array $input customer data
      * @return array customer data
      */
     public function createGlobalCustomer($input)
@@ -79,6 +77,13 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $customer->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $customers = $this->repo->customer->fetch($input, $this->merchant->getId());
+
+        return $customers->toArrayPublic();
     }
 
     /**

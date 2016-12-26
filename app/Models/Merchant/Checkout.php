@@ -12,7 +12,9 @@ use RZP\Models\Customer;
 use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 
 class Checkout
@@ -22,9 +24,11 @@ class Checkout
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
     }
 
-    public function getPreferences($merchant, $mode, $input)
+    public function getPreferences(Entity $merchant, $mode, array $input)
     {
         $this->tracePreferencesRequest($merchant, $mode, $input);
 
@@ -34,18 +38,54 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
+        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
+
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
+        $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
+        $this->tracePreferencesResponse($merchant, $data);
+
         return $data;
     }
 
-    protected function tracePreferencesRequest($merchant, $mode, $input)
+    protected function checkAndAddDetailsForInvoice(
+        array $input, Merchant\Entity $merchant, array & $data)
+    {
+        if (empty($input['invoice_id']) === true)
+        {
+            return;
+        }
+
+        $invoiceId = $input['invoice_id'];
+
+        $invoiceCore = new Invoice\Core;
+
+        $invoiceData = $invoiceCore->getFormattedInvoiceData($invoiceId, $merchant);
+
+        $data['invoice'] = $invoiceData['invoice'];
+
+        // If invoice's customer data is set, merge it to existing data
+        if (isset($invoiceData['customer']))
+        {
+            if (isset($data['customer']))
+            {
+                $data['customer'] = array_merge($data['customer'], $invoiceData['customer']);
+            }
+            else
+            {
+                $data['customer'] = $invoiceData['customer'];
+            }
+        }
+    }
+
+    protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
         $sessionData = $this->app['request']->session()->all();
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
@@ -55,7 +95,17 @@ class Checkout
             ]);
     }
 
-    protected function fetchTPVOrderInfo($input)
+    protected function tracePreferencesResponse(Entity $merchant, array $response)
+    {
+        $this->trace->info(
+            TraceCode::CHECKOUT_PREFERENCES_RESPONSE,
+            [
+                'merchant_id' => $merchant->getId(),
+                'response' => $response,
+            ]);
+    }
+
+    protected function fetchTPVOrderInfo(array $input)
     {
         $orderData = null;
 
@@ -66,13 +116,13 @@ class Checkout
         }
         catch(\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
 
         return $orderData ;
     }
 
-    protected function fetchCustomerData($input, $merchant)
+    protected function fetchCustomerData(array $input, Entity $merchant)
     {
         $custData = null;
 
@@ -107,13 +157,13 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
 
         return $custData;
     }
 
-    protected function checkAndFillAppTokenInputFromSession($merchant, $mode, array & $input)
+    protected function checkAndFillAppTokenInputFromSession(Entity $merchant, $mode, array & $input)
     {
         if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
@@ -136,7 +186,7 @@ class Checkout
         }
     }
 
-    protected function checkAndAddOrderForTpv($merchant, $input, & $data)
+    protected function checkAndAddOrderForTpv(Entity $merchant, array $input, array & $data)
     {
         // If merchant is TPV enabled pass details for
         // current order as part of preferences
@@ -152,10 +202,16 @@ class Checkout
         }
     }
 
-    protected function checkAndFillSavedTokens($input, $merchant, & $data)
+    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data)
     {
         try
         {
+            /// we don't return the customer data if request is jsonp
+            if (isset($input['callback']) === true)
+            {
+                return;
+            }
+
             // fetch customer data and saved cards data
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
@@ -193,17 +249,17 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
         }
      }
 
-    protected function getMerchantPreferencesData($merchant, $mode, $input)
+    protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
 
         $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
 
-        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode, $input);
+        $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode);
 
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
@@ -212,7 +268,7 @@ class Checkout
         return $data;
     }
 
-    protected function shouldEnableCardSaving($merchant, $mode, $input)
+    protected function shouldEnableCardSaving(Entity $merchant, $mode)
     {
         $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
 

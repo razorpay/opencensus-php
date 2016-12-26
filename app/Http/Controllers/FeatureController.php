@@ -50,10 +50,4 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function migrateMerchantFeatures()
-    {
-        $data = (new Feature\Service)->migrateMerchantFeatures();
-
-        return ApiResponse::json($data);
-    }
 }

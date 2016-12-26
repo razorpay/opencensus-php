@@ -267,7 +267,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
                 ($rule[Entity::AMOUNT_RANGE_ACTIVE] === $newRule[Entity::AMOUNT_RANGE_ACTIVE]) and
                 ($rule[Entity::AMOUNT_RANGE_MIN] === $newRule[Entity::AMOUNT_RANGE_MIN]) and
-                ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]))
+                ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]) and
+                ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -278,7 +279,9 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
-                $newRule[Entity::AMOUNT_RANGE_ACTIVE] and $rule[Entity::AMOUNT_RANGE_ACTIVE])
+                ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
+                (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
+                (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
                 $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
             }

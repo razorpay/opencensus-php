@@ -71,7 +71,7 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
-        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
 
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
@@ -87,6 +87,31 @@ class RecurringPaymentTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testRecurringSecondPaymentCreatePublicAuthWithCard()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
     }
 
     public function testRecurringSecondPaymentCreatePrivateAuth()
@@ -121,6 +146,8 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
     public function testRecurringPaymentCreatePrivateAuth()
@@ -154,7 +181,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['recurring']);
 
-        $payment[Payment::CARD]['number'] = '4000000000000002';
+        $payment[Payment::CARD]['number'] = '4245126853998870';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -219,5 +246,7 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 }

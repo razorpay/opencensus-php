@@ -83,7 +83,7 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callabck again. This could be due to
+     * we are hitting callback again. This could be due to
      * browser refresh by the customer or s2s callback notification being
      * delivered by the gateway before browser hits the callback route etc.
      */
@@ -94,9 +94,7 @@ trait Callback
         $diff = time() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
-        if ((($payment->isAuthorized() === true) or
-             (($payment->isCaptured() === true) and
-              ($payment->getAutoCaptured() === true))) and
+        if (($payment->hasBeenAuthorized() === true) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
@@ -110,10 +108,10 @@ trait Callback
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     public function s2sCallback($payment, array $gatewayInput)
@@ -136,10 +134,10 @@ trait Callback
 
         if ($payment->isCreated() === false)
         {
-            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         $this->processPaymentCallback($payment, $gatewayInput);
@@ -171,7 +169,16 @@ trait Callback
 
         try
         {
-            $data = $this->callGatewayCallback($payment, $input);
+            $data = $this->callGatewayCallback($input);
+
+            if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
+            {
+                $twoFactorAuth = $data[Payment\Entity::TWO_FACTOR_AUTH];
+
+                $payment->setTwoFactorAuth($twoFactorAuth);
+
+                $this->repo->saveOrFail($payment);
+            }
         }
         catch (Exception\BaseException $e)
         {
@@ -181,7 +188,7 @@ trait Callback
         $this->updateAndNotifyPaymentAuthorized();
     }
 
-    protected function callGatewayCallback($payment, $input)
+    protected function callGatewayCallback($input)
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
@@ -208,7 +215,7 @@ trait Callback
     protected function checkForRecentFailedPayment($payment)
     {
         // Difference should be less than 30 minutes
-        $diff = time() - $payment->getUpdatedAt();
+        $diff = time() - $payment->getCreatedAt();
 
         if (($payment->isFailed()) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
@@ -276,10 +283,12 @@ trait Callback
         if ($status !== Status::CREATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         $code = $e->getError()->getInternalErrorCode();
+
+        $this->setTwoFactorAuthAfterCallbackException($e);
 
         if (Error\Error::hasAction($code) === false)
         {
@@ -287,7 +296,7 @@ trait Callback
         }
         else
         {
-            $this->setPaymentError($e->getError());
+            $this->setPaymentError($e);
         }
 
         switch ($code)
@@ -337,7 +346,7 @@ trait Callback
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_FAILURE, $errors);
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     protected function checkForMerchantCallbackUrl($payment)

@@ -101,8 +101,7 @@ class Report extends Core
                 'time_started'  => $begin
             ]);
 
-        $repo = $this->repo->$entity;
-        $entities = $repo->fetchEntitiesForReport($merchantId, $from, $to);
+        $entities = $this->fetchEntitiesForReport($merchantId, $from, $to, $entity);
 
         $timeTaken = time() - $begin;
 
@@ -116,7 +115,7 @@ class Report extends Core
                 'time_taken'    => $timeTaken
             ]);
 
-        $data = $entities->toArrayReport();
+        $data = $this->fetchFormattedDataForReport($entities);
 
         $timeTaken = time() - $begin;
 
@@ -131,6 +130,57 @@ class Report extends Core
             ]);
 
         return $data;
+    }
+
+    protected function fetchFormattedDataForReport($entities)
+    {
+        return $entities->toArrayReport();
+    }
+
+    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
+    {
+        $repo = $this->repo->$entity;
+
+        return $repo->fetchEntitiesForReport($merchantId, $from, $to);
+    }
+
+    public function getInvoiceV2($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
+
+        $fees = $feesBreakup->getStringAttributesByKey('name');
+
+        $totalFee = $fees['payment']['sum'] + $fees['service_tax']['sum'];
+        $totalTax = $fees['service_tax']['sum'];
+
+        if (empty($fees['swachh_bharat_cess']) === false)
+        {
+            $totalFee += $fees['swachh_bharat_cess']['sum'];
+            $totalTax += $fees['swachh_bharat_cess']['sum'];
+        }
+
+        if (empty($fees['krishi_kalyan_cess']) === false)
+        {
+            $totalFee += $fees['krishi_kalyan_cess']['sum'];
+            $totalTax += $fees['krishi_kalyan_cess']['sum'];
+        }
+
+        return [
+            self::TOTAL_FEE    => $totalFee,
+            self::RAZORPAY_FEE => $fees['payment']['sum'],
+            self::TAX          => $totalTax,
+            self::TAXES        => [
+                self::SERVICE_TAX        => $fees['service_tax']['sum'],
+                self::SWACH_BHARAT_CESS  => $fees['swachh_bharat_cess']['sum'],
+                self::KRISHI_KALYAN_CESS => $fees['krishi_kalyan_cess']['sum'],
+            ],
+        ];
     }
 
     public function getInvoice($input)

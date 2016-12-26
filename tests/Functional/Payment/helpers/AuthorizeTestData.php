@@ -6,7 +6,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testJsonpPayment' =>[
+    'testJsonpPayment' => [
         'request' => [
             'url' => '/payments/create/jsonp',
             'method' => 'GET',
@@ -573,6 +573,19 @@ return [
         ]
     ],
 
+    'testFixAuthorizedAt' => [
+        'request' => [
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'authorized_at' => null
+            ],
+        ],
+    ],
+
     'testTimeoutOldPayment' => [
         'request' => [
             'content' => [],
@@ -581,7 +594,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'failed',
-                'error_code' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                'error_code' => ErrorCode::BAD_REQUEST_ERROR,
                 'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
             ],
         ],
@@ -615,7 +628,7 @@ return [
         ]
     ],
 
-    'testPaymentViaWalletS2SWoAuth' =>[
+    'testPaymentViaWalletS2SWoAuth' => [
         'request' => [
             'url' => '/payments/create/wallet',
             'method' => 'POST',
@@ -638,7 +651,7 @@ return [
         ]
     ],
 
-    'testWalletS2SPaymentWoFeature' =>[
+    'testWalletS2SPaymentWoFeature' => [
         'request' => [
             'url' => '/payments/create/wallet',
             'method' => 'POST',
@@ -661,7 +674,34 @@ return [
         ]
     ],
 
-    'testWalletWithInternationalContact' =>[
+    'testInvalidWalletS2SPayment' => [
+        'request' => [
+            'url' => '/payments/create/wallet',
+            'method' => 'POST',
+            'content' => [
+                'wallet'    => 'invalid_wallet',
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testWalletWithInternationalContact' => [
         'request' => [
             'content' => [
                 'wallet'        => 'payumoney',
@@ -691,7 +731,7 @@ return [
         ],
     ],
 
-    'testPayumoneyPaymentViaWalletS2S' =>[
+    'testPayumoneyPaymentViaWalletS2S' => [
         'request' => [
             'url' => '/payments/create/wallet',
             'method' => 'POST',
@@ -717,7 +757,7 @@ return [
         ]
     ],
 
-    'testMobikwikPaymentViaWalletS2S' =>[
+    'testMobikwikPaymentViaWalletS2S' => [
         'request' => [
             'url' => '/payments/create/wallet',
             'method' => 'POST',

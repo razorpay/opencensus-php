@@ -18,6 +18,8 @@ class Authorization
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
 
+    protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
+
     public function __construct($test)
     {
         $this->test = $test;
@@ -31,9 +33,10 @@ class Authorization
      */
     public function basicAuth($user = null, $pwd = null)
     {
-        $this->auth = array(
+        $this->auth = [
             'PHP_AUTH_USER' => $user,
-            'PHP_AUTH_PW' => $pwd);
+            'PHP_AUTH_PW' => $pwd
+        ];
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '')
@@ -132,15 +135,28 @@ class Authorization
 
         if ($secret === null)
         {
-            $this->setSecret($this->defaultSecret);
             $secret = $this->defaultSecret;
         }
-        else
-        {
-            $this->setSecret($secret);
-        }
+
+        $this->setSecret($secret);
 
         $this->basicAuth($key, $secret);
+    }
+
+    public function adminAuth($mode = 'test', $token = null)
+    {
+        $this->type = 'admin';
+
+        $this->key = "rzp_{$mode}_admin";
+
+        if ($token === null)
+        {
+            $token = $this->defaultToken;
+        }
+
+        $this->setSecret($token);
+
+        $this->basicAuth($this->key, $token);
     }
 
     public function dashboardAuth($mode = 'test')
@@ -184,6 +200,11 @@ class Authorization
     public function isPublicAuth()
     {
         return ($this->type === 'public');
+    }
+
+    public function isPrivateAuth()
+    {
+        return ($this->type === 'private');
     }
 
     public function getKey()
@@ -259,5 +280,14 @@ class Authorization
         $key = $this->getAppAuthKeyForMode();
 
         $this->appAuth($key);
+    }
+
+    public function getAdmin()
+    {
+        $token = $this->secret;
+
+        $this->admin = (new \RZP\Models\Admin\Admin\Token\Repository)->findOrFailToken($token)->admin;
+
+        return $this->admin;
     }
 }

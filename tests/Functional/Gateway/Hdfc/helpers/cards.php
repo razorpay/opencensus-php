@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testCardTimeout' => [
@@ -26,7 +27,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayTimeoutException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-            'gateway_error_code'  => Hdfc\ErrorCode::RP00003,
+            'gateway_error_code'  => Hdfc\ErrorCode::RP00013,
         ],
     ],
 
@@ -41,6 +42,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
+                'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,

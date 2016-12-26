@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
+    const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
@@ -27,13 +28,13 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-    // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
-
     protected $entity = 'payment_analytics';
+
+    public $incrementing = true;
 
     protected $fillable = array(
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -73,22 +75,18 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     );
 
-    protected static $modifiers = array(
-        self::OS,
-    );
-
     protected $casts = array(
-        self::ATTEMPTS               => 'int',
+        self::ATTEMPTS  => 'int',
     );
 
-    // ----------------------- Relations -------------------------------------------
+    // ----------------------- Relations ---------------------------------------
 
     public function payment()
     {
-        return $this->hasOne('RZP\Models\Payment\Entity');
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Getters -----------------------------------------
 
     public function getPaymentId()
     {
@@ -165,9 +163,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTEGRATION_VERSION);
     }
 
-    // ----------------------- Getters End ---------------------------------------------
+    // ----------------------- Getters End -------------------------------------
 
-    // ----------------------- Setters ---------------------------------------------
+    // ----------------------- Setters -----------------------------------------
 
     public function setAttempts($attempts)
     {
@@ -199,9 +197,60 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTEGRATION_VERSION, $integrationVersion);
     }
 
-    // ----------------------- Setters End---------------------------------------------
+    public function setIntegration($integration)
+    {
+        $this->setAttribute(self::INTEGRATION, $integration);
+    }
 
-    // ----------------------- Mutator ---------------------------------------------
+    public function setLibrary($library)
+    {
+        $this->setAttribute(self::LIBRARY, $library);
+    }
+
+    public function setBrowser($browser)
+    {
+        $this->setAttribute(self::BROWSER, $browser);
+    }
+
+    public function setPlatform($platform)
+    {
+        $this->setAttribute(self::PLATFORM, $platform);
+    }
+
+    public function setOs($os)
+    {
+        $this->setAttribute(self::OS, $os);
+    }
+
+    public function setDevice($device)
+    {
+        $this->setAttribute(self::DEVICE, $device);
+    }
+
+    public function setIp($ip)
+    {
+        $this->setAttribute(self::IP, $ip);
+    }
+
+    public function setReferer($referer)
+    {
+        $this->setAttribute(self::REFERER, $referer);
+    }
+
+    public function setUserAgent($ua)
+    {
+        $this->setAttribute(self::USER_AGENT, $ua);
+    }
+
+    public function setMerchantId($merchant_id)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchant_id);
+    }
+
+
+    // ----------------------- Setters End--------------------------------------
+
+    // ----------------------- Mutator -----------------------------------------
     //
 
     protected function getLibraryAttribute()
@@ -291,27 +340,5 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::REFERER] = $referer;
     }
 
-    // ----------------------- Mutator Ends ----------------------------------------
-
-    // ----------------------- Modifiers ------------------------------------------
-
-    protected function modifyOs(& $input)
-    {
-        if (isset($input[self::OS]) === true)
-        {
-            switch (strtolower($input[self::OS]))
-            {
-                case 'os x':
-                    $input[self::OS] = Metadata::MACOS;
-                    break;
-
-                case 'androidos':
-                    $input[self::OS] = Metadata::ANDROID;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
+    // ----------------------- Mutator Ends ------------------------------------
 }

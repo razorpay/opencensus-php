@@ -16,4 +16,5 @@ class Type
     const PAYMENT_FAILED     = 'payment.failed';
     const PAYMENT_CAPTURED   = 'payment.captured';
     const ORDER_PAID         = 'order.paid';
+    const INVOICE_PAID       = 'invoice.paid';
 }

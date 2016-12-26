@@ -29,9 +29,9 @@ class Selector
      * @var array
      */
     protected static $sorters = [
-        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
+        Sorters\ExclusivitySorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
         Sorters\TerminalLoadSorter::class,
@@ -75,6 +75,7 @@ class Selector
 
     public function select(Options $options = null, $verbose = false)
     {
+        $verbose = true;
         $terminals = $this->getTerminals();
 
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
@@ -110,7 +111,6 @@ class Selector
         if ((count($failedTerminals) > 0))
         {
             $this->input['failed_terminals'] = $failedTerminals;
-
         }
 
         foreach (self::$sorters as $sorter)
@@ -171,7 +171,6 @@ class Selector
         }
     }
 
-
     /**
      * Methods selects a list of terminals for payment. We are
      * selecting a list here since, we want to iterate through
@@ -185,10 +184,10 @@ class Selector
     {
         $options = new Terminal\Options;
 
-        if ((isset($opts['failed']) === true) and
-            (is_array($opts['failed']) === true))
+        if ((isset($opts[Options::FAILED]) === true) and
+            (is_array($opts[Options::FAILED]) === true))
         {
-            $options->setFailedTerminals($opts['failed']);
+            $options->setFailedTerminals($opts[Options::FAILED]);
         }
 
         $terminalsSelected = $this->select($options);

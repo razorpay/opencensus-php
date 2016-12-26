@@ -37,7 +37,13 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::STATUS);
 
+            $table->string(Payment::TWO_FACTOR_AUTH, 20)
+                  ->nullable();
+
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->tinyInteger(Payment::INTERNATIONAL)
@@ -136,6 +142,9 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::GATEWAY_CAPTURED)
+                  ->nullable();
+
             $table->tinyInteger(Payment::VERIFY_BUCKET)
                   ->nullable();
 
@@ -174,9 +183,12 @@ class CreatePayments  extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::TWO_FACTOR_AUTH);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+
+            $table->index(Payment::GATEWAY_CAPTURED);
             $table->index(Payment::VERIFY_BUCKET);
             $table->index(Payment::GATEWAY);
             $table->index(Payment::AUTHORIZED_AT);

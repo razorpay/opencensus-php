@@ -18,6 +18,7 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Order;
@@ -26,8 +27,10 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -190,7 +193,8 @@ trait Authorize
     protected function verifyFeesLessThanAmount($payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-        list($fee, $serviceTax, $ruleKey) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     protected function processAuthResponse(array $request, Payment\Entity $payment)
@@ -199,6 +203,7 @@ trait Authorize
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
+        //
         if ($request !== null)
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
@@ -206,9 +211,31 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized();
 
+        $this->updateTwoFactorAuthForOneStepPayment();
+
         $payment = $this->payment;
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function updateTwoFactorAuthForOneStepPayment()
+    {
+        $payment = $this->payment;
+
+        // In one step payment, we always set the 2FA as unavailable. Basically, no 2FA done.
+        // Except in the cases of recurring, because, here we know that
+        // we have manually skipped/by-passed the 2FA.
+
+        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
+        }
+        else
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::NOT_APPLICABLE);
+        }
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function autoCapturePaymentIfApplicable($payment)
@@ -221,6 +248,32 @@ trait Authorize
         }
     }
 
+    protected function getVerifyCaller()
+    {
+        $route = $this->route->getCurrentRouteName();
+
+        switch($route)
+        {
+            case 'payment_verify_multiple':
+                $caller = 'cron';
+                break;
+
+            case 'payment_authorize_failed':
+                $caller = 'dashboard';
+                break;
+
+            case 'reconciliate':
+                $caller = 'reconciliate';
+                break;
+
+            default:
+                $caller = 'unknown';
+                break;
+        }
+
+        return $caller;
+    }
+
     public function authorizeFailedPayment($payment)
     {
         $this->setPayment($payment);
@@ -231,9 +284,20 @@ trait Authorize
                 'Non failed payment given for authorization where failed payment is needed');
         }
 
+        $paymentCreatedTime = $payment->getCreatedAt();
+
+        $currentTime = time();
+
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-            ['payment_id' => $payment->getId()]);
+            [
+                'payment_id'      => $payment->getId(),
+                'payment_created' => $paymentCreatedTime,
+                'verify_bucket'   => $payment->getVerifyBucket(),
+                'authorized_at'   => $currentTime,
+                'time_difference' => $currentTime - $paymentCreatedTime,
+                'caller'          => $this->getVerifyCaller(),
+            ]);
 
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
 
@@ -376,13 +440,24 @@ trait Authorize
             return;
         }
 
-        if ($payment->isWallet())
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            return;
+        }
+
+        if ($payment->isWallet() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
         else
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 
@@ -398,7 +473,7 @@ trait Authorize
         $merchant = $payment->merchant;
 
         // Ensure that the merchant is allowed to do recurring payments.
-        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
 
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
@@ -587,7 +662,7 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
         }
 
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
@@ -599,11 +674,11 @@ trait Authorize
         {
             if ($payment->isWallet())
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
             }
             else
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2S);
             }
         }
     }
@@ -1160,6 +1235,13 @@ trait Authorize
         {
             $order->setAuthorized(true);
 
+            $this->trace->info(
+                TraceCode::ORDER_STATUS_AUTHORIZED,
+                [
+                    'order_id' => $order->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
             $this->repo->saveOrFail($order);
         }
     }
@@ -1280,7 +1362,8 @@ trait Authorize
             $this->fillReturnDataWithOrder($payment, $returnData);
         }
 
-        if ($payment->getCallbackUrl())
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($payment->getCallbackUrl()))
         {
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
@@ -1427,7 +1510,7 @@ trait Authorize
     {
         try
         {
-            $analyticsEntity = (new Analytics\Core)->create($payment);
+            (new Analytics\Service)->createLog($payment);
         }
         catch (\Exception $e)
         {
@@ -1728,8 +1811,9 @@ trait Authorize
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    "$feature is not supported");
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 
@@ -1765,7 +1849,11 @@ trait Authorize
         {
             $this->lockForUpdateAndReload($payment);
 
-            if ($this->payment->getStatus() === Status::AUTHORIZED)
+            $status = $this->payment->getStatus();
+
+            // We do not want the payments which failed captured
+            // and got marked as failed to be authorized again.
+            if ($payment->hasBeenAuthorized() === true)
             {
                 return;
             }
@@ -1784,15 +1872,28 @@ trait Authorize
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
 
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_AUTHORIZED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'late_authorize'    => $wasFailed,
+                    'old_status'        => $status,
+                ]);
+
             //
             // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
             //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
+                $payment->setGatewayCaptured(true);
+
                 // Also sets the transaction association with the payment.
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
+
+                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);
@@ -1830,12 +1931,7 @@ trait Authorize
             $networkCode = $paymentCard->getNetworkCode();
         }
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
     }
 
     protected function getEncryptedGatewayText($gateway)

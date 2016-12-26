@@ -156,14 +156,15 @@ class VerifyTest extends TestCase
         $request = [
             'url'     => '/payments/verify/'. $filter,
             'method'  => 'post',
-            'content' => ['bucket'=> $payment['verify_bucket'] - 1]
+            'content' => ['bucket'=> [$payment['verify_bucket'] - 1]]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'success' => 0,
-            'filter'  => $filter,
+            'success'       => 0,
+            'filter'        => $filter,
+            'bucket_filter' => [$payment['verify_bucket'] - 1]
         ];
 
         $this->assertContent($content, $resultData);
@@ -171,7 +172,7 @@ class VerifyTest extends TestCase
         $request = [
             'url'     => '/payments/verify/'. $filter,
             'method'  => 'post',
-            'content' => ['bucket'=> $payment['verify_bucket'] + 1]
+            'content' => ['bucket'=> [$payment['verify_bucket'] + 1]]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -179,6 +180,7 @@ class VerifyTest extends TestCase
         $resultData = [
             'success' => 0,
             'filter'  => $filter,
+            'bucket_filter' => [$payment['verify_bucket'] + 1]
         ];
 
         $this->assertContent($content, $resultData);
@@ -186,7 +188,7 @@ class VerifyTest extends TestCase
         $request = [
             'url'     => '/payments/verify/'. $filter,
             'method'  => 'post',
-            'content' => ['bucket'=> $payment['verify_bucket'] ]
+            'content' => ['bucket'=> [$payment['verify_bucket']] ]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -194,6 +196,7 @@ class VerifyTest extends TestCase
         $resultData = [
             'success' => 1,
             'filter'  => $filter,
+            'bucket_filter' => [$payment['verify_bucket']]
         ];
 
         $this->assertContent($content, $resultData);
@@ -213,12 +216,6 @@ class VerifyTest extends TestCase
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $result = [
-            'filter'  => 'payments_failed',
-            'all'     => 2,
-            'none'    => 0,
-        ];
-
         // Lock payment for 10 days, No verify should run on this payment
         $this->app['api.mutex']->acquire($payment2['id'].'_verify', 864000);
 
@@ -227,6 +224,26 @@ class VerifyTest extends TestCase
             'all'     => 1,
             'none'    => 0,
         ];
+
+        $this->runVerifyForMaxPeriod($result);
+    }
+
+    public function testVerifyWithLockedPaymentsExceedingThreshold()
+    {
+        $createdAt = time() - 180;
+
+        $payment = $this->fixtures->times(102)->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $result = [
+            'filter'  => 'payments_failed',
+            'all'     => 100,
+            'none'    => 0,
+        ];
+
+        $this->app['api.mutex']->acquire($payment[0]['id'].'_verify', 864000);
+
+        $this->app['api.mutex']->acquire($payment[101]['id'].'_verify', 864000);
 
         $this->runVerifyForMaxPeriod($result);
     }
@@ -380,6 +397,31 @@ class VerifyTest extends TestCase
         $newBucket = $payment['verify_bucket'];
 
         $this->assertNotEquals($prevBucket, $newBucket);
+        $request = [
+            'url'    => '/payments/verify/verify_error',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized' => 0,
+            'error'      => 1,
+            'filter'     => 'verify_error'
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $this->resetMockServer();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized' => 1,
+            'filter'     => 'verify_error'
+        ];
+
+        $this->assertContent($content, $resultData);
     }
 
     public function testTimeoutPaymentVerify()
@@ -704,6 +746,7 @@ class VerifyTest extends TestCase
             'authorized'    => 0,
             'timeout'       => 0,
             'error'         => 0,
+            'bucket_filter' => [],
         ];
 
         $total = array_sum($defaultParams);

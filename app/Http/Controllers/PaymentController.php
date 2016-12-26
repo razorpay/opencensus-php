@@ -68,6 +68,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function postRefundAuthorizedInBulk()
+    {
+        $input = Request::all();
+
+        $summary = $this->payment->refundAuthorizedInBulk($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function postForceAuthorize($id)
     {
         $input = Request::all();
@@ -87,6 +96,13 @@ class PaymentController extends Controller
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFixAuthorizedAt($id)
+    {
+        $data = $this->payment->fixAuthorizeAt($id);
 
         return ApiResponse::json($data);
     }
@@ -121,6 +137,10 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * @deprecated
+     * @return mixed
+     */
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

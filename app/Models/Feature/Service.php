@@ -13,7 +13,8 @@ class Service extends Base\Service
     {
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item) {
+        $features = $featureParams->map(function ($item)
+        {
             return (new Core)->create($item);
         });
 
@@ -40,39 +41,9 @@ class Service extends Base\Service
 
         $this->repo->feature->delete($feature);
 
+        (new Core)->notifyOnSlack($feature, true);
+
         return $feature->toArrayPublic();
-    }
-
-    public function migrateMerchantFeatures()
-    {
-        $response = new Base\Collection;
-
-        $merchants = $this->repo->merchant->fetchMerchantsWithoutFeatureEntries();
-
-        foreach ($merchants as $merchant) {
-            $featureParam = [
-                Entity::ENTITY_ID      => $merchant->getId(),
-                Constants::NAMES       => $merchant->getFeatures(),
-                Entity::ENTITY_TYPE    => \RZP\Constants\Entity::MERCHANT
-            ];
-
-            try
-            {
-                $features = $this->addFeatures($featureParam);
-
-                $response->push($features);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->warn(
-                    TraceCode::FEATURE_MIGRATION_EXCEPTION,
-                    [
-                        Entity::ENTITY_ID   => $merchant->getId(),
-                        'msg'               => $e->getMessage()
-                    ]);
-            }
-        }
-        return $response->collapse();
     }
 
     public function multiAssignFeature($input)
@@ -131,6 +102,30 @@ class Service extends Base\Service
         }
 
         return $response->toArray();
+    }
+
+    public function getFeaturesForEntity($entity)
+    {
+        $entityId = $entity->getId();
+
+        $data['features'] = [];
+
+        $enabledFeatures = $entity->features();
+
+        foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
+        {
+            $feature = $featureDetails['feature'];
+
+            $isEnabled = in_array($feature, $enabledFeatures, true);
+
+            $data['features'][] = [
+                'feature'      => $visibleFeature,
+                'value'        => $isEnabled,
+                'display_name' => $featureDetails['display_name']
+            ];
+        }
+
+        return $data;
     }
 
     private function buildFeatureParams($input)

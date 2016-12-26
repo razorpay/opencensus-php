@@ -24,6 +24,9 @@ class Gateway extends Base\Gateway
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
+    const PROCESSING                 = 'PROCESSING';
+    const SERVICES                   = 'SERVICES';
+
     const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
 
     protected $gateway = Constants\Entity::FIRST_DATA;
@@ -57,6 +60,8 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
+        $this->mockApprovalCodeIfNeeded($input['gateway']);
+
         $attributes = $this->getCallbackFields($input['gateway']);
 
         $gatewayPayment->fill($attributes);
@@ -83,7 +88,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $requestContent = $this->getRequestArray($input, TxnType::CAPTURE);
+        $requestContent = $this->getCaptureRequestArray($input, TxnType::CAPTURE);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
@@ -92,10 +97,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
-                'capture_response' => $response
-            ]);
+                'response' => $response
+            ]
+        );
 
-        $captureFields = $this->getCaptureOrRefundFields($response, $input['payment']);
+        $captureFields = $this->getCaptureFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
 
@@ -106,7 +112,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $requestContent = $this->getRequestArray($input, TxnType::REFUND);
+        $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
 
@@ -115,14 +121,39 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'refund_response' => $response
-            ]);
+                'response' => $response
+            ]
+        );
 
-        $refundFields = $this->getCaptureOrRefundFields($response, $input['refund']);
+        $refundFields = $this->getRefundFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
         $this->checkApprovalCode($refundEntity);
+    }
+
+    public function reverse(array $input)
+    {
+        parent::reverse($input);
+
+        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
+
+        $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
+
+        $response = $this->getSoapResponse($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_RESPONSE,
+            [
+                'response' => $response
+            ]
+        );
+
+        $reverseFields = $this->getReverseFields($response, $input['refund']);
+
+        $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
+
+        $this->checkApprovalCode($reverseEntity);
     }
 
     public function verify(array $input)
@@ -134,46 +165,74 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    // First Data is not returning approval code in some cases.
+    // In these cases, we mock the code and handle it appropriately.
+    protected function mockApprovalCodeIfNeeded(& $gatewayCallback)
+    {
+        if (isset($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === true)
+        {
+            $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
+
+            return;
+        }
+
+        //Approval code wasn't returned, but we can generate one from fail fields
+        if (isset($gatewayCallback[ConnectResponseFields::FAIL_RC]) === true)
+        {
+            $failCode = $gatewayCallback[ConnectResponseFields::FAIL_RC];
+
+            $failReason = $gatewayCallback[ConnectResponseFields::FAIL_REASON];
+
+            $mockedApprovalCode = implode(':', ['N', $failCode, $failReason]);
+        }
+        // Approval code wasn't returned, and neither were fail_rc and fail_reason
+        // Assume failure, and mock the failed approval code.
+        else
+        {
+            $mockedApprovalCode = implode(':', ['N', Codes::MOCK_FAIL_APPROVAL_CODE]);
+        }
+
+        $this->setApproval($mockedApprovalCode);
+
+        $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
+    }
+
+    protected function setApproval($approvalCode)
+    {
+        // Request has failed if the first character
+        // of the approval code string isn't 'Y'
+        if ($approvalCode[0] === 'Y')
+        {
+            $this->approval = true;
+        }
+        else
+        {
+            $this->approval = false;
+        }
+    }
+
     protected function getSoapResponse($requestContent)
     {
-        try
-        {
-            $xmlResponse = $this->postSoapRequest($requestContent, ApiRequestFields::ORDER_REQUEST);
+        $xmlResponse = $this->postSoapRequest($requestContent, ApiRequestFields::ORDER_REQUEST);
 
-            $traceCode = $this->getTraceCode();
+        $traceCode = $this->getTraceCode();
 
-            $this->trace->info($traceCode, [$xmlResponse->asXml()]);
+        $this->trace->info($traceCode, [$xmlResponse->asXml()]);
 
-            $response = $this->parseOrderResponse($xmlResponse);
-        }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            // If a timeout occurs, don't throw an exception just yet.
-            // We build a mock response, that allows the gateway entity
-            // to be created, then throw the same exception
-            // in checkApprovalCode
-            $response = $this->buildTimeoutResponse($e);
-        }
+        $response = $this->parseOrderResponse($xmlResponse);
 
         return $response;
     }
 
     protected function checkApprovalCode($gatewayEntity)
     {
-        // Request has failed if the first character
-        // of the approval code string isn't 'Y'
-        if ($gatewayEntity->getApprovalCode()[0] !== 'Y')
+        if ($this->approval === false)
         {
             $approvalCode = $this->getActualCodeFromApprovalCode($gatewayEntity->getApprovalCode());
 
             $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
-
-            if ($gatewayEntity->getReceived() === false)
-            {
-                throw new Exception\GatewayTimeoutException($gatewayEntity->getApprovalCode());
-            }
 
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
         }
@@ -205,21 +264,30 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackFields($callbackBody)
     {
-
         $attributes = [
             Entity::RECEIVED                => true,
             Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
-            Entity::TDATE                   => $callbackBody[ConnectResponseFields::TDATE],
-            Entity::TRANSACTION_RESULT      => $callbackBody[ConnectResponseFields::STATUS],
-            Entity::GATEWAY_TRANSACTION_ID  => $callbackBody[ConnectResponseFields::IPG_TRANSACTION_ID],
         ];
+
+        $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
+                    ConnectResponseFields::STATUS, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TRANSACTION_ID,
+                    ConnectResponseFields::IPG_TRANSACTION_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::ENDPOINT_TRANSACTION_ID,
+                        ConnectResponseFields::ENDPOINT_TRANSACTION_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TERMINAL_ID,
+                        ConnectResponseFields::TERMINAL_ID, $callbackBody);
 
         if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
         {
-            $attributes[Entity::STATUS]                  = Status::AUTHORIZED;
-            $attributes[Entity::ENDPOINT_TRANSACTION_ID] = $callbackBody[ConnectResponseFields::ENDPOINT_TRANSACTION_ID];
-            $attributes[Entity::GATEWAY_TERMINAL_ID]     = $callbackBody[ConnectResponseFields::TERMINAL_ID];
-            $attributes[Entity::AUTH_CODE]               = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+            $attributes[Entity::STATUS]    = Status::AUTHORIZED;
+
+            $attributes[Entity::AUTH_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+
+            $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
 
         $this->setErrorMessageIfNeeded($attributes);
@@ -227,26 +295,103 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCaptureOrRefundFields($response, $input)
+    protected function getCaptureFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
+
+        return $attributes;
+    }
+
+    protected function getRefundFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getReverseFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setRefundId($attributes, $input);
+
+        return $attributes;
+    }
+
+    protected function getCommonResponseFields($response, $input)
     {
         $attributes = [
             Entity::RECEIVED               => true,
             Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
             Entity::AMOUNT                 => $input['amount'],
-            Entity::TDATE                  => $response[ApiResponseFields::TDATE],
             Entity::STATUS                 => Status::CAPTURED,
-            Entity::TRANSACTION_RESULT     => $response[ApiResponseFields::TRANSACTION_RESULT],
-            Entity::GATEWAY_PAYMENT_ID     => $response[ApiResponseFields::ORDER_ID],
-            Entity::GATEWAY_TRANSACTION_ID => $response[ApiResponseFields::IPG_TRANSACTION_ID],
-            Entity::GATEWAY_TERMINAL_ID    => $response[ApiResponseFields::TERMINAL_ID],
-            Entity::AUTH_CODE              => $response[ApiResponseFields::PROCESSOR_APPROVAL_CODE],
         ];
 
-        $this->setRefundIdIfNeeded($attributes, $input);
+        $this->setApproval($attributes[Entity::APPROVAL_CODE]);
+
+        $this->setFieldIfPresent($attributes, Entity::TDATE,
+                    ApiResponseFields::TDATE, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
+                    ApiResponseFields::TRANSACTION_RESULT, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_PAYMENT_ID,
+                    ApiResponseFields::ORDER_ID, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TRANSACTION_ID,
+                    ApiResponseFields::IPG_TRANSACTION_ID, $response);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TERMINAL_ID,
+                    ApiResponseFields::TERMINAL_ID, $response);
 
         $this->setErrorMessageIfNeeded($attributes);
 
         return $attributes;
+    }
+
+    protected function setFieldIfPresent(array & $attributes, string $field,
+                                            string $responseField, array $response)
+    {
+        if (isset($response[$responseField]) === true)
+        {
+            $attributes[$field] = $response[$responseField];
+        }
+        else
+        {
+            $attributes[$field] = null;
+
+            if ($this->approval === false)
+            {
+                // Random fields are often missing in FirstData responses
+                // in cases of auth being declined. Raise warning, but chill.
+                $traceLevel = 'warning';
+                $message    = $responseField . ' is missing from response.';
+            }
+            else
+            {
+                // If a random field is missing in a successful response,
+                // then contact FirstData immediately and clear things up.
+                $traceLevel = 'error';
+                $message    = $responseField . ' is missing from a successful preauth response.';
+            }
+
+            $this->trace->$traceLevel(
+                TraceCode::GATEWAY_PAYMENT_MISSING_FIELD,
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'message'    => $message,
+                    'gateway'    => $this->gateway,
+                ]
+            );
+        }
     }
 
     protected function buildTimeoutResponse($exception)
@@ -266,21 +411,16 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function setRefundIdIfNeeded(& $attributes, $input)
+    protected function setRefundId(& $attributes, $input)
     {
-        if ($this->action == Base\Action::REFUND)
-        {
-            $attributes[Entity::REFUND_ID] = $input['id'];
-        }
+        $attributes[Entity::REFUND_ID] = $input['id'];
     }
 
     protected function setErrorMessageIfNeeded(& $attributes)
     {
-        $approvalCode = $attributes[Entity::APPROVAL_CODE];
-
-        if ($approvalCode[0] !== 'Y')
+        if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($approvalCode);
+            $approvalCode = $this->getActualCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
 
             $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
             $attributes[Entity::STATUS]        = Status::FAILED;
@@ -452,9 +592,14 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
-            [$response->body]);
+            [
+                'body'    => $response->body,
+                'headers' => $response->headers,
+                'code'    => $response->status_code,
+            ]
+        );
 
-        $xml = simplexml_load_string($response->body);
+        $xml = simplexml_load_string(trim($response->body));
 
         return $xml;
     }
@@ -470,7 +615,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RESPONSE,
             [
                 'raw_xml_response' => $xml->asXml()
-            ]);
+            ]
+        );
 
         $soapEnvBody = $xml->children('SOAP-ENV', true)->Body;
 
@@ -511,17 +657,18 @@ class Gateway extends Base\Gateway
                     'payment_id' => $payment['id'],
                     'message'    => 'Payment verification failed.',
                     'gateway'    => $this->gateway,
-                ]);
+                ]
+            );
 
             return null;
         }
 
         $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-                [
-                    'gateway_verify_response' => $ipgApiActionResponse->asXML()
-                ]
-            );
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $ipgApiActionResponse->asXML()
+            ]
+        );
 
         return $ipgApiActionResponse;
     }
@@ -543,7 +690,8 @@ class Gateway extends Base\Gateway
         $servicesApiActionList = [
             Action::CAPTURE,
             Action::REFUND,
-            Action::VERIFY
+            Action::VERIFY,
+            Action::REVERSE,
         ];
 
         if (in_array($this->action, $servicesApiActionList))
@@ -601,7 +749,7 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '')
     {
-        $approvalCode   = $content[ConnectResponseFields::APPROVAL_CODE];
+        $approvalCode   = $content[ConnectResponseFields::APPROVAL_CODE] ?? null;
 
         $txnDateTime    = $content[ConnectResponseFields::TXN_DATE_TIME];
 
@@ -655,7 +803,7 @@ class Gateway extends Base\Gateway
             // Card Entity type field is not reliable, and not mandatory
             // ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
             ConnectRequestFields::COMMENTS                  => '',
-            ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => 'Razorpay Payments',
+            ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => $this->getDynamicMerchantName($input['merchant']),
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
             ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],
@@ -701,38 +849,71 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
-
         $request[ApiRequestFields::A1_ACTION]
                     [ApiRequestFields::A1_INQUIRY_ORDER]
-                        [ApiRequestFields::A1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+                        [ApiRequestFields::A1_ORDER_ID] = $input['payment']['id'];
 
         return $request;
     }
 
-    protected function getRequestArray($input, $txnType)
+    protected function getCaptureRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
 
-        $currency     = $input['payment'][Payment\Entity::CURRENCY];
-        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
-        $amountEntity = TxnType::$amountEntity[$txnType];
+        $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
 
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE]     = $txnType;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL]         = $input[$amountEntity]['amount'] / 100;
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY]             = $currencyCode;
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $gatewayPayment[Entity::GATEWAY_PAYMENT_ID];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
     }
 
-    protected function arrayToXml($array, $wrap=null)
+    protected function getRefundRequestArray($input)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
+
+        $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function getReverseRequestArray($input)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                            $input['payment'][Payment\Entity::ID],
+                                            Base\Action::AUTHORIZE);
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
+            ApiRequestFields::V1_TDATE    => $gatewayPayment[Entity::TDATE],
+        ];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function setPaymentRequestArray(& $body, $input, $txnType)
+    {
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amountEntity = TxnType::$amountEntity[$txnType];
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function arrayToXml($array, $wrap = null)
     {
         // set initial value for XML string
         $xml = '';
@@ -779,7 +960,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $gatewayCallback);
+            $gatewayCallback
+        );
     }
 
     protected function scrubCardInfo(& $content)
@@ -806,42 +988,32 @@ class Gateway extends Base\Gateway
     // Client Cert           => GATEWAY_CLIENT_CERTIFICATE (base64 encoded)
     // Client Cert Password  => GATEWAY_TERMINAL_PASSWORD
 
-    protected function getStoreId()
+    public function getStoreId()
     {
+        $storeId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_store_id'];
+            $storeId = $this->config['test_store_id'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-    }
-
-    protected function getSharedSecret()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_hash_secret'];
-        }
-
-        return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        return $storeId;
     }
 
     protected function getCredentials()
     {
+        $auth = [
+            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
+            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
+        ];
+
         if ($this->mode === Mode::TEST)
         {
             $auth = [
                 'username' => $this->config['test_user_id'],
                 'password' => $this->config['test_password']
             ];
-
-            return $auth;
         }
-
-        $auth = [
-            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
-            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
-        ];
 
         return $auth;
     }
@@ -868,13 +1040,11 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
+            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+
             if ($this->mode === Mode::TEST)
             {
                 $encodedCert = $this->config['test_client_certificate'];
-            }
-            else
-            {
-                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
             $key = base64_decode($encodedCert);
@@ -893,11 +1063,13 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
+        $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_client_certificate_password'];
+            $password = $this->config['test_client_certificate_password'];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        return $password;
     }
 }

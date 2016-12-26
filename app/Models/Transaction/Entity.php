@@ -93,7 +93,20 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::GRATIS    => false,
+        self::GRATIS                => false,
+        self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_FEE           => null,
+        self::GATEWAY_SERVICE_TAX   => null,
+        self::BALANCE               => null,
+        self::API_FEE               => null,
+        self::FEE_CREDITS           => 0,
+        self::ESCROW_BALANCE        => null,
+        self::SETTLED_AT            => null,
+        self::SETTLEMENT_ID         => null,
+        self::RECONCILED_AT         => null,
+        self::SETTLED               => 0,
+        self::PRICING_RULE_ID       => null,
+        self::SERVICE_TAX           => null,
     );
 
     protected $amounts = array(
@@ -160,6 +173,11 @@ class Entity extends Base\PublicEntity
     public function settlement()
     {
         return $this->belongsTo('RZP\Models\Settlement\Entity');
+    }
+
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
     }
 
     public function getCredit()
@@ -467,6 +485,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::SETTLEMENT);
     }
 
+    public function isTypeAdjustment()
+    {
+        return ($this->getType() === Type::ADJUSTMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -477,15 +500,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_CREDITS);
     }
 
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();
 
         unset($reportTxn[self::ID]);
 
-        $reportTxn['description'] = null;
-        $reportTxn['notes'] = null;
-        $reportTxn['payment_id'] = null;
+        $reportTxn[Payment\Entity::DESCRIPTION] = null;
+        $reportTxn[Payment\Entity::NOTES] = null;
+        $reportTxn[self::PAYMENT_ID] = null;
         $reportTxn['settlement_utr'] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
@@ -496,8 +524,8 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn['description'] = $payment->getDescription();
-            $reportTxn['notes'] = $payment->getNotesJson();
+            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
             if ($payment->hasBeenCaptured() === false)
             {
@@ -516,13 +544,20 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn['payment_id'] = $payment->getPublicId();
+            $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
         }
         else if ($this->isTypeSettlement())
         {
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
+            $reportTxn[self::SETTLED] = null;
+        }
+        else if ($this->isTypeAdjustment())
+        {
+            $adjustment = $this->source;
+
+            $reportTxn['description'] = $adjustment->getDescription();
         }
 
         return $reportTxn;

@@ -1,7 +1,6 @@
 <?php
 
 return array(
-
     'dashboard' => array(
         'url'       =>  env('APP_DASHBOARD_URL'),
         'secret'    =>  env('APP_DASHBOARD_SECRET'),
@@ -62,8 +61,20 @@ return array(
         'secret'    => env('MAXMIND_SECRET')
     ),
 
+    'bitly' => array(
+        'mock'          => env('BITLY_MOCK', false),
+        //'access_token'  => env('BITLY_ACCESS_TOKEN'),
+        'access_token'  => env('BITLY_ACCESS_TOKEN_PUBLIC'),
+    ),
+
     'lumberjack' => array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
     ),
+
+    'exchange'  => [
+        'mock'      => env('EXCHANGE_MOCK', false),
+        'url'       => env('EXCHANGE_URL'),
+        'appId'     => env('EXCHANGE_APP_ID')
+    ],
 );

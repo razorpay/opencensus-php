@@ -14,6 +14,7 @@ use RZP\Gateway\AxisMigs;
 
 use Rzp\Trace\TraceCode;
 use App;
+use RZP\Models\Base\PublicCollection;
 
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -818,11 +819,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'                           => get_called_class()
             ]);
 
-        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
         $this->repo->saveOrFail($txn);
         // This is required to save the association of the transaction with the payment.
         $this->repo->saveOrFail($this->payment);
+
+        $this->saveFeeDetails($txn, $feesSplit);
+    }
+
+    protected function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
+    {
+        foreach ($feesSplit as $feeSplit)
+        {
+            $feeSplit->transaction()->associate($txn);
+
+            $this->repo->saveOrFail($feeSplit);
+        }
+
+        $this->app['trace']->info(
+            TraceCode::FEES_BREAKUP_CREATED,
+            [
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
     }
 
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)

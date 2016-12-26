@@ -10,6 +10,19 @@ use RZP\Trace\TraceCode;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
+    protected function validatePublicId($attribute, $id)
+    {
+        $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+
+        if ($match === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $attribute . ' is not valid.');
+        }
+
+        return true;
+    }
+
     /**
      * Create basic contact validate
      *

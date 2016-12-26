@@ -21,9 +21,10 @@ class Validator extends Base\Validator
     protected static $refundRules = array(
         'pg_instance_id'                 => 'required|string',
         'merchant_id'                    => 'required|string',
-        'perform'                        => 'required|in:processMerchantAPI#DirectVoid,processMerchantAPI#DirectRefund',
+        'perform'                        => 'required|in:processMerchantAPI#DirectVoidORRefund',
         'orginal_transaction_id'         => 'required|string',
         'original_merchant_reference_no' => 'required|string',
+        'new_merchant_reference_no'      => 'required|string',
         'login_id'                       => 'required|in:random',
         'pgName'                         => 'required|in:hdfcpg',
         'message_hash'                   => 'required|string',

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
@@ -21,13 +22,27 @@ class RefundFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getRefundData($input);
 
-        $name = $this->getFileToWriteName();
+        // Uncomment commented lines to disbale UFH
 
-        $filePath = $this->writeToTextFile($txt);
+        //$name = $this->getFileToWriteName();
 
-        $fileFullPath = $this->getFullFilePath($name);
+        //$filePath = $this->writeToTextFile($txt);
 
-        return [$totalAmount, $fileFullPath];
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::KOTAK_NETBANKING_REFUND);
+
+        $file = $creator->get();
+
+        //$fileFullPath = $this->getFullFilePath($name);
+
+        //return [$totalAmount, $fileFullPath];
+
+        return [$totalAmount, $file['local_file_path']];
     }
 
     protected function getTextData($data, $prependLine = '')

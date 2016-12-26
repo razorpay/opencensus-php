@@ -47,6 +47,20 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->save($entity, $options);
     }
 
+    public function sync($entity, $relation, $ids = [])
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $ids);
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $id, $attributes, $touch);
+    }
+
     public function delete($entity)
     {
         $repo = $this->getRepositoryClassFromObject($entity);
@@ -137,10 +151,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
     /**
      * Execute a callable within a transaction.
      *
-     * @param  Closure  $callback
+     * @param callable $callback
      * @return mixed
-     *
-     * @throws \Exception
      */
     public function transaction(callable $callback)
     {

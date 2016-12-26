@@ -84,6 +84,7 @@ trait PaymentCreationTrait
             '/payments/create/checkout',
             '/payments/create/redirect',
             '/payments/create/recurring',
+            '/payments/create/upi',
             '/payments');
 
         return in_array($url, $urls, true);
@@ -322,6 +323,8 @@ trait PaymentCreationTrait
 
         if ($content['type'] === 'return')
         {
+            $this->assertS2SCallback($response);
+
             $this->merchantCallbackFlow = true;
 
             $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -333,6 +336,14 @@ trait PaymentCreationTrait
             $this->assertResponse('json', $response);
 
             return $response;
+        }
+    }
+
+    protected function assertS2SCallback($response)
+    {
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $this->assertResponse('json', $response);
         }
     }
 

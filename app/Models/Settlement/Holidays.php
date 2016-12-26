@@ -70,10 +70,59 @@ class Holidays
                 31 => 'Diwali (Balipratipada)/Deepavali',
             ],
             11 => [
+                9  => 'Unscheduled Bank Holiday',
                 14 => 'Guru Nanak Jayanti/Kartik Poornima',
             ],
             12 => [
                 12 => 'Id-e-Milad/Eid Milad-un-Nabi',
+            ],
+        ],
+        2017 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                24 => 'Mahashivratri',
+            ],
+            3 => [
+                13 => 'Holi (2nd day)/Yaosang 2nd Day',
+                28 => 'Gudi Padwa',
+            ],
+            4 => [
+                1  => 'Annual closing of Accounts',
+                4  => 'Shree Ram Navami',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Cheiraoba/Good Friday/Biju Festival',
+            ],
+            5 => [
+                1  => 'Maharashtra Din/May Day',
+                10 => 'Buddha Pournima',
+            ],
+            6 => [
+                26 => 'Ramzan Id (Id-ul-Fitr)',
+            ],
+            7 => [
+                1  => 'Annual Closing of RBI/Kharchi Puja',
+            ],
+            8 => [
+                15 => 'Independence Day/Janmashtami',
+                17 => 'Parsi New Year (Shahenshahi)',
+                25 => 'Ganesh Chaturthi',
+            ],
+            9 => [
+                2  => 'Bakri Id (Id-ul-Zuha)',
+                30 => 'Durga Puja/Dussehra (Vijaya Dashmi)',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                19 => 'Diwali Amavasaya (Laxmi Pujan)/Kali Puja',
+                20 => 'Diwali (Balipratipada)',
+            ],
+            11 => [
+                4  => 'Guru Nanak Jayanti',
+            ],
+            12 => [
+                1  => 'Id-e-Milad/Eid Milad-un-Nabi',
+                25 => 'Christmas',
             ],
         ],
     ];

@@ -21,6 +21,7 @@ class Entity
     const CARD                  = 'card';
     // TODO: Should this be renamed to subscription_plan? Since we have emi_plan and pricing_plan too.
     const PLAN                  = 'plan';
+    const ITEM                  = 'item';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
@@ -33,35 +34,51 @@ class Entity
     const PAYMENT               = 'payment';
     const FEATURE               = 'feature';
     const WEBHOOK               = 'webhook';
+    const INVOICE               = 'invoice';
     const SCHEDULE              = 'schedule';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
+    const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
+    const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const SUBSCRIPTION          = 'subscription';
+    const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
-    const DAILY_SETTLEMENT      = 'daily_settlement';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const MERCHANT_DETAIL       = 'merchant_detail';
+    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
+
+    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const OFFER                 = 'offer';
+    const COUPON                = 'coupon';
 
     //
     // Gateway entities
     //
 
+    const EBS                   = 'ebs';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
-    const EBS                   = 'ebs';
+    const UPI                   = 'upi';
     const AMEX                  = 'amex';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
-    const UPI                   = 'upi';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
@@ -70,12 +87,12 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
     const UPI_ICICI             = 'upi_icici';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
-    const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const WALLET_PAYUMONEY      = 'wallet_payumoney';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
@@ -102,29 +119,41 @@ class Entity
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::OFFER                 => \RZP\Models\Offer::class,
+        self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
-        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
+        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
+        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
-        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::ORG                   => \RZP\Models\Admin\Org::class,
+        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ROLE                  => \RZP\Models\Admin\Role::class,
+        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
+        self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
+        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
     protected static $repository = array(
@@ -138,6 +167,23 @@ class Entity
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
+    protected static $syncedInLiveAndTest = array(
+        self::ORG,
+        self::ORG_HOSTNAME,
+        self::ROLE,
+        self::PERMISSION,
+        self::GROUP,
+        self::ADMIN,
+        self::ADMIN_TOKEN,
+        self::IIN,
+        self::FEATURE,
+        self::METHODS,
+        self::PRICING,
+        self::EMI_PLAN,
+        self::MERCHANT,
+        self::SCHEDULE,
+    );
+
     public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
@@ -149,7 +195,7 @@ class Entity
 
         // Converts first character of the
         // words (delimited by underscores/hyphens/spaces) to uppercase
-        return '\RZP\Models\\' . studly_case($entity);
+        return 'RZP\Models\\' . studly_case($entity);
     }
 
     public static function getEntityClass(string $entity)
@@ -238,5 +284,10 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    public static function isEntitySyncedInLiveAndTest($entity)
+    {
+        return in_array($entity, self::$syncedInLiveAndTest, true);
     }
 }

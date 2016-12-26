@@ -56,18 +56,6 @@ class FeaturesTest extends TestCase
         $this->assertArraySelectiveEquals($resultData, $content);
     }
 
-    public function testMigrateMerchantFeature()
-    {
-        $merch1 = $this->fixtures->create('merchant', ['id' => '10000000000001',
-                    'features' => 'dummy']);
-        $merch2 = $this->fixtures->create('merchant', ['id' => '10000000000002',
-                    'features' => 'dummy']);
-        $merch3 = $this->fixtures->create('merchant', ['id' => '10000000000003',
-                    'features' => 'dummy']);
-
-        $this->startTest();
-    }
-
     public function testMultiAssignFeature()
     {
         $merch1 = $this->fixtures->create('merchant', ['id' => '10000000000001']);

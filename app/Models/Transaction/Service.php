@@ -33,4 +33,9 @@ class Service extends Base\Service
 
         return $report->getReport($input, 'transaction');
     }
+
+    public function createFeeBreakupForTransaction($input)
+    {
+        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
+    }
 }

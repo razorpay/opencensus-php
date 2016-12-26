@@ -62,6 +62,10 @@ TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testin
 * Run `phpunit --coverage-html [Directory to save coverage]`
 * You can also generate coverage in other formats. Visit [PHPUnit CodeCoverage](https://phpunit.de/manual/current/en/code-coverage-analysis.html) for more info.
 
+### Setup git hooks
+
+* Run `cp scripts/git-hooks/pre-commit .git/hooks/`
+
 # Docs
 
 To generate documentation, run the following:

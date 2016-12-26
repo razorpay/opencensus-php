@@ -38,7 +38,11 @@ class PublicEntity extends UniqueIdEntity
 
     public function toArrayPublic()
     {
-        $array = $this->toArray();
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayPublic();
+
+        $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
 
@@ -94,6 +98,40 @@ class PublicEntity extends UniqueIdEntity
 
             $this->$func($array);
         }
+    }
+
+    public function relationsToArrayPublic()
+    {
+        $array = [];
+        $public = array_flip($this->public);
+
+        $relations = $this->relations;
+
+        foreach ($relations as $key => $value)
+        {
+            $newKey = snake_case($key);
+            if ($newKey !== $key)
+            {
+                $relations[$newKey] = $value;
+                unset($relations[$key]);
+            }
+        }
+
+        $publicRelations = array_intersect_key($relations, $public);
+
+        foreach ($publicRelations as $key => $value)
+        {
+            if (($value !== null) and PublicCollection::isPublicCollection($value))
+            {
+                $array[$key] = $value->toArrayPublicEmbedded();
+            }
+            else
+            {
+                $array[$key] = $value;
+            }
+        }
+
+        return $array;
     }
 
     public function setPublicIdAttribute(array & $array)
@@ -204,6 +242,18 @@ class PublicEntity extends UniqueIdEntity
         return $id;
     }
 
+    public static function verifyIdAndStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
+    }
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)
@@ -267,9 +317,21 @@ class PublicEntity extends UniqueIdEntity
         return static::$delimiter;
     }
 
+    /**
+     * Returns id with the sign prefix attached.
+     */
     public static function getSignedId($id)
     {
         return static::getIdPrefix() . $id;
+    }
+
+    /**
+     * Returns id with the sign prefix attached.
+     * However, if the value is null, then simply return null.
+     */
+    public static function getSignedIdOrNull($id)
+    {
+        return $id ? static::getSignedId($id) : null;
     }
 
     public function getEntity()
@@ -284,17 +346,10 @@ class PublicEntity extends UniqueIdEntity
 
     public function getDateInFormatDMY($attribute)
     {
-        $value = $this->getAttribute($attribute);
-
-        if (empty($value))
-        {
-            return null;
-        }
-
-        return date('d/m/y', $value);
+        return $this->getDateInFormat($attribute, 'd/m/y');
     }
 
-    public function getDateInFormatDMYHMS($attribute)
+    public function getDateInFormat($attribute, $format)
     {
         $value = $this->getAttribute($attribute);
 
@@ -303,6 +358,21 @@ class PublicEntity extends UniqueIdEntity
             return null;
         }
 
-        return date('d/m/y h:i:s', $value);
+        return date($format, $value);
+    }
+
+    public function getDateInFormatDMYHMS($attribute)
+    {
+        return $this->getDateInFormat($attribute, 'd/m/y h:i:s');
+    }
+
+    /**
+     * After Deleting Entity Contents are irrelevant
+     * returning entity id and deleted key with value as true
+     * @return array
+     */
+    public function toArrayDeleted()
+    {
+        return [static::ID => $this->getPublicId(), 'deleted' => true];
     }
 }

@@ -10,6 +10,8 @@ use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber
 {
@@ -36,6 +38,15 @@ class ApiEventSubscriber
 
     protected $params;
 
+    protected $webhookEnabledForEvent = false;
+
+    // Events for which only webhook needs to be triggered
+    protected static $webhookOnlyEvents = [
+        WebhookEvent::PAYMENT_AUTHORIZED,
+        WebhookEvent::PAYMENT_FAILED,
+        WebhookEvent::ORDER_PAID,
+    ];
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -54,7 +65,13 @@ class ApiEventSubscriber
     {
         $event = $this->getFiringEvent();
 
-        if ($this->isWebhookEnabledForEvent($params) === false)
+        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
+
+        // Returns if:
+        // - Event is web-hook only event,
+        // - Merchant doesn't have web-hook enabled
+        if (in_array($event, self::$webhookOnlyEvents, true) and
+            ($this->webhookEnabledForEvent === false))
         {
             return;
         }
@@ -112,14 +129,52 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onInvoicePaid($payment)
+    {
+        $invCore = new Invoice\Core;
+        $invCore->setCustomerDetailsFromPaymentIfAbsent($payment);
+
+        if ($this->webhookEnabledForEvent === false)
+        {
+            return;
+        }
+
+        // WebHook specific statements
+        $payload = $this->getInvoicePayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getOrderPayload($payment)
     {
         $order = $payment->order;
 
-        $partialPayload = $this->getPaymentPayload($payment);
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
 
         $partialPayload[Constants\Entity::ORDER] = [
             'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getInvoicePayload($payment)
+    {
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::ORDER] = [
+            'entity' => $order->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::INVOICE] = [
+            'entity' => $invoice->toArrayPublic()
         ];
 
         return $partialPayload;
