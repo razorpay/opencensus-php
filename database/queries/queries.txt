@@ -1400,7 +1400,7 @@ ALTER TABLE merchants
     ADD COLUMN convert_currency TINYINT(1) DEFAULT 1 AFTER auto_refund_delay;
 
 ALTER TABLE payments
-    ADD COLUMN base_amount INTEGER UNSIGNED DEFAULT 0 AFTER currency;
+    ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
 
 ALTER TABLE refunds
-    ADD COLUMN base_amount INTEGER UNSIGNED DEFAULT 0 AFTER currency;
+    ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;

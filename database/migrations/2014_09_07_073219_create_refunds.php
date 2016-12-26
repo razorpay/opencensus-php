@@ -34,8 +34,7 @@ class CreateRefunds extends Migration
             $table->char(Refund::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
 
             $table->integer(Refund::BASE_AMOUNT)
-                  ->unsigned()
-                  ->default(0);
+                  ->unsigned();
 
             $table->text(Refund::NOTES);
 
