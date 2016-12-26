@@ -106,7 +106,12 @@ class EntityReportTest extends TestCase
             'Refund Status' => null,
         ];
 
-        $this->assertArraySelectiveEquals($expectedContent, $combinedReport[0]);
+        $saleTxnReports = array_filter($combinedReport, function ($obj)
+        {
+            return $obj['Txn State'] === 'Sale';
+        });
+
+        $this->assertArraySelectiveEquals($expectedContent, array_pop($saleTxnReports));
     }
 
     protected function fetchBrokingReport($content)
