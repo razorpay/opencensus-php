@@ -147,7 +147,8 @@ return array(
     ],
 
     'upi_npci' => [
-        'test_private_key'       => env('UPI_NPCI_TEST_PRIVATE_KEY'),
+        'test_decryption_key'    => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
+        'test_signing_key'       => env('UPI_NPCI_TEST_SIGNING_KEY'),
     ],
 
     'wallet_payzapp' => array(
