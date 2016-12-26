@@ -13,7 +13,9 @@ app.controller('PaymentDetailCtrl', [
   'displayValue',
   'getState',
   'getType',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass, user, displayClass, displayValue, getState, getType) {
+  'getStateMerchant',
+  function ($scope, $http, $stateParams, $modal, alertsFactory,
+      transformRequestAsFormPost, getStatusClass, user, displayClass, displayValue, getState, getType, getStateMerchant) {
 
     $scope.tags = [];
 
@@ -24,6 +26,7 @@ app.controller('PaymentDetailCtrl', [
     $scope.displayClass = displayClass;
     $scope.getState = getState;
     $scope.getType = getType;
+    $scope.getStateMerchant = getStateMerchant;
 
     // Keys currently added the to good-looking view
     var shownByDefault = [

@@ -682,6 +682,26 @@ angular.module('app.services', [])
     stop: $.noop
   };
 })
+.factory('getStateMerchant', function() {
+  return function(key, value) {
+    switch (key) {
+      case 'payment_id':
+        return 'app.payments.detail({id: value})';
+      case 'refund_id':
+        return 'app.refunds.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'order_id':
+        return 'app.orders.detail({id: value})';
+      case 'invoice_id':
+        return 'app.invoicedetails({id: value})';
+      default:
+        return '.';
+    }
+  };
+})
 .factory('permissionsFactory', function () {
   var _permissions = {};
   return {

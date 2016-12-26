@@ -90,7 +90,7 @@
           </div>
           <!-- These are the extra fields that were not nicely formatted above -->
           <div class="list-group-item" ng-repeat="key in keysNotShown()"
-            ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
+            ng-init="value = entity[key];valueType = getType(key, value);state=getStateMerchant(key, value);" ui-sref="{{state}}"
             ng-show="value!==null">
             <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
               {{displayValue(key, value)}}
