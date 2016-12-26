@@ -4,6 +4,7 @@ namespace RZP\Models\Admin;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment\Currency;
 
 class ExchangeRate extends Base\Core
 {
@@ -31,7 +32,30 @@ class ExchangeRate extends Base\Core
         return ['success' => true];
     }
 
-    public function getRates($currency)
+    public function getBaseAmount($amount, $currency)
+    {
+        // currently we set rates in redis only for usd
+        if ($currency === Currency::INR)
+        {
+            return $amount;
+        }
+
+        $rates = $this->getRates($currency);
+
+        $denominationFactorINR = Currency::DENOMINATION_FACTOR[Currency::INR];
+
+        $denominationFactorInputCurr = Currency::DENOMINATION_FACTOR[$currency];
+
+        $denominationFactor = $denominationFactorINR / $denominationFactorInputCurr;
+
+        $baseAmount = $amount * $rates[Currency::INR] * $denominationFactor;
+
+        $baseAmount = (int) ceil($baseAmount);
+
+        return $baseAmount;
+    }
+
+    protected function getRates($currency)
     {
         $key = self::EXCHANGE_RATE_KEY . $currency;
 

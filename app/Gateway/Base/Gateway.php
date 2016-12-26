@@ -261,17 +261,34 @@ class Gateway
 
     public function getAmountCurrencyData(array $input)
     {
-        $amount = $input['payment']['amount'];
+        $entity = null;
 
-        $currency = $input['payment']['currency'];
-
-        if ($input['merchant']['currency_conversion'] === '1')
+        switch ($this->action)
         {
-            $amount = $input['payment']['base_amount'];
+            case Action::AUTHORIZE:
+            case Action::CAPTURE:
+                $entity = 'payment';
+                break;
+
+            case Action::REFUND:
+                $entity = 'refund';
+                break;
+
+            default:
+                throw new Exception\RuntimeException(
+                    'invalid action',
+                    ['action' => $this->action]);
+        }
+
+
+        $currency = $input[$entity]['currency'];
+
+        if ($input['terminal']->getCurrency() === Payment\Currency::INR)
+        {
+            $amount = $input[$entity]['base_amount'];
 
             $currency = Payment\Currency::INR;
         }
-
 
         $data['amount']   = $amount;
 

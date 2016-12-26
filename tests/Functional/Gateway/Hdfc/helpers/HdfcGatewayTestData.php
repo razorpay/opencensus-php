@@ -125,7 +125,7 @@ return [
 //        'gateway_transaction_id' => '663191662573200',
         'action' => 5,
         'received' => true,
-        'amount' => '50',
+        'amount' => '500',
         'enroll_result' => null,
         'status' => 'captured',
         'result' => 'CAPTURED',

@@ -8,6 +8,7 @@ use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -51,7 +52,8 @@ trait Refund
         $data = array(
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency());
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -122,7 +124,8 @@ trait Refund
         $data = array(
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency());
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -173,7 +176,8 @@ trait Refund
         $data = [
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount()
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
         ];
 
         return $this->callGatewayForCreateRefundRecord($data);
@@ -471,6 +475,14 @@ trait Refund
 
         $refund->merchant()->associate($this->merchant);
 
+        $amount = $refund->getAmount();
+
+        $currency = $refund->getCurrency();
+
+        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
+
+        $refund->setBaseAmount($baseAmount);
+
         if ($this->payment->isCaptured())
         {
             $this->validateMerchantBalance($refund);
@@ -490,7 +502,8 @@ trait Refund
         $data = array(
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency());
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -547,12 +560,12 @@ trait Refund
 
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
-        if ($balance->getBalance() < $refund->getAmount())
+        if ($balance->getBalance() < $refund->getBaseAmount())
         {
             $traceMessage = [
                 'message' => 'Not enough balance',
                 'merchant_balance' => $balance->getBalance(),
-                'refund_amount' => $refund->getAmount()
+                'refund_amount' => $refund->getBaseAmount()
             ];
 
             $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);

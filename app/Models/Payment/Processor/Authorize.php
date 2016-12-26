@@ -657,30 +657,13 @@ trait Authorize
 
     protected function processCurrencyConversions(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
-
         $currency = $payment->getCurrency();
 
         $amount = $payment->getAmount();
 
-        $totalAmount = $amount;
+        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
 
-        if ($currency !== Payment\Currency::INR)
-        {
-            $rates = (new Admin\ExchangeRate)->getRates($currency);
-
-            $denominationFactorINR = Payment\Currency::DENOMINATION_FACTOR[Payment\Currency::INR];
-
-            $denominationFactorInputCurr = Payment\Currency::DENOMINATION_FACTOR[$currency];
-
-            $denominationFactor = $denominationFactorINR / $denominationFactorInputCurr;
-
-            $totalAmount = $amount * $rates[Payment\Currency::INR] * $denominationFactor;
-
-            $totalAmount = ceil($totalAmount);
-        }
-
-        $payment->setBaseAmount($totalAmount);
+        $payment->setBaseAmount($baseAmount);
     }
 
     /**

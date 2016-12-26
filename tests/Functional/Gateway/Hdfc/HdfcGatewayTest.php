@@ -78,10 +78,12 @@ class HdfcGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('hdfc', true);
+        $gatewayPayment = $this->getLastEntity('hdfc', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testHdfcUSDPaymentEntity'], $payment);
+            $this->testData['testHdfcUSDPaymentEntity'], $gatewayPayment);
+
+        $this->refundPayment($payment['id'], $payment['amount']/2);
     }
 
     public function testMaestroCard()

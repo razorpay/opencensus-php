@@ -207,7 +207,8 @@ trait Capture
 
         $data = array(
             'payment'   => $payment->toArray(),
-            'amount'    => $amount
+            'amount'    => $amount,
+            'currency'  => $payment->getCurrency()
         );
 
         if ($payment->isMethodCardOrEmi())
