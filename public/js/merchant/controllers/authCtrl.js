@@ -35,7 +35,7 @@ app.controller('AuthCtrl', [
       },
       merchantData: {
         business_type: null,
-        monthly_transaction: null,
+        monthly_transaction: 1,
         role: null,
         department: null,
         business_name: '',
@@ -86,7 +86,7 @@ app.controller('AuthCtrl', [
 
     $scope.goToStep = function (step, subStep) {
       $scope.signup.currentStep = step;
-      $scope.signup.currentSubStep = subStep;
+      $scope.signup.currentSubStep = subStep || 0;
     }
 
     $scope.createAccount = function ($valid) {
@@ -131,6 +131,9 @@ app.controller('AuthCtrl', [
       var request = $http(payload);
       request.success(function (data) {
         debugger
+        if (data.success || 1) {
+          $scope.goToStep(2, $scope.signup.currentSubStep + 1)
+        }
       })
     }
 

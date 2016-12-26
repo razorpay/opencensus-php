@@ -28,6 +28,10 @@
   .logo {
     height 32px
   }
+  
+  ::-webkit-scrollbar { 
+    display: none; 
+  }
 }
 
 .auth-header 
@@ -154,6 +158,7 @@
   border: 1px solid rgba(0, 0, 0, 0.26);
   margin-right: 4px;
   border-radius: 4px;
+  transition: all 0.2s ease-in
   &.active{
     width: 12px;
     background-color: #7266ba;
@@ -163,6 +168,7 @@
 
 .signup-details-translate-container 
   width 1200px
+  transition transform .2s ease-in
 
 .signup-details-overflow-container
   margin-top 12px
@@ -171,7 +177,9 @@
 
 .signup-details-question
   width 240px
+  height 356px
   float left
+  overflow scroll
 
 .signup-details-button
   margin-top 18px
