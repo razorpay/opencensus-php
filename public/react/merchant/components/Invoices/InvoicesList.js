@@ -1,5 +1,4 @@
-import TableLoader from 'rzp/ui/TableLoader'
-import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import TableBody from '../TableBody'
 import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
@@ -58,23 +57,6 @@ const InvoiceListItem = (props) => {
 
 export default (props) => {
   let { invoices, isLoading, highlightRow = () => {} } = props
-  let tableRowComponent
-
-  if (isLoading) {
-    tableRowComponent = <TableLoader colSpan='8' />
-  } else if (invoices.length) {
-    tableRowComponent = invoices.map((invoice) =>
-      <InvoiceListItem
-        key={invoice.id}
-        invoice={invoice}
-        canHighlight={highlightRow(invoice)}
-        onEditClick={() => props.onEdit(invoice)}
-        onDeleteClick={() => props.onDelete(invoice)}
-      />
-    )
-  } else {
-    tableRowComponent = <EmptyTableRow colSpan='8' message='No Invoices found!' />
-  }
 
   return (
     <div class='table-responsive'>
@@ -92,9 +74,24 @@ export default (props) => {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          {tableRowComponent}
-        </tbody>
+        <TableBody
+          isLoading={isLoading}
+          colSpan={8}
+          rows={invoices}
+          emptyTableMsg='No Invoices found!'
+        >
+          {
+            invoices.map((invoice) =>
+              <InvoiceListItem
+                key={invoice.id}
+                invoice={invoice}
+                canHighlight={highlightRow(invoice)}
+                onEditClick={() => props.onEdit(invoice)}
+                onDeleteClick={() => props.onDelete(invoice)}
+              />
+            )
+          }
+        </TableBody>
       </table>
     </div>
   )

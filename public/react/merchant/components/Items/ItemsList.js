@@ -1,5 +1,4 @@
-import TableLoader from 'rzp/ui/TableLoader'
-import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import TableBody from '../TableBody'
 
 const ItemsListItem = (props) => {
   let { item, canHighlightRow } = props
@@ -39,24 +38,6 @@ const ItemsList = (props) => {
     highlightRow
   } = props
 
-  let tableRowComponent
-
-  if (isLoading) {
-    tableRowComponent = <TableLoader colSpan='4' />
-  } else if (items.length) {
-    tableRowComponent = items.map((item) =>
-      <ItemsListItem
-        key={item.id}
-        item={item}
-        canHighlightRow={highlightRow(item)}
-        onEdit={() => onEdit(item)}
-        onDelete={() => onDelete(item)}
-      />
-    )
-  } else {
-    tableRowComponent = <EmptyTableRow colSpan='4' message='No Items found!' />
-  }
-
   return (
     <div class='table-responsive'>
       <table class='table table-hover'>
@@ -68,9 +49,24 @@ const ItemsList = (props) => {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          {tableRowComponent}
-        </tbody>
+        <TableBody
+          isLoading={isLoading}
+          colSpan={4}
+          rows={customers}
+          emptyTableMsg='No Items found!'
+        >
+        {
+          items.map((item) =>
+            <ItemsListItem
+              key={item.id}
+              item={item}
+              canHighlightRow={highlightRow(item)}
+              onEdit={() => onEdit(item)}
+              onDelete={() => onDelete(item)}
+            />
+          )
+        }
+        </TableBody>
       </table>
     </div>
   )
