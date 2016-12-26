@@ -19,6 +19,8 @@ class PaymentTransferTest extends TestCase
 
         $this->payment = $this->getLastEntity('payment', false);
 
+        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+
         $this->ba->privateAuth();
     }
 

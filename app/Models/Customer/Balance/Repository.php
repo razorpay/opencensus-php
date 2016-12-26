@@ -23,4 +23,9 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->find($customerId);
     }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::CUSTOMER_ID, 'desc');
+    }
 }
