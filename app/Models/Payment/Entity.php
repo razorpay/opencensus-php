@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::METHOD,
         self::AMOUNT,
+        self::TOTAL_AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::CURRENCY,
@@ -170,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::TOTAL_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -240,6 +242,7 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::TOTAL_AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::FEE,
@@ -248,6 +251,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::RECURRING         => 'bool',
+        self::TOTAL_AMOUNT      => 'int',
         self::AMOUNT_AUTHORIZED => 'int',
         self::AMOUNT_REFUNDED   => 'int',
         self::AUTO_CAPTURED     => 'bool',
@@ -822,7 +826,7 @@ class Entity extends Base\PublicEntity
 
     public function getTotalAmount()
     {
-        return $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::TOTAL_AMOUNT);
     }
 
     public function getAmountRefunded()
