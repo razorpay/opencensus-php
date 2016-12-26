@@ -4,7 +4,10 @@ namespace RZP\Services\UrlShortener\Mock;
 
 use Illuminate\Config\Repository as Config;
 
-class Service extends Impl\Base
+use RZP\Trace\Trace;
+use RZP\Services\UrlShortener\Impl\Base;
+
+class Service extends Base
 {
     // Comma separated list of services, eg. 'gimli,bitly'.
 
