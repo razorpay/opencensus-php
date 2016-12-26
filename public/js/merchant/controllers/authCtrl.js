@@ -86,7 +86,9 @@ app.controller('AuthCtrl', [
 
     $scope.goToStep = function (step, subStep) {
       $scope.signup.currentStep = step;
-      $scope.signup.currentSubStep = subStep || 0;
+      if (typeof subStep !== undefined) {
+        $scope.signup.currentSubStep = subStep || 0;
+      }
     }
 
     $scope.createAccount = function ($valid) {
@@ -114,11 +116,14 @@ app.controller('AuthCtrl', [
       var request = $http(payload);
       request.success(function (data) {
         if (data.success) {
+          // todo hide login button because user is logged in
           $scope.goToStep(1)
         }
         // todo show error in alert
       })
     }
+
+    // todo get post-signup details and check whether post-signup steps are needed
 
     $scope.sendDetails = function () {
       var payload = {
@@ -132,7 +137,11 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         debugger
         if (data.success || 1) {
-          $scope.goToStep(2, $scope.signup.currentSubStep + 1)
+          if ($scope.signup.currentSubStep == 4) {
+            $scope.goToStep(3)
+          } else {
+            $scope.goToStep(2, $scope.signup.currentSubStep + 1)
+          }
         }
       })
     }

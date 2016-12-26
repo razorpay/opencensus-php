@@ -163,11 +163,13 @@
     </div>
     <div class="signup-step">
       <div class="auth-heading">
-        Account Created
+        Check your Inbox
       </div>
-      <div class="btn btn-default" ng-click="goToSigninLayout()">
-        Create Account
+      <div class="auth-text">
+        To get started with activation process, please click on the link in the verification email that we just sent to 
+        <strong>{{signup.data.email}}</strong>
       </div>
+      <div class="auth-text verification-email" xng-click="resendVerificationEmail()">Resend verification email</div>
     </div>
   </div>
 </div>
