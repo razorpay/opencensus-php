@@ -13,7 +13,7 @@ class Gimli extends Base
     {
         $baseUrl = $config['base_url'];
 
-        $this->apiUrl = $baseUrl . '/shorten';
+        $this->apiUrl = $baseUrl . 'shorten';
 
         $this->secret = $config['secret'];
     }
