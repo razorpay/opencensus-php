@@ -483,7 +483,7 @@ trait Refund
         return $refund;
     }
 
-    protected function processRefund(Payment\Refund\Entity $refund)
+    protected function  processRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 

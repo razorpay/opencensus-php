@@ -312,6 +312,23 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testUsdPaymentOnApiWithOrder()
+    {
+        $this->fixtures->create('order', [
+            'amount' => 5000,
+            'currency' => 'USD',
+            'receipt' => 'random receipt']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+    }
+
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
     {
         $request = array(
