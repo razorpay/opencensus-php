@@ -67,6 +67,22 @@ class CaptureTest extends TestCase
         $this->startTest();
     }
 
+    public function testCaptureWithGatewayCapturedTrue()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->startTest();
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('authorized', $hdfc['status']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+    }
+
     public function testCaptureWithDifferentAmount()
     {
         $amount = $this->payment['amount'] - 1000;
