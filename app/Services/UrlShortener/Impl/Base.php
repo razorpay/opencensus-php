@@ -2,6 +2,8 @@
 
 namespace RZP\Services\UrlShortener\Impl;
 
+use Requests;
+
 use RZP\Exception;
 
 abstract class Base
@@ -28,6 +30,15 @@ abstract class Base
         }
 
         return self::$instances[$calledClass];
+    }
+
+    protected function makeRequestAndValidateHeader(string $api, array $headers, $params)
+    {
+        $res = Requests::post($api, $headers, $params);
+
+        $this->validateResponseHeader($res);
+
+        return json_decode($res->body, true);
     }
 
     protected function validateResponseHeader($res)

@@ -2,8 +2,6 @@
 
 namespace RZP\Services\UrlShortener\Impl;
 
-use Requests;
-
 use RZP\Exception;
 
 class Bitly extends Base
@@ -19,35 +17,39 @@ class Bitly extends Base
 
     public function shorten(string $url)
     {
+        $params = $this->getParams($url);
+
+        $res = $this->makeRequestAndValidateHeader(self::API, [], $params);
+
+        $this->validateResponse($res);
+
+        return $res['data']['url'];
+    }
+
+    protected function getParams(string $url)
+    {
         $params = [
             'uri'          => $url,
             'format'       => 'json',
             'access_token' => $this->accessToken,
         ];
 
-        $res = Requests::post(self::API, [], $params);
-
-        $this->validateResponseHeader($res);
-
-        $resBody = json_decode($res->body, true);
-
-        $this->validateResponse($resBody);
-
-        return $resBody['data']['url'];
+        return $params;
     }
 
-    protected function validateResponse(array $resBody)
+    protected function validateResponse(array $res)
     {
         //
         // Bitly has response code as 200 always.
         // In the response body it sends error codes. So need to do this too.
+        // This also does key existense check in resbody for safety.
         //
 
-        if ($resBody['status_code'] === 200)
+        if (($res['status_code'] !== 200) or
+            (isset($res['data']['url']) === false))
         {
-            return;
-        }
 
-        throw new Exception\RuntimeException($resBody['status_txt'], $resBody);
+            throw new Exception\RuntimeException($res['status_txt'], $res);
+        }
     }
 }

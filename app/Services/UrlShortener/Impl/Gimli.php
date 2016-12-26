@@ -2,8 +2,6 @@
 
 namespace RZP\Services\UrlShortener\Impl;
 
-use Requests;
-
 class Gimli extends Base
 {
 
@@ -22,24 +20,36 @@ class Gimli extends Base
 
     public function shorten(string $url)
     {
-        $payload = [
+        $params = $this->getParams($url);
+
+        $headers = $this->getHeaders($params);
+
+        $res = $this->makeRequestAndValidateHeader($this->apiUrl, $headers, $params);
+
+        return $res['hash'];
+    }
+
+    protected function getParams(string $url)
+    {
+        $params = [
             'url' => $url,
         ];
 
-        $payload = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        $params = json_encode($params, JSON_UNESCAPED_UNICODE);
+
+        return $params;
+    }
+
+    protected function getHeaders(string $params)
+    {
+        $signature = $this->getSignature($params);
 
         $headers = [
             'Content-Type' => 'application/json',
-            'x-signature'  => $this->getSignature($payload),
+            'x-signature'  => $signature,
         ];
 
-        $res = Requests::post($this->apiUrl, $headers, $payload);
-
-        $this->validateResponseHeader($res);
-
-        $resBody = json_decode($res->body, true);
-
-        return $resBody['hash'];
+        return $headers;
     }
 
     protected function getSignature(string $payload)

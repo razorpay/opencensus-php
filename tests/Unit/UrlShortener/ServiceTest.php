@@ -14,28 +14,29 @@ class ServiceTest extends TestCase
 
         $app = $this->createApplication();
 
-        //
-        // Mocks implementations provider for testing
-        //
-
-        $this->provider = $this->createMock(UrlShortener\ImplProvider::class);
-
         $config             = $app['config'];
-        $UrlShortenerConfig = $config['applications.url_shortener'];
         $trace              = $app['trace'];
 
-        $this->service = new UrlShortener\Service($config, $trace, $this->provider);
+        $this->service = $this->getMockBuilder(UrlShortener\Service::class)
+                            ->setConstructorArgs([$config, $trace])
+                            ->setMethods(['getImplementation'])
+                            ->getMock();
 
-        $this->gimli   = new UrlShortener\Impl\Mock\Gimli($UrlShortenerConfig['gimli']);
-        $this->bitly   = new UrlShortener\Impl\Mock\Bitly($UrlShortenerConfig['bitly']);
+        $this->gimliConfig        = $config['applications.url_shortener.gimli'];
 
-        //
-        // Followings are test stubs for testing the service logic by emulating
-        // requried behaviour.
-        //
+        $this->gimli = $this->getMockBuilder(UrlShortener\Impl\Gimli::class)
+                            ->setConstructorArgs([$this->gimliConfig])
+                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->getMock();
 
-        $this->gimliTestMock   = $this->createMock(UrlShortener\Impl\Gimli::class);
-        $this->bitlyTestMock   = $this->createMock(UrlShortener\Impl\Bitly::class);
+        $this->bitlyConfig        = $config['applications.url_shortener.bitly'];
+
+        $this->bitly = $this->getMockBuilder(UrlShortener\Impl\Bitly::class)
+                            ->setConstructorArgs([$this->bitlyConfig])
+                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->getMock();
+
+        $this->testUrl = 'https://www.duckduckgo.com';
     }
 
     public function testShorten()
@@ -44,16 +45,27 @@ class ServiceTest extends TestCase
         // Tests when first of the service succeeds
         //
 
-        $this->provider->expects($this->once())
-                       ->method('get')
-                       ->with($this->equalTo('gimli'))
-                       ->willReturn($this->gimli);
+        $this->service->expects($this->once())
+                      ->method('getImplementation')
+                      ->with('gimli', $this->gimliConfig)
+                      ->willReturn($this->gimli);
 
-        $url = 'https://www.duckduckgo.com';
+        $this->gimli->expects($this->once())
+                    ->method('makeRequestAndValidateHeader')
+                    ->willReturn(
+                        [
+                            'id' => 'something',
+                            'url' => $this->testUrl,
+                            'hash' => 'http://dwarf.razorpay.dev/xyz',
+                            'comment' => null,
+                            'clicks' => 2,
+                            'created_at' => time(),
+                        ]
+                    );
 
-        $shortUrl = $this->service->shorten($url);
+        $shortUrl = $this->service->shorten($this->testUrl);
 
-        $this->assertContains('http://dwarf.razorpay.dev/', $shortUrl);
+        $this->assertEquals('http://dwarf.razorpay.dev/xyz', $shortUrl);
     }
 
     public function testShortenFallback()
@@ -62,14 +74,14 @@ class ServiceTest extends TestCase
         // Tests when fisrt of the service fails and second returns the short url.
         //
 
-        $this->provider->expects($this->exactly(2))
-                       ->method('get')
+        $this->service->expects($this->exactly(2))
+                      ->method('getImplementation')
                        ->withConsecutive(
-                            [$this->equalTo('gimli')],
-                            [$this->equalTo('bitly')]
+                            ['gimli', $this->gimliConfig],
+                            ['bitly', $this->bitlyConfig]
                         )
                        ->will(
-                            $this->onConsecutiveCalls($this->gimliTestMock, $this->bitly)
+                            $this->onConsecutiveCalls($this->gimli, $this->bitly)
                         );
 
         $exception = new Exception\RuntimeException(
@@ -79,15 +91,24 @@ class ServiceTest extends TestCase
             ]
         );
 
-        $this->gimliTestMock->expects($this->once())
-                            ->method('shorten')
-                            ->will($this->throwException($exception));
+        $this->gimli->expects($this->once())
+                    ->method('makeRequestAndValidateHeader')
+                    ->will($this->throwException($exception));
 
-        $url = 'https://www.duckduckgo.com';
+        $this->bitly->expects($this->once())
+                    ->method('makeRequestAndValidateHeader')
+                    ->willReturn(
+                        [
+                            'status_code' => 200,
+                            'data'        => [
+                                'url' => 'https://bitly.dev/xyz',
+                            ],
+                        ]
+                    );
 
-        $shortUrl = $this->service->shorten($url);
+        $shortUrl = $this->service->shorten($this->testUrl);
 
-        $this->assertContains('http://bitly.dev/', $shortUrl);
+        $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
 
     /**
@@ -101,10 +122,10 @@ class ServiceTest extends TestCase
         // as it's client side error.
         //
 
-        $this->provider->expects($this->once())
-                       ->method('get')
-                       ->with($this->equalTo('gimli'))
-                       ->willReturn($this->gimliTestMock);
+        $this->service->expects($this->once())
+                       ->method('getImplementation')
+                       ->with('gimli', $this->gimliConfig)
+                       ->willReturn($this->gimli);
 
         $exception = new Exception\RuntimeException(
             'Unexpected response code received from Gimli service.',
@@ -117,13 +138,11 @@ class ServiceTest extends TestCase
             ]
         );
 
-        $this->gimliTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->gimli->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $url = 'https://www.duckduckgo.com';
-
-        $shortUrl = $this->service->shorten($url);
+        $shortUrl = $this->service->shorten($this->testUrl);
     }
 
     public function testShortenFailSilent()
@@ -132,10 +151,10 @@ class ServiceTest extends TestCase
         // Same as above, but returns original url and stays silent
         //
 
-        $this->provider->expects($this->once())
-                       ->method('get')
-                       ->with($this->equalTo('gimli'))
-                       ->willReturn($this->gimliTestMock);
+        $this->service->expects($this->once())
+                       ->method('getImplementation')
+                       ->with('gimli', $this->gimliConfig)
+                       ->willReturn($this->gimli);
 
         $exception = new Exception\RuntimeException(
             'Unexpected response code received from Gimli service.',
@@ -148,15 +167,13 @@ class ServiceTest extends TestCase
             ]
         );
 
-        $this->gimliTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->gimli->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $url = 'https://www.duckduckgo.com';
+        $shortUrl = $this->service->shorten($this->testUrl, false);
 
-        $shortUrl = $this->service->shorten($url, false);
-
-        $this->assertEquals($url, $shortUrl);
+        $this->assertEquals($this->testUrl, $shortUrl);
     }
 
     /**
@@ -169,14 +186,14 @@ class ServiceTest extends TestCase
         // Tests when all implementations fail
         //
 
-        $this->provider->expects($this->exactly(2))
-                       ->method('get')
+        $this->service->expects($this->exactly(2))
+                      ->method('getImplementation')
                        ->withConsecutive(
-                            [$this->equalTo('gimli')],
-                            [$this->equalTo('bitly')]
+                            ['gimli', $this->gimliConfig],
+                            ['bitly', $this->bitlyConfig]
                         )
                        ->will(
-                            $this->onConsecutiveCalls($this->gimliTestMock, $this->bitlyTestMock)
+                            $this->onConsecutiveCalls($this->gimli, $this->bitly)
                         );
 
         $exception = new Exception\RuntimeException(
@@ -186,17 +203,15 @@ class ServiceTest extends TestCase
             ]
         );
 
-        $this->gimliTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->gimli->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $this->bitlyTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->bitly->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $url = 'https://www.duckduckgo.com';
-
-        $shortUrl = $this->service->shorten($url);
+        $shortUrl = $this->service->shorten($this->testUrl);
     }
 
     public function testShortenFailAllSilent()
@@ -205,14 +220,14 @@ class ServiceTest extends TestCase
         // Same as above, but returns original url and stays silent
         //
 
-        $this->provider->expects($this->exactly(2))
-                       ->method('get')
+        $this->service->expects($this->exactly(2))
+                      ->method('getImplementation')
                        ->withConsecutive(
-                            [$this->equalTo('gimli')],
-                            [$this->equalTo('bitly')]
+                            ['gimli', $this->gimliConfig],
+                            ['bitly', $this->bitlyConfig]
                         )
                        ->will(
-                            $this->onConsecutiveCalls($this->gimliTestMock, $this->bitlyTestMock)
+                            $this->onConsecutiveCalls($this->gimli, $this->bitly)
                         );
 
         $exception = new Exception\RuntimeException(
@@ -222,18 +237,16 @@ class ServiceTest extends TestCase
             ]
         );
 
-        $this->gimliTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->gimli->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $this->bitlyTestMock->expects($this->once())
-                            ->method('shorten')
+        $this->bitly->expects($this->once())
+                            ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $url = 'https://www.duckduckgo.com';
+        $shortUrl = $this->service->shorten($this->testUrl, false);
 
-        $shortUrl = $this->service->shorten($url, false);
-
-        $this->assertEquals($url, $shortUrl);
+        $this->assertEquals($this->testUrl, $shortUrl);
     }
 }
