@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Upi\Npci;
 
 use DOMDocument;
-use FR3D\XmlDSig\Adapter\XmlseclibsAdapter as Stamp;
+use FR3D\XmlDSig\Adapter\XmlseclibsAdapter;
 use RobRichards\XMLSecLibs;
 
 /**
@@ -15,7 +15,7 @@ use RobRichards\XMLSecLibs;
  */
 class Crypto
 {
-    public function __construct(array $config)
+    public function __construct(array $config, string $mode = 'test')
     {
         $this->config = $config;
     }
@@ -40,15 +40,20 @@ class Crypto
 
     public function sign(string $xml)
     {
-        $xmlDoc = new DOMDocument($xml);
-        $stamp = new Stamp;
+        $xmlDoc = (new DOMDocument);
+        $xmlDoc->loadXML($xml);
+
+        $stamp = new XmlseclibsAdapter;
 
         $signingKey = $this->getSigningKey();
         $stamp->setPrivateKey($signingKey);
+        $stamp->setPublicKey($this->getSigningPublicKey());
 
         $stamp->setDigestAlgorithm(XMLSecLibs\XMLSecurityDSig::SHA256);
 
-        return $stamp->sign($xml);
+        $stamp->sign($xmlDoc);
+
+        return $xmlDoc->saveXML();
     }
 
     protected function getRSAInstance()
@@ -80,6 +85,24 @@ class Crypto
     protected function getDecryptionKey()
     {
         $key = $this->config['test_decryption_key'];
+
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return trim(str_replace('\n', "\n", $key));
+    }
+
+    protected function getSigningKey()
+    {
+        $key = $this->config['test_signing_key'];
+
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return trim(str_replace('\n', "\n", $key));
+    }
+
+    protected function getSigningPublicKey()
+    {
+        $key = $this->config['test_signing_public_key'];
 
         // The trim is to make sure that the key doesn't end with
         // an extra newline
