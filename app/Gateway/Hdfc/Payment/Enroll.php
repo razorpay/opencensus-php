@@ -8,6 +8,7 @@ use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Payment\Currency;
 
 trait Enroll
 {
@@ -116,6 +117,8 @@ trait Enroll
     {
         $payment = $input['payment'];
 
+        $amountData = $this->getAmountCurrencyData($input);
+
         $card = $input['card'];
 
         $this->enrollRequest['url'] = Hdfc\Urls::ENROLL_URL;
@@ -125,7 +128,7 @@ trait Enroll
         $data['trackid'] = $payment['id'];
 
         // Convert amount from integer to decimal
-        $data['amt'] = $payment['amount']/100;
+        $data['amt'] = $amountData['amount'] / $amountData['factor'];
 
         // Collect udf fields
         $data['udf1'] = 'test';
@@ -152,7 +155,7 @@ trait Enroll
         // Later change it to something better
         // when we support multiple currencies
         //
-        $data['currencycode'] = self::INR_CODE;
+        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$amountData['currency']];
 
         $network = $input['card']['network_code'];
 

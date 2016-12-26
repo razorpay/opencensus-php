@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $feeCredits = $merchantBalance->getFeeCredits();
 
-        $amount = $payment->getAmount();
+        $amount = $payment->getTotalAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
 

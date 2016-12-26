@@ -57,7 +57,12 @@ class HdfcGatewayTest extends TestCase
     {
         $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['currency' => 'USD']);
 
-        $payment = $this->defaultAuthPayment(['currency' => 'USD']);
+        $input = [
+            'amount'   => 5000,
+            'currency' => 'USD'
+        ];
+
+        $payment = $this->defaultAuthPayment($input);
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -78,7 +83,7 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('hdfc', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testHdfcPaymentEntity'], $payment);
+            $this->testData['testHdfcUSDPaymentEntity'], $payment);
     }
 
     public function testMaestroCard()

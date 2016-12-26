@@ -667,7 +667,15 @@ trait Authorize
         {
             $rates = (new Admin\ExchangeRate)->getRates($currency);
 
-            $totalAmount = $amount * $rates[$currency];
+            $denominationFactorINR = Payment\Currency::DENOMINATION_FACTOR[Payment\Currency::INR];
+
+            $denominationFactorInputCurr = Payment\Currency::DENOMINATION_FACTOR[$currency];
+
+            $denominationFactor = $denominationFactorINR / $denominationFactorInputCurr;
+
+            $totalAmount = $amount * $rates[Payment\Currency::INR] * $denominationFactor;
+
+            $totalAmount = ceil($totalAmount);
         }
 
         $payment->setTotalAmount($totalAmount);

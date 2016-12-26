@@ -259,6 +259,29 @@ class Gateway
         $this->mock = $mock;
     }
 
+    public function getAmountCurrencyData(array $input)
+    {
+        $amount = $input['payment']['amount'];
+
+        $currency = $input['payment']['currency'];
+
+        if ($input['merchant']['currency_conversion'] === '1')
+        {
+            $amount = $input['payment']['total_amount'];
+
+            $currency = Payment\Currency::INR;
+        }
+
+
+        $data['amount']   = $amount;
+
+        $data['currency'] = $currency;
+
+        $data['factor']   = Payment\Currency::DENOMINATION_FACTOR[$currency];
+
+        return $data;
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
