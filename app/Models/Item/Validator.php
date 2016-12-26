@@ -48,8 +48,8 @@ class Validator extends Base\Validator
     {
         $fields = array_diff(array_keys($input), Entity::$fieldsAlwaysEditable);
 
-        if ((count($fields) > 0)
-            and ($item->lineItems()->count() > 0))
+        if ((count($fields) > 0) and
+            ($item->lineItems()->count() > 0))
         {
             $this->raiseOperationNotAllowed($item);
         }

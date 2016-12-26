@@ -49,6 +49,7 @@ class Repository extends Base\Repository
      * @param Merchant\Entity $merchant
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function findActiveByPublicIdAndMerchantOrFail($id, Merchant\Entity $merchant)
     {

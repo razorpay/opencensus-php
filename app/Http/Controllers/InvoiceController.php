@@ -106,7 +106,6 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-
         $invoice = $this->service->removeManyLineItems($id, $input);
 
         return ApiResponse::json($invoice);

@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
 
     //
-    // We use this property to pluck all item realated fields from request
+    // We use this property to pluck all item related fields from request
     // payload of line items operations. Yes, that payload contains item related
     // fields at the same level.
     //

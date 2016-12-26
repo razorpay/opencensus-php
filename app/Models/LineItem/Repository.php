@@ -19,7 +19,6 @@ class Repository extends Base\Repository
 
     public function findByIdAndMorphEntity($id, Base\Entity $morphEntity)
     {
-
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $morphEntity->getId())
                     ->where(Entity::ENTITY_TYPE, '=', $morphEntity->getEntity())
