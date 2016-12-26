@@ -16,14 +16,8 @@ app.controller('AddfundsCtrl', [
       'amount': 50000,
       'name': '',
       'description': 'Add Funds to Account',
-      'image': '',
       'handler': function (transaction) {
         $scope.transactionHandler(transaction);
-      },
-      'prefill': {
-        'name': '',
-        'email': '',
-        'contact': ''
       },
       notes: { 'dashboard': 'true' },
       netbanking: true,
