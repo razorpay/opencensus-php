@@ -126,6 +126,8 @@ class Processor
 
         $this->mutex = $this->app['api.mutex'];
 
+        $this->cache = $this->app['cache'];
+
         $this->route = $this->app['api.route'];
 
         $this->segment = $this->app['segment'];

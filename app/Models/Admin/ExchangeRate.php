@@ -30,4 +30,13 @@ class ExchangeRate extends Base\Core
 
         return ['success' => true];
     }
+
+    public function getRates($currency)
+    {
+        $key = self::EXCHANGE_RATE_KEY . $currency;
+
+        $rates = $this->redis->get($key);
+
+        return $rates;
+    }
 }

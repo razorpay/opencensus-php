@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
@@ -52,6 +53,8 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
+
+        $this->processCurrencyConversions($payment);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -648,6 +651,26 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
         }
+    }
+
+    protected function processCurrencyConversions(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $currency = $payment->getCurrency();
+
+        $amount = $payment->getAmount();
+
+        $totalAmount = $amount;
+
+        if ($currency !== Payment\Currency::INR)
+        {
+            $rates = (new Admin\ExchangeRate)->getRates($currency);
+
+            $totalAmount = $amount * $rates[$currency];
+        }
+
+        $payment->setTotalAmount($totalAmount);
     }
 
     /**

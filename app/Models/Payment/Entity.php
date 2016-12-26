@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
+    const TOTAL_AMOUNT          = 'total_amount';
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
@@ -364,6 +365,11 @@ class Entity extends Base\PublicEntity
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
+    public function setTotalAmount($amount)
+    {
+        $this->setAttribute(self::TOTAL_AMOUNT, $amount);
     }
 
     public function setAmountAuthorized()
@@ -810,6 +816,11 @@ class Entity extends Base\PublicEntity
 // ----------------------- Getters ---------------------------------------------
 
     public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getTotalAmount()
     {
         return $this->getAttribute(self::AMOUNT);
     }
