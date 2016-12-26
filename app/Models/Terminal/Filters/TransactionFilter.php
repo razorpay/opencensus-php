@@ -16,6 +16,7 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
         'maestro',
@@ -65,6 +66,15 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function currencyFilter($terminal, $input)
+    {
+        $paymentCurrency = $input['payment']->getCurrency();
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
     }
 
     public function internationalFilter($terminal, $input)

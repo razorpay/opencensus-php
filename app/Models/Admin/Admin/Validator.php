@@ -33,6 +33,7 @@ class Validator extends Base\Validator
         Entity::ROLES                 => 'sometimes|array',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $editRules = [
@@ -50,6 +51,7 @@ class Validator extends Base\Validator
         Entity::ROLES                 => 'sometimes|array',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $loginRules = [
