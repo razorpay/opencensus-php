@@ -53,10 +53,8 @@ class HdfcGatewayTest extends TestCase
             $this->testData['testHdfcPaymentEntity'], $payment);
     }
 
-    public function testInternationalUSDPayment()
+    public function testInternationalUSDPaymentOnApi()
     {
-        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['currency' => 'USD']);
-
         $input = [
             'amount'   => 5000,
             'currency' => 'USD'

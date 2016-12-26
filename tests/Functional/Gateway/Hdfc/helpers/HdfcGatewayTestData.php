@@ -32,7 +32,7 @@ return [
         'entity' => 'payment',
     ],
 
-    'testInternationalUSDPayment' => [
+    'testInternationalUSDPaymentOnApi' => [
         'merchant_id'       => '10000000000000',
         'amount'            => 5000,
         'method'            => 'card',
