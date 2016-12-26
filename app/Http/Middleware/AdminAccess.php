@@ -187,10 +187,11 @@ class AdminAccess
         return true;
     }
 
-    private function validateWildCardPermissionRules(array $perms)
+    private function validateWildCardPermissionRules(array $permissions)
     {
         // Check wildcard permission is the only one used in the list
-        if (in_array(self::WILDCARD_PERMISSION, $perms) and count($perms) > 1)
+        if ((in_array(self::WILDCARD_PERMISSION, $permissions) === true) and
+            (count($permissions) > 1))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PERMISSIONS_USAGE);
