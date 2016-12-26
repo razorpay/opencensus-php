@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
     const AUTO_REFUND_DELAY         = 'auto_refund_delay';
+    const CONVERT_CURRENCY          = 'convert_currency';
 
     /**
      * Category for particular methods or gateways
@@ -144,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::CONVERT_CURRENCY       => false,
     );
 
     protected $publicSetters = array(
