@@ -52,9 +52,9 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->runPaymentInputValidations($payment, $input);
-
         $this->processCurrencyConversions($payment);
+
+        $this->runPaymentInputValidations($payment, $input);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -511,6 +511,8 @@ trait Authorize
         $gatewayInput = [];
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        $this->processCurrencyConversions($payment);
     }
 
     protected function parseContact($contact)

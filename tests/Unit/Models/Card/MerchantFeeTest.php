@@ -580,6 +580,8 @@ class MerchantFeeTest extends TestCase
 
         $payment->setRecurring($isRecurring);
 
+        $payment->setTotalAmount($amount);
+
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
@@ -596,6 +598,8 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
 
         $payment = new Payment\Entity($paymentArray);
+
+        $payment->setTotalAmount($amount);
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
