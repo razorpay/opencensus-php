@@ -13,6 +13,8 @@ use RZP\Error\ErrorCode;
 
 class AdminAccess
 {
+    const WILDCARD_PERMISSION = '*';
+
     protected $app;
 
     public function __construct(Application $app)
@@ -120,7 +122,8 @@ class AdminAccess
 
         if (isset($adminAuthRoutes[$routeName]) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
         }
 
         $permissions = $adminAuthRoutes[$routeName];
@@ -141,7 +144,8 @@ class AdminAccess
         // 2. Check if the specified permissions exist in our
         // generated white list
 
-        $policyPassed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
+        $policyPassed = $this->checkPermissionsAllowed(
+            $permissions, $adminPermissions);
 
         if ($policyPassed === true)
         {
@@ -165,6 +169,13 @@ class AdminAccess
 
     private function checkPermissionsAllowed($toCheck, $haystack)
     {
+        if (in_array(self::WILDCARD_PERMISSION, $toCheck))
+        {
+            $this->validateWildCardPermissionRules($toCheck);
+
+            return true;
+        }
+
         foreach ($toCheck as $permission)
         {
             if (in_array($permission, $haystack) === false)
@@ -174,6 +185,16 @@ class AdminAccess
         }
 
         return true;
+    }
+
+    private function validateWildCardPermissionRules(array $perms)
+    {
+        // Check wildcard permission is the only one used in the list
+        if (in_array(self::WILDCARD_PERMISSION, $perms) and count($perms) > 1)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PERMISSIONS_USAGE);
+        }
     }
 
     private function groupCheck($admin, $merchant)
