@@ -24,5 +24,10 @@ border:2px solid #29B7D6;border-top-color:transparent}
     var data = {!!utf8_json_encode($data)!!};
   </script>
   <script type="text/javascript" src="{{$basepath}}/bundle.js"></script>
+  {{-- Do not remove below form — needed to run tests --}}
+  <form id="form2" name="form2">
+    <input type="hidden" name="type" value="{{$data['type']}}">
+    <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+  </form>
 </body>
 </html>
