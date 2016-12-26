@@ -102,6 +102,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerBitly();
 
+        $this->registerExchange();
+
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
@@ -131,6 +133,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'segment',
             'upi.client',
             'webhook.inferno',
+            'exchange',
         );
     }
 
@@ -183,6 +186,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Bitly($app);
+        });
+    }
+
+    protected function registerExchange()
+    {
+        $this->app->singleton('exchange', function($app)
+        {
+            $exchangeMock = $app['config']->get('applications.exchange.mock');
+
+            if ($exchangeMock === true)
+            {
+                return new Mock\Exchange($app);
+            }
+
+            return new Exchange($app);
         });
     }
 

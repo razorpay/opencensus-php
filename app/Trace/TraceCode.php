@@ -359,6 +359,9 @@ class TraceCode
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
+    const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
+    const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
+
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';

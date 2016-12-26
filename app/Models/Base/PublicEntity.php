@@ -347,17 +347,10 @@ class PublicEntity extends UniqueIdEntity
 
     public function getDateInFormatDMY($attribute)
     {
-        $value = $this->getAttribute($attribute);
-
-        if (empty($value))
-        {
-            return null;
-        }
-
-        return date('d/m/y', $value);
+        return $this->getDateInFormat($attribute, 'd/m/y');
     }
 
-    public function getDateInFormatDMYHMS($attribute)
+    public function getDateInFormat($attribute, $format)
     {
         $value = $this->getAttribute($attribute);
 
@@ -366,7 +359,12 @@ class PublicEntity extends UniqueIdEntity
             return null;
         }
 
-        return date('d/m/y h:i:s', $value);
+        return date($format, $value);
+    }
+
+    public function getDateInFormatDMYHMS($attribute)
+    {
+        return $this->getDateInFormat($attribute, 'd/m/y h:i:s');
     }
 
     /**

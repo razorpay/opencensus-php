@@ -249,6 +249,7 @@ final class Route
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -354,6 +355,7 @@ final class Route
         'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'international_exchange_rates'            => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -673,6 +675,7 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
+        'international_exchange_rates',
     );
 
     public static $proxy = array(
@@ -694,6 +697,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'balance_fetch',
+        'reports_transaction_broking',
         'reports_monthly_invoice',
         'reports_monthly_invoice_v2',
         'reports_public_entity',
@@ -731,7 +735,6 @@ final class Route
         'group_get',
         'group_get_multiple',
         'group_get_allowed_groups',
-        'admin_get',
         'org_create',
         'org_edit',
         'org_delete',
@@ -873,6 +876,7 @@ final class Route
             'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
+            'international_exchange_rates',
         ),
 
         'mailgun' => array(
@@ -911,17 +915,7 @@ final class Route
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        // 'invoice_create'                => 'invoice',
-        // 'invoice_fetch'                 => 'invoice',
-        // 'invoice_fetch_multiple'        => 'invoice',
-        // 'invoice_send_notification'     => 'invoice',
-        // 'invoice_notification_update'   => 'invoice',
-        // 'invoice_get_status'            => 'invoice',
-        // 'item_create'                   => 'invoice',
-        // 'item_fetch'                    => 'invoice',
-        // 'item_fetch_multiple'           => 'invoice',
-        // 'item_update'                   => 'invoice',
-        // 'item_delete'                   => 'invoice',
+        'reports_transaction_broking'   => 'broking_report'
     );
 
     const RAZORPAYJS_ROUTES = array(
