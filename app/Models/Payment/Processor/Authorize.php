@@ -197,7 +197,13 @@ trait Authorize
         list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    protected function processAuthResponse(array $request, Payment\Entity $payment)
+    /**
+     * @param array|null     $request
+     * @param Payment\Entity $payment
+     *
+     * @return array|mixed
+     */
+    protected function processAuthResponse($request, Payment\Entity $payment)
     {
         //
         // If $request is not null, then payment is two-step process
