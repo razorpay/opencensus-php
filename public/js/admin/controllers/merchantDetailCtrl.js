@@ -373,7 +373,7 @@ app.controller('MerchantDetailCtrl', [
         data: terminal
       };
       if (typeof terminal.gateway_client_certificate !== 'undefined') {
-        requestData['file'] = terminal.gateway_client_certificate;
+        requestData.file = terminal.gateway_client_certificate;
       }
       var request = $upload.upload(requestData);
       request.success(function (data) {
@@ -445,6 +445,16 @@ app.controller('MerchantDetailCtrl', [
      */
     $scope.editMerchant = function (merchant, selected_groups) {
 
+      // If the second parameter was not provided
+      // we don't try to edit the groups and don't
+      // send the field instead.
+      if (typeof selected_groups === 'undefined') {
+        selected_groups = {};
+      }
+      else {
+        merchant.groups = Object.keys(selected_groups);
+      }
+
       var dropUnchangedFields = function(merchant) {
         for (var i in merchant) {
           var val = $scope.merchant.details[i];
@@ -464,7 +474,6 @@ app.controller('MerchantDetailCtrl', [
       };
 
       dropUnchangedFields(merchant);
-      merchant['groups'] = Object.keys(selected_groups);
 
       var request = $http({
         method: 'post',
@@ -903,7 +912,7 @@ app.controller('MerchantDetailCtrl', [
           });
         }
       });
-    }
+    };
 
     function generateMerchant() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
@@ -987,7 +996,7 @@ app.controller('MerchantDetailCtrl', [
           });
         }
       });
-    }
+    };
 
     function fetchBalance() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/balance');
@@ -1113,10 +1122,9 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('assignTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
-  '$upload',
-  function ($scope, $modalInstance, $upload) {
+  function ($scope, $modalInstance) {
     $scope.terminal = {gateway:'hdfc', mode:'live', card:1};
-    $scope.onFileSelect = function ($files, fieldname) {
+    $scope.onFileSelect = function ($files) {
       var file = $files[0];
       if ($scope.terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
         $scope.alerts.addAlert('danger', 'Invalid certificate file', true);
@@ -1528,9 +1536,7 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('openCredits', [
   '$scope',
   '$modalInstance',
-  '$http',
-  'modeFactory',
-  function ($scope, $modalInstance, $http, modeFactory) {
+  function ($scope, $modalInstance) {
     $scope.ok = function (credits) {
       $modalInstance.close(credits);
     };
@@ -1574,4 +1580,4 @@ app.controller('MerchantDetailCtrl', [
 
 function removeLineBreaks(str) {
   return str.replace(/[\n|\r]/g, ' ')
-}
+};
