@@ -580,7 +580,7 @@ class MerchantFeeTest extends TestCase
 
         $payment->setRecurring($isRecurring);
 
-        $payment->setTotalAmount($amount);
+        $payment->setBaseAmount($amount);
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -599,7 +599,7 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        $payment->setTotalAmount($amount);
+        $payment->setBaseAmount($amount);
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 

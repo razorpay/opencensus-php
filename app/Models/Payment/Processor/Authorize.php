@@ -680,7 +680,7 @@ trait Authorize
             $totalAmount = ceil($totalAmount);
         }
 
-        $payment->setTotalAmount($totalAmount);
+        $payment->setBaseAmount($totalAmount);
     }
 
     /**
