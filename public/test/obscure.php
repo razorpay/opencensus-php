@@ -108,6 +108,12 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <tr>
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="100"></td>
+            <td>
+            <select name="currency">
+                <option value="INR">Indian Rupee</option>
+                <option value="USD">US Dollar</option>
+            </select>
+        </td>
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
