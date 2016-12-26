@@ -1,4 +1,27 @@
-Sign in here from signin.html
-<div class="btn btn-default" ng-click="goToSignupLayout()">
-  Sign Up
+<div class="login-overflow-container">
+  <div class="login-translate-container" style="transform: translateX({{-(240)*login.currentStep}}px)">
+    <div class="login-step">
+      <div class="auth-heading">
+        Login to Dashboard
+      </div>
+      <div class="auth-text">
+        Enter your Razorpay Credentials
+      </div>
+
+      <form class="auth-form" name="loginForm" xng-submit="goToStep(1)" ng-submit="login(loginForm.$valid)">
+        <label class="form-label auth-subheading" for="email">Email</label>
+        <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+        <label class="form-label auth-subheading" for="password">Password</label>
+        <input type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
+        <div class="highlight-clickable-text">
+          Forgot Password?
+        </div>
+        <button class="btn btn-primary form-control login-btn" type="submit">
+          Login
+        </button>
+      </form>
+      
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+    </div>
+  </div>
 </div>

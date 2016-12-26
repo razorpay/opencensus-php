@@ -32,6 +32,12 @@
   ::-webkit-scrollbar { 
     display: none; 
   }
+  
+  &.no-transition {
+    * {
+      transition-duration 0s !important
+    }
+  }
 }
 
 .auth-header 
@@ -111,7 +117,7 @@
   width: 240px;
   overflow-x hidden
   
-.signup-form
+.auth-form
   margin-top 24px
   
 .auth-heading 
@@ -242,10 +248,14 @@
   }
 }
 
-.verification-email {
+.highlight-clickable-text {
   cursor pointer
   color #7266ba
   text-decoration underline
+  margin-top 24px
+}
+
+.login-btn {
   margin-top 24px
 }
 

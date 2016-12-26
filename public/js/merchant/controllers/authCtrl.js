@@ -16,6 +16,7 @@ app.controller('AuthCtrl', [
     
     // todo check route and go to login/signup/forgotpwd layout
 
+
     $scope.toArray = function (obj) {
       if (!obj) {
         return [];
@@ -26,7 +27,7 @@ app.controller('AuthCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false;
     $scope.signup = {
-      currentStep: 2, // 0, 1, 2, 3
+      currentStep: 0, // 0, 1, 2, 3
       currentSubStep: 0, // 0, 1, 2, 3, 4
       data: {
         email: $location.search().email || '',
@@ -84,10 +85,10 @@ app.controller('AuthCtrl', [
       showMore: false,
     }
 
-    $scope.goToStep = function (step, subStep) {
+    $scope.goToSignupStep = function (step, subStep) {
       $scope.signup.currentStep = step;
       if (typeof subStep !== undefined) {
-        $scope.signup.currentSubStep = subStep || 0;
+        $scope.signup.currentSubStep = subStep;
       }
     }
 
@@ -102,7 +103,8 @@ app.controller('AuthCtrl', [
           && !$scope.signup.data.captcha) {
         $scope.signup.data.captcha = 'Faked';
       }
-      // todo call signup api here
+
+      // todo show spinner
       var payload = {
         method: 'post',
         url: '/user/register',
@@ -117,7 +119,7 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         if (data.success) {
           // todo hide login button because user is logged in
-          $scope.goToStep(1)
+          $scope.goToSignupStep(1)
         }
         // todo show error in alert
       })
@@ -132,26 +134,34 @@ app.controller('AuthCtrl', [
         transformRequest: transformRequestAsFormPost,
         data: $scope.signup.merchantData
       }
-      debugger
       var request = $http(payload);
+      // todo show spinner
       request.success(function (data) {
-        debugger
+        // todo handle success
         if (data.success || 1) {
           if ($scope.signup.currentSubStep == 4) {
-            $scope.goToStep(3)
+            $scope.goToSignupStep(3)
           } else {
-            $scope.goToStep(2, $scope.signup.currentSubStep + 1)
+            $scope.goToSignupStep(2, $scope.signup.currentSubStep + 1)
           }
         }
       })
     }
 
-    $scope.goToSigninLayout = function () {
+    $scope.goToSigninLayout = function (noTransition) {
+      if (noTransition) {
+        $('.auth-container').addClass('no-transition')
+      }
       $scope.right = true;
       const toRoute = 'access.signin';
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
+      if (noTransition) {
+        setTimeout(function () {
+          $('.auth-container').removeClass('no-transition')
+        }, 200)
+      }
     }
 
     $scope.goToSignupLayout = function () {
@@ -162,6 +172,19 @@ app.controller('AuthCtrl', [
       });
     }
 
+    // debugger
+    if ($state.current.name === 'access.signin') {
+      $scope.goToSigninLayout(true)
+    }
+
+    $scope.login = {
+      data: {
+        email: '',
+        password: '',
+      },
+      currentStep: 0, // 0 -> login/otp, 1 -> forgotpwd
+      currentSubStep: 0, // 0 -> email+pwd, 1 -> otp
+    }
 
   }
 ]);

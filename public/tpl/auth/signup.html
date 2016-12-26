@@ -8,7 +8,7 @@
         Create a password to continue
       </div>
 
-      <form class="signup-form" name="signupForm" xng-submit="goToStep(1)" ng-submit="createAccount(signupForm.$valid)">
+      <form class="auth-form" name="signupForm" xng-submit="goToSignupStep(1)" ng-submit="createAccount(signupForm.$valid)">
         <label class="form-label auth-subheading" for="email">Your Office Email</label>
         <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required>
         <label class="form-label auth-subheading" for="password">Create a Password</label>
@@ -37,7 +37,7 @@
       <div class="auth-text">
         Your Razorpay account is created. We’ll need a few more details to customise your experience
       </div>
-      <button class="btn btn-primary form-control btn-step-2" ng-click="goToStep(2)">
+      <button class="btn btn-primary form-control btn-step-2" ng-click="goToSignupStep(2)">
         Next
       </button>
       
@@ -49,7 +49,7 @@
       <div class="auth-text">
         Just need a few more details.
       </div>
-
+      <!-- todo add back buttons and text -->
       <div class="signup-detail-form">
         <div class="steps-dots">
           <div class="step-dot" ng-repeat="key in [0, 1, 2, 3, 4]" ng-class="key == signup.currentSubStep && 'active'"></div>
@@ -169,7 +169,7 @@
         To get started with activation process, please click on the link in the verification email that we just sent to 
         <strong>{{signup.data.email}}</strong>
       </div>
-      <div class="auth-text verification-email" xng-click="resendVerificationEmail()">Resend verification email</div>
+      <div class="auth-text highlight-clickable-text" xng-click="resendVerificationEmail()">Resend verification email</div>
     </div>
   </div>
 </div>
