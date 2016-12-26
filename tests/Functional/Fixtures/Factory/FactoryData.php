@@ -127,6 +127,7 @@ final class FactoryData
             'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
             'amount' => 100,
             'currency' => 'INR',
+            'base_amount' => 100,
             'notes' => null,
             'transaction_id' => null,
         ]);

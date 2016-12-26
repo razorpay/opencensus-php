@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
+    const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
         self::TRANSACTION_ID,
         self::NOTES,
         self::BATCH_ID,
@@ -69,6 +71,7 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::BASE_AMOUNT,
     );
 
     public function payment()
@@ -132,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getBaseAmount()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT);
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -145,6 +153,11 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function setBaseAmount($amount)
+    {
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
     }
 
     public function setPublicPaymentIdAttribute(array & $array)
