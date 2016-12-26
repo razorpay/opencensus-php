@@ -158,8 +158,8 @@ class Service extends Base\Service
 
             $oAuthLoginInput = [
                 'email'                 => $updatedAdmin['email'],
-                'oauth_access_token'    => $updatedAdmin['oauth_access_token'],
-                'oauth_provider_id'     => $updatedAdmin['oauth_provider_id']
+                'oauth_access_token'    => $token->getAccessToken(),
+                'oauth_provider_id'     => $result->id,
             ];
 
             try
