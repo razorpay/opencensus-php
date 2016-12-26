@@ -89,7 +89,7 @@ class CreateMerchants extends Migration
                   ->default(null);
 
             $table->tinyInteger(Merchant::CONVERT_CURRENCY)
-                  ->default(0);
+                  ->default(1);
 
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
