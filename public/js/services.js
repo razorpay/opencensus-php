@@ -76,7 +76,7 @@ angular.module('app.services', [])
           else if ($rootScope.toState.data.role === 'guest') {
             if (user.isAuthenticated() === true) {
               if ($rootScope.role === 'sellerapp') {
-                $state.go('app.invoices')
+                $state.go('app.invoices');
               } else {
                 $state.go('app.dashboard');  // user is signed in but not authorized for desired state
               }
@@ -181,7 +181,7 @@ angular.module('app.services', [])
         msg: $message
       });
 
-      window.scrollTo(0, 0)
+      window.scrollTo(0, 0);
     };
 
     this.resetAlerts = function (last) {
@@ -276,12 +276,9 @@ angular.module('app.services', [])
 .factory('organization', [
   '$q',
   '$http',
-  '$timeout',
-  '$idle',
-  function ($q, $http, $timeout, $idle) {
+  function ($q, $http) {
 
-    var _org
-      , _roles;
+    var _org, _roles;
 
     return {
       fetchCurrentOrg: function () {
@@ -306,7 +303,6 @@ angular.module('app.services', [])
       },
       addOrEditRole: function (role) {
         var deferred = $q.defer();
-        var _this = this;
         var roleId = role.id;
 
         delete role.id;
@@ -321,7 +317,7 @@ angular.module('app.services', [])
           data: {
             body: role
           }
-        }
+        };
 
         if (roleId) {
           request_data = $.extend(request_data, {
@@ -353,7 +349,6 @@ angular.module('app.services', [])
       },
       fetchRoles: function () {
         var deferred = $q.defer();
-        var _this = this;
 
         if (angular.isDefined(_roles)){
           deferred.resolve(_roles);
@@ -408,8 +403,8 @@ angular.module('app.services', [])
           else {
             groups = [];
           }
-        }).error(function () {
-          return data.errors
+        }).error(function (data) {
+          return data.errors;
         });
 
         return deferred.promise;
@@ -475,7 +470,8 @@ angular.module('app.services', [])
           }
         }).error(function () {
         });
-        return this.permissions = perms;
+        this.permissions = perms;
+        return perms;
       },
       fetchUsers: function () {
         if (this.users) {
@@ -501,18 +497,14 @@ angular.module('app.services', [])
           }
         }).error(function () {
         });
-        return this.users = users;
+        this.users = users;
+        return this.users;
       }
     };
   }
 ])
 .factory('theme', [
-  '$rootScope',
-  '$state',
-  'admin',
-  '$location',
-  '$http',
-  function ($rootScope, $state, admin, $location) {
+  function () {
     return {
       apply: function (themeVars) {
         var style = document.createElement('style');
@@ -527,7 +519,7 @@ angular.module('app.services', [])
         }
         document.getElementsByTagName('head')[0].appendChild(style);
       }
-    }
+    };
   }
 ])
 
@@ -537,9 +529,7 @@ angular.module('app.services', [])
   '$rootScope',
   '$state',
   'admin',
-  '$location',
-  '$http',
-  function ($rootScope, $state, admin, $location) {
+  function ($rootScope, $state, admin) {
     return {
       authorize: function () {
 
@@ -618,8 +608,12 @@ angular.module('app.services', [])
     return mapper[status];
   };
 }])
+// Only returns true if we have a valid status value
 .factory('isStatusKey', [function() {
-  return function (key) {
+  return function (key, value) {
+    if (!value) {
+      return false;
+    }
     var statusKeys = [
       'status',
       'refund_status'
@@ -688,6 +682,26 @@ angular.module('app.services', [])
     stop: $.noop
   };
 })
+.factory('getStateMerchant', function() {
+  return function(key, value) {
+    switch (key) {
+      case 'payment_id':
+        return 'app.payments.detail({id: value})';
+      case 'refund_id':
+        return 'app.refunds.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'order_id':
+        return 'app.orders.detail({id: value})';
+      case 'invoice_id':
+        return 'app.invoicedetails({id: value})';
+      default:
+        return '.';
+    }
+  };
+})
 .factory('permissionsFactory', function () {
   var _permissions = {};
   return {
@@ -700,6 +714,129 @@ angular.module('app.services', [])
     }
   };
 })
+.factory('displayClass', [
+  'isStatusKey',
+  'statusClass',
+  function (isStatusKey, statusClass) {
+  return function(key, value) {
+    if (isStatusKey(key, value)) {
+      return 'label ' + statusClass(value);
+    }
+
+    if (value === null) {
+      return 'label label-warning col-lg-1';
+    } else if (value === '') {
+      return 'label label-info';
+    } else {
+      return '';
+    }
+  };
+}])
+.factory('getEntity', [
+  function () {
+  return function(key) {
+    return key.substr(0, key.length - 3);
+  };
+}])
+.factory('getType', [
+  'getEntity',
+  function (getEntity) {
+    return function(key, value) {
+      var entity = key.substr(0, key.length - 3);
+      var isTimestamp = function (key) {
+        return key.substr(-3) === '_at';
+      };
+      // These have their own views
+      var specialEntities = [
+        'merchant_id',
+        'payment_id'
+      ];
+      var isId = function (key) {
+        var validEntities = [
+          'adjustment',
+          'amex',
+          'atom',
+          'axis_genius',
+          'axis_migs',
+          'balance',
+          'bank_account',
+          'bank_account',
+          'billdesk',
+          'card',
+          'credits',
+          'customer',
+          'daily_settlement',
+          'ebs',
+          'first_data',
+          'emi_plan',
+          'hdfc',
+          'iin',
+          'merchant',
+          'methods',
+          'mobikwik',
+          'netbanking',
+          'payment',
+          'payment_analytics',
+          'pricing',
+          'refund',
+          'settlement',
+          'settlement_details',
+          'schedule',
+          'terminal',
+          'token',
+          'transaction',
+          'wallet',
+          'webhook'
+        ];
+        // It needs to be suffixed with _id
+        // and be a valid entity name for this to work
+        return key.substr(-3) === '_id' && validEntities.indexOf(entity) > -1;
+      };
+      // Timestamps could be blank, which is why
+      // we consider its value as well
+      if (value && isTimestamp(key)) {
+        return 'timestamp';
+      }  // All other entity links are considered here
+      else if (key.substr(-6) === 'amount') {
+        return 'amount';
+      }
+      else if (isId(key)) {
+        if (specialEntities.indexOf(key) > -1) {
+          return getEntity(key);
+        } else {
+          return 'id';
+        }
+      }  // Unknown type is entity specific things, like currency
+      else {
+        return 'unknown';
+      }
+    };
+  }
+])
+.factory('displayValue', [
+  'getType',
+  function (getType) {
+    return function (key, value) {
+      var type = getType(key, value);
+      // Set timezone to IST
+      moment().utcOffset(5.5);
+      switch (type) {
+      case 'timestamp':
+        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+      case 'amount':
+        return 'INR ' + (value / 100).toFixed(2);
+      default:
+        if (value === null) {
+          return 'null';
+        // We want to display an empty string prominently
+        } else if (value === '') {
+          return '"\u2000"';
+        } else {
+          return value;
+        }
+      }
+    };
+}])
 .factory('utils', function () {
   return {
     humanize: function (str) {

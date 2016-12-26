@@ -11,8 +11,12 @@ app.controller('PaymentDetailCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   'statusClass',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass) {
+  'displayClass',
+  'displayValue',
+  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass, displayClass, displayValue) {
+    $scope.displayClass = displayClass;
     $scope.getStatusClass = getStatusClass;
+    $scope.displayValue = displayValue;
 
     // Keys currently added the to good-looking view
     var shownByDefault = [
@@ -63,34 +67,6 @@ app.controller('PaymentDetailCtrl', [
         }
       }
       return keys;
-    };
-
-    $scope.displayClass = function (value) {
-      if (value === null) {
-        return 'label label-warning col-lg-1';
-      } else if (value === '') {
-        return 'label label-info';
-      } else {
-        return '';
-      }
-    };
-
-    $scope.timestamp = function(value) {
-      moment().zone(5.5);
-      // If not null and not zero
-      if (value) {
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
-      }
-      else {
-        return 'null';
-      }
-    };
-    $scope.displayValue = function (value) {
-      if (value === null) {
-        return 'null';
-      } else {
-        return value;
-      }
     };
 
     $scope.openRefundModal = function () {

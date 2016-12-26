@@ -17,11 +17,8 @@
         <div class="list-group-item" ng-repeat="key in getKeys()"
           ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
         >
-          <span ng-show="!isStatusKey(key)" class="pull-right {{displayClass(value)}}" title="{{value}}">
-            {{displayValue(value, valueType)}}
-          </span>
-          <span ng-show="isStatusKey(key)" class="pull-right label {{getStatusClass(value)}}" title="{{value}}" >
-            {{displayValue(value, valueType)}}
+          <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
+            {{displayValue(key, value)}}
           </span>
           {{key|titlecase}}
         </div>
