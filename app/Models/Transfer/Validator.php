@@ -18,7 +18,10 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'required|integer',
     ];
 
-    public function validateTransfers(Payment\Entity $payment, Merchant\Balance\Entity $merchantBalance, array $transfers)
+    public function validateTransfers(
+        Payment\Entity $payment,
+        Merchant\Balance\Entity $merchantBalance,
+        array $transfers)
     {
         $keys = [];
 

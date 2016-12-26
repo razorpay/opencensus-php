@@ -21,9 +21,8 @@ class CreateCustomerBalance extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(Entity::ID);
-
-            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
+                  ->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 

@@ -266,7 +266,7 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postTransfer($paymentId)
+    public function postTransfer(string $paymentId)
     {
         $input = Request::all();
 

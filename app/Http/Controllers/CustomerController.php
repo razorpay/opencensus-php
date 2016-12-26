@@ -225,14 +225,14 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getCustomerWalletBalance($customerId)
+    public function getCustomerWalletBalance(string $customerId)
     {
         $customerBalance = $this->customer->getCustomerBalance($customerId);
 
         return ApiResponse::json($customerBalance);
     }
 
-    public function getCustomerWalletStatement($customerId)
+    public function getCustomerWalletStatement(string $customerId)
     {
         $input = Request::all();
 

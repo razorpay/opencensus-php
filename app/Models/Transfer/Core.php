@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
+use RZP\Models\Payment;
 
 class Core extends Base\Core
 {
@@ -54,7 +55,14 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    public function createForPayment($payment, array $input)
+    /**
+     * Create and process a payment transfer
+     *
+     * @param   Payment\Entity          $payment
+     * @param   array                   $input
+     * @return  Base\PublicCollection
+     */
+    public function createForPayment(Payment\Entity $payment, array $input)
     {
         $transfers = new Base\PublicCollection;
 

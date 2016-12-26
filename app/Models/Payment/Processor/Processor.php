@@ -297,7 +297,7 @@ class Processor
     }
 
     /**
-     * Transfer a captured payment to a customer or another Razorpay account
+     * Transfer a captured payment to customer/marketplace account
      *
      * @param  string $id    Payment ID
      * @param  array  $input Input Array
@@ -311,21 +311,20 @@ class Processor
 
         $payment = $this->retrieve($id);
 
-        $payment->getValidator()->validateInput('transfer', $input);
+        $validator = $payment->getValidator();
 
-        $payment->getValidator()->validateIsCaptured($payment);
+        $validator->validateInput('transfer', $input);
+
+        $validator->validateIsCaptured($payment);
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
-            return $this->transferPayment($payment, $input['transfers']);
+            $transfers = (new Transfer\Core)->createForPayment(
+                            $payment,
+                            $input['transfers']);
+
+            return $transfers;
         });
-    }
-
-    protected function transferPayment($payment, array $transfers)
-    {
-        $transfers = (new Transfer\Core)->createForPayment($payment, $transfers);
-
-        return $transfers;
     }
 
     /**

@@ -855,6 +855,7 @@ final class Route
         'setl_combined_report'          => 'setl_report',
         'customer_get_wallet_balance'   => 'b2bwallet',
         'customer_get_wallet_statement' => 'b2bwallet',
+        'payment_transfer'              => 'b2bwallet',
         'reports_transaction_broking'   => 'broking_report'
     );
 

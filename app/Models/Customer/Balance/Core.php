@@ -11,7 +11,7 @@ use RZP\Models\Customer;
 class Core extends Base\Core
 {
     /**
-     * Create and save a new customer_balance record for a customer <> merchant
+     * Create and save a new customer_balance wallet account linked to merchant
      *
      * @param  Customer\Entity $customer
      * @return Entity              Balance Entity
