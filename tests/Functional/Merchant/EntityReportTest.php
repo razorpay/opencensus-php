@@ -58,8 +58,6 @@ class EntityReportTest extends TestCase
 
     public function testBrokingReport()
     {
-        $this->markTestSkipped();
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->merchant->addFeatures(['broking_report']);
 
@@ -106,7 +104,12 @@ class EntityReportTest extends TestCase
             'Refund Status' => null,
         ];
 
-        $this->assertArraySelectiveEquals($expectedContent, $combinedReport[0]);
+        $saleTxnReports = array_filter($combinedReport, function ($obj)
+        {
+            return $obj['Txn State'] === 'Sale';
+        });
+
+        $this->assertArraySelectiveEquals($expectedContent, $saleTxnReports[0]);
     }
 
     protected function fetchBrokingReport($content)
