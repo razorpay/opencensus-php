@@ -56,23 +56,15 @@ class FlashWalletGatewayTest extends TestCase
     {
         $customerBalance = $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 3000]);
 
-        s($this->getEntityById('customer_balance', '100000customer', true));
-
         $payment = $this->getDefaultFlashWalletPaymentArray('cust_100000customer', 1500);
 
         $authPayment = $this->doAuthPayment($payment);
 
         $input = ['amount' => 500];
 
-        s($this->getEntityById('customer_balance', '100000customer', true));
-
         $this->refundAuthorizedPayment($authPayment['razorpay_payment_id'], $input);
 
-        s($this->getEntityById('customer_balance', '100000customer', true));
-
         $refund = $this->getLastEntity('refund', true);
-
-        s($this->getLastEntity('customer_transaction', true));
 
         $this->testData[__FUNCTION__]['payment_id'] = $authPayment['razorpay_payment_id'];
 
