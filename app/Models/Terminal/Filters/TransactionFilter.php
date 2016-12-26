@@ -72,6 +72,11 @@ class TransactionFilter extends Terminal\Filter
     {
         $paymentCurrency = $input['payment']->getCurrency();
 
+        if ($payment->merchant->convertOnApi() === true)
+        {
+            $paymentCurrency = Payment\Currency::INR;
+        }
+
         $terminalCurrency = $terminal->getCurrency();
 
         return ($paymentCurrency === $terminalCurrency);

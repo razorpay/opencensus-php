@@ -162,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => 'bool',
         self::CATEGORY              => 'int',
         self::SETTLEMENT_SCHEDULE   => 'int',
+        self::CONVERT_CURRENCY      => 'bool'
     );
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -463,6 +464,15 @@ class Entity extends Base\PublicEntity
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    /**
+     * check if api or gateway should do currency conversion for merchant
+     * @return [type] [description]
+     */
+    public function convertOnApi()
+    {
+        return $this->getAttribute(self::CONVERT_CURRENCY);
     }
 
     public function features()
