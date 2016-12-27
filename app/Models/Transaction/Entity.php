@@ -175,6 +175,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+    }
+
     public function getCredit()
     {
         return (int) $this->getAttribute(self::CREDIT);
@@ -493,6 +498,11 @@ class Entity extends Base\PublicEntity
     public function isFeeCredits()
     {
         return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
     }
 
     public function toArrayReport()
