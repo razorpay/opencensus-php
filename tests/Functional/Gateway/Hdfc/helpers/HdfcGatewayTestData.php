@@ -39,7 +39,7 @@ return [
         'status'            => 'captured',
         'two_factor_auth'   => TwoFactorAuth::NOT_APPLICABLE,
         'captured'          => true,
-        'amount_authorized' => 50000,
+        'amount_authorized' => 5000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
         'currency'          => 'USD',
