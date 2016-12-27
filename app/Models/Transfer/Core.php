@@ -143,7 +143,7 @@ class Core extends Base\Core
         // Marketplace Account ID to receive the transfer
         $accountId = $transfer[ToType::ACCOUNT];
 
-        $this->checkMultipleMarketplaceTransfer($accountId);
+        $this->checkMultipleMarketplaceTransfer($payment->getId(), $accountId);
 
         $amount = $transfer['amount'];
 
@@ -189,14 +189,14 @@ class Core extends Base\Core
         ];
     }
 
-    protected function checkMultipleMarketplaceTransfer(string $accountId)
+    protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId)
     {
         Merchant\AccountEntity::verifyIdAndStripSign($accountId);
 
         $transfers = $this->repo
                           ->transfer
-                          ->fetchByAccountIdAndMerchant(
-                            $accountId, $this->merchant, false);
+                          ->fetchBySourcePaymentToAccountAndMerchant(
+                            $paymentId, $accountId, $this->merchant);
 
         if (count($transfers) !== 0)
         {

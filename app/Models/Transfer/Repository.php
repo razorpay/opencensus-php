@@ -26,7 +26,7 @@ class Repository extends Base\Repository
                       ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
                       ->where(Entity::TO_TYPE, 'merchant')
                       ->where(Entity::TO_ID, $accountId)
-                      ->where(Entity::MERCHANT_ID, $marketplace->getId());
+                      ->merchantId($marketplace->getId());
 
         if ($fail === true)
         {
@@ -46,7 +46,21 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->where(Entity::TO_TYPE, 'merchant')
-                    ->where(Entity::MERCHANT_ID, $marketplace->getId())
+                    ->merchantId($marketplace->getId())
+                    ->get();
+    }
+
+    public function fetchBySourcePaymentToAccountAndMerchant(
+        string $paymentId,
+        string $accountId,
+        Merchant\Entity $marketplace)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                    ->where(Entity::SOURCE_ID, $paymentId)
+                    ->where(Entity::TO_TYPE, 'merchant')
+                    ->where(Entity::TO_ID, $accountId)
+                    ->merchantId($marketplace->getId())
                     ->get();
     }
 }

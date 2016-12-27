@@ -437,6 +437,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
+    public function setMarketplaceGateway()
+    {
+        $this->setGateway('marketplace');
+    }
+
     public function setError($errorCode, $errorDesc, $internalErrorCode)
     {
         $this->setAttribute(self::ERROR_CODE, $errorCode);

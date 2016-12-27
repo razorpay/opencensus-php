@@ -221,6 +221,8 @@ class Processor
 
         $payment = $this->createPaymentEntity($paymentData);
 
+        $payment->setMarketplaceGateway();
+
         $this->repo->transaction(function () use ($payment, $originPayment) {
 
             $payment->setStatus(Status::CAPTURED);
