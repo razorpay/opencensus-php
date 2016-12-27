@@ -57,7 +57,7 @@ export default class AddCustomer extends Component {
           message={this.state.errors}
         />
 
-        <form class='form-horizontal'>
+        <form class='form-horizontal' onSubmit={handleSubmit(this.save)}>
           <div class='modal-body'>
             <div class='form-group'>
               <label class='col-md-3 control-label'>Name</label>
@@ -124,7 +124,7 @@ export default class AddCustomer extends Component {
             </button>
 
             <AsyncButton
-              type='button'
+              type='submit'
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'

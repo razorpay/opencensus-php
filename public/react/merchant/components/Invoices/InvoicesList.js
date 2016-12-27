@@ -65,7 +65,7 @@ export default (props) => {
           <tr>
             <th>Invoice Id</th>
             <th>Invoice Date</th>
-            <th>Receipt</th>
+            <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Type</th>

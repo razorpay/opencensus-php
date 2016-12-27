@@ -96,7 +96,7 @@ export default class CreatePaymentLink extends Component {
           message={this.state.errors}
         />
 
-        <form class='form-horizontal payment-link-form'>
+        <form class='form-horizontal payment-link-form' onSubmit={handleSubmit(this.save)}>
           <div class='modal-body'>
             {
               isNewForm &&
@@ -262,7 +262,7 @@ export default class CreatePaymentLink extends Component {
             </button>
 
             <AsyncButton
-              type='button'
+              type='submit'
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'

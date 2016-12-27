@@ -52,7 +52,7 @@ const ItemsList = (props) => {
         <TableBody
           isLoading={isLoading}
           colSpan={4}
-          rows={customers}
+          rows={items}
           emptyTableMsg='No Items found!'
         >
         {
