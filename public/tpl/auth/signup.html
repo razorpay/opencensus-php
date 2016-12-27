@@ -47,10 +47,37 @@
       <div class="auth-heading">
         Almost There...
       </div>
-      <div class="auth-text">
+      <div class="auth-text" ng-if="signup.currentSubStep == 0">
         Just need a few more details.
       </div>
-      <!-- todo add back buttons and text -->
+      <div class="auth-text" ng-if="signup.currentSubStep == 1">
+        Business Type 
+        <strong>
+          {{signup.details.business_type[signup.merchantData.business_type]}}
+        </strong> 
+        (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 0)">Edit</span>)
+      </div>
+      <div class="auth-text" ng-if="signup.currentSubStep == 2">
+        Monthly Transaction Volume (INR) 
+        <strong>
+          {{signup.details.transaction_volume[signup.merchantData.transaction_volume]}}
+        </strong> 
+        (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 1)">Edit</span>)
+      </div>
+      <div class="auth-text" ng-if="signup.currentSubStep == 3">
+        Your Role 
+        <strong>
+          {{signup.details.role[signup.merchantData.role]}}
+        </strong> 
+        (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 2)">Edit</span>)
+      </div>
+      <div class="auth-text" ng-if="signup.currentSubStep == 4">
+        Your Department  
+        <strong>
+          {{signup.details.department[signup.merchantData.department]}}
+        </strong> 
+        (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 3)">Edit</span>)
+      </div>
       <div class="signup-detail-form">
         <div class="steps-dots">
           <div class="step-dot" ng-repeat="key in [0, 1, 2, 3, 4]" ng-class="key == signup.currentSubStep && 'active'"></div>
@@ -80,9 +107,9 @@
                   </label>
                 </div>
               </div>
-              <div class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+              <button ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
                 Next
-              </div>
+              </button>
             </div>
             <div class="auth-substep">
               <div class="auth-subheading">
@@ -90,17 +117,17 @@
               </div>
 
               <div class="select-one">
-                <div class="select-one-option" ng-repeat="key in toArray(signup.details.monthly_transaction)" >
-                  <input type="radio" name="monthly_transaction" value="{{key}}" id="{{'monthly_transaction_'+key}}" ng-model="signup.merchantData.monthly_transaction"/>
-                  <label for="{{'monthly_transaction_'+key}}">
-                    {{signup.details.monthly_transaction[key]}}
+                <div class="select-one-option" ng-repeat="key in toArray(signup.details.transaction_volume)" >
+                  <input type="radio" name="transaction_volume" value="{{key}}" id="{{'transaction_volume_'+key}}" ng-model="signup.merchantData.transaction_volume"/>
+                  <label for="{{'transaction_volume_'+key}}">
+                    {{signup.details.transaction_volume[key]}}
                     <i class="pull-right fa fa-check"></i>
                   </label>
                 </div>
               </div>
-              <div class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+              <button ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
                 Next
-              </div>
+              </button>
             </div>
             <div class="auth-substep">
               <div class="auth-subheading">
@@ -116,9 +143,9 @@
                   </label>
                 </div>
               </div>
-              <div class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+              <button ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
                 Next
-              </div>
+              </button>
             </div>
             <div class="auth-substep">
               <div class="auth-subheading">
@@ -134,33 +161,32 @@
                   </label>
                 </div>
               </div>
-              <div class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+              <button ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
                 Next
-              </div>
+              </button>
             </div>
             <div class="auth-substep">
               <div class="auth-subheading">
                 Account Info
               </div>
 
-              <label class="form-label" for="name">Name</label>
-              <input type="text" name="name" id="name" ng-model="signup.merchantData.name"
+              <label class="form-label" for="contact_name">Name</label>
+              <input type="text" name="contact_name" id="contact_name" ng-model="signup.merchantData.contact_name"
                 class="form-control" required>
-              <label class="form-label" for="company_name">Company Name</label>
-              <input type="text" name="company_name" id="company_name" ng-model="signup.merchantData.company_name"
+              <label class="form-label" for="business_name">Company Name</label>
+              <input type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
                 class="form-control" required>
               <label class="form-label" for="phone">Phone</label>
               <input type="tel" name="phone" id="phone" ng-model="signup.merchantData.phone"
                 class="form-control" required>
-              <div class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+              <button ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.phone)" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
                 Finish
-              </div>
+              </button>
             </div>
           </div>
+          <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
         </div>
       </div>
-
-
     </div>
     <div class="auth-step">
       <div class="auth-heading">
