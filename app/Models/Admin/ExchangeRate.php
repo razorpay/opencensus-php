@@ -34,6 +34,11 @@ class ExchangeRate extends Base\Core
 
     public function getBaseAmount($amount, $currency)
     {
+        if ($currency === Currency::INR)
+        {
+            return $amount;
+        }
+
         $rates = $this->getRates($currency);
 
         $denominationFactorINR = Currency::DENOMINATION_FACTOR[Currency::INR];
