@@ -225,6 +225,7 @@ app.controller('AuthCtrl', [
       })
     }
 
+
     $scope.goToSigninLayout = function (noTransition) {
       $scope.goToSignupStep(0); // reset signup step
       $scope.right = true;
@@ -270,6 +271,62 @@ app.controller('AuthCtrl', [
         notify: false,
       });
       $scope.login.currentStep = 1;  
+    }
+
+    $scope.sendLoginCredentials = function ($valid) {
+      if (!$valid) {
+        $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
+        return true;
+      }
+
+      // todo show spinner
+      var payload = {
+        method: 'post',
+        url: '/user/signin',
+        transformRequest: transformRequestAsFormPost,
+        data: $scope.login.data
+      }
+
+      var request = $http(payload);
+      showSpinner()
+      request.success(function (data) {
+        hideSpinner()
+        if (data.success) {
+          // todo hide login button because user is logged in
+          hideLoginBtn()
+          user.identity(true).then(function(user) {
+            var role = user.merchants[user.id].pivot.role;
+            
+            switch (role) {
+              case 'support':
+                $state.go('app.payments.list');
+                break;
+              case 'sellerapp':
+                $state.go('app.invoices');
+                break;
+              default:
+                $state.go('app.dashboard');
+            }
+          });
+          // $scope.goToSignupStep(1)
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+        if (data.success) {
+        } else {
+          $scope.alerts.resetAlerts();
+          if (data.errors[0] == 'not activated') {
+            $scope.notactivated = true;
+          } else {
+            angular.forEach(data.errors, function (error, key) {
+              $scope.alerts.addAlert('danger', error);
+            });
+          }
+        }
+      })
     }
 
   }
