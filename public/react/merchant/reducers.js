@@ -9,6 +9,7 @@ import subscriptionsReducer from 'merchant/modules/subscriptions'
 import plansReducer from 'merchant/modules/plans'
 import customersReducer from 'merchant/modules/customers'
 import itemsReducer from 'merchant/modules/items'
+import ordersReducer from 'merchant/modules/orders'
 
 export default combineReducers({
   form: formReducer,
@@ -20,5 +21,6 @@ export default combineReducers({
   subscriptions: subscriptionsReducer,
   plans: plansReducer,
   customers: customersReducer,
-  items: itemsReducer
+  items: itemsReducer,
+  orders: ordersReducer,
 })
