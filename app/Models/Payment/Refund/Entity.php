@@ -160,9 +160,28 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
-    public function setBaseAmount($amount)
+    public function setBaseAmount()
     {
-        $this->setAttribute(self::BASE_AMOUNT, $amount);
+        $amount = $this->getAttribute(self::AMOUNT);
+
+        $currency = $this->getAttribute(self::CURRENCY);
+
+        $unrefundedAmount = $this->payment->getAmountUnrefunded();
+
+        if ($amount === $unrefundedAmount)
+        {
+            $baseAmount = $this->getBaseAmountUnrefunded();
+        }
+        else
+        {
+            $conversionRate = $this->payment->getBaseAmount() / $this->getAmount();
+
+            $baseAmount = $amount * $conversionRate;
+
+            $baseAmount = (int) floor($baseAmount);
+        }
+
+        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
     public function setPublicPaymentIdAttribute(array & $array)

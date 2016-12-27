@@ -467,13 +467,7 @@ trait Refund
 
         $refund->merchant()->associate($this->merchant);
 
-        $amount = $refund->getAmount();
-
-        $currency = $refund->getCurrency();
-
-        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
-
-        $refund->setBaseAmount($baseAmount);
+        $refund->setBaseAmount();
 
         if ($this->payment->isCaptured())
         {
@@ -536,12 +530,9 @@ trait Refund
         {
             $amount = $this->refund->getAmount();
 
-            if ($this->payment->getConvertCurrency() === true)
-            {
-                $amount = $this->refund->getBaseAmount();
-            }
+            $baseAmount = $this->refund->getBaseAmount();
 
-            $this->payment->refundAmount($amount);
+            $this->payment->refundAmount($amount, $baseAmount);
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);

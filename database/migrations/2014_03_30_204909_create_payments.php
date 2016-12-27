@@ -60,6 +60,10 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Payment::BASE_AMOUNT_REFUNDED)
+                  ->unsigned()
+                  ->default(0);
+
             $table->string(Payment::REFUND_STATUS)
                   ->nullable();
 
