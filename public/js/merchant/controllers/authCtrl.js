@@ -156,7 +156,7 @@ app.controller('AuthCtrl', [
     // todo get post-signup details and check whether post-signup steps are needed
 
     $scope.sendDetails = function () {
-      pushToDrip()
+      // pushToDrip()
       var payload = {
         method: 'post',
         url: '/user/pre_signup',
@@ -176,7 +176,6 @@ app.controller('AuthCtrl', [
             $scope.goToSignupStep(2, $scope.signup.currentSubStep + 1)
           }
         }
-        // show alert on error
       })
     }
 
@@ -198,8 +197,32 @@ app.controller('AuthCtrl', [
       try {
         // try-catch, since there could be tracker blocking scripts
         _dcq.push(["identify", payload]);
-      } catch () {}
+      } catch (e) {}
+    }
 
+    $scope.resendVerificationEmail = function () {
+      var data = {
+        email: $scope.signup.data.email,
+        password: $scope.signup.data.password
+      }
+      var payload = {
+        method: 'post',
+        url: '/user/resend',
+        transformRequest: transformRequestAsFormPost,
+        data: data
+      }
+      var request = $http(payload);
+      // todo verify fields to be sent in api
+      request.success(function (data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Confirmation mail re-sent, please check your inbox.', true);
+        } else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
     }
 
     $scope.goToSigninLayout = function (noTransition) {

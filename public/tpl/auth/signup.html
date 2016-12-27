@@ -196,7 +196,8 @@
         To get started with activation process, please click on the link in the verification email that we just sent to 
         <strong>{{signup.data.email}}</strong>
       </div>
-      <div class="auth-text highlight-clickable-text" xng-click="resendVerificationEmail()">Resend verification email</div>
+      <div class="auth-text highlight-clickable-text" ng-click="resendVerificationEmail()">Resend verification email</div>
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
     </div>
   </div>
 </div>
