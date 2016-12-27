@@ -11,7 +11,7 @@
               Enter your Razorpay Credentials
             </div>
 
-            <form class="auth-form" name="loginForm" ng-submit="goToLoginStep(0, 1)" xng-submit="sendLoginCredentials(loginForm.$valid)">
+            <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
               <label class="form-label auth-subheading" for="email">Email</label>
               <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
@@ -25,30 +25,6 @@
             </form>
             
             <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-          </div>
-          <div class="auth-substep">
-            <div class="auth-text">
-              Email <strong>{{login.data.email}}</strong> (<span class="highlight-clickable-text" ng-click="goToLoginStep(0, 0)">Edit</span>)
-            </div>
-            <form class="auth-form" name="otpForm" xng-submit="goToStep(1)" ng-submit="sendOtp(otpForm.$valid)">
-              <label class="form-label auth-subheading" for="otp">Enter OTP</label>
-              <input type="number" placeholder="6 digit code" name="otp" id="otp" ng-model="login.data.otp" class="form-control auth-form-input" required>
-
-              <div class="auth-subtext">
-                Enter the OTP received as SMS on your mobile number ********{{login.last2digits}} 
-                <div class="">
-                <span class="highlight-clickable-text" ng-click="resendOtp()">
-                  Resend OTP
-                </span>
-                |
-                <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">Need Help?</a>
-                </div>
-              </div>
-              <button class="btn btn-primary form-control login-btn" type="submit">
-                Login
-              </button>
-            </form>
-            
           </div>
         </div>
       </div>
