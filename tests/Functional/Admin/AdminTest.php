@@ -519,7 +519,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
@@ -569,7 +569,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
@@ -600,7 +600,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check($oldPwd, $admin['password']));
     }
@@ -622,7 +622,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
