@@ -193,4 +193,16 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    public function toArrayGateway()
+    {
+        $data = $this->toArray();
+
+        if (($this->payment->isMethodCard()) and
+            ($this->payment->getConvertCurrencyOnApi() === true))
+        {
+            $data['amount'] = $this->getBaseAmount();
+            $data['currency'] = Payment\Currency::INR;
+        }
+    }
 }

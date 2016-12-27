@@ -265,6 +265,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL     => 'bool',
         self::GATEWAY_CAPTURED  => 'bool',
         self::LATE_AUTHORIZED   => 'bool',
+        self::CONVERT_CURRENCY  => 'bool',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -1288,6 +1289,17 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayGateway()
+    {
+        $data = $this->toArray();
+
+        if (($this->isMethodCard()) and
+            ($this->getConvertCurrencyOnApi() === true))
+        {
+            $data['amount'] = $this->getBaseAmount();
+            $data['currency'] = Payment\Currency::INR;
+        }
+    }
 // --------------- Relation to other entities ----------------------------------
 
     public function card()
