@@ -1323,6 +1323,7 @@ class Entity extends Base\PublicEntity
         {
             $data['amount'] = $this->getBaseAmount();
             $data['currency'] = Payment\Currency::INR;
+            $data['amount_refunded'] = $this->getBaseAmountRefunded();
         }
 
         return $data;
