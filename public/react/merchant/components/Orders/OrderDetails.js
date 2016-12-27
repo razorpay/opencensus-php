@@ -4,8 +4,32 @@ import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
 import Alert from 'rzp/ui/Forms/Alert'
 import ListGroupToggler from 'rzp/ui/ListGroupToggler'
-import { OrderStatusLabel } from 'merchant/components/StatusLabel'
+import { OrderStatusLabel, PaymentStatusLabel } from 'merchant/components/StatusLabel'
 import TableBody from 'merchant/components/TableBody'
+
+const PaymentList = ({ payment }) => {
+  return (
+    <tr>
+      <td>
+        <a
+          target='_blank'
+          href={`#/app/payments/${payment.id}`}
+        >
+          {payment.id}
+        </a>
+      </td>
+      <td>
+        <PaymentStatusLabel status={payment.status} />
+      </td>
+      <td>
+        <Time
+          value={payment.created_at}
+          format='DD MMM YYYY, hh:mm:ss a'
+        />
+      </td>
+    </tr>
+  )
+}
 
 export default (props) => {
   let {
@@ -65,24 +89,7 @@ export default (props) => {
                         rows={payments.items}
                       >
                         {
-                          payments.items.map((payment) => {
-                            <tr key={payment.id}>
-                              <td>
-                                <a
-                                  target='_blank'
-                                  href={`#/app/payments/${payment.id}`}
-                                >
-                                  {payment.id}
-                                </a>
-                              </td>
-                              <td>
-                                <Time
-                                  value={payment.created_at}
-                                  format='DD MMM YYYY, hh:mm:ss a'
-                                />
-                              </td>
-                            </tr>
-                          })
+                          payments.items.map((payment) => <PaymentList key={payment.id} />)
                         }
                       </TableBody>
                     </table>
@@ -93,6 +100,13 @@ export default (props) => {
                   </div>
                 }
 
+                <div class='list-group-item'>
+                  <span>Created At</span>
+                  <Time
+                    value={order.created_at}
+                    format='DD MMM YYYY, hh:mm:ss a'
+                  />
+                </div>
               </div>
             </div>
           </div>

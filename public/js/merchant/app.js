@@ -99,15 +99,9 @@ var app = angular.module('app', [
     }).state('app.payments', {
       url: '/payments',
       template: '<div ui-view class="fade-in-down"></div>'
-    // }).state('app.orders', {
-    //   url: '/orders',
-    //   template: '<div ui-view class="fade-in-down"></div>'
     }).state('app.payments.list', {
       url: '/list',
       templateUrl: 'tpl/app_payments.html'
-    // }).state('app.orders.list', {
-    //   url: '/list',
-    //   templateUrl: 'tpl/app_orders.html'
     }).state('app.payments.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_payment_detail.html'
@@ -132,9 +126,6 @@ var app = angular.module('app', [
     }).state('app.batch.list', {
       url: '/list',
       templateUrl: 'tpl/app_batch_list.html'
-    // }).state('app.orders.detail', {
-    //   url: '/:id',
-    //   templateUrl: 'tpl/app_order_detail.html'
     }).state('app.settlements', {
       url: '/settlements',
       template: '<div ui-view class="fade-in-down"></div>'

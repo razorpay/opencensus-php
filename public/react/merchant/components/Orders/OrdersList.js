@@ -16,7 +16,10 @@ const OrdersListItem = ({ order }) => {
       </td>
       <td>{order.receipt}</td>
       <td>
-        <Time value={order.created_at} />
+        <Time
+          value={order.created_at}
+          format='DD MMM YYYY, hh:mm:ss a'
+        />
       </td>
     </tr>
   )
