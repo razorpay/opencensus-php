@@ -137,7 +137,15 @@ class Entity extends Base\PublicEntity
 
     public function getBaseAmount()
     {
-        return $this->getAttribute(self::BASE_AMOUNT);
+        $amount = $this->getAttribute(self::BASE_AMOUNT);
+
+        // hack to avoid
+        if ($amount === null)
+        {
+            return $this->getAttribute(self::AMOUNT);
+        }
+
+        return $amount;
     }
 
     public function getCurrency()
