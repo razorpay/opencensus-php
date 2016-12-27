@@ -35,12 +35,12 @@ app.controller('AuthCtrl', [
       },
       merchantData: {
         business_type: null,
-        monthly_transaction: 1,
+        transaction_volume: null,
         role: null,
         department: null,
         business_name: '',
         phone: '',
-        person_name: '',
+        contact_name: '',
       },
       details: {
         business_type: {
@@ -56,7 +56,7 @@ app.controller('AuthCtrl', [
           10: 'Society',
         },
 
-        monthly_transaction: {
+        transaction_volume: {
           1: 'Less than 1 Lac',
           2: '1 Lac to 10 Lacs',
           3: '10 Lacs to 1 Crore',
@@ -156,6 +156,7 @@ app.controller('AuthCtrl', [
     // todo get post-signup details and check whether post-signup steps are needed
 
     $scope.sendDetails = function () {
+      pushToDrip()
       var payload = {
         method: 'post',
         url: '/user/pre_signup',
@@ -164,16 +165,41 @@ app.controller('AuthCtrl', [
       }
       var request = $http(payload);
       // todo show spinner
+      showSpinner()
       request.success(function (data) {
         // todo handle success
-        if (data.success || 1) {
+        hideSpinner()
+        if (data.success) {
           if ($scope.signup.currentSubStep == 4) {
             $scope.goToSignupStep(3)
           } else {
             $scope.goToSignupStep(2, $scope.signup.currentSubStep + 1)
           }
         }
+        // show alert on error
       })
+    }
+
+    function pushToDrip() {
+      const payload = {email: $scope.signup.data.email}
+      if (!payload.email) {
+        return
+      }
+      const keys = ['business_type','transaction_volume','role','department','business_name','phone','contact_name']
+      keys.forEach(function (key){
+        if ($scope.signup.merchantData[key]) {
+          payload[key] = $scope.signup.details[key] 
+          // multi select field
+          ? $scope.signup.details[key][$scope.signup.merchantData[key]] 
+          // string field
+          : $scope.signup.merchantData[key]
+        }
+      })
+      try {
+        // try-catch, since there could be tracker blocking scripts
+        _dcq.push(["identify", payload]);
+      } catch () {}
+
     }
 
     $scope.goToSigninLayout = function (noTransition) {
