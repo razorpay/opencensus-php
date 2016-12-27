@@ -750,7 +750,7 @@ final class Route
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
         'auditlog_search'            => ['view_auditlog'],
-        'admin_logout'               => ['logout_admin'],
+        'admin_logout'               => ['*'],
     ];
 
     public static $direct = array(
