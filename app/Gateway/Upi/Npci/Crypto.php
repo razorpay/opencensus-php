@@ -3,8 +3,7 @@
 namespace RZP\Gateway\Upi\Npci;
 
 use DOMDocument;
-use FR3D\XmlDSig\Adapter\XmlseclibsAdapter;
-use RobRichards\XMLSecLibs;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
  * Handles all the Cypto code for the
@@ -15,6 +14,12 @@ use RobRichards\XMLSecLibs;
  */
 class Crypto
 {
+    const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
+
+    const TRANSFORMS = [
+        self::ENVELOPED
+    ];
+
     public function __construct(array $config, string $mode = 'test')
     {
         $this->config = $config;
@@ -40,20 +45,53 @@ class Crypto
 
     public function sign(string $xml)
     {
+        file_put_contents('/tmp/signed2.xml', $this->oldSign($xml));
+
         $xmlDoc = (new DOMDocument);
+
         $xmlDoc->loadXML($xml);
 
-        $stamp = new XmlseclibsAdapter;
+        $stamp = new Stamp;
 
-        $signingKey = $this->getSigningKey();
-        $stamp->setPrivateKey($signingKey);
-        $stamp->setPublicKey($this->getSigningPublicKey());
+        $stamp->setCanonicalMethod(Stamp::C14N);
 
-        $stamp->setDigestAlgorithm(XMLSecLibs\XMLSecurityDSig::SHA256);
+        $stamp->addReference(
+            $xmlDoc,
+            Stamp::SHA256,
+            self::TRANSFORMS
+        );
 
-        $stamp->sign($xmlDoc);
+        $stamp->sign($this->getSigningKey());
 
-        return $xmlDoc->saveXML();
+        $stamp->addKeyInfo($this->getSigningPublicKey(), true);
+
+        $stamp->appendSignature($xmlDoc->documentElement);
+
+        $signed = $xmlDoc->saveXML();
+
+        $signed =  str_replace(['ds:', ':ds'], '', $signed);
+
+        file_put_contents('/tmp/signed.xml', $signed);
+
+        return $signed;
+    }
+
+    protected function oldSign($xml)
+    {
+        $inputxml = tempnam(sys_get_temp_dir(), 'req');
+
+        file_put_contents($inputxml, $xml);
+
+        $outputxml = tempnam(sys_get_temp_dir(), 'res');
+
+        $privateKey = storage_path('certs/razorpay-npci-pkcs8.key');
+        $publicKey  = storage_path('certs/razorpay-npci.pub');
+
+        chdir(app_path('../scripts'));
+
+        shell_exec("/usr/bin/java SignatureGen '$inputxml' '$outputxml' '$privateKey' '$publicKey'");
+
+        return file_get_contents($outputxml);
     }
 
     protected function getRSAInstance()
@@ -97,7 +135,14 @@ class Crypto
 
         // The trim is to make sure that the key doesn't end with
         // an extra newline
-        return trim(str_replace('\n', "\n", $key));
+        $key = trim(str_replace('\n', "\n", $key));
+
+        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type'=>'private'));
+
+        // function loadKey($key, $isFile=false, $isCert = false)
+        $objKey->loadKey($key, false);
+
+        return $objKey;
     }
 
     protected function getSigningPublicKey()
