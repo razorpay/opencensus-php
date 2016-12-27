@@ -294,9 +294,10 @@ app.controller('AuthCtrl', [
         if (data.success) {
           // todo hide login button because user is logged in
           hideLoginBtn()
+          // check questions have been answered or not
           user.identity(true).then(function(user) {
             var role = user.merchants[user.id].pivot.role;
-            
+
             switch (role) {
               case 'support':
                 $state.go('app.payments.list');
@@ -314,17 +315,6 @@ app.controller('AuthCtrl', [
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
           });
-        }
-        if (data.success) {
-        } else {
-          $scope.alerts.resetAlerts();
-          if (data.errors[0] == 'not activated') {
-            $scope.notactivated = true;
-          } else {
-            angular.forEach(data.errors, function (error, key) {
-              $scope.alerts.addAlert('danger', error);
-            });
-          }
         }
       })
     }

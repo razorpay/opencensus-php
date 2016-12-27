@@ -42,6 +42,9 @@
 
 .auth-header 
   margin-bottom 60px
+  @media(max-width: 890px){
+    padding 0 30px
+  }
   .btn-layout-change
     color white
     border-radius 5px
@@ -54,6 +57,12 @@
   margin 0 auto
   width 890px
   padding 30px
+  @media(max-width: 890px){
+    width auto
+    max-width 480px
+    padding 0
+    margin 30px auto
+  }
 }
 .auth-body {
   position relative
@@ -76,6 +85,9 @@
     .login-messaging {
       opacity 1;
     }
+  }
+  @media(max-width: 890px){
+    display none
   }
 }
 
@@ -181,16 +193,21 @@
   border-radius: 4px;
   background-color: #fafafa;
   box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15), 0 0 2px 0 rgba(0, 0, 0, 0.2);
-  position absolute
   top -30px
   left 30px
   padding 40px
   transition left .2s ease-in
-  &.right-align {
-    left 480px
-    .translate-container{
-      transform: translateX(-240px)
+  &.right-align .translate-container{
+    transform: translateX(-240px)
+  }
+  @media(min-width: 890px){
+    position absolute
+    &.right-align {
+      left 480px
     }
+  }
+  @media(max-width: 890px){
+    margin 0 auto
   }
 }
 
