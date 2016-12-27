@@ -1,11 +1,11 @@
-import BaseModel from './Base'
+import Entity from './Entity'
 import ajax from 'merchant/utils/ajax'
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils'
 
-export default class Invoice extends BaseModel {
-  resourceIdField = 'id'
-  resourceUrl = '/invoices'
-  resourceProperties = [
+export default class Invoice extends Entity {
+  static resourceIdField = 'id'
+  static resourceUrl = '/invoices'
+  static resourceProperties = [
     'id',
     'amount',
     'currency',
@@ -21,54 +21,13 @@ export default class Invoice extends BaseModel {
     'description',
     'receipt'
   ]
+
   currency = 'INR'
-
-  static fetchAll(params = {}) {
-    let { invoice_id, ...data } = params
-
-    if (invoice_id) {
-      return Invoice.fetch(invoice_id, data).then((response) => {
-        return {
-          data: {
-            items: [response]
-          }
-        }
-      })
-    }
-
-    return ajax('/invoices', { data }).then((response) => {
-      response.data.items = response.data.items.map((item) => new Invoice().deserialize(item))
-      return response
-    })
-  }
-
-  static fetch(id, data = {}) {
-    return ajax(`/invoices/${id}`, { data }).then((response) => {
-      return new Invoice().deserialize(response.data.items[0])
-    })
-  }
-
-  save() {
-    let params = this.serialize()
-    let { id, ...data } = params
-    let [ url, method ] = this.getResourceUrlAndMethod()
-
-    return ajax({ url, method, data }).then((response) => {
-      return new Invoice().deserialize(response.data)
-    })
-  }
 
   notify(type) {
     return ajax({
       url: `${this.getResourceUrl()}/notify/${type}`,
       method: 'post'
-    })
-  }
-
-  delete() {
-    return ajax({
-      url: this.getResourceUrl(),
-      method: 'delete'
     })
   }
 

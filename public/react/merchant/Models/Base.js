@@ -1,19 +1,21 @@
 export default class BaseModel {
-  resourceIdField = 'id'
+  static resourceIdField = 'id'
 
   constructor(props) {
     Object.assign(this, props)
   }
 
   get isNew() {
-    return !this[this.resourceIdField]
+    const Klass = this.constructor
+    return !this[Klass.resourceIdField]
   }
 
   getResourceUrl() {
+    const Klass = this.constructor
     if (this.isNew) {
-      return this.resourceUrl
+      return Klass.resourceUrl
     }
-    return `${this.resourceUrl}/${this[this.resourceIdField]}`
+    return `${Klass.resourceUrl}/${this[Klass.resourceIdField]}`
   }
 
   getResourceMethod() {
@@ -25,7 +27,8 @@ export default class BaseModel {
   }
 
   serialize() {
-    let resourceProperties = this.resourceProperties
+    let Klass = this.constructor
+    let resourceProperties = Klass.resourceProperties
     let serializedModel = {}
 
     for (let i = 0, len = resourceProperties.length; i < len; i++) {

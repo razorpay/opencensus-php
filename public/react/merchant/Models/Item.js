@@ -1,11 +1,11 @@
-import BaseModel from './Base'
+import Entity from './Entity'
 import ajax from 'merchant/utils/ajax'
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 
-export default class Item extends BaseModel {
-  resourceIdField = 'id'
-  resourceUrl = '/items'
-  resourceProperties = [
+export default class Item extends Entity {
+  static resourceIdField = 'id'
+  static resourceUrl = '/items'
+  static resourceProperties = [
     'id',
     'name',
     'amount',
@@ -14,35 +14,11 @@ export default class Item extends BaseModel {
   ]
   currency = 'INR'
 
-  static fetchAll(data = {}) {
-    return ajax('/items', { data }).then((response) => {
-      response.data.items = response.data.items.map((item) => new Item().deserialize(item))
-      return response
-    })
-  }
-
   // This will be replaced with the ES autocomplete api
   static fetchForAutocomplete(data = {}) {
     return ajax('/items/autocomplete', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Item().deserialize(item))
       return response
-    })
-  }
-
-  save() {
-    let params = this.serialize()
-    let { id, ...data } = params
-    let [ url, method ] = this.getResourceUrlAndMethod()
-
-    return ajax({ url, method, data }).then((response) => {
-      return new Item().deserialize(response.data)
-    })
-  }
-
-  delete() {
-    return ajax({
-      url: this.getResourceUrl(),
-      method: 'delete'
     })
   }
 
