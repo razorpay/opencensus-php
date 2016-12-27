@@ -659,6 +659,28 @@ trait Authorize
     {
         $currency = $payment->getCurrency();
 
+        $merchant = $payment->merchant;
+
+        if ($currency !== Payment\Currency::INR)
+        {
+            // mcc is supported only for merchants where this flag is set to true or false
+            // or merchant is not fee bearer
+            if (($merchant->convertOnApi() === null) or
+                ($merchant->isFeeBearerCustomer() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            }
+
+            // mcc is supported only for card payments
+            if ($payment->isCard() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+
+            }
+        }
+
         $amount = $payment->getAmount();
 
         $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
