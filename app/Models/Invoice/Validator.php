@@ -420,7 +420,7 @@ class Validator extends Base\Validator
         if (($lineItemsCount === 0) and ($description === null))
         {
             throw new BadRequestValidationFailureException(
-                'Either line_items or description is required.');
+                'description is required.');
         }
     }
 

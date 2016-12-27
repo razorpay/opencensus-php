@@ -49,6 +49,14 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
 
+        //
+        // We when serialize this entity, keep item attributes at same level
+        // in the output by merging both line_item and item arrays.
+        //
+        // Attributes of item which needs to be exposed in api, should be added
+        // here too.
+        //
+
         Item\Entity::NAME,
         Item\Entity::DESCRIPTION,
         Item\Entity::AMOUNT,

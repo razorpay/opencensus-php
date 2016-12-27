@@ -24,6 +24,10 @@ class Entity extends Base\PublicEntity
     // payload of line items operations. Yes, that payload contains item related
     // fields at the same level.
     //
+    // New attribute when being added, please check:
+    // - $allFields
+    // - LineItem.($visible, $public)
+    //
     public static $allFields    = [
         self::ACTIVE,
         self::NAME,

@@ -682,7 +682,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Either line_items or description is required.',
+                    'description' => 'description is required.',
                 ],
             ],
             'status_code' => 400,
