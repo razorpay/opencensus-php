@@ -741,6 +741,8 @@ class Processor
             $amount = $amount - $payment->getFee();
         }
 
+        $currency = $payment->getCurrency();
+
         // Move this to a common validate function.
         $validator = new Order\Validator;
 
