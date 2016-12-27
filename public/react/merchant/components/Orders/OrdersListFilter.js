@@ -7,7 +7,7 @@ export default (props) => {
       <div class='form-group list-filter-item'>
         <label>Order ID:</label>
         <Field
-          name='order_id'
+          name='id'
           component='input'
           class='form-control input-sm'
         />

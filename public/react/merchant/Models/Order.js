@@ -1,13 +1,16 @@
-import BaseModel from './Base'
-import ajax from 'merchant/utils/ajax'
+import Entity from './Entity'
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
+import Payment from './Payment'
+import ajax from 'merchant/utils/ajax'
 
-export default class Order extends BaseModel {
-  resourceUrl = '/orders'
+export default class Order extends Entity {
+  static resourceUrl = '/orders'
 
-  static fetchAll(data = {}) {
-    return ajax('/orders', { data }).then((response) => {
-      response.data.items = response.data.items.map((order) => new Order().deserialize(order))
+  fetchPayments() {
+    return ajax({
+      url: `${this.getResourceUrl()}/payments`
+    }).then((response) => {
+      response.data.items = response.data.map((item) => new Payment().deserialize(item))
       return response
     })
   }

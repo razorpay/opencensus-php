@@ -5,11 +5,11 @@ import Alert from 'rzp/ui/Forms/Alert'
 import OrdersList from 'merchant/components/Orders/OrdersList'
 import ListContainer from 'merchant/containers/ListContainer'
 import OrdersListFilter from 'merchant/components/Orders/OrdersListFilter'
-import * as OrderActions from 'merchant/modules/orders'
+import { fetchOrders } from 'merchant/modules/orders/list'
 
 @connect(
   (state) => state.orders,
-  OrderActions
+  { fetchOrders }
 )
 export default class OrdersListContainer extends ListContainer {
   fetchEntityList(params) {

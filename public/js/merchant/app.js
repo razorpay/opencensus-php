@@ -229,6 +229,12 @@ var app = angular.module('app', [
     }).state('app.orders.list', {
       url: '/list',
       templateProvider: reactTemplateProvider('<orders-list />')
+    }).state('app.orders.detail', {
+      url: '/:id/details',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.id = $stateParams.id;
+      }],
+      templateProvider: reactTemplateProvider('<order-details id="id" />')
     })
 
 
