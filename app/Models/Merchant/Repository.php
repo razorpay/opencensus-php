@@ -243,12 +243,12 @@ class Repository extends Base\Repository
      * @param  Entity $parentMerchant   Parent Merchant Entity
      * @return AccountEntity
      */
-    public function fetchAccountByIdAndMerchant(string $accountId, Entity $parentMerchant) : Entity
+    public function fetchAccountByIdAndMerchant(string $accountId, Entity $marketplace) : Entity
     {
         AccountEntity::verifyIdAndStripSign($accountId);
 
         return $this->newQuery()
-                    ->where(Entity::PARENT_ID, $parentMerchant->getId())
+                    ->where(Entity::PARENT_ID, $marketplace->getId())
                     ->findOrFailPublic($accountId); //@todo: Should we throw a custom exception here?
     }
 }

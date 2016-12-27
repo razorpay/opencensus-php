@@ -225,6 +225,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    // Is the merchant a marketplace vendor account
     public function isAccount()
     {
         return ($this->getParentId() !== NULL);
@@ -335,11 +336,13 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    // All marketplace accounts belonging to the Marketplace merchant
     public function accounts()
     {
         return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }
 
+    // Marketplace owner
     public function parent()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
@@ -628,7 +631,6 @@ class Entity extends Base\PublicEntity
 
         return $awsLogoUrl;
     }
-
 
     public function getParentId()
     {

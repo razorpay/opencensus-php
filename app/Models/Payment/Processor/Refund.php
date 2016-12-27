@@ -317,10 +317,10 @@ trait Refund
     /**
      * For a full-refund, fetch and implicitly add reversals
      *
-     * @param  [type] $transfers [description]
-     * @param  [type] $payment   [description]
-     * @param  [type] $input     [description]
-     * @return [type]            [description]
+     * @param  [type] $transfers
+     * @param  [type] $payment
+     * @param  [type] $input
+     * @return [type]
      */
     protected function implicitAddReversalsForFullRefund($transfers, $payment, array & $input)
     {
@@ -328,7 +328,7 @@ trait Refund
         {
             $transfers = $this->repo
                               ->transfer
-                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant, true);
         }
 
         $reversals = [];
@@ -690,6 +690,7 @@ trait Refund
 
             if ($processReversals === true)
             {
+                // @todo: Fix this hack.
                 $parentRefund = $this->refund;
                 $parentPayment = $this->payment;
 

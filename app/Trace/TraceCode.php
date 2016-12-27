@@ -62,6 +62,9 @@ class TraceCode
     const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
     const PAYMENT_INVALID_CONTACT_NUMBER            = 'PAYMENT_INVALID_CONTACT_NUMBER';
     const PAYMENT_CAPTURE_CREATE_TRANSACTION        = 'PAYMENT_CAPTURE_CREATE_TRANSACTION';
+    const PAYMENT_TRANSFER_CREATE_TRANSACTION       = 'PAYMENT_TRANSFER_CREATE_TRANSACTION';
+    const PAYMENT_TRANSFER_TO_ACCOUNT               = 'PAYMENT_TRANSFER_TO_ACCOUNT';
+    const PAYMENT_TRANSFER_TO_CUSTOMER              = 'PAYMENT_TRANSFER_TO_CUSTOMER';
     const PAYMENT_CAPTURE_UPDATE_TRANSACTION        = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
     const PAYMENT_CAPTURE_ORDER_UPDATE              = 'PAYMENT_CAPTURE_ORDER_UPDATE';
     const PAYMENT_TRANSACTION_OLD                   = 'PAYMENT_TRANSACTION_OLD';
@@ -515,6 +518,9 @@ class TraceCode
         self::PAYMENT_CAPTURE_REQUEST                   => 'Payment capture request received',
         self::PAYMENT_CAPTURE_ADD_TO_QUEUE              => 'Adding capture request to queue',
         self::PAYMENT_CAPTURE_CREATE_TRANSACTION        => 'Create transaction on payment capture',
+        self::PAYMENT_TRANSFER_CREATE_TRANSACTION       => 'Create transaction on payment transfer',
+        self::PAYMENT_TRANSFER_TO_ACCOUNT               => 'Process payment transfer to marketplace account',
+        self::PAYMENT_TRANSFER_TO_CUSTOMER              => 'Process payment transfer to customer account',
         self::PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   => 'Create transaction on payment failed capture',
         self::PAYMENT_CAPTURE_UPDATE_TRANSACTION        => 'Update existing transaction on payment capture',
         self::PAYMENT_CAPTURE_ORDER_UPDATE              => 'Update corresponding order on payment capture',

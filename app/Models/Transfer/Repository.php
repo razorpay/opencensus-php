@@ -40,13 +40,18 @@ class Repository extends Base\Repository
         return $data;
     }
 
-    public function fetchBySourcePaymentIdAndMerchant($paymentId, Merchant\Entity $marketplace)
+    /**
+     * Fetch all transfers from a merchant, done on a payment
+     *
+     * @param  string          $paymentId
+     * @param  Merchant\Entity $marketplace
+     */
+    public function fetchBySourcePaymentIdAndMerchant(string $paymentId, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
                     ->where(Entity::SOURCE_ID, $paymentId)
-                    ->where(Entity::TO_TYPE, 'merchant')
-                    ->merchantId($marketplace->getId())
+                    ->merchantId($merchant->getId())
                     ->get();
     }
 

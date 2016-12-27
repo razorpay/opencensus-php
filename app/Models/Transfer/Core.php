@@ -11,7 +11,6 @@ use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -27,10 +26,10 @@ class Core extends Base\Core
      *
      * @param  Base\Entity        $from        Source entity for transfer
      * @param  Base\Entity        $to          Recieving entity for transfer
-     * @param  Transaction\Entity $transaction Transaction Entity
+     * @param  int                $amount
      * @return Transfer\Entity
      */
-    public function createTransfer(Base\Entity $to, $source, $amount)
+    public function createTransfer(Base\Entity $to, $source, int $amount) : Entity
     {
         $transferData = [
             Entity::TO_ID           => $to->getId(),
@@ -73,9 +72,7 @@ class Core extends Base\Core
 
         (new Validator)->validateTransfers($payment, $merchantBalance, $input);
 
-        $totalTransferAmount = $this->getTotalTransferAmount($input);
-
-        $this->updatePaymentTransferAmount($payment, $totalTransferAmount);
+        $totalTransferAmount = 0;
 
         foreach ($input as $transfer)
         {
@@ -88,25 +85,17 @@ class Core extends Base\Core
                 $transfer = $this->accountTransfer($payment, $transfer);
             }
 
+            $totalTransferAmount += $transfer['amount'];
+
             $transfers->push($transfer);
         }
+
+        $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
         return $transfers;
     }
 
-    protected function getTotalTransferAmount(array $input)
-    {
-        $amount = 0;
-
-        foreach ($input as $transfer)
-        {
-            $amount += $transfer['amount'];
-        }
-
-        return $amount;
-    }
-
-    protected function updatePaymentTransferAmount($payment, int $amount)
+    protected function updatePaymentAmountTransferred($payment, int $amount)
     {
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $amount)
         {
@@ -116,17 +105,28 @@ class Core extends Base\Core
         });
     }
 
-    protected function customerTransfer($payment, $merchant, $transfer)
+    /**
+     * Transfer to a customer account
+     *
+     * @param  Payment\Entity   $payment
+     * @param  array            $transfer
+     * @return Transfer\Entity
+     */
+    protected function customerTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
     {
         $this->verifyFeatureAllowed(Merchant\Features::B2BWALLET);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
+            ['transfer' => $transfer]);
 
         $to = $this->repo
                    ->customer
                    ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $merchant);
 
-        $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
+        $amount = $transfer['amount'];
 
-        $amount = $transfer->transaction->getAmount();
+        $transfer = $this->createTransfer($to, $payment, $amount);
 
         $customerTxn = (new Customer\Transaction\Core)
                         ->createFromCustomerCredit($payment, $transfer, $amount, $to->getId());
@@ -136,30 +136,40 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    protected function accountTransfer($payment, $transfer)
+    /**
+     * Transfer to a Marketplace account
+     *
+     * @param  Payment\Entity   $payment
+     * @param  array            $transfer
+     * @return Transfer\Entity
+     */
+    protected function accountTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
     {
         $this->verifyFeatureAllowed(Merchant\Features::MARKETPLACE);
 
-        // Marketplace Account ID to receive the transfer
         $accountId = $transfer[ToType::ACCOUNT];
-
-        $this->checkMultipleMarketplaceTransfer($payment->getId(), $accountId);
 
         $amount = $transfer['amount'];
 
-        // Validate account belongs to marketplace
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
+            ['transfer' => $transfer]);
+
+        $this->checkMultipleMarketplaceTransfer($payment->getId(), $accountId);
 
         $account = $this->repo
                         ->merchant
                         ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
 
-        // $vendor->getValidator()->validateVendorForTransfer();
-
         $transfer = $this->createTransfer($account, $payment, $amount);
 
-        $paymentData = $this->getTransferPaymentData($payment, $amount, $accountId);
+        $paymentData = [
+            Payment\Entity::AMOUNT    => $amount,
+            Payment\Entity::CONTACT   => $payment->getContact(),
+            Payment\Entity::EMAIL     => $payment->getEmail(),
+        ];
 
-        (new Payment\Service)->processTransfer($account, $payment, $amount, $paymentData);
+        (new Payment\Service)->processTransfer($account, $payment, $paymentData);
 
         return $transfer;
     }
@@ -176,19 +186,14 @@ class Core extends Base\Core
 
     }
 
-    // Unused. @todo remove
-    protected function getTransferPaymentData($payment, int $amount, string $accountId) : array
-    {
-        return [
-            'method'        => 'transfer',
-            'amount'        => $amount,
-            'currency'      => 'INR',
-            'account_id'    => $accountId,
-            'contact'       => $payment->getContact(),
-            'email'         => $payment->getEmail(),
-        ];
-    }
-
+    /**
+     * Check that: A transfer can only be done once to an account
+     * for a payment
+     *
+     * @param  string $paymentId
+     * @param  string $accountId
+     * @throws Exception\BadRequestException
+     */
     protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId)
     {
         Merchant\AccountEntity::verifyIdAndStripSign($accountId);

@@ -66,6 +66,26 @@ class PaymentMarketplaceTransferTest extends TestCase
         });
     }
 
+    public function testTransferToCustomerAndAccount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000
+        ];
+
+        $transfers[1] = [
+            'customer'=> 'cust_100000customer',
+            'amount'  => 400
+        ];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
+        {
+            $this->transferPayment($this->payment['id'], $transfers);
+        });
+    }
+
     public function testPartialAmountTransfer()
     {
         $this->fixtures->merchant->addFeatures(['marketplace']);
@@ -108,6 +128,8 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
         $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
 
+        $oldMarketBalance = $this->getAccountBalance('10000000000000');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 43000
@@ -149,5 +171,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transferFee = $this->getLastTransactionFee('10000000000002');
         $this->assertEquals($transfers[1]['amount'] - $transferFee, $this->getAccountBalance('10000000000002'));
+
+        $newMarketBalance = $this->getAccountBalance('10000000000000');
+        $this->assertEquals(50000, $oldMarketBalance - $newMarketBalance);
     }
 }

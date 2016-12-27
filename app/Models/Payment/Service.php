@@ -33,16 +33,15 @@ class Service extends Base\Service
 
     /**
      * Process a transfer payment
-     * @param  array  $input
+     * (internal payments created on Marketplace transfer to accounts)
      *
-     * @return array|mixed
-     * @throws Exception\BadRequestException
+     * @param  Merchant\Entity $account
+     * @param  Payment\Entity  $originPayment
+     * @param  array           $input
      */
-    public function processTransfer($account, $originPayment, $amount, array $input)
+    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, array $input)
     {
-        $payment = $this->getNewProcessor($account)->processTransfer($account, $originPayment, $amount, $input);
-
-        return $payment;
+        return $this->getNewProcessor($account)->processTransfer($account, $originPayment, $input);
     }
 
     /**
@@ -400,7 +399,7 @@ class Service extends Base\Service
      * @param string $id
      * @param array  $input
      *
-     * @return Collection  Transfer collection
+     * @return array
      */
     public function transfer(string $id, array $input) : array
     {
@@ -422,8 +421,6 @@ class Service extends Base\Service
         $transfers = $this->repo
                           ->transfer
                           ->fetchBySourcePaymentIdAndMerchant($id, $this->merchant);
-
-                          sd($transfers->toArrayPublic());
 
         return $transfers->toArrayPublic();
     }

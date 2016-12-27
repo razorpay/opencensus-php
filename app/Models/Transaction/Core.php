@@ -114,7 +114,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates a Transaction record for a Payment transfer to account
+     * Creates a Transaction record for a Payment transfer credit to account
      * Updates Marketplace balance
      *
      * @param  Payment\Entity $payment
@@ -122,11 +122,12 @@ class Core extends Base\Core
      */
     public function createFromPaymentTransferred(Payment\Entity $payment) : array
     {
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment); // @todo: check
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION, // @todo: change
+            TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
             [
+                'type'          => 'account_credit',
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId()
             ]);
@@ -578,7 +579,7 @@ class Core extends Base\Core
      * Record and associate a transaction from a transfer payment action.
      *
      * @param  Transfer\Entity      $transfer Transfer entity
-     * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/vendor)
+     * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/merchant)
      * @return Transaction\Entity
      */
     public function createFromTransfer($transfer, $to)
@@ -607,11 +608,16 @@ class Core extends Base\Core
 
         $txn->fillAndGenerateId($values);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
+            [
+                'type'           => 'marketplace_debit',
+                'transaction_id' => $txn->getId()
+            ]);
+
         $txn->merchant()->associate($transfer->merchant);
 
         $txn->sourceAssociate($transfer);
-
-        $transfer->transaction()->associate($txn);
 
         $this->creditBalancesForTransfer($to, $txn);
 

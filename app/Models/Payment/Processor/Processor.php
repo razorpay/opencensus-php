@@ -209,34 +209,45 @@ class Processor
         return $data;
     }
 
-    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, int $amount, array $input) : Payment\Entity
+    /**
+     * Create a payment entity for marketplace transfer,
+     * create and process a payment transaction
+     *
+     * @param  Merchant\Entity $account
+     * @param  Payment\Entity  $originPayment
+     * @param  array           $input
+     */
+    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, array $input) : Payment\Entity
     {
         $paymentData = [
-            'method'        => Payment\Method::TRANSFER,
-            'amount'        => $amount,
-            'currency'      => 'INR',
-            'contact'       => $input['contact'],
-            'email'         => $input['email'],
+            'method'            => Payment\Method::TRANSFER,
+            'amount'            => $input['amount'],
+            'currency'          => 'INR',
+            'contact'           => $input['contact'],
+            'email'             => $input['email'],
         ];
 
         $payment = $this->createPaymentEntity($paymentData);
 
+        $payment->setStatus(Status::CAPTURED);
+
         $payment->setMarketplaceGateway();
 
-        $this->repo->transaction(function () use ($payment, $originPayment) {
+        $payment->setGatewayCaptured(true);
 
-            $payment->setStatus(Status::CAPTURED);
+        $payment->setAuthorizeTimestamp();
 
-            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
+        $payment->setCaptureTimestamp();
 
-            $this->repo->saveOrFail($txn);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
 
-            $payment->originPayment()->associate($originPayment);
+        $this->repo->saveOrFail($txn);
 
-            $this->repo->saveOrFail($payment);
+        $payment->originPayment()->associate($originPayment);
 
-            $this->saveFeeDetails($txn, $feesSplit);
-        });
+        $this->repo->saveOrFail($payment);
+
+        $this->saveFeeDetails($txn, $feesSplit);
 
         return $payment;
     }

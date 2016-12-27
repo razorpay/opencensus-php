@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -237,10 +237,8 @@ class Entity extends Base\PublicEntity
 
     public function isTransferEnabled()
     {
-        $marketplaceEnabled = $this->merchant
-                                   ->isFeatureEnabled(Merchant\Features::MARKETPLACE);
-
-        return $marketplaceEnabled;
+        return $this->merchant
+                    ->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
 
     public function isMethodEnabled($method)
