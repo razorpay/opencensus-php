@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Airtel\Constants;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
+use RZP\Gateway\Netbanking\Airtel\RefundFields;
 use RZP\Gateway\Netbanking\Airtel\RequestFields;
 use RZP\Gateway\Netbanking\Airtel\ResponseFields;
 
@@ -40,26 +41,41 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $request = (array) json_decode($input);
+
+        $response = $this->createRefundResponse($request);
+
+        return $this->makeResponse($response);
+    }
+
     protected function createCallbackResponse($input)
     {
-        $hashArray = $this->getHashArray($input);
-
-        $hash = $this->getHash($hashArray);
-
-        if ($hash !== $input[RequestFields::HASH])
-        {
-            // Error in authorize request - invalid hash
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_HASH);
-        }
-
         // Creating a success response
-        $response = $this->createResponseArray($input);
+        $response = $this->createVerifyResponseArray($input);
 
         return $response;
     }
 
-    protected function createResponseArray($input)
+    protected function createRefundResponse($request)
+    {
+        $hashArray = $this->getRefundHashArray($request);
+
+        $hash = $this->getGatewayInstance()->getHash($hashArray);
+
+        $hashArray[RefundFields::HASH] = $hash;
+
+        $data = $this->getAdditionalRefundData($request);
+
+        $data =  array_merge($hashArray, $data);
+
+        return json_encode($data);
+    }
+
+    protected function createVerifyResponseArray($input)
     {
         $hashArray = [
             ResponseFields::MERCHANT_ID               => $input[RequestFields::MERCHANT_ID],
@@ -69,7 +85,8 @@ class Server extends Base\Mock\Server
             ResponseFields::TRANSACTION_DATE          => $input[RequestFields::DATE],
         ];
 
-        $hash = $this->getHash($hashArray);
+        // This could be wrong--- hashArray
+        $hash = $this->getGatewayInstance()->getHash($hashArray);
 
         $response = [
             ResponseFields::STATUS                    => Constants::SUCCESS,
@@ -84,25 +101,38 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getHash($hashArray)
-    {
-        $salt = $this->getGatewayInstance()->getSalt();
-
-        array_push($hashArray, $salt);
-
-        $hashString = implode('#', $hashArray);
-
-        return hash(Constants::HASH_ALGORITHM, $hashString);
-    }
-
     protected function getHashArray($input)
     {
         return [
-            $input[RequestFields::MERCHANT_ID],
-            $input[RequestFields::TRANSACTION_REFERENCE_NO],
-            $input[RequestFields::AMOUNT],
-            $input[RequestFields::DATE],
-            Constants::NETBANKING,
+            ResponseFields::MERCHANT_ID              => $input[RequestFields::MERCHANT_ID],
+            ResponseFields::TRANSACTION_REFERENCE_NO => $input[RequestFields::TRANSACTION_REFERENCE_NO],
+            ResponseFields::AMOUNT                   => $input[RequestFields::AMOUNT],
+            ResponseFields::TRANSACTION_DATE         => $input[RequestFields::DATE],
+            ResponseFields::SERVICE                  => Constants::NETBANKING,
+        ];
+    }
+
+    protected function getRefundHashArray($input)
+    {
+        $date = Carbon::createFromFormat('dmYHms',
+            $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
+
+        return [
+            RefundFields::MERCHANT_ID              => $input[RefundFields::MERCHANT_ID],
+            RefundFields::ERROR_CODE               => Constants::CODE,
+            RefundFields::AMOUNT                   => $input[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_ID           => $input[RefundFields::TRANSACTION_ID],
+            RefundFields::TRANSACTION_DATE         => $date,
+            RefundFields::STATUS                   => Constants::SUCCESS
+        ];
+    }
+
+    protected function getAdditionalRefundData($request)
+    {
+        return [
+            RefundFields::SESSION_ID    => $request[RefundFields::SESSION_ID],
+            RefundFields::MESSAGE_TEXT  => Constants::REFUND_SUCCESS_MESSAGE,
+            RefundFields::CODE          => Constants::REFUND_CODE
         ];
     }
 

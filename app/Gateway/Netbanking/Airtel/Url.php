@@ -9,6 +9,5 @@ class Url
 
     const AUTHORIZE     = '/initiatePayment';
     const VERIFY        = '/inquiry';
-
-    // Reversal ---- refunds = different url
+    const REFUND        = '/reversal';
 }

@@ -70,6 +70,29 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $content = $this->getRefundRequestData($input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, (array) $request);
+
+        $responseArray = $this->getRefundResponseArray($response);
+
+        $attributes = $this->getRefundAttributes($responseArray, $input);
+
+        $this->createRefundEntity($responseArray, $input);
+
+        $this->checkRefundStatus($attributes, $responseArray);
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -265,36 +288,157 @@ class Gateway extends Base\Gateway
     {
         $response = (array) json_decode($content);
 
-        $responseArray = (array)$response[VerifyFields::TRANSACTION][0];
+        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
 
-        $this->assertVerifyHash($responseArray,
+        $hashArray = $this->getVerifyResponseHashArray($content);
+
+        // This fails at the moment --> Need to make sure this works
+        $this->assertResponseHash($hashArray,
             $response[VerifyFields::HASH]);
 
         return $responseArray;
     }
 
-    public function getVerifyHashArray($data)
+    protected function getVerifyResponseHashArray($content)
+    {
+        $response = (array) json_decode($content);
+
+        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
+
+        $verifyJson = json_encode($responseArray);
+
+        return [
+            VerifyFields::MERCHANT_ID       => $response[VerifyFields::MERCHANT_ID],
+            Constants::VERIFY_JSON          => $verifyJson,
+            VerifyFields::ERROR_CODE        => $response[VerifyFields::ERROR_CODE]
+        ];
+    }
+
+    protected function getVerifyHashArray($data)
     {
         return [
             VerifyFields::MERCHANT_ID              => $data[VerifyFields::MERCHANT_ID],
             VerifyFields::TRANSACTION_REFERENCE_NO => $data[VerifyFields::TRANSACTION_REFERENCE_NO],
             VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
             VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
-        ];
+            ];
     }
 
-    protected function assertVerifyHash($response, $hash)
+    protected function getRefundHashArray($data)
     {
-        // hash generation is incorrect
-        $responseHash = $this->getHash($response);
+        return [
+            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
+            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
+            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
+            ];
+    }
 
-        sd($responseHash, $hash);
+    public function assertResponseHash($response, $hash)
+    {
+        $responseHash = $this->getHash($response);
 
         if (hash_equals($responseHash, $hash) === false)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+    }
+
+    protected function getRefundRequestData($input)
+    {
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+
+        $tranId = $payment['bank_payment_id'];
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('dmYhms');
+
+        $merchantId = $this->getMerchantId();
+
+        $amount = $input['refund']['amount'] / 100;
+
+        $request = [
+            RefundFields::SESSION_ID        => uniqid(),
+            RefundFields::TRANSACTION_ID    => $tranId,
+            RefundFields::TRANSACTION_DATE  => $date,
+            RefundFields::REQUEST           => Constants::REVERSAL,
+            RefundFields::MERCHANT_ID       => $merchantId,
+            RefundFields::HASH              => '',
+            RefundFields::AMOUNT            => "$amount"
+        ];
+
+        $hashArray = $this->getRefundHashArray($request);
+
+        $hash = $this->getHash($hashArray);
+
+        $request[RefundFields::HASH] = $hash;
+
+        return json_encode($request);
+    }
+
+    protected function getRefundResponseArray($response)
+    {
+        $responseArray = (array) $response;
+
+        $content = $responseArray[Constants::REFUND_BODY];
+
+        $refundArray = (array) json_decode($content);
+
+        return $refundArray;
+    }
+
+    protected function checkRefundStatus($attributes, $refundArray)
+    {
+        $hashArray = $this->getRefundHashArray($refundArray);
+
+        $hash = $this->getHash($hashArray);
+
+        $this->assertResponseHash($hashArray, $hash);
+
+        if ((isset($attributes[RefundFields::STATUS]) === false) or
+            ($attributes[RefundFields::STATUS] !== Constants::SUCCESS))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                $refundArray);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
+        }
+    }
+
+    protected function createRefundEntity($attributes, $input)
+    {
+        $paymentId = $input['payment']['id'];
+
+        $gatewayPayment = $this->createGatewayRefundEntity(
+            $attributes, $paymentId);
+
+        $this->gatewayPayment = $gatewayPayment;
+    }
+
+    protected function getRefundAttributes($response, $input)
+    {
+        try
+        {
+            $attrs = [
+                'received'        => true,
+                'amount'          => $input['payment']['amount'] / 100,
+                'bank_payment_id' => $response[RefundFields::TRANSACTION_ID],
+                'status'          => $response[RefundFields::STATUS],
+                'refund_id'       => $input['refund']['id']
+            ];
+        }
+
+        catch(Exception $e)
+        {
+            throw new Exception\GatewayErrorException($e->getMessage());
+        }
+
+        return $attrs;
     }
 
     public function getMerchantId()

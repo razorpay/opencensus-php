@@ -14,4 +14,5 @@ class ResponseFields
     const HASH                      = 'HASH';
     const CODE                      = 'CODE';
     const MSG                       = 'MSG';
+    const SERVICE                   = 'service';
 }
