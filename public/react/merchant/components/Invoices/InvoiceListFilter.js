@@ -14,7 +14,7 @@ export default (props) => {
       </div>
 
       <div class='form-group list-filter-item'>
-        <label>Receipt</label>
+        <label>Receipt No.</label>
         <Field
           name='receipt'
           component='input'
