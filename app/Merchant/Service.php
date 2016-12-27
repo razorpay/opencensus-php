@@ -307,7 +307,7 @@ class Service extends Base\Service
         // Save complete merchant details on api side
         $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails->toArray());
+        // (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails->toArray());
 
         return array();
     }
