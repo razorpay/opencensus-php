@@ -178,6 +178,9 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::LATE_AUTHORIZED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::CONVERT_CURRENCY)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);

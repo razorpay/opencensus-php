@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
     const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
+    const CONVERT_CURRENCY      = 'convert_currency';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -163,6 +164,7 @@ class Entity extends Base\PublicEntity
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
+        self::CONVERT_CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -555,6 +557,11 @@ class Entity extends Base\PublicEntity
     public function setLateAuthorized($lateAuthorized)
     {
         $this->setAttribute(self::LATE_AUTHORIZED, $lateAuthorized);
+    }
+
+    public function setConvertCurrency($convert)
+    {
+        $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
 // ----------------------- Setters Ends-----------------------------------------

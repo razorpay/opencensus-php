@@ -1401,6 +1401,7 @@ ALTER TABLE merchants
 
 ALTER TABLE payments
     ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
+    ADD COLUMN convert_currency TINYINT(1) NULL AFTER late_authorized;
 
 ALTER TABLE refunds
     ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
