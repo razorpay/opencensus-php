@@ -61,8 +61,9 @@ class Stamp extends XMLSecLibs\XMLSecurityDSig
             }
         }
 
-        $publicKey = openssl_pkey_get_public($publicKey);
-        $pubkeyInfo = openssl_pkey_get_details($publicKey);
+        $publicKeyResource = openssl_pkey_get_public($publicKey);
+
+        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
 
         if ($pubkeyInfo['type'] === OPENSSL_KEYTYPE_RSA) {
             $keyValueNode = $baseDoc->createElementNS(self::XMLDSIGNS, $dsig_pfx.'KeyValue');
@@ -71,9 +72,6 @@ class Stamp extends XMLSecLibs\XMLSecurityDSig
             $keyValueNode -> appendChild($rsaKeyValueNode);
             $rsaKeyValueNode -> appendChild($baseDoc->createElementNS(self::XMLDSIGNS, $dsig_pfx.'Modulus', base64_encode($pubkeyInfo["rsa"]["n"])));
             $rsaKeyValueNode -> appendChild($baseDoc->createElementNS(self::XMLDSIGNS, $dsig_pfx.'Exponent', base64_encode($pubkeyInfo["rsa"]["e"])));
-        }
-        else {
-            sd("112");
         }
     }
 

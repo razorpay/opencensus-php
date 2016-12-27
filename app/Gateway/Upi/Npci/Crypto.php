@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Npci;
 
 use DOMDocument;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
+use RobRichards\XMLSecLibs\XMLSecEnc;
 
 /**
  * Handles all the Cypto code for the
@@ -43,22 +44,59 @@ class Crypto
         return $rsa->decrypt($data);
     }
 
-    public function sign(string $xml)
+    protected function makeDOMDocument(string $xml)
     {
-        file_put_contents('/tmp/signed2.xml', $this->oldSign($xml));
-
-        $xmlDoc = (new DOMDocument);
+        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
 
         $xmlDoc->loadXML($xml);
 
-        $stamp = new Stamp;
+        return $xmlDoc;
+    }
 
-        $stamp->setCanonicalMethod(Stamp::C14N);
+    protected function verifySignature(string $xml)
+    {
+        $stamp = new Stamp(null);
+
+        $xmlDoc = $this->makeDOMDocument($xml);
+
+        assertTrue($stamp->locateSignature($xmlDoc));
+
+        $stamp->canonicalizeSignedInfo();
+
+        assertTrue($stamp->validateReference());
+
+        $objKey = $stamp->locateKey();
+
+        $objKey->loadKey($this->getSigningPublicKey());
+
+        $verify = $stamp->verify($objKey);
+
+        // Calls openssl_verify, which returns 1 on success, 0 on failure, -1 on error
+        return ($verify === 1);
+    }
+
+    public function sign(string $xml)
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . str_replace("\n", "", $xml);
+
+        $xmlDoc = $this->makeDOMDocument($xml);
+
+        $stamp = new Stamp(null);
+
+        /**
+         * This is not the method that UPI specifies.
+         * They ask for C14N, but there are weird namespace issues that crop up
+         * if we try to use that
+         */
+        $stamp->setCanonicalMethod(Stamp::EXC_C14N);
+
+        $stamp->canonicalizeSignedInfo();
 
         $stamp->addReference(
             $xmlDoc,
             Stamp::SHA256,
-            self::TRANSFORMS
+            self::TRANSFORMS,
+            ['force_uri' => true]
         );
 
         $stamp->sign($this->getSigningKey());
@@ -69,29 +107,11 @@ class Crypto
 
         $signed = $xmlDoc->saveXML();
 
-        $signed =  str_replace(['ds:', ':ds'], '', $signed);
-
-        file_put_contents('/tmp/signed.xml', $signed);
+        // We take care not to pass anything but the XML doc string
+        // to verify the signature
+        assertTrue($this->verifySignature($signed));
 
         return $signed;
-    }
-
-    protected function oldSign($xml)
-    {
-        $inputxml = tempnam(sys_get_temp_dir(), 'req');
-
-        file_put_contents($inputxml, $xml);
-
-        $outputxml = tempnam(sys_get_temp_dir(), 'res');
-
-        $privateKey = storage_path('certs/razorpay-npci-pkcs8.key');
-        $publicKey  = storage_path('certs/razorpay-npci.pub');
-
-        chdir(app_path('../scripts'));
-
-        shell_exec("/usr/bin/java SignatureGen '$inputxml' '$outputxml' '$privateKey' '$publicKey'");
-
-        return file_get_contents($outputxml);
     }
 
     protected function getRSAInstance()
@@ -140,7 +160,7 @@ class Crypto
         $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type'=>'private'));
 
         // function loadKey($key, $isFile=false, $isCert = false)
-        $objKey->loadKey($key, false);
+        $objKey->loadKey($key);
 
         return $objKey;
     }
