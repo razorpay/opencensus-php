@@ -8,7 +8,7 @@ use RobRichards\XMLSecLibs;
 
 /**
  * Handles all the Cypto code for the
- * gateway. Primarily three functions:
+ * gateway. Primarily two functions:
  *
  * - decrypt: Decrypts cred blocks
  * - sign: Signs an XML document
@@ -21,7 +21,7 @@ class Crypto
     }
 
     /**
-     * Decrypts responses from the ICICI API
+     * Decrypts encrypted text from UPI (MPIN etc)
      * @param  string $data
      * @return string
      */
