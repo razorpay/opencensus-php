@@ -81,4 +81,34 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT
         ],
     ],
+    'testTransferPaymentAmountGreaterThanCaptured' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED
+        ],
+    ],
+    'dummy' => [
+        'content' => [
+            'count' => 1,
+            'items' => [
+                [
+                    'source_type'     => 'payment',
+                    'source_id'       => '000',
+                    'to_type'         => 'merchant',
+                    'to_id'           => 'acc_10000000000001',
+                    'amount'          => 4000,
+                    'amount_reversed' => 0
+                ],
+            ],
+        ],
+    ],
 ];

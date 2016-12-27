@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
 
-class PaymentMarketplaceTransferTests extends TestCase
+class PaymentMarketplaceTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
@@ -49,5 +49,105 @@ class PaymentMarketplaceTransferTests extends TestCase
         $this->sendRequest($testData['request']);
 
         $this->startTest();
+    }
+
+    public function testTransferPaymentAmountGreaterThanCaptured()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => $this->payment['amount'] + 1000
+        ];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
+        {
+            $this->transferPayment($this->payment['id'], $transfers);
+        });
+    }
+
+    public function testPartialAmountTransfer()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 4000
+        ];
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source_type'     => 'payment',
+                    'source_id'       => $this->payment['id'],
+                    'to_type'         => 'merchant',
+                    'to_id'           => 'acc_10000000000001',
+                    'amount'          => 4000,
+                    'amount_reversed' => 0
+                ],
+            ],
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transferFee = $this->getLastTransactionFee('10000000000001');
+
+        $this->assertEquals(4000 - $transferFee, $this->getAccountBalance('10000000000001'));
+
+        $this->assertArraySelectiveEquals($expected, $content);
+    }
+
+    public function testFullTransfer()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+        $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 43000
+        ];
+
+        $transfers[1] = [
+            'account' => 'acc_10000000000002',
+            'amount'  => 7000
+        ];
+
+        $expected = [
+            'count' => 2,
+            'items' => [
+                [
+                    'source_type'     => 'payment',
+                    'source_id'       => $this->payment['id'],
+                    'to_type'         => 'merchant',
+                    'to_id'           => 'acc_10000000000001',
+                    'amount'          => 43000,
+                    'amount_reversed' => 0
+                ],
+                [
+                    'source_type'     => 'payment',
+                    'source_id'       => $this->payment['id'],
+                    'to_type'         => 'merchant',
+                    'to_id'           => 'acc_10000000000002',
+                    'amount'          => 7000,
+                    'amount_reversed' => 0
+                ],
+            ],
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $this->assertArraySelectiveEquals($expected, $content);
+
+        $transferFee = $this->getLastTransactionFee('10000000000001');
+        $this->assertEquals($transfers[0]['amount'] - $transferFee, $this->getAccountBalance('10000000000001'));
+
+        $transferFee = $this->getLastTransactionFee('10000000000002');
+        $this->assertEquals($transfers[1]['amount'] - $transferFee, $this->getAccountBalance('10000000000002'));
     }
 }

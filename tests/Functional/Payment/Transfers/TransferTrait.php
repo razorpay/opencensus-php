@@ -53,4 +53,22 @@ trait TransferTrait
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
     }
+
+    protected function getAccountBalance(string $accountId)
+    {
+        return $this->getEntityById('balance', $accountId, true)['balance'];
+    }
+
+    protected function getLastTransactionFee(string $accountId)
+    {
+        $lastTxnForAccount =  $this->getEntities(
+                                'transaction',
+                                [
+                                    'merchant_id' => $accountId,
+                                    'count' => 1
+                                ],
+                                true);
+
+        return $lastTxnForAccount['items'][0]['fee'];
+    }
 }

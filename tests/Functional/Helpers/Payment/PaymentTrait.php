@@ -560,6 +560,21 @@ trait PaymentTrait
         // $this->assertEquals($content['status'], 'failed');
     }
 
+    protected function transferPayment(string $id, array $transfers)
+    {
+        $request = [
+            'method'        => 'POST',
+            'url'           => '/payments/' . $id . '/transfer',
+            'content'       => [
+                'transfers' => $transfers,
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function addPaymentMetadata($id, $content)
     {
         $request = array(
