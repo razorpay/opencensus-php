@@ -81,6 +81,10 @@ class CaptureTest extends TestCase
 
         $this->assertEquals('authorized', $hdfc['status']);
         $this->assertEquals('APPROVED', $hdfc['result']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transaction['fee_type'], 'default');
     }
 
     public function testCaptureWithDifferentAmount()
@@ -317,6 +321,84 @@ class CaptureTest extends TestCase
 
         $this->assertSame(6, $content['payments_count']);
         $this->assertSame(2, $content['emails_count']);
+    }
+
+    public function testTransactionOnCaptureWithFeeCredit()
+    {
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('authorized', $hdfc['status']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transaction['fee_type'], 'fee_credit');
+        $this->assertEquals($transaction['fee_bearer'], 'platform');
+        $this->assertEquals($transaction['plan'], 'prepaid');
+    }
+
+    public function testTransactionOnCaptureWithAmountCredit()
+    {
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
+
+        $pricing = $this->fixtures->base->createEntity('pricing', [
+            'plan_id' => '10ZeroPricingP',
+            'feature' => 'payment',
+            'payment_method' =>'card'
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('authorized', $hdfc['status']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transaction['fee_type'], 'amount_credit');
+        $this->assertEquals($transaction['fee_bearer'], 'platform');
+        $this->assertEquals($transaction['plan'], 'prepaid');
+    }
+
+    public function testTransactionOnCaptureWithFeeBearerCustomer()
+    {
+        $merchant = $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true,
+            'fee'              => 23000
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest(null, 977000);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transaction['fee_type'], 'default');
+        $this->assertEquals($transaction['fee_bearer'], 'customer');
+        $this->assertEquals($transaction['plan'], 'prepaid');
     }
 
     public function startTest($id = null, $amount = null)

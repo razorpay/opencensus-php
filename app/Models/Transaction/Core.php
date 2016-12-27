@@ -164,6 +164,8 @@ class Core extends Base\Core
 
         $feesSplit = new Base\PublicCollection;
 
+        $feeType = Transaction\FeeType::DEFAULT;
+
         if ($oldTransaction === true)
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
@@ -200,15 +202,19 @@ class Core extends Base\Core
             $fee = 0;
             $serviceTax = 0;
 
+            $feeType = Transaction\FeeType::AMOUNT_CREDIT;
+
             $txn->setGratis(true);
         }
         // If the customer is fee bearer for the merchant
         // use the fees and service tax from both
-        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        else if ($payment->merchant->isFeeBearerCustomer())
         {
             list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
             $credit = $amount - $fee;
+
+            $txn->setFeeBearer(Merchant\FeeBearer::CUSTOMER);
         }
         else
         {
@@ -220,6 +226,8 @@ class Core extends Base\Core
                 $feeCredits     = $fee;
 
                 $txn->setFeeCredits($feeCredits);
+
+                $feeType = Transaction\FeeType::FEE_CREDIT;
             }
             else
             {
@@ -233,6 +241,7 @@ class Core extends Base\Core
         $txn->setDebit(0);
         $txn->setFee($fee);
         $txn->setServiceTax($serviceTax);
+        $txn->setFeeType($feeType);
 
         return [$txn, $feesSplit];
     }

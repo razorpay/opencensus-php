@@ -6,8 +6,12 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Transaction\FeeType;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\Plan;
+
 
 class CreateTransactions extends Migration
 {
@@ -79,6 +83,15 @@ class CreateTransactions extends Migration
                   ->nullable();
 
             $table->string(Transaction::CHANNEL, 8);
+
+            $table->tinyInteger(Transaction::FEE_BEARER)
+                  ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+
+            $table->tinyInteger(Transaction::PLAN)
+                  ->default(Plan::getValueForPlanString(Plan::PREPAID));
+
+            $table->char(Transaction::FEE_TYPE)
+                  ->default(FeeType::DEFAULT);
 
             $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);

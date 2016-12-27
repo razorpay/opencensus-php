@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\Plan;
 
 class CreateMerchants extends Migration
 {
@@ -66,6 +67,9 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+
+            $table->tinyInteger(Merchant::PLAN)
+                  ->default(Plan::getValueForPlanString(Plan::PREPAID));
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();

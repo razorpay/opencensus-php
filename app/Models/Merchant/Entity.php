@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const FEATURES                  = 'features';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
+    const PLAN                      = 'plan';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
     const LOGO_URL                  = 'logo_url';
@@ -65,6 +66,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
+        self::PLAN,
         self::EMAIL,
         self::SCOPE,
         self::WEBSITE,
@@ -144,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::PLAN                   => Plan::PREPAID,
     );
 
     protected $publicSetters = array(
@@ -389,6 +392,11 @@ class Entity extends Base\PublicEntity
         return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
+    protected function getPlanAttribute()
+    {
+        return Plan::getPlanStringForValue($this->attributes[self::PLAN]);
+    }
+
     protected function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
@@ -614,6 +622,11 @@ class Entity extends Base\PublicEntity
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function setPlanAttribute($plan)
+    {
+        $this->attributes[self::PLAN] = Plan::getValueForPlanString($plan);
     }
 
     protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)
