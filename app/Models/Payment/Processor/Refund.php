@@ -243,9 +243,7 @@ trait Refund
     }
 
     /**
-     * Check if the refund should happen along with Marketplace transfers/reversals
-     *
-     * @todo CLEAN UP
+     * Check if the refund should be processed for Marketplace transfers/reversals
      *
      * @param  Payment\Entity   $payment
      * @param  array            $input
@@ -273,7 +271,8 @@ trait Refund
         {
             if ($reversalsReqd === true)
             {
-                throw new Exception\BadRequestException('transfers input required');
+                throw new Exception\BadRequestValidationFailureException(
+                    'The reversals attribute is required for this refund request');
             }
 
             if ($reverseAllTransfers === true)
@@ -305,9 +304,17 @@ trait Refund
 
             assert (count($transfers) !== 0);
 
+            // Reversals need to be sent only if there are
+            // multiple transfers created on a payment.
             if (count($transfers) > 1)
             {
                 $reversalsReqd = true;
+            }
+            // When only a single transfer exists, we reverse
+            // the amount on it.
+            else if (count($transfers) === 1)
+            {
+                $reverseAllTransfers = true;
             }
         }
 

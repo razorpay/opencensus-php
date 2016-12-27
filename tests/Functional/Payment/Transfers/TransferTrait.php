@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Constants\Entity as E;
+
 trait TransferTrait
 {
     protected function checkLastTransferEntity($toId, $toType, int $amount)

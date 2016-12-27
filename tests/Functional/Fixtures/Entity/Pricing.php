@@ -123,7 +123,7 @@ class Pricing extends Base
                         'payment_method_type' => null,
                         'payment_network'     => null,
                         'payment_issuer'      => null,
-                        'percent_rate'        => 200,
+                        'percent_rate'        => 0,
                         'fixed_rate'          => 0,
                     ),
                     array(

@@ -613,7 +613,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function refundPayment($id, $amount = null)
+    protected function refundPayment($id, $amount = null, $reversals = [])
     {
         $this->ba->privateAuth();
 
@@ -624,10 +624,16 @@ trait PaymentTrait
             $content = array('amount' => $amount);
         }
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/refund',
-            'content' => $content);
+        if (empty($reversals) === false)
+        {
+            $content['transfers'] = $reversals;
+        }
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/payments/'.$id.'/refund',
+            'content'   => $content
+        ];
 
         $refund = $this->makeRequestAndGetContent($request);
 
