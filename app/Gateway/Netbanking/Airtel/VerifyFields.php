@@ -11,4 +11,10 @@ class VerifyFields
     const HASH                      = 'hash';
     const AMOUNT                    = 'amount';
     const STATUS                    = 'status';
+    const TRANSACTION               = 'txns';
+    const TRANSACTION_ID            = 'txnid';
+    const TRANSACTION_AMOUNT        = 'txnAmount';
+    const CODE                      = 'code';
+    const MESSAGE_TEXT              = 'messageText';
+    const ERROR_CODE                = 'errorCode';
 }

@@ -2,8 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Airtel\Mock;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Airtel\Constants;
+use RZP\Gateway\Netbanking\Airtel\VerifyFields;
 use RZP\Gateway\Netbanking\Airtel\RequestFields;
 use RZP\Gateway\Netbanking\Airtel\ResponseFields;
 
@@ -29,9 +31,13 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input);
+        $request = $this->getVerifyRequestArray($input);
 
-        sd('111');
+        $this->validateActionInput($request);
+
+        $response = $this->getVerifyResponse($request);
+
+        return $this->makeResponse($response);
     }
 
     protected function createCallbackResponse($input)
@@ -97,6 +103,46 @@ class Server extends Base\Mock\Server
             $input[RequestFields::AMOUNT],
             $input[RequestFields::DATE],
             Constants::NETBANKING,
+        ];
+    }
+
+    protected function getVerifyRequestArray($input)
+    {
+        return (array) json_decode($input);
+    }
+
+    protected function getVerifyResponse($input)
+    {
+        $response = $this->getVerifyResponseArray($input);
+
+        return json_encode($response);
+    }
+
+    protected function getVerifyResponseArray($input)
+    {
+        $date = Carbon::createFromFormat('dmYHms',
+            $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
+
+        $verifyArray = [
+            VerifyFields::STATUS                => Constants::SUCCESS,
+            VerifyFields::TRANSACTION_ID        => mt_rand(111111111, 999999999),
+            VerifyFields::TRANSACTION_DATE      => $date,
+            VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
+        ];
+
+        // hash generation is incorrect
+        $hash = $this->getGatewayInstance()->getHash($verifyArray);
+
+        $merchantId = $this->getGatewayInstance()->getMerchantId();
+
+        return [
+            VerifyFields::TRANSACTION               => array($verifyArray),
+            VerifyFields::HASH                      => $hash,
+            VerifyFields::MERCHANT_ID               => $merchantId,
+            VerifyFields::TRANSACTION_REFERENCE_NO  => $input[VerifyFields::TRANSACTION_REFERENCE_NO],
+            VerifyFields::MESSAGE_TEXT              => Constants::VERIFY_SUCCESS,
+            VerifyFields::CODE                      => Constants::VERIFY_CODE,
+            VerifyFields::ERROR_CODE                => Constants::CODE
         ];
     }
 }

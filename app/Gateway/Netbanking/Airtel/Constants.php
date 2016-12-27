@@ -10,5 +10,7 @@ class Constants
     const SUCCESS           = 'SUC';
     const FAILURE           = 'FAL';
     const CODE              = '000';
+    const VERIFY_CODE       = '0';
     const SUCCESS_MSG       = "eCommerce transaction successful";
+    const VERIFY_SUCCESS    = 'Success';
 }

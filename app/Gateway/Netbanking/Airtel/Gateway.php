@@ -105,22 +105,37 @@ class Gateway extends Base\Gateway
         // Response is originally a string.
         $response = $this->getVerifyResponseArray($content);
 
-        // sd($response);
+        $status = $this->getVerifyStatus($verify, $response);
 
+        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH)
+                            ? true : false;
+
+        return $status;
+    }
+
+    protected function getVerifyStatus($verify, $response)
+    {
         $status = GatewayBase\VerifyResult::STATUS_MATCH;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $response);
 
-        $verify->apiSuccess = true;
-        $verify->gatewaySuccess = false;
+        $this->setApiSuccess($verify);
 
-        if (isset($response[VerifyFields::STATUS]) and
-            $response[VerifyFields::STATUS] === Constants::SUCCESS)
+        $this->setGatewaySuccess($verify, $response);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $verify->gatewaySuccess = true;
+            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
         }
+
+        return $status;
+    }
+
+    protected function setApiSuccess($verify)
+    {
+        $verify->apiSuccess = true;
 
         $input = $verify->input;
 
@@ -129,16 +144,17 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
         }
+    }
 
-        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+    protected function setGatewaySuccess($verify, $response)
+    {
+        $verify->gatewaySuccess = false;
+
+        if (isset($response[VerifyFields::STATUS]) and
+            $response[VerifyFields::STATUS] === Constants::SUCCESS)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $verify->gatewaySuccess = true;
         }
-
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH)
-                            ? true : false;
-
-        return $status;
     }
 
     protected function createAuthorizeRequestData($input)
@@ -180,7 +196,7 @@ class Gateway extends Base\Gateway
         $amount = (double) $input['payment']['amount'] / 100;
 
         $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'UTC')
+            $input['payment']['created_at'], 'Asia/Kolkata')
             ->format('dmYhms');
 
         return [
@@ -192,7 +208,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getHash($data)
+    public function getHash($data)
     {
         $values = array_values($data);
 
@@ -220,7 +236,7 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'UTC')
+            $input['payment']['created_at'], 'Asia/Kolkata')
             ->format('dmYhms');
 
         $merchantId = $this->getMerchantId();
@@ -247,10 +263,17 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyResponseArray($content)
     {
-        return (array) json_decode($content);
+        $response = (array) json_decode($content);
+
+        $responseArray = (array)$response[VerifyFields::TRANSACTION][0];
+
+        $this->assertVerifyHash($responseArray,
+            $response[VerifyFields::HASH]);
+
+        return $responseArray;
     }
 
-    protected function getVerifyHashArray($data)
+    public function getVerifyHashArray($data)
     {
         return [
             VerifyFields::MERCHANT_ID              => $data[VerifyFields::MERCHANT_ID],
@@ -258,6 +281,20 @@ class Gateway extends Base\Gateway
             VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
             VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
         ];
+    }
+
+    protected function assertVerifyHash($response, $hash)
+    {
+        // hash generation is incorrect
+        $responseHash = $this->getHash($response);
+
+        sd($responseHash, $hash);
+
+        if (hash_equals($responseHash, $hash) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function getMerchantId()
