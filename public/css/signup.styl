@@ -231,6 +231,30 @@
   
 .auth-form
   margin-top 24px
+  position relative
+  
+.spinner-container
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  // opacity: 1;
+  
+.loading-animation
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: rgba(250,250,250,0.4);
+  opacity: 0
+  transition opacity 0.2s ease-in
+  pointer-events none
+  &.active
+    opacity 1
   
 .auth-heading 
   font-size: 18px;
@@ -380,86 +404,3 @@
 }
 
 /* old styles */
-
-.signup {
-  font-family: "Lato", "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
-
-  .header {
-    .logo {
-      height: 32px;
-    }
-  }
-
-  .container{
-    width: 100%;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 28px;
-    padding: 0;
-
-    &.main {
-      text-align: center;
-    }
-  }
-
-  .form, .announcements {
-    display: inline-block;
-    vertical-align: middle;
-    text-align: left;
-    margin: 14px auto;
-    width: 100%;
-    border-radius: 4px;
-  }
-
-  .form{
-    background: #fafafa;
-    height: 540px;
-    max-width: 320px;
-    padding: 40px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15),
-                0 0 2px 0 rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    position: relative;
-    overflow: auto;
-    .form-label {
-      font-size: 14px;
-      font-weight: bold;
-      line-height: 1.64;
-    }
-  }
-
-  .form-control {
-    font-size: 14px;
-    line-height: 24px;
-    height: 40px;
-    width: 240px;
-    border: 1px solid #7266ba;
-  }
-
-  .faded-text {
-    font-size: 12px;
-    line-height: 1.5;
-    color: #999999;
-  }
-
-  .form-control, .btn, .faded-text {
-    margin: 10px 0;
-  }
-
-  .head-text {
-    font-size: 18px;
-    line-height: 1.56;
-    height: 28px;
-    color: #555555;
-  }
-
-  .announcements {
-    background: #eaeaea;
-    max-width: 480px;
-    min-height: 480px;
-    margin-left: -0.25em;
-    border-radius: 0 4px 4px 0;
-  }
-}

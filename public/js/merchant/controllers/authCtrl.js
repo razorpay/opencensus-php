@@ -86,14 +86,14 @@ app.controller('AuthCtrl', [
 
     $scope.goToSignupStep = function (step, subStep) {
       $scope.signup.currentStep = step;
-      if (typeof subStep !== undefined) {
+      if (subStep !== undefined) {
         $scope.signup.currentSubStep = subStep;
       }
     }
 
     $scope.goToLoginStep = function (step, subStep) {
       $scope.login.currentStep = step;
-      if (typeof subStep !== undefined) {
+      if (subStep !== undefined) {
         $scope.login.currentSubStep = subStep;
       }
     }
@@ -122,15 +122,37 @@ app.controller('AuthCtrl', [
       payload.data.business_name = ''
 
       var request = $http(payload);
+      showSpinner()
       request.success(function (data) {
+        hideSpinner()
         if (data.success) {
           // todo hide login button because user is logged in
+          hideLoginBtn()
           $scope.goToSignupStep(1)
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
-        // todo show error in alert
       })
     }
 
+    function showSpinner() {
+      $('.loading-animation').addClass('active')
+    }
+
+    function hideSpinner() {
+      $('.loading-animation').removeClass('active')
+    }
+
+    function hideLoginBtn() {
+      $('.btn-layout-change').hide()
+    }
+
+    function goToPostSignup () {
+      $scope.goToSignupStep(2)    
+    }
     // todo get post-signup details and check whether post-signup steps are needed
 
     $scope.sendDetails = function () {
