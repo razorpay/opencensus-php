@@ -95,7 +95,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan="40">Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
+        <td><input type="text" name="card[number]" value="4000000000000002" size="25"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
