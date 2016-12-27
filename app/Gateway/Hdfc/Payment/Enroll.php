@@ -117,8 +117,6 @@ trait Enroll
     {
         $payment = $input['payment'];
 
-        $amountData = $this->getAmountCurrencyData($input);
-
         $card = $input['card'];
 
         $this->enrollRequest['url'] = Hdfc\Urls::ENROLL_URL;
@@ -128,7 +126,11 @@ trait Enroll
         $data['trackid'] = $payment['id'];
 
         // Convert amount from integer to decimal
-        $data['amt'] = $amountData['amount'] / $amountData['factor'];
+        $amount = $payment['amount'];
+        $currency = $payment['currency'];
+        $factor = Currency::DENOMINATION_FACTOR[$currency];
+
+        $data['amt'] = $amount / $factor;
 
         // Collect udf fields
         $data['udf1'] = 'test';
@@ -145,17 +147,11 @@ trait Enroll
 
         $this->udfRemoveHackCharacters($data);
 
-        //
         // Collect fields related to the card
-        //
         $this->mapKeys($card, $this->cardKeyMappings, $data);
 
-        //
-        // Write currency code manually.
-        // Later change it to something better
-        // when we support multiple currencies
-        //
-        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$amountData['currency']];
+        // set the iso numeric currency code
+        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
 
         $network = $input['card']['network_code'];
 

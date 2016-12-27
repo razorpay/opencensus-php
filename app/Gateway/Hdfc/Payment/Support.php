@@ -226,10 +226,10 @@ trait Support
 
         $data['action'] = $action;
 
-        $amountData = $this->getAmountCurrencyData($input);
+        $factor = Currency::ISO_NUMERIC_CODES[$input['currency']];
 
         // Convert amount from integer to decimal
-        $data['amt'] = $amountData['amount'] / $amountData['factor'];
+        $data['amt'] = $input['amount'] / $factor;
 
         $data['member'] = $card['name'];
 

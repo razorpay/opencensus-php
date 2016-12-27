@@ -259,47 +259,6 @@ class Gateway
         $this->mock = $mock;
     }
 
-    public function getAmountCurrencyData(array $input)
-    {
-        $entity = null;
-
-        switch ($this->action)
-        {
-            case Action::AUTHORIZE:
-            case Action::CAPTURE:
-                $entity = 'payment';
-                break;
-
-            case Action::REFUND:
-                $entity = 'refund';
-                break;
-
-            default:
-                throw new Exception\RuntimeException(
-                    'invalid action',
-                    ['action' => $this->action]);
-        }
-
-        $amount = $input[$entity]['amount'];
-
-        $currency = $input[$entity]['currency'];
-
-        if ($input['terminal']->getCurrency() === Payment\Currency::INR)
-        {
-            $amount = $input[$entity]['base_amount'];
-
-            $currency = Payment\Currency::INR;
-        }
-
-        $data['amount']   = $amount;
-
-        $data['currency'] = $currency;
-
-        $data['factor']   = Payment\Currency::DENOMINATION_FACTOR[$currency];
-
-        return $data;
-    }
-
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)

@@ -206,7 +206,7 @@ trait Capture
         $payment->getValidator()->captureValidate($payment, $amount, $currency);
 
         $data = array(
-            'payment'   => $payment->toArray(),
+            'payment'   => $payment->toArrayGateway(),
             'amount'    => $amount,
             'currency'  => $payment->getCurrency()
         );
@@ -214,6 +214,12 @@ trait Capture
         if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $payment->card->toArray();
+        }
+
+        if ($payment->convertCurrencyOnApi() === true)
+        {
+            $data['amount'] = $payment->getBaseAmount();
+            $data['currency'] = Payment\Currency::INR;
         }
 
         $this->captureOnGateway($data);

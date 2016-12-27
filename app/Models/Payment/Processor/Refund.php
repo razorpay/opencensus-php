@@ -49,11 +49,7 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -121,11 +117,7 @@ trait Refund
                 (in_array($payment->card->getNetworkCode(),
                           [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -174,8 +166,8 @@ trait Refund
         assert ($payment->getTransactionId() !== null);
 
         $data = [
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
             'amount'    => $refund->getAmount(),
             'currency'  => $refund->getCurrency()
         ];
@@ -499,11 +491,7 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -643,6 +631,25 @@ trait Refund
         }
 
         return null;
+    }
+
+    protected function getGatewayDataForRefund(Refund\Entity $refund, Payment\Entity $payment)
+    {
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        if ($payment->convertCurrencyOnApi())
+        {
+            $data['amount'] = $refund->getBaseAmount();
+
+            $data['currency'] = Payment\Currency::INR;
+        }
+
+        return $data;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)

@@ -50,9 +50,9 @@ trait Authorize
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
-
         $this->processCurrencyConversions($payment);
+
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
 
@@ -481,7 +481,7 @@ trait Authorize
         //
         // Call gateway input
         //
-        $gatewayInput['payment'] = $payment->toArray();
+        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -510,9 +510,9 @@ trait Authorize
     {
         $gatewayInput = [];
 
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
-
         $this->processCurrencyConversions($payment);
+
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
 
     protected function parseContact($contact)
@@ -661,9 +661,17 @@ trait Authorize
 
         $amount = $payment->getAmount();
 
-        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
+        $baseAmount = $amount;
+
+        if (($payment->isCard() === true) and
+            ($currency !== Currency::INR))
+        {
+            $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
+        }
 
         $payment->setBaseAmount($baseAmount);
+
+        $payment->setConvertCurrency($payment->merchant->convertOnApi());
     }
 
     /**

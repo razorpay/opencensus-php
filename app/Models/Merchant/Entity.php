@@ -145,7 +145,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
-        self::CONVERT_CURRENCY       => true,
+        self::CONVERT_CURRENCY       => null,
     );
 
     protected $publicSetters = array(
