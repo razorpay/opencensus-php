@@ -589,6 +589,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
+    protected function setWebsiteAttribute($website)
+    {
+        $this->attributes[self::WEBSITE] = mb_strtolower($website);
+    }
+
     protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)

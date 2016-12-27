@@ -3,11 +3,11 @@
 namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class OrgTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -27,6 +27,10 @@ class OrgTest extends TestCase
     {
         $org = $this->fixtures->create('org');
 
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
         $this->startTest();
@@ -35,6 +39,10 @@ class OrgTest extends TestCase
     public function testDeleteOrg()
     {
         $org = $this->fixtures->create('org');
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 

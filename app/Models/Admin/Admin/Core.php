@@ -71,22 +71,23 @@ class Core extends Base\Core
 
     public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
     {
-        $roles = [];
-        $groups = [];
-
         if (isset($input['roles']) === true)
         {
-            $roles = Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-        }
+            $roles = [];
 
-        $this->repo->sync($admin, 'roles',  $roles);
+            $roles = Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
+
+            $this->repo->sync($admin, 'roles',  $roles);
+        }
 
         if (isset($input['groups']) === true)
         {
-            $groups = Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
-        }
+            $groups = [];
 
-        $this->repo->sync($admin, 'groups', $groups);
+            $groups = Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
+
+            $this->repo->sync($admin, 'groups', $groups);
+        }
     }
 
     public function passwordReset(

@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
+    const ALLOW_ALL_MERCHANTS   = 'allow_all_merchants';
 
     protected $dontKeepRevisionOf = [
         self::PASSWORD,
@@ -81,7 +82,8 @@ class Entity extends Base\PublicEntity
         self::LOCATION_CODE,
         self::DISABLED,
         self::LOCKED,
-        self::LAST_LOGIN_AT
+        self::LAST_LOGIN_AT,
+        self::ALLOW_ALL_MERCHANTS,
     ];
 
     protected $visible = [
@@ -91,9 +93,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::EMAIL,
-        self::PASSWORD,
         self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -105,10 +105,9 @@ class Entity extends Base\PublicEntity
         self::LOCKED,
         self::LAST_LOGIN_AT,
         self::FAILED_ATTEMPTS,
-        self::OLD_PASSWORDS,
-        self::PASSWORD_CHANGED_AT,
         self::EXPIRED_AT,
         self::DELETED_AT,
+        self::ALLOW_ALL_MERCHANTS,
         'roles',
         'groups',
         'merchants',
@@ -121,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::REMEMBER_TOKEN,
+        self::OAUTH_PROVIDER_ID,
         self::ORG_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -132,13 +132,15 @@ class Entity extends Base\PublicEntity
         self::LOCKED,
         self::DELETED_AT,
         self::LAST_LOGIN_AT,
+        self::ALLOW_ALL_MERCHANTS,
         'roles',
         'groups',
         'merchants',
     ];
 
     protected $casts = [
-        self::FAILED_ATTEMPTS => 'int',
+        self::FAILED_ATTEMPTS     => 'int',
+        self::ALLOW_ALL_MERCHANTS => 'bool',
     ];
 
     protected $publicSetters = [
@@ -147,11 +149,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::BRANCH_CODE     => 'default_branch',
-        self::SUPERVISOR_CODE => 'default_supervisor',
-        self::DEPARTMENT_CODE => 'default_location',
-        self::LOCATION_CODE   => 'default_department',
-        self::EMPLOYEE_CODE   => 'default_employee',
+        self::BRANCH_CODE         => 'default_branch',
+        self::SUPERVISOR_CODE     => 'default_supervisor',
+        self::DEPARTMENT_CODE     => 'default_location',
+        self::LOCATION_CODE       => 'default_department',
+        self::EMPLOYEE_CODE       => 'default_employee',
+        self::ALLOW_ALL_MERCHANTS => false,
     ];
 
     protected static $unsetCreateInput = [
@@ -354,6 +357,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PASSWORD, $password);
     }
 
+    public function setAllowAllMerchants()
+    {
+        $this->setAttribute(self::ALLOW_ALL_MERCHANTS, true);
+    }
 
     /*
      * Getters
@@ -372,6 +379,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
+    }
+
+    public function canSeeAllMerchants()
+    {
+        return $this->getAttribute(self::ALLOW_ALL_MERCHANTS);
     }
 
     /*
@@ -417,5 +429,12 @@ class Entity extends Base\PublicEntity
         $expectedPwdHash = $this->getPassword(self::PASSWORD);
 
         return Hash::check($password, $expectedPwdHash);
+    }
+
+    public function getPublicOrgId()
+    {
+        $orgId = $this->getAttribute(self::ORG_ID);
+
+        return Org\Entity::getSignedId($orgId);
     }
 }

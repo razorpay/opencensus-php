@@ -228,7 +228,58 @@ trait Capture
         {
             $this->acquireMutexOnPayment($this->payment);
 
-            try
+            $this->callAndHandleCaptureOnGateway($data);
+
+            $this->recordCapture();
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->updatePaymentIfApplicableOnCaptureFailure($ex, $paymentCopy);
+        }
+        finally
+        {
+            $this->releaseMutexOnPayment($this->payment);
+        }
+    }
+
+    protected function updatePaymentIfApplicableOnCaptureFailure(
+        Exception\BaseException $ex,
+        Payment\Entity $paymentCopy)
+    {
+        // For validation failures, we shouldn't mark capture as failed ever.
+        if (($ex instanceof Exception\BadRequestValidationFailureException) or
+            ($ex instanceof Exception\BadRequestException) or
+            ($ex instanceof Exception\GatewayRequestException))
+        {
+            throw $ex;
+        }
+
+        if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+        {
+            // If pricing rule is not found, we should not mark capture as failed ever.
+            throw $ex;
+        }
+
+        $this->trace->traceException($ex);
+
+        //
+        // We need to use the old payment
+        // because the recordCapture would have made some changes
+        // to payment entity but not committed due to which payment
+        // entity will have corrupted data
+        //
+        $this->payment = $paymentCopy;
+
+        $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
+
+        throw $ex;
+    }
+
+    protected function callAndHandleCaptureOnGateway(array $data)
+    {
+        try
+        {
+            if ($this->payment->isGatewayCaptured() === false)
             {
                 $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
 
@@ -238,68 +289,64 @@ trait Capture
                 // in a transaction, which could fail and end up rolling back.
                 $this->repo->saveOrFail($this->payment);
             }
-            catch (Exception\GatewayTimeoutException $ex)
-            {
-                //
-                // We are currently doing capture queue for HDFC, as we don't want to mark
-                // the captured payment on gateway as failed on API
-                // Note: Capture shouldn't be done again for Cybersource
-                // as Cybersource settles the amount from CH account again
-                //
-                if ($this->payment->getGateway() !== Payment\Gateway::HDFC)
-                {
-                    throw $ex;
-                }
-
-                $this->trace->traceException($ex);
-
-                $data['mode'] = $this->mode;
-
-                $this->trace->info(
-                    TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
-                );
-
-                // Adding a delay here because some gateways return back an error if a capture request
-                // is sent within a few seconds of the first capture request.
-                // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
-                // previous capture request.
-                $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
-            }
-
-            $this->recordCapture();
         }
-        catch (Exception\BaseException $ex)
+        catch (Exception\GatewayTimeoutException $ex)
         {
-            // For validation failures, we shouldn't mark capture as failed ever.
-            if (($ex instanceof Exception\BadRequestValidationFailureException) or
-                ($ex instanceof Exception\BadRequestException))
-            {
-                throw $ex;
-            }
+            $this->handleGatewayTimeoutOnCapture($data, $ex);
+        }
+    }
 
-            //
-            // We need to use the old payment
-            // because the recordCapture would have made some changes
-            // to payment entity but not committed due to which payment
-            // entity will have corrupted data
-            //
+    protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
+    {
+        $paymentGateway = $this->payment->getGateway();
 
-            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
-            {
-                // If pricing rule is not found, we should not mark capture as failed ever.
-                throw $ex;
-            }
-
-            $this->payment = $paymentCopy;
-
-            $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
-
+        //
+        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+        // to a queue. We then try to capture on HDFC.
+        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
+        //
+        if (($paymentGateway !== Payment\Gateway::HDFC) and
+            ($paymentGateway !== Payment\Gateway::CYBERSOURCE))
+        {
             throw $ex;
         }
-        finally
+
+        $curlMessage = strtolower($ex->getData()['message']);
+
+        //
+        // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
+        // We want to mark the payment as successful only if the error
+        // message says that the operation timed out.
+        //
+        if (strpos($curlMessage, 'operation timed out') === false)
         {
-            $this->releaseMutexOnPayment($this->payment);
+            throw $ex;
         }
+
+        $this->trace->traceException($ex);
+
+        $data['mode'] = $this->mode;
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
+        );
+
+        // We will be removing this piece of code once the capture queue is written
+        // for Cybersource to handle. Being tracked in the issue #1842
+        if ($paymentGateway === Payment\Gateway::CYBERSOURCE)
+        {
+            return;
+        }
+
+        //
+        // Adding a delay here because some gateways return back an error if a capture request
+        // is sent within a few seconds of the first capture request.
+        // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
+        // previous capture request.
+        //
+        $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
     }
 
     protected function recordTransactionForFailedApiCapture()

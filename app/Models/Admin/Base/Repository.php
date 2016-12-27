@@ -54,12 +54,13 @@ class Repository extends BaseRepository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchByOrgId(string & $orgId)
+    public function fetchByOrgId(string & $orgId, $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         return $this->newQuery()
                     ->orgId($orgId)
+                    ->with($relations)
                     ->get();
     }
 }
