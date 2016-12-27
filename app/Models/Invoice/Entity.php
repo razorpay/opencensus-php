@@ -95,8 +95,10 @@ class Entity extends Base\PublicEntity
         'delete',
         'sendNotification',
         'addLineItem',
+        'addManyLineItems',
         'updateLineItem',
         'removeLineItem',
+        'removeManyLineItems',
     ];
 
     protected $defaults = [
