@@ -291,10 +291,11 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function findByEntityId($entityId, $fail = false)
+    public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
                     ->first();
 
         if (($txn === null) and
