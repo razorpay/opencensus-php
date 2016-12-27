@@ -1395,3 +1395,8 @@ ALTER TABLE orgs
 # Adds Currency Code to terminals
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN mobile_banking_enabled TINYINT(1) AFTER beneficiary_address4,
+    ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
+    MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
