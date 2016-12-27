@@ -170,7 +170,7 @@ class Entity extends Base\PublicEntity
 
         if ($amount === $unrefundedAmount)
         {
-            $baseAmount = $this->getBaseAmountUnrefunded();
+            $baseAmount = $this->payment->getBaseAmountUnrefunded();
         }
         else
         {
