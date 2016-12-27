@@ -534,7 +534,14 @@ trait Refund
         }
         else
         {
-            $this->payment->refundAmount($this->refund->getAmount());
+            $amount = $this->refund->getAmount();
+
+            if ($this->payment->getConvertCurrency() === true)
+            {
+                $amount = $this->refund->getBaseAmount();
+            }
+
+            $this->payment->refundAmount($amount);
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);

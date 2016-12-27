@@ -383,6 +383,11 @@ class Entity extends Base\PublicEntity
     {
         $authAmount = $this->getAttribute(self::AMOUNT);
 
+        if ($this->getConvertCurrency() === true)
+        {
+            $authAmount = $this->getAttribute(self::BASE_AMOUNT);
+        }
+
         $this->setAttribute(self::AMOUNT_AUTHORIZED, $authAmount);
     }
 
@@ -844,7 +849,14 @@ class Entity extends Base\PublicEntity
 
     public function getAmountUnrefunded()
     {
-        return $this->getAmount() - $this->getAmountRefunded();
+        $totalAmount = $this->getAmount();
+
+        if ($this->getConvertCurrency() === true)
+        {
+            $totalAmount = $this->getBaseAmount();
+        }
+
+        return $totalAmount - $this->getAmountRefunded();
     }
 
     public function getCurrency()
