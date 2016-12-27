@@ -56,7 +56,7 @@ class Service extends Base\Service
         else
         {
             throw new Exception\BadRequestValidationFailureException(
-                "invalid entity, entity should be either payment or refund ");
+                "invalid entity, entity should be either payment or refund");
         }
 
         $txn = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
