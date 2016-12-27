@@ -471,6 +471,13 @@ class InvoiceTest extends TestCase
         $response = $this->startTest($testData);
     }
 
+    public function testAddManyLineItemsToInvoice()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testAddLineItemToInvoiceWithBadData()
     {
         $this->createDraftInvoice();
@@ -478,7 +485,26 @@ class InvoiceTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testAddManyLineItemsToInvoiceWithBadData()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(0, $lineItems['count']);
+    }
+
     public function testAddLineItemToIssuedInvoice()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testAddManyLineItemsToIssuedInvoice()
     {
         $this->createOrder();
 
@@ -640,6 +666,30 @@ class InvoiceTest extends TestCase
         $this->assertEquals(0, $lineItems['count']);
     }
 
+    public function testRemoveManyLineItemsOfInvoice()
+    {
+        $this->createDraftInvoice();
+
+        $this->createFewLineItems();
+
+        $this->startTest();
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(1, $lineItems['count']);
+    }
+
+    public function testRemoveManyLineItemsOfInvoiceWithBadData()
+    {
+        $this->createDraftInvoice();
+
+        $this->createFewLineItems();
+
+        $this->startTest();
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(3, $lineItems['count']);
+    }
+
     public function testRemoveLineItemOfIssuedInvoice()
     {
         $this->createOrder();
@@ -649,6 +699,20 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('line_item');
 
         $this->startTest();
+    }
+
+    public function testRemoveManyLineItemsOfIssuedInvoice()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('invoice');
+
+        $this->createFewLineItems();
+
+        $this->startTest();
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(3, $lineItems['count']);
     }
 
     public function testSendNotificationWithSmsMode()
@@ -923,5 +987,17 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
 
         return $payment;
+    }
+
+    protected function createFewLineItems()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->fixtures->create('item', ['id' => '1000000001item']);
+        $this->fixtures->create('line_item', ['id' => '100001lineitem', 'item_id' => '1000000001item']);
+
+        $this->fixtures->create('item', ['id' => '1000000002item']);
+        $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
     }
 }

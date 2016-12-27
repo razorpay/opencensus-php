@@ -52,17 +52,6 @@ class ItemController extends Controller
         return ApiResponse::json($item);
     }
 
-    public function updateItemActive($id, $active)
-    {
-        $input = Request::all();
-
-        $input[Item\Entity::ACTIVE] = $active;
-
-        $item = $this->service->update($id, $input);
-
-        return ApiResponse::json($item);
-    }
-
     public function deleteItem($id)
     {
         $response = $this->service->delete($id);

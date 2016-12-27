@@ -53,6 +53,10 @@ class Repository extends Base\Repository
      */
     public function findActiveByPublicIdAndMerchantOrFail($id, Merchant\Entity $merchant)
     {
+
+        // TODO:
+        // - Add tests
+
         $item = $this->findActiveByPublicIdAndMerchant($id, $merchant);
 
         if ($item->isNotActive())
@@ -62,7 +66,6 @@ class Repository extends Base\Repository
                 null,
                 [
                     'item_id' => $item->getId(),
-                    'invoice_id' => $invoice->getId(),
                 ]);
         }
 

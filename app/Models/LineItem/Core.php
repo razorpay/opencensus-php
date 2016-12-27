@@ -5,14 +5,22 @@ namespace RZP\Models\LineItem;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Item;
-use RZP\Models\Invoice;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant, Base\Entity $morphEntity)
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $morphEntity)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_CREATE_REQUEST,
+            $input
+        );
+
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         $lineItem = (new Entity)->build($lineItemDetails);
@@ -27,7 +35,11 @@ class Core extends Base\Core
                 // Create or get item(if id exists in input) and associate with line item.
                 //
 
-                $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $morphEntity);
+                $item = $this->createItemOrGetExisting(
+                    $lineItemDetails,
+                    $itemDetails,
+                    $merchant,
+                    $morphEntity);
 
                 $lineItem->item()->associate($item);
 
@@ -37,8 +49,16 @@ class Core extends Base\Core
         return $lineItem;
     }
 
-    public function createMany(array $input, Merchant\Entity $merchant, Base\Entity $morphEntity)
+    public function createMany(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $morphEntity)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_CREATE_MANY_REQUEST,
+            $input
+        );
+
         (new Validator)->validateInput('create_many', $input);
 
         $this->repo->transaction(
@@ -55,8 +75,16 @@ class Core extends Base\Core
         Entity $lineItem,
         array $input,
         Merchant\Entity $merchant,
-        Base\Entity $morphEntity)
+        Base\PublicEntity $morphEntity)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_UPDATE_REQUEST,
+            [
+                'id'    => $lineItem->getId(),
+                'input' => $input,
+            ]
+        );
+
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
         $lineItem->edit($lineItemDetails);
@@ -72,7 +100,11 @@ class Core extends Base\Core
                 if ((isset($lineItemDetails[Entity::ITEM_ID])) or
                     (empty($itemDetails) === false))
                 {
-                    $item = $this->createItemOrGetExisting($lineItemDetails, $itemDetails, $merchant, $morphEntity);
+                    $item = $this->createItemOrGetExisting(
+                        $lineItemDetails,
+                        $itemDetails,
+                        $merchant,
+                        $morphEntity);
 
                     $lineItem->item()->associate($item);
                 }
@@ -86,11 +118,25 @@ class Core extends Base\Core
 
     public function delete(Entity $lineItem)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_DELETE_REQUEST,
+            [
+                'id' => $lineItem->getId(),
+            ]
+        );
+
         return $this->repo->line_item->deleteOrFail($lineItem);
     }
 
     public function deleteMany(Base\PublicCollection $lineItems)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEM_DELETE_MANY_REQUEST,
+            [
+                'ids' => $lineItems->pluck('id')->toArray(),
+            ]
+        );
+
         $this->repo->transaction(
             function() use ($lineItems)
             {
@@ -116,10 +162,10 @@ class Core extends Base\Core
     // -------------------- Protected methods --------------------
 
     /**
-     * @param array           $lineItemDetails
-     * @param array           $itemDetails
-     * @param Merchant\Entity $merchant
-     * @param Base\Entity     $morphEntity
+     * @param array             $lineItemDetails
+     * @param array             $itemDetails
+     * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $morphEntity
      *
      * @return Item\Entity
      * @throws Exception\BadRequestException
@@ -128,7 +174,7 @@ class Core extends Base\Core
         array $lineItemDetails,
         array $itemDetails,
         Merchant\Entity $merchant,
-        Base\Entity $morphEntity)
+        Base\PublicEntity $morphEntity)
     {
         $item = null;
 

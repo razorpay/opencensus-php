@@ -76,7 +76,7 @@ class Generator extends Base\Core
         }
         catch (\Exception $e)
         {
-            ExceptionHandler::handle($e, $this->invoice, $input);
+            ExceptionHandler::handleMySqlUnqiueError($e, $this->invoice, $input);
         }
 
         //
@@ -159,12 +159,12 @@ class Generator extends Base\Core
         // If draft=1 in input, validate against createDraftRules else createIssuedRules.
         //
 
-        $operation = 'createIssued';
+        $operation = Validator::CREATE_ISSUED;
 
         if ((isset($input[Entity::DRAFT])) and
             ($input[Entity::DRAFT]) === '1')
         {
-            $operation = 'createDraft';
+            $operation = Validator::CREATE_DRAFT;
         }
 
         $invoice = new Entity;

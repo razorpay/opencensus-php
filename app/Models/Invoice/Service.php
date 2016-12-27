@@ -130,7 +130,9 @@ class Service extends Base\Service
                                     $invoice
                                 );
 
-        return $this->core->removeLineItem($invoice, $lineItem);
+        $invoice = $this->core->removeLineItem($invoice, $lineItem);
+
+        return $invoice->toArrayPublic();
     }
 
     public function removeManyLineItems(string $id, array $input)
@@ -146,7 +148,9 @@ class Service extends Base\Service
                                     $invoice
                                 );
 
-        return $this->core->removeManyLineItems($invoice, $lineItems);
+        $invoice = $this->core->removeManyLineItems($invoice, $lineItems);
+
+        return $invoice->toArrayPublic();
     }
 
     public function sendNotification($id, $medium)

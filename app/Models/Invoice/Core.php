@@ -75,7 +75,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            ExceptionHandler::handle($e, $invoice, $input);
+            ExceptionHandler::handleMySqlUnqiueError($e, $invoice, $input);
         }
 
         return $invoice;

@@ -1280,6 +1280,116 @@ return [
         ]
     ],
 
+    'testAddManyLineItemsToInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'post',
+            'content'   => [
+                'line_items' => [
+                    [
+                        'name'        => 'Item 1',
+                        'description' => 'Item 1 Description',
+                        'quantity'    => 10,
+                        'amount'      => 100,
+                    ],
+                    [
+                        'name'        => 'Item 2',
+                        'description' => 'Item 2 Description',
+                        'quantity'    => 10,
+                        'amount'      => 200,
+                    ],
+                    [
+                        'name'        => 'Item 3',
+                        'description' => 'Item 3 Description',
+                        'quantity'    => 10,
+                        'amount'      => 300,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'invoice',
+                'receipt'          => null,
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
+                    'customer_name'    => 'test',
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_address' => null
+                ],
+                'order_id'         => null,
+                'line_items'       => [
+                    [
+                        'quantity'         => 10,
+                        'name'             => 'Item 1',
+                        'description'      => 'Item 1 Description',
+                        'amount'           => 100,
+                        'currency'         => 'INR'
+                    ],
+                    [
+                        'quantity'         => 10,
+                        'name'             => 'Item 2',
+                        'description'      => 'Item 2 Description',
+                        'amount'           => 200,
+                        'currency'         => 'INR'
+                    ],
+                    [
+                        'quantity'         => 10,
+                        'name'             => 'Item 3',
+                        'description'      => 'Item 3 Description',
+                        'amount'           => 300,
+                        'currency'         => 'INR'
+                    ],
+                ],
+                'payment_id'       => null,
+                'status'           => 'draft',
+                'amount'           => 6000,
+                'currency'         => 'INR',
+            ]
+        ]
+    ],
+
+    'testAddManyLineItemsToInvoiceWithBadData' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'post',
+            'content'   => [
+                'line_items' => [
+                    [
+                        'name'        => 'Item 1',
+                        'description' => 'Item 1 Description',
+                        'quantity'    => 10,
+                        'amount'      => 100,
+                    ],
+                    [
+                        'name'        => 'Item 2',
+                        'description' => 'Item 2 Description',
+                        'quantity'    => 10,
+                        'amount'      => 200,
+                    ],
+                    [
+                        'name'        => 'Item 3',
+                        'description' => 'Item 3 Description',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddLineItemToInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
@@ -1452,8 +1562,80 @@ return [
             'content'   => [],
         ],
         'response' => [
-            'content' => []
+            'content' => [
+                'id'         => 'inv_1000000invoice',
+                'entity'     => 'invoice',
+                'line_items' => [],
+                'type'       => 'invoice',
+                'view_less'  => true,
+                'notes'      => [],
+                'status'     => 'draft',
+                'amount'     => 0,
+                'currency'   => 'INR',
+            ]
         ]
+    ],
+
+    'testRemoveManyLineItemsOfInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'delete',
+            'content'   => [
+                'line_item_ids' => [
+                    'li_100000lineitem',
+                    'li_100001lineitem',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'line_items' => [
+                    [
+                        'id'       => 'li_100002lineitem',
+                        'item_id'  => 'item_1000000002item',
+                        'quantity' => 1,
+                        'name'     => 'Some item name',
+                        'amount'   => 100000,
+                        'currency' => 'INR',
+                    ]
+                ],
+                'type'             => 'invoice',
+                'view_less'        => true,
+                'notes'            => [],
+                'status'           => 'draft',
+                'amount'           => 100000,
+                'currency'         => 'INR',
+            ]
+        ]
+    ],
+
+    'testRemoveManyLineItemsOfInvoiceWithBadData' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'delete',
+            'content'   => [
+                'line_item_ids' => [
+                    'li_100000lineitem',
+                    'li_100001lineitem',
+                    'li_10000Xlineitem',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One/more of the ids provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_IDS,
+        ],
     ],
 
     'testAddLineItemToIssuedInvoice' => [
@@ -1465,6 +1647,42 @@ return [
                 'description' => 'Item 1 Description',
                 'quantity'    => 10,
                 'amount'      => 200,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in issued status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddManyLineItemsToIssuedInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'post',
+            'content'   => [
+                'line_items' => [
+                    [
+                        'name'        => 'Item 1',
+                        'description' => 'Item 1 Description',
+                        'quantity'    => 10,
+                        'amount'      => 100,
+                    ],
+                    [
+                        'name'        => 'Item 2',
+                        'description' => 'Item 2 Description',
+                        'quantity'    => 10,
+                        'amount'      => 200,
+                    ],
+                ],
             ],
         ],
         'response' => [
@@ -1510,6 +1728,32 @@ return [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
             'method'    => 'delete',
             'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in issued status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRemoveManyLineItemsOfIssuedInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'method'    => 'delete',
+            'content'   => [
+                'line_item_ids' => [
+                    'li_100000lineitem',
+                    'li_100001lineitem',
+                ],
+            ],
         ],
         'response' => [
             'content' => [

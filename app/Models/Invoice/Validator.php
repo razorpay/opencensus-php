@@ -22,6 +22,11 @@ class Validator extends Base\Validator
     // - Update invoice when it's in ISSUED status
     //
 
+    const CREATE_DRAFT  = 'createDraft';
+    const CREATE_ISSUED = 'createIssued';
+    const EDIT_DRAFT    = 'editDraft';
+    const EDIT_ISSUED   = 'editIssued';
+
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
@@ -149,7 +154,7 @@ class Validator extends Base\Validator
         // for the invoice.
         //
 
-        'editDraft' . Entity::AMOUNT,
+        self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
     public function validateAmount(array $input)

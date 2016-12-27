@@ -18,7 +18,10 @@ class ExceptionHandler
      * uniqueness beforehand(by querying of course) and not wait for mysql error.
      *
      */
-    public static function handle(\Exception $e, Entity $invoice, array $input)
+    public static function handleMySqlUnqiueError(
+        \Exception $e,
+        Entity $invoice,
+        array $input)
     {
         if (($e instanceof \Illuminate\Database\QueryException) and
             ($e->errorInfo[1] === 1062))

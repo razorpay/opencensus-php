@@ -158,7 +158,12 @@ class TraceCode
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
     const ITEM_DELETE_REQUEST                       = 'ITEM_DELETE_REQUEST';
+
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
+    const LINE_ITEM_CREATE_MANY_REQUEST             = 'LINE_ITEM_CREATE_MANY_REQUEST';
+    const LINE_ITEM_UPDATE_REQUEST                  = 'LINE_ITEM_UPDATE_REQUEST';
+    const LINE_ITEM_DELETE_REQUEST                  = 'LINE_ITEM_DELETE_REQUEST';
+    const LINE_ITEM_DELETE_MANY_REQUEST             = 'LINE_ITEM_DELETE_MANY_REQUEST';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
