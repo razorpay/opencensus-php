@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
