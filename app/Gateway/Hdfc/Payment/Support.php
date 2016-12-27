@@ -226,10 +226,10 @@ trait Support
 
         $data['action'] = $action;
 
-        $factor = PaymentModel\Currency::DENOMINATION_FACTOR[$input['currency']];
-
+        //
         // Convert amount from integer to decimal
-        $data['amt'] = $input['amount'] / $factor;
+        //
+        $data['amt'] = $input['amount'] / 100;
 
         $data['member'] = $card['name'];
 

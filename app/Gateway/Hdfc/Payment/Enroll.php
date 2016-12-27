@@ -126,12 +126,7 @@ trait Enroll
         $data['trackid'] = $payment['id'];
 
         // Convert amount from integer to decimal
-        $amount = $payment['amount'];
-        $currency = $payment['currency'];
-
-        $factor = Currency::DENOMINATION_FACTOR[$currency];
-
-        $data['amt'] = $amount / $factor;
+        $data['amt'] = $payment['amount']/100;
 
         // Collect udf fields
         $data['udf1'] = 'test';
@@ -152,6 +147,8 @@ trait Enroll
         $this->mapKeys($card, $this->cardKeyMappings, $data);
 
         // set the iso numeric currency code
+        $currency = $payment['currency'];
+
         $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
 
         $network = $input['card']['network_code'];
