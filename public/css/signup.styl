@@ -167,7 +167,7 @@
   bottom 40px
   left: 390px;
   opacity: 0
-  transition opacity 0.2s ease-in
+  transition opacity 0.25s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 }
 
 .messaging-link
@@ -184,7 +184,7 @@
   bottom 40px
   left: 40px;
   opacity: 0
-  transition opacity 0.2s ease-in
+  transition opacity 0.25s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 }
 
 .auth-main-container {
@@ -196,9 +196,19 @@
   top -30px
   left 30px
   padding 40px
-  transition left .2s ease-in
-  &.right-align .translate-container{
-    transform: translateX(-240px)
+  transition left .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
+  &.right-align {
+    .translate-container {
+      transform: translateX(-240px)
+    }
+    .auth-signup-container {
+      transition-delay 0s
+      opacity 0
+    }
+    .auth-signin-container {
+      transition-delay 0.25s
+      opacity 1
+    }
   }
   @media(min-width: 890px){
     position absolute
@@ -213,7 +223,7 @@
 
 .translate-container
   width 480px
-  transition transform .2s ease-in
+  transition transform .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 
 .overflow-container
   overflow hidden
@@ -222,19 +232,25 @@
   width 240px
   height 460px
   float left
+  transition opacity .25s cubic-bezier(0.175, 0.885, 0.260, 1.055)
+  transition-delay 0.25s
+  opacity 1
 
 .auth-signin-container 
   width 240px
   height 460px
   float left
+  transition opacity .25s cubic-bezier(0.175, 0.885, 0.260, 1.055)
+  transition-delay 0s
+  opacity 0
   
 .signup-translate-container 
   width 960px
-  transition transform .2s ease-in
+  transition transform .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 
 .login-translate-container
   width 480px
-  transition transform .2s ease-in
+  transition transform .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 
 .auth-overflow-container 
   width: 100%;
@@ -317,7 +333,7 @@
   border: 1px solid rgba(0, 0, 0, 0.26);
   margin-right: 4px;
   border-radius: 4px;
-  transition: all 0.2s ease-in
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
   &.active{
     width: 12px;
     background-color: #7266ba;
@@ -327,11 +343,11 @@
 
 .signup-details-translate-container 
   width 1200px
-  transition transform .2s ease-in
+  transition transform .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
   
 .login-details-translate-container 
   width 480px
-  transition transform .2s ease-in
+  transition transform .5s cubic-bezier(0.175, 0.885, 0.260, 1.055)
 
 .signup-details-overflow-container
   margin-top 12px
