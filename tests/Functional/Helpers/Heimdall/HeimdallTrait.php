@@ -33,6 +33,19 @@ trait HeimdallTrait
         return $content;
     }
 
+    protected function getAdmin($orgId, $adminId, $token = null)
+    {
+        $request = array(
+            'url' => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'method' => 'GET');
+
+        $this->ba->adminAuth('test', $token);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function getAuthTokenForOrg($org, $role = 'admin')
     {
         $now = Carbon::now();

@@ -125,4 +125,9 @@ class Entity extends Base\Entity
 
         return true;
     }
+
+    public function getBankReferenceNo()
+    {
+        return $this->getAttribute('BankReferenceNo');
+    }
 }

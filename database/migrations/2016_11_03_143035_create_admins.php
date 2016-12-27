@@ -61,6 +61,10 @@ class CreateAdmins extends Migration
             $table->boolean(Admin::DISABLED)
                   ->default(0);
 
+            // admin can see all the merchants
+            $table->boolean(Admin::ALLOW_ALL_MERCHANTS)
+                  ->default(0);
+
             // user account has been locked due to
             // max password failure attempts
             $table->boolean(Admin::LOCKED)

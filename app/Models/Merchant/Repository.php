@@ -212,4 +212,11 @@ class Repository extends Base\Repository
                     ->with(['admins'])
                     ->get();
     }
+
+    public function fetchMerchantsByOrgId($orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
+    }
 }

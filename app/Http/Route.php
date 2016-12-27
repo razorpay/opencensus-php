@@ -27,6 +27,7 @@ final class Route
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_create_upi'                      => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -248,6 +249,7 @@ final class Route
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -309,6 +311,7 @@ final class Route
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
+        'admin_get_by_attr'                       => ['get',      'admins/get-multiple-app-auth',                   'OrganizationController@getAdminMultipleOnAppAuth'                  ],
         'org_get'                                 => ['get',      'orgs/{orgId}',                                   'OrganizationController@getOrganization'                            ],
         'org_get_self'                            => ['get',      'orgs/{id}/self',                                 'OrganizationController@getOrganization'                            ],
         'org_get_by_hostname'                     => ['get',      'orgs/hostname/{hostname}',                       'OrganizationController@getOrganizationByHostname'                  ],
@@ -325,6 +328,7 @@ final class Route
         'admin_get_app_auth'                      => ['post',     'orgs/{orgId}/current_admin',                     'OrganizationController@getAdminByAppAuth'                          ],
         'admin_get'                               => ['get',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@getAdmin'                                   ],
         'admin_edit'                              => ['put',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@editAdmin'                                  ],
+        'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
         'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
@@ -342,7 +346,6 @@ final class Route
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
-        'oauth_login'                             => ['post',     'admin/oauth_login',                              'OrganizationController@oAuthLogin'                                 ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'OrganizationController@postPasswordReset'                          ],
@@ -352,6 +355,7 @@ final class Route
         'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'international_exchange_rates'            => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
     );
 
     public static $public = array(
@@ -415,6 +419,7 @@ final class Route
         'payment_create_private_old',
         'payment_create_recurring',
         'payment_create_wallet',
+        'payment_create_upi',
         'payment_refund',
         'payment_capture',
         'payment_fetch_by_id',
@@ -594,17 +599,19 @@ final class Route
         'adj_add_reverse',
         'admin_get_app_auth',
         'admin_authentication',
-        'oauth_login',
         'admin_oauth_authenticate',
+        'admin_get_by_attr',
         'org_get_self',
         'org_get_by_hostname',
         'admin_lock_old_accounts',
         'merchant_activation_update',
         'admin_password_reset',
+        'admin_edit_app_auth',
         'offers_update_merchants',
         'offer_create',
         'offer_update',
         'offer_delete',
+        'international_exchange_rates',
     );
 
     public static $proxy = array(
@@ -626,6 +633,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'balance_fetch',
+        'reports_transaction_broking',
         'reports_monthly_invoice',
         'reports_monthly_invoice_v2',
         'reports_public_entity',
@@ -663,7 +671,6 @@ final class Route
         'group_get',
         'group_get_multiple',
         'group_get_allowed_groups',
-        'admin_get',
         'org_create',
         'org_edit',
         'org_delete',
@@ -704,7 +711,6 @@ final class Route
         'role_edit'                  => ['edit_role'],
         'role_delete'                => ['delete_role'],
         'admin_get_multiple'         => ['view_all_admin'],
-        'admin_get_by_attr'          => ['view_all_admin'],
         'admin_get'                  => ['view_admin'],
         'admin_edit'                 => ['edit_admin'],
         'admin_delete'               => ['delete_admin'],
@@ -742,7 +748,7 @@ final class Route
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
         'auditlog_search'            => ['view_auditlog'],
-        'admin_logout'               => ['logout_admin'],
+        'admin_logout'               => ['*'],
     ];
 
     public static $direct = array(
@@ -801,6 +807,7 @@ final class Route
             'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
+            'international_exchange_rates',
         ),
 
         'mailgun' => array(
@@ -835,20 +842,11 @@ final class Route
         'customer_delete_token'         => 'tokens',
         'customer_fetch_tokens'         => 'tokens',
         'payment_create_wallet'         => 's2swallet',
+        'payment_create_upi'            => 's2supi',
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        // 'invoice_create'                => 'invoice',
-        // 'invoice_fetch'                 => 'invoice',
-        // 'invoice_fetch_multiple'        => 'invoice',
-        // 'invoice_send_notification'     => 'invoice',
-        // 'invoice_notification_update'   => 'invoice',
-        // 'invoice_get_status'            => 'invoice',
-        // 'item_create'                   => 'invoice',
-        // 'item_fetch'                    => 'invoice',
-        // 'item_fetch_multiple'           => 'invoice',
-        // 'item_update'                   => 'invoice',
-        // 'item_delete'                   => 'invoice',
+        'reports_transaction_broking'   => 'broking_report'
     );
 
     const RAZORPAYJS_ROUTES = array(
@@ -868,6 +866,7 @@ final class Route
         'payment_create_ajax',
         'payment_create_fees',
         'payment_create_wallet',
+        'payment_create_upi',
         'payment_callback_post',
         'payment_callback_get',
         'payment_callback_with_key_post',
@@ -1032,7 +1031,8 @@ final class Route
             'v1/payments/create/jsonp',
             'v1/payments/create/ajax',
             'v1/payments/create/fees',
-            'v1/payments/create/wallet'
+            'v1/payments/create/wallet',
+            'v1/payments/create/upi'
         );
 
         return $doNotLogUrls;
