@@ -687,7 +687,10 @@ trait Authorize
 
         $payment->setBaseAmount($baseAmount);
 
-        $payment->setConvertCurrency($payment->merchant->convertOnApi());
+        if ($payment->isCard() === true)
+        {
+            $payment->setConvertCurrency($payment->merchant->convertOnApi());
+        }
     }
 
     /**
