@@ -1395,3 +1395,8 @@ ALTER TABLE orgs
     ADD COLUMN custom_code VARCHAR(250)
     UNIQUE NULL
     AFTER invoice_logo_url;
+
+---
+# Queries to add Role and Department in merchant_details for new signup flow
+ALTER TABLE merchant_details ADD COLUMN role VARCHAR (255) AFTER transaction_report_email;
+ALTER TABLE merchant_details ADD COLUMN department VARCHAR (255) AFTER role;
