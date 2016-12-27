@@ -43,6 +43,16 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateOrderCurrency($order, $currency)
+    {
+        if ($order->getCurrency() !== $currency)
+        {
+            // Order and Payment currency mismatch
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
+        }
+    }
+
     public function validateMerchantSpecificData($order, $payment = null)
     {
         $this->validateOrderTpvChecks($order, $payment);

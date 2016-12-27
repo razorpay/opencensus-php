@@ -746,6 +746,8 @@ class Processor
 
         $validator->validateOrderAmount($this->order, $amount);
 
+        $validator->validateOrderCurrency($this->order, $currency);
+
         $validator->validateOrderNotPaid($this->order);
 
         $validator->validateMerchantSpecificData($this->order, $payment);
