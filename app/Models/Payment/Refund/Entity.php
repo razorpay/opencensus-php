@@ -174,7 +174,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $conversionRate = $this->payment->getBaseAmount() / $this->getAmount();
+            $conversionRate = $this->payment->getBaseAmount() / $this->payment->getAmount();
 
             $baseAmount = $amount * $conversionRate;
 
