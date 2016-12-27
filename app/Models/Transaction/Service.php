@@ -47,7 +47,6 @@ class Service extends Base\Service
         if ($entity === Constants\Entity::PAYMENT)
         {
             Payment\Entity::verifyIdAndStripSign($id);
-
         }
         else if ($entity === Constants\Entity::REFUND)
         {
