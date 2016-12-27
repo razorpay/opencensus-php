@@ -1044,6 +1044,11 @@ class Entity extends Base\PublicEntity
                 ($this->localToken->isRecurring() === true));
     }
 
+    public function getConvertCurrency()
+    {
+        return $this->getAttribute(self::CONVERT_CURRENCY);
+    }
+
     /**
      * This function returns the current payment method
      * and a detail string for that particular method
@@ -1293,12 +1298,14 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (($this->isMethodCard()) and
-            ($this->getConvertCurrencyOnApi() === true))
+        if (($this->isCard()) and
+            ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
             $data['currency'] = Payment\Currency::INR;
         }
+
+        return $data;
     }
 // --------------- Relation to other entities ----------------------------------
 

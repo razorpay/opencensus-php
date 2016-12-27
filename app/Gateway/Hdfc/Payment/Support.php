@@ -226,7 +226,7 @@ trait Support
 
         $data['action'] = $action;
 
-        $factor = Currency::ISO_NUMERIC_CODES[$input['currency']];
+        $factor = PaymentModel\Currency::DENOMINATION_FACTOR[$input['currency']];
 
         // Convert amount from integer to decimal
         $data['amt'] = $input['amount'] / $factor;

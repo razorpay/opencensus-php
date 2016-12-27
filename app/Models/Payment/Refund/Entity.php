@@ -198,11 +198,13 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (($this->payment->isMethodCard()) and
-            ($this->payment->getConvertCurrencyOnApi() === true))
+        if (($this->payment->isCard()) and
+            ($this->payment->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
             $data['currency'] = Payment\Currency::INR;
         }
+
+        return $data;
     }
 }

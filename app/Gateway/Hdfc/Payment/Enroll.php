@@ -128,6 +128,7 @@ trait Enroll
         // Convert amount from integer to decimal
         $amount = $payment['amount'];
         $currency = $payment['currency'];
+
         $factor = Currency::DENOMINATION_FACTOR[$currency];
 
         $data['amt'] = $amount / $factor;

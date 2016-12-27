@@ -633,7 +633,7 @@ trait Refund
         return null;
     }
 
-    protected function getGatewayDataForRefund(Refund\Entity $refund, Payment\Entity $payment)
+    protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
         $data = [
             'payment'   => $payment->toArrayGateway(),
@@ -642,7 +642,7 @@ trait Refund
             'currency'  => $refund->getCurrency()
         ];
 
-        if ($payment->convertCurrencyOnApi())
+        if ($payment->getConvertCurrency())
         {
             $data['amount'] = $refund->getBaseAmount();
 

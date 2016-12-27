@@ -314,6 +314,8 @@ class OrderTest extends TestCase
 
     public function testUsdPaymentOnApiWithOrder()
     {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
         $this->fixtures->create('order', [
             'amount' => 5000,
             'currency' => 'USD',

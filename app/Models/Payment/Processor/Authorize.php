@@ -664,7 +664,7 @@ trait Authorize
         $baseAmount = $amount;
 
         if (($payment->isCard() === true) and
-            ($currency !== Currency::INR))
+            ($currency !== Payment\Currency::INR))
         {
             $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
         }

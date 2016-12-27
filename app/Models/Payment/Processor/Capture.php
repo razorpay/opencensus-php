@@ -216,7 +216,7 @@ trait Capture
             $data['card'] = $payment->card->toArray();
         }
 
-        if ($payment->convertCurrencyOnApi() === true)
+        if ($payment->getConvertCurrency() === true)
         {
             $data['amount'] = $payment->getBaseAmount();
             $data['currency'] = Payment\Currency::INR;

@@ -55,6 +55,8 @@ class HdfcGatewayTest extends TestCase
 
     public function testInternationalUSDPaymentOnApi()
     {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
         $input = [
             'amount'   => 5000,
             'currency' => 'USD'
