@@ -33,6 +33,8 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT)
                   ->unsigned();
 
+            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
+
             $table->integer(Payment::BASE_AMOUNT)
                   ->unsigned();
 
@@ -66,8 +68,6 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::REFUND_STATUS)
                   ->nullable();
-
-            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
             $table->string(Payment::DESCRIPTION)
                   ->nullable();
