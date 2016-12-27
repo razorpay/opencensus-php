@@ -56,7 +56,7 @@ export default class CreatePaymentLink extends Component {
 
   constructor() {
     super(...arguments)
-    this.create = ::this.create
+    this.save = ::this.save
     this.state = {
       errors: null
     }
@@ -68,7 +68,7 @@ export default class CreatePaymentLink extends Component {
     }
   }
 
-  create(props) {
+  save(props) {
     return this.props.saveInvoice(props).then((invoice) => {
       this.props.onSave(invoice)
       this.props.closeModal()
@@ -266,7 +266,7 @@ export default class CreatePaymentLink extends Component {
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'
-              onClick={handleSubmit(this.create)}
+              onClick={handleSubmit(this.save)}
             />
           </div>
         </form>

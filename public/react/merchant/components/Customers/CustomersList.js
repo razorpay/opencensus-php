@@ -16,6 +16,7 @@ const CustomersListItem = (props) => {
             <i class='fa fa-edit'></i>
             <span>edit</span>
           </button>
+{/*
           <button
             class='btn btn-xs btn-default'
             onClick={props.onDelete}
@@ -23,6 +24,7 @@ const CustomersListItem = (props) => {
             <i class='fa fa-trash text-danger'></i>
             <span>delete</span>
           </button>
+*/}
         </div>
       </td>
     </tr>

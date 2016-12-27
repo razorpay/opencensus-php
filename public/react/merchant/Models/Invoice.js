@@ -23,15 +23,27 @@ export default class Invoice extends BaseModel {
   ]
   currency = 'INR'
 
-  static fetchAll(data = {}) {
+  static fetchAll(params = {}) {
+    let { invoice_id, ...data } = params
+
+    if (invoice_id) {
+      return Invoice.fetch(invoice_id, data).then((response) => {
+        return {
+          data: {
+            items: [response]
+          }
+        }
+      })
+    }
+
     return ajax('/invoices', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Invoice().deserialize(item))
       return response
     })
   }
 
-  static fetch(id, params = {}) {
-    return ajax(`/invoices/${id}`, params).then((response) => {
+  static fetch(id, data = {}) {
+    return ajax(`/invoices/${id}`, { data }).then((response) => {
       return new Invoice().deserialize(response.data.items[0])
     })
   }
