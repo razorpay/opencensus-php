@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
+        // TODO: Use schedule instead
         self::INTERVAL,
         self::INTERVAL_COUNT,
         self::NAME,
@@ -64,7 +65,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::INTERVAL);
     }
-    
+
     public function getIntervalCount()
     {
         return $this->getAttribute(self::INTERVAL_COUNT);

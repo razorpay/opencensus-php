@@ -45,8 +45,7 @@ class Validator extends Base\Validator
                     'interval'          => $interval,
                     'interval_count'    => $intervalCount,
                     'max_allowed'       => $maxAllowedIntervalCount
-                ]
-            );
+                ]);
         }
     }
 }

@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::FAILED_AT     => null,
         self::CURRENT_START => null,
         self::CURRENT_END   => null,
+        self::TOKEN_ID      => null,
     ];
 
     protected static $generators = [
@@ -262,7 +263,7 @@ class Entity extends Base\PublicEntity
     // --------------------- PUBLIC SETTERS ---------------------
 
 
-    public function setPublicPlanIdAttribute(Array & $array)
+    public function setPublicPlanIdAttribute(array & $array)
     {
         if (isset($array[self::PLAN_ID]))
         {
@@ -272,7 +273,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicCustomerIdAttribute(Array & $array)
+    public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
         {
@@ -282,7 +283,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicTokenIdAttribute(Array & $array)
+    public function setPublicTokenIdAttribute(array & $array)
     {
         if (isset($array[self::TOKEN_ID]))
         {
@@ -296,6 +297,7 @@ class Entity extends Base\PublicEntity
 
     // --------------------- GENERATORS ---------------------
 
+    // TODO: This will need to move to schedule's getNextRunAt
     public function generateChargeAt($input)
     {
         $startAt = $input[Entity::START_AT];

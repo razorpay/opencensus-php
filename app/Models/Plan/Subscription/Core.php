@@ -23,11 +23,13 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Token\Entity $token)
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
     {
         $subscription = (new Entity)->build($input);
 
-        $this->associateEntitiesToSubscription($subscription, $plan, $token);
+        // $this->associateEntitiesToSubscription($subscription, $plan, $token);
+
+        $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
         $this->repo->saveOrFail($subscription);
 
@@ -38,7 +40,7 @@ class Core extends Base\Core
     {
         $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function() use($subscription) 
+            function() use($subscription)
             {
                 $recurringPayload = $this->constructRecurringPayload($subscription);
 
@@ -138,14 +140,18 @@ class Core extends Base\Core
         return $recurringPayload;
     }
 
-    protected function associateEntitiesToSubscription(Entity $subscription, Plan\Entity $plan, Token\Entity $token)
+    protected function associateEntitiesToSubscription(
+        Entity $subscription,
+        Plan\Entity $plan,
+        Customer\Entity $customer)
     {
-        $customer = $token->customer;
+        //$customer = $token->customer;
+
         $merchant = $customer->merchant;
 
         $subscription->merchant()->associate($merchant);
         $subscription->plan()->associate($plan);
         $subscription->customer()->associate($customer);
-        $subscription->token()->associate($token);
+        //$subscription->token()->associate($token);
     }
 }

@@ -23,7 +23,7 @@ class Interval
         self::DAY,
     ];
 
-    protected static $allowedMaxInternalCount = [
+    protected static $allowedMaxIntervalCount = [
         self::YEAR  => self::ONE_YEAR,
         self::MONTH => self::MONTHS_IN_YEAR,
         self::WEEK  => self::WEEKS_IN_YEAR,
@@ -49,6 +49,6 @@ class Interval
             );
         }
 
-        return self::$allowedMaxInternalCount[$interval];
+        return self::$allowedMaxIntervalCount[$interval];
     }
 }

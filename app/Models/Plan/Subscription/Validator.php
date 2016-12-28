@@ -9,10 +9,10 @@ use Carbon\Carbon;
 class Validator extends Base\Validator
 {
     const ONE_YEAR = 86400;
-    
+
     protected static $createRules = [
         Entity::CUSTOMER_ID => 'required|string|size:19',
-        Entity::TOKEN_ID    => 'required|string|size:20',
+        // Entity::TOKEN_ID    => 'required|string|size:20',
         Entity::QUANTITY    => 'required|integer|max:500',
         Entity::NOTES       => 'sometimes|notes',
         Entity::START_AT    => 'required|integer|custom',

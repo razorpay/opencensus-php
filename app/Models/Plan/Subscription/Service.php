@@ -19,20 +19,23 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input, $planId)
+    public function create(array $input, string $planId)
     {
         $customerId = $input[Entity::CUSTOMER_ID];
-        $tokenId = $input[Entity::TOKEN_ID];
+        // We will create the token during the payment
+        // itself and associate that with the subscription
+        // $tokenId = $input[Entity::TOKEN_ID];
 
         Customer\Entity::verifyIdAndStripSign($customerId);
-        Token\Entity::verifyIdAndStripSign($tokenId);
+        // Token\Entity::verifyIdAndStripSign($tokenId);
         Plan\Entity::verifyIdAndStripSign($planId);
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
         $plan = $this->repo->plan->findByIdAndMerchant($planId, $this->merchant);
-        $token = $this->repo->token->findByIdAndCustomer($tokenId, $customer);
+        // $token = $this->repo->token->findByIdAndCustomer($tokenId, $customer);
 
-        $subscription = $this->core->create($input, $plan, $token);
+        // $subscription = $this->core->create($input, $plan, $token);
+        $subscription = $this->core->create($input, $plan, $customer);
 
         return $subscription->toArrayPublic();
     }
