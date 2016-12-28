@@ -27,7 +27,7 @@ Route::group(['prefix' => 'admin'], function () {
     Route::post('/signin', 'AdminController@postSignin');
 
     Route::post('/password/reset', 'PasswordController@forgotAdminPassword');
-    Route::post('/password/reset', 'PasswordController@resetAdminPassword');
+    Route::post('/password/reset/{token}', 'PasswordController@resetAdminPassword');
 });
 
 Route::group([], function()

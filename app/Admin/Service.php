@@ -89,6 +89,11 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function resetPassword($input)
+    {
+        $error = $data = null;
+    }
+
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
