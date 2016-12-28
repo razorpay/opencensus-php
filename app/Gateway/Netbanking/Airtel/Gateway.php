@@ -309,7 +309,7 @@ class Gateway extends Base\Gateway
 
         return [
             VerifyFields::MERCHANT_ID       => $response[VerifyFields::MERCHANT_ID],
-            Constants::VERIFY_JSON          => $verifyJson,
+            Constants::VERIFY_JSON          => '['.$verifyJson.']',
             VerifyFields::ERROR_CODE        => $response[VerifyFields::ERROR_CODE]
         ];
     }
@@ -415,7 +415,7 @@ class Gateway extends Base\Gateway
         $paymentId = $input['payment']['id'];
 
         $gatewayPayment = $this->createGatewayRefundEntity(
-            $attributes, $paymentId);
+            $paymentId, $attributes);
 
         $this->gatewayPayment = $gatewayPayment;
     }

@@ -160,8 +160,9 @@ class Server extends Base\Mock\Server
             VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
         ];
 
-        // hash generation is incorrect
-        $hash = $this->getGatewayInstance()->getHash($verifyArray);
+        $hashArray = $this->getVerifyHashArray($verifyArray, $input);
+
+        $hash = $this->getGatewayInstance()->getHash($hashArray);
 
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
@@ -173,6 +174,15 @@ class Server extends Base\Mock\Server
             VerifyFields::MESSAGE_TEXT              => Constants::VERIFY_SUCCESS,
             VerifyFields::CODE                      => Constants::VERIFY_CODE,
             VerifyFields::ERROR_CODE                => Constants::CODE
+        ];
+    }
+
+    protected function getVerifyHashArray($verifyArray, $input)
+    {
+        return [
+            VerifyFields::MERCHANT_ID    => $input[VerifyFields::MERCHANT_ID],
+            VerifyFields::TRANSACTION    => '['.json_encode($verifyArray).']',
+            VerifyFields::ERROR_CODE     => Constants::CODE,
         ];
     }
 }
