@@ -193,8 +193,10 @@ trait Capture
     /**
      * Captures the payment.
      *
-     * @param  Payment\Entity   $payment
-     * @param  integer          $amount
+     * @param  Payment\Entity $payment
+     * @param  integer        $amount
+     * @param                 $currency
+     *
      * @return Payment\Entity
      */
     protected function capturePayment($payment, $amount, $currency)
@@ -259,23 +261,27 @@ trait Capture
 
             $this->callAndHandleCaptureOnGateway($data);
 
-            $this->recordCapture();
+            try
+            {
+                $this->recordCapture();
+            }
+            catch (Exception\BaseException $ex)
+            {
+                $this->trace->traceException($ex);
+
+                throw new Exception\LogicException(
+                    'Capture on API failed.',
+                    ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED,
+                    [
+                        'payment_id'    => $this->payment->getId(),
+                        'capture_data'  => $data,
+                        'error_message' => $ex->getMessage(),
+                    ]);
+            }
         }
         catch (Exception\BaseException $ex)
         {
             $this->trace->traceException($ex);
-
-            if (($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) or
-                ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED))
-            {
-                $ex =  new Exception\LogicException(
-                            'Error while recording capture on API side',
-                            ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED,
-                            [
-                                'payment' => $this->payment->getId(),
-                                'message' => $ex->getMessage()
-                            ]);
-            }
 
             $this->updatePaymentIfApplicableOnCaptureFailure($ex, $paymentCopy);
         }
@@ -289,7 +295,10 @@ trait Capture
         Exception\BaseException $ex,
         Payment\Entity $paymentCopy)
     {
-        // For validation failures, we shouldn't mark capture as failed ever.
+        //
+        // For validation failures from the gateway or
+        // request exceptions, we shouldn't mark capture as failed ever.
+        //
         if (($ex instanceof Exception\BadRequestValidationFailureException) or
             ($ex instanceof Exception\BadRequestException) or
             ($ex instanceof Exception\GatewayRequestException))
@@ -297,9 +306,12 @@ trait Capture
             throw $ex;
         }
 
+        //
+        // If capture failed on the API side for any reason,
+        // we should not mark it as failed.
+        //
         if ($ex->getCode() === ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED)
         {
-            // If pricing rule is not found, we should not mark capture as failed ever.
             throw $ex;
         }
 
