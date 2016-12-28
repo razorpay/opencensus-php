@@ -8,7 +8,6 @@ use RZP\Gateway\Netbanking\Airtel\VerifyFields;
 
 class Validator extends Base\Validator
 {
-    // Make sure this works
     protected static $authRules = [
         RequestFields::MERCHANT_ID               => 'required|numeric',
         RequestFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num',

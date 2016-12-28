@@ -10,7 +10,8 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
-use RZP\Models\Terminal\Entity;
+use RZP\Models\Terminal;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 
 class Gateway extends Base\Gateway
 {
@@ -24,6 +25,10 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT => 'amount'
     ];
 
+    const STATUS_MATCH = GatewayBase\VerifyResult::STATUS_MATCH;
+
+    const STATUS_MISMATCH = GatewayBase\VerifyResult::STATUS_MISMATCH;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -36,7 +41,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::PAYMENT_NEW_REQUEST, $request);
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -47,31 +52,20 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $content);
+        $this->traceGatewayPaymentResponse($content, $input);
 
         $this->verifyAuthResponseHash($content);
 
-        $attrs = $this->getCallackAttributes($content);
+        $attributes = $this->getCallackAttributes($content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
 
-        $payment->fill($attrs);
+        $payment->fill($attributes);
 
         $payment->saveOrFail();
 
-        if ($attrs['status'] !== Constants::SUCCESS)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
+        $this->assertCallbackAttributes($attributes, $content);
     }
 
     public function refund(array $input)
@@ -102,37 +96,29 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
-        $verify->verifyResponseContent = $content;
-
-        return $response;
     }
 
     public function verifyPayment($verify)
     {
         $content = $verify->verifyResponseBody;
 
-        // Response is originally a string.
         $response = $this->getVerifyResponseArray($content);
 
         $status = $this->getVerifyStatus($verify, $response);
 
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH)
-                            ? true : false;
+        $verify->match = ($status === self::STATUS_MATCH) ? true : false;
 
         return $status;
     }
 
     protected function getVerifyStatus($verify, $response)
     {
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+        $status = self::STATUS_MATCH;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -144,7 +130,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $status = self::STATUS_MISMATCH;
         }
 
         return $status;
@@ -176,16 +162,15 @@ class Gateway extends Base\Gateway
 
     protected function createAuthorizeRequestData($input)
     {
-        $defaultData = $this->getEncryptionArray($input);
+        $defaultData = $this->getAuthRequestHashArray($input);
 
-        $hash = $this->getHash($defaultData);
+        $hash = $this->generateHash($defaultData);
 
         $callbackUrl = $input['callbackUrl'];
 
         $data = [
             RequestFields::SUCCESS_URL      => $callbackUrl,
             RequestFields::FAILURE_URL      => $callbackUrl,
-            // Not using mer service and end mid for now
             RequestFields::CURRENCY         => Constants::INDIAN_RUPEE,
             RequestFields::CUSTOMER_MOBILE  => $input['payment']['contact'],
             RequestFields::CUSTOMER_EMAIL   => $input['payment']['email'],
@@ -206,26 +191,10 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getEncryptionArray($input)
-    {
-        $mid = $this->getMerchantId();
-
-        $amount = (double) $input['payment']['amount'] / 100;
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhms');
-
-        return [
-            RequestFields::MERCHANT_ID               => $mid,
-            RequestFields::TRANSACTION_REFERENCE_NO  => $input['payment']['id'],
-            RequestFields::AMOUNT                    => $amount,
-            RequestFields::DATE                      => $date,
-            RequestFields::SERVICE                   => Constants::NETBANKING,
-        ];
-    }
-
-    public function getHash($data)
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
+    public function getHashOfArray($data)
     {
         $values = array_values($data);
 
@@ -233,19 +202,43 @@ class Gateway extends Base\Gateway
 
         array_push($values, $salt);
 
-        $text = implode('#', $values);
+        $hashString = $this->getStringToHash($values, '#');
 
-        return hash(Constants::HASH_ALGORITHM, $text);
+        return $this->getHashOfString($hashString);
+    }
+
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
+    public function getHashOfString($string)
+    {
+        return hash(Constants::HASH_ALGORITHM, $string);
     }
 
     protected function getCallackAttributes($content)
     {
-        // double check
         return [
-            'received'  => true,
-            'status'    => $content[ResponseFields::STATUS],
-            'bank_payment_id' => $content[ResponseFields::TRANSACTION_ID]
+            Netbanking\Entity::RECEIVED        => true,
+            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::TRANSACTION_ID],
+            Netbanking\Entity::MERCHANT_CODE   => $content[ResponseFields::CODE],
+            Netbanking\Entity::ERROR_MESSAGE   => $content[ResponseFields::MSG],
+            Netbanking\Entity::DATE            => $content[ResponseFields::TRANSACTION_DATE],
         ];
+    }
+
+    protected function assertCallbackAttributes($attributes, $content)
+    {
+        if ($attributes[Netbanking\Entity::STATUS] !== Constants::SUCCESS)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function sendRefundRequestAndCheckResponse($request, $input)
@@ -272,17 +265,6 @@ class Gateway extends Base\Gateway
         $this->assertResponseHash($hashArray, $content[ResponseFields::HASH]);
     }
 
-    protected function getAuthResponseHashArray($content)
-    {
-        return [
-            ResponseFields::MERCHANT_ID => $content[ResponseFields::MERCHANT_ID],
-            ResponseFields::TRANSACTION_ID => $content[ResponseFields::TRANSACTION_ID],
-            ResponseFields::TRANSACTION_REFERENCE_NO => $content[ResponseFields::TRANSACTION_REFERENCE_NO],
-            ResponseFields::TRANSACTION_AMOUNT => $content[ResponseFields::TRANSACTION_AMOUNT],
-            ResponseFields::TRANSACTION_DATE => $content[ResponseFields::TRANSACTION_DATE],
-        ];
-    }
-
     protected function getPaymentVerifyData($verify)
     {
         $input = $verify->input;
@@ -306,16 +288,16 @@ class Gateway extends Base\Gateway
             VerifyFields::AMOUNT                   => "$amount"
         ];
 
-        $hashArray = $this->getVerifyHashArray($data);
+        $hashArray = $this->getVerifyRequestHashArray($data);
 
-        $data[VerifyFields::HASH] = $this->getHash($hashArray);
+        $data[VerifyFields::HASH] = $this->generateHash($hashArray);
 
         return json_encode($data);
     }
 
     protected function getVerifyResponseArray($content)
     {
-        $response = (array) json_decode($content);
+        $response = $this->jsonToArray($content);
 
         $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
 
@@ -328,52 +310,11 @@ class Gateway extends Base\Gateway
         return $responseArray;
     }
 
-    protected function getVerifyResponseHashArray($content)
+    public function assertResponseHash($response, $actual)
     {
-        $response = (array) json_decode($content);
+        $generated = $this->generateHash($response);
 
-        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
-
-        $verifyJson = json_encode($responseArray);
-
-        return [
-            VerifyFields::MERCHANT_ID       => $response[VerifyFields::MERCHANT_ID],
-            Constants::VERIFY_JSON          => '['.$verifyJson.']',
-            VerifyFields::ERROR_CODE        => $response[VerifyFields::ERROR_CODE]
-        ];
-    }
-
-    protected function getVerifyHashArray($data)
-    {
-        return [
-            VerifyFields::MERCHANT_ID              => $data[VerifyFields::MERCHANT_ID],
-            VerifyFields::TRANSACTION_REFERENCE_NO => $data[VerifyFields::TRANSACTION_REFERENCE_NO],
-            VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
-            VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
-            ];
-    }
-
-    protected function getRefundHashArray($data)
-    {
-        return [
-            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
-            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
-            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
-            ];
-    }
-
-    public function assertResponseHash($response, $hash)
-    {
-        $responseHash = $this->getHash($response);
-
-        if (hash_equals($responseHash, $hash) === false)
-        {
-            $this->trace->error(TraceCode::, $responseHash);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function getRefundRequestData($input)
@@ -401,9 +342,9 @@ class Gateway extends Base\Gateway
             RefundFields::AMOUNT            => "$amount"
         ];
 
-        $hashArray = $this->getRefundHashArray($request);
+        $hashArray = $this->getRefundRequestHashArray($request);
 
-        $hash = $this->getHash($hashArray);
+        $hash = $this->generateHash($hashArray);
 
         $request[RefundFields::HASH] = $hash;
 
@@ -416,18 +357,17 @@ class Gateway extends Base\Gateway
 
         $content = $responseArray[Constants::REFUND_BODY];
 
-        $refundArray = (array) json_decode($content);
+        $refundArray = $this->jsonToArray($content);
 
         return $refundArray;
     }
 
     protected function checkRefundStatus($attributes, $refundArray)
     {
-        $hashArray = $this->getRefundHashArray($refundArray);
+        $hashArray = $this->getRefundResponseHashArray($refundArray);
 
-        $hash = $this->getHash($hashArray);
-
-        $this->assertResponseHash($hashArray, $hash);
+        $this->assertResponseHash($hashArray,
+            $refundArray[RefundFields::HASH]);
 
         if ((isset($attributes[RefundFields::STATUS]) === false) or
             ($attributes[RefundFields::STATUS] !== Constants::SUCCESS))
@@ -472,13 +412,90 @@ class Gateway extends Base\Gateway
         return $attrs;
     }
 
+    protected function getAuthRequestHashArray($input)
+    {
+        $mid = $this->getMerchantId();
+
+        $amount = (double) $input['payment']['amount'] / 100;
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('dmYhms');
+
+        return [
+            RequestFields::MERCHANT_ID               => $mid,
+            RequestFields::TRANSACTION_REFERENCE_NO  => $input['payment']['id'],
+            RequestFields::AMOUNT                    => $amount,
+            RequestFields::DATE                      => $date,
+            RequestFields::SERVICE                   => Constants::NETBANKING,
+        ];
+    }
+
+    protected function getAuthResponseHashArray($content)
+    {
+        return [
+            ResponseFields::MERCHANT_ID              => $content[ResponseFields::MERCHANT_ID],
+            ResponseFields::TRANSACTION_ID           => $content[ResponseFields::TRANSACTION_ID],
+            ResponseFields::TRANSACTION_REFERENCE_NO => $content[ResponseFields::TRANSACTION_REFERENCE_NO],
+            ResponseFields::TRANSACTION_AMOUNT       => $content[ResponseFields::TRANSACTION_AMOUNT],
+            ResponseFields::TRANSACTION_DATE         => $content[ResponseFields::TRANSACTION_DATE],
+        ];
+    }
+
+    protected function getVerifyRequestHashArray($data)
+    {
+        return [
+            VerifyFields::MERCHANT_ID              => $data[VerifyFields::MERCHANT_ID],
+            VerifyFields::TRANSACTION_REFERENCE_NO => $data[VerifyFields::TRANSACTION_REFERENCE_NO],
+            VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
+            VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
+            ];
+    }
+
+    protected function getVerifyResponseHashArray($content)
+    {
+        $response = $this->jsonToArray($content);
+
+        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
+
+        $verifyJson = json_encode($responseArray);
+
+        return [
+            VerifyFields::MERCHANT_ID       => $response[VerifyFields::MERCHANT_ID],
+            Constants::VERIFY_JSON          => '['.$verifyJson.']',
+            VerifyFields::ERROR_CODE        => $response[VerifyFields::ERROR_CODE]
+        ];
+    }
+
+    protected function getRefundRequestHashArray($data)
+    {
+        return [
+            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
+            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
+            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
+            ];
+    }
+
+    protected function getRefundResponseHashArray($data)
+    {
+        return [
+            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
+            RefundFields::ERROR_CODE               => $data[RefundFields::ERROR_CODE],
+            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
+            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
+            RefundFields::STATUS                   => $data[RefundFields::STATUS]
+        ];
+    }
+
     public function getMerchantId()
     {
-        $mid = $this->terminal[Entity::GATEWAY_TERMINAL_ID];
+        $mid = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = $this->config['test_merchant_id'];
+            $mid = $this->getTestMerchantId();
         }
 
         return $mid;
@@ -486,11 +503,11 @@ class Gateway extends Base\Gateway
 
     public function getSalt()
     {
-        $salt = $this->terminal[Entity::GATEWAY_TERMINAL_PASSWORD];
+        $salt = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
         if ($this->mode === Mode::TEST)
         {
-            $salt = $this->config['test_hash_secret'];
+            $salt = $this->getTestSecret();
         }
 
         return $salt;

@@ -94,15 +94,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
     'testFailedRefundStatus' => [

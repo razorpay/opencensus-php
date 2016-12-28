@@ -127,11 +127,11 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function testFailedRefundStatus()
     {
-        $this->mockRefundFailure();
-
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->mockRefundFailure();
 
         $this->runRequestResponseFlow($data, function() use ($payment){
             // Refund double amount
