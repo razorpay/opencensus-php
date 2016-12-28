@@ -32,17 +32,18 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
-            'id' => $faker->uniqueid,
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
-            'card' => 1,
-            'netbanking' => 0,
-            'shared' => 1,
-            'gateway' => 'hdfc',
-            'gateway_merchant_id' => $faker->word,
-            'gateway_terminal_id' => $faker->word,
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => 'factory:\RZP\Models\Merchant\Entity',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'currency'                  => 'INR',
+            'gateway'                   => 'hdfc',
+            'gateway_merchant_id'       => $faker->word,
+            'gateway_terminal_id'       => $faker->word,
             'gateway_terminal_password' => null,
-            'gateway_access_code' => null,
-            'gateway_secure_secret' => null,
+            'gateway_access_code'       => null,
+            'gateway_secure_secret'     => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
@@ -103,6 +104,7 @@ final class FactoryData
             'card_id' => null,
             'bank' => null,
             'amount' => 1000000,
+            'base_amount' => 1000000,
             'amount_authorized' => 1000000,
             'amount_refunded' => 0,
             'currency' => 'INR',
@@ -125,6 +127,7 @@ final class FactoryData
             'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
             'amount' => 100,
             'currency' => 'INR',
+            'base_amount' => 100,
             'notes' => null,
             'transaction_id' => null,
         ]);

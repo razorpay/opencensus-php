@@ -282,10 +282,12 @@ class BasicAuth
 
         $token = $this->getSecret();
 
-        $admin = $this->fetchAdminOfToken($token);
+        $adminToken = $this->fetchAdminToken($token);
 
-        if ($admin !== null)
+        if ($adminToken->getAdminId() !== null)
         {
+            $this->admin = $adminToken->admin;
+
             return;
         }
 
@@ -815,6 +817,11 @@ class BasicAuth
         return $this->device;
     }
 
+    public function getAdminToken()
+    {
+        return $this->adminToken;
+    }
+
     public function getAdmin()
     {
         return $this->admin;
@@ -982,11 +989,11 @@ class BasicAuth
         return $this->merchant;
     }
 
-    protected function fetchAdminOfToken($token)
+    protected function fetchAdminToken($token)
     {
-        $this->admin = $this->repo->admin_token->findOrFailToken($token)->admin;
+        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
 
-        return $this->admin;
+        return $this->adminToken;
     }
 
     protected function checkMerchantActivatedForLive()

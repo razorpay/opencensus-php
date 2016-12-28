@@ -109,7 +109,7 @@ class EntityReportTest extends TestCase
             return $obj['Txn State'] === 'Sale';
         });
 
-        $this->assertArraySelectiveEquals($expectedContent, $saleTxnReports[0]);
+        $this->assertArraySelectiveEquals($expectedContent, array_pop($saleTxnReports));
     }
 
     protected function fetchBrokingReport($content)

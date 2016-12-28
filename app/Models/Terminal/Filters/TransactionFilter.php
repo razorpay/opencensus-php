@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
@@ -70,7 +71,14 @@ class TransactionFilter extends Terminal\Filter
 
     public function currencyFilter($terminal, $input)
     {
-        $paymentCurrency = $input['payment']->getCurrency();
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $paymentCurrency = Currency::INR;
+        }
 
         $terminalCurrency = $terminal->getCurrency();
 
