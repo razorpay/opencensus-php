@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use Config;
 use RZP\Exception;
+use RZP\Constants\Mode;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -73,10 +74,10 @@ trait RepositoryUpdateTestAndLive
                 // This has been fixed in Laravel 5.4 by #16103.
                 // We'll use the parent connection once we update to
                 // L5.4
-                Config::set('database.default', 'live');
+                Config::set('database.default', Mode::LIVE);
                 $changes = $liveEntity->$relation()->sync($ids);
 
-                Config::set('database.default', 'test');
+                Config::set('database.default', Mode::TEST);
                 $testEntity->$relation()->sync($ids);
 
                 return $changes;
@@ -95,10 +96,10 @@ trait RepositoryUpdateTestAndLive
                 list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
                 // Attach the relationship in both live and test databases.
-                Config::set('database.default', 'live');
+                Config::set('database.default', Mode::LIVE);
                 $liveEntity->$relation()->attach($id);
 
-                Config::set('database.default', 'test');
+                Config::set('database.default', Mode::TEST);
                 $testEntity->$relation()->attach($id);
             });
     }
@@ -140,8 +141,8 @@ trait RepositoryUpdateTestAndLive
         // fetch existing audit action
         $auditAction = $entity->getAuditAction();
 
-        $testEntity = $this->newQueryWithConnection('test')->lockForUpdate()->findOrFail($id);
-        $liveEntity = $this->newQueryWithConnection('live')->lockForUpdate()->findOrFail($id);
+        $testEntity = $this->newQueryWithConnection(Mode::TEST)->lockForUpdate()->findOrFail($id);
+        $liveEntity = $this->newQueryWithConnection(Mode::LIVE)->lockForUpdate()->findOrFail($id);
 
         // reset the current entity's audit action with the older one
         $liveEntity->setAuditAction($auditAction);
@@ -155,8 +156,8 @@ trait RepositoryUpdateTestAndLive
         $testEntity->setRawAttributes($attributes);
         $liveEntity->setRawAttributes($attributes);
 
-        $testEntity->setConnection('test');
-        $liveEntity->setConnection('live');
+        $testEntity->setConnection(Mode::TEST);
+        $liveEntity->setConnection(Mode::LIVE);
 
         return array($testEntity, $liveEntity);
     }
@@ -167,8 +168,8 @@ trait RepositoryUpdateTestAndLive
         $testEntity->resetAuditAction();
         $liveEntity = clone $entity;
 
-        $liveEntity->setConnection('live');
-        $testEntity->setConnection('test');
+        $liveEntity->setConnection(Mode::LIVE);
+        $testEntity->setConnection(Mode::TEST);
 
         return [$liveEntity, $testEntity];
     }
