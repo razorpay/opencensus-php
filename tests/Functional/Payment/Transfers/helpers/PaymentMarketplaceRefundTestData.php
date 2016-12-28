@@ -35,7 +35,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The reversals attribute is required for this refund request',
+                    'description' => 'The reversals parameter is required for this refund request',
                 ],
             ],
             'status_code' => 400,

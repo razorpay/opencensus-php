@@ -615,7 +615,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSplitPaymentByOriginPaymentId(string $originPaymentId, string $accountId)
+    public function fetchTransferPaymentByOriginPaymentId(string $originPaymentId, string $accountId)
     {
         return $this->newQuery()
                     ->where(Entity::ORIGIN_PAYMENT_ID, $originPaymentId)

@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                => 'sometimes|integer|min:100',
         'notes'                 => 'sometimes|notes',
-        'transfers'             => 'sometimes|array',
+        'reversals'             => 'sometimes|array',
     ];
 
     protected static $createValidators = [
@@ -104,12 +104,12 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTransfersRequired(array $input)
+    public function validateReversalsRequired(array $input)
     {
-        if (isset($input['transfers']) === false)
+        if (isset($input['reversals']) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'transfers attribute required');
+                    'The reversals parameter is required for this refund request');
         }
 
         if (isset($input['amount']) === false)

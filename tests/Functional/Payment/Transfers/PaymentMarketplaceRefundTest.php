@@ -45,9 +45,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->refundPayment($this->payment['id']);
 
-        $accountBalance = $this->getAccountBalance('10000000000001');
-
-        $this->assertEquals(0, $accountBalance);
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
         $content = $this->getLastEntity('reverse_transfer', true);
 
@@ -71,6 +69,47 @@ class PaymentMarketplaceRefundTest extends TestCase
         $amountReversed = $transferEntity['amount_reversed'];
 
         $this->assertEquals(1000, $amountReversed);
+    }
+
+    public function testFullRefundMultipleTransfers()
+    {
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000
+        ];
+        $transfers[1] = [
+            'account' => 'acc_10000000000002',
+            'amount'  => 12000
+        ];
+
+        $transfer = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transferId = explode('_', $transfer['items'][1]['id'])[1];
+
+        $this->refundPayment($this->payment['id']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
+
+        $content = $this->getLastEntity('reverse_transfer', true);
+
+        $expected = [
+            'transfer_id'   => $transferId,
+            'merchant_id'   => '10000000000000',
+            'amount'        => 12000,
+            'entity'        => 'reverse_transfer',
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $content);
+
+        $transferEntity = $this->getEntityById('transfer', $transferId, true);
+
+        $this->assertEquals(12000, $transferEntity['amount_reversed']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
     }
 
     // Payment created with multiple transfers.
