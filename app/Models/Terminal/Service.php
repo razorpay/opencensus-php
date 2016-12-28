@@ -18,6 +18,15 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
+    public function copyTerminal($mid, $tid, $input)
+    {
+        $terminal = $this->repo->terminal->findByIdAndMerchantId($tid, $mid);
+
+        $terminals = (new Terminal\Core)->copy($input, $terminal);
+
+        return $terminals;
+    }
+
     public function getTerminals($mid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -31,7 +40,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
-        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $id);
+        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         return $terminal->toArrayPublic();
     }
@@ -93,6 +102,24 @@ class Service extends Base\Service
         (new Terminal\Core)->validateExistingTerminal($terminal);
 
         $terminal->restore();
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function removeMerchantFromTerminal(string $id, string $merchantId)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function addMerchantToTerminal(string $id, string $merchantId)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        (new Terminal\Core)->addMerchantToTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }

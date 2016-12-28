@@ -2,7 +2,6 @@
 
 namespace RZP\Trace;
 
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Entity as Payment;
 
 class TraceFields
@@ -178,7 +177,8 @@ class TraceFields
     /**
      * Return fields for a trace event
      *
-     * @param $eventCode event code
+     * @param string $traceCode event code
+     * @return array|mixed
      */
     public static function getFields($traceCode)
     {

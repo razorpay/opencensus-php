@@ -14,7 +14,9 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
 {
@@ -42,8 +44,11 @@ class Service extends Base\Service
 
     /**
      * Processes a wallet payment
+     *
      * @param array $input
+     *
      * @return array|mixed
+     * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
     public function processWallet(array $input)
@@ -51,6 +56,29 @@ class Service extends Base\Service
         // Just a hack to get around mobikwik normal flow
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
+
+        if (Payment\Gateway::isPowerWallet($input['wallet']) === false)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+
+        return $this->getNewProcessor()->process($input);
+    }
+
+    /**
+     * Processes a upi payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processUpi(array $input)
+    {
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'upi';
 
         return $this->getNewProcessor()->process($input);
     }
@@ -120,6 +148,58 @@ class Service extends Base\Service
         $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
 
         return $refund->toArrayPublic();
+    }
+
+    public function refundAuthorizedInBulk(array $input)
+    {
+        $paymentIds = $input['payment_ids'];
+
+        $count = count($paymentIds);
+
+        $success = $failure = 0;
+
+        $failurePayments = $successRefunds = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $refund = $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
+
+                $success++;
+
+                $successRefunds[] = $refund->getId();
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failure++;
+
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'count' => $count,
+            'success' => $success,
+            'failure' => $failure,
+            'failure_payments' => $failurePayments,
+            'success_refunds' => $successRefunds,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_AUTHORIZE_BULK,
+            $data
+        );
+
+        return $data;
     }
 
     public function verify($id)
@@ -215,6 +295,29 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fixAuthorizeAt($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        if (($payment->isFailed() === false) or
+            ($payment->hasBeenCaptured() === true))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+            'payment_id' => $id,
+            'old_authorized_at' => $payment->getAuthorizeTimestamp()
+        ]);
+
+        $payment->setAuthorizeAtNull();
+
+        $this->repo->saveOrFail($payment);
+
+        return $payment->toArray();
+    }
+
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);
@@ -248,6 +351,17 @@ class Service extends Base\Service
         $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
+    }
+
+    public function fetchTransactionByPaymentId($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $transaction->toArrayPublic();
     }
 
     /**
@@ -439,7 +553,7 @@ class Service extends Base\Service
 
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
-        $this->slack->queue($message, $results, ['channel' => '#tech_logs']);
+        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $results;
     }
@@ -533,12 +647,19 @@ class Service extends Base\Service
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
-
         $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
+
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
+
+        // We fetch all the authorized payments eligible for refund.
+        // Payments are identified on the basis of merchant auto_refund_delay
+        // Maximum delay can be 5 days
+        $payments2 = $this->repo->payment->getAuthorizedPaymentsWithAutoRefundDelay();
+
+        $payments = $payments->merge($payments2);
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -547,6 +668,13 @@ class Service extends Base\Service
         $time = time();
 
         $payments = $payments->shuffle();
+
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_REFUND_CRON,
+            [
+                'count' => $authorized,
+                'start_time' => $time
+            ]);
 
         foreach ($payments as $payment)
         {
@@ -559,11 +687,20 @@ class Service extends Base\Service
                 $refund = $this->getNewProcessor($merchant)
                                ->refundAuthorizedPayment($payment);
 
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTO_REFUND,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'auto_refund_delay' => $merchant->getAutoRefundDelay()
+                    ]);
+
                 $refunded++;
             }
             catch (Exception\GatewayErrorException $e)
             {
                 $failed++;
+
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
 
                 // Now Just continue
             }
@@ -587,8 +724,7 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                // @todo: Remove this in future.
-                // $this->app['exception.handler']->traceException($e);
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
 
                 // Just continue
                 $error++;
@@ -638,53 +774,41 @@ class Service extends Base\Service
     public function timeoutOldPayments()
     {
         $count = 0;
+        $error = 0;
 
+        $startTime = microtime(true);
+
+        // All Payments in created state will be marked as failed after 9 minutes
         $timestamp = time() - 9 * 60;
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
-            $internalErrorCode = $payment->getInternalErrorCode();
-
-            if ($internalErrorCode !== null)
+            try
             {
-                $error = new Error\Error($internalErrorCode);
+                $this->getNewProcessor($payment->merchant)
+                     ->setPayment($payment)
+                     ->timeoutPayment();
 
-                $code = $error->getPublicErrorCode();
-
-                $desc = $error->getDescription();
-
-                $internalCode = $error->getInternalErrorCode();
-
-                $payment->setStatus(Payment\Status::FAILED);
-
-                $payment->setError($code, $desc, $internalCode);
+                $count++;
             }
-            else
+            catch (\Exception $e)
             {
-                $payment->setStatus(Payment\Status::FAILED);
+                $this->trace->traceException($e);
 
-                $payment->setError(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
-                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
-                    null);
-            }
-
-            $saved = $this->repo->save($payment);
-
-            if ($saved === true)
-            {
-                ++$count;
-
-                $this->app['events']->fire('api.payment.failed', array($payment));
+                $error++;
             }
         }
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
-            ['count' => $count,
-             'timestamp' => time()]);
+            [
+                'count'      => $count,
+                'error'      => $error,
+                'timestamp'  => time(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
 
         return ['count' => $count];
     }
@@ -748,25 +872,28 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyMultiplePayments($filter)
+    public function verifyMultiplePayments(string $filter, array $input)
     {
-        $verify = new Verify($this->mode, $this->trace);
+        $bucket = [];
 
-        return $verify->verifyPaymentsWithFilter($filter);
+        if (isset($input['bucket']) === true)
+        {
+            $bucket = $input['bucket'];
+        }
+
+        return (new Verify)->verifyPaymentsWithFilter($filter, $bucket);
     }
 
     public function verifyPayment($payment)
     {
-        $verify = new Verify($this->mode, $this->trace);
-
-        return $verify->verifyPayment($payment);
+        return (new Verify)->verifyPayment($payment);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
         $result = [
-            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
-            'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
+            'initial'   => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
+            'final'     => $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
 
         $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
@@ -778,7 +905,7 @@ class Service extends Base\Service
     {
         $result = [
             // This holds the counts
-            'counts'=>[]
+            'counts' => []
         ];
 
         // This is the start of the day 00:00, $day ago
@@ -796,18 +923,35 @@ class Service extends Base\Service
         $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
 
         // Put the counts in for debug purposes
-        $result['counts']['payments'] = count($authorizedPayments);
-        $result['counts']['merchants'] = count($grouped);
+        $result['counts'] = [
+            'payments'  => count($authorizedPayments),
+            'merchants' => count($grouped),
+            'failures'  => 0,
+        ];
 
         foreach ($grouped as $merchantId => $payments)
         {
             // Send mail only if we have some payments
             if (count($payments) > 0)
             {
-                $this->sendAuthorizedPaymentsReminderMail(
-                    $merchantId, $payments, $final);
+                try
+                {
+                    $this->sendAuthorizedPaymentsReminderMail(
+                        $merchantId, $payments, $final);
 
-                $result['counts'][$merchantId] = count($payments);
+                    $result['counts'][$merchantId] = count($payments);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->warning(TraceCode::PAYMENT_AUTHORIZE_REMINDER_FAILURE,
+                        [
+                            'merchant_id' => $merchantId,
+                            'payments'    => count($payments),
+
+                        ]);
+
+                    $result['counts']['failures'] += 1;
+                }
             }
         }
 

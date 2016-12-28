@@ -28,6 +28,13 @@ class Core
      */
     protected $trace;
 
+    /**
+     * Test/Live mode
+     *
+     * @var string
+     */
+    protected $mode;
+
     protected $merchant;
 
     public function __construct()

@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'AxisMigs';
+    protected $entity = 'axis_migs';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
@@ -50,9 +50,8 @@ class Repository extends Base\Repository
 
     public function findCapturedPaymentByIdOrFail($paymentId)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Entity::PAYMENT_ID, '=', $paymentId)
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
                     ->firstOrFail();
     }

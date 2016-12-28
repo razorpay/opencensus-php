@@ -3,12 +3,8 @@
 namespace RZP\Models\Emi\Banks\Indusind;
 
 use Carbon\Carbon;
-
-use RZP\Services\TokenEx;
 use RZP\Models\Card;
-use RZP\Models\Emi\Service;
 use RZP\Models\Emi\Banks\Base;
-use RZP\Gateway\Base\Action;
 
 class EmiFile extends Base\EmiFile
 {
@@ -68,8 +64,6 @@ class EmiFile extends Base\EmiFile
 
     protected function getEmiData($input)
     {
-        $emiPayments = [];
-
         $data = [];
 
         foreach ($input as $emiPayment)

@@ -2,32 +2,30 @@
 
 namespace RZP\Gateway\Wallet\Freecharge;
 
-use Cache;
 use Carbon\Carbon;
 use Config;
-use Lib\PhoneBook;
-use View;
-
-use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
-use RZP\Models\Payment\Core;
-use RZP\Trace\Trace;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
+use View;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
+
+    const BALANCE_CACHE_KEY = 'freecharge_balance_';
 
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 
@@ -137,6 +135,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     /*
@@ -168,6 +168,8 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, ['otpId' => $otpId]);
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -180,21 +182,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         $response = $this->sendGatewayRequest($request);
 
         $this->handleRequestFailed($response);
 
         $content = $this->jsonToArray($response->body);
 
-        $data = array();
+        $data = [];
 
         if (isset($content[ResponseFields::ACCESS_TOKEN]) === true)
         {
             $data['token'] = $this->getTokenAttributes($content);
-
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
 
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 
@@ -203,7 +201,11 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input);
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function debit(array $input)
@@ -211,8 +213,6 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
-
-        $this->traceGatewayPaymentRequest($request, $input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -269,16 +269,6 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity(
             $wallet,
             [RequestFields::TOPUP => 'true']);
-
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BaseException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
 
         return $this->getTopupWalletRedirectRequestArray($input);
     }
@@ -467,7 +457,13 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {
-            return (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+            $key = $this->getBalanceKeyForCache($input['payment']);
+
+            $walletBalance = (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
+
+            $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL);
+
+            return $walletBalance;
         }
 
         return 0;
@@ -482,7 +478,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -508,7 +504,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($content, $input);
 
-        $content[RequestFields::ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -557,10 +553,14 @@ class Gateway extends Base\Gateway
 
         $content = array(
             RequestFields::OTP_ID                  => $wallet['reference1'],
-            RequestFields::OTP                     => $input['gateway']['otp'],
+            RequestFields::OTP                     => '',
             RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
             RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
         );
+
+        $this->traceGatewayPaymentRequest($content, $input);
+
+        $content[RequestFields::OTP] = $input['gateway']['otp'];
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -584,9 +584,16 @@ class Gateway extends Base\Gateway
 
     protected function getTopupWalletRedirectRequestArray($input)
     {
+        $key = $this->getBalanceKeyForCache($input['payment']);
+
+        // Wallet Balance is in paise
+        $walletBalance = $this->app['cache']->get($key, 0);
+
+        $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
+
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) ($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT       => (string) $topupAmount,
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
@@ -602,7 +609,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($this->accessToken);
+        $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($input['token']['gateway_token']);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
@@ -674,13 +681,17 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
+        // Regular error handling cannot be used here because freecharge sends
+        // an error code if the transaction does not exist
+        $this->handleServerTimeouts($response);
+
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content' => $content,
-                'gateway' => $this->gateway,
+                'content'    => $content,
+                'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -704,7 +715,6 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
-        $response = $verify->verifyResponse;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -784,7 +794,9 @@ class Gateway extends Base\Gateway
             }
             else if ($payment['received'] === false)
             {
-                $payment->fill($walletAttributes);
+                $attr = $this->getMappedAttributes($walletAttributes);
+
+                $payment->fill($attr);
 
                 $payment->saveOrFail();
             }
@@ -871,13 +883,6 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::TOPUP_SUCCESS))
         {
             $this->verifyCheckSumForResponse($content);
-
-            $token = $this->getValidWalletToken($input);
-
-            if ($token !== null)
-            {
-                $this->accessToken = $token->getGatewayToken();
-            }
         }
     }
 
@@ -906,8 +911,6 @@ class Gateway extends Base\Gateway
         if (isset($content[ResponseFields::ACCESS_TOKEN]))
         {
             $data['token'] = $this->getTokenAttributes($content);
-
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
 
             $content[ResponseFields::ACCESS_TOKEN]  = '';
 
@@ -945,6 +948,11 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
+        else if($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        }
         else if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
@@ -963,6 +971,22 @@ class Gateway extends Base\Gateway
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
                 $content[ResponseFields::ERROR_CODE],
                 $content[ResponseFields::ERROR_MESSAGE]);
+        }
+    }
+
+    protected function getBalanceKeyForCache($payment)
+    {
+        return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function handleServerTimeouts($response)
+    {
+        // Freecharge servers timeout internally, It is not request timeout.
+        // Handle the timeout errors
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
         }
     }
 }

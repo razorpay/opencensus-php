@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 
@@ -89,7 +90,7 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile($setlFile)
+    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = true)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
@@ -98,6 +99,9 @@ trait SettlementTrait
             'files' => [
                 'file' => $uploadedFile,
             ],
+            'content' => [
+                'failed_recons' => $generateFailedReconciliations
+            ]
         ];
 
         $this->ba->appAuth();
@@ -196,7 +200,7 @@ trait SettlementTrait
 
             $bucket = $awsConfig['settlement_bucket'];
 
-            $s3 = AWS::createClient('s3');
+            $s3 = Handler::getClient();
 
             $this->assertEquals(true, $s3->doesObjectExist($bucket, $key));
 

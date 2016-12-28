@@ -2,16 +2,14 @@
 
 namespace RZP\Gateway\Mobikwik;
 
+use Lib\PhoneBook;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Mobikwik\Type;
-use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
@@ -67,7 +65,9 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $this->verifyPaymentCallbackResponse($input);
+        $this->verifyPaymentCallbackResponse($input['gateway']);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -295,12 +295,12 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::OTP_GENERATE);
 
         $content = array(
-            'amount'    => $input['payment']['amount'] / 100,
-            'cell'      => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $input['merchant']['billing_label'],
-            'mid'       => $this->getMobikwikMerchantId($input['terminal']),
-            'msgcode'   => MessageCode::OTP_GENERATE,
-            'tokentype' => '0',
+            'amount'       => $input['payment']['amount'] / 100,
+            'cell'         => $this->getFormattedContact($input['payment']['contact']),
+            'merchantname' => $this->getBillingLabel($input),
+            'mid'          => $this->getMobikwikMerchantId($input['terminal']),
+            'msgcode'      => MessageCode::OTP_GENERATE,
+            'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
@@ -327,6 +327,8 @@ class Gateway extends Base\Gateway
                 $content['statuscode'],
                 $content['statusdescription']);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -339,7 +341,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $input['merchant']['billing_label'],
+            'merchantname'  => $this->getBillingLabel($input),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -379,10 +381,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                throw new Exception\GatewayErrorException(
-                    ResponseCodeMap::getApiErrorCode($code),
-                    $responseArray['statuscode'],
-                    $responseArray['statusdescription']);
+                $this->throwPaymentFailureException($responseArray);
             }
         }
 
@@ -401,6 +400,8 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAuthorizeRequestContent($input)
@@ -501,21 +502,6 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
-    }
-
-    protected function getPaymentHash($content)
-    {
-        $fieldsInOrder = array(
-            'cell',
-            'email',
-            'amount',
-            'orderid',
-            'redirecturl',
-            'mid');
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($content);
     }
 
     protected function verifySecureHash(array $content)
@@ -664,22 +650,27 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
-
     protected function verifyPaymentCallbackResponse($input)
     {
-        $content = $input['gateway'];
-        $code = (int) $input['gateway']['statuscode'];
-
-        if ($content['statuscode'] !== Status::SUCCESS)
+        if ($input['statuscode'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($code);
-
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $input['gateway']['statuscode'],
-                $input['gateway']['statusmessage']);
+            $this->throwPaymentFailureException($input);
         }
+    }
+
+    protected function throwPaymentFailureException(array $response)
+    {
+        $code = $response['statuscode'];
+
+        $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+        $message = $response['statusmessage'] ?? $response['statusdescription'];
+
+        throw new Exception\GatewayErrorException(
+            $errorCode,
+            $code,
+            $message);
     }
 
     protected function getUrlDomain()
@@ -760,5 +751,19 @@ class Gateway extends Base\Gateway
         $number = new PhoneBook($contact, true);
 
         return $number->format(PhoneBook::DOMESTIC);
+    }
+
+    protected function getBillingLabel(array $input)
+    {
+        $label = $input['merchant']['billing_label'];
+
+        if (empty($label) === true)
+        {
+            $label = $input['merchant']['name'];
+        }
+
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        return $filteredLabel;
     }
 }

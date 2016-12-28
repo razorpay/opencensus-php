@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,6 +26,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const API_FEE             = 'api_fee';
     const GRATIS              = 'gratis';
+    const FEE_CREDITS         = 'fee_credits';
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
@@ -37,8 +37,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
 
     const RECONCILED        = 'reconciled';
-
-    protected $table = Table::TRANSACTION;
 
     protected static $sign = 'txn';
 
@@ -59,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT,
         self::SERVICE_TAX,
         self::GRATIS,
+        self::FEE_CREDITS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
@@ -94,7 +93,20 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::GRATIS    => false,
+        self::GRATIS                => false,
+        self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_FEE           => null,
+        self::GATEWAY_SERVICE_TAX   => null,
+        self::BALANCE               => null,
+        self::API_FEE               => null,
+        self::FEE_CREDITS           => 0,
+        self::ESCROW_BALANCE        => null,
+        self::SETTLED_AT            => null,
+        self::SETTLEMENT_ID         => null,
+        self::RECONCILED_AT         => null,
+        self::SETTLED               => 0,
+        self::PRICING_RULE_ID       => null,
+        self::SERVICE_TAX           => null,
     );
 
     protected $amounts = array(
@@ -118,6 +130,11 @@ class Entity extends Base\PublicEntity
         Payment\Entity::NOTES,
         self::PAYMENT_ID,
     );
+
+    protected $casts = [
+        self::GRATIS      => 'boolean',
+        self::FEE_CREDITS => 'integer',
+    ];
 
     public function merchant()
     {
@@ -156,6 +173,11 @@ class Entity extends Base\PublicEntity
     public function settlement()
     {
         return $this->belongsTo('RZP\Models\Settlement\Entity');
+    }
+
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
     }
 
     public function getCredit()
@@ -284,11 +306,6 @@ class Entity extends Base\PublicEntity
         return (int) $gatewaySettledAt;
     }
 
-    protected function getGratisAttribute()
-    {
-        return (bool) $this->attributes[self::GRATIS];
-    }
-
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
@@ -313,6 +330,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
+    }
+
     public function getApiFee()
     {
         return $this->getAttribute(self::API_FEE);
@@ -333,6 +355,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_RULE_ID);
     }
 
+    public function getGatewaySettledAt()
+    {
+        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
@@ -341,11 +368,6 @@ class Entity extends Base\PublicEntity
     public function setGatewaySettledAt($timestamp)
     {
         $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
-    }
-
-    public function getGatewaySettledAt()
-    {
-        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
     }
 
     public function setGatewayFee($gatewayFee)
@@ -396,6 +418,11 @@ class Entity extends Base\PublicEntity
     public function setGratis($gratis)
     {
         $this->setAttribute(self::GRATIS, $gratis);
+    }
+
+    public function setFeeCredits(int $credits)
+    {
+        $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
     public function setDebit($amount)
@@ -453,9 +480,29 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::REFUND);
     }
 
+    public function isTypeSettlement()
+    {
+        return ($this->getType() === Type::SETTLEMENT);
+    }
+
+    public function isTypeAdjustment()
+    {
+        return ($this->getType() === Type::ADJUSTMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
+    }
+
+    public function isFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
     }
 
     public function toArrayReport()
@@ -464,9 +511,10 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
-        $reportTxn['description'] = null;
-        $reportTxn['notes'] = null;
-        $reportTxn['payment_id'] = null;
+        $reportTxn[Payment\Entity::DESCRIPTION] = null;
+        $reportTxn[Payment\Entity::NOTES] = null;
+        $reportTxn[self::PAYMENT_ID] = null;
+        $reportTxn['settlement_utr'] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -476,8 +524,8 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn['description'] = $payment->getDescription();
-            $reportTxn['notes'] = $payment->getNotesJson();
+            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
             if ($payment->hasBeenCaptured() === false)
             {
@@ -496,7 +544,22 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn['payment_id'] = $payment->getPublicId();
+            $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
+
+            $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
+        }
+        else if ($this->isTypeSettlement())
+        {
+            $settlement = $this->source;
+
+            $reportTxn['settlement_utr'] = $settlement->getUtr();
+            $reportTxn[self::SETTLED] = null;
+        }
+        else if ($this->isTypeAdjustment())
+        {
+            $adjustment = $this->source;
+
+            $reportTxn['description'] = $adjustment->getDescription();
         }
 
         return $reportTxn;

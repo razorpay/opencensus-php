@@ -694,7 +694,7 @@ class Orchestrator
     {
         foreach ($haystack as $key => $subArray)
         {
-            if (in_array($needle, $subArray) === true)
+            if (in_array($needle, $subArray, true) === true)
             {
                 return $key;
             }

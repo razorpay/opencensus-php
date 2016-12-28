@@ -2,19 +2,15 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
 use Config;
-use Carbon\Carbon;
-use RZP\Exception;
+use Mail;
 use RZP\Error;
-use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Batch;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
-use RZP\Models\Batch\Status;
 
 class Service extends Base\Service
 {

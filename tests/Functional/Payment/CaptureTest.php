@@ -34,7 +34,7 @@ class CaptureTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/capture.php';
+        $this->testDataFilePath = __DIR__.'/helpers/CaptureTestData.php';
 
         parent::setUp();
 
@@ -53,6 +53,10 @@ class CaptureTest extends TestCase
         $this->mockDashboardRequest();
 
         $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
     }
 
     public function testCaptureTwice()
@@ -62,6 +66,22 @@ class CaptureTest extends TestCase
         $this->payment = $payment;
 
         $this->startTest();
+    }
+
+    public function testCaptureWithGatewayCapturedTrue()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->startTest();
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('authorized', $hdfc['status']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
     }
 
     public function testCaptureWithDifferentAmount()
@@ -262,49 +282,49 @@ class CaptureTest extends TestCase
         $this->app['config']->set('gateway.mock_hdfc', true);
         $this->app['config']->set('gateway.mock_atom', true);
 
-        $created_at = time() - rand(0, 23) * 60 * 60;
-        $updated_at = $created_at;
+        $createdAt = time() - rand(0, 23) * 60 * 60;
+        $updatedAt = $createdAt;
 
         $payment = $this->fixtures->create(
-            'payment:authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:netbanking_authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
-        $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-        $updated_at = $created_at;
-
-        $payment = $this->fixtures->create(
-            'payment:status_created', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+        $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+        $updatedAt = $createdAt;
 
         $payment = $this->fixtures->create(
-            'payment:captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:status_created', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
 
         $x = range(1,3);
 
         foreach ($x as $i)
         {
-            $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updated_at = $created_at;
+            $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+            $updatedAt = $createdAt;
 
             $payment = $this->fixtures->create(
                 'payment:authorized',
-                ['created_at' => $created_at,
-                 'updated_at' => $updated_at]);
+                ['created_at' => $createdAt,
+                 'updated_at' => $updatedAt]);
         }
 
         foreach ($x as $i)
         {
-            $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updated_at = $created_at;
+            $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+            $updatedAt = $createdAt;
 
             $payment = $this->fixtures->create(
                 'payment:netbanking_authorized',
-                ['created_at' => $created_at,
-                 'updated_at' => $updated_at]);
+                ['created_at' => $createdAt,
+                 'updated_at' => $updatedAt]);
         }
 
         $payment = $this->fixtures->create('payment:netbanking_authorized');
@@ -317,26 +337,37 @@ class CaptureTest extends TestCase
     public function testAutoCaptureEmail()
     {
         $time = Carbon::today('Asia/Kolkata')->timestamp;
-        $created_at = $time - rand(0, 23) * 60 * 60;
-        $updated_at = $created_at;
+        $createdAt = $time - rand(0, 23) * 60 * 60;
+
+        $attributes = [
+            'authorized_at' => $createdAt + 1,
+            'captured_at'   => $createdAt + 10,
+            'created_at'    => $createdAt,
+            'updated_at'    => $createdAt + 10
+        ];
 
         // The following two payments have been captured but not auto-captured
         $payment = $this->fixtures->create(
-            'payment:captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:captured', $attributes);
         $payment = $this->fixtures->create(
-            'payment:netbanking_captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:netbanking_captured', $attributes);
 
-        $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
-        $updated_at = $created_at;
+        $createdAt = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+        $attributes = [
+            'authorized_at' => $createdAt + 1,
+            'captured_at'   => $createdAt + 10,
+            'created_at'    => $createdAt,
+            'updated_at'    => $createdAt + 10
+        ];
 
         $payment = $this->fixtures->create(
-            'payment:status_created', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:status_created', $attributes);
 
         $payment = $this->fixtures->create(
-            'payment:authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:authorized', $attributes);
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+            'payment:netbanking_authorized', $attributes);
 
         $x = range(1,3);
 
@@ -345,27 +376,33 @@ class CaptureTest extends TestCase
         // Only the following 6 payments are actually auto-captured. The above rest is just noise
         foreach ($x as $i)
         {
-            $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
-            $updated_at = $created_at;
+            $createdAt = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+            $attributes = [
+                'authorized_at' => $createdAt + 1,
+                'captured_at'   => $createdAt + 10,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10,
+                'auto_captured' => 1
+            ];
 
             $payment = $this->fixtures->create(
-                'payment:captured',
-                ['created_at' => $created_at,
-                 'updated_at' => $updated_at,
-                 'auto_captured' => 1]);
+                'payment:captured', $attributes);
         }
 
         foreach ($x as $i)
         {
-            $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
-            $updated_at = $created_at;
+            $createdAt = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+            $attributes = [
+                'authorized_at' => $createdAt + 1,
+                'captured_at'   => $createdAt + 10,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10,
+                'auto_captured' => 1,
+                'merchant_id'   => $merchant->getId()
+            ];
 
             $payment = $this->fixtures->create(
-                'payment:netbanking_captured',
-                ['created_at' => $created_at,
-                 'updated_at' => $updated_at,
-                 'auto_captured' => 1,
-                 'merchant_id' => $merchant->getId()]);
+                'payment:netbanking_captured', $attributes);
         }
 
         $payment = $this->fixtures->create('payment:netbanking_authorized');

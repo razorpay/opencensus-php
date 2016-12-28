@@ -64,7 +64,7 @@ class CreateWebhooks extends Migration
         Schema::table(Table::WEBHOOK, function($table)
         {
             $table->dropForeign(
-                TABLE::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
+                Table::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::WEBHOOK);

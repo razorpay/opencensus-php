@@ -76,11 +76,13 @@ class BilldeskGatewayTest extends TestCase
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertTestResponse($refund);
     }
 
@@ -93,6 +95,7 @@ class BilldeskGatewayTest extends TestCase
         $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentRefund'], $refund);
 
@@ -203,5 +206,28 @@ class BilldeskGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 40000);
         });
+    }
+
+    public function testReconcileCancelledTransactions()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentTransaction = $this->getLastTransaction(true);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $billdeskRefund = $this->getLastEntity('billdesk', true);
+
+        $this->fixtures->edit('billdesk', $billdeskRefund['id'], ['refStatus' => '0699']);
+
+        $this->startTest();
+
+        $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
+
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
+        $this->assertEquals(0, $paymentTransaction['gateway_fee']);
     }
 }

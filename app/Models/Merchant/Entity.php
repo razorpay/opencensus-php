@@ -3,14 +3,16 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+
+use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Terminal\Category;
-use RZP\Models\Pricing\Service as PricingService;
+use RZP\Models\Terminal;
+use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
+    const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
     const ACTIVATED                 = 'activated';
@@ -23,6 +25,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
+    const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
@@ -33,6 +36,8 @@ class Entity extends Base\PublicEntity
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
+    const AUTO_REFUND_DELAY         = 'auto_refund_delay';
+    const CONVERT_CURRENCY          = 'convert_currency';
 
     /**
      * Category for particular methods or gateways
@@ -45,13 +50,15 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = \RZP\Constants\Table::MERCHANT;
-
     protected $entity = 'merchant';
 
     protected static $sign = '';
 
     protected static $delimiter = '';
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected static $generators = array(
         self::TRANSACTION_REPORT_EMAIL);
@@ -72,8 +79,11 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::CONVERT_CURRENCY,
+        self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
@@ -83,7 +93,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
-        self::LOGO_URL,
+        self::LOGO_URL
     );
 
     protected $public = array(
@@ -105,34 +115,56 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
+        self::CONVERT_CURRENCY,
+        self::MAX_PAYMENT_AMOUNT,
+        self::AUTO_REFUND_DELAY,
         self::BRAND_COLOR,
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LOGO_URL,
+        self::ORG_ID,
+        'groups',
+        'admins'
      );
 
     protected $defaults = array(
-        self::CATEGORY2             => null,
-        self::LIVE                  => false,
-        self::ACTIVATED             => false,
-        self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true,
-        self::HOLD_FUNDS            => false,
-        self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES              => Features::CARD_SAVING,
-        self::FEE_BEARER            => FeeBearer::PLATFORM,
-        self::BRAND_COLOR           => null,
-        self::RISK_RATING           => 3,
-        self::LOGO_URL              => null,
-        self::MAX_PAYMENT_AMOUNT    => null,
+        self::CATEGORY2              => null,
+        self::LIVE                   => false,
+        self::ACTIVATED              => false,
+        self::ACTIVATED_AT           => null,
+        self::RECEIPT_EMAIL_ENABLED  => true,
+        self::HOLD_FUNDS             => false,
+        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE_ID => null,
+        self::FEATURES               => Features::CARD_SAVING,
+        self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::BRAND_COLOR            => null,
+        self::RISK_RATING            => 3,
+        self::LOGO_URL               => null,
+        self::MAX_PAYMENT_AMOUNT     => null,
+        self::ORG_ID                 => null,
+        self::AUTO_REFUND_DELAY      => null,
+        self::CONVERT_CURRENCY       => null,
     );
 
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::LOGO_URL
+        self::LOGO_URL,
+    );
+
+    protected $casts = array(
+        self::ACTIVATED             => 'bool',
+        self::LIVE                  => 'bool',
+        self::INTERNATIONAL         => 'bool',
+        self::RECEIPT_EMAIL_ENABLED => 'bool',
+        self::HOLD_FUNDS            => 'bool',
+        self::CATEGORY              => 'int',
+        self::SETTLEMENT_SCHEDULE   => 'int',
+        self::CONVERT_CURRENCY      => 'bool'
     );
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -151,7 +183,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (bool) $this->getAttribute(self::INTERNATIONAL);
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isFeeBearerCustomer()
@@ -179,7 +211,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->getFeatures());
+        return in_array($feature, $this->features(), true);
     }
 
     public function activate()
@@ -199,22 +231,50 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LIVE, false);
     }
 
+    public function hasSchedule()
+    {
+        return ($this->getSettlementScheduleId() !== null);
+    }
+
     public function keys()
     {
-        return $this->hasMany(
-            'RZP\Models\Key\Entity');
+        return $this->hasMany('RZP\Models\Key\Entity');
     }
 
     public function pricing()
     {
+        return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+    }
+
+    public function schedule()
+    {
         return $this->belongsTo(
-            'RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+            'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
     }
 
     public function payments()
     {
-        return $this->hasMany(
-            'RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
+    }
+
+    public function lineItems()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
+    public function customers()
+    {
+        return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
     public function balance()
@@ -241,6 +301,12 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Terminal\Entity');
     }
 
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
+    }
+
     public function transactions()
     {
         return $this->hasMany(
@@ -251,6 +317,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\Merchant\Webhook\Entity');
+    }
+
+    public function merchantDetail()
+    {
+        return $this->hasOne('RZP\Models\Merchant\Detail\Entity', 'merchant_id', self::ID);
     }
 
     public function setPricingPlan($planId)
@@ -300,14 +371,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
-    protected function getActivatedAttribute()
+    public function offers()
     {
-        return (bool) $this->attributes[self::ACTIVATED];
-    }
-
-    protected function getLiveAttribute()
-    {
-        return (bool) $this->attributes[self::LIVE];
+        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
     }
 
     protected function getMaxPaymentAmountAttribute()
@@ -325,7 +391,7 @@ class Entity extends Base\PublicEntity
 
     protected function getFeeBearerAttribute()
     {
-        return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+        return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
     protected function getInternationalAttribute()
@@ -383,6 +449,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
+    public function getAutoRefundDelay()
+    {
+        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+    }
+
     /**
      * Returns all transaction emails associated with the merchant
      * @return array array of email addresses
@@ -392,9 +463,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
-    public function getFeatures()
+    public function getOrgId()
     {
-        return $this->getAttribute(self::FEATURES);
+        return $this->getAttribute(self::ORG_ID);
+    }
+
+    /**
+     * check if api or gateway should do currency conversion for merchant
+     * @return [type] [description]
+     */
+    public function convertOnApi()
+    {
+        return $this->getAttribute(self::CONVERT_CURRENCY);
+    }
+
+    public function features()
+    {
+        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
+                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()
@@ -449,7 +535,7 @@ class Entity extends Base\PublicEntity
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['region'];
+        $regionName = $awsConfig['bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 
@@ -517,6 +603,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
+    protected function setWebsiteAttribute($website)
+    {
+        $this->attributes[self::WEBSITE] = mb_strtolower($website);
+    }
+
     protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)
@@ -539,6 +630,39 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
+    protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)
+    {
+        if ($autoRefundDelayPeriod === null)
+        {
+            $this->attributes[self::AUTO_REFUND_DELAY] = null;
+            return;
+        }
+
+        $autoRefundDelay = explode(' ', $autoRefundDelayPeriod);
+
+        $time = $autoRefundDelay[0];
+        $duration = $autoRefundDelay[1];
+
+        switch ($duration)
+        {
+            case 'mins':
+                $multiplier = 60;
+                break;
+
+            case 'hours':
+                $multiplier = 3600;
+                break;
+
+            case 'days':
+                $multiplier = 86400;
+                break;
+        }
+
+        $delay = $time * $multiplier;
+
+        $this->attributes[self::AUTO_REFUND_DELAY] = (int) $delay;
+    }
+
     protected function setPublicLogoUrlAttribute(array & $array)
     {
         if (empty($array[self::LOGO_URL]) === false)
@@ -552,14 +676,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
+    public function getSettlementScheduleId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_SCHEDULE_ID);
+    }
+
     public function holdFunds()
     {
-        return (bool) $this->attributes[self::HOLD_FUNDS];
+        return $this->getAttribute(self::HOLD_FUNDS);
+    }
+
+    public function setHoldFunds($holdFunds)
+    {
+        $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
     }
 
     public function isReceiptEmailsEnabled()
     {
-        return $this->getReceiptEmailEnabledAttribute();
+        return $this->getAttribute(self::RECEIPT_EMAIL_ENABLED);
     }
 
     public function getRiskRating()
@@ -594,7 +728,7 @@ class Entity extends Base\PublicEntity
             // divide by 4 to get number of such segments
             // and take ceil so we have a whole number of these
 
-            $repeat = ceil((strlen($ac) - 4)/4);
+            $repeat = ceil((strlen($ac) - 4) / 4);
 
             // repeat this section $repeat times
             // and then just append the original last 4 digits
@@ -630,23 +764,16 @@ class Entity extends Base\PublicEntity
      */
     public function isTPVRequired()
     {
-        // 9999 - Test MCC requiring TPV
-        // 6211 - Live MCC requiring TPV
         $tpvCategories = $this->getTPVCategories();
 
-        $category = $this->getCategory();
+        $category = $this->getCategory2();
 
-        if (isset($tpvCategories[$category]))
-        {
-            return true;
-        }
-
-        return false;
+        return in_array($category, $tpvCategories);
     }
 
     public function getTPVCategories()
     {
-        return array(9999 => 9999, 6211 => 6211);
+        return Terminal\Category::INCOMPATIBLE;
     }
 
     public function isShared()
@@ -657,5 +784,26 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
+    }
+
+    public function groups()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function admins()
+    {
+        return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function toArrayPublic()
+    {
+         $merchant = parent::toArrayPublic();
+
+         $groups = $this->groups;
+
+         $merchant['groups'] = $groups->toArrayPublicEmbedded();
+
+         return $merchant;
     }
 }

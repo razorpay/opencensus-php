@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Models;
 use RZP\Models\Base;
@@ -15,20 +16,16 @@ use RZP\Models\Settlement\Details as SetlDetails;
 class Merchant
 {
     protected $merchant;
-
     protected $amount;
-
     protected $apiFee;
-
     protected $setl;
-
     protected $setlTransaction;
-
     protected $txns;
-
     protected $setlDetails;
+    protected $fee;
+    protected $serviceTax;
 
-    public function __construct($merchant, $channel, $repo)
+    public function __construct($merchant, $channel, $repo = null)
     {
         $this->merchant = $merchant;
 
@@ -40,7 +37,7 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function settle($txns, $amount, $fee, $apiFee, $gatewayFee, $serviceTax)
+    public function settle($txns, $amount, $fee, $apiFee, $serviceTax)
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -112,6 +109,7 @@ class Merchant
         $details = [];
         $totalServiceTax = 0;
         $totalFee = 0;
+        $totalFeeCredits = 0;
 
         foreach ($entityTypes as $componentType)
         {
@@ -144,6 +142,10 @@ class Merchant
             $totalServiceTax += $txn->getServiceTax();
 
             $totalFee += ($txn->getFee() - $txn->getServiceTax());
+
+            // FeeCredits is either zero or equal to fees.
+            $totalFeeCredits += $txn->getFeeCredits();
+
         }
 
         foreach ($entityTypes as $componentType)
@@ -178,6 +180,15 @@ class Merchant
             'debit',
             null,
             $totalFee);
+
+        if ($totalFeeCredits > 0)
+        {
+            $this->createSetlDetailsEntity(
+                SetlDetails\Component::FEE_CREDITS,
+                'credit',
+                null,
+                $totalFeeCredits);
+        }
     }
 
     protected function createSetlDetailsEntity($component, $type, $count, $amount)
@@ -284,7 +295,7 @@ class Merchant
      */
     protected function attachMerchantBankAccount()
     {
-        $mode = \BasicAuth::getMode();
+        $mode = BasicAuth::getMode();
 
         if (($mode === Mode::TEST) and
             ($this->merchant->bankAccount === null))
@@ -321,7 +332,7 @@ class Merchant
             'beneficiary_mobile'    => '9393993939',
         );
 
-        $ba = (new BankAccount\Entity)->build($attributes, true);
+        $ba = (new BankAccount\Entity)->build($attributes);
 
         $ba->merchant()->associate($merchant);
 

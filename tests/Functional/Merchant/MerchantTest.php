@@ -136,12 +136,72 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditMerchantEnableInternationalFail()
+    public function testEditMerchantEditGroups()
     {
-        $this->fixtures->create('pricing:standard_plan');
-        $this->fixtures->merchant->editPricingPlanId('1A0Fkd38fGZPVC');
+        $merchant = $this->createMerchant();
 
-        $this->startTest();
+        $org = $this->fixtures->create('org');
+
+        $orgId = $org->getId();
+
+        // --------------------------
+
+        // create two groups for the org
+        $groups = $this->fixtures->times(2)->create('group', ['org_id' => $orgId]);
+
+        foreach ($groups as $group)
+        {
+            $groupIds[] = $group->getPublicId();
+        }
+
+        // create request to add groups to merchant
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $merchant['id']);
+
+        $request['content']['groups'] = $groupIds;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $response = $this->startTest();
+
+        // list of created group ids
+        $createdGroupIds = array_column($response['groups'], 'id');
+
+        // check total created groups against request groups
+        $this->assertEquals(count($groupIds), count($createdGroupIds));
+
+        // check if group ids in request match as those in respose
+        foreach ($groupIds as $groupId)
+        {
+            $this->assertContains($groupId, $createdGroupIds);
+        }
+
+        // --------------------------
+
+        // Create another group
+        $newGroup = $this->fixtures->create('group', ['org_id' => $orgId]);
+
+        // Assign the new group, and one of older groups,
+        // such that the other older group gets deleted
+        $newGroupIds = [$newGroup->getPublicId(), $groupIds[0]];
+
+        $request['content']['groups'] = $newGroupIds;
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $response = $this->startTest();
+
+        // list of new group ids
+        $createdGroupIds = array_column($response['groups'], 'id');
+
+        $this->assertEquals(count($newGroupIds), count($createdGroupIds));
+
+        // check if group ids in request match as those in respose
+        foreach ($newGroupIds as $groupId)
+        {
+            $this->assertContains($groupId, $createdGroupIds);
+        }
     }
 
     public function testEditTransactionEmailWithCsv()
@@ -193,6 +253,27 @@ class MerchantTest extends TestCase
         $this->createMerchant();
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidDurationAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantAutoRefundDelay()
+    {
+        $this->createMerchant();
 
         $this->startTest();
     }
@@ -456,6 +537,23 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesWithOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $content = $this->startTest();
+
+        $countCardOffers = count($content['offers']['card']['items']);
+
+        $countWalletOffers = count($content['offers']['wallet']['items']);
+
+        $this->assertEquals(1, $countCardOffers);
+
+        $this->assertEquals(0, $countWalletOffers);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();
@@ -491,7 +589,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $this->session(['test_app_token' => '1000001custapp']);
 
@@ -504,7 +602,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $response = $this->startTest();
     }
@@ -528,7 +626,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->editFeatures('cardsaving');
+        $this->fixtures->merchant->addFeatures(['cardsaving']);
 
         $response = $this->startTest();
 
@@ -625,6 +723,24 @@ class MerchantTest extends TestCase
             {
                $this->merchantEditCredits('10000000000000', 'abcde');
             });
+    }
+
+    public function testCreateMerchantWithLongName()
+    {
+        $id = '1X4hRFHFx4UiXt';
+        $merchant = array(
+            'id'    => $id,
+            'name'  => 'Merchant business name just long enought to break things',
+            'email' => 'liveandtest@localhost.com'
+        );
+
+        $request = array(
+            'content' => $merchant,
+            'url' => '/merchants',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
     }
 
     protected function startTest($testDataToReplace = [])
@@ -776,7 +892,7 @@ class MerchantTest extends TestCase
 
         $merchantValidator->validateLogo($imageDetails);
 
-        $imageDetails = ['size' => 1+(1024*1024), 'width' => '300', 'height' => '300'];
+        $imageDetails = ['size' => 1 + (1024 * 1024), 'width' => '300', 'height' => '300'];
 
         $data = $this->testData['testValidateLogoImageTooBig'];
 
@@ -785,4 +901,26 @@ class MerchantTest extends TestCase
             $merchantValidator->validateLogo($imageDetails);
         });
     }
+
+    public function testGetMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantUnEditableFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 }

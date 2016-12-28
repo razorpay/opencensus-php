@@ -4,34 +4,58 @@ namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
+    const BANKADJREF            = 'bankadjref';
+    const FLAG                  = 'Flag';
+    const SHTDAT                = 'shtdat';
+    const ADJAMT                = 'adjamt';
+    const SHSER                 = 'shser';
+    const SHCRD                 = 'shcrd';
+    const FILENAME              = 'filename';
+    const REASON                = 'reason';
+    const SPECIFYOTHER          = 'specifyother';
+    const MERCHANTACCOUNT       = 'Merchantaccount';
+    const MERCHANT_IFSC_CODE    = 'MerchantIFSCCode';
+
     protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
     protected static $headers = array(
-        'Merchant reference Number',
-        'bankadjref',
-        'refundRef',
-        'Flag',
-        'shtdat',
-        'adjamt',
-        'shcrd',
-        'specifyother',
+        self::BANKADJREF,
+        self::FLAG,
+        self::SHTDAT,
+        self::ADJAMT,
+        self::SHSER,
+        self::SHCRD,
+        self::FILENAME,
+        self::REASON,
+        self::SPECIFYOTHER,
+        self::MERCHANTACCOUNT,
+        self::MERCHANT_IFSC_CODE,
     );
 
     public function generate($input)
     {
         $data = $this->getRefundData($input);
 
-        $urlCsv = $this->writeToCsvFile($data, $this->getFileToWriteNameWithoutExt());
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $urlCsv = $this->writeToCsvFile($data, $fileName);
+
+        $creator = $this->createFile(
+            FileStore\Format::CSV,
+            $data,
+            $fileName,
+            FileStore\Type::ICICI_UPI_REFUND);
 
         $this->sendRefundEmail();
 
         return $urlCsv;
     }
 
-    protected function sendRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
         $fullpath = $this->getCsvFullFilePath();
 
@@ -63,16 +87,19 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 
-            $data[] = array(
-                'Merchant reference Number' => $row['payment']['id'],
-                'bankadjref'                => $row['gateway']['gateway_payment_id'],
-                'refundRef'                 => $fileName,
-                'Flag'                      => 'C',
-                'shtdat'                    => $date,
-                'adjamt'                    => ($row['refund']['amount'] / 100),
-                'shcrd'                     => $row['gateway']['vpa'],
-                'specifyother'              => $row['refund']['id'],
-            );
+            $data[] = [
+                self::BANKADJREF         => $row['refund']['id'],
+                self::FLAG               => 'C',
+                self::SHTDAT             => $date,
+                self::ADJAMT             => ($row['refund']['amount'] / 100),
+                self::SHSER              => $row['gateway']['gateway_payment_id'],
+                self::SHCRD              => $row['gateway']['vpa'],
+                self::FILENAME           => $fileName,
+                self::REASON             => 'NA',
+                self::SPECIFYOTHER       => $row['refund']['id'],
+                self::MERCHANTACCOUNT    => '',
+                self::MERCHANT_IFSC_CODE => '',
+            ];
         }
 
         return $data;

@@ -30,6 +30,11 @@ class Entity extends Base\PublicEntity
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
+
     protected $fillable = array(
         self::ID,
         self::PLAN_ID,
@@ -47,11 +52,10 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::FIXED_RATE);
 
-    protected $table = \RZP\Constants\Table::PRICING;
-
     protected $entity = 'pricing';
 
-    protected $generateIdOnCreate = true;
+    // We are explicitly generating Id so that same Id gets stored in live and test db
+    protected $generateIdOnCreate = false;
 
     /**
      * Fields which will be modified before
@@ -133,6 +137,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Transaction\Entity', 'pricing_rule_id');
     }
+
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'pricing_rule_id');
+    }
+
 
     protected function generatePlanId()
     {
@@ -256,6 +266,11 @@ class Entity extends Base\PublicEntity
     protected function getFixedRateAttribute()
     {
         return (int) $this->attributes[self::FIXED_RATE];
+    }
+
+    public function getFeature()
+    {
+        return $this->attributes[self::FEATURE];
     }
 
     /*

@@ -4,11 +4,11 @@ namespace RZP\Base;
 
 use Closure;
 use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
-
     public function __construct($app)
     {
         parent::__construct($app);
@@ -23,8 +23,7 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     public function getDefaultDriver()
     {
-        throw new Exception\LogicException(
-            'No default repository driver');
+        throw new Exception\LogicException('No default repository driver');
     }
 
     protected function createDriver($driver)
@@ -46,6 +45,20 @@ class RepositoryManager extends \Illuminate\Support\Manager
         $repo = $this->getRepositoryClassFromObject($entity);
 
         return $repo->save($entity, $options);
+    }
+
+    public function sync($entity, $relation, $ids = [])
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $ids);
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $id, $attributes, $touch);
     }
 
     public function delete($entity)
@@ -94,18 +107,18 @@ class RepositoryManager extends \Illuminate\Support\Manager
     {
         $repo = $this->driver($entity);
 
-        $obj = $repo->connection('live')->find($id);
+        $obj = $repo->connection(Mode::LIVE)->find($id);
 
         if ($obj !== null)
         {
-            return 'live';
+            return Mode::LIVE;
         }
 
-        $obj = $repo->connection('test')->find($id);
+        $obj = $repo->connection(Mode::TEST)->find($id);
 
         if ($obj !== null)
         {
-            return 'test';
+            return Mode::TEST;
         }
 
         return null;
@@ -138,10 +151,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
     /**
      * Execute a callable within a transaction.
      *
-     * @param  Closure  $callback
+     * @param callable $callback
      * @return mixed
-     *
-     * @throws \Exception
      */
     public function transaction(callable $callback)
     {
@@ -167,8 +178,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     public function transactionOnLiveAndTest(callable $callback)
     {
-        $this->db->connection('test')->beginTransaction();
-        $this->db->connection('live')->beginTransaction();
+        $this->db->connection(Mode::TEST)->beginTransaction();
+        $this->db->connection(Mode::LIVE)->beginTransaction();
 
         // We'll simply execute the given callback within a try / catch block
         // and if we catch any exception we can rollback the transaction
@@ -177,8 +188,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
         {
             $result = $callback($this);
 
-            $this->db->connection('live')->commit();
-            $this->db->connection('test')->commit();
+            $this->db->connection(Mode::LIVE)->commit();
+            $this->db->connection(Mode::TEST)->commit();
         }
 
         // If we catch an exception, we will roll back so nothing gets messed
@@ -186,8 +197,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
         // be handled how the developer sees fit for their applications.
         catch (\Exception $e)
         {
-            $this->db->connection('live')->rollBack();
-            $this->db->connection('test')->rollBack();
+            $this->db->connection(Mode::LIVE)->rollBack();
+            $this->db->connection(Mode::TEST)->rollBack();
 
             throw $e;
         }

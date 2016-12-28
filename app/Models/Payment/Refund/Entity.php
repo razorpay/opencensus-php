@@ -16,11 +16,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
+    const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
-
-    protected $table = \RZP\Constants\Table::REFUND;
 
     protected static $sign = 'rfnd';
 
@@ -44,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
         self::TRANSACTION_ID,
         self::NOTES,
         self::BATCH_ID,
@@ -71,6 +71,7 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::BASE_AMOUNT,
     );
 
     public function payment()
@@ -91,6 +92,16 @@ class Entity extends Base\PublicEntity
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
+    }
+
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
     public function build(array $input = array())
@@ -124,6 +135,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getBaseAmount()
+    {
+        $amount = $this->getAttribute(self::BASE_AMOUNT);
+
+        // hack to avoid
+        if ($amount === null)
+        {
+            return $this->getAttribute(self::AMOUNT);
+        }
+
+        return $amount;
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -137,6 +166,30 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function setBaseAmount()
+    {
+        $amount = $this->getAttribute(self::AMOUNT);
+
+        $currency = $this->getAttribute(self::CURRENCY);
+
+        $unrefundedAmount = $this->payment->getAmountUnrefunded();
+
+        if ($amount === $unrefundedAmount)
+        {
+            $baseAmount = $this->payment->getBaseAmountUnrefunded();
+        }
+        else
+        {
+            $conversionRate = $this->payment->getBaseAmount() / $this->payment->getAmount();
+
+            $baseAmount = $amount * $conversionRate;
+
+            $baseAmount = (int) floor($baseAmount);
+        }
+
+        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
     public function setPublicPaymentIdAttribute(array & $array)
@@ -164,6 +217,20 @@ class Entity extends Base\PublicEntity
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL] = $this->payment->getEmail();
+
+        return $data;
+    }
+
+    public function toArrayGateway()
+    {
+        $data = $this->toArray();
+
+        if (($this->payment->isCard()) and
+            ($this->payment->getConvertCurrency() === true))
+        {
+            $data['amount'] = $this->getBaseAmount();
+            $data['currency'] = Payment\Currency::INR;
+        }
 
         return $data;
     }

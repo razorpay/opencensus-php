@@ -68,6 +68,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function postRefundAuthorizedInBulk()
+    {
+        $input = Request::all();
+
+        $summary = $this->payment->refundAuthorizedInBulk($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function postForceAuthorize($id)
     {
         $input = Request::all();
@@ -87,6 +96,13 @@ class PaymentController extends Controller
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFixAuthorizedAt($id)
+    {
+        $data = $this->payment->fixAuthorizeAt($id);
 
         return ApiResponse::json($data);
     }
@@ -121,6 +137,10 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * @deprecated
+     * @return mixed
+     */
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -147,6 +167,13 @@ class PaymentController extends Controller
         $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
+    }
+
+    public function getTransactionForPayment($paymentId)
+    {
+        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
+
+        return ApiResponse::json($transaction);
     }
 
     public function postTimeout()
@@ -186,16 +213,11 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments($filter)
+    public function postVerifyPayments($filter)
     {
-        $data = $this->payment->verifyMultiplePayments($filter);
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
-    {
-        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
+        $data = $this->payment->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }

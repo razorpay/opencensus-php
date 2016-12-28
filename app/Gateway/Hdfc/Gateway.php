@@ -24,6 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
@@ -31,7 +32,9 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action as BaseAction;
 use App;
 
 class Gateway extends Base\Gateway
@@ -72,7 +75,9 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
+
+    const VERIFY_TIMEOUT = 60;
 
     /**
      * Parameters required to construct request
@@ -85,7 +90,7 @@ class Gateway extends Base\Gateway
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
-        'headers' => array('Content-Type'=>'text/xml'),
+        'headers' => array('Content-Type' => 'text/xml'),
         'data' => array());
 
     /**
@@ -93,7 +98,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $enrollResponse = array(
-        'fields' => array(
+       'fields' => array(
             'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
         'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
             'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
@@ -110,21 +115,21 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
-        'type' => 'auth_enrolled',
-        'fields' => array('paymentid', 'PaRes'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::AUTH_ENROLLED_URL,
+        'type'      => 'auth_enrolled',
+        'fields'    => array('paymentid', 'PaRes'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $authEnrolledResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid', 'trackid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
-        'type' => 'auth_enrolled',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate',
+                        'paymentid', 'tranid', 'trackid', 'udf1', 'udf2', 'udf3',
+                        'udf4', 'udf5', 'error_text'),
+        'type'      => 'auth_enrolled',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     /**
      * The assoc array is used to constructing
@@ -145,7 +150,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authNotEnrolledResponse = array(
-        'fields' =>  array(
+        'fields' => array(
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
             'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
         'type' => 'auth_not_enrolled',
@@ -159,29 +164,28 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $supportPaymentRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'type' => '',
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'type'      => '',
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $supportPaymentResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf2', 'udf5', 'amt', 'error_text'),
-        'type' => '',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'),
+        'type'      => '',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'type' => 'inquiry',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'type'      => 'inquiry',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryResponse = array(
         'type' => 'inquiry',
@@ -321,7 +325,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($authResponse);
 
-            return;
+            return $this->getCallbackResponseData($input);
         }
 
         $this->validateCallbackGatewayFields($input, $network);
@@ -340,6 +344,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->postAuthEnrolledRequest($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -366,7 +372,7 @@ class Gateway extends Base\Gateway
     /**
      * HDFC gateway does not provide void
      */
-    public function void()
+    public function void(array $input)
     {
         throw new Exception\LogicException(
             'Hdfc gateway does not support voids');
@@ -426,7 +432,10 @@ class Gateway extends Base\Gateway
 
         try
         {
-            validate($this->bankAcsResponseRules, $input['gateway'], false);
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
         }
         catch (Exception\RecoverableException $e)
         {
@@ -469,7 +478,7 @@ class Gateway extends Base\Gateway
         catch (Exception\GatewayTimeoutException $e)
         {
             // For verify we should throw exception as is.
-            if ($this->action === 'verify')
+            if ($this->action === BaseAction::VERIFY)
             {
                 throw $e;
             }
@@ -478,7 +487,9 @@ class Gateway extends Base\Gateway
 
             $response['content'] = '';
 
-            Hdfc\ErrorHandler::setTimeoutError($response);
+            $curlErrorMessage = strtolower($e->getData()['message']);
+
+            Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
 
             return;
         }
@@ -602,6 +613,12 @@ class Gateway extends Base\Gateway
 
     protected function getTimeout()
     {
+        // Increasing timeout for verify Request
+        if ($this->action === BaseAction::VERIFY)
+        {
+            return static::VERIFY_TIMEOUT;
+        }
+
         return static::TIMEOUT;
     }
 
@@ -676,7 +693,8 @@ class Gateway extends Base\Gateway
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
-            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004) or
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00013))
         {
             $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
         }

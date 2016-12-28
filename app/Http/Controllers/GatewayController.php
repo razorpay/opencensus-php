@@ -3,14 +3,14 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception;
-use RZP\Http\Route;
-use RZP\Models\Payment;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-use Request;
 use Redirect;
+use Request;
+use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
+use RZP\Models\Payment;
+use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Base\RuntimeManager;
+use RZP\Trace\TraceCode;
 
 class GatewayController extends Controller
 {
@@ -50,8 +50,6 @@ class GatewayController extends Controller
 
     protected function callbackEbs($input)
     {
-        $msg = $input['msg'];
-
         $gateway = $this->app['gateway']->gateway('ebs');
 
         //TODO validate callback
@@ -81,6 +79,17 @@ class GatewayController extends Controller
 
         $data = [];
 
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
+            [
+                'input'     => $input,
+                'body'      => Request::getContent(),
+                'headers'   => Request::header(),
+                'gateway'   => $gateway,
+            ]);
+
         switch ($gateway)
         {
             case 'billdesk':
@@ -88,17 +97,7 @@ class GatewayController extends Controller
                 break;
 
             case 'wallet_olamoney':
-                $trace = $this->app['trace'];
-
-                $trace->info(
-                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                    [
-                        'input'     => $input,
-                        'body'      => Request::getContent(),
-                        'headers'   => Request::header(),
-                        'gateway'   => $gateway,
-                    ]);
-
+            case 'upi_hdfc':
                 break;
 
             case 'wallet_freecharge':
@@ -117,8 +116,6 @@ class GatewayController extends Controller
 
         // $input['gateway'] = $gateway;
 
-        // $app['slack']->send($input, 'transactions', '#tech_logs');
-
         return ApiResponse::json($data);
     }
 
@@ -134,7 +131,7 @@ class GatewayController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        $result = $this->getGatewayEntityAndModeByTraceId($input[3]);
+        $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
 
         $nb = $result['nb'];
 
@@ -172,11 +169,11 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    protected function getGatewayEntityAndModeByTraceId($traceId)
+    protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
 
-        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
+        $repo = $app['repo']->netbanking;
 
         $mode = 'test';
 
@@ -249,4 +246,75 @@ class GatewayController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Single use function - Fills provider field in the UPI table with bank code
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function fillUpiProviderCode()
+    {
+        RuntimeManager::setMaxExecTime(1800);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
+        $batchSize = 500;
+        $lastId = 0;
+
+        $totalRecords = $failedCount = $successCount = 0;
+        $failedIds = [];
+
+        while (true)
+        {
+            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize, $lastId);
+
+            $currentBatchCount = count($recordsToUpdate);
+
+            $totalRecords += $currentBatchCount;
+
+            if ($currentBatchCount === 0)
+            {
+                break;
+            }
+
+            foreach ($recordsToUpdate as $upiRecord)
+            {
+                $provider = $upiRecord->extractProviderFromVpa();
+
+                $upiRecord->setProvider($provider);
+
+                $upiRecord->setBank(ProviderCode::getBankCode($provider));
+
+                $upiRecord->setAcquirer('icici');
+
+                try
+                {
+                    $this->repo->saveOrFail($upiRecord);
+
+                    $successCount++;
+                }
+                catch (\Exception $ex)
+                {
+                    $failedCount++;
+
+                    $failedIds[] = $upiRecord->getId();
+                }
+
+                $lastId = $upiRecord->getId();
+            }
+
+            if ($currentBatchCount < $batchSize)
+            {
+                break;
+            }
+        }
+
+        return ApiResponse::json([
+            'total_processed'    => $totalRecords,
+            'total_success'      => $successCount,
+            'total_fail'         => $failedCount,
+            'failed_ids'         => implode(', ', $failedIds)
+        ]);
+    }
+
 }

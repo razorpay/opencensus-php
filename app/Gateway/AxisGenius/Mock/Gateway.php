@@ -3,7 +3,6 @@
 namespace RZP\Gateway\AxisGenius\Mock;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\AxisGenius;
 use RZP\Gateway\Base;
 

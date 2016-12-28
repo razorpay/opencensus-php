@@ -7,7 +7,7 @@ use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    protected $entity = 'address';
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
@@ -27,6 +27,17 @@ class Repository extends Base\Repository
                                         ->get();
 
         return $currentPrimaryAddresses;
+    }
+
+    public function fetchPrimaryAddressOfEntityOfType(Base\Entity $entity, $type)
+    {
+        $primaryAddressOfType = $this->newQuery()
+                                     ->where(Entity::ENTITY_ID, '=', $entity->getId())
+                                     ->where(Entity::TYPE, '=', $type)
+                                     ->where(Entity::PRIMARY, '=', 1)
+                                     ->first();
+
+        return $primaryAddressOfType;
     }
 
     public function findByEntityAndId($addressId, Base\Entity $entity)

@@ -2,9 +2,8 @@
 
 namespace RZP\Services;
 
-use RZP\Exception;
 use Requests;
-use RZP\Trace\Trace;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class TokenEx
@@ -116,6 +115,8 @@ class TokenEx
         $headers['Accept'] = 'application/json';
 
         $options = [];
+
+        $options['timeout'] = 20;
 
         if ($this->proxyEnabled === true)
         {

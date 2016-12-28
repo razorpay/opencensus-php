@@ -3,10 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Payment;
-use RZP\Models\Card;
 use Request;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 
 class CardController extends Controller
 {

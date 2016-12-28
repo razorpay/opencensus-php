@@ -127,13 +127,23 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], ' 100');
     }
 
+    public function testRefundWithFloatAmountString()
+    {
+        $this->startTest($this->payment['public_id'], '100.1');
+    }
+
+    public function testRefundWithFloatAmount()
+    {
+        $this->startTest($this->payment['public_id'], 100.1);
+    }
+
     public function testRefundofOldAuthorizedPayments()
     {
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+            ['created_at' => $createdAt]);
 
         $payments = $this->fixtures->times(2)->create('payment:authorized');
 
@@ -166,13 +176,54 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRefundCreateOnGatewayForMissingRefunds()
+    {
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testRefundPaymentsWithRefundDelay()
+    {
+        // Change auto refund delay to 2 days
+        $this->fixtures->merchant->editAutoRefundDelay('2 days');
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
+
+        $payments = $this->fixtures->times(3)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000']);
+
+        $payment = $this->fixtures->create(
+            'payment:authorized',
+            ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(4, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(4, $content['authorized']);
+    }
+
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:purchased',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+            ['created_at' => $createdAt]);
 
         $payments = $this->fixtures->times(2)->create('payment:purchased');
 
@@ -197,11 +248,12 @@ class RefundTest extends TestCase
     // This will also be picked up for a refund and refunded.
     public function testRefundOnHdfcCapturedPaymentAuthorized()
     {
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $authorizedAt = Carbon::today('Asia/Kolkata')->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:captured',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+            ['authorized_at' => $authorizedAt, 'created_at' => $createdAt]);
 
         $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
 

@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testPayment' => [
@@ -10,6 +11,7 @@ return [
         'amount' => 50000,
         'method' => 'netbanking',
         'status' => 'captured',
+        'two_factor_auth' => TwoFactorAuth::UNAVAILABLE,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
         'refund_status' => null,
@@ -38,7 +40,7 @@ return [
         'amount' => 50000,
         'fee' => 1438,
         'service_tax' => 188,
-        'pricing_rule_id' => '1zD0BXpeOyaqpB',
+        'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48562,
         'currency' => 'INR',
@@ -220,7 +222,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [],
             ],
@@ -240,6 +242,19 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+        ],
+    ],
+
+    'testReconcileCancelledTransactions' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/reconciliate/billdesk/cancelled',
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failure_count' => 0,
+            ],
         ],
     ],
 

@@ -2,21 +2,20 @@
 
 namespace RZP\Models\Merchant;
 
+use Closure;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Merchant';
+    protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
 
@@ -30,6 +29,9 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
+        Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
 
     public function getSharedAccount()
@@ -81,6 +83,26 @@ class Repository extends Base\Repository
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
+    public function fetchBySettlementScheduleId($settlementScheduleIds)
+    {
+        if (is_array($settlementScheduleIds) === false)
+        {
+            $settlementScheduleIds = [$settlementScheduleIds];
+        }
+
+        return $this->newQuery()
+                    ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
+                    ->get();
+    }
+
+    public function fetchMerchantsWithSettlementScheduleIdNull()
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->get();
+    }
+
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()
@@ -91,11 +113,11 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            Methods\Entity::getTableName(),
+            $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
@@ -130,9 +152,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = $this->repo;
-
-        return $repo::setConnection(Mode::TEST)
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }
@@ -152,5 +172,51 @@ class Repository extends Base\Repository
         $entity->merchant()->associate($merchant);
 
         return $merchant;
+    }
+
+    /**
+     * Fetches merchant records which have features assigned in chunks of 200
+     * records and passes that to the closure argument for processing
+     * @param  Closure $processData Function to process the merchant records
+     */
+    public function fetchMerchantsWithoutFeatureEntries()
+    {
+        $merchantIds = $this->db->select(
+           'SELECT DISTINCT id
+            FROM merchants
+            WHERE features IS NOT NULL
+              AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id
+                 FROM merchants
+                 JOIN features ON merchants.id = features.entity_id) LIMIT 200');
+
+        $merchantIds = json_decode(json_encode($merchantIds), true);
+
+        $merchantIds = array_map(function ($mid)
+        {
+            return $mid['id'];
+        }, $merchantIds);
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
+    }
+
+    /**
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
+                    ->get();
+    }
+
+    public function fetchMerchantsByOrgId($orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
     }
 }

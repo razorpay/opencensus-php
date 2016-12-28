@@ -29,14 +29,14 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->editFeatures('recurring');
-
         $this->mockTokenex();
     }
 
     public function testRecurringFirstPaymentCreatePublicAuth()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -63,6 +63,8 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures(['recurring']);
+
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $this->doAuthAndCapturePayment($payment);
@@ -71,7 +73,7 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
-        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
 
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
@@ -89,9 +91,36 @@ class RecurringPaymentTest extends TestCase
         });
     }
 
+    public function testRecurringSecondPaymentCreatePublicAuthWithCard()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+    }
+
     public function testRecurringSecondPaymentCreatePrivateAuth()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -113,22 +142,22 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->editFeatures('recurring');
-
         $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
     public function testRecurringPaymentCreatePrivateAuth()
     {
          $this->ba->privateAuth();
 
-        $payment = $this->getDefaultRecurringPaymentArray();
+        $this->fixtures->merchant->addFeatures(['recurring', 's2s']);
 
-        $this->fixtures->merchant->editFeatures('recurring,s2s');
+        $payment = $this->getDefaultRecurringPaymentArray();
 
         $this->doS2SPrivateAuthAndCapturePayment($payment);
     }
@@ -138,8 +167,6 @@ class RecurringPaymentTest extends TestCase
         $this->ba->privateAuth();
 
         $payment = $this->getDefaultRecurringPaymentArray();
-
-        $this->fixtures->merchant->editFeatures('');
 
         $data = $this->testData[__FUNCTION__];
 
@@ -153,7 +180,9 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $payment[Payment::CARD]['number'] = '4000000000000002';
+        $this->fixtures->merchant->addFeatures(['recurring']);
+
+        $payment[Payment::CARD]['number'] = '4245126853998870';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -165,6 +194,8 @@ class RecurringPaymentTest extends TestCase
     public function testRecurringPaymentAmexCardNotSupported()
     {
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
 
         $payment[Payment::CARD]['number'] = '341111111111111';
         $payment[Payment::CARD]['cvv'] = '8888';
@@ -179,6 +210,8 @@ class RecurringPaymentTest extends TestCase
     public function testRecurringPaymentUsingSavedCardTokenNotRecurring()
     {
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['recurring']);
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
@@ -197,6 +230,8 @@ class RecurringPaymentTest extends TestCase
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
+        $this->fixtures->merchant->addFeatures(['recurring']);
+
         unset($payment[Payment::CARD]);
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
@@ -212,5 +247,7 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 }

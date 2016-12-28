@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Terminal;
 
-use RZP\Constants\Mode;
-
 class Options
 {
+    const FAILED = 'failed';
+
     protected $chance;
 
     protected static $testChance;

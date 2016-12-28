@@ -3,33 +3,32 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
-use RZP\Constants\Table;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Payment';
+    protected $entity = 'payment';
 
     // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = array(
-        Entity::ORDER_ID        => 'sometimes|string|size:20',
+        Entity::ORDER_ID           => 'sometimes|string|size:20',
     );
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
-        Entity::EMAIL           => 'sometimes',
-        Entity::STATUS          => 'sometimes|string',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::EMAIL              => 'sometimes',
+        Entity::STATUS             => 'sometimes|string',
+        Entity::NOTES              => 'sometimes|string|max:500',
     );
 
     // These are admin allowed params to search on.
@@ -37,6 +36,7 @@ class Repository extends Base\Repository
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
+        Entity::TWO_FACTOR_AUTH    => 'sometimes|string',
         Entity::BANK               => 'sometimes',
         Entity::METHOD             => 'sometimes',
         Entity::GATEWAY            => 'sometimes',
@@ -44,20 +44,46 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
-        Entity::WALLET             => 'sometimes|',
+        Entity::WALLET             => 'sometimes|custom',
         Entity::NOTES              => 'sometimes|string|max:500',
         Card\Entity::IIN           => 'sometimes|integer|digits:6',
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
-        ENTITY::TOKEN_ID           => 'sometimes|alpha_num|size:14',
-        ENTITY::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
+        Entity::TOKEN_ID           => 'sometimes|alpha_num|size:14',
+        Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
+        Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [
         Entity::NOTES
     ];
+
+    public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
+    {
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
+        $paPaymentId = $this->manager
+                            ->payment_analytics
+                            ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
+
+        $paymentColumns = $this->getAttributeWithTableName('*');
+
+        $paTable = $this->manager->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->manager
+                               ->payment_analytics
+                               ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join($paTable, $pid, '=', $paPaymentId)
+                    ->where($checkoutIdAttr, '=', $checkoutId)
+                    ->createdAtGreaterThan($timestamp)
+                    ->latest()
+                    ->get();
+    }
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
@@ -134,20 +160,66 @@ class Repository extends Base\Repository
                         );
     }
 
+    /**
+     * Fetches old payments which can be timed-out with respective
+     * merchant relation.
+     */
     public function fetchOldCreatedPaymentsForTimeout($timestamp)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with('merchant')
                     ->get();
     }
 
+    /**
+     * This function is used to fetch the authorized payments where
+     * Merchant auto refund delay is null.
+     *
+     * @param $timestamp
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
+        $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
         return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->status(Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->where($createdAt, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
+                    ->get();
+    }
+
+    /**
+     * This function is used to fetch the authorized payments with
+     * merchant auto delay delay
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
+    public function getAuthorizedPaymentsWithAutoRefundDelay()
+    {
+        $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
+        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
+
+        $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
+
+        return $this->newQuery()
+                    ->select($this->getAttributeWithTableName('*'))
+                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                    ->status(Payment\Status::AUTHORIZED)
+                    ->whereRaw($rawCondition)
+                    ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
+                    ->where($paymentCreatedAt, '<', $minCreatedAt)
+                    ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
     }
 
@@ -172,43 +244,139 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function get50PaymentsWithVerifyResult($result, $random = false)
+    /**
+     * Return Payments object(s) which should be verified
+     *
+     * @param string $minimumTime filter to remove Payments which are created before $ts seconds
+     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
+     * @param string $verifyStatus value for filter of VerifyStatus
+     * @param string $paymentStatus value for filter of paymentStatus
+     * @param bool   $random
+     * @return Collection of Payment
+     */
+    public function getPaymentsToVerify(
+                        $minimumTime,
+                        $verifyBoundary,
+                        $verifyStatus = null,
+                        $paymentStatus = null,
+                        $random = true,
+                        $rowsToFetch = 100)
     {
-        $query = $this->newQuery()
-                    ->where(Payment\Entity::VERIFIED, '=', $result)
-                    ->take(50);
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
-        if ($random)
+        $query = $this->newQuery()
+                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+
+        if ($verifyStatus !== null)
+        {
+            $query->where(Payment\Entity::VERIFIED, '=', $verifyStatus);
+        }
+
+        if ($paymentStatus !== null)
+        {
+            $query->status($paymentStatus);
+        }
+
+        if ($random === true)
         {
             $query->inRandomOrder();
         }
 
-        return $query()->get();
+        // For created, we only look at the payment status.
+        if (($paymentStatus !== Payment\Status::CREATED) and
+            ($verifyStatus !== Verify\Status::ERROR))
+        {
+            $this->addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundary, $query);
+        }
+        else
+        {
+            $this->addWhereConditionsUsingMinimumTime($minimumTime, $query);
+        }
+
+        // Sample Query
+        // SELECT *
+        // FROM   `payments`
+        // WHERE  `gateway` IN ( 'axis_migs', 'billdesk', 'ebs', 'mobikwik',
+        //                      'paytm', 'hdfc', 'amex', 'netbanking_hdfc',
+        //                      'netbanking_kotak', 'wallet_payzapp', 'first_data',
+        //                      'cybersource', 'wallet_payumoney', 'wallet_airtelmoney',
+        //                      'wallet_olamoney', 'wallet_freecharge' )
+        //        AND `status` = 'failed'
+        //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
+        //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
+        //              OR ( `verify_bucket` = '2' AND `created_at` < '1478019668' )
+        //              OR ( `verify_bucket` = '3' AND `created_at` < '1477936868' )
+        //              OR ( `verify_bucket` = '4' AND `created_at` < '1477850468' )
+        //              OR ( `verify_bucket` = '5' AND `created_at` < '1477764068' )
+        //              OR ( `verify_bucket` = '6' AND `created_at` < '1477677668' )
+        //              OR ( `verify_bucket` = '7' AND `created_at` < '1477591268' )
+        //              OR ( `verify_bucket` = '8' AND `created_at` < '1477504868' )
+        //              OR ( `verify_bucket` = '9' AND `created_at` < '1477418468' )
+        //            )
+        // ORDER  BY Rand()
+        // LIMIT  100
+
+        // We want total number of Payments which are awaiting verify, for logging
+        $verifiableCount = $query->count();
+
+        $payments = $query->take($rowsToFetch)
+                          ->get();
+
+        return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
     }
 
-    public function getPaymentsWithCreatedStatusForVerification($ts)
+    /**
+     * Add Where Condition for Created Payments, And Verify Failed Payments
+     *
+     * @param int       $minimumTime  filter to remove Payments which are created before $ts seconds
+     * @param BuilderEx $query        original query
+     * @return void
+     */
+    protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::CREATED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->get();
+        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minimumTime);
     }
 
-    public function getUnverifiedPayments($ts)
+    /**
+     * Process min_time and verify_boundary array and return where and orWhere Condition
+     *
+     * @param int       $minimumTime      filter to remove Payments which are created before $ts seconds
+     * @param array     $verifyBoundaries array with Key as bucket and value as time for that bucket
+     * @param BuilderEx $query            original query
+     * @return void
+     */
+    protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        return $this->newQuery()
-                    ->whereNull(Payment\Entity::VERIFIED)
-                    ->status(Payment\Status::FAILED)
-                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->createdAtLessThan($ts)
-                    ->take(50)
-                    ->get();
+        // Each or condition will fetch payments which are
+        // in next Verify Bucket and not processed by previous cron
+        // This will not give all payments at once, but only payments which
+        // crossed the boundary after prev cron ran (SLIDING WINDOW PROTOCOL)
+        foreach ($verifyBoundaries as $bucket => $time)
+        {
+            // This gets all the payments in the last `boundary (15, 60, etc)` time.
+            // $boundary has time in seconds, signifying payment should be X second old
+            // For querying on db, need to change that to absolute value
+            $paymentCreatedAfter = $currentTime - $time;
+
+            $whereConditions[] = [
+                [Payment\Entity::VERIFY_BUCKET, '=', ($bucket + 1)],
+                [Payment\Entity::CREATED_AT, '<', $paymentCreatedAfter]
+            ];
+        }
+
+        // Now add the conditions to the payment verify query.
+        $query->where(
+            function ($query) use ($whereConditions)
+            {
+                foreach($whereConditions as $condition)
+                {
+                    $query->orWhere($condition);
+                }
+            });
     }
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
@@ -230,19 +398,20 @@ class Repository extends Base\Repository
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
     {
-        $paymentAttrs = Entity::getAttributeWithTableName('*');
+        $paymentAttrs = $this->getAttributeWithTableName('*');
 
-        $paymentId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
-        $transactionPaymentId = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+        $txnRepo = $this->manager->transaction;
+        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
-        $transactionEntityType = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
 
-        $transactionReconciledAt = Transaction\Entity::getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
-                    ->join(Table::TRANSACTION, $paymentId, '=', $transactionPaymentId)
+                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
@@ -300,7 +469,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $international = Payment\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
+        $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
@@ -334,16 +503,16 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === Card\Entity::getTableName())
+            if ($join->table === $this->manager->card->getTableName())
             {
                 return;
             }
         }
 
-        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = $this->getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = $this->manager->card->getAttributeWithTableName(Card\Entity::ID);
 
-        $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
+        $query->join($this->manager->card->getTableName(), $paymentCardId, '=', $cardId);
     }
 
     public function getYesterdayVolume()
@@ -356,15 +525,15 @@ class Repository extends Base\Repository
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
 
-    public function getCreatedPaymentsForOrder($orderId)
+    public function getCreatedAndFailedPaymentsForOrder($orderId)
     {
-        $ts = time() - Analytics\Entity::PAYMENT_WINDOW;
+        $ts = time() - Payment\Entity::PAYMENT_WINDOW;
 
         return $this->newQuery()
                     ->whereIn(Entity::STATUS, [Status::CREATED, Status::FAILED])
@@ -373,16 +542,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getCapturedPaymentForOrder($orderId)
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Entity::CAPTURED_AT)
+                    ->where(Entity::ORDER_ID, '=', $orderId)
+                    ->first();
+    }
+
     public function getYesterdayTopMerchantVolumeWise()
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -396,20 +573,20 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(30)
+                    ->limit(50)
                     ->get();
     }
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::today('Asia/Kolkata')->startOfMonth()->timestamp;
+        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
+        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join(Merchant\Entity::getTableName(), $pid, '=', $mid)
+                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -423,7 +600,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(30)
+                    ->limit(50)
                     ->get();
     }
 
@@ -438,7 +615,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturedSummaryBetweenTimestamp($from , $to)
+    public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
@@ -455,8 +632,15 @@ class Repository extends Base\Repository
         $vol = $this->newQuery()
                     ->betweenTime($from, $to)
                     ->statusSuccess()
-                    ->sum(Entity::AMOUNT);
+                    ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
+                       'COUNT(*) AS count')
+                    ->first();
 
         return $vol;
+    }
+
+    protected function validateWallet($attribute, $value)
+    {
+        Processor\Wallet::validateExists($value);
     }
 }

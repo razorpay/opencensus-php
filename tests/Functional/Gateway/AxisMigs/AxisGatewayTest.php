@@ -3,8 +3,13 @@
 namespace RZP\Tests\Functional\Gateway\AxisMigs;
 
 use Mockery;
+use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 
@@ -33,10 +38,17 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
-        $this->assertNotNull($txn);
+        $this->assertNull($txn);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertNotNull($payment['transaction_id']);
+
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -49,10 +61,10 @@ class AxisGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getLastEntity('axis_migs', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentAxisMigsEntity'], $payment);
+            $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
     public function testMasterCardPayment()
@@ -120,7 +132,8 @@ class AxisGatewayTest extends TestCase
 
         $this->verifyPayment($payment['id']);
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals('pay', $payment['vpc_Command']);
+
+        $this->assertEquals('capture', $payment['vpc_Command']);
     }
 
     public function testPaymentVerifyFailed()
@@ -192,12 +205,20 @@ class AxisGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function()
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '55553555655655';
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-	        $payment = $this->getDefaultPaymentArray();
-	        $payment['card']['number'] = '55553555655655';
 	        $payment = $this->doAuthPayment($payment);
 	    });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(TwoFactorAuth::FAILED, $payment[Entity::TWO_FACTOR_AUTH]);
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     public function testFailureWhen3DSFailsForRiskyMerchant()

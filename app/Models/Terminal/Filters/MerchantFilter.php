@@ -2,50 +2,19 @@
 
 namespace RZP\Models\Terminal\Filters;
 
-use RZP\Constants\Mode;
-
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-
-use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Terminal;
+use RZP\Models\Merchant;
+use RZP\Models\Card\Network;
 
 class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
-        'tpv',
-        // 'risk',
+        'incompatible',
         'category',
+        'gateway',
     ];
-
-    /**
-     * Filter applies for securities merchants
-     * Only for the netbanking method.
-     * Allow Only Third Party Validation (TPV) terminals for
-     * TPV required merchants, and non TPV terminals for non
-     * TPV merchants.
-     *
-     * @param Terminal\Entity $terminal
-     * @param array $input
-     * @return bool
-     */
-    public function tpvFilter(Terminal\Entity $terminal, array $input)
-    {
-        if ($input['payment']->isNetbanking())
-        {
-            if ($input['merchant']->isTPVRequired())
-            {
-                return ($terminal->isTPVTerminal() === true);
-            }
-
-            return ($terminal->isTPVTerminal() === false);
-        }
-
-        return true;
-    }
 
 
     /**
@@ -71,6 +40,41 @@ class MerchantFilter extends Terminal\Filter
         }
 
         // Else allow - By default allow all transactions
+        return true;
+    }
+
+    /**
+     * For merchants with a category2 that is incompatible,
+     * the null and the default match terminals will be filtered out
+     **/
+    public function incompatibleFilter($terminal, $input)
+    {
+        $merchantTerminalCategory = $input['merchant']->getCategory2();
+
+        if ((isset($merchantTerminalCategory) === true) and
+            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
+        {
+            $category = $terminal->getNetworkCategory();
+
+            // If the terminal's category is null, don't allow.
+            if (empty($category) === true)
+            {
+                return false;
+            }
+
+            $method = $input['payment']->getMethod();
+
+            $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+
+            // If category is a defaultCategory don't allow,
+            if ($category === $defaultCategory)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -110,4 +114,30 @@ class MerchantFilter extends Terminal\Filter
         return ($category === $merchantTerminalCategory);
     }
 
+    public function gatewayFilter($terminal, $input)
+    {
+        $merchantId = $input['payment']->getMerchantId();
+
+        $merchants = array_keys(Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST);
+
+        if (in_array($merchantId, $merchants))
+        {
+            $gateway = $terminal->getGateway();
+
+            $excludedGateways = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST[$merchantId];
+
+            if (in_array($gateway, $excludedGateways))
+            {
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }

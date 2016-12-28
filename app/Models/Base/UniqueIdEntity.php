@@ -11,6 +11,17 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    /**
+     * This should be set to true if you expect a unique id to be
+     * generated when the entity is being saved. Note that if a unique id
+     * is present then it won't be created.
+     *
+     * Also, if the entity is synced between test and live then it needs
+     * to be created before save is called and this cannot be true
+     * in those cases.
+     *
+     * @var boolean
+     */
     protected $generateIdOnCreate = false;
 
     const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -135,16 +146,19 @@ class UniqueIdEntity extends Entity
 
         $value = $this->getAttribute($key);
 
-        if ($value === null)
+        if ($this->getIncrementing() === false)
         {
-            if ($this->generateIdOnCreate)
+            if ($value === null)
             {
-                $this->generateAndSetUniqueId();
+                if ($this->getGenerateIdOnCreate() === true)
+                {
+                    $this->generateAndSetUniqueId();
+                }
             }
-        }
-        else
-        {
-            static::verifyUniqueId($value);
+            else
+            {
+                static::verifyUniqueId($value);
+            }
         }
     }
 
@@ -156,7 +170,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = static::generateUniqueId($this->secureUid);
+            $value = static::generateUniqueId();
 
             $this->setAttribute($key, $value);
         }
@@ -176,13 +190,18 @@ class UniqueIdEntity extends Entity
 
     public static function verifyUniqueId($id, $throw = true)
     {
-        $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
+        $uniqueIdCheckRegex = '/^[0-9a-z]{'. static::ID_LENGTH .'}$/i';
 
         $res = preg_match($uniqueIdCheckRegex, $id);
 
-        if (($res === false) and ($throw))
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
+        if ((in_array($res, [0, false], true) === true) and
+            ($throw === true))
         {
-            throw new Exception\BadRequestException($id . ' is not a valid id');
+            throw new Exception\BadRequestValidationFailureException(
+                        $id . ' is not a valid id');
         }
 
         return $res;
@@ -214,9 +233,15 @@ class UniqueIdEntity extends Entity
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
 
-        // Only 4 base 62 digits are needed, so cutoff any more.
+        // Only 4 base 62 digits are needed, so cutoff any more and pad with
+        // 0 if less.
+
         if (strlen($rand) > 4)
+        {
             $rand = substr($rand, -4);
+        }
+
+        $rand = str_pad($rand, 4, '0', STR_PAD_LEFT);
 
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier
@@ -281,8 +306,7 @@ class UniqueIdEntity extends Entity
 
     public static function nanotimeToBase62($nanotime)
     {
-        // Timestmap of 1st Jan 2014!!
-        // 1388534400
+        // Timestamp of 1st Jan 2014
         $ts1stJan2014 = 1388534400;
 
         // Subtract nanotime of 1st Jan 2014
@@ -334,4 +358,10 @@ class UniqueIdEntity extends Entity
     {
         return Luhn::isValid($num, 62);
     }
+
+    public function getGenerateIdOnCreate()
+    {
+        return $this->generateIdOnCreate;
+    }
+
 }

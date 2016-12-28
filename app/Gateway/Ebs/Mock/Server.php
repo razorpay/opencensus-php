@@ -4,14 +4,12 @@ namespace RZP\Gateway\Ebs\Mock;
 
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Ebs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Card;
-use RZP\Models\Payment\Core;
+use RZP\Gateway\Ebs;
 use RZP\Gateway\Ebs\RequestConstants as Request;
 use RZP\Gateway\Ebs\ResponseConstants as Response;
+use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
 {
@@ -70,9 +68,14 @@ class Server extends Base\Mock\Server
             Response::REQUEST_ID            => random_alpha_string(8),
         );
 
+        $this->content($content);
+
         $content[Response::SECURE_HASH] = $this->generateHash($content);
 
-        $this->content($content);
+        if ($content['IsFlagged'] === 'YES')
+        {
+            $content['IsFlagged'] = 'NO';
+        }
 
         $request = array(
             'url' => $input['return_url'],

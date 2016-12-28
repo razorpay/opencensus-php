@@ -3,8 +3,12 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Models\Admin as Admin;
+use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
-use CreditCardFraudDetection;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -82,13 +86,24 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
+        $this->app->singleton('segment', function($app)
+        {
+            return new SegmentClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
 
+        $this->registerBitly();
+
+        $this->registerExchange();
+
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+
+        $this->registerMorphRelationMaps();
     }
 
     /**
@@ -109,7 +124,10 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'repo',
             'es',
-            'maxmind'
+            'maxmind',
+            'bitly',
+            'segment',
+            'exchange',
         );
     }
 
@@ -128,10 +146,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
             return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages);
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -150,6 +168,36 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerBitly()
+    {
+        $this->app->singleton('bitly', function($app)
+        {
+            $bitlyMock = $app['config']->get('applications.bitly.mock');
+
+            if ($bitlyMock === true)
+            {
+                return new Mock\Bitly($app);
+            }
+
+            return new Bitly($app);
+        });
+    }
+
+    protected function registerExchange()
+    {
+        $this->app->singleton('exchange', function($app)
+        {
+            $exchangeMock = $app['config']->get('applications.exchange.mock');
+
+            if ($exchangeMock === true)
+            {
+                return new Mock\Exchange($app);
+            }
+
+            return new Exchange($app);
+        });
+    }
+
     protected function registerApiMutex()
     {
         $this->app->singleton('api.mutex', function($app)
@@ -163,5 +211,20 @@ class ApiServiceProvider extends BaseServiceProvider
 
             return new Mutex($app);
         });
+    }
+
+    protected function registerMorphRelationMaps()
+    {
+        Relation::morphMap([
+            // heimdall
+            'org'             => Admin\Org\Entity::class,
+            'group'           => Admin\Group\Entity::class,
+            'admin'           => Admin\Admin\Entity::class,
+            'role'            => Admin\Role\Entity::class,
+            'permission'      => Admin\Permission\Entity::class,
+            'invoice'         => Invoice\Entity::class,
+            'merchant'        => Merchant\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
+        ]);
     }
 }

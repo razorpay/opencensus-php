@@ -28,15 +28,14 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \RZP\Constants\Table::METHODS;
-
     protected $entity = 'methods';
 
-    protected static $sign = '';
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::CARD,
         self::AMEX,
         self::BANKS,
         self::PAYTM,
@@ -77,7 +76,6 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD          => false,
         self::AMEX          => false,
         self::PAYTM         => false,
         self::MOBIKWIK      => false,
@@ -88,7 +86,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => false,
         self::BANKS         => [],
         self::EMI           => false,
-        self::UPI           => false,
+        self::UPI           => true,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -108,7 +106,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMEX        => 'bool',
         self::PAYTM       => 'bool',
-        self::CARD        => 'bool',
         self::CREDIT_CARD => 'bool',
         self::DEBIT_CARD  => 'bool',
         self::NETBANKING  => 'bool',
@@ -134,7 +131,8 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return $this->getAttribute(self::CARD);
+        return (($this->isDebitCardEnabled()) or
+                ($this->isCreditCardEnabled()));
     }
 
     public function isDebitCardEnabled()
@@ -359,17 +357,12 @@ class Entity extends Base\PublicEntity
 
     public function setAirtelmoney($value)
     {
-        $this->setAttribute(self::Airtelmoney, $value);
+        $this->setAttribute(self::AIRTELMONEY, $value);
     }
 
     public function setFreecharge($value)
     {
         $this->setAttribute(self::FREECHARGE, $value);
-    }
-
-    public function setCard($card)
-    {
-        $this->setAttribute(self::CARD, $card);
     }
 
     public function setCreditCard($card)

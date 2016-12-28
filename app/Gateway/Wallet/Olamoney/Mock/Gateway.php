@@ -2,10 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use RZP\Http\Route;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Olamoney;
 
 class Gateway extends Olamoney\Gateway

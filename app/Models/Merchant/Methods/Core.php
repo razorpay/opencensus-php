@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank;
 use RZP\Models\Emi;
 
+use Config;
+
 class Core extends Base\Core
 {
     /**
@@ -157,11 +159,15 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        $methods->setCard(true);
+        $methods->setCreditCard(true);
+        $methods->setDebitCard(true);
         $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
         $methods->setPayumoney(true);
+        $methods->setOlamoney(true);
+        $methods->setFreecharge(true);
+        $methods->setAirtelmoney(true);
 
         $this->setAllPaymentBanks($methods);
 
@@ -249,9 +255,15 @@ class Core extends Base\Core
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
-            $this->app['slack']->queue($message, $data, ['channel' => '#operations_log',
-                                                         'username' => 'Jordan Belfort',
-                                                         'icon' => ':boom:']);
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:'
+                ]
+            );
         }
     }
 

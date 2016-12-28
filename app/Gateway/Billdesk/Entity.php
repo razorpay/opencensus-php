@@ -15,6 +15,7 @@ class Entity extends Base\Entity
         'CustomerID',
         'TxnAmount',
         'BankID',
+        'AccountNumber',
         'CurrencyType',
         'ItemCode',
         'TypeField1',
@@ -48,6 +49,7 @@ class Entity extends Base\Entity
         'CustomerID',
         'TxnAmount',
         'BankID',
+        'AccountNumber',
         'CurrencyType',
         'ItemCode',
         'TypeField1',
@@ -72,13 +74,21 @@ class Entity extends Base\Entity
         'ProcessStatus',
     );
 
-    protected $table = 'billdesk';
-
     protected $guarded = array();
 
     protected $entity = 'billdesk';
 
     protected $appends = array('status', 'refund_status');
+
+    public function getRefundAmount()
+    {
+        return $this->getAttribute('RefAmount');
+    }
+
+    public function getAuthStatus()
+    {
+        return $this->getAttribute('AuthStatus');
+    }
 
     protected function getStatusAttribute()
     {
@@ -102,5 +112,22 @@ class Entity extends Base\Entity
         }
 
         return RefundStatus::$statusMap[$code];
+    }
+
+    public function isTpv()
+    {
+        $accountNumber = $this->getAttribute('AccountNumber');
+
+        if ((empty($accountNumber) === true) or ($accountNumber === 'NA'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getBankReferenceNo()
+    {
+        return $this->getAttribute('BankReferenceNo');
     }
 }

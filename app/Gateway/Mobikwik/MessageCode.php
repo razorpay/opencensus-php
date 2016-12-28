@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Mobikwik;
 
 use RZP\Error;
-use RZP\Error\ErrorCode;
 
 class MessageCode
 {

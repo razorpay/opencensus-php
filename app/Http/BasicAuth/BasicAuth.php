@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Admin Auth
+     * rzp_mode_admin:auth_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -65,6 +68,12 @@ class BasicAuth
      * @var Merchant\Entity
      */
     private $merchant = null;
+
+    /**
+     * Admin who is authenticating himself
+     * through adminAuth
+     */
+    private $isAdmin = null;
 
     /**
      * During app authentication, the app
@@ -143,10 +152,12 @@ class BasicAuth
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
      * 3 + 1 + 4 + 1 + 14
+     * 3 + 1 + 4 + 1 + 5 (rzp_$mode_admin)
      * @var array
      */
-    protected static $validKeyLengths = array(
-        8, 23, 33);
+    protected static $validKeyLengths = [
+        8, 23, 33, 14
+    ];
 
     public function __construct($app)
     {
@@ -164,6 +175,7 @@ class BasicAuth
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
+        $this->merchant = null;
     }
 
     public function setCredentials()
@@ -231,6 +243,39 @@ class BasicAuth
         else if ($this->verifyInternalAppAsProxy() === true)
         {
             $this->setProxyTrue();
+
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    public function adminAuth()
+    {
+        $this->setType(Type::ADMIN_AUTH);
+
+        $res = $this->setCredentials();
+
+        // null is the good value here
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->getKey() !== 'admin')
+        {
+            return $this->invalidApiKey();
+        }
+
+        $this->setAdminTrue();
+
+        $token = $this->getSecret();
+
+        $adminToken = $this->fetchAdminToken($token);
+
+        if ($adminToken->getAdminId() !== null)
+        {
+            $this->admin = $adminToken->admin;
 
             return;
         }
@@ -416,9 +461,8 @@ class BasicAuth
             //
 
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
-            $allowedFeatures = $this->merchant->getFeatures();
 
-            if (in_array($accessedFeature, $allowedFeatures))
+            if ($this->merchant->isFeatureEnabled($accessedFeature))
             {
                 return null;
             }
@@ -505,12 +549,18 @@ class BasicAuth
 
         if ($secret === '')
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
         {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
@@ -575,7 +625,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->getCurrentRouteName(), $appRoutes) === false)
+        if (in_array($this->getCurrentRouteName(), $appRoutes, true) === false)
         {
             return false;
         }
@@ -686,9 +736,29 @@ class BasicAuth
         return $this->merchant;
     }
 
+    public function getAdminToken()
+    {
+        return $this->adminToken;
+    }
+
+    public function getAdmin()
+    {
+        return $this->admin;
+    }
+
     public function getMerchantId()
     {
         return $this->merchant->getKey();
+    }
+
+    public function getMerchantIdOfKey()
+    {
+        if ($this->key === null)
+        {
+            return null;
+        }
+
+        return $this->key->getMerchantId();
     }
 
     public function getPublicKey()
@@ -706,6 +776,18 @@ class BasicAuth
         return $this->type;
     }
 
+    public function getInternalApp()
+    {
+        return $this->internalApp;
+    }
+
+    public function isCron()
+    {
+        $cron = ($this->internalApp === 'cron');
+
+        return $cron;
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------
@@ -719,6 +801,11 @@ class BasicAuth
     protected function setType($type)
     {
         $this->type = $type;
+    }
+
+    protected function setAdminTrue()
+    {
+        $this->isAdmin = true;
     }
 
     protected function setProxyTrue()
@@ -745,6 +832,11 @@ class BasicAuth
         return $this->appAuth;
     }
 
+    public function isAdminAuth()
+    {
+        return ($this->type === Type::ADMIN_AUTH);
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
@@ -758,6 +850,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isProxyOrPrivilegeAuth()
+    {
+        return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
     }
 
     protected function setKeyFromQueryParams()
@@ -806,6 +903,13 @@ class BasicAuth
         return $this->merchant;
     }
 
+    protected function fetchAdminToken($token)
+    {
+        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+
+        return $this->adminToken;
+    }
+
     protected function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
@@ -825,9 +929,9 @@ class BasicAuth
     protected function invalidApiKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+            TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 

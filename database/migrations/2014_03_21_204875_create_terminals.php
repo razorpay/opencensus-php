@@ -83,7 +83,13 @@ class CreateTerminals extends Migration
                   ->default(Recurring::NON_RECURRING);
 
             $table->tinyInteger(Terminal::SHARED)
+                   ->default(0);
+
+            $table->tinyInteger(Terminal::TPV)
                   ->default(0);
+
+            $table->string(Terminal::CURRENCY, 3)
+                  ->default(Terminal::DEFAULT_CURRENCY);
 
             $table->string(Terminal::NETWORK_CATEGORY)
                   ->nullable();
@@ -125,7 +131,7 @@ class CreateTerminals extends Migration
         Schema::table(Table::TERMINAL, function($table)
         {
             $table->dropForeign(
-                TABLE::TERMINAL.'_'.Terminal::MERCHANT_ID.'_foreign');
+                Table::TERMINAL.'_'.Terminal::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TERMINAL);

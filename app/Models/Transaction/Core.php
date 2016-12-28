@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -14,6 +15,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -36,15 +38,19 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment);
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
+            [
+                'payment_id' => $payment->getId()
+            ]);
 
-        $this->updateFreeCredits($txn, $payment);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateOnCapture(Payment\Entity $payment)
@@ -54,6 +60,8 @@ class Core extends Base\Core
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->updateCredits($txn, $payment);
 
         $this->updateMerchantBalance($txn);
 
@@ -70,7 +78,7 @@ class Core extends Base\Core
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
-        $txn = $this->txnCreationFromPaymentOperation($payment);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
@@ -83,11 +91,11 @@ class Core extends Base\Core
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->updateFreeCredits($txn, $payment);
+        $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -113,11 +121,11 @@ class Core extends Base\Core
         $txn = new Transaction\Entity;
         $txn->generateId();
 
-        $this->fillTxnFeesAndAmount($txn, $payment);
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
@@ -130,7 +138,14 @@ class Core extends Base\Core
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
 
-        return $txn;
+        $this->trace->info(
+            TraceCode::TRANSACTION_CREATED,
+            [
+                'payment_id' => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]);
+
+        return [$txn, $feesSplit];
     }
 
     protected function fillTxnFeesAndAmount($txn, $payment)
@@ -139,11 +154,15 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
 
-        $freeCredits = $merchantBalance->getCredits();
+        $amountCredits = $merchantBalance->getAmountCredits();
 
-        $amount = $payment->getAmount();
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        $amount = $payment->getBaseAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
+
+        $feesSplit = new Base\PublicCollection;
 
         if ($oldTransaction === true)
         {
@@ -153,14 +172,26 @@ class Core extends Base\Core
             $serviceTax = 0;
             $credit = $amount;
         }
-        else if ($freeCredits > 0)
+        else if (($this->app->runningUnitTests() === false) and
+                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
+                 ($payment->isCard() === true) and
+                 ($payment->card->isInternational() === false) and
+                 ($payment->card->isDebit() === true))
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if ($amountCredits > 0)
         {
             $this->trace->info(
                 TraceCode::TRANSACTION_FREE_CREDITS,
                 [
                     'payment_id' => $payment->getId(),
                     'amount' => $amount,
-                    'free_credits' => $freeCredits,
+                    'free_credits' => $amountCredits,
                 ]
             );
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
@@ -175,14 +206,25 @@ class Core extends Base\Core
         // use the fees and service tax from both
         else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
         {
-            $fee            = $payment->getFee();
-            $serviceTax     = (new Pricing\Fee)->calculateServiceTaxFromFees($fee);
-            $credit         = $amount - $fee;
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+            $credit = $amount - $fee;
         }
         else
         {
-            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
-            $credit = $amount - $fee;
+            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+            if ($feeCredits >= $fee)
+            {
+                $credit         = $amount;
+                $feeCredits     = $fee;
+
+                $txn->setFeeCredits($feeCredits);
+            }
+            else
+            {
+                $credit = $amount - $fee;
+            }
         }
 
         $txn->setPricingRule($pricingRuleId);
@@ -192,7 +234,7 @@ class Core extends Base\Core
         $txn->setFee($fee);
         $txn->setServiceTax($serviceTax);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     protected function checkIfOldPayment($payment)
@@ -245,13 +287,13 @@ class Core extends Base\Core
         $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::SERVICE_TAX     => 0,
-            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => 'INR');
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR);
 
         $gateway = $refund->getGateway();
 
@@ -321,7 +363,7 @@ class Core extends Base\Core
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
             Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),
@@ -396,7 +438,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateFreeCredits($txn, $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -409,24 +451,69 @@ class Core extends Base\Core
             return;
         }
 
+        // While filling the txn fees and amount, we have not used amount credits.
+        if ($txn->isGratis() === false)
+        {
+            return;
+        }
+
         $amount = $txn->getAmount();
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $freeCredits = $merchantBalance->getCredits();
+        $amountCredits = $merchantBalance->getAmountCredits();
 
-        assertTrue($freeCredits > 0);
+        assert($amountCredits > 0);
 
-        if ($freeCredits < $amount)
+        //
+        // Even if free credits is less than txn amount, we still give full
+        // amount as free credits. However, in balance we only go ahead with
+        // updating the actual free credits so that it does not go negative.
+        //
+        if ($amountCredits < $amount)
         {
-            $amount = $freeCredits;
+            $amount = $amountCredits;
         }
 
         $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractCredits($amount);
+        $nodalBalance->subtractAmountCredits($amount);
 
-        $merchantBalance->subtractCredits($amount);
+        $merchantBalance->subtractAmountCredits($amount);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateFeeCredits(Transaction\Entity $txn)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        // While filling the txn fees and amount, we have not used fee credits.
+        if ($txn->getFeeCredits() === 0)
+        {
+            return;
+        }
+
+        $fee = $txn->getFee();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        if ($feeCredits < $fee)
+        {
+            throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
+        }
+
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractFeeCredits($fee);
+
+        $merchantBalance->subtractFeeCredits($fee);
+
+        // Nodal balance needs to be saved because of amount credit update
+        $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -461,9 +548,22 @@ class Core extends Base\Core
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
-        $addDays = $payment->merchant->getSettlementSchedule();
+        $merchant = $payment->merchant;
 
-        return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        $returnTime = null;
+
+        if ($merchant->getSettlementScheduleId() === null)
+        {
+            $addDays = $merchant->getSettlementSchedule();
+
+            $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+        }
+        else
+        {
+            $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
+        }
+
+        return $returnTime;
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
@@ -478,5 +578,17 @@ class Core extends Base\Core
     protected function getSettlementSchedule($payment)
     {
         return $payment->merchant->getSettlementSchedule();
+    }
+
+    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        if ($txn->isGratis() === true)
+        {
+            $this->updateAmountCredits($txn, $payment);
+        }
+        else if ($txn->getFeeCredits() > 0)
+        {
+            $this->updateFeeCredits($txn);
+        }
     }
 }

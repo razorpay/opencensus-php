@@ -2,6 +2,7 @@
 <html>
 <head>
     <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         @keyframes pulsate {
             0% {
@@ -233,7 +234,7 @@
         <form class="card" id="otpform" name="otpform" action="{{$data['request']['url']}}" method="post" onsubmit="return false;">
             <div id="prompt" class="center">We have sent an OTP to your registered mobile Number ({{$data['contact']}})</div>
             <div>
-                <input id='otp' type="text" name="otp" maxlength="6" required pattern="^[0-9]{4,6}$">
+                <input id='otp' type="tel" name="otp" maxlength="6" required pattern="^[0-9]{4,6}$">
             </div>
             <div id='resend-text'>
             </div>
@@ -263,9 +264,7 @@
 
         var gel =  document.getElementById.bind(document);
         function enterOTP(e){
-            if(!e) { return '' }
-
-            var which = e.which;
+            var which = e.which ? e.which : event.keyCode;
             if(typeof which !== 'number'){
                which = e.keyCode;
             }

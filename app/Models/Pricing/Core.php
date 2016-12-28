@@ -2,13 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
@@ -16,7 +15,11 @@ class Core extends Base\Core
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
+        $rule = $rule->generateId();
+
         $rule->getValidator()->matchPaymentRules($plan);
+
+        $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
         $this->repo->saveOrFail($rule);
 
@@ -30,6 +33,10 @@ class Core extends Base\Core
             $input);
 
         $pricing = (new Pricing\Entity)->build($input);
+
+        $pricing = $pricing->generateId();
+
+        $pricing->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 

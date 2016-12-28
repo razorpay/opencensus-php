@@ -18,7 +18,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [
 //                    'paytm' => false,
@@ -42,5 +42,24 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testBulkMethodUpdate' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'debit_card' => true,
+                    'credit_card' => true,
+                    'netbanking' => true
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 

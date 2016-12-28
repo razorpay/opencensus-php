@@ -5,7 +5,6 @@ namespace RZP\Gateway\Cybersource\Mock;
 use App;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Cybersource;
 
 class Gateway extends Cybersource\Gateway
@@ -14,7 +13,7 @@ class Gateway extends Cybersource\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new SoapClient($request['url'], $request['options']);
+        $soapClient = new SoapClient($request['wsdl'], $request['options']);
 
         $headers = $this->getSoapHeader($request);
         $soapClient->__setSoapHeaders($headers);

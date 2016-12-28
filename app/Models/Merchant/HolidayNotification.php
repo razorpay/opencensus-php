@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Newsletter;
@@ -158,7 +159,7 @@ class HolidayNotification
 
         $slackData = ['holidays' => $holidays];
 
-        $slackSettings = ['channel' => '#settlements'];
+        $slackSettings = ['channel' => Config::get('slack.channels.settlements')];
 
         $this->app['slack']->queue($slackMsg, $slackData, $slackSettings);
     }

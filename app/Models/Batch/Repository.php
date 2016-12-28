@@ -2,16 +2,12 @@
 
 namespace RZP\Models\Batch;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch\Entity as Batch;
-use RZP\Models\Batch\Status;
-use RZP\Exception;
-use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'batch';
 
     protected $proxyFetchParamRules = array(

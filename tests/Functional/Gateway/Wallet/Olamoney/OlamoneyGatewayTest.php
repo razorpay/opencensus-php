@@ -92,11 +92,38 @@ class OlamoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['two_factor_auth']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);
 
         $this->step = null;
+    }
+
+    public function testCallbackEmptyResponseBody()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '';
+
+            return $content;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
     }
 
     public function testOtpRetrySuccessPayment()
@@ -172,7 +199,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 

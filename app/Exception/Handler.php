@@ -8,12 +8,9 @@ use Exception;
 use ApiResponse;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use Psr\Log\LoggerInterface;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -42,6 +39,8 @@ class Handler extends ExceptionHandler
         $this->trace = $this->app['trace'];
 
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
+
+        $this->route = $this->app['api.route'];
     }
 
     /**
@@ -92,10 +91,13 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function traceException(Exception $exception, $level = null, $code = null)
+    public function traceException(
+        $exception,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $traceData = $this->getExceptionDetails($exception);
-
+        $traceData = $this->getExceptionDetails($exception, 0, $extraData);
         if (($level === null) and
             ($code === null))
         {
@@ -108,6 +110,11 @@ class Handler extends ExceptionHandler
             {
                 $level = Trace::ERROR;
                 $code = TraceCode::ERROR_EXCEPTION;
+
+                if ($this->route->isCriticalRoute())
+                {
+                    $level = Trace::CRITICAL;
+                }
             }
         }
 
@@ -145,7 +152,10 @@ class Handler extends ExceptionHandler
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
-    protected function getExceptionDetails(Exception $exception, $level = 0)
+    protected function getExceptionDetails(
+        $exception,
+        $level = 0,
+        array $extraData = [])
     {
         $previousException = $exception->getPrevious();
 
@@ -156,7 +166,7 @@ class Handler extends ExceptionHandler
             $previous = $this->getExceptionDetails($previousException, $level + 1);
         }
 
-        $data = $this->getDataArrayPropertyFromException($exception);
+        $data = $this->getDataArrayPropertyFromException($exception, $extraData);
 
         $stack = explode("\n", $exception->getTraceAsString());
 
@@ -274,7 +284,9 @@ class Handler extends ExceptionHandler
         return $data;
     }
 
-    protected function getDataArrayPropertyFromException($e)
+    protected function getDataArrayPropertyFromException(
+        $e,
+        array $extraData = [])
     {
         $data = null;
 
@@ -292,6 +304,15 @@ class Handler extends ExceptionHandler
             {
                 $data = null;
             }
+        }
+
+        if ($data !== null)
+        {
+            $data = array_merge($data, $extraData);
+        }
+        else
+        {
+            $data = $extraData;
         }
 
         return $data;

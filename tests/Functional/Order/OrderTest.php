@@ -20,11 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->gateway = 'billdesk';
+        $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->setMockGatewayTrue();
     }
@@ -113,8 +109,11 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+
         $payment = $this->getLastEntity('payment');
-        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');
@@ -152,6 +151,30 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertAutoCaptureResponse($response, $payment, $order);
+    }
+
+    public function testAutoCaptureFeeBearerCustomer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $feesArray = $this->validateFees($payment);
+
+        $this->ba->privateAuth();
+
+        $amount = $payment['amount'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $order = $this->testCreateAutoCaptureOrder();
+
+        $payment['order_id'] = $order['id'];
+
         $response = $this->doAuthPayment($payment);
 
         $this->assertAutoCaptureResponse($response, $payment, $order);
@@ -289,6 +312,25 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testUsdPaymentOnApiWithOrder()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $this->fixtures->create('order', [
+            'amount' => 5000,
+            'currency' => 'USD',
+            'receipt' => 'random receipt']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+    }
+
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
     {
         $request = array(
@@ -298,5 +340,19 @@ class OrderTest extends TestCase
         );
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function validateFees($payment)
+    {
+        $feesArray = $this->createAndGetFeesForPayment($payment);
+
+        if ($payment['amount'] === 50000)
+        {
+            $this->assertEquals(1173, $feesArray['input']['fee']);
+
+            $this->assertEquals(1.49, $feesArray['display']['service_tax']);
+        }
+
+        return $feesArray;
     }
 }

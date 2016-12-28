@@ -71,6 +71,10 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
+            $table->integer(Transaction::FEE_CREDITS)
+                  ->unsigned()
+                  ->default(0);
+
             $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
@@ -132,7 +136,7 @@ class CreateTransactions extends Migration
         Schema::table(Table::TRANSACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
+                Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

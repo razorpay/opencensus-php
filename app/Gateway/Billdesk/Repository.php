@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Billdesk';
+    protected $entity = 'billdesk';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
@@ -24,5 +24,16 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where('refundId', '=', $gatewayRefundId)
                     ->firstOrFail();
+    }
+
+    public function getSuccessfulRefundRecordForThePayment($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('ProcessStatus', '=', QueryStatus::Y)
+                    ->where('RequestType', '=', '0410')
+                    ->where('action', '=', Base\Action::REFUND)
+                    ->where('received', '=', '1')
+                    ->get();
     }
 }

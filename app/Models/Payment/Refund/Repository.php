@@ -10,8 +10,6 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = array(
@@ -121,33 +119,93 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $ptable = Payment\Entity::getTableName();
-
-        $attrs = Refund\Entity::getAttributeWithTableName('*');
+        $attrs = $this->getAttributeWithTableName('*');
 
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(
-            $ptable,
+            $this->manager->payment->getTableName(),
             function ($join) use ($from, $to, $type, $gatewayCode, $gateway)
             {
-                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
+                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
-                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-                $ptype = Payment\Entity::getAttributeWithTableName($type);
-                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pRepo = $this->manager->payment;
+                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+                $pType = $pRepo->getAttributeWithTableName($type);
+                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
-                $join->on($rPaymentId, '=', $pid)
+                $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
-                     ->where($ptype, '=', $gatewayCode)
-                     ->where($pgateway, '=', $gateway);
+                     ->where($pType, '=', $gatewayCode)
+                     ->where($pGateway, '=', $gateway);
             })
             ->with('payment')
             ->get();
 
         return $refunds;
+    }
+
+    /**
+     * Join with the corresponding gateway and check that this particular payment
+     * has no gateway entity for the refund.
+     *
+     * @param $gateway
+     * @param $ts
+     * @return mixed
+     */
+    public function fetchMissingRefundsOfGateway($gateway, $ts)
+    {
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // WHERE `payments`.`gateway` = '$gateway'
+        //     AND `payments`.`refund_status` IS NOT NULL
+        //     AND `payments`.`transaction_id` IS NOT NULL
+        //     AND `refunds`.`transaction_id` IS NOT NULL
+        //     AND `refunds`.`created_at` > '$ts'
+        //     AND refunds.id NOT IN
+        //         (SELECT refunds.id
+        //          FROM refunds
+        //          JOIN billdesk ON refunds.id = refund_id);
+
+        $paymentTable = Table::PAYMENT;
+        $refundTable = Table::REFUND;
+        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+
+        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentRefundStatusAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
+        $gatewayRefundIdAttr = 'refund_id';
+
+        $refundAttributes = $this->getAttributeWithTableName('*');
+
+        $response = $this->newQuery()
+                         ->select($refundAttributes)
+                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                         ->where($paymentGatewayAttr, '=', $gateway)
+                         ->whereNotNull($paymentRefundStatusAttr)
+                         ->whereNotNull($paymentTransactionIdAttr)
+                         ->whereNotNull($refundTransactionIdAttr)
+                         ->where($refundCreatedAtAttr, '>', $ts)
+                         ->whereRaw($refundIdAttr . ' NOT IN ' .
+                                 '(' .
+                                     ' SELECT ' . $refundIdAttr .
+                                     ' FROM ' . $refundTable .
+                                     ' JOIN ' . $gatewayTable . ' ON ' . $refundIdAttr . ' = ' . $gatewayRefundIdAttr .
+                                 ')'
+                         )
+                         ->get();
+
+        return $response;
     }
 
     public function fetchRefundsByBatchAndPayment($batch, $payment)

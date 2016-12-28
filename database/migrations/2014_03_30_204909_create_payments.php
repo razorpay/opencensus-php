@@ -33,11 +33,22 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT)
                   ->unsigned();
 
+            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
+
+            $table->integer(Payment::BASE_AMOUNT)
+                  ->unsigned();
+
             $table->string(Payment::METHOD);
 
             $table->string(Payment::STATUS);
 
+            $table->string(Payment::TWO_FACTOR_AUTH, 20)
+                  ->nullable();
+
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->tinyInteger(Payment::INTERNATIONAL)
@@ -51,10 +62,12 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Payment::BASE_AMOUNT_REFUNDED)
+                  ->unsigned()
+                  ->default(0);
+
             $table->string(Payment::REFUND_STATUS)
                   ->nullable();
-
-            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
             $table->string(Payment::DESCRIPTION)
                   ->nullable();
@@ -81,6 +94,9 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->string(Payment::ERROR_DESCRIPTION, 255)
+                  ->nullable();
+
+            $table->string(Payment::CANCELLATION_REASON, 255)
                   ->nullable();
 
             $table->string(Payment::CUSTOMER_ID, 14)
@@ -130,6 +146,12 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::GATEWAY_CAPTURED)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::VERIFY_BUCKET)
+                  ->nullable();
+
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
 
@@ -160,14 +182,22 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::LATE_AUTHORIZED)
                   ->nullable();
 
+            $table->tinyInteger(Payment::CONVERT_CURRENCY)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::TWO_FACTOR_AUTH);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+
+            $table->index(Payment::GATEWAY_CAPTURED);
+            $table->index(Payment::VERIFY_BUCKET);
+            $table->index(Payment::GATEWAY);
             $table->index(Payment::AUTHORIZED_AT);
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);

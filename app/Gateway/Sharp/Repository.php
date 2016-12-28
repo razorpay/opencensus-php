@@ -7,9 +7,9 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Sharp';
+    protected $entity = 'sharp';
 
-    public function findByPaymentId()
+    public function findByPaymentId($id)
     {
         assertTrue($this->mode === 'test');
 

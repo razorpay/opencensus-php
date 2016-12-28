@@ -3,10 +3,9 @@
 namespace RZP\Services;
 
 use CreditCardFraudDetection;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
-use RZP\Trace\Trace;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 
 class MaxMind
 {
@@ -34,12 +33,15 @@ class MaxMind
 
         $this->licenseKey = $this->config['secret'];
 
+        $this->basicauth = $app['basicauth'];
+
         $this->maxmind = new CreditCardFraudDetection;
     }
 
     public function query($payment)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) or
+            ($this->basicauth->isPrivateAuth() === true))
         {
             return;
         }

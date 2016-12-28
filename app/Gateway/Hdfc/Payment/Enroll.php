@@ -8,6 +8,7 @@ use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Payment\Currency;
 
 trait Enroll
 {
@@ -50,8 +51,11 @@ trait Enroll
         $network = $input['card']['network_code'];
 
         // Only required in case of Rupay
-        if (($network === Card\Network::RUPAY) and
-            ($this->proxyEnabled === true))
+        // TODO: This currently does not honour our PROXY_ENABLED
+        // setting, which is set to false in production.
+        //
+        // We will shift it back once we have whitelisted FSS
+        if ($network === Card\Network::RUPAY)
         {
             $this->enrollRequest['options']['proxy'] = $this->proxy;
         }
@@ -64,7 +68,6 @@ trait Enroll
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
-
 
         //
         // If there is an error then just return
@@ -140,17 +143,13 @@ trait Enroll
 
         $this->udfRemoveHackCharacters($data);
 
-        //
         // Collect fields related to the card
-        //
         $this->mapKeys($card, $this->cardKeyMappings, $data);
 
-        //
-        // Write currency code manually.
-        // Later change it to something better
-        // when we support multiple currencies
-        //
-        $data['currencycode'] = self::INR_CODE;
+        // set the iso numeric currency code
+        $currency = $payment['currency'];
+
+        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
 
         $network = $input['card']['network_code'];
 
@@ -400,7 +399,7 @@ trait Enroll
      */
     protected function setErrorOnEnrollFailure()
     {
-        Assert($this->error === false);
+        assert($this->error === false);
 
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
 

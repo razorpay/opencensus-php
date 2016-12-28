@@ -10,15 +10,7 @@ use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'order';
-
-    protected $appFetchParamRules = [
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
-        Entity::AUTHORIZED      => 'sometimes|in:0,1',
-    ];
 
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
@@ -27,6 +19,12 @@ class Repository extends Base\Repository
 
     protected $proxyFetchParamRules = [
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+        Entity::AUTHORIZED      => 'sometimes|in:0,1',
     ];
 
     protected $esWhitelistedParams = [
@@ -60,9 +58,9 @@ class Repository extends Base\Repository
         // group by `orders`.`id`
         // having count(*) > 1
 
-        $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
-        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
-        $orderId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $orderId = $this->getAttributeWithTableName(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
 
         $results = $this->newQuery()
