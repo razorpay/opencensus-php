@@ -72,6 +72,8 @@ class Server extends Base\Mock\Server
 
         $data =  array_merge($hashArray, $data);
 
+        $this->content($data);
+
         return json_encode($data);
     }
 
@@ -79,8 +81,8 @@ class Server extends Base\Mock\Server
     {
         $hashArray = [
             ResponseFields::MERCHANT_ID               => $input[RequestFields::MERCHANT_ID],
-            ResponseFields::TRANSACTION_REFERENCE_NO  => $input[RequestFields::TRANSACTION_REFERENCE_NO],
             ResponseFields::TRANSACTION_ID            => mt_rand(11111111, 99999999),
+            ResponseFields::TRANSACTION_REFERENCE_NO  => $input[RequestFields::TRANSACTION_REFERENCE_NO],
             ResponseFields::TRANSACTION_AMOUNT        => $input[RequestFields::AMOUNT],
             ResponseFields::TRANSACTION_DATE          => $input[RequestFields::DATE],
         ];
@@ -159,6 +161,8 @@ class Server extends Base\Mock\Server
             VerifyFields::TRANSACTION_DATE      => $date,
             VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
         ];
+
+        $this->content($verifyArray);
 
         $hashArray = $this->getVerifyHashArray($verifyArray, $input);
 

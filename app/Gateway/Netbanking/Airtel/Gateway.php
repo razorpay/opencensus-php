@@ -49,6 +49,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $content);
 
+        $this->verifyAuthResponseHash($content);
+
         $attrs = $this->getCallackAttributes($content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -251,6 +253,24 @@ class Gateway extends Base\Gateway
             'received'  => true,
             'status'    => $content[ResponseFields::STATUS],
             'bank_payment_id' => $content[ResponseFields::TRANSACTION_ID]
+        ];
+    }
+
+    protected function verifyAuthResponseHash($content)
+    {
+        $hashArray = $this->getAuthResponseHashArray($content);
+
+        $this->assertResponseHash($hashArray, $content[ResponseFields::HASH]);
+    }
+
+    protected function getAuthResponseHashArray($content)
+    {
+        return [
+            ResponseFields::MERCHANT_ID => $content[ResponseFields::MERCHANT_ID],
+            ResponseFields::TRANSACTION_ID => $content[ResponseFields::TRANSACTION_ID],
+            ResponseFields::TRANSACTION_REFERENCE_NO => $content[ResponseFields::TRANSACTION_REFERENCE_NO],
+            ResponseFields::TRANSACTION_AMOUNT => $content[ResponseFields::TRANSACTION_AMOUNT],
+            ResponseFields::TRANSACTION_DATE => $content[ResponseFields::TRANSACTION_DATE],
         ];
     }
 
