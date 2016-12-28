@@ -59,6 +59,7 @@ final class Route
         'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
+        'payment_fetch_transaction'               => ['get',      'payments/{id}/transaction',                      'PaymentController@getTransactionForPayment'                        ],
         'payment_auth_notify'                     => ['get',      'payments/auth/notify',                           'PaymentController@getAuthNotify',                                  ],
         'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
@@ -430,6 +431,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'payment_fetch_transaction',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'card_fetch_by_id',
@@ -755,7 +757,7 @@ final class Route
         'permission_get'             => ['get_permission'],
         'permission_delete'          => ['delete_permission'],
         'auditlog_search'            => ['view_auditlog'],
-        'admin_logout'               => ['logout_admin'],
+        'admin_logout'               => ['*'],
     ];
 
     public static $direct = array(

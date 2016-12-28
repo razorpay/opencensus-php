@@ -85,7 +85,7 @@ class AuthorizeTest extends TestCase
         $this->assertEquals('43634423', $payment['contact']);
     }
 
-    public function testNonInrCurrency()
+    public function testNonSupportedCurrency()
     {
         $this->startTest();
     }

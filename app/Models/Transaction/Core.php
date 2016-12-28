@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $feeCredits = $merchantBalance->getFeeCredits();
 
-        $amount = $payment->getAmount();
+        $amount = $payment->getBaseAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
 
@@ -287,13 +287,13 @@ class Core extends Base\Core
         $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::SERVICE_TAX     => 0,
-            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => 'INR');
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR);
 
         $gateway = $refund->getGateway();
 
@@ -363,7 +363,7 @@ class Core extends Base\Core
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
             Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),

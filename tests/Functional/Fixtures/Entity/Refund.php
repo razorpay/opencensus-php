@@ -19,6 +19,7 @@ class Refund extends Base
 
         $attributes['payment_id'] = $payment->getId();
         $attributes['merchant_id'] = $payment->merchant->getId();
+        $attributes['base_amount'] = $attributes['amount'];
 
         $refund = parent::create($attributes);
 
