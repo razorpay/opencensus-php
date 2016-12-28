@@ -53,7 +53,7 @@ trait PaymentTrait
      */
     protected $failPaymentOnBankPage = false;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0)
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency='INR')
     {
         if ($payment === null)
         {
@@ -66,13 +66,13 @@ trait PaymentTrait
         {
             $payment = $this->capturePayment(
                 $paymentAuth['razorpay_payment_id'],
-                $amount, $payment['amount']);
+                $amount, $currency, $payment['amount']);
         }
         else
         {
             $payment = $this->capturePayment(
                 $paymentAuth['razorpay_payment_id'],
-                $payment['amount']);
+                $payment['amount'], $currency);
         }
 
         return $payment;
@@ -513,12 +513,17 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency='INR', $verifyAmount = 0)
     {
         $request = array(
             'method' => 'POST',
             'url' => "/payments/".$id.'/capture',
             'content' => array('amount' => $amount));
+
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
 
         $this->ba->privateAuth();
         $content = $this->makeRequestAndGetContent($request);

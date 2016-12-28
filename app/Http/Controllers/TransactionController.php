@@ -41,4 +41,11 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getEntityTransaction($entity, $id)
+    {
+        $data = (new Transaction\Service)->getEntityTransaction($entity, $id);
+
+        return ApiResponse::json($data);
+    }
 }

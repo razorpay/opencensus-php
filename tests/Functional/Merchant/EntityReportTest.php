@@ -58,8 +58,6 @@ class EntityReportTest extends TestCase
 
     public function testBrokingReport()
     {
-        $this->markTestSkipped();
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->merchant->addFeatures(['broking_report']);
 
