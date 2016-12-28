@@ -28,36 +28,11 @@ class Repository extends Base\Repository
      * @param Merchant\Entity $merchant
      *
      * @return Entity
-     */
-    public function findActiveByPublicIdAndMerchant($id, Merchant\Entity $merchant)
-    {
-        $entity = $this->getEntityClass();
-
-        $entity::verifyIdAndStripSign($id);
-
-        return $this->newQuery()
-                    ->merchantId($merchant->getId())
-                    ->where(Entity::ACTIVE, '=', 1)
-                    ->findOrFailPublic($id);
-    }
-
-    /**
-     * Finds item with given public id and where status is ACTIVE.
-     * If not found, throws exception.
-     *
-     * @param integer         $id
-     * @param Merchant\Entity $merchant
-     *
-     * @return Entity
      * @throws Exception\BadRequestException
      */
     public function findActiveByPublicIdAndMerchantOrFail($id, Merchant\Entity $merchant)
     {
-
-        // TODO:
-        // - Add tests
-
-        $item = $this->findActiveByPublicIdAndMerchant($id, $merchant);
+        $item = $this->findByPublicIdAndMerchant($id, $merchant);
 
         if ($item->isNotActive())
         {

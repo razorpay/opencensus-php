@@ -113,6 +113,13 @@ class InvoiceTest extends TestCase
         $this->assertEquals($items['items'][1]['id'], $lineItems['items'][1]['item_id']);
     }
 
+    public function testCreateInvoiceWithUsingInactiveItem()
+    {
+        $this->fixtures->create('item', ['active' => 0]);
+
+        $response = $this->startTest();
+    }
+
     public function testCreateInvoiceWithNewCustomerAndAddress()
     {
         $response = $this->startTest();
