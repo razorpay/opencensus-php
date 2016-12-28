@@ -856,7 +856,7 @@ class Processor
         $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
-    public function setPayment($payment)
+    public function setPayment(Payment\Entity $payment)
     {
         $this->payment = $payment;
 
