@@ -45,7 +45,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
     public function testPaymentFailureFlow()
     {
-        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $payment['amount'] = ((float) TestAmount::FAIL_PAYMENT_AMOUNT) * 100;
 

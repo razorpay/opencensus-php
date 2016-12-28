@@ -23,4 +23,17 @@ class Gateway extends Jiomoney\Gateway
 
         return $request;
     }
+
+    protected function getStatusQueryRequest(array $input)
+    {
+        $request = parent::getStatusQueryRequest($input);
+
+        $content = json_decode($request['content'], true);
+
+        $content['payload_data']['amount'] = Jiomoney\TestAmount::FAIL_STATUSQUERY_AMOUNT;
+
+        $request['content'] = json_encode($content);
+
+        return $request;
+    }
 }

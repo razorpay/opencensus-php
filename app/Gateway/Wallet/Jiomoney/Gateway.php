@@ -11,9 +11,12 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Entity as BaseGatewayEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -32,7 +35,13 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
 
+    const JSON_MODE = '2';
+
+    const STATUS_QUERY_API_VERSION = '1.0';
+
     protected $gateway = 'wallet_jiomoney';
+
+     protected $sortRequestContent = false;
 
     protected $map = [
         RequestFields::MERCHANT_ID           => WalletEntity::GATEWAY_MERCHANT_ID,
@@ -43,6 +52,8 @@ class Gateway extends Base\Gateway
         ResponseFields::RESPONSE_DESCRIPTION => WalletEntity::RESPONSE_DESCRIPTION,
         ResponseFields::GATEWAY_PAYMENT_ID   => WalletEntity::GATEWAY_PAYMENT_ID,
         ResponseFields::DATE                 => WalletEntity::DATE,
+        WalletEntity::EMAIL                  => WalletEntity::EMAIL,
+        WalletEntity::CONTACT                => WalletEntity::CONTACT,
         BaseGatewayEntity::RECEIVED          => BaseGatewayEntity::RECEIVED
     ];
 
@@ -58,6 +69,8 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
             RequestFields::PAYMENT_ID   => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'],
+            WalletEntity::EMAIL         => $input['payment']['email'],
+            WalletEntity::CONTACT       => $input['payment']['contact'],
             BaseGatewayEntity::RECEIVED => false
         ];
 
@@ -89,6 +102,15 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -110,6 +132,215 @@ class Gateway extends Base\Gateway
             $this->handleRefundFailure($content);
         }
     }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $statusQueryRequest = $this->getStatusQueryRequest($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $statusQueryRequest);
+
+        $statusQueryResponse = $this->sendGatewayRequest($statusQueryRequest);
+
+        $this->response = $statusQueryResponse;
+
+        $content = $this->jsonToArray($this->response->body);
+
+        if ($this->validStatusQueryResponse($content) === false)
+        {
+            $checkPaymentStatusRequest = $this->getCheckPaymentStatusRequest($input);
+
+            $checkPaymentStatusResponse = $this->sendGatewayRequest($checkPaymentStatusRequest);
+
+            $this->response = $checkPaymentStatusResponse;
+
+            $content = $this->jsonToArray($this->response->body);
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content'    => $content,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $gatewayPayment = $verify->payment;
+        $input = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if ($this->getGatewayTxnStatus($content) === 'SUCCESS')
+        {
+            $this->checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify);
+        }
+        else
+        {
+            $this->checkVerifyStatusOnGatewayFailure($gatewayPayment, $input, $verify);
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if ($verify->match === false)
+        {
+            $verify->payment = $this->saveVerifyContent($gatewayPayment,
+                                                        $verify);
+        }
+
+        return $verify->status;
+    }
+
+    protected function checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
+    {
+        $verify->gatewaySuccess = true;
+
+        $content = $verify->verifyResponseContent;
+        // $verifyResponse = $this->getVerifyResponseContent($verify->verifyResponseContent);
+
+        if ((($input['payment']['status'] !== PaymentStatus::CREATED) and
+                ($input['payment']['status'] !== PaymentStatus::FAILED) and
+                ($gatewayPayment !== null) and
+                ($gatewayPayment['status_code'] === StatusCode::SUCCESS)))
+        {
+            $verify->apiSuccess = true;
+        }
+        elseif ((($input['payment']['status'] !== PaymentStatus::CREATED) and
+                 ($input['payment']['status'] !== PaymentStatus::FAILED) and
+                 (($gatewayPayment === null) or
+                  ($gatewayPayment['status_code'] !== Status::SUCCESS))))
+        {
+            $gatewayPaymentStatus = $gatewayPayment['status_code'] ?? '';
+
+            $gatewayTxnStatus = $this->getGatewayTxnStatus($content);
+
+            $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'api_payment_status'      => $input['payment']['status'],
+                        'gateway_verify_response' => $gatewayTxnStatus,
+                        'payment_id'              => $input['payment']['id'],
+                        'gateway_payment_status'  => $gatewayPaymentStatus,
+                    ]);
+
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+
+            $verify->apiSuccess = false;
+        }
+    }
+
+    public function checkVerifyStatusOnGatewayFailure($gatewayPayment, array $input, $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if (($gatewayPayment === null) or
+            (($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created')))
+        {
+            $verify->apiSuccess = false;
+        }
+        elseif (($gatewayPayment['received'] === false) and
+                 (($gatewayPayment['status_code'] === null) or
+                    (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) !== true)))
+        {
+            $verify->apiSuccess = false;
+        }
+        elseif (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) !== true)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function saveVerifyContent($gatewayPayment, $verify)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $walletAttributes = $this->getVerifyWalletCreateAttributes($verify);
+
+            if ($gatewayPayment === null)
+            {
+                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if (($gatewayPayment['received'] === false) or
+                     ($gatewayPayment['status_code'] !== StatusCode::SUCCESS))
+            {
+                $gatewayPayment->fill($walletAttributes);
+                $gatewayPayment->saveOrFail();
+            }
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $gatewayPayment;
+    }
+
+    protected function getVerifyWalletCreateAttributes($verify)
+    {
+        $payment = $this->input['payment'];
+
+        $content = $verify->verifyResponseContent;
+
+        $contentToSave = array(
+            ResponseFields::AMOUNT             => $payment['amount'],
+            WalletEntity::RECEIVED             => true,
+            WalletEntity::EMAIL                => $payment['email'],
+            WalletEntity::CONTACT              => $payment['contact'],
+            ResponseFields::STATUS_CODE        => StatusCode::SUCCESS,
+            ResponseFields::GATEWAY_PAYMENT_ID => $verifyResponse['jm_tran_ref_no']
+        );
+
+        return $contentToSave;
+    }
+
+    public function validStatusQueryResponse($content)
+    {
+        // s($this->jsonToArray($response->body));
+        // $content = $this->jsonToArray($response->body);
+
+        if (isset($content['response_header']) === true)
+        {
+            return $content['response_header']['api_status'] === '1';
+        }
+
+        return false;
+    }
+
+    protected function getGatewayTxnStatus(array $content)
+    {
+        if ($this->validStatusQueryResponse($content) === true)
+        {
+            return $content['payload_data']['txn_status'];
+        }
+        else
+        {
+            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                    [ResponseFields::TXN_STATUS];
+        }
+    }
+
 
     protected function callbackAuthSuccessFlow(array $input)
     {
@@ -168,6 +399,76 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::RESPONSE_CODE],
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );
+    }
+
+    protected function getCheckPaymentStatusRequest(array $input)
+    {
+        $this->domainType = 'test_verify';          // TODO Change this later
+
+        $content = [
+            RequestFields::APINAME       => ApiName::CHECKPAYMENTSTATUS,
+            RequestFields::MODE          => self::JSON_MODE,
+            RequestFields::REQUEST_ID    => $this->genuuid(),
+            RequestFields::STARTDATETIME => 'NA',
+            RequestFields::ENDDATETIME   => 'NA',
+            RequestFields::MERCHANT_ID   => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID    => $input['payment']['id']
+        ];
+
+        $hashString = $this->getStringToHash(array_values($content), '~');
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfString($hashString);
+
+        $content = implode('~', array_values($content));
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = $this->getRequestHeaders($content);
+
+        return $request;
+    }
+
+    protected function getStatusQueryRequest(array $input)
+    {
+        $content = [
+            RequestFields::REQUEST_HEADER => [
+                RequestFields::VERSION => self::STATUS_QUERY_API_VERSION,
+                RequestFields::API_NAME => 'STATUSQUERY',
+            ],
+            RequestFields::PAYLOAD_DATA => [
+                'client_id' => $this->getClientId(),
+                'merchant_id' => $this->getMerchantId(),
+                'tran_ref_no' => $input['payment']['id']
+            ]
+        ];
+
+        $hashArray = [
+            $this->getClientId(),
+            $this->getMerchantId(),
+            'STATUSQUERY',
+            $input['payment']['id']
+        ];
+
+        $hash = $this->getHashOfArray($hashArray);
+
+        $content[RequestFields::CHECKSUM] = $hash;
+
+        $content = json_encode($content);
+
+        $this->action = 'payment_status';
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->action = Action::VERIFY;
+
+        $request['headers'] = $this->getRequestHeaders($content);
+
+        return $request;
+    }
+
+    protected function getVerifyResponseContent(array $content)
+    {
+        return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS];
     }
 
     protected function getRefundRequest(array $input)
@@ -246,12 +547,15 @@ class Gateway extends Base\Gateway
     {
         $refundAttributes = [
             WalletEntity::PAYMENT_ID           => $input['payment']['id'],
+            WalletEntity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
             WalletEntity::ACTION               => $this->action,
             WalletEntity::AMOUNT               => $input['refund']['amount'],
             WalletEntity::RECEIVED             => true,
             WalletEntity::WALLET               => $input['payment']['wallet'],
             WalletEntity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
             WalletEntity::REFUND_ID            => $input['refund']['id'],
+            WalletEntity::EMAIL                => $input['payment']['email'],
+            WalletEntity::CONTACT              => $input['payment']['contact'],
             WalletEntity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             WalletEntity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
             WalletEntity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
@@ -260,14 +564,9 @@ class Gateway extends Base\Gateway
         return $refundAttributes;
     }
 
-    protected function getCheckPaymentStatusRequestArray(array $input)
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
-
-    }
-
-    protected function getCaptureResponse()
-    {
-        return null;
+        return false;
     }
 
     protected function getPurchaseRequestArray(array $input)
@@ -438,5 +737,28 @@ class Gateway extends Base\Gateway
     protected function getFormattedAmount($amount)
     {
         return number_format(($amount / 100), 2);
+    }
+
+    protected function genuuid()
+    {
+        return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            // 32 bits for "time_low"
+            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+
+            // 16 bits for "time_mid"
+            mt_rand( 0, 0xffff ),
+
+            // 16 bits for "time_hi_and_version",
+            // four most significant bits holds version number 4
+            mt_rand( 0, 0x0fff ) | 0x4000,
+
+            // 16 bits, 8 bits for "clk_seq_hi_res",
+            // 8 bits for "clk_seq_low",
+            // two most significant bits holds zero and one for variant DCE1.1
+            mt_rand( 0, 0x3fff ) | 0x8000,
+
+            // 48 bits for "node"
+            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+        );
     }
 }

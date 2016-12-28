@@ -26,10 +26,108 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_jiomoney',
-        'terminal_id'       => '100ArtlMnyTmnl',
+        'terminal_id'       => '1000JioMnyTmnl',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
         'otp_attempts'      => null
+    ],
+
+    'testPaymentFailureFlow' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR
+        ],
+    ],
+
+    'testRefundPayment' => [
+        'action'               => 'refund',
+        'wallet'               => 'jiomoney',
+        'email'                => 'a@b.com',
+        'amount'               => 50000,
+        'contact'              => '+919918899029',
+        'gateway_merchant_id'  => '100001000013647',
+        'status_code'          => '000',
+        'response_code'        => 'SUCCESS',
+        'response_description' => 'APPROVED',
+        'entity'               => 'wallet'
+    ],
+
+    'testRefundFailedPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REFUND_FAILED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FAILED
+        ]
+    ],
+
+    'testRefundFailedPaymentEntity' => [
+        'action'               => 'refund',
+        'wallet'               => 'jiomoney',
+        'email'                => 'a@b.com',
+        'amount'               => 1999,
+        'contact'              => '+919918899029',
+        'gateway_merchant_id'  => '100001000013647',
+        'status_code'          => '500',
+        'response_code'        => 'FAILED',
+        'response_description' => 'NA',
+        'entity'               => 'wallet'
+    ],
+
+    'testPartialRefundPayment' => [
+        'action'               => 'refund',
+        'wallet'               => 'jiomoney',
+        'email'                => 'a@b.com',
+        'amount'               => 25000,
+        'contact'              => '+919918899029',
+        'gateway_merchant_id'  => '100001000013647',
+        'status_code'          => '000',
+        'response_code'        => 'SUCCESS',
+        'response_description' => 'APPROVED',
+        'entity'               => 'wallet'
+    ],
+
+    'testPaymentWalletEntity' => [
+        'action'               => 'authorize',
+        'amount'               => 50000,
+        'wallet'               => 'jiomoney',
+        'received'             => true,
+        'email'                => 'a@b.com',
+        'contact'              => '+919918899029',
+        'gateway_merchant_id'  => '100001000013647',
+        'status_code'          => '000',
+        'response_code'        => 'SUCCESS',
+        'response_description' => 'APPROVED',
+        'entity'               => 'wallet'
+    ],
+
+    'testFailedPaymentWalletEntity' => [
+        'action'               => 'authorize',
+        'amount'               => 999,
+        'wallet'               => 'jiomoney',
+        'received'             => false,
+        'email'                => 'a@b.com',
+        'contact'              => '+919918899029',
+        'gateway_merchant_id'  => '100001000013647',
+        'status_code'          => '500',
+        'response_code'        => 'FAILED',
+        'response_description' => 'NA',
+        'entity'               => 'wallet'
     ]
 ];

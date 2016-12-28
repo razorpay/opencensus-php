@@ -18,6 +18,10 @@ class ResponseFields
     const CARD_TYPE            = 'card_type';
     const CARD_NETWORK         = 'card_network';
     const CHECKSUM             = 'checksum';
+    const RESPONSE             = 'RESPONSE';
+    const CHECKPAYMENTSTATUS   = 'CHECKPAYMENTSTATUS';
+    const TXN_STATUS           = 'TXN_STATUS';
+    const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
 
     public static function getResponseFieldsArray()
     {

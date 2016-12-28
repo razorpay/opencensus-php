@@ -21,4 +21,13 @@ class RequestFields
     const EMAIL         = 'email';
     const CONTACT       = 'mobilenumber';
     const CUSTOMER_NAME = 'customername';
+    const APINAME       = 'apiname';
+    const MODE          = 'mode';
+    const REQUEST_ID    = 'request_id';
+    const STARTDATETIME = 'startdatetime';
+    const ENDDATETIME   = 'enddatetime';
+    const REQUEST_HEADER = 'request_header';
+    const VERSION = 'version';
+    const API_NAME = 'api_name';
+    const PAYLOAD_DATA = 'payload_data';
 }
