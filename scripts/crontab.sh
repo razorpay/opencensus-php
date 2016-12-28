@@ -82,7 +82,7 @@ add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants
 
 # Refund
 add_cron "0 3 * * *"       "refund_excel_generate"     POST "$BASE_URL/refunds/netbanking/excel"         ""                              $LIVE_AUTH
-add_cron "10 0,12 * * *"   "authorized_old_refund"     POST "$BASE_URL/payments/refund/authorized"       ""                              $LIVE_AUTH
+add_cron "10 * * * *"      "authorized_old_refund"     POST "$BASE_URL/payments/refund/authorized"       ""                              $LIVE_AUTH
 add_cron "0 4 * * *"       "upi_refunds_prod"          POST "$BASE_URL/refunds/excel"                    "method=upi&bank=icici"         $LIVE_AUTH
 add_cron "6-51/15 * * * *" "order_refund_multiple_aut" POST "$BASE_URL/orders/payments/refund"           ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *" "batch_processor_prod"      POST "$BASE_URL/batches/process"                  ""                              $LIVE_AUTH
