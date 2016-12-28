@@ -255,43 +255,26 @@ trait Capture
 
         $paymentCopy = clone $this->payment;
 
-        try
-        {
-            $this->acquireMutexOnPayment($this->payment);
-
-            $this->callAndHandleCaptureOnGateway($data);
-
-            try
+        $this->mutex->acquireAndRelease(
+            $this->payment->getId(),
+            function() use($data, $paymentCopy)
             {
+                try
+                {
+                    $this->callAndHandleCaptureOnGateway($data);
+                }
+                catch (Exception\BaseException $ex)
+                {
+                    $this->trace->traceException($ex);
+
+                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex, $paymentCopy);
+                }
+
                 $this->recordCapture();
-            }
-            catch (Exception\BaseException $ex)
-            {
-                $this->trace->traceException($ex);
-
-                throw new Exception\LogicException(
-                    'Capture on API failed.',
-                    ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED,
-                    [
-                        'payment_id'    => $this->payment->getId(),
-                        'capture_data'  => $data,
-                        'error_message' => $ex->getMessage(),
-                    ]);
-            }
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->trace->traceException($ex);
-
-            $this->updatePaymentIfApplicableOnCaptureFailure($ex, $paymentCopy);
-        }
-        finally
-        {
-            $this->releaseMutexOnPayment($this->payment);
-        }
+            });
     }
 
-    protected function updatePaymentIfApplicableOnCaptureFailure(
+    protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
         Exception\BaseException $ex,
         Payment\Entity $paymentCopy)
     {
@@ -305,17 +288,6 @@ trait Capture
         {
             throw $ex;
         }
-
-        //
-        // If capture failed on the API side for any reason,
-        // we should not mark it as failed.
-        //
-        if ($ex->getCode() === ErrorCode::BAD_REQUEST_API_CAPTURE_FAILED)
-        {
-            throw $ex;
-        }
-
-        $this->trace->traceException($ex);
 
         //
         // We need to use the old payment

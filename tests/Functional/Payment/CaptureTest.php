@@ -93,9 +93,9 @@ class CaptureTest extends TestCase
         }
         catch (Exception\LogicException $ex)
         {
-            $this->assertEquals("BAD_REQUEST_API_CAPTURE_FAILED", $ex->getCode());
+            $this->assertEquals("BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED", $ex->getCode());
 
-            $this->assertEquals("Error while recording capture on API side", $ex->getMessage());
+            $this->assertEquals("Error while recording fee breakup", $ex->getMessage());
 
             return;
         }
