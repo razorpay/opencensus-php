@@ -13,8 +13,8 @@ BASE_URL="http://api.razorpay.dev/v1"
 
 TMP_CRONTAB=/tmp/crontab
 
-LIVE_AUTH="rzp_live:RANDOM_DASH_PASSWORD"
-TEST_AUTH="rzp_test:RANDOM_DASH_PASSWORD"
+LIVE_AUTH="rzp_live:RANDOM_CRON_PASSWORD"
+TEST_AUTH="rzp_test:RANDOM_CRON_PASSWORD"
 
 CRON_LOG=`pwd`/storage/logs/cron.log
 
