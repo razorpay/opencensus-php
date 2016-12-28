@@ -353,6 +353,17 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
+    public function fetchTransactionByPaymentId($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $transaction->toArrayPublic();
+    }
+
     /**
      * Captures a payment
      *
