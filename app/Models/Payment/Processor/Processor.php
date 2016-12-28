@@ -126,6 +126,8 @@ class Processor
 
         $this->mutex = $this->app['api.mutex'];
 
+        $this->cache = $this->app['cache'];
+
         $this->route = $this->app['api.route'];
 
         $this->segment = $this->app['segment'];
@@ -739,10 +741,14 @@ class Processor
             $amount = $amount - $payment->getFee();
         }
 
+        $currency = $payment->getCurrency();
+
         // Move this to a common validate function.
         $validator = new Order\Validator;
 
         $validator->validateOrderAmount($this->order, $amount);
+
+        $validator->validateOrderCurrency($this->order, $currency);
 
         $validator->validateOrderNotPaid($this->order);
 
@@ -850,7 +856,7 @@ class Processor
         $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
-    public function setPayment($payment)
+    public function setPayment(Payment\Entity $payment)
     {
         $this->payment = $payment;
 

@@ -36,7 +36,7 @@ class SettlementTest extends TestCase
                 'payment:captured',
                 [
                     'merchant_id' => $merchant->getId(),
-                    'amount' => '10000'
+                    'amount' => '10000',
                 ]
             );
 

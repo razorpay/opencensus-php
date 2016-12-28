@@ -8,6 +8,7 @@ use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -48,10 +49,7 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -119,10 +117,7 @@ trait Refund
                 (in_array($payment->card->getNetworkCode(),
                           [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -171,9 +166,10 @@ trait Refund
         assert ($payment->getTransactionId() !== null);
 
         $data = [
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount()
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
         ];
 
         return $this->callGatewayForCreateRefundRecord($data);
@@ -471,6 +467,8 @@ trait Refund
 
         $refund->merchant()->associate($this->merchant);
 
+        $refund->setBaseAmount();
+
         if ($this->payment->isCaptured())
         {
             $this->validateMerchantBalance($refund);
@@ -483,14 +481,11 @@ trait Refund
         return $refund;
     }
 
-    protected function processRefund(Payment\Refund\Entity $refund)
+    protected function  processRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -533,7 +528,11 @@ trait Refund
         }
         else
         {
-            $this->payment->refundAmount($this->refund->getAmount());
+            $amount = $this->refund->getAmount();
+
+            $baseAmount = $this->refund->getBaseAmount();
+
+            $this->payment->refundAmount($amount, $baseAmount);
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
@@ -547,12 +546,12 @@ trait Refund
 
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
-        if ($balance->getBalance() < $refund->getAmount())
+        if ($balance->getBalance() < $refund->getBaseAmount())
         {
             $traceMessage = [
                 'message' => 'Not enough balance',
                 'merchant_balance' => $balance->getBalance(),
-                'refund_amount' => $refund->getAmount()
+                'refund_amount' => $refund->getBaseAmount()
             ];
 
             $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
@@ -630,6 +629,25 @@ trait Refund
         }
 
         return null;
+    }
+
+    protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    {
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        if ($payment->getConvertCurrency())
+        {
+            $data['amount'] = $refund->getBaseAmount();
+
+            $data['currency'] = Payment\Currency::INR;
+        }
+
+        return $data;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
