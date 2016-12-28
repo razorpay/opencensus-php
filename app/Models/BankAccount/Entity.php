@@ -168,12 +168,12 @@ class Entity extends Base\PublicEntity
 
     protected function getMpinAttribute()
     {
-        $mpin = $this->attributes[self::MPIN];
-
-        if ($mpin === null)
+        if (isset($this->attributes[self::MPIN]) === false)
         {
-            return $mpin;
+            return null;
         }
+
+        $mpin = $this->attributes[self::MPIN];
 
         return Crypt::decrypt($mpin);
     }
