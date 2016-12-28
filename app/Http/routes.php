@@ -25,6 +25,9 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('/org', 'AdminController@getOrg');
     Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
     Route::post('/signin', 'AdminController@postSignin');
+
+    Route::post('/password/reset', 'PasswordController@forgotAdminPassword');
+    Route::post('/password/reset', 'PasswordController@resetAdminPassword');
 });
 
 Route::group([], function()

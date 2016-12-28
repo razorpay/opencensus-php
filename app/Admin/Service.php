@@ -62,6 +62,33 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
+    public function forgotPassword($email)
+    {
+        $error = $data = null;
+
+        $domain = \Request::server('SERVER_NAME');
+
+        $org = $this->getOrgFromCache($domain);
+
+        $resetPasswordUrl = $org['hostname'] . '/admin#/access/resetpwd';
+
+        $params = array(
+            'email' => $email,
+            'reset_password_url' => $resetPasswordUrl
+        );
+
+        try
+        {
+            $data = $this->api->admin->forgotPassword($org['id'], $params);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;

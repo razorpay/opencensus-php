@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\AppResponse;
+
 use Input;
 use Password;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
@@ -83,6 +86,24 @@ class PasswordController extends Controller
             case Password::PASSWORD_RESET:
                 return Response::json(array('success' => true));
         }
+    }
+
+    public function forgotAdminPassword(Request $request)
+    {
+        $email = $request->input('email');
+
+        list($error, $data) = (new Admin\Service)->forgotPassword($email);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function resetAdminPassword(Request $request)
+    {
+        $input = $request->all();
+
+        list($error, $data) = (new Admin\Service)->resetPassword($input);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
 }
