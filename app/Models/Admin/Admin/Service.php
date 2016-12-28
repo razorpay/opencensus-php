@@ -168,7 +168,7 @@ class Service extends Base\Service
             'user' => [
                 'email'    => $admin->getEmail(),
                 'org'      => $org->getDisplayName(),
-                'resetUrl' => $input['reset_password_url'] . '?' . http_build_query([$input[self::TOKEN]])
+                'resetUrl' => $input['reset_password_url'] . '/' . $input[self::TOKEN],
             ]
         ];
 
