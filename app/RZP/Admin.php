@@ -50,6 +50,13 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
+    public function logout($orgId)
+    {
+        $relativeUrl = "orgs/$orgId/admin/logout";
+
+        return $this->request('POST', $relativeUrl);
+    }
+
     public function triggerError()
     {
         $relativeUrl = 'trigger/error';

@@ -2653,4 +2653,25 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function logout()
+    {
+        $error = $data = null;
+
+        $this->setAdminCredentials();
+
+        $user = Auth::guard('api')->user();
+
+        $orgId = $user->org_id;
+
+        try
+        {
+            $data = $this->api->admin->logout($orgId);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }

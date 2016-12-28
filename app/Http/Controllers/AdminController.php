@@ -216,9 +216,9 @@ class AdminController extends Controller
 
     public function getLogout()
     {
-        Auth::guard('api')->logout();
+        list($error, $data) = (new Admin\Service)->logout();
 
-        return AppResponse::jsonResponse([]);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getKeepAlive()
