@@ -82,6 +82,7 @@ class CaptureTest extends TestCase
             ->times(1)
             ->withAnyArgs()
             ->andThrow(new Exception\LogicException(
+                    'Error while recording fee breakup',
                     ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED));
 
         $params = ['amount' => 1000000];

@@ -1010,7 +1010,13 @@ class Processor
                 ]);
 
             throw new Exception\LogicException(
-                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED);
+                'Error while recording fee breakup',
+                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
         }
 
     }
