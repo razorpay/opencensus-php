@@ -42,6 +42,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayReport();
     }
 
+    public function toArrayGateway()
+    {
+        return $this->itemsToArrayGateway();
+    }
+
     public function toArrayPublicEmbedded()
     {
         return $this->itemsToArrayPublic();
@@ -156,6 +161,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayReport();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayGateway()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayGateway();
 
         }, $this->items);
     }

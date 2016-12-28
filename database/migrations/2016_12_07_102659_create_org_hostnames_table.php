@@ -38,7 +38,7 @@ class CreateOrgHostnamesTable extends Migration
             $table->foreign(OrgHost::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG)
-                  ->on_delete('cascade');
+                  ->onDelete('cascade');
         });
     }
 

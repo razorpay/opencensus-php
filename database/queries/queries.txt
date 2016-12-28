@@ -1395,3 +1395,22 @@ ALTER TABLE orgs
 # Adds Currency Code to terminals
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
+
+# ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign;
+
+# ALTER TABLE org_hostname
+    ADD CONSTRAINT `org_hostname_org_id_foreign`
+    FOREIGN KEY (`org_id`) REFERENCES `orgs` (`id`) ON DELETE cascade;
+
+ALTER TABLE merchants
+    ADD COLUMN convert_currency TINYINT(1) AFTER auto_refund_delay;
+
+ALTER TABLE payments
+    MODIFY COLUMN currency CHAR(3) NOT NULL AFTER amount,
+    ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency,
+    ADD COLUMN base_amount_refunded INTEGER UNSIGNED DEFAULT 0 AFTER amount_refunded,
+    ADD COLUMN convert_currency TINYINT(1) NULL AFTER late_authorized;
+
+ALTER TABLE refunds
+    ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
