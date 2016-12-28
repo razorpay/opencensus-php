@@ -48,7 +48,7 @@ class CreateBankAccounts extends Migration
             $table->tinyInteger(BankAccount::MOBILE_BANKING_ENABLED)
                   ->nullable();
 
-            $table->string(BankAccount::MPIN, 16)
+            $table->string(BankAccount::MPIN, 255)
                   ->nullable();
 
             $table->string(BankAccount::BENEFICIARY_CITY, 30);
