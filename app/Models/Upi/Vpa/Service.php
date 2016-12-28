@@ -102,6 +102,34 @@ class Service extends Base\Service
         return $vpa->toArrayPublic();
     }
 
+    public function isValid($vpa)
+    {
+        // TODO Check for generic validity, rather than @razor
+        $match = preg_match('/[a-z0-9][a-z0-9\.-]{2,}@razor/', $vpa);
+
+        $valid = $match !== 0;
+
+        return ['valid' => $valid];
+    }
+
+    public function isAvailable($vpa)
+    {
+        $validResult = $this->isValid($vpa);
+
+        if ($validResult['valid'] === false)
+        {
+            $available = false;
+        }
+        else
+        {
+            $existing = $this->repo->vpa->findByAddress($vpa);
+
+            $available = is_null($existing);
+        }
+
+        return array_merge($validResult, ['available' => $available]);
+    }
+
     protected function eventVpaEdited($vpa)
     {
         $this->app['events']->fire('api.vpa.edited', array($vpa));

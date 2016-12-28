@@ -189,6 +189,16 @@ class Core extends Base\Core
         return $this->vpaService->getAll();
     }
 
+    public function isValidVpa($vpa)
+    {
+        return $this->vpaService->isValid($vpa);
+    }
+
+    public function isAvailableVpa($vpa)
+    {
+        return $this->vpaService->isAvailable($vpa);
+    }
+
     protected function getSharedAccount()
     {
         return $this->repo->merchant->getSharedAccount();
@@ -231,7 +241,6 @@ class Core extends Base\Core
             'error' => $error
         ];
     }
-
 
     protected function RespSetCre(array $creds)
     {

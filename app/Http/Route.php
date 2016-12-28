@@ -411,7 +411,6 @@ final class Route
         'invoice_send_notification',
         // 'invoice_view',
         'merchant_public_get_banks',
-        'vpa_valid',
         'merchant_methods',
         'merchant_checkout_preferences',
         'mock_atom_init_payment',

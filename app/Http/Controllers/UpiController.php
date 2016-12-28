@@ -121,17 +121,16 @@ class UpiController extends Controller
 
     public function isValidVpa($vpa)
     {
-        return ApiResponse::json([
-            'valid'         => true
-        ]);
+        $data = $this->core->isValidVpa($vpa);
+
+        return ApiResponse::json($data);
     }
 
     public function isAvailableVpa($vpa)
     {
-        return ApiResponse::json([
-            'valid'         => true,
-            'available'     => true
-        ]);
+        $data = $this->core->isAvailableVpa($vpa);
+
+        return ApiResponse::json($data);
     }
 
     // TODO: Start supporting these in the new flow
