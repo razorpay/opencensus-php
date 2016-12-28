@@ -12,7 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::AMOUNT          =>  'required|integer|min:100|max:50000000',
-        Entity::CURRENCY        =>  'required|size:3|in:INR',
+        Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
         Entity::RECEIPT         =>  'required|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',
         Entity::CUSTOMER_ID     =>  'sometimes',
@@ -40,6 +40,16 @@ class Validator extends Base\Validator
             // Order and Payment amount mismatch
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+        }
+    }
+
+    public function validateOrderCurrency($order, $currency)
+    {
+        if ($order->getCurrency() !== $currency)
+        {
+            // Order and Payment currency mismatch
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
         }
     }
 
