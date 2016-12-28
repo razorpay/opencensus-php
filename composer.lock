@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "36305f5dfd86544b6ee7fecfb5a89e4b",
-    "content-hash": "60ce0650e4366dce9fae0c50fcdd1dbb",
+    "hash": "87fe6899dd3f0e4e0fcbce310fd20a82",
+    "content-hash": "f4c35a9a54e94312e0862e1b4e4d1035",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4956,56 +4956,6 @@
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
             "time": "2016-10-14 09:44:29"
-        },
-        {
-            "name": "fr3d/xmldsig",
-            "version": "v2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Maks3w/xmldsig.git",
-                "reference": "1edfaca132a0db0edbef41cae189bce316490854"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Maks3w/xmldsig/zipball/1edfaca132a0db0edbef41cae189bce316490854",
-                "reference": "1edfaca132a0db0edbef41cae189bce316490854",
-                "shasum": ""
-            },
-            "require": {
-                "robrichards/xmlseclibs": "^2.0"
-            },
-            "require-dev": {
-                "fabpot/php-cs-fixer": "1.10.*",
-                "phpunit/phpunit": "^4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "FR3D\\XmlDSig\\": [
-                        "src"
-                    ]
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Maks3w",
-                    "email": "github.maks3w@virtualplanets.net"
-                }
-            ],
-            "description": "Tool for easy management of XML Signatures (http://www.w3.org/TR/xmldsig-core/)",
-            "homepage": "https://github.com/Maks3w/xmldsig/",
-            "keywords": [
-                "security",
-                "signature",
-                "soap",
-                "xml",
-                "xmldsig"
-            ],
-            "time": "2016-02-01 11:18:40"
         },
         {
             "name": "fzaninotto/faker",

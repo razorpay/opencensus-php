@@ -166,6 +166,18 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::MPIN) !== null);
     }
 
+    protected function getMpinAttribute()
+    {
+        $mpin = $this->attributes[self::MPIN];
+
+        if ($mpin === null)
+        {
+            return $mpin;
+        }
+
+        return Crypt::decrypt($mpin);
+    }
+
     public function settlements()
     {
         return $this->hasMany('RZP\Models\Settlement\Entity');
@@ -221,6 +233,16 @@ class Entity extends Base\PublicEntity
         $code = strtoupper($code);
 
         $this->attributes[self::IFSC_CODE] = $code;
+    }
+
+    protected function setMpinAttribute($mpin)
+    {
+        if ($mpin === null)
+        {
+            $mpin = '';
+        }
+
+        $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
     }
 
     protected function getIfscCodeAttribute($code)
