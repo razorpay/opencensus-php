@@ -34,9 +34,16 @@ trait Capture
 
         $payment = $this->retrieve($id);
 
+        // set the input currency if missing and payment currency is INR
+        if ((isset($input['currency']) === false) and
+            ($payment->getCurrency() === Payment\Currency::INR))
+        {
+            $input['currency'] = Payment\Currency::INR;
+        }
+
         $payment->getValidator()->validateInput('capture', $input);
 
-        return $this->capturePayment($payment, $input['amount']);
+        return $this->capturePayment($payment, $input['amount'], $input['currency']);
     }
 
     /**
@@ -64,9 +71,11 @@ trait Capture
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
 
+        $currency = $payment->getCurrency();
+
         try
         {
-            $payment = $this->capturePayment($payment, $amount);
+            $payment = $this->capturePayment($payment, $amount, $currency);
         }
         catch (Exception\RecoverableException $e)
         {
@@ -94,21 +103,29 @@ trait Capture
     }
 
     /**
-     * We check if the capture status on the gateway is successful and on the api, it's not captured.
-     * If it's successful on the gateway side, we create a transaction on the api side.
+     * We check if the capture status on the gateway is successful (by checking on gateway and gateway_captured
+     * flag in the payment entity) and on the api, it's not captured.
+     * If it's successful on the gateway side, we create a transaction on the api side from authorized state.
      * This does not follow the convention where all authAndCapture supported gateways should have
      * the payment in captured state for a transaction to be created. But, these are edge cases where capture
      * succeeded on gateway and failed on api side due to some reason. This should ideally never happen.
      * We cannot create a transaction by capturing it because, the merchant may not actually want to capture
      * this payment anymore. Hence, we just create a transaction and leave it at that.
      *
-     * If the merchant wants to capture the payment later, he can capture it and the process would
-     * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
+     * If the merchant wants to capture the payment later, he can capture it. We will not send a request
+     * to the gateway for capture (since gateway captured flag would be set). We will just record the capture
+     * in our system and update the existing transaction for the payment, as applicable.
+     *
+     * NOTE: This function is not really needed now since we have gateway_captured flag in the payment entity.
+     * If it is set, we just record the capture in our system (without calling gateway) and go through the normal flow.
+     *
      * TODO: add segment here
-     * @param $payment
+     *
+     * @param Payment\Entity $payment
+     *
      * @return array
      */
-    public function verifyCapture($payment)
+    public function verifyCapture(Payment\Entity $payment)
     {
         $this->setPayment($payment);
 
@@ -134,9 +151,14 @@ trait Capture
         // Here, verify=true means that the payment is captured on the gateway side.
         if ($verify === true)
         {
-            $this->recordTransactionForFailedApiCapture();
+            $msg = 'Has been captured on gateway. Gateway captured flag is set to false. It\'s a bug!';
 
-            $msg = 'Has been captured on gateway and hence creating a transaction in api.';
+            if ($payment->isGatewayCaptured())
+            {
+                $this->recordTransactionForFailedApiCapture();
+
+                $msg = 'Has been captured on gateway and hence creating a transaction in api.';
+            }
         }
         else if ($verify === false)
         {
@@ -175,7 +197,7 @@ trait Capture
      * @param  integer          $amount
      * @return Payment\Entity
      */
-    protected function capturePayment($payment, $amount)
+    protected function capturePayment($payment, $amount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -189,21 +211,28 @@ trait Capture
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
                     'payment_id' => $payment->getId(),
-                    'amount' => $amount,
-                    'message' => 'Adds fee to the amount because fee bearer is customer',
+                    'amount'     => $amount,
+                    'message'    => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
-        $payment->getValidator()->captureValidate($payment, $amount);
+        $payment->getValidator()->captureValidate($payment, $amount, $currency);
 
         $data = array(
-            'payment'   => $payment->toArray(),
-            'amount'    => $amount
+            'payment'   => $payment->toArrayGateway(),
+            'amount'    => $amount,
+            'currency'  => $payment->getCurrency()
         );
 
         if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $payment->card->toArray();
+        }
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $data['amount'] = $payment->getBaseAmount();
+            $data['currency'] = Payment\Currency::INR;
         }
 
         $this->captureOnGateway($data);

@@ -176,10 +176,10 @@ return [
         ],
     ],
 
-    'testNonInrCurrency' => [
+    'testNonSupportedCurrency' => [
         'request' => [
             'content' => [
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ],
         'response' => [
