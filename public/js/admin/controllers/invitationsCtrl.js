@@ -1,0 +1,71 @@
+//Merchant List controller
+app.controller('InvitationsCtrl', [
+  '$scope',
+  '$http',
+  'alertsFactory',
+  'transformRequestAsFormPost',
+  '$modal',
+  'utils',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, utils) {
+    $scope.alerts = alertsFactory.getHandler();
+    $scope.invitations = [];
+    $scope.count = 0;
+
+    $scope.invitation_cache = {};
+
+    $scope.fetchInvitations = function () {
+      var request = $http.get('/admin/invitations');
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.invitations = data.data;
+          $scope.count = data.data.length;
+
+          data.data.forEach(function (v, i) {
+            $scope.invitation_cache[v.id] = v;
+          });
+        }
+      });
+    }
+
+    $scope.fetchInvitations();
+
+    // Invitation Details
+
+    $scope.showInvitationDetails = function (invitation_id) {
+      $modal.open({
+        templateUrl: 'invitationDetail.html',
+        controller: 'invitationDetailCtrl',
+        resolve: {
+          invitation_id: function () {
+            return invitation_id;
+          },
+
+          invitation_cache: function () {
+            return $scope.invitation_cache;
+          }
+        }
+      });
+    };
+  }
+])
+.controller('invitationDetailCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'invitation_id',
+  'invitation_cache',
+  'utils',
+  function($scope, $modalInstance, $http, invitation_id, invitation_cache, utils) {
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    // exposing the entire service in scope
+    $scope.utils = utils;
+
+    var form_data = invitation_cache[invitation_id].form_data;
+
+    $scope.data = JSON.parse(form_data);
+  }
+])

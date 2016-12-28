@@ -11,6 +11,7 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Admin;
 
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
@@ -19,15 +20,15 @@ use Razorpay\Api\Errors\Error as ApiError;
 class Service extends Base\Service
 {
 
-    const INVALID_EMAIL_OR_PASSWORD = 'Email or password is invalid.';
-    const EMAIL_CHANGE_FORBIDDEN    = "Email change forbidden on this account";
-    const NAME_CHANGE_FORBIDDEN     = "Name change forbidden on this account";
-    const INVALID_CONFIRMATION_TOKEN= 'Invalid confirmation token or the merchant is already confirmed.';
-    const ROLL_KEY_FORBIDDEN        = "Roll key forbidden on this account";
-    const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
-    const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
-    const SUBMERCHANT_NOT_ALLOWED   = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
-    const BANK_ACCOUNT_NOT_FOUND    = "Could not find a Bank Account";
+    const INVALID_EMAIL_OR_PASSWORD     = 'Email or password is invalid.';
+    const EMAIL_CHANGE_FORBIDDEN        = "Email change forbidden on this account";
+    const NAME_CHANGE_FORBIDDEN         = "Name change forbidden on this account";
+    const INVALID_CONFIRMATION_TOKEN    = 'Invalid confirmation token or the merchant is already confirmed.';
+    const ROLL_KEY_FORBIDDEN            = "Roll key forbidden on this account";
+    const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
+    const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
+    const SUBMERCHANT_NOT_ALLOWED       = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const BANK_ACCOUNT_NOT_FOUND        = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -179,9 +180,11 @@ class Service extends Base\Service
     public function changeEmail($id, $input)
     {
         $merchant = Merchant\Entity::findorfail($id);
+
         $originalEmail = $merchant->email;
 
-        if ($merchant->isTestAccount()) {
+        if ($merchant->isTestAccount())
+        {
             return [[static::EMAIL_CHANGE_FORBIDDEN], null];
         }
 
@@ -192,9 +195,6 @@ class Service extends Base\Service
             $this->handleUserEmailChange($merchant, $originalEmail, $input); //This handles different cases of 'user' email change.
 
             $merchant->saveOrFail();
-            $merchantDetails = $merchant->merchantDetails;
-            $merchantDetails->contact_email = $merchant->email;
-            $merchantDetails->save();
         }
 
         return [$error, null];
@@ -288,6 +288,23 @@ class Service extends Base\Service
 
         $merchantApiData = $merchant->generateApiData();
 
+        // Once the merchant is created we also have to tag him
+        // with the admin if he was invited by one.
+        $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
+
+        if ($lead)
+        {
+            $merchantApiData['admin_id'] = $lead->admin_id;
+        }
+
+        // Fetch org by hostname and set the orgId in the input
+        // so that the merchant can be tagged to the Org
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $merchantApiData['org_id'] = $org['id'];
+
         // This is internal auth as of now
         // We need to shift this to some other auth
         $this->setApiCredentials();
@@ -310,6 +327,12 @@ class Service extends Base\Service
         (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails->toArray());
 
         return array();
+    }
+
+    public function tagAdmin($merchantOnApi)
+    {
+        sd($merchantOnApi);
+        // $this->api->merchant->tagAdmin();
     }
 
     public function resendConfirmation(array $input)
@@ -850,6 +873,20 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function getInvitationDetails($token)
+    {
+        $error = $data = null;
+
+        $lead = \DB::table('admin_leads')->where('token', '=', $token)->first();
+
+        if (empty($lead))
+        {
+            $error = true;
+        }
+
+        return [$error, $lead];
+    }
+
     /**
      * Fetches merchant credits
      * Uses Proxy Auth on the API
@@ -927,6 +964,6 @@ class Service extends Base\Service
     {
         $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
 
-        return [ null, $merchantDetail->getPreSignupFields()];
+        return $merchantDetail->getPreSignupFields();
     }
 }

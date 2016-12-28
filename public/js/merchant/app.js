@@ -38,7 +38,9 @@ var app = angular.module('app', [
         authorization.authorize();
       }
       user.identity(true).then(function (data) {
-        $rootScope.role = data.merchants[data.id].pivot.role;
+        if (data) {
+          $rootScope.role = data.merchants[data.id].pivot.role;
+        }
       });
 
     });

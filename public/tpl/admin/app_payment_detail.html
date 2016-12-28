@@ -19,7 +19,7 @@
             <span class="pull-right">
                <a ui-sref="app.merchants.detail({id:entity.merchant_id})">
                 {{entity.merchant_id}}
-	        </a> 	
+	        </a>
             </span>
             Merchant Id
           </div>
@@ -105,20 +105,20 @@
             Description
           </div>
           <div href class="list-group-item">
-            <span class="pull-right" ng-class="displayClass(entity.error_code)">
-              {{displayValue(entity.error_code)}}
+            <span class="pull-right" ng-class="displayClass('error_code', entity.error_code)">
+              {{displayValue('error_code', entity.error_code)}}
             </span>
             Error
           </div>
           <div href class="list-group-item panel-body">
-            <span class="pull-right col-lg-8 text-right" ng-class="displayClass(entity.error_code)">
-              {{displayValue(entity.error_description)}}
+            <span class="pull-right col-lg-8 text-right" ng-class="displayClass('error_code', entity.error_code)">
+              {{displayValue('error_description', entity.error_description)}}
             </span>
             Error Description
           </div>
           <div href class="list-group-item panel-body" ng-show="entity.internal_error_code">
             <span class="pull-right col-lg-8 text-right">
-              {{displayValue(entity.internal_error_code)}}
+              {{displayValue('internal_error_code', entity.internal_error_code)}}
             </span>
             Internal Error Code
           </div>
@@ -145,24 +145,24 @@
           </div>
           <div class="list-group-item" ng-disable="!entity.transaction_id">
             <span class="pull-right" ng-class="displayClass(entity.transaction_id)">
-              <a ui-sref="app.entitiesdetail({mode:mode, type: 'transaction', id:entity.transaction_id})">{{displayValue(entity.transaction_id)}}</a>
+              <a ui-sref="app.entitiesdetail({mode:mode, type: 'transaction', id:entity.transaction_id})">{{displayValue('transaction_id', entity.transaction_id)}}</a>
             </span>
             Transaction Id
           </div>
           <div href class="list-group-item">
-            <span ng-class="displayClass(entity.authorized_at)" class="pull-right">{{timestamp(entity.authorized_at)}}</span>
+            <span ng-class="displayClass(entity.authorized_at)" class="pull-right">{{displayValue('authorized_at', entity.authorized_at)}}</span>
             Authorized At
           </div>
           <div href class="list-group-item">
-            <span ng-class="displayClass(entity.created_at)" class="pull-right">{{timestamp(entity.created_at)}}</span>
+            <span ng-class="displayClass(entity.created_at)" class="pull-right">{{displayValue('created_at', entity.created_at)}}</span>
             Created At
           </div>
           <div href class="list-group-item">
-            <span ng-class="displayClass(entity.updated_at)" class="pull-right">{{timestamp(entity.updated_at)}}</span>
+            <span ng-class="displayClass(entity.updated_at)" class="pull-right">{{displayValue('updated_at', entity.updated_at)}}</span>
             Updated At
           </div>
           <div href class="list-group-item">
-            <span ng-class="displayClass(entity.captured_at)" class="pull-right">{{timestamp(entity.captured_at)}}</span>
+            <span ng-class="displayClass(entity.captured_at)" class="pull-right">{{displayValue('captured_at', entity.captured_at)}}</span>
             Captured At
           </div>
           <div class="list-group-item">
@@ -186,8 +186,8 @@
           <div class="list-group-item" ng-repeat="key in keysNotShown()"
             ng-init="value = entity[key]"
           >
-            <span class="pull-right" ng-class="displayClass(value)">
-              {{displayValue(value)}}
+            <span class="pull-right" ng-class="displayClass(key, value)">
+              {{displayValue(key, value)}}
             </span>
             {{key|titlecase}}
           </div>

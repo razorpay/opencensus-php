@@ -16,7 +16,14 @@ class Transaction extends Entity
 
     public function generateEntityReport($entity, $params)
     {
-        $relativeUrl = "reports/$entity";
+        if ($entity === 'broking')
+        {
+            $relativeUrl = "reports/transaction/broking";
+        }
+        else
+        {
+            $relativeUrl = "reports/$entity";
+        }
 
         return $this->longRequest('GET', $relativeUrl, $params);
     }

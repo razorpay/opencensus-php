@@ -89,7 +89,7 @@ class Service extends Base\Service
         // as the invited user
         if ($invitationToken)
         {
-            list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
+            list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
             // the invitation
             $input['email'] = $invitation->email;
@@ -116,7 +116,7 @@ class Service extends Base\Service
 
             $data['login'] = true;
         }
-        else
+        else 
         {
             // See HACKING.md in the root of the repo for a detailed note
             $data = [

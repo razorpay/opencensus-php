@@ -13,9 +13,13 @@ app.controller('UserCtrl', [
   'transformRequestAsFormPost',
   '$cookies',
   'jqTourbusService',
-  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost, $cookies, jqTourbusService) {
+  'organization',
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle,
+    $keepalive, modeFactory, transformRequestAsFormPost, $cookies,
+    jqTourbusService, organization) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
+    $scope.logo_full = '';
 
     $scope.getPendingInvitations = function() {
       var request = $http.get('/settings/invitations');
@@ -269,6 +273,11 @@ app.controller('UserCtrl', [
         $scope.timedout = null;
       }
     }
+
+    // Show correct logo according to the organization
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.logo_full = data.main_logo_url || 'img/logo_full.png';
+    });
   }
 ]).controller('passwordModalCtrl', [
   '$scope',

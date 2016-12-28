@@ -7,6 +7,7 @@ app.controller('GenerateReportCtrl', [
   'user',
   function ($scope, $http, alertsFactory, user) {
     $scope.alerts = alertsFactory.getHandler();
+    $scope.broking_report = false;
 
     user.identity().then(function (data) {
       $scope.user = data;

@@ -6,11 +6,62 @@ angular.module('app.controllers', [
   '$scope',
   '$localStorage',
   '$window',
-  function ($scope, $localStorage, $window) {
+  'theme',
+  function ($scope, $localStorage, $window, theme) {
     // add 'ie' classes to html
     var isIE = !!navigator.userAgent.match(/MSIE/i);
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
+
+    var orgTheme = '';
+    var themeKeys = {
+      hdfc : 'hdfc',
+      wl : 'hdfc',
+      icici :'icici',
+      baroda :'baroda',
+      bob : 'baroda'
+    };
+
+    for (var key in themeKeys) {
+      if (themeKeys.hasOwnProperty(key) &&
+          (location.hostname.indexOf(key) > 0 || localStorage.getItem('theme') === key)) {
+        orgTheme = themeKeys[key];
+        break;
+      };
+    }
+
+    var baseTheme = {
+      transparent : 'rgba(0,0,0,0.2)',
+      transparentDark : 'rgba(0,0,0,0.4)',
+      textLight : 'rgba(255,255,255,0.9)',
+      primaryLight : '#e1f3ff',
+      primaryTransparent : 'rgba(225,243,252,0.3)',
+      errorBackground : 'rgba(234,33,45,0.1)',
+      secondary : '#ea212d',
+      tertiary : '#ffffff'
+    }
+
+    switch (orgTheme) {
+      case 'hdfc':
+        theme.apply(angular.extend(baseTheme, {
+          primary : '#084c8d',
+        }));
+        break;
+
+      case 'icici':
+        theme.apply(angular.extend(baseTheme, {
+          navBg : '#F07937',
+          primary: '#0A3D6B',
+        }));
+        break;
+
+      case 'baroda':
+        theme.apply(angular.extend(baseTheme, {
+          primary : '#F04E00',
+        }));
+        break;
+    }
+
     // config
     $scope.app = {
       name: 'RZP Admin',

@@ -76,7 +76,7 @@ angular.module('app.services', [])
           else if ($rootScope.toState.data.role === 'guest') {
             if (user.isAuthenticated() === true) {
               if ($rootScope.role === 'sellerapp') {
-                $state.go('app.invoices')
+                $state.go('app.invoices');
               } else {
                 $state.go('app.dashboard');  // user is signed in but not authorized for desired state
               }
@@ -162,28 +162,38 @@ angular.module('app.services', [])
 .factory('alertsFactory', function () {
   var handler = function() {
     this.alerts = [];
+
     this.getAlerts = function () {
       return this.alerts;
     };
+
     this.closeAlert = function (index) {
       this.alerts.splice(index, 1);
     };
+
     this.addAlert = function ($type, $message, reset) {
       $message = $message || 'An error occured.';
-      if (reset)
+      if (reset) {
         this.alerts = [];
+      }
       this.alerts.push({
         type: $type,
         msg: $message
       });
+
+      window.scrollTo(0, 0);
     };
+
     this.resetAlerts = function (last) {
-      if (!last)
+      if (!last) {
         this.alerts = [];
-      else
+      }
+      else {
         this.alerts.pop();
+      }
     };
   };
+
   return {
     getHandler: function () {
       return new handler();
@@ -262,20 +272,291 @@ angular.module('app.services', [])
     };
   }
 ])
+//Organization
+.factory('organization', [
+  '$q',
+  '$http',
+  function ($q, $http) {
+
+    var _org, _roles;
+
+    return {
+      fetchCurrentOrg: function () {
+        var deferred = $q.defer();
+
+        if (angular.isDefined(_org)) {
+          deferred.resolve(_org);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/org')
+          .success(function (data) {
+            if (data.success) {
+              _org = data.data;
+            }
+
+            deferred.resolve(_org);
+          });
+
+        return deferred.promise;
+      },
+      addOrEditRole: function (role) {
+        var deferred = $q.defer();
+        var roleId = role.id;
+
+        delete role.id;
+
+        // Request for creating
+        var request_data = {
+          url: '/admin/generic',
+          method: 'POST',
+          params: {
+            route_name: 'role_create'
+          },
+          data: {
+            body: role
+          }
+        };
+
+        if (roleId) {
+          request_data = $.extend(request_data, {
+            method: 'PUT',
+            params: {
+              route_name: 'role_edit',
+              url_params: {
+                '{roleId}': roleId
+              }
+            },
+
+          });
+        }
+
+        $http(request_data)
+        .success(function (data) {
+          if (data.success) {
+            _roles = undefined;
+            deferred.resolve(data.data);
+          } else {
+            deferred.reject(data.errors);
+          }
+        })
+        .error(function(data) {
+          deferred.reject(data.errors);
+        });
+
+        return deferred.promise;
+      },
+      fetchRoles: function () {
+        var deferred = $q.defer();
+
+        if (angular.isDefined(_roles)){
+          deferred.resolve(_roles);
+          return deferred.promise;
+        }
+
+        $http
+          .get('/admin/generic', {
+            ignoreErrors: true,
+            params: {
+              route_name: 'role_get_multiple'
+            }
+          })
+          .success(function (data) {
+            if (data.success) {
+              _roles = data.data.items;
+              deferred.resolve(_roles);
+            } else {
+              deferred.reject(data.errors);
+            }
+          })
+          .error(function(data) {
+            deferred.reject(data.errors);
+          });
+
+        return deferred.promise;
+      },
+      // No caching implemented
+      fetchGroups: function () {
+        var deferred = $q.defer();
+
+        var groups = [];
+
+        $http.get('/admin/generic', {
+          params: {
+            route_name: 'group_get_multiple',
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            angular.forEach(data.data.items, function (group) {
+              var groupObj = {
+                id: group.id,
+                name: group.name,
+                description: group.description
+              };
+
+              groups.push(groupObj);
+            });
+
+            deferred.resolve(groups);
+          }
+          else {
+            groups = [];
+          }
+        }).error(function (data) {
+          return data.errors;
+        });
+
+        return deferred.promise;
+      },
+      fetchAllowedGroups: function (groupId) {
+        var deferred = $q.defer();
+
+        var allowed_groups = [];
+
+        $http.get('/admin/generic', {
+          params: {
+            route_name: 'group_get_allowed_groups',
+            url_params: {
+              '{groupId}': groupId  //TODO Add actual ids
+            }
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data) {
+              angular.forEach(data.data, function (group) {
+                var groupObj = {
+                  id: group.id,
+                  name: group.name,
+                  description: group.description
+                };
+
+                allowed_groups.push(groupObj);
+              });
+
+              deferred.resolve(allowed_groups);
+            }
+          }
+          else {
+            allowed_groups = [];
+          }
+        }).error(function () {
+
+        });
+
+        return deferred.promise;
+      },
+      fetchPermissions: function () {
+        if (this.permissions) {
+          return this.permissions;
+        }
+
+        var perms = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'permission_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (perm) {
+                perms.push(perm);
+              });
+            }
+          }
+          else {
+            perms = {};
+          }
+        }).error(function () {
+        });
+        this.permissions = perms;
+        return perms;
+      },
+      fetchUsers: function () {
+        if (this.users) {
+          return this.users;
+        }
+
+        var users = [];
+        $http.get('/admin/generic', {
+          ignoreErrors: true,
+          params: {
+            route_name: 'admin_get_multiple'
+          }
+        }).success(function (data) {
+          if (data.success === true) {
+            if (data.data.items.length > 0) {
+              angular.forEach(data.data.items, function (user) {
+                users.push(user);
+              });
+            }
+          }
+          else {
+            users = {};
+          }
+        }).error(function () {
+        });
+        this.users = users;
+        return this.users;
+      }
+    };
+  }
+])
+.factory('theme', [
+  function () {
+    return {
+      apply: function (themeVars) {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+
+        var rules = themes.theme(themeVars);
+
+        if (style.styleSheet) {
+          style.styleSheet.cssText = rules;
+        } else {
+          style.appendChild(document.createTextNode(rules));
+        }
+        document.getElementsByTagName('head')[0].appendChild(style);
+      }
+    };
+  }
+])
+
 //Authorisation service
 //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('adminAuthorization', [
   '$rootScope',
   '$state',
   'admin',
-  '$location',
   function ($rootScope, $state, admin) {
     return {
       authorize: function () {
-        return admin.identity().then(function () {
+
+        var promise = admin.identity().then(function () {
+
+          // Direct access to /admin (w/o hash) should always trigger auth
+          // if the admin is not logged in
+          if (!$rootScope.toState) {
+            if (admin.isAuthenticated()) {
+              $state.go('app.dashboard');
+            }
+            else {
+              window.location.href = '/admin/auth';
+            }
+
+            return;
+          }
+
+          // Need auth ?
           if ($rootScope.toState.data.role === 'auth') {
-            if (admin.isAuthenticated() === false)
-              location.reload();
+
+            // If you are not logged in and not on the signin page
+            if (admin.isAuthenticated() === false) {
+              // Will cause redirect
+              window.location.href = '/admin/auth';
+            }
+
             // user is signed in but not authorized for desired state
             if ($rootScope.toState.data.superadmin) {
               admin.identity().then(function (data) {
@@ -283,11 +564,16 @@ angular.module('app.services', [])
                   $state.go('app.dashboard');
               });
             }
-          } else if ($rootScope.toState.data.role === 'guest') {
-            if (admin.isAuthenticated() === true)
+          }
+          // Don't need auth!
+          else if ($rootScope.toState.data.role === 'guest') {
+            if (admin.isAuthenticated() === true) {
               $state.go('app.dashboard');  // user is signed in but not authorized for desired state
+            }
           }
         });
+
+        return promise;
       }
     };
   }
@@ -322,8 +608,12 @@ angular.module('app.services', [])
     return mapper[status];
   };
 }])
+// Only returns true if we have a valid status value
 .factory('isStatusKey', [function() {
-  return function (key) {
+  return function (key, value) {
+    if (!value) {
+      return false;
+    }
     var statusKeys = [
       'status',
       'refund_status'
@@ -390,5 +680,172 @@ angular.module('app.services', [])
     next: $.noop,
     prev: $.noop,
     stop: $.noop
+  };
+})
+.factory('getStateMerchant', function() {
+  return function(key, value) {
+    switch (key) {
+      case 'payment_id':
+        return 'app.payments.detail({id: value})';
+      case 'refund_id':
+        return 'app.refunds.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'settlement_id':
+        return 'app.settlements.detail({id: value})';
+      case 'order_id':
+        return 'app.orders.detail({id: value})';
+      case 'invoice_id':
+        return 'app.invoicedetails({id: value})';
+      default:
+        return '.';
+    }
+  };
+})
+.factory('permissionsFactory', function () {
+  var _permissions = {};
+  return {
+    getPermissions: function () {
+      return _permissions;
+    },
+    setPermissions: function(permissions) {
+      _permissions = permissions;
+    }
+  };
+})
+.factory('displayClass', [
+  'isStatusKey',
+  'statusClass',
+  function (isStatusKey, statusClass) {
+  return function(key, value) {
+    if (isStatusKey(key, value)) {
+      return 'label ' + statusClass(value);
+    }
+
+    if (value === null) {
+      return 'label label-warning col-lg-1';
+    } else if (value === '') {
+      return 'label label-info';
+    } else {
+      return '';
+    }
+  };
+}])
+.factory('getEntity', [
+  function () {
+  return function(key) {
+    return key.substr(0, key.length - 3);
+  };
+}])
+.factory('getType', [
+  'getEntity',
+  function (getEntity) {
+    return function(key, value) {
+      var entity = key.substr(0, key.length - 3);
+      var isTimestamp = function (key) {
+        return key.substr(-3) === '_at';
+      };
+      // These have their own views
+      var specialEntities = [
+        'merchant_id',
+        'payment_id'
+      ];
+      var isId = function (key) {
+        var validEntities = [
+          'adjustment',
+          'amex',
+          'atom',
+          'axis_genius',
+          'axis_migs',
+          'balance',
+          'bank_account',
+          'bank_account',
+          'billdesk',
+          'card',
+          'credits',
+          'customer',
+          'daily_settlement',
+          'ebs',
+          'first_data',
+          'emi_plan',
+          'hdfc',
+          'iin',
+          'merchant',
+          'methods',
+          'mobikwik',
+          'netbanking',
+          'payment',
+          'payment_analytics',
+          'pricing',
+          'refund',
+          'settlement',
+          'settlement_details',
+          'schedule',
+          'terminal',
+          'token',
+          'transaction',
+          'wallet',
+          'webhook'
+        ];
+        // It needs to be suffixed with _id
+        // and be a valid entity name for this to work
+        return key.substr(-3) === '_id' && validEntities.indexOf(entity) > -1;
+      };
+      // Timestamps could be blank, which is why
+      // we consider its value as well
+      if (value && isTimestamp(key)) {
+        return 'timestamp';
+      }  // All other entity links are considered here
+      else if (key.substr(-6) === 'amount') {
+        return 'amount';
+      }
+      else if (isId(key)) {
+        if (specialEntities.indexOf(key) > -1) {
+          return getEntity(key);
+        } else {
+          return 'id';
+        }
+      }  // Unknown type is entity specific things, like currency
+      else {
+        return 'unknown';
+      }
+    };
+  }
+])
+.factory('displayValue', [
+  'getType',
+  function (getType) {
+    return function (key, value) {
+      var type = getType(key, value);
+      // Set timezone to IST
+      moment().utcOffset(5.5);
+      switch (type) {
+      case 'timestamp':
+        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+      case 'amount':
+        return 'INR ' + (value / 100).toFixed(2);
+      default:
+        if (value === null) {
+          return 'null';
+        // We want to display an empty string prominently
+        } else if (value === '') {
+          return '"\u2000"';
+        } else {
+          return value;
+        }
+      }
+    };
+}])
+.factory('utils', function () {
+  return {
+    humanize: function (str) {
+      var frags = str.split('_');
+
+      for (var i = 0; i < frags.length; i++) {
+        frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+      }
+
+      return frags.join(' ');
+    }
   };
 });

@@ -11,6 +11,7 @@
 */
 Route::get('/', 'UserController@getIndex')->name('dashboard');
 Route::get('/admin', 'AdminController@getIndex');
+
 // This is for enabling CORS support on contact form submissions
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');

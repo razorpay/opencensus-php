@@ -18,7 +18,7 @@
         "maknz/slack": "dev-queue",
         "nesbot/carbon": "1.*",
         "phpunit/phpunit-selenium": "^3.0",
-        "razorpay/ifsc": "^0.1.1",
+        "razorpay/ifsc": "^0.2",
         "razorpay/spine": "dev-master",
         "rmccue/requests": ">=1.0",
         "rtconner/laravel-tagging": "~2.1",

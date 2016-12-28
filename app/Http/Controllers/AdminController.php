@@ -14,6 +14,8 @@ use Input;
 use Config;
 use OAuthFacade;
 use Redirect;
+use Cache;
+use Session;
 use View;
 
 class AdminController extends Controller
@@ -33,51 +35,158 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $this->admin = Auth::guard('admin')->user();
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
     }
 
+    /**
+     * Route = /admin/auth
+     * @return
+     */
+    public function initiateAuth()
+    {
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            return redirect('/admin');
+        }
+
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        $code = Input::get('code');
+
+        if (! empty($code))
+        {
+            $oauth = $this->triggerGoogleOAuth($code);
+
+            if (! empty($oauth))
+            {
+                return $oauth;
+            }
+        }
+
+        switch($org['auth_type'])
+        {
+            case 'google_auth':
+                return redirect($this->getGoogleOAuthUrl());
+        }
+
+        // Password login by default
+        return redirect('/admin#/access/auth/password');
+    }
+
+    /**
+     * We always return the view, since it does not
+     * contain anything sensitive
+     */
     public function getIndex()
     {
-        $code = Input::get('code');
+        return view('admin.tmpgetIndex');
+    }
+
+    protected function getGoogleOAuthUrl()
+    {
         $googleService = OAuthFacade::consumer('Google');
 
-        // If the user is not logged in
-        if (!Auth::guard('admin')->check())
-        {
-            // if code is provided get user data and sign in
-            if ($code !== null or env('OAUTH_MOCK') === true)
-            {
-                $error = (new Admin\Service)->loginWithGoogle($code, $googleService);
+        return (string) $googleService->getAuthorizationUri();
+    }
 
-                if (empty($error))
-                {
-                    return redirect('/admin');
-                }
-                else
-                {
-                    return AppResponse::jsonResponse($error, []);
-                }
+    public function triggerGoogleOAuth($code)
+    {
+        $googleService = OAuthFacade::consumer('Google');
+
+        // if code is provided get user data and sign in
+        if ($code !== null or env('OAUTH_MOCK') === true)
+        {
+            // Get Current Org first
+            $org = $this->getOrg()->getData(true);
+
+            if ($org['success'])
+            {
+                $org = $org['data'];
             }
             else
             {
-                return redirect((string) $googleService->getAuthorizationUri());
+                return AppResponse::jsonResponse(['Organization not found'], null);
+            }
+
+            $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
+
+            if (empty($error))
+            {
+                // sort of a page reload/refresh
+                return redirect('/admin');
+            }
+            else
+            {
+                return AppResponse::jsonResponse($error, []);
             }
         }
-        return view('admin.tmpgetIndex');
     }
 
     public function postSignin()
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->login($input);
+        $domain = \Request::server('SERVER_NAME');
 
-        return AppResponse::jsonResponse($error);
+        // This is password based login
+        list($error, $user) = (new Admin\Service)->passwordLogin($domain, $input);
+
+        if (! empty($error))
+        {
+            return AppResponse::jsonResponse($error, []);
+        }
+
+        if (Auth::guard('api')->check())
+        {
+            return AppResponse::jsonResponse(null);
+        }
+
+        return AppResponse::jsonResponse(['Invalid Credentials'], []);
+    }
+
+    public function getOrg()
+    {
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        return AppResponse::jsonResponse($error, $org);
     }
 
     public function getAdmin()
     {
-        return AppResponse::jsonResponse([], $this->admin->toArray());
+        // We are not caching admin data in session because permissions,
+        // roles, etc. might change
+        //
+        // So for now every time the user refreshes the page
+        // we will load entire payload and give it to the frontend
+        // to work with.
+        //
+        // Later at some point we'll have to shove all these data in
+        // redis and that'll work well.
+
+        $admin = Auth::guard('api')->user();
+
+        list($error, $data) = (new Admin\Service)->getAdminData($admin);
+
+        if (! empty($error))
+        {
+            Auth::guard('api')->logout();
+        }
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdminActivity()
@@ -107,7 +216,7 @@ class AdminController extends Controller
 
     public function getLogout()
     {
-        Auth::guard('admin')->logout();
+        Auth::guard('api')->logout();
 
         return AppResponse::jsonResponse([]);
     }
@@ -851,7 +960,34 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postSendMerchantInvitation()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendInvitation($input);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantInvitations()
+    {
+        list($error, $data) = (new Admin\Service)->getAdminLeads();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     // ----- /Credits -----
+
+    // ----- Heimdall (Whitelabel) -----
+
+    public function postUploadOrgLogo($orgId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->uploadOrgLogo($orgId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 
     public function getScheduleList()
     {

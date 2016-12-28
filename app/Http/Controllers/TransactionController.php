@@ -296,7 +296,7 @@ class TransactionController extends Controller
 
         if (isset($input['date']) === false)
         {
-            $timestamp = Carbon::today()->timestamp;
+            $timestamp = Carbon::yesterday()->timestamp;
         }
         else
         {

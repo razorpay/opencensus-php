@@ -10,17 +10,26 @@ app.controller('EntityDetailCtrl', [
   'statusClass',
   'isStatusKey',
   'getState',
-  function ($scope, $http, $stateParams, alertsFactory, $modal, statusClass, isStatusKey, getState) {
+  'getType',
+  'displayClass',
+  'displayValue',
+  function ($scope, $http, $stateParams, alertsFactory, $modal, statusClass, isStatusKey, getState, getType, displayClass, displayValue) {
     //Intialise alerts and scope functions
     $scope.getStatusClass = statusClass;
+    $scope.getState = getState;
+    $scope.getType = getType;
+    $scope.displayClass = displayClass;
+    $scope.displayValue = displayValue;
     $scope.isStatusKey = isStatusKey;
     $scope.alerts = alertsFactory.getHandler();
     $scope.mode = $stateParams.mode;
     $scope.entity = { id: $stateParams.id };
     $scope.loadType = $stateParams.type;
+
     $scope.generate = function (entityType) {
       fetchEntity(entityType);
     };
+
     function fetchEntity(entityType) {
       var url = '/admin/' + $scope.mode + '/fetchentity/' + entityType + '/' + $scope.entity.id;
       var request = $http.get(url);
@@ -37,38 +46,7 @@ app.controller('EntityDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
-    $scope.getState = getState;
-    $scope.displayValue = function (value, type) {
-      // Set timezone to IST
-      moment().zone(5.5);
-      switch (type) {
-      case 'timestamp':
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
-      case 'amount':
-        return 'INR ' + (value / 100).toFixed(2);
-      default:
-        if (value === null) {
-          return 'null';
-        } else if (value === '') {
-          return '"\u2000"';
-        } else {
-          return value;
-        }
-      }
-    };
-    $scope.displayClass = function (value) {
-      if (value === null) {
-        return 'label label-warning';
-      } else if (value === '') {
-        return 'label label-info';
-      } else {
-        return '';
-      }
-    };
-    // Removes _id from end
-    $scope.getEntity = function (key) {
-      return key.substr(0, key.length - 3);
-    };
+
     // Terminal Specific actions
     $scope.terminal = {
       delete: function (id) {
@@ -236,73 +214,6 @@ app.controller('EntityDetailCtrl', [
     $scope.getKeys = function () {
       var keys = Object.keys($scope.entity);
       return keys;
-    };
-    $scope.getType = function (key, value) {
-      var entity = key.substr(0, key.length - 3);
-      var isTimestamp = function (key) {
-        return key.substr(-3) === '_at';
-      };
-      // These have their own views
-      var specialEntities = [
-        'merchant_id',
-        'payment_id'
-      ];
-      var isId = function (key) {
-        var validEntities = [
-          'adjustment',
-          'amex',
-          'atom',
-          'axis_genius',
-          'axis_migs',
-          'balance',
-          'bank_account',
-          'bank_account',
-          'billdesk',
-          'card',
-          'credits',
-          'customer',
-          'daily_settlement',
-          'ebs',
-          'first_data',
-          'emi_plan',
-          'hdfc',
-          'iin',
-          'merchant',
-          'methods',
-          'mobikwik',
-          'netbanking',
-          'payment',
-          'payment_analytics',
-          'pricing',
-          'refund',
-          'settlement',
-          'settlement_details',
-          'schedule',
-          'terminal',
-          'token',
-          'transaction',
-          'wallet',
-          'webhook'
-        ];
-        // It needs to be suffixed with _id
-        // and be a valid entity name for this to work
-        return key.substr(-3) === '_id' && validEntities.indexOf(entity) > -1;
-      };
-      // Timestamps could be blank, which is why
-      // we consider its value as well
-      if (value && isTimestamp(key)) {
-        return 'timestamp';
-      }  // All other entity links are considered here
-      else if (isId(key)) {
-        if (specialEntities.indexOf(key) > -1) {
-          return $scope.getEntity(key);
-        } else {
-          return 'id';
-        }
-      }  // Unknown type is entity specific things, like currency
-      else {
-        return 'unknown';
-      }
     };
   }
 ]).controller('editTerminalModalCtrl', [
