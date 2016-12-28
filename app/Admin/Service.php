@@ -2666,6 +2666,9 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->admin->logout($orgId);
+
+            // Dashboard logout
+            Auth::guard('api')->logout();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
