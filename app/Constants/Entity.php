@@ -155,15 +155,15 @@ class Entity
     );
 
     protected static $repository = array(
-        self::NETBANKING_HDFC     => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_KOTAK    => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_AIRTEL   => \RZP\Gateway\Netbanking\Base::class,
-        self::UPI_ICICI           => \RZP\Gateway\Upi\Base::class,
-        self::WALLET_AIRTELMONEY  => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP      => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE   => \RZP\Gateway\Wallet\Base::class,
+        self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
+        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
     );
 
     protected static $syncedInLiveAndTest = array(

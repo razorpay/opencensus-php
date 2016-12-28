@@ -36,6 +36,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::PAYMENT_NEW_REQUEST, $request);
+
         return $request;
     }
 
@@ -82,17 +84,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
-        $response = $this->sendGatewayRequest($request);
-
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, (array) $request);
-
-        $responseArray = $this->getRefundResponseArray($response);
-
-        $attributes = $this->getRefundAttributes($responseArray, $input);
-
-        $this->createRefundEntity($responseArray, $input);
-
-        $this->checkRefundStatus($attributes, $responseArray);
+        $this->sendRefundRequestAndCheckResponse($request, $input);
     }
 
     public function verify(array $input)
@@ -256,6 +248,23 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function sendRefundRequestAndCheckResponse($request, $input)
+    {
+        $response = $this->sendGatewayRequest($request);
+
+        $responseArray = $this->getRefundResponseArray($response);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            (array) $responseArray);
+
+        $attributes = $this->getRefundAttributes($responseArray, $input);
+
+        $this->createRefundEntity($responseArray, $input);
+
+        $this->checkRefundStatus($attributes, $responseArray);
+    }
+
     protected function verifyAuthResponseHash($content)
     {
         $hashArray = $this->getAuthResponseHashArray($content);
@@ -360,6 +369,8 @@ class Gateway extends Base\Gateway
 
         if (hash_equals($responseHash, $hash) === false)
         {
+            $this->trace->error(TraceCode::, $responseHash);
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
@@ -479,7 +490,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $salt = $this->config['test_salt'];
+            $salt = $this->config['test_hash_secret'];
         }
 
         return $salt;
