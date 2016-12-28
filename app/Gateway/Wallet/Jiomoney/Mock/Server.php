@@ -136,19 +136,19 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        s($input);
-
-        $input = json_decode($input, true);
+        $decodedInput = json_decode($input, true);
 
         $response = [];
 
-        if (is_array($input))
+        if ($decodedInput !== null)
         {
-            $this->verifyStatusQueryHash($input);
+            $this->verifyStatusQueryHash($decodedInput);
 
-            $this->validateActionInput($input, 'status_query');
+            $this->validateActionInput($decodedInput, 'status_query');
 
-            if ($input['payload_data']['amount'] === TestAmount::FAIL_STATUSQUERY_AMOUNT)
+            $txnNotFound = $decodedInput['request_header']['txn_not_found'] ?? false;
+
+            if ($txnNotFound === true)
             {
                 $response = [
                     'response_header' => [
@@ -178,9 +178,9 @@ class Server extends Base\Mock\Server
                         'api_msg' => 'Transaction Fetched Successfully'
                     ],
                     'payload_data' => [
-                        'client_id' => $input['payload_data']['client_id'],
-                        'merchant_id' => $input['payload_data']['merchant_id'],
-                        'tran_ref_no' => $input['payload_data']['tran_ref_no'],
+                        'client_id' => $decodedInput['payload_data']['client_id'],
+                        'merchant_id' => $decodedInput['payload_data']['merchant_id'],
+                        'tran_ref_no' => $decodedInput['payload_data']['tran_ref_no'],
                         'jm_tran_ref_no' => $this->getJioMoneyTxnId(),
                         'txn_amount' => '5.00',
                         'txn_type' => 'JM',
@@ -191,7 +191,7 @@ class Server extends Base\Mock\Server
         }
         else
         {
-            $input = implode('~', $input);
+            $input = explode('~', $input);
 
             $checkPaymentStatusApiFields = [
                 RequestFields::APINAME,

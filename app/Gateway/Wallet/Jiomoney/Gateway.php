@@ -187,11 +187,11 @@ class Gateway extends Base\Gateway
 
         if ($this->getGatewayTxnStatus($content) === 'SUCCESS')
         {
-            $this->checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify);
+            $this->verifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify);
         }
         else
         {
-            $this->checkVerifyStatusOnGatewayFailure($gatewayPayment, $input, $verify);
+            $this->verifyStatusOnGatewayFailure($gatewayPayment, $input, $verify);
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -205,38 +205,15 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
+    protected function verifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
     {
         $verify->gatewaySuccess = true;
 
         $content = $verify->verifyResponseContent;
-        // $verifyResponse = $this->getVerifyResponseContent($verify->verifyResponseContent);
 
-        if ((($input['payment']['status'] !== PaymentStatus::CREATED) and
-                ($input['payment']['status'] !== PaymentStatus::FAILED) and
-                ($gatewayPayment !== null) and
-                ($gatewayPayment['status_code'] === StatusCode::SUCCESS)))
+        if (($input['payment']['status'] !== PaymentStatus::CREATED) and
+                ($input['payment']['status'] !== PaymentStatus::FAILED))
         {
-            $verify->apiSuccess = true;
-        }
-        elseif ((($input['payment']['status'] !== PaymentStatus::CREATED) and
-                 ($input['payment']['status'] !== PaymentStatus::FAILED) and
-                 (($gatewayPayment === null) or
-                  ($gatewayPayment['status_code'] !== Status::SUCCESS))))
-        {
-            $gatewayPaymentStatus = $gatewayPayment['status_code'] ?? '';
-
-            $gatewayTxnStatus = $this->getGatewayTxnStatus($content);
-
-            $this->trace->info(
-                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
-                    [
-                        'api_payment_status'      => $input['payment']['status'],
-                        'gateway_verify_response' => $gatewayTxnStatus,
-                        'payment_id'              => $input['payment']['id'],
-                        'gateway_payment_status'  => $gatewayPaymentStatus,
-                    ]);
-
             $verify->apiSuccess = true;
         }
         else
@@ -247,7 +224,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function checkVerifyStatusOnGatewayFailure($gatewayPayment, array $input, $verify)
+    public function verifyStatusOnGatewayFailure($gatewayPayment, array $input, $verify)
     {
         $verify->gatewaySuccess = false;
 
@@ -265,21 +242,19 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
         }
-        elseif (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) !== true)
+        elseif (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) === true)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
+            $verify->apiSuccess = true;
         }
     }
 
     protected function saveVerifyContent($gatewayPayment, $verify)
     {
         $this->action = Action::AUTHORIZE;
-
         if ($verify->gatewaySuccess === true)
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($verify);
-
             if ($gatewayPayment === null)
             {
                 $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
@@ -305,11 +280,14 @@ class Gateway extends Base\Gateway
 
         $contentToSave = array(
             ResponseFields::AMOUNT             => $payment['amount'],
+            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             WalletEntity::RECEIVED             => true,
             WalletEntity::EMAIL                => $payment['email'],
             WalletEntity::CONTACT              => $payment['contact'],
             ResponseFields::STATUS_CODE        => StatusCode::SUCCESS,
-            ResponseFields::GATEWAY_PAYMENT_ID => $verifyResponse['jm_tran_ref_no']
+            ResponseFields::RESPONSE_CODE      => 'SUCCESS',
+            ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
+            ResponseFields::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content)
         );
 
         return $contentToSave;
@@ -317,9 +295,6 @@ class Gateway extends Base\Gateway
 
     public function validStatusQueryResponse($content)
     {
-        // s($this->jsonToArray($response->body));
-        // $content = $this->jsonToArray($response->body);
-
         if (isset($content['response_header']) === true)
         {
             return $content['response_header']['api_status'] === '1';
@@ -341,6 +316,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getGatewayPaymentId(array $content)
+    {
+        if ($this->validStatusQueryResponse($content) === true)
+        {
+            return $content['payload_data']['txn_status'];
+        }
+        else
+        {
+            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                    [ResponseFields::JM_TRAN_REF_NO];
+        }
+    }
 
     protected function callbackAuthSuccessFlow(array $input)
     {
@@ -696,12 +683,12 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getStringToHash($content, $glue = '|')
+    public function getStringToHash($content, $glue = '|')
     {
         return implode($glue, $content);
     }
 
-    protected function getHashOfString($hashString)
+    public function getHashOfString($hashString)
     {
         $secret = $this->getSecret();
 

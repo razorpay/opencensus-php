@@ -64,6 +64,7 @@ class Validator extends Base\Validator
     protected static $statusQueryRequestHeaderRules = [
         'version' => 'required|string|in:1.0',
         'api_name' => 'required|string|in:STATUSQUERY',
+        'txn_not_found' => 'sometimes'
     ];
 
     protected static $statusQueryPayLoadRules = [

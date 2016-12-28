@@ -120,16 +120,49 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
-    // public function testCheckPaymentStatusApiVerifyPayment()
-    // {
-    //     $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+    public function testCheckPaymentStatusApiVerifyPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
-    //     $authPayment = $this->doAuthPayment($payment);
+        $payment['amount'] = TestAmount::FAIL_STATUSQUERY_AMOUNT;
 
-    //     $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+        $authPayment = $this->doAuthPayment($payment);
 
-    //     $this->assertSame($this->payment['payment']['verified'], 1);
-    // }
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create(
+            'payment:failed',
+            [
+                'email'         => 'a@b.com',
+                'amount'        => 50000,
+                'contact'       => '9918899029',
+                'method'        => 'wallet',
+                'wallet'        => 'jiomoney',
+                'gateway'       => 'wallet_jiomoney',
+                'card_id'       => null,
+                'terminal_id'   => $this->sharedTerminal->id
+            ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
 
     protected function runPaymentCallbackFlowWalletJiomoney($response, & $callback = null)
     {

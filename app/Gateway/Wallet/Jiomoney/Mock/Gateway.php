@@ -30,7 +30,10 @@ class Gateway extends Jiomoney\Gateway
 
         $content = json_decode($request['content'], true);
 
-        $content['payload_data']['amount'] = Jiomoney\TestAmount::FAIL_STATUSQUERY_AMOUNT;
+        if ($input['payment']['amount'] === Jiomoney\TestAmount::FAIL_STATUSQUERY_AMOUNT)
+        {
+            $content['request_header']['txn_not_found'] = true;
+        }
 
         $request['content'] = json_encode($content);
 
