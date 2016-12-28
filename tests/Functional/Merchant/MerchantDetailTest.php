@@ -19,6 +19,15 @@ class MerchantDetailTest extends TestCase
         parent::setUp();
     }
 
+    public function testGetMerchantDetails()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testUpdateIFSCCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -130,6 +139,21 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', $params);
 
         $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCommentMerchantWithNoMerchantDetail()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $merchantId = $merchant['id'];
 
         $testData = & $this->testData[__FUNCTION__];
 

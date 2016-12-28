@@ -619,6 +619,8 @@ class MerchantFeeTest extends TestCase
 
         $payment->setRecurring($isRecurring);
 
+        $payment->setBaseAmount($amount);
+
         return $payment;
     }
 
@@ -633,6 +635,8 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
 
         $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount($amount);
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 

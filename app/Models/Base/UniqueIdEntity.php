@@ -233,9 +233,15 @@ class UniqueIdEntity extends Entity
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
 
-        // Only 4 base 62 digits are needed, so cutoff any more.
+        // Only 4 base 62 digits are needed, so cutoff any more and pad with
+        // 0 if less.
+
         if (strlen($rand) > 4)
+        {
             $rand = substr($rand, -4);
+        }
+
+        $rand = str_pad($rand, 4, '0', STR_PAD_LEFT);
 
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier

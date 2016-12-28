@@ -4,17 +4,13 @@ namespace RZP\Tests\Functional\Admin;
 
 use Carbon\Carbon;
 use Hash;
-use DB;
-use Str;
-
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\HeimdallTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 
 use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Role;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class AdminTest extends TestCase
 {
@@ -34,7 +30,9 @@ class AdminTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
-        $this->ba->adminAuth();
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken);
 
         $this->repo = (new Admin\Repository);
     }
@@ -145,7 +143,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->groups->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['roles']));
     }
 
     public function testDeleteAllGroupsAdmin()
@@ -164,7 +167,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->roles->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['groups']));
     }
 
     public function testDeleteAdmin()
@@ -175,7 +183,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -188,7 +196,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin['org_id'], $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -378,8 +386,6 @@ class AdminTest extends TestCase
 
     public function testSelfEditAdminFailed()
     {
-        $this->ba->adminAuth();
-
         $admin = $this->ba->getAdmin();
 
         $org = $admin->org;
@@ -395,25 +401,21 @@ class AdminTest extends TestCase
 
     public function testSelfDeleteAdminFailed()
     {
-        $this->ba->adminAuth();
-
         $admin = $this->ba->getAdmin();
-
-        $org = $admin->org;
 
         $data = $this->testData['testSelfEditAdminFailed'];
 
-        $this->runRequestResponseFlow($data, function() use ($org, $admin)
+        $this->runRequestResponseFlow($data, function() use ($admin)
         {
-            $this->deleteAdmin($org->getPublicId(), $admin->getPublicId());
+            $this->deleteAdmin(
+                $admin->getPublicOrgId(),
+                $admin->getPublicId(),
+                $this->authToken);
         });
     }
 
     public function testSuperAdmin()
     {
-        // By default - superadmin's creds are used for admin auth
-        $this->ba->adminAuth();
-
         $admin = $this->ba->getAdmin();
 
         $this->assertEquals($admin->isSuperAdmin(), true);
@@ -443,7 +445,7 @@ class AdminTest extends TestCase
         if ((isset($result['success']) === true) and
             ($result['success'] === true))
         {
-            $admin = $this->getEntityById('admin', $admin->getId(), true);
+            $admin = $this->repo->findOrFailPublic($admin->getId());
 
             $this->assertTrue(Hash::check($newPassword, $admin['password']));
         }
@@ -470,7 +472,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check($oldPwd, $admin['password']));
     }
@@ -563,5 +565,56 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+     }
+
+     public function testGetAdminByEmailOnAppAuth()
+     {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
+            Admin\Entity::NAME    => 'test admin app auth',
+        ]);
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+     }
+
+     public function testEditAdminOnAppAuth()
+     {
+        $this->ba->appAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $managerRole = Role\Entity::getSignedId(Org::MANAGER_ROLE);
+
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $managerRole;
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['roles'][0]['id'], $managerRole);
+
+        $this->assertEquals($result['groups'][0]['id'], $group);
      }
 }
