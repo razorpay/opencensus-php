@@ -37,6 +37,13 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'upi_npci';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->crypto = new Crypto($this->config);
+    }
+
     protected function getCommonVariables()
     {
         return [
@@ -95,7 +102,7 @@ EOT;
         $p2pId = $txn->getNote();
 
         $cred = $request->getPayer()->getCreds()[0];
-        $mpin = $this->decrypt($cred->getData()->value());
+        $mpin = $this->crypto->decrypt($cred->getData()->value());
 
         return [
             'p2p_id'    =>  $txn->getNote(),
@@ -170,8 +177,8 @@ EOT;
         $creds['last6'] = $details->getDetailByName('CARDDIGITS');
         $creds['expiry'] = $details->getDetailByName('EXPDATE');
 
-        $creds['otp'] = $this->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
-        $creds['mpin'] = $this->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
+        $creds['otp'] = $this->crypto->decrypt($details->getCredByTypeAndSubType('OTP', 'SMS'));
+        $creds['mpin'] = $this->crypto->decrypt($details->getCredByTypeAndSubType('PIN', 'MPIN'));
 
         // $creds['otp'] = $details->getCredByTypeAndSubType('OTP', 'SMS');
         // $creds['mpin'] = $details->getCredByTypeAndSubType('PIN', 'MPIN');
@@ -237,8 +244,8 @@ EOT;
 
         $account = $request->getPayer()->getAc();
 
-        $creds['mpin'] = $this->decrypt($request->getPayer()->getCreds()[0]->getData()->value());
-        $creds['nmpin'] = $this->decrypt(($request->getPayer()->getNewCred()[0]->getData()->value()));
+        $creds['mpin'] = $this->crypto->decrypt($request->getPayer()->getCreds()[0]->getData()->value());
+        $creds['nmpin'] = $this->crypto->decrypt(($request->getPayer()->getNewCred()[0]->getData()->value()));
 
         $creds['account'] = [
             'IFSC'  => $account->getDetailByName('IFSC'),
@@ -246,59 +253,6 @@ EOT;
         ];
 
         return $creds;
-    }
-
-    /**
-     * This is the private key used for
-     * decrypting responses we get from the
-     * gateway server
-     * @see getPublicKey
-     * @return string Private Key
-     */
-    protected function getPrivateKey()
-    {
-        $key = $this->config['test_private_key'];
-
-        // The trim is to make sure that the key doesn't end with
-        // an extra newline
-        return trim(str_replace('\n', "\n", $key));
-    }
-
-    /**
-     * Decrypts responses from the ICICI API
-     * @param  string $data
-     * @return string
-     */
-    public function decrypt($data)
-    {
-        $data = base64_decode($data);
-
-        $rsa = $this->getRSAInstance();
-
-        $key = $this->getPrivateKey();
-
-        $rsa->loadKey($key);
-
-        return $rsa->decrypt($data);
-    }
-
-    protected function getRSAInstance()
-    {
-        /**
-         * We need to do this to use PCCS 1.5 instead of 1.7
-         * which is the default. This is because of what the
-         * bank uses on the other side.
-         */
-        if (defined('CRYPT_RSA_PKCS15_COMPAT') === false)
-        {
-            define('CRYPT_RSA_PKCS15_COMPAT', true);
-        }
-
-        $rsa = new RSA();
-
-        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
-
-        return $rsa;
     }
 
     /**
@@ -816,19 +770,7 @@ EOT;
     {
         $xml = str_replace("\n", "", $xml);
 
-        $inputxml = tempnam(sys_get_temp_dir(), 'req');
-        file_put_contents($inputxml, $xml);
-
-        $outputxml = tempnam(sys_get_temp_dir(), 'res');
-
-        $privateKey = storage_path('certs/razorpay-npci-pkcs8.key');
-        $publicKey  = storage_path('certs/razorpay-npci.pub');
-
-        chdir(app_path('../scripts'));
-
-        shell_exec("/usr/bin/java SignatureGen '$inputxml' '$outputxml' '$privateKey' '$publicKey'");
-
-        return file_get_contents($outputxml);
+        return $this->crypto->sign($xml);
     }
 
     protected function fireRequest(string $method, string $txnId, string $unsignedXml)
