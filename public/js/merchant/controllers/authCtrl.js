@@ -319,5 +319,34 @@ app.controller('AuthCtrl', [
       })
     }
 
+    $scope.forgotPwdSubmit = function ($valid) {
+      if (!$valid) {
+        $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
+        return true;
+      }
+
+      // todo show spinner
+      var payload = {
+        method: 'post',
+        url: '/user/password/reset',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          email: $scope.login.data.email
+        }
+      }
+
+      var request = $http(payload);
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email from Razorpay.');
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+    }
+
   }
 ]);
