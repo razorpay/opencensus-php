@@ -13,7 +13,7 @@ app.controller('AuthCtrl', [
   '$cookies',
   function ($scope, $http, $state, $stateParams, $location, alertsFactory, user, 
     transformRequestAsFormPost, $analytics, $window, $cookies) {
-
+    console.log('state params', $stateParams)
     $scope.toArray = function (obj) {
       if (!obj) {
         return [];
@@ -23,7 +23,8 @@ app.controller('AuthCtrl', [
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false; // login layout ? right is true : right is false
-    
+    $scope.showPreSignup = $stateParams.showPreSignup
+    debugger
     // signup state container
     $scope.signup = {
       currentStep: 0, // 0, 1, 2, 3
@@ -250,8 +251,8 @@ app.controller('AuthCtrl', [
         email: '',
         password: '',
       },
-      currentStep: 0, // 0 -> login/otp, 1 -> forgotpwd
-      currentSubStep: 0, // 0 -> email+pwd, 1 -> otp
+      currentStep: 1, // 0 -> questions, 1 -> login, 2 -> forgotpwd
+      currentSubStep: 0, // 0 -> email+pwd
     }
 
     if (['access.signin', 'access.forgotpwd'].indexOf($state.current.name) !== -1) {
@@ -260,8 +261,14 @@ app.controller('AuthCtrl', [
       setTimeout(function () {
         $('.auth-container').removeClass('no-transition')
       }, 200)
-      if ($state.current.name === 'access.forgotpwd') {
-        $scope.login.currentStep = 1;
+      if ($state.current.name === 'access.signin') {
+        if ($scope.showPreSignup) {
+          $scope.login.currentStep = 0;
+        } else {
+          $scope.login.currentStep = 1;
+        }
+      } else if ($state.current.name === 'access.forgotpwd') {
+        $scope.login.currentStep = 2;
       }
     }
 

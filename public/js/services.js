@@ -22,11 +22,12 @@ angular.module('app.services', [])
         _identity = identity;
         _authenticated = identity !== null;
       },
-
       getIdentity: function() {
         return _identity;
       },
-
+      isPreSignupDone: function() {
+        return _identity && _identity.isPreSignupDone;
+      },
       identity: function (force) {
         var deferred = $q.defer();
         if (force === true)
@@ -41,6 +42,12 @@ angular.module('app.services', [])
           if (data.data.steps_finished) {
             _identity.activation_progress = parseInt(data.data.steps_finished.length * 100 / 5);
           }
+          // if any of the fields is missing, isPreSignupDone will be false
+          _identity.isPreSignupDone = !!Object.keys(_identity.pre_signup)
+            // get all values
+            .map(function (key) {return _identity.pre_signup[key]})
+            // reduce all values using '&&'
+            .reduce(function (x, y){return x && y});
           _authenticated = data.success === true;
           if (_authenticated)
             $idle.watch();
@@ -74,7 +81,7 @@ angular.module('app.services', [])
             }
           }
           else if ($rootScope.toState.data.role === 'guest') {
-            if (user.isAuthenticated() === true) {
+            if (user.isAuthenticated()) {
               if ($rootScope.role === 'sellerapp') {
                 $state.go('app.invoices');
               } else {

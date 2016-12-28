@@ -228,7 +228,10 @@ var app = angular.module('app', [
     // auth routes
     .state('access.signin', {
       url: '/signin',
-      templateUrl: 'tpl/auth/index.html'
+      templateUrl: 'tpl/auth/index.html',
+      params: {
+        showPreSignup: false
+      }
     }).state('access.lockme', {
       url: '/lockme/:email',
       templateUrl: 'tpl/auth/index.html'
