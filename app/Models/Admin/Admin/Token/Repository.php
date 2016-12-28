@@ -23,11 +23,4 @@ class Repository extends Base\Repository
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->get();
     }
-
-    public function deleteTokensForAdmin(string $adminId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ADMIN_ID, '=', $adminId)
-                    ->delete();
-    }
 }
