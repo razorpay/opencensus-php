@@ -65,17 +65,16 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
         //
         // If all of the requested ids are found, return the collection.
         //
-
-        $foundIds = $models->pluck('id')->toArray();
-
-        if (count($foundIds) === count($ids))
+        if ($models->count() === count($ids))
         {
             return $models;
         }
 
         //
-        // Else, throw error with attributes holding all not found ids.
+        // All ids not found so trace the diff with attributes
+        // holding all the not found ids.
         //
+        $foundIds = $models->pluck('id')->toArray();
 
         $notFoundIds = array_diff($ids, $foundIds);
 
