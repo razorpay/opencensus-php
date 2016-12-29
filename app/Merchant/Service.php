@@ -291,7 +291,6 @@ class Service extends Base\Service
         // Once the merchant is created we also have to tag him
         // with the admin if he was invited by one.
         $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
         if ($lead)
         {
             $merchantApiData['admin_id'] = $lead->admin_id;
@@ -324,7 +323,7 @@ class Service extends Base\Service
         // Save complete merchant details on api side
         $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetails->toArray());
+        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetail->toArray());
 
         return array();
     }

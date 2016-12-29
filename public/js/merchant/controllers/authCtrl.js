@@ -29,6 +29,8 @@ app.controller('AuthCtrl', [
       $scope.login_logo = data.login_logo_url || 'img/logo_full.png'; 
     });
 
+    $scope.signupDisabled = true;
+
     // signup state container
     $scope.signup = {
       currentStep: 0, // 0, 1, 2, 3
