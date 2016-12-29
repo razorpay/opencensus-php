@@ -46,7 +46,7 @@ trait Refund
             Payment\Gateway::AXIS_MIGS
         ];
 
-        // Currently doing it for only HDFC. In case when other gateways start
+        // Currently doing it for only HDFC and Migs. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
         if (in_array($payment->getGateway(), $verifyRefundGateways, true) === false)
         {
