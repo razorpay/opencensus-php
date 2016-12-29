@@ -4,6 +4,9 @@ namespace RZP\Gateway\Netbanking\Airtel\Mock;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Netbanking\Airtel\Status;
 use RZP\Gateway\Netbanking\Airtel\Constants;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
@@ -17,7 +20,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $content = $this->createCallbackResponse($input);
+        $content = $this->createCallbackResponseArray($input);
 
         $this->content($content);
 
@@ -53,21 +56,13 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function createCallbackResponse($input)
-    {
-        // Creating a success response
-        $response = $this->createAuthResponseArray($input);
-
-        return $response;
-    }
-
     protected function createRefundResponse($request)
     {
         $hashArray = $this->getRefundHashArray($request);
 
         $this->content($hashArray);
 
-        $hash = $this->generateHash($hashArray);
+        $hash = $this->getHash($hashArray);
 
         $hashArray[RefundFields::HASH] = $hash;
 
@@ -78,38 +73,73 @@ class Server extends Base\Mock\Server
         return json_encode($data);
     }
 
-    protected function createAuthResponseArray($input)
+    protected function createCallbackResponseArray($input)
     {
-        $hashArray = $this->getAuthResponseHashArray($input);
-
-        $hash = $this->generateHash($hashArray);
-
-        $response = $this->getAdditionalAuthData($hash);
-
-        $response = array_merge($hashArray, $response);
-
-        return $response;
-    }
-
-    protected function getAuthResponseHashArray($input)
-    {
-        return [
+        $response = [
             AuthFields::MERCHANT_ID               => $input[AuthFields::MERCHANT_ID],
             AuthFields::TRANSACTION_ID            => mt_rand(11111111, 99999999),
             AuthFields::TRANSACTION_REFERENCE_NO  => $input[AuthFields::TRANSACTION_REFERENCE_NO],
             AuthFields::TRANSACTION_AMOUNT        => $input[AuthFields::AMOUNT],
             AuthFields::TRANSACTION_DATE          => $input[AuthFields::DATE],
-        ];
-    }
-
-    protected function getAdditionalAuthData($hash)
-    {
-        return [
-            AuthFields::STATUS                    => Constants::SUCCESS,
+            AuthFields::STATUS                    => Status::SUCCESS,
             AuthFields::CODE                      => Constants::CODE,
             AuthFields::MSG                       => Constants::SUCCESS_MSG,
             AuthFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
-            AuthFields::HASH                      => $hash
+        ];
+
+        $response[AuthFields::HASH] = $this->generateHash($response);
+
+        return $response;
+    }
+
+    protected function getHash($input)
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+            {
+                $content = $this->getCallbackHashArray($input);
+            }
+        }
+
+        return $this->getHashOfArray($content);
+    }
+
+    protected function getHashOfArray($content)
+    {
+        $hashString = $this->getStringToHash($content, '#');
+
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        return implode($glue, $content);
+    }
+
+    protected function getHashOfString($string)
+    {
+        return hash(HashAlgo::SHA512, $string);
+    }
+
+    protected function getCallbackHashArray($input)
+    {
+        return [
+            AuthFields::MERCHANT_ID               => $input[AuthFields::MERCHANT_ID],
+            AuthFields::TRANSACTION_ID            => $input[AuthFields::TRANSACTION_ID],
+            AuthFields::TRANSACTION_REFERENCE_NO  => $input[AuthFields::TRANSACTION_REFERENCE_NO],
+            AuthFields::TRANSACTION_AMOUNT        => $input[AuthFields::TRANSACTION_AMOUNT],
+            AuthFields::TRANSACTION_DATE          => $input[AuthFields::TRANSACTION_DATE],
+        ];
+    }
+
+    protected function getAdditionalAuthData()
+    {
+        return [
+            AuthFields::STATUS                    => Status::SUCCESS,
+            AuthFields::CODE                      => Constants::CODE,
+            AuthFields::MSG                       => Constants::SUCCESS_MSG,
+            AuthFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
         ];
     }
 
@@ -124,7 +154,7 @@ class Server extends Base\Mock\Server
             RefundFields::AMOUNT                   => $input[RefundFields::AMOUNT],
             RefundFields::TRANSACTION_ID           => $input[RefundFields::TRANSACTION_ID],
             RefundFields::TRANSACTION_DATE         => $date,
-            RefundFields::STATUS                   => Constants::SUCCESS
+            RefundFields::STATUS                   => Status::SUCCESS
         ];
     }
 
@@ -164,7 +194,7 @@ class Server extends Base\Mock\Server
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         return [
-            VerifyFields::STATUS                => Constants::SUCCESS,
+            VerifyFields::STATUS                => Status::SUCCESS,
             VerifyFields::TRANSACTION_ID        => mt_rand(111111111, 999999999),
             VerifyFields::TRANSACTION_DATE      => $date,
             VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],

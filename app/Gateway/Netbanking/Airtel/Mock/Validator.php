@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         AuthFields::END_MERCHANT_NAME         => 'sometimes',
         AuthFields::CUSTOMER_MOBILE           => 'required',
         AuthFields::CUSTOMER_EMAIL            => 'required',
-        AuthFields::SERVICE                   => 'required',
+        AuthFields::SERVICE                   => 'required|size:2',
         AuthFields::HASH                      => 'required',
     ];
 

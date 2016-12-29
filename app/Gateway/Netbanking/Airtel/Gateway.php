@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Netbanking\Airtel;
 
 use Carbon\Carbon;
+use RZP\Gateway\Base\Action;
+use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -23,6 +25,8 @@ class Gateway extends Base\Gateway
     protected $map = [
         AuthFields::AMOUNT => 'amount'
     ];
+
+    protected $request = true;
 
     const STATUS_MATCH = GatewayBase\VerifyResult::STATUS_MATCH;
 
@@ -53,7 +57,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($content, $input);
 
-        $this->verifyAuthResponseHash($content);
+        $this->request = false;
+
+        $this->verifySecureHash($content);
 
         $attributes = $this->getCallackAttributes($content);
 
@@ -100,6 +106,12 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponseBody = $response->body;
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            $responseArray);
     }
 
     public function verifyPayment($verify)
@@ -118,10 +130,6 @@ class Gateway extends Base\Gateway
     protected function getVerifyStatus($verify, $response)
     {
         $status = self::STATUS_MATCH;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $response);
 
         $this->setApiSuccess($verify);
 
@@ -153,7 +161,7 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if (isset($response[VerifyFields::STATUS]) and
-            $response[VerifyFields::STATUS] === Constants::SUCCESS)
+            $response[VerifyFields::STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -176,7 +184,7 @@ class Gateway extends Base\Gateway
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             AuthFields::AMOUNT                   => $amount,
             AuthFields::DATE                     => $date,
-            AuthFields::SERVICE                  => Constants::NETBANKING,
+            AuthFields::SERVICE                  => SERVICE::NETBANKING,
             AuthFields::SUCCESS_URL              => $callbackUrl,
             AuthFields::FAILURE_URL              => $callbackUrl,
             AuthFields::CURRENCY                 => Constants::INDIAN_RUPEE,
@@ -184,9 +192,9 @@ class Gateway extends Base\Gateway
             AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
         ];
 
-        $hashArray = array_slice($data, 0, 5);
+        $this->request = true;
 
-        $data[AuthFields::HASH] = $this->generateHash($hashArray);
+        $data[AuthFields::HASH] = $this->generateHash($data);
 
         return $data;
     }
@@ -200,10 +208,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    /*
-     * Overrides the default method contained in Base/Gateway
-     */
-    public function getHashOfArray($data)
+    /*public function getHashOfArray($data)
     {
         $values = array_values($data);
 
@@ -214,6 +219,51 @@ class Gateway extends Base\Gateway
         $hashString = $this->getStringToHash($values, '#');
 
         return $this->getHashOfString($hashString);
+    }*/
+
+    protected function getHashValueFromContent(array $content)
+    {
+        switch ($this->action)
+        {
+            case Action::CALLBACK:
+            {
+                return $content[AuthFields::HASH];
+            }
+        }
+    }
+
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
+    protected function getHashOfArray($content)
+    {
+        $hashString = $this->getStringToHash($content, '#');
+
+        return $this->getHashOfString($hashString);
+    }
+
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
+    protected function getStringToHash($content, $glue = '')
+    {
+        s($this->action);
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+            {
+                $data = $this->getAuthorizeRequestHashArray($content);
+                break;
+            }
+
+            case Action::CALLBACK:
+            {
+                $data = $this->getCallbackResponseHashArray($content);
+                break;
+            }
+        }
+
+        return implode($glue, $data);
     }
 
     /*
@@ -221,7 +271,7 @@ class Gateway extends Base\Gateway
      */
     public function getHashOfString($string)
     {
-        return hash(Constants::HASH_ALGORITHM, $string);
+        return hash(HashAlgo::SHA512, $string);
     }
 
     protected function getCallackAttributes($content)
@@ -238,7 +288,7 @@ class Gateway extends Base\Gateway
 
     protected function assertCallbackAttributes($attributes, $content)
     {
-        if ($attributes[Netbanking\Entity::STATUS] !== Constants::SUCCESS)
+        if ($attributes[Netbanking\Entity::STATUS] !== Status::SUCCESS)
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -262,17 +312,17 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
-        $this->createGatewayRefundEntity($responseArray);
+        $this->createGatewayActionEntity($responseArray);
 
         $this->checkRefundStatus($attributes, $responseArray);
     }
 
-    protected function verifyAuthResponseHash($content)
+    /*protected function verifyAuthResponseHash($content)
     {
         $hashArray = $this->getAuthResponseHashArray($content);
 
         $this->assertResponseHash($hashArray, $content[AuthFields::HASH]);
-    }
+    }*/
 
     protected function getPaymentVerifyData($verify)
     {
@@ -376,7 +426,7 @@ class Gateway extends Base\Gateway
             $refundArray[RefundFields::HASH]);
 
         if ((isset($attributes[RefundFields::STATUS]) === false) or
-            ($attributes[RefundFields::STATUS] !== Constants::SUCCESS))
+            ($attributes[RefundFields::STATUS] !== Status::SUCCESS))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
@@ -408,7 +458,18 @@ class Gateway extends Base\Gateway
         return $attrs;
     }
 
-    protected function getAuthResponseHashArray($content)
+    protected function getAuthorizeRequestHashArray($content)
+    {
+        return [
+            AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
+            AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
+            AuthFields::AMOUNT                   => $content[AuthFields::AMOUNT],
+            AuthFields::DATE                     => $content[AuthFields::DATE],
+            AuthFields::SERVICE                  => $content[AuthFields::SERVICE],
+        ];
+    }
+
+    protected function getCallbackResponseHashArray($content)
     {
         return [
             AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],

@@ -33,7 +33,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes)
+    protected function createGatewayActionEntity($attributes)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 

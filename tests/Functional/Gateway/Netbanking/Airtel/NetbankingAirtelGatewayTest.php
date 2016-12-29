@@ -26,7 +26,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_airtel_terminal');
     }
 
-    public function testPayment()
+    public function testPaymentAuth()
     {
         $payment = $this->doAuthPayment($this->payment);
 
