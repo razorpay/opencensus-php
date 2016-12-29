@@ -93,7 +93,7 @@ class SubscriptionTest extends TestCase
             'testCreateSubscription', $plan->getPublicId(), $tokenId);
 
         $requestContent['request']['url'] = '/plans/' . $plan->getPublicId() . '/subscriptions/';
-        $requestContent['request']['content']['token_id'] = $tokenId;
+        // $requestContent['request']['content']['token_id'] = $tokenId;
 
         $this->ba->privateAuth();
 
@@ -109,7 +109,7 @@ class SubscriptionTest extends TestCase
         $requestContent = $this->testData[$function];
 
         $requestContent['request']['url'] = '/plans/' . $planId . '/subscriptions/';
-        //$requestContent['request']['content']['token_id'] = $tokenId;
+        // $requestContent['request']['content']['token_id'] = $tokenId;
 
         $startAt = time() + 100;
         $endAt = $startAt + 86000;
