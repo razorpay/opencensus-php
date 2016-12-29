@@ -167,6 +167,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicToTypeAttribute(array & $attributes)
+    {
+        $toType = $this->getAttribute(self::TO_TYPE);
+
+        if ($toType === 'merchant')
+        {
+            $toType = 'account';
+        }
+
+        $attributes[self::TO_TYPE] = $toType;
+    }
+
     public function setPublicSourceIdAttribute(array & $attributes)
     {
         $sourceId = $this->getAttribute(self::SOURCE_ID);

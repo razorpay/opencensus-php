@@ -103,7 +103,7 @@ class PaymentMarketplaceTransferTest extends TestCase
                 [
                     'source_type'     => 'payment',
                     'source_id'       => $this->payment['id'],
-                    'to_type'         => 'merchant',
+                    'to_type'         => 'account',
                     'to_id'           => 'acc_10000000000001',
                     'amount'          => 4000,
                     'amount_reversed' => 0
@@ -146,7 +146,7 @@ class PaymentMarketplaceTransferTest extends TestCase
                 [
                     'source_type'     => 'payment',
                     'source_id'       => $this->payment['id'],
-                    'to_type'         => 'merchant',
+                    'to_type'         => 'account',
                     'to_id'           => 'acc_10000000000001',
                     'amount'          => 43000,
                     'amount_reversed' => 0
@@ -154,7 +154,7 @@ class PaymentMarketplaceTransferTest extends TestCase
                 [
                     'source_type'     => 'payment',
                     'source_id'       => $this->payment['id'],
-                    'to_type'         => 'merchant',
+                    'to_type'         => 'account',
                     'to_id'           => 'acc_10000000000002',
                     'amount'          => 7000,
                     'amount_reversed' => 0

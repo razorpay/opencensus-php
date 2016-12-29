@@ -229,6 +229,8 @@ class Processor
 
         $payment = $this->createPaymentEntity($paymentData);
 
+        $this->processCurrencyConversions($payment);
+
         $payment->setStatus(Status::CAPTURED);
 
         $payment->setMarketplaceGateway();

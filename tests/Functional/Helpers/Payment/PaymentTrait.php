@@ -626,7 +626,7 @@ trait PaymentTrait
 
         if (empty($reversals) === false)
         {
-            $content['transfers'] = $reversals;
+            $content['reversals'] = $reversals;
         }
 
         $request = [

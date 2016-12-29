@@ -332,9 +332,18 @@ trait Refund
 
         foreach ($transfers as $transfer)
         {
+            $amountToReverse = $transfer->getAmountUnreversed();
+
+            $transferId = $transfer->getPublicId();
+
+            if ($amountToReverse === 0)
+            {
+                continue;
+            }
+
             $reversals[] = [
-                'transfer'  => $transfer->getPublicId(),
-                'amount'    => $transfer->getAmountUnreversed()
+                'transfer'  => $transferId,
+                'amount'    => $amountToReverse,
             ];
         }
 
@@ -373,6 +382,13 @@ trait Refund
         $transfer = $this->repo
                          ->transfer
                          ->findByPublicIdAndMerchant($transferId, $this->merchant);
+
+        if ($transfer->getAmountUnreversed() === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        'Transfer ID: ' . $transferId . 'has been fully reversed already'
+                    );
+        }
 
         $accountId = $transfer->getToId();
 

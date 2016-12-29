@@ -11,6 +11,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 
 class Core extends Base\Core
 {
@@ -114,7 +115,7 @@ class Core extends Base\Core
      */
     protected function customerTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
     {
-        $this->verifyFeatureAllowed(Merchant\Features::B2BWALLET);
+        $this->verifyFeatureAllowed(Feature\Constants::B2BWALLET);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
@@ -145,7 +146,7 @@ class Core extends Base\Core
      */
     protected function accountTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
     {
-        $this->verifyFeatureAllowed(Merchant\Features::MARKETPLACE);
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE);
 
         $accountId = $transfer[ToType::ACCOUNT];
 

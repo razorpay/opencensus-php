@@ -119,7 +119,7 @@ class Validator extends Base\Validator
 
         $transferSum = 0;
 
-        foreach ($input['transfers'] as $transfer)
+        foreach ($input['reversals'] as $transfer)
         {
             $transferSum += $transfer['amount'];
         }

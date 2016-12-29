@@ -3,6 +3,7 @@
 namespace RZP\Models\ReverseTransfer;
 
 use RZP\Models\Base;
+use RZP\Models\Transfer;
 
 class Entity extends Base\PublicEntity
 {
@@ -45,6 +46,12 @@ class Entity extends Base\PublicEntity
         self::AMOUNT    => 'int',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::TRANSFER_ID,
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function transaction()
@@ -67,5 +74,15 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function setPublicTransferIdAttribute(array & $attributes)
+    {
+        $transferId = $this->getAttribute(self::TRANSFER_ID);
+
+        if ($transferId !== null)
+        {
+            $attributes[self::TRANSFER_ID] = Transfer\Entity::getSignedId($transferId);
+        }
     }
 }
