@@ -358,6 +358,40 @@ final class Route
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'international_exchange_rates'            => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
+
+        // UPI
+        'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
+        'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],
+        'customer_collect_request_fetch_private'  => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
+        'device_create'                           => ['post',     'upi/devices',                                    'DeviceController@createDevice'                                     ],
+        'device_refresh_token'                    => ['put',      'upi/device/upi_token',                           'DeviceController@refreshUpiToken'                                  ],
+        'device_verify'                           => ['post',     'upi/devices/verify',                             'DeviceController@verifyDevice'                                     ],
+        'device_fetch'                            => ['get',      'upi/devices/{id}',                               'DeviceController@getDevice'                                        ],
+        'upi_customer_bank_accounts_fetch'        => ['get',      'upi/bank_accounts/ifsc/{ifsc}',                  'CustomerController@fetchUpiBankAccounts'                           ],
+        'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
+        'customer_bank_account_fetch'             => ['get',      'upi/bank_accounts/{id}',                         'CustomerController@fetchBankAccount'                               ],
+        'reset_mpin'                              => ['put',      'upi/bank_accounts/{id}/mpin',                    'CustomerController@resetMpin'                                      ],
+        'set_mpin'                                => ['post',     'upi/bank_accounts/{id}/mpin',                    'CustomerController@setMpin'                                        ],
+        'upi_customer_razor_accounts_fetch'       => ['get',      'upi/bank_accounts',                              'CustomerController@fetchUpiBankAccounts'                           ],
+        'vpa_fetch_multiple'                      => ['get',      'upi/vpa/',                                       'UpiController@getVpas'                                             ],
+        'vpa_available'                           => ['get',      'upi/vpa/available/{vpa}',                        'UpiController@isAvailableVpa'                                      ],
+        'vpa_valid'                               => ['get',      'upi/vpa/valid/{vpa}',                            'UpiController@isValidVpa'                                          ],
+        'vpa_create'                              => ['post',     'upi/vpa/',                                       'CustomerController@createVpa'                                      ],
+        'vpa_delete'                              => ['delete',   'upi/vpa/{id}',                                   'UpiController@deleteVpa'                                           ],
+        'vpa_edit'                                => ['put',      'upi/vpa/{id}',                                   'UpiController@editVpa'                                             ],
+        'vpa_fetch'                               => ['get',      'upi/vpa/{id}',                                   'UpiController@getVpa'                                              ],
+        'customer_collect_request_fetch'          => ['get',      'upi/customers/requests/collect',                 'P2pController@fetchCollectRequests'                                ],
+        'upi_get_key_list'                        => ['get',      'upi/keyList',                                    'UpiController@getPublicKeyList'                                    ],
+        'upi_npci_request'                        => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                           ],
+        'upi_get_bank_list'                       => ['get',      'upi/banks',                                      'UpiController@getBankList'                                         ],
+        'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
+        'upi_read_async'                          => ['get',      'upi/status/{msgId}',                             'UpiController@getStatus'                                           ],
+        'p2p_create'                              => ['post',     'upi/p2p',                                        'P2pController@createP2p'                                           ],
+        'p2p_fetch'                               => ['get',      'upi/p2p/{id}',                                   'P2pController@getP2p'                                              ],
+        'p2p_fetch_multiple'                      => ['get',      'upi/p2p',                                        'P2pController@getP2ps'                                             ],
+        'p2p_reject'                              => ['put',      'upi/p2p/{id}/reject',                            'P2pController@rejectP2p'                                           ],
+        'p2p_authorize'                           => ['post',     'upi/p2p/{id}/authorize',                         'P2pController@postAuthorize'                                       ],
+        'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
     );
 
     public static $public = array(
@@ -382,6 +416,7 @@ final class Route
         'merchant_methods',
         'merchant_checkout_preferences',
         'mock_atom_init_payment',
+        'mock_acs',
         'mock_atom_choose_org',
         'mock_atom_rzp_payment',
         'mock_atom_rzp_payment_submit',
@@ -409,6 +444,32 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
+        'device_create',
+    );
+
+    public static $device = array(
+        'set_mpin',
+        'reset_mpin',
+        'vpa_create',
+        'vpa_delete',
+        'vpa_edit',
+        'customer_balance_fetch',
+        'customer_bank_account_fetch',
+        'vpa_available',
+        'vpa_valid',
+        'vpa_fetch_multiple',
+        'upi_customer_bank_accounts_fetch',
+        'upi_customer_razor_accounts_fetch',
+        'device_fetch',
+        'device_refresh_token',
+        'vpa_fetch',
+        'p2p_create',
+        'p2p_fetch_multiple',
+        'p2p_fetch',
+        'p2p_authorize',
+        'p2p_reject',
+        'customer_collect_request_fetch',
+        'device_customer_fetch',
     );
 
     public static $publicCallback = array(
@@ -459,6 +520,9 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'p2p_fetch_private',
+        'vpa_fetch_private',
+        'customer_collect_request_fetch_private',
     );
 
     public static $internal = array(
@@ -598,7 +662,6 @@ final class Route
         'upi_fill_provider',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
-        'transaction_create_fees_breakup',
         'adj_add_reverse',
         'admin_get_app_auth',
         'admin_authentication',
@@ -756,8 +819,11 @@ final class Route
     ];
 
     public static $direct = array(
+        'device_verify',
+        'upi_get_bank_list',
+        'upi_read_async',
+        'upi_get_key_list',
         'account',
-        'mock_acs',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
@@ -766,6 +832,8 @@ final class Route
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
+        'upi_npci_request',
+        'zero_upi_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
