@@ -95,6 +95,15 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->findMany($ids);
     }
 
+    public function fetchForIndexing(int $skip = 0, int $take = 100, array $fields = ['*'])
+    {
+        return $this->newQuery()
+                    ->skip($skip)
+                    ->take($take)
+                    ->select($fields)
+                    ->get();
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         // Gets the attributes which are being newly inserted or updated.

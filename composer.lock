@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a248c2599b2afa0b2cd0b7e32b059a90",
-    "content-hash": "a29a3e0ad97c5915e85970cf9252e48b",
+    "hash": "706b6a9eb840e87fbeca865fb8da8dec",
+    "content-hash": "c0c4d6404b08a34f8fb89a21e2846a87",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -855,30 +855,31 @@
         },
         {
             "name": "elasticsearch/elasticsearch",
-            "version": "v2.3.0",
+            "version": "v5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elastic/elasticsearch-php.git",
-                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93"
+                "reference": "30be1c0367c865eec5ca0a9c09ce293869da7665"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/12a400656e4cf4c231d83cb56af3f50a27dcde93",
-                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93",
+                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/30be1c0367c865eec5ca0a9c09ce293869da7665",
+                "reference": "30be1c0367c865eec5ca0a9c09ce293869da7665",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/ringphp": "~1.0",
-                "php": ">=5.4",
+                "php": "^5.6.6|^7.0",
                 "psr/log": "~1.0"
             },
             "require-dev": {
                 "cpliakas/git-wrapper": "~1.0",
+                "doctrine/inflector": "^1.1",
                 "mockery/mockery": "0.9.4",
-                "phpunit/phpunit": "~4.7",
+                "phpunit/phpunit": "^4.7|^5.4",
                 "sami/sami": "~3.2",
-                "symfony/yaml": "2.4.3 as 2.4.2",
-                "twig/twig": "1.*"
+                "symfony/finder": "^2.8",
+                "symfony/yaml": "^2.8"
             },
             "suggest": {
                 "ext-curl": "*",
@@ -905,7 +906,7 @@
                 "elasticsearch",
                 "search"
             ],
-            "time": "2016-11-30 17:15:05"
+            "time": "2016-10-26 14:35:32"
         },
         {
             "name": "giggsey/libphonenumber-for-php",

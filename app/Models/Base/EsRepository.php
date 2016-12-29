@@ -21,6 +21,12 @@ class EsRepository extends \Razorpay\Spine\Repository
     // This is in seconds
     const JOB_RELEASE_WAIT = 120;
 
+    //
+    // Fields indexed in es and their mappings
+    //
+    protected $fields         = [];
+    protected $fieldsMappings = [];
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +38,89 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->indexName = $app['config']->get('database.es_index');
 
         $this->esDao = new EsDao();
+    }
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public function getFieldsMappings()
+    {
+        return $this->fieldsMappings;
+    }
+
+    public function setIndexName($indexName)
+    {
+        $this->indexName = $indexName;
+
+        $this->esDao->setIndexNameByValue($this->indexName);
+
+        return $this;
+    }
+
+    public function createIndexIfNotExists()
+    {
+        $settings = [
+            'analysis' => [
+                'analyzer' => [
+                    'edge_ngram_analyzer' => [
+                        'tokenizer' => 'edge_ngram_tokenizer',
+                        'filter'    => ['lowercase_filter'],
+                    ],
+                ],
+                'tokenizer' => [
+                    'edge_ngram_tokenizer' => [
+                        'type'        => 'edge_ngram',
+                        'min_gram'    => 2,
+                        'max_gram'    => 50,
+                        'token_chars' => [
+                            'letter',
+                            'digit',
+                        ],
+                    ],
+                ],
+                'filter' => [
+                    'lowercase_filter' => [
+                        'type' => 'lowercase',
+                    ],
+                ],
+            ]
+        ];
+
+        $mappings = [
+            '_default_' => [
+                'properties' => $this->fieldsMappings,
+            ],
+        ];
+
+        $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
+
+        return $this;
+    }
+
+    public function bulkUpdate(array $documents)
+    {
+        //
+        // Builds es payload and makes bulk upsert request to es
+        //
+
+        $params = [];
+
+        foreach($documents as $document)
+        {
+            $params['body'][] = [
+                'index' => [
+                    '_index' => $this->indexName,
+                    '_type'  => $this->indexName,
+                    '_id'    => $document['id'],
+                ]
+            ];
+
+            $params['body'][] = $document;
+        }
+
+        $this->esDao->bulkUpdate($params);
     }
 
     public function fetch($params, $merchantId)

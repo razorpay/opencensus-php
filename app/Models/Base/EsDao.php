@@ -68,6 +68,13 @@ class EsDao
         $this->indexName = $this->config->get('database.es_index')[$mode];
     }
 
+    public function setIndexNameByValue($indexName)
+    {
+        $this->indexName = $indexName;
+
+        return $this;
+    }
+
     // If a document with entity ID is already present, only the notes key is updated.
     // Otherwise, creates a new document.
     // Currently storing only notes and merchant id of the entity.
@@ -250,6 +257,27 @@ class EsDao
         ];
 
         return $this->es->createIndex($params);
+    }
+
+    public function createIndexIfNotExistsSane($indexName, $settings, $mappings)
+    {
+        $indexExists = $this->es->indexExists(['index' => $indexName]);
+
+        if ($indexExists)
+        {
+            return;
+        }
+
+        $this->createIndex($indexName, $settings, $mappings);
+
+        return $this;
+    }
+
+    public function bulkUpdate(array $params)
+    {
+        $this->es->bulkUpdate($params);
+
+        return $this;
     }
 
 

@@ -105,6 +105,11 @@ class EsClient
         return $this->client->delete($params);
     }
 
+    public function indexExists(array $params)
+    {
+        return $this->client->indices()->exists($params);
+    }
+
     public function createIndex($params)
     {
         return $this->client->indices()->create($params);

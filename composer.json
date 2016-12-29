@@ -14,7 +14,7 @@
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-f/queue-with-retry",
         "cebe/markdown": "~1.0.1",
-        "elasticsearch/elasticsearch": "^2.1",
+        "elasticsearch/elasticsearch": "^5.0",
         "razorpay/ifsc": "~0.2",
         "propaganistas/laravel-phone": "^2.7",
         "giggsey/libphonenumber-for-php": "^7.4",
