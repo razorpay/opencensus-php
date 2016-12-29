@@ -229,6 +229,11 @@ class Gateway extends Base\Gateway
             {
                 return $content[AuthFields::HASH];
             }
+
+            case Action::VERIFY:
+            {
+                return $content[VerifyFields::HASH];
+            }
         }
     }
 
@@ -247,7 +252,6 @@ class Gateway extends Base\Gateway
      */
     protected function getStringToHash($content, $glue = '')
     {
-        s($this->action);
         switch ($this->action)
         {
             case Action::AUTHORIZE:
@@ -260,6 +264,18 @@ class Gateway extends Base\Gateway
             {
                 $data = $this->getCallbackResponseHashArray($content);
                 break;
+            }
+
+            case Action::VERIFY:
+            {
+                if ($this->request === true)
+                {
+                    $data = $this->getVerifyRequestHashArray($content);
+                }
+                else
+                {
+                    $data = $this->getVerifyResponseHashArray($content);
+                }
             }
         }
 
@@ -347,9 +363,9 @@ class Gateway extends Base\Gateway
             VerifyFields::AMOUNT                   => "$amount"
         ];
 
-        $hashArray = $this->getVerifyRequestHashArray($data);
+        $this->request = true;
 
-        $data[VerifyFields::HASH] = $this->generateHash($hashArray);
+        $data[VerifyFields::HASH] = $this->generateHash($data);
 
         return json_encode($data);
     }
