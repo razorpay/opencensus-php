@@ -1,6 +1,22 @@
 <div class="auth-overflow-container">
   <div class="login-translate-container" style="transform: translateX({{-(240)*login.currentStep}}px)">
-    <div class="auth-step" ng-include="'tpl/auth/questions.html'">
+    <div class="auth-step">
+      <div class="auth-heading">
+        Forgot Password
+      </div>
+      <div class="auth-text">
+        Enter your email and we will send you a password reset link
+      </div>
+
+      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
+        <label class="form-label auth-subheading" for="email">Email</label>
+        <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+        <button class="btn btn-primary form-control login-btn" type="submit">
+          Send Reset Link
+        </button>
+      </form>
+      
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
     </div>
     <div class="auth-step">
       <div class="auth-heading">
@@ -31,23 +47,12 @@
         </div>
       </div>
     </div>
-    <div class="auth-step">
-      <div class="auth-heading">
-        Forgot Password
-      </div>
-      <div class="auth-text">
-        Enter your email and we will send you a password reset link
-      </div>
-
-      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
-        <label class="form-label auth-subheading" for="email">Email</label>
-        <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
-        <button class="btn btn-primary form-control login-btn" type="submit">
-          Send Reset Link
-        </button>
-      </form>
-      
-      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+    
+    <div class="auth-step" >
+      <div ng-include="'tpl/auth/questions.html'"></div>
+    </div>
+    <div class="auth-step" >
+      <div ng-include="'tpl/auth/verify.html'"></div>
     </div>
   </div>
 </div>

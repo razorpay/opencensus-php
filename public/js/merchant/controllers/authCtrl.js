@@ -23,8 +23,6 @@ app.controller('AuthCtrl', [
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false; // login layout ? right is true : right is false
-    $scope.showPreSignup = $stateParams.showPreSignup
-    debugger
     // signup state container
     $scope.signup = {
       currentStep: 0, // 0, 1, 2, 3
@@ -172,12 +170,20 @@ app.controller('AuthCtrl', [
         hideSpinner()
         if (data.success) {
           if ($scope.signup.currentSubStep == 4) {
-            $scope.goToSignupStep(3)
+            goToVerification()
           } else {
             $scope.goToSignupStep(2, $scope.signup.currentSubStep + 1)
           }
         }
       })
+    }
+
+    function goToVerification() {      
+      if (!$scope.right) {
+        $scope.goToSignupStep(3)
+      } else {
+        $scope.goToLoginStep(3)
+      }
     }
 
     function pushToDrip() {
@@ -202,9 +208,11 @@ app.controller('AuthCtrl', [
     }
 
     $scope.resendVerificationEmail = function () {
+      // todo pick data from login if on login side
+      var source = $scope.right ? 'login' : 'signup';
       var data = {
-        email: $scope.signup.data.email,
-        password: $scope.signup.data.password
+        email: $scope[source].data.email,
+        password: $scope[source].data.password
       }
       var payload = {
         method: 'post',
@@ -229,6 +237,7 @@ app.controller('AuthCtrl', [
 
     $scope.goToSigninLayout = function (noTransition) {
       $scope.goToSignupStep(0); // reset signup step
+      $scope.goToLoginStep(1); // reset login step
       $scope.right = true;
       const toRoute = 'access.signin';
       $state.transitionTo(toRoute, {}, {
@@ -237,7 +246,8 @@ app.controller('AuthCtrl', [
     }
 
     $scope.goToSignupLayout = function () {
-      $scope.goToLoginStep(0); // reset login step
+      $scope.goToSignupStep(0); // reset signup step
+      $scope.goToLoginStep(1); // reset login step
       $scope.right = false;
       const toRoute = 'access.signup';
       $state.transitionTo(toRoute, {}, {
@@ -251,24 +261,29 @@ app.controller('AuthCtrl', [
         email: '',
         password: '',
       },
-      currentStep: 1, // 0 -> questions, 1 -> login, 2 -> forgotpwd
+      currentStep: 1, // 2 -> questions, 1 -> login, 0 -> forgotpwd
       currentSubStep: 0, // 0 -> email+pwd
     }
 
-    if (['access.signin', 'access.forgotpwd'].indexOf($state.current.name) !== -1) {
-      $('.auth-container').addClass('no-transition')
+    if ($state.current.name === 'access.pre_sign_up') {
+    }
+
+    if (['access.signin', 'access.forgotpwd', 'access.pre_sign_up'].indexOf($state.current.name) !== -1) {
       $scope.right = true;
-      setTimeout(function () {
-        $('.auth-container').removeClass('no-transition')
-      }, 200)
+
       if ($state.current.name === 'access.signin') {
-        if ($scope.showPreSignup) {
-          $scope.login.currentStep = 0;
-        } else {
-          $scope.login.currentStep = 1;
-        }
+        $scope.login.currentStep = 1;
       } else if ($state.current.name === 'access.forgotpwd') {
-        $scope.login.currentStep = 2;
+        $scope.login.currentStep = 0;
+      } else if ($state.current.name === 'access.pre_sign_up') {
+        if (!user.isAuthenticated()) {
+          $state.transitionTo('access.signin', {}, {
+            notify: false,
+          });
+          $scope.login.currentStep = 1;
+        } else {
+          $scope.login.currentStep = 2;
+        }
       }
     }
 
@@ -277,7 +292,7 @@ app.controller('AuthCtrl', [
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
-      $scope.login.currentStep = 1;  
+      $scope.login.currentStep = 0;
     }
 
     $scope.sendLoginCredentials = function ($valid) {
@@ -303,17 +318,25 @@ app.controller('AuthCtrl', [
           hideLoginBtn()
           // check questions have been answered or not
           user.identity(true).then(function(user) {
-            var role = user.merchants[user.id].pivot.role;
+            if (user.isPreSignupDone) {
+              var role = user.merchants[user.id].pivot.role;
 
-            switch (role) {
-              case 'support':
-                $state.go('app.payments.list');
-                break;
-              case 'sellerapp':
-                $state.go('app.invoices');
-                break;
-              default:
-                $state.go('app.dashboard');
+              switch (role) {
+                case 'support':
+                  $state.go('app.payments.list');
+                  break;
+                case 'sellerapp':
+                  $state.go('app.invoices');
+                  break;
+                default:
+                  $state.go('app.dashboard');
+              }
+            } else {
+              $state.transitionTo('access.pre_sign_up', {}, {
+                notify: false,
+              });
+              Object.assign($scope.signup.merchantData, user.pre_signup)
+              $scope.login.currentStep = 2;  
             }
           });
           // $scope.goToSignupStep(1)

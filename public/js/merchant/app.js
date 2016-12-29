@@ -229,9 +229,9 @@ var app = angular.module('app', [
     .state('access.signin', {
       url: '/signin',
       templateUrl: 'tpl/auth/index.html',
-      params: {
-        showPreSignup: false
-      }
+    }).state('access.pre_sign_up', {
+      url: '/pre_sign_up',
+      templateUrl: 'tpl/auth/index.html',
     }).state('access.lockme', {
       url: '/lockme/:email',
       templateUrl: 'tpl/auth/index.html'
