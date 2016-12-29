@@ -352,7 +352,7 @@ class Service extends Base\Service
             {
                 $user = Auth::user()->get();
 
-                if ($user->confirm_token === null)
+                if (isset($user->confirm_token) !== false)
                 {
                     return [['User already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
