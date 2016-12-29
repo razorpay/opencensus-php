@@ -10,8 +10,8 @@
 
       <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
-        <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
-        <button class="btn btn-primary form-control login-btn" type="submit">
+        <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+        <button override-tab class="btn btn-primary form-control login-btn" type="submit">
           Send Reset Link
         </button>
       </form>
@@ -31,13 +31,13 @@
 
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
               <label class="form-label auth-subheading" for="email">Email</label>
-              <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+              <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
-              <input type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
+              <input override-tab type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
               <div class="highlight-clickable-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
-              <button class="btn btn-primary form-control login-btn" type="submit">
+              <button override-tab class="btn btn-primary form-control login-btn" type="submit">
                 Login
               </button>
             </form>
@@ -48,7 +48,7 @@
       </div>
     </div>
     
-    <div class="auth-step" >
+    <div class="auth-step" ng-if="right">
       <div ng-include="'tpl/auth/questions.html'"></div>
     </div>
     <div class="auth-step" >

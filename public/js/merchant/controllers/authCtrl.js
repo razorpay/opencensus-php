@@ -14,7 +14,6 @@ app.controller('AuthCtrl', [
   '$cookies',
   function ($scope, $http, $state, $stateParams, $location, alertsFactory, user, 
     organization, transformRequestAsFormPost, $analytics, $window, $cookies) {
-    console.log('state params', $stateParams)
     $scope.toArray = function (obj) {
       if (!obj) {
         return [];
@@ -160,7 +159,6 @@ app.controller('AuthCtrl', [
     function goToPostSignup () {
       $scope.goToSignupStep(2)    
     }
-    // todo get post-signup details and check whether post-signup steps are needed
 
     $scope.sendDetails = function () {
       // pushToDrip()
@@ -273,17 +271,30 @@ app.controller('AuthCtrl', [
       currentSubStep: 0, // 0 -> email+pwd
     }
 
-    if ($state.current.name === 'access.pre_sign_up') {
+    if ($state.current.name === 'access.pre_signup') {
+      Object.assign($scope.signup.merchantData, (user.getIdentity() && user.getIdentity().pre_signup))
     }
 
-    if (['access.signin', 'access.forgotpwd', 'access.pre_sign_up'].indexOf($state.current.name) !== -1) {
+    if (['access.signin', 'access.forgotpwd', 'access.pre_signup'].indexOf($state.current.name) !== -1) {
       $scope.right = true;
-
       if ($state.current.name === 'access.signin') {
-        $scope.login.currentStep = 1;
+        if (!user.isAuthenticated()) {
+          $scope.login.currentStep = 1;
+        } else {
+          $state.transitionTo('access.pre_signup', {}, {
+            notify: false,
+          });
+          $scope.login.data.email = (user.getIdentity() && user.getIdentity().email)
+          if (!user.isPreSignupDone()) {
+            $scope.login.currentStep = 2;
+          } else {
+            // email not verified case
+            $scope.login.currentStep = 3;
+          }
+        }
       } else if ($state.current.name === 'access.forgotpwd') {
         $scope.login.currentStep = 0;
-      } else if ($state.current.name === 'access.pre_sign_up') {
+      } else if ($state.current.name === 'access.pre_signup') {
         if (!user.isAuthenticated()) {
           $state.transitionTo('access.signin', {}, {
             notify: false,
@@ -340,7 +351,8 @@ app.controller('AuthCtrl', [
                   $state.go('app.dashboard');
               }
             } else {
-              $state.transitionTo('access.pre_sign_up', {}, {
+              // todo check verify also
+              $state.transitionTo('access.pre_signup', {}, {
                 notify: false,
               });
               Object.assign($scope.signup.merchantData, user.pre_signup)
@@ -387,4 +399,13 @@ app.controller('AuthCtrl', [
     }
 
   }
-]);
+]).directive('overrideTab', ['$window', function ($window) {
+    return function (scope, element, attrs) {
+      element.bind('keydown', function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode == 9) {
+          e.preventDefault();
+        }
+      });
+    };
+  }]);
