@@ -145,6 +145,76 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onVpaEdited($vpa)
+    {
+        $payload = $this->getVpaPayload($vpa);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pCreated($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pRejected($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pTransferred($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function getP2pPayload($p2p)
+    {
+        $source = $p2p->source;
+
+        $sink = $p2p->sink;
+
+        $partialPayload[Constants\Entity::P2P] = [
+            'entity' => $p2p->toArrayPublic()
+        ];
+
+        $partialPayload['source'] = [
+            'entity' => $source->toArrayPublic()
+        ];
+
+        $partialPayload['sink'] = [
+            'entity' => $sink->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getVpaPayload($vpa)
+    {
+        $customer = $vpa->customer;
+
+        $bankAccount = $vpa->bankAccount;
+
+        $partialPayload[Constants\Entity::VPA] = [
+            'entity' => $vpa->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::CUSTOMER] = [
+            'entity' => $customer->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::BANK_ACCOUNT] = [
+            'entity' => $bankAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getOrderPayload($payment)
     {
         $order = $payment->order;

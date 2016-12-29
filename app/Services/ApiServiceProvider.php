@@ -91,6 +91,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
+        $this->app->singleton('upi.client', function($app)
+        {
+            return new \Razorpay\UPI\Client;
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -114,19 +119,20 @@ class ApiServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return array(
-            'mailgun',
-            'instance',
+            'api.mutex',
+            'bitly',
+            'card.tokenex',
+            'es',
             'exception.handler',
             'gateway',
-            'webhook.inferno',
-            'card.tokenex',
-            'api.mutex',
+            'instance',
+            'mailgun',
+            'maxmind',
             'raven',
             'repo',
-            'es',
-            'maxmind',
-            'bitly',
             'segment',
+            'upi.client',
+            'webhook.inferno',
             'exchange',
         );
     }
