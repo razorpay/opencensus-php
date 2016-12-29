@@ -47,6 +47,16 @@ class OrgTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
         $this->startTest();
+
+        $data = $this->testData['deleteOrgException'];
+
+        $this->runRequestResponseFlow($data, function() use ($org) {
+            $this->getEntityById('org', $org->getPublicId(), true);
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($org) {
+            $this->getEntityById('org', $org->getPublicId(), true, 'live');
+        });
     }
 
     public function testfetchMultipleOrg()
