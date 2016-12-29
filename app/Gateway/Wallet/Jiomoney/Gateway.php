@@ -726,6 +726,8 @@ class Gateway extends Base\Gateway
         {
             return $this->config['test_merchant_id'];
         }
+
+        return $this->input['terminal']['gateway_merchant_id'];
     }
 
     protected function getClientId()
@@ -734,6 +736,8 @@ class Gateway extends Base\Gateway
         {
             return $this->config['test_client_id'];
         }
+
+        return $this->input['terminal']['gateway_access_code'];
     }
 
     protected function getFormattedTimeStamp($timestamp, $format)
