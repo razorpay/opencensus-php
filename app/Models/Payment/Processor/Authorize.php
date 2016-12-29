@@ -26,7 +26,6 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;

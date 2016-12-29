@@ -75,7 +75,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            ExceptionHandler::handleMySqlUnqiueError($e, $invoice, $input);
+            ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
 
         return $invoice;
@@ -96,8 +96,7 @@ class Core extends Base\Core
                 (new Generator($merchant, $invoice))->issueInvoice();
 
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         (new Notifier($invoice))->sendNotificationToCustomer();
 
@@ -140,8 +139,7 @@ class Core extends Base\Core
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         return $invoice;
     }
@@ -168,8 +166,7 @@ class Core extends Base\Core
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         return $invoice;
     }
@@ -189,8 +186,7 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
                 'line_item_id'   => $lineItem->getId(),
                 'input'          => $input,
-            ]
-        );
+            ]);
 
         $this->repo->transaction(
             function() use ($invoice, $lineItem, $input, $merchant)
@@ -204,8 +200,7 @@ class Core extends Base\Core
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         return $invoice;
     }
@@ -230,8 +225,7 @@ class Core extends Base\Core
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         return $invoice;
     }
@@ -246,8 +240,7 @@ class Core extends Base\Core
                 'invoice_id'     => $invoice->getId(),
                 'invoice_status' => $invoice->getStatus(),
                 'line_item_ids'  => $lineItems->pluck('id')->toArray(),
-            ]
-        );
+            ]);
 
         $this->repo->transaction(
             function() use ($lineItems, $invoice)
@@ -256,8 +249,7 @@ class Core extends Base\Core
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
-            }
-        );
+            });
 
         return $invoice;
     }

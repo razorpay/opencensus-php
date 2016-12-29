@@ -17,8 +17,13 @@ class ExceptionHandler
      * https://github.com/felixkiss/uniquewith-validator to validate the
      * uniqueness beforehand(by querying of course) and not wait for mysql error.
      *
+     * @param \Exception $e
+     * @param Entity     $invoice
+     * @param array      $input
+     *
+     * @throws BadRequestException
      */
-    public static function handleMySqlUnqiueError(
+    public static function handleMySqlUniqueError(
         \Exception $e,
         Entity $invoice,
         array $input)

@@ -9,15 +9,21 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
 {
     public function findOrFailPublic($id, $columns = array('*'))
     {
-        if ( ! is_null($model = $this->find($id, $columns))) return $model;
+        $model = $this->find($id, $columns);
 
-        $e = array(
+        if (is_null($model) === false)
+        {
+            return $model;
+        }
+
+        $data = [
                 'model' => get_class($this->model),
                 'attributes' => $id,
-                'operation' => 'find');
+                'operation' => 'find'
+            ];
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_INVALID_ID, null, $e);
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
     /**
@@ -32,18 +38,18 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
     {
         if ( ! is_null($model = $this->first($columns))) return $model;
 
-        $e = array(
+        $data = array(
                 'model' => get_class($this->model),
                 'attributes' => $columns,
                 'operation' => 'find');
 
         throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $e);
+            ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $data);
     }
 
     /**
      * Queries for many entity by ids.
-     * If any single of the given ids are not found, failss with bad request.
+     * If any single of the given ids are not found, fails with bad request.
      *
      * @param array $ids
      * @param array $columns

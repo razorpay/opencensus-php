@@ -76,7 +76,7 @@ class Generator extends Base\Core
         }
         catch (\Exception $e)
         {
-            ExceptionHandler::handleMySqlUnqiueError($e, $this->invoice, $input);
+            ExceptionHandler::handleMySqlUniqueError($e, $this->invoice, $input);
         }
 
         //
