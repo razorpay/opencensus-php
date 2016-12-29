@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
 

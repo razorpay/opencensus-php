@@ -175,6 +175,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+    }
+
     public function getCredit()
     {
         return (int) $this->getAttribute(self::CREDIT);
@@ -495,6 +500,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_CREDITS);
     }
 
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();
@@ -533,6 +543,8 @@ class Entity extends Base\PublicEntity
             {
                 return null;
             }
+
+            $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
 
             $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
         }

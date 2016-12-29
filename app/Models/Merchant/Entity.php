@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
     const AUTO_REFUND_DELAY         = 'auto_refund_delay';
+    const CONVERT_CURRENCY          = 'convert_currency';
 
     /**
      * Category for particular methods or gateways
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
@@ -115,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
+        self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
         self::AUTO_REFUND_DELAY,
         self::BRAND_COLOR,
@@ -144,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::CONVERT_CURRENCY       => null,
     );
 
     protected $publicSetters = array(
@@ -160,6 +164,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => 'bool',
         self::CATEGORY              => 'int',
         self::SETTLEMENT_SCHEDULE   => 'int',
+        self::CONVERT_CURRENCY      => 'bool'
     );
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -463,6 +468,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    /**
+     * check if api or gateway should do currency conversion for merchant
+     * @return [type] [description]
+     */
+    public function convertOnApi()
+    {
+        return $this->getAttribute(self::CONVERT_CURRENCY);
+    }
+
     public function features()
     {
         return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
@@ -587,6 +601,11 @@ class Entity extends Base\PublicEntity
     protected function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
+    protected function setWebsiteAttribute($website)
+    {
+        $this->attributes[self::WEBSITE] = mb_strtolower($website);
     }
 
     protected function setTransactionReportEmailAttribute($emails)

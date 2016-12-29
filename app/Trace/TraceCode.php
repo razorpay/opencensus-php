@@ -152,6 +152,7 @@ class TraceCode
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
+    const GATEWAY_UPI_REQUEST_CALLBACK              = 'GATEWAY_UPI_REQUEST_CALLBACK';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
@@ -291,6 +292,11 @@ class TraceCode
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
 
+    const VPA_CREATE_REQUEST                        = 'VPA_CREATE_REQUEST';
+    const VPA_CREATED                               = 'VPA_CREATED';
+    const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
+    const VPA_DELETED                               = 'VPA_DELETED';
+
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
     const SCHEDULE_UNANCHORED_RESOLUTION            = 'SCHEDULE_UNANCHORED_RESOLUTION';
@@ -352,6 +358,9 @@ class TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+
+    const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
+    const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 

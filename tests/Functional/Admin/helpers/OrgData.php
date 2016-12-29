@@ -17,6 +17,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'hdfc',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -54,6 +55,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'hdfc',
             ],
         ],
         'response' => [
@@ -128,6 +130,22 @@ return [
         ],
     ],
 
+    'deleteOrgException' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
     'testGetOrg' => [
         'request' => [
             'url' => '/orgs',
@@ -178,6 +196,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'hdfc',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -215,6 +234,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
+                'custom_code' => 'hdfc',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -252,6 +272,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'invalid_auth',
+                'custom_code' => 'hdfc',
             ],
         ],
         'response'  => [
