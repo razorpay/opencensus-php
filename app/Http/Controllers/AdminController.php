@@ -74,13 +74,6 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postInternationalRates($currency)
-    {
-        $data = (new Admin\Service)->postInternationalRates($currency);
-
-        return ApiResponse::json($data);
-    }
-
     public function postMailgunCallback($type)
     {
         $input = Request::all();
@@ -88,5 +81,19 @@ class AdminController extends Controller
         $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
 
         return ApiResponse::json([], $responseStatus);
+    }
+
+    public function postInternationalRates($currency)
+    {
+        $data = (new Admin\Service)->postInternationalRates($currency);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getInternationalRates($currency)
+    {
+        $data = (new Admin\Service)->getInternationalRates($currency);
+
+        return ApiResponse::json($data);
     }
 }

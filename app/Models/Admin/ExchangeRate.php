@@ -54,7 +54,7 @@ class ExchangeRate extends Base\Core
         return $baseAmount;
     }
 
-    protected function getRates($currency)
+    public function getRates($currency)
     {
         $key = self::EXCHANGE_RATE_KEY . $currency;
 
