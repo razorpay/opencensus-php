@@ -30,19 +30,6 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
-    public function verify($input)
-    {
-        parent::verify($input);
-
-        $request = $this->getVerifyRequestArray($input);
-
-        $this->validateActionInput($request);
-
-        $response = $this->getVerifyResponse($request);
-
-        return $this->makeResponse($response);
-    }
-
     public function refund($input)
     {
         parent::refund($input);
@@ -56,6 +43,19 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $request = $this->jsonToArray($input);
+
+        $this->validateActionInput($request);
+
+        $response = $this->getVerifyResponse($request);
+
+        return $this->makeResponse($response);
+    }
+
     protected function createRefundResponse($request)
     {
         $date = Carbon::createFromFormat('dmYHis',
@@ -63,7 +63,7 @@ class Server extends Base\Mock\Server
 
         $data = [
             RefundFields::MERCHANT_ID      => $request[RefundFields::MERCHANT_ID],
-            RefundFields::ERROR_CODE       => Constants::CODE,
+            RefundFields::ERROR_CODE       => '000',
             RefundFields::AMOUNT           => $request[RefundFields::AMOUNT],
             RefundFields::TRANSACTION_ID   => $request[RefundFields::TRANSACTION_ID],
             RefundFields::TRANSACTION_DATE => $date,
@@ -89,14 +89,45 @@ class Server extends Base\Mock\Server
             AuthFields::TRANSACTION_AMOUNT        => $input[AuthFields::AMOUNT],
             AuthFields::TRANSACTION_DATE          => $input[AuthFields::DATE],
             AuthFields::STATUS                    => Status::SUCCESS,
-            AuthFields::CODE                      => Constants::CODE,
-            AuthFields::MSG                       => Constants::SUCCESS_MSG,
+            AuthFields::CODE                      => '000',
+            AuthFields::MSG                       => 'eCommerce transaction successful',
             AuthFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
         ];
 
         $response[AuthFields::HASH] = $this->generateHash($response);
 
         return $response;
+    }
+
+    protected function getVerifyResponse($input)
+    {
+        $date = Carbon::createFromFormat('dmYHis',
+            $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
+
+        $verifyArray = [
+            VerifyFields::STATUS                => Status::SUCCESS,
+            VerifyFields::TRANSACTION_ID        => mt_rand(111111111, 999999999),
+            VerifyFields::TRANSACTION_DATE      => $date,
+            VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
+        ];
+
+        $merchantId = $this->getGatewayInstance()->getMerchantId();
+
+        $hash = $this->generateHash($verifyArray);
+
+        $response =  [
+            VerifyFields::TRANSACTION               => array($verifyArray),
+            VerifyFields::HASH                      => $hash,
+            VerifyFields::MERCHANT_ID               => $merchantId,
+            VerifyFields::TRANSACTION_REFERENCE_NO  => $input[VerifyFields::TRANSACTION_REFERENCE_NO],
+            VerifyFields::MESSAGE_TEXT              => 'Success',
+            VerifyFields::CODE                      => '0',
+            VerifyFields::ERROR_CODE                => '000'
+        ];
+
+        $this->content($response);
+
+        return json_encode($response);
     }
 
     protected function generateHash($content)
@@ -138,60 +169,24 @@ class Server extends Base\Mock\Server
     protected function getCallbackHashArray($input)
     {
         return [
-            AuthFields::MERCHANT_ID               => $input[AuthFields::MERCHANT_ID],
-            AuthFields::TRANSACTION_ID            => $input[AuthFields::TRANSACTION_ID],
-            AuthFields::TRANSACTION_REFERENCE_NO  => $input[AuthFields::TRANSACTION_REFERENCE_NO],
-            AuthFields::TRANSACTION_AMOUNT        => $input[AuthFields::TRANSACTION_AMOUNT],
-            AuthFields::TRANSACTION_DATE          => $input[AuthFields::TRANSACTION_DATE],
+            $input[AuthFields::MERCHANT_ID],
+            $input[AuthFields::TRANSACTION_ID],
+            $input[AuthFields::TRANSACTION_REFERENCE_NO],
+            $input[AuthFields::TRANSACTION_AMOUNT],
+            $input[AuthFields::TRANSACTION_DATE],
         ];
     }
 
     protected function getRefundHashArray($content)
     {
         return [
-            RefundFields::MERCHANT_ID              => $content[RefundFields::MERCHANT_ID],
-            RefundFields::ERROR_CODE               => $content[RefundFields::ERROR_CODE],
-            RefundFields::AMOUNT                   => $content[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_ID           => $content[RefundFields::TRANSACTION_ID],
-            RefundFields::TRANSACTION_DATE         => $content[RefundFields::TRANSACTION_DATE],
-            RefundFields::STATUS                   => $content[RefundFields::STATUS]
+            $content[RefundFields::MERCHANT_ID],
+            $content[RefundFields::ERROR_CODE],
+            $content[RefundFields::AMOUNT],
+            $content[RefundFields::TRANSACTION_ID],
+            $content[RefundFields::TRANSACTION_DATE],
+            $content[RefundFields::STATUS]
         ];
-    }
-
-    protected function getVerifyRequestArray($input)
-    {
-        return (array) json_decode($input);
-    }
-
-    protected function getVerifyResponse($input)
-    {
-        $date = Carbon::createFromFormat('dmYHms',
-            $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
-
-        $verifyArray = [
-            VerifyFields::STATUS                => Status::SUCCESS,
-            VerifyFields::TRANSACTION_ID        => mt_rand(111111111, 999999999),
-            VerifyFields::TRANSACTION_DATE      => $date,
-            VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
-        ];
-
-        $this->content($verifyArray);
-
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
-
-        $hash = $this->generateHash($verifyArray);
-
-        $response =  [
-            VerifyFields::TRANSACTION               => array($verifyArray),
-            VerifyFields::HASH                      => $hash,
-            VerifyFields::MERCHANT_ID               => $merchantId,
-            VerifyFields::TRANSACTION_REFERENCE_NO  => $input[VerifyFields::TRANSACTION_REFERENCE_NO],
-            VerifyFields::MESSAGE_TEXT              => 'Success',
-            VerifyFields::CODE                      => '0',
-            VerifyFields::ERROR_CODE                => Constants::CODE
-        ];
-
-        return json_encode($response);
     }
 
     protected function getVerifyHashArray($verifyArray)
@@ -199,9 +194,9 @@ class Server extends Base\Mock\Server
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
         return [
-            VerifyFields::MERCHANT_ID    => $merchantId,
-            VerifyFields::TRANSACTION    => '['.json_encode($verifyArray).']',
-            VerifyFields::ERROR_CODE     => Constants::CODE,
+            $merchantId,
+            '['.json_encode($verifyArray).']',
+            '000',
         ];
     }
 }

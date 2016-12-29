@@ -142,6 +142,8 @@ class Gateway extends Base\Gateway
             $status = self::STATUS_MISMATCH;
         }
 
+        $this->checkVerifyStatus($response);
+
         return $status;
     }
 
@@ -177,7 +179,7 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhms');
+            ->format('dmYhis');
 
         $callbackUrl = $input['callbackUrl'];
 
@@ -186,7 +188,7 @@ class Gateway extends Base\Gateway
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             AuthFields::AMOUNT                   => $amount,
             AuthFields::DATE                     => $date,
-            AuthFields::SERVICE                  => SERVICE::NETBANKING,
+            AuthFields::SERVICE                  => Service::NETBANKING,
             AuthFields::SUCCESS_URL              => $callbackUrl,
             AuthFields::FAILURE_URL              => $callbackUrl,
             AuthFields::CURRENCY                 => Constants::INDIAN_RUPEE,
@@ -210,6 +212,186 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getCallackAttributes($content)
+    {
+        return [
+            Netbanking\Entity::RECEIVED        => true,
+            Netbanking\Entity::STATUS          => $content[AuthFields::STATUS],
+            Netbanking\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
+            Netbanking\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
+            Netbanking\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
+            Netbanking\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
+        ];
+    }
+
+    protected function assertCallbackAttributes($attributes, $content)
+    {
+        if ($attributes[Netbanking\Entity::STATUS] !== Status::SUCCESS)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function sendRefundRequestAndCheckResponse($request, $input)
+    {
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $response->body;
+
+        $responseArray = $this->jsonToArray($content);
+
+        $this->request = false;
+
+        $this->verifySecureHash($responseArray);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            (array) $responseArray);
+
+        $attributes = $this->getRefundAttributes($responseArray, $input);
+
+        $this->createGatewayActionEntity($responseArray);
+
+        $this->checkRefundStatus($attributes, $responseArray);
+    }
+
+    protected function getPaymentVerifyData($verify)
+    {
+        $input = $verify->input;
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('dmYhis');
+
+        $merchantId = $this->getMerchantId();
+
+        $paymentId = $input['payment']['id'];
+
+        $amount = $input['payment']['amount'] / 100;
+
+        $data = [
+            VerifyFields::SESSION_ID               => uniqid(),
+            VerifyFields::TRANSACTION_REFERENCE_NO => $paymentId,
+            VerifyFields::TRANSACTION_DATE         => $date,
+            VerifyFields::MERCHANT_ID              => $merchantId,
+            VerifyFields::HASH                     => '',
+            VerifyFields::AMOUNT                   => "$amount"
+        ];
+
+        $this->request = true;
+
+        $data[VerifyFields::HASH] = $this->generateHash($data);
+
+        return json_encode($data);
+    }
+
+    protected function getVerifyResponseArray($content)
+    {
+        $response = $this->jsonToArray($content);
+
+        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
+
+        $this->request = false;
+
+        $this->verifySecureHash($responseArray);
+
+        return $responseArray;
+    }
+
+    protected function getRefundRequestData($input)
+    {
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+
+        $tranId = $payment['bank_payment_id'];
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('dmYhis');
+
+        $merchantId = $this->getMerchantId();
+
+        $amount = $input['refund']['amount'] / 100;
+
+        $request = [
+            RefundFields::SESSION_ID        => uniqid(),
+            RefundFields::TRANSACTION_ID    => $tranId,
+            RefundFields::TRANSACTION_DATE  => $date,
+            RefundFields::REQUEST           => Constants::REVERSAL,
+            RefundFields::MERCHANT_ID       => $merchantId,
+            RefundFields::AMOUNT            => "$amount"
+        ];
+
+        $this->request = true;
+
+        $hash = $this->generateHash($request);
+
+        $request[RefundFields::HASH] = $hash;
+
+        return json_encode($request);
+    }
+
+    protected function checkRefundStatus($attributes, $refundArray)
+    {
+        if ((isset($attributes[Netbanking\Entity::MERCHANT_CODE]) === false) or
+            ($attributes[Netbanking\Entity::MERCHANT_CODE] !== Code::SUCCESS))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                $refundArray);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
+        }
+    }
+
+    protected function getRefundAttributes($response, $input)
+    {
+        try
+        {
+            $attrs = [
+                Netbanking\Entity::RECEIVED        => true,
+                Netbanking\Entity::AMOUNT          => $input['payment']['amount'] / 100,
+                Netbanking\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
+                Netbanking\Entity::STATUS          => $response[RefundFields::STATUS],
+                Netbanking\Entity::REFUND_ID       => $input['refund']['id'],
+                Netbanking\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
+                Netbanking\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
+                Netbanking\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
+            ];
+        }
+
+        catch(Exception $e)
+        {
+            throw new Exception\GatewayErrorException($e->getMessage());
+        }
+
+        return $attrs;
+    }
+
+    protected function checkVerifyStatus($response)
+    {
+        if ((isset($response[VerifyFields::CODE]) === false) or
+            ($response[VerifyFields::CODE] !== Code::SUCCESS))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                $response);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
     protected function getHashValueFromContent(array $content)
     {
         switch ($this->action)
@@ -288,167 +470,6 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA512, $string);
     }
 
-    protected function getCallackAttributes($content)
-    {
-        return [
-            Netbanking\Entity::RECEIVED        => true,
-            Netbanking\Entity::STATUS          => $content[AuthFields::STATUS],
-            Netbanking\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
-            Netbanking\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
-            Netbanking\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
-            Netbanking\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
-        ];
-    }
-
-    protected function assertCallbackAttributes($attributes, $content)
-    {
-        if ($attributes[Netbanking\Entity::STATUS] !== Status::SUCCESS)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-    }
-
-    protected function sendRefundRequestAndCheckResponse($request, $input)
-    {
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $response->body;
-
-        $responseArray = $this->jsonToArray($content);
-
-        $this->request = false;
-
-        $this->verifySecureHash($responseArray);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            (array) $responseArray);
-
-        $attributes = $this->getRefundAttributes($responseArray, $input);
-
-        $this->createGatewayActionEntity($responseArray);
-
-        $this->checkRefundStatus($attributes, $responseArray);
-    }
-
-    protected function getPaymentVerifyData($verify)
-    {
-        $input = $verify->input;
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhms');
-
-        $merchantId = $this->getMerchantId();
-
-        $paymentId = $input['payment']['id'];
-
-        $amount = $input['payment']['amount'] / 100;
-
-        $data = [
-            VerifyFields::SESSION_ID               => uniqid(),
-            VerifyFields::TRANSACTION_REFERENCE_NO => $paymentId,
-            VerifyFields::TRANSACTION_DATE         => $date,
-            VerifyFields::MERCHANT_ID              => $merchantId,
-            VerifyFields::HASH                     => '',
-            VerifyFields::AMOUNT                   => "$amount"
-        ];
-
-        $this->request = true;
-
-        $data[VerifyFields::HASH] = $this->generateHash($data);
-
-        return json_encode($data);
-    }
-
-    protected function getVerifyResponseArray($content)
-    {
-        $response = $this->jsonToArray($content);
-
-        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
-
-        $this->request = false;
-
-        $this->verifySecureHash($responseArray);
-
-        return $responseArray;
-    }
-
-    protected function getRefundRequestData($input)
-    {
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
-
-        $tranId = $payment['bank_payment_id'];
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhms');
-
-        $merchantId = $this->getMerchantId();
-
-        $amount = $input['refund']['amount'] / 100;
-
-        $request = [
-            RefundFields::SESSION_ID        => uniqid(),
-            RefundFields::TRANSACTION_ID    => $tranId,
-            RefundFields::TRANSACTION_DATE  => $date,
-            RefundFields::REQUEST           => Constants::REVERSAL,
-            RefundFields::MERCHANT_ID       => $merchantId,
-            RefundFields::HASH              => '',
-            RefundFields::AMOUNT            => "$amount"
-        ];
-
-        $this->request = true;
-
-        $hash = $this->generateHash($request);
-
-        $request[RefundFields::HASH] = $hash;
-
-        return json_encode($request);
-    }
-
-    protected function checkRefundStatus($attributes, $refundArray)
-    {
-        if ((isset($attributes[RefundFields::STATUS]) === false) or
-            ($attributes[RefundFields::STATUS] !== Status::SUCCESS))
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                $refundArray);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
-        }
-    }
-
-    protected function getRefundAttributes($response, $input)
-    {
-        try
-        {
-            $attrs = [
-                Netbanking\Entity::RECEIVED        => true,
-                Netbanking\Entity::AMOUNT          => $input['payment']['amount'] / 100,
-                Netbanking\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
-                Netbanking\Entity::STATUS          => $response[RefundFields::STATUS],
-                Netbanking\Entity::REFUND_ID       => $input['refund']['id']
-            ];
-        }
-
-        catch(Exception $e)
-        {
-            throw new Exception\GatewayErrorException($e->getMessage());
-        }
-
-        return $attrs;
-    }
-
     protected function getAuthorizeRequestHashArray($content)
     {
         return [
@@ -474,10 +495,10 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestHashArray($data)
     {
         return [
-            VerifyFields::MERCHANT_ID              => $data[VerifyFields::MERCHANT_ID],
-            VerifyFields::TRANSACTION_REFERENCE_NO => $data[VerifyFields::TRANSACTION_REFERENCE_NO],
-            VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
-            VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
+            $data[VerifyFields::MERCHANT_ID],
+            $data[VerifyFields::TRANSACTION_REFERENCE_NO],
+            $data[VerifyFields::AMOUNT],
+            $data[VerifyFields::TRANSACTION_DATE],
         ];
     }
 
@@ -486,31 +507,31 @@ class Gateway extends Base\Gateway
         $verifyJson = json_encode($content[VerifyFields::TRANSACTION]);
 
         return [
-            VerifyFields::MERCHANT_ID       => $content[VerifyFields::MERCHANT_ID],
-            Constants::VERIFY_JSON          => $verifyJson,
-            VerifyFields::ERROR_CODE        => $content[VerifyFields::ERROR_CODE]
+            $content[VerifyFields::MERCHANT_ID],
+            $verifyJson,
+            $content[VerifyFields::ERROR_CODE]
         ];
     }
 
     protected function getRefundRequestHashArray($data)
     {
         return [
-            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
-            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
-            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
+            $data[RefundFields::MERCHANT_ID],
+            $data[RefundFields::TRANSACTION_ID],
+            $data[RefundFields::AMOUNT],
+            $data[RefundFields::TRANSACTION_DATE],
         ];
     }
 
     protected function getRefundResponseHashArray($data)
     {
         return [
-            RefundFields::MERCHANT_ID              => $data[RefundFields::MERCHANT_ID],
-            RefundFields::ERROR_CODE               => $data[RefundFields::ERROR_CODE],
-            RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
-            RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
-            RefundFields::STATUS                   => $data[RefundFields::STATUS]
+            $data[RefundFields::MERCHANT_ID],
+            $data[RefundFields::ERROR_CODE],
+            $data[RefundFields::AMOUNT],
+            $data[RefundFields::TRANSACTION_ID],
+            $data[RefundFields::TRANSACTION_DATE],
+            $data[RefundFields::STATUS]
         ];
     }
 

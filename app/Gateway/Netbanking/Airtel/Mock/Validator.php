@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         VerifyFields::TRANSACTION_DATE          => 'required|string',
         VerifyFields::MERCHANT_ID               => 'required|numeric',
         VerifyFields::HASH                      => 'required',
-        VerifyFields::AMOUNT                    => 'required',
+        VerifyFields::AMOUNT                    => 'required|string',
     ];
 
     protected static $refundRules = [
