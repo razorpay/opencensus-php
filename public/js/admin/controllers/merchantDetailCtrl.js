@@ -1444,7 +1444,7 @@ app.controller('MerchantDetailCtrl', [
             contract_software: '',
             contract_govt: '',
             contract_other: 'Y',
-            contract_specify: merchant_details.bussiness_model || '',
+            contract_specify: merchant_details.business_model || '',
             mercreg_company: merchant_details.business_name || '',
             mercreg_contact: merchant_details.contact_name || '',
             mercreg_tel_business: merchant_details.contact_mobile || '',
