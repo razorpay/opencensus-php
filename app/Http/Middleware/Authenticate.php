@@ -39,7 +39,6 @@ class Authenticate
         $router = $this->app['router'];
 
         $route = $router->currentRouteName();
-
         $ba = $this->app['basicauth'];
 
         $ba->init($this->app);
@@ -65,6 +64,14 @@ class Authenticate
         else if (in_array($route, Route::$proxy))
         {
             $ret = $ba->proxyAuth();
+        }
+        else if (in_array($route, Route::$device))
+        {
+            $ret = $ba->deviceAuth();
+        }
+        else if (in_array($route, Route::$admin))
+        {
+            $ret = $ba->adminAuth();
         }
         else if (in_array($route, Route::$direct))
         {

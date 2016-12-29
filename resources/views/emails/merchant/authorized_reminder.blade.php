@@ -92,6 +92,6 @@ capturing it in the dashboard.</p>
             </tr></table>
           @endforeach
           @include('emails.partials.footer', ['message' => $message])
-
-
+        
+      
     </table></td></tr></table></body></html>

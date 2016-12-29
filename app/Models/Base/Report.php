@@ -101,8 +101,7 @@ class Report extends Core
                 'time_started'  => $begin
             ]);
 
-        $repo = $this->repo->$entity;
-        $entities = $repo->fetchEntitiesForReport($merchantId, $from, $to);
+        $entities = $this->fetchEntitiesForReport($merchantId, $from, $to, $entity);
 
         $timeTaken = time() - $begin;
 
@@ -116,7 +115,7 @@ class Report extends Core
                 'time_taken'    => $timeTaken
             ]);
 
-        $data = $entities->toArrayReport();
+        $data = $this->fetchFormattedDataForReport($entities);
 
         $timeTaken = time() - $begin;
 
@@ -131,6 +130,18 @@ class Report extends Core
             ]);
 
         return $data;
+    }
+
+    protected function fetchFormattedDataForReport($entities)
+    {
+        return $entities->toArrayReport();
+    }
+
+    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
+    {
+        $repo = $this->repo->$entity;
+
+        return $repo->fetchEntitiesForReport($merchantId, $from, $to);
     }
 
     public function getInvoiceV2($input)

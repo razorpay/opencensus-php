@@ -9,11 +9,18 @@ use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
+    /**
+     * Holds the default database connection.
+     * @var string
+     */
+    protected $defaultConn;
+
     public function __construct($app)
     {
         parent::__construct($app);
 
         $this->db = $app['db'];
+        $this->defaultConn = $app['config']->get('database.default');
     }
 
     public function __get($entity)
@@ -45,6 +52,20 @@ class RepositoryManager extends \Illuminate\Support\Manager
         $repo = $this->getRepositoryClassFromObject($entity);
 
         return $repo->save($entity, $options);
+    }
+
+    public function sync($entity, $relation, $ids = [])
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $ids);
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->sync($entity, $relation, $id, $attributes, $touch);
     }
 
     public function delete($entity)
@@ -187,6 +208,10 @@ class RepositoryManager extends \Illuminate\Support\Manager
             $this->db->connection(Mode::TEST)->rollBack();
 
             throw $e;
+        }
+        finally
+        {
+            $this->app['config']->set('database.default', $this->defaultConn);
         }
 
         return $result;

@@ -49,15 +49,19 @@ trait EntityFetchTrait
         return $content;
     }
 
-    protected function getEntityById($entity, $id, $admin = false)
+    protected function getEntityById($entity, $id, $admin = false, $mode = 'test')
     {
-        $this->ba->proxyAuth();
+        $proxyAuth = 'proxyAuth' . camel_case($mode);
+
+        $this->ba->$proxyAuth();
 
         $url = '/'.$entity.'s/'.$id;
 
         if ($admin)
         {
-            $this->ba->appAuth();
+            $appAuth = 'appAuth' . camel_case($mode);
+
+            $this->ba->$appAuth();
 
             $url = '/admin/'.$entity.'/'.$id;
         }

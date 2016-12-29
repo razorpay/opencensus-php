@@ -178,6 +178,12 @@ class ErrorCode
      */
     const RP00012   = 'RP00012';
 
+    /**
+     * Gateway request timeout
+     * operation timed out specifically
+     */
+    const RP00013   = 'RP00013';
+
     public static $resultToErrorCodeMap = array(
         Result::HOST_TIMEOUT        => self::RP00004,
         Result::DENIED_BY_RISK      => self::RP00005,
@@ -274,6 +280,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00010   => 'Result code is AUTH ERROR. This happens mostly because card number provided is invalid',
         Hdfc\ErrorCode::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on rupay 3dsecure page.',
         Hdfc\ErrorCode::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
+        Hdfc\ErrorCode::RP00013   => 'Operation timed out while making the request',
     );
 
     /**
@@ -342,6 +349,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00001   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         Hdfc\ErrorCode::RP00002   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         Hdfc\ErrorCode::RP00003   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        Hdfc\ErrorCode::RP00013   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         Hdfc\ErrorCode::RP00004   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         Hdfc\ErrorCode::RP00005   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         Hdfc\ErrorCode::RP00006   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,

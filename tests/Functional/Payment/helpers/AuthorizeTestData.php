@@ -176,10 +176,10 @@ return [
         ],
     ],
 
-    'testNonInrCurrency' => [
+    'testNonSupportedCurrency' => [
         'request' => [
             'content' => [
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ],
         'response' => [
@@ -571,6 +571,19 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testFixAuthorizedAt' => [
+        'request' => [
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'authorized_at' => null
+            ],
+        ],
     ],
 
     'testTimeoutOldPayment' => [

@@ -162,9 +162,10 @@ return [
                     "aggregator",
                     "tokens",
                     "s2swallet",
+                    "s2supi",
                     "setl_report",
                     "cardsaving",
-                    "nocardsaving",
+                    "noflashcheckout",
                     "recurring",
                     "s2s"
                 ]

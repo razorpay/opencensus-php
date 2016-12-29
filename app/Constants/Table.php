@@ -5,6 +5,8 @@ namespace RZP\Constants;
 class Table
 {
     // Core entities
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
@@ -17,6 +19,9 @@ class Table
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
+    const SCHEDULE              = 'schedules';
+    const DEVICE                = 'devices';
+    const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
@@ -24,7 +29,6 @@ class Table
     const TERMINAL              = 'terminals';
     const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
-    const SCHEDULE              = 'schedules';
     const EMI_PLAN              = 'emi_plans';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
@@ -37,6 +41,24 @@ class Table
     const DAILY_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
+    const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const OFFER                 = 'offers';
+    const COUPON                = 'coupons';
+    const MERCHANT_OFFER        = 'merchant_offer';
+
+    // organization roles permissions
+    const ORG                   = 'orgs';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'roles';
+    const PERMISSION            = 'permissions';
+    const PERMISSION_MAP        = 'permission_map';
+    const GROUP                 = 'groups';
+    const ADMIN                 = 'admins';
+    const GROUP_MAP             = 'group_map';
+    const MERCHANT_MAP          = 'merchant_map';
+    const ADMIN_TOKEN           = 'admin_tokens';
+    const ROLE_MAP              = 'role_map';
+    const LOGIN_ATTEMPT         = 'login_attempts';
 
     // Gateway related
     const EBS                   = 'ebs';

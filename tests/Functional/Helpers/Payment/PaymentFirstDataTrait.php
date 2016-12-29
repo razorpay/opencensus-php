@@ -42,12 +42,11 @@ trait PaymentFirstDataTrait
         });
     }
 
-    protected function removeApprovalCodeInSucessfulAuth()
+    protected function removeApprovalCodeFailRc()
     {
         $this->mockServerContentFunction(function (& $content)
         {
             $content['approval_code'] = null;
-            $content['status']        = 'APPROVED';
         });
     }
 
@@ -90,7 +89,7 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new Exception\GatewayTimeoutException('Gateway request timed out');
+            throw new Exception\GatewayTimeoutException('operation timed out');
         });
     }
 

@@ -87,6 +87,13 @@ class EloquentEx extends \Razorpay\Spine\Entity
         $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 
+    public function scopeOrgId($query, $orgId)
+    {
+        $orgIdColumn = $this->getAttributeWithTableName('org_id');
+
+        $query->where($orgIdColumn, '=', $orgId);
+    }
+
     public function scopeMerchantId($query, $merchantId)
     {
         $merchantIdColumn = $this->getAttributeWithTableName(Common::MERCHANT_ID);

@@ -321,7 +321,7 @@ class Gateway extends Base\Gateway
             RequestFields::NOTIFICATION_URL     => $notificationUrl,
             RequestFields::AMOUNT               => $amount,
             RequestFields::CURRENCY             => $input['payment']['currency'],
-            RequestFields::COUPON_CODE          => 'RPAY15',
+            RequestFields::COUPON_CODE          => 'NA',
             RequestFields::USER_ACCESS_TOKEN    => $input['token']['gateway_token'],
         );
 

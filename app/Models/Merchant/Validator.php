@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 
 class Validator extends Base\Validator
 {
@@ -39,8 +40,10 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
+        'groups'                            => 'sometimes|array',
         // max: 5 days (don't change max value without consult), min:60 minutes
-        Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom'
+        Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
+        Entity::CONVERT_CURRENCY            => 'sometimes|boolean'
     );
 
     protected static $uniqueEmailRules = array(
@@ -61,6 +64,11 @@ class Validator extends Base\Validator
         Entity::LOGO_URL                    => 'sometimes|max:2000',
     );
 
+    protected static $featureRules = [
+        'features'          => 'required|array',
+        'optout_reason'     => 'sometimes|string|max:200'
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -68,6 +76,10 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email',
         'features',
+    ];
+
+    protected static $featureValidators = [
+        'visible_features',
     ];
 
     public function validateLogo($imageDetails)
@@ -168,6 +180,24 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Please set value for attribute: ' . $attribute);
+            }
+        }
+    }
+
+    protected function validateVisibleFeatures(array $input)
+    {
+        $featureNames = array_keys($input['features']);
+
+        $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+
+        foreach ($featureNames as $feature)
+        {
+            if (in_array($feature, $visibleFeatures, true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
             }
         }
     }

@@ -85,6 +85,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('RefAmount');
     }
 
+    public function getAuthStatus()
+    {
+        return $this->getAttribute('AuthStatus');
+    }
+
     protected function getStatusAttribute()
     {
         $code = $this->attributes['AuthStatus'];
@@ -119,5 +124,10 @@ class Entity extends Base\Entity
         }
 
         return true;
+    }
+
+    public function getBankReferenceNo()
+    {
+        return $this->getAttribute('BankReferenceNo');
     }
 }

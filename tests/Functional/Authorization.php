@@ -17,6 +17,9 @@ class Authorization
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
+    protected $defaultDeviceToken = 'authentication_token';
+
+    protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
 
     public function __construct($test)
     {
@@ -31,9 +34,10 @@ class Authorization
      */
     public function basicAuth($user = null, $pwd = null)
     {
-        $this->auth = array(
+        $this->auth = [
             'PHP_AUTH_USER' => $user,
-            'PHP_AUTH_PW' => $pwd);
+            'PHP_AUTH_PW' => $pwd
+        ];
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '')
@@ -102,6 +106,27 @@ class Authorization
         $this->basicAuth($key, '');
     }
 
+    public function deviceAuth($key = null, $secret = null)
+    {
+        $this->type = 'device';
+
+        if ($key === null)
+        {
+            $key = $this->defaultKey;
+
+            $this->key = $key;
+        }
+
+        if ($secret === null)
+        {
+            $secret = $this->defaultDeviceToken;
+        }
+
+        $this->setSecret($secret);
+
+        $this->basicAuth($key, $secret);
+    }
+
     public function publicCallbackAuth()
     {
         $this->noAuth();
@@ -132,15 +157,28 @@ class Authorization
 
         if ($secret === null)
         {
-            $this->setSecret($this->defaultSecret);
             $secret = $this->defaultSecret;
         }
-        else
-        {
-            $this->setSecret($secret);
-        }
+
+        $this->setSecret($secret);
 
         $this->basicAuth($key, $secret);
+    }
+
+    public function adminAuth($mode = 'test', $token = null)
+    {
+        $this->type = 'admin';
+
+        $this->key = "rzp_{$mode}_admin";
+
+        if ($token === null)
+        {
+            $token = $this->defaultToken;
+        }
+
+        $this->setSecret($token);
+
+        $this->basicAuth($this->key, $token);
     }
 
     public function dashboardAuth($mode = 'test')
@@ -264,5 +302,14 @@ class Authorization
         $key = $this->getAppAuthKeyForMode();
 
         $this->appAuth($key);
+    }
+
+    public function getAdmin()
+    {
+        $token = $this->secret;
+
+        $this->admin = (new \RZP\Models\Admin\Admin\Token\Repository)->findOrFailToken($token)->admin;
+
+        return $this->admin;
     }
 }

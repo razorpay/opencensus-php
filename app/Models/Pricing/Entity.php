@@ -30,6 +30,11 @@ class Entity extends Base\PublicEntity
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
+
     protected $fillable = array(
         self::ID,
         self::PLAN_ID,
