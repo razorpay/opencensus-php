@@ -105,9 +105,9 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseBody = $response->body;
-
         $responseArray = $this->jsonToArray($response->body);
+
+        $verify->verifyResponseContent = $responseArray;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -116,9 +116,11 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment($verify)
     {
-        $content = $verify->verifyResponseBody;
+        $response = $verify->verifyResponseContent;
 
-        $response = $this->getVerifyResponseArray($content);
+        $this->request = false;
+
+        $this->verifySecureHash($response);
 
         $status = $this->getVerifyStatus($verify, $response);
 
@@ -133,7 +135,7 @@ class Gateway extends Base\Gateway
 
         $this->setApiSuccess($verify);
 
-        $this->setGatewaySuccess($verify, $response);
+        $this->setGatewaySuccess($verify, $response[VerifyFields::TRANSACTION][0]);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -160,8 +162,8 @@ class Gateway extends Base\Gateway
     {
         $verify->gatewaySuccess = false;
 
-        if (isset($response[VerifyFields::STATUS]) and
-            $response[VerifyFields::STATUS] === Status::SUCCESS)
+        if ((isset($response[VerifyFields::STATUS]) === true) and
+            ($response[VerifyFields::STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -207,19 +209,6 @@ class Gateway extends Base\Gateway
             AuthFields::AMOUNT => $amount
         ];
     }
-
-    /*public function getHashOfArray($data)
-    {
-        $values = array_values($data);
-
-        $salt = $this->getSalt();
-
-        array_push($values, $salt);
-
-        $hashString = $this->getStringToHash($values, '#');
-
-        return $this->getHashOfString($hashString);
-    }*/
 
     protected function getHashValueFromContent(array $content)
     {
@@ -279,6 +268,10 @@ class Gateway extends Base\Gateway
             }
         }
 
+        $salt = $this->getSalt();
+
+        array_push($data, $salt);
+
         return implode($glue, $data);
     }
 
@@ -332,13 +325,6 @@ class Gateway extends Base\Gateway
 
         $this->checkRefundStatus($attributes, $responseArray);
     }
-
-    /*protected function verifyAuthResponseHash($content)
-    {
-        $hashArray = $this->getAuthResponseHashArray($content);
-
-        $this->assertResponseHash($hashArray, $content[AuthFields::HASH]);
-    }*/
 
     protected function getPaymentVerifyData($verify)
     {
@@ -508,16 +494,12 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyResponseHashArray($content)
     {
-        $response = $this->jsonToArray($content);
-
-        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
-
-        $verifyJson = json_encode($responseArray);
+        $verifyJson = json_encode($content[VerifyFields::TRANSACTION]);
 
         return [
-            VerifyFields::MERCHANT_ID       => $response[VerifyFields::MERCHANT_ID],
-            Constants::VERIFY_JSON          => '['.$verifyJson.']',
-            VerifyFields::ERROR_CODE        => $response[VerifyFields::ERROR_CODE]
+            VerifyFields::MERCHANT_ID       => $content[VerifyFields::MERCHANT_ID],
+            Constants::VERIFY_JSON          => $verifyJson,
+            VerifyFields::ERROR_CODE        => $content[VerifyFields::ERROR_CODE]
         ];
     }
 

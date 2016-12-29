@@ -105,14 +105,20 @@ class Server extends Base\Mock\Server
         {
             case Action::AUTHORIZE:
             {
-                $content = $this->getCallbackHashArray($input);
+                $content = $this->getCallbackHashArray($content);
+                break;
             }
 
             case Action::VERIFY:
             {
-                $content = $this->getVerifyHashArray($input);
+                $content = $this->getVerifyHashArray($content);
+                break;
             }
         }
+
+        $salt = $this->getGatewayInstance()->getSalt();
+
+        array_push($content, $salt);
 
         return implode($glue, $content);
     }
@@ -164,13 +170,6 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponse($input)
     {
-        $response =  $this->createVerifyResponseArray($input, $verifyArray);
-
-        return json_encode($response);
-    }
-
-    protected function createVerifyResponseArray($input, $verifyArray)
-    {
         $date = Carbon::createFromFormat('dmYHms',
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
@@ -187,7 +186,7 @@ class Server extends Base\Mock\Server
 
         $hash = $this->generateHash($verifyArray);
 
-        return [
+        $response =  [
             VerifyFields::TRANSACTION               => array($verifyArray),
             VerifyFields::HASH                      => $hash,
             VerifyFields::MERCHANT_ID               => $merchantId,
@@ -196,6 +195,8 @@ class Server extends Base\Mock\Server
             VerifyFields::CODE                      => '0',
             VerifyFields::ERROR_CODE                => Constants::CODE
         ];
+
+        return json_encode($response);
     }
 
     protected function getVerifyHashArray($verifyArray)
