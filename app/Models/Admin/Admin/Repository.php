@@ -15,7 +15,7 @@ class Repository extends Base\Repository
     protected $entity = 'admin';
 
     protected $appFetchParamRules = [
-        Entity::EMAIL       => 'required|email',
+        Entity::EMAIL => 'sometimes|email',
     ];
 
     public function findByEmail($email)

@@ -10,3 +10,4 @@
 /.git/*
 /report
 /docs
+/storage/certs/*

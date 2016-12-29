@@ -75,6 +75,14 @@ class Fixtures
 
         $this->customer->setUp();
 
+        $this->create('device', [
+            'id' => 'RazorpayDevice',
+            'verification_token' => 'sample_verification_token',
+            'auth_token' => 'authentication_token',
+        ]);
+
+        $this->create('vpa:default');
+
         $this->entities = $entities;
     }
 
