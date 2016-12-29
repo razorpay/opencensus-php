@@ -10,6 +10,7 @@ use Hash;
 use Mail;
 use Str;
 
+use RZP\Constants\HashAlgo;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Error\ErrorCode;
@@ -191,7 +192,7 @@ class Service extends Base\Service
 
         $secret = $app->config->get('app.key');
 
-        $token =  hash_hmac('sha256', Str::random(40), $secret);
+        $token =  hash_hmac(HashAlgo::SHA256, Str::random(40), $secret);
 
         return $token;
     }
