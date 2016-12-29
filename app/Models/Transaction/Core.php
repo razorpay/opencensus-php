@@ -176,7 +176,8 @@ class Core extends Base\Core
                  ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
                  ($payment->isCard() === true) and
                  ($payment->card->isInternational() === false) and
-                 ($payment->card->isDebit() === true))
+                 ($payment->card->isDebit() === true) and
+                 (time() < 1483228800))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 

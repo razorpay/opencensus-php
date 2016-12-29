@@ -1410,6 +1410,13 @@ ALTER TABLE orgs
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
 
+# ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign;
+
+# ALTER TABLE org_hostname
+    ADD CONSTRAINT `org_hostname_org_id_foreign`
+    FOREIGN KEY (`org_id`) REFERENCES `orgs` (`id`) ON DELETE cascade;
+
 ALTER TABLE merchants
     ADD COLUMN convert_currency TINYINT(1) AFTER auto_refund_delay;
 

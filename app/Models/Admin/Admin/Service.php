@@ -175,7 +175,7 @@ class Service extends Base\Service
 
         $tokenAttributes = [
             'token'      => str_random(40),
-            'expires_at' => Carbon::now()->addHours(1)->timestamp
+            'expires_at' => Carbon::now()->addDays(30)->timestamp
         ];
 
         // Create a token for the user
@@ -506,9 +506,9 @@ class Service extends Base\Service
 
     public function logout()
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $adminToken = $this->app['basicauth']->getAdminToken();
 
-        $this->repo->admin_token->deleteTokensForAdmin($admin->getId());
+        (new Token\Service)->deleteToken($adminToken);
 
         return ['success' => true];
     }
