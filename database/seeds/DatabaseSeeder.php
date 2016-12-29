@@ -844,6 +844,7 @@ class DatabaseSeeder extends Seeder
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
+        $this->createJiomoneyTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
