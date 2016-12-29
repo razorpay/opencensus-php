@@ -296,7 +296,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 
-    const BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID                                  = 'Email provided is not a valid email';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';

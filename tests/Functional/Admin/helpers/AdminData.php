@@ -65,14 +65,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ADMIN_EMAIL,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL,
         ],
     ],
 
@@ -375,7 +375,7 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL,
         ],
     ],
 
@@ -457,7 +457,7 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
             'status_code' => 400,
@@ -468,7 +468,7 @@ return [
         ],
     ],
 
-    'testPasswordResetInvalid' => [
+    'testPasswordResetInvalidPassword' => [
         'request' => [
             'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',

@@ -93,7 +93,7 @@ class Validator extends Base\Validator
         if (in_array($domain, $emailDomains) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID, 'email', $email);
+                ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL, 'email', $email);
         }
     }
 

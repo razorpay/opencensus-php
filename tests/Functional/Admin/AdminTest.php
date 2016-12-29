@@ -507,8 +507,6 @@ class AdminTest extends TestCase
     {
         $admin = $this->testForgotPasswordSuccess();
 
-        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -528,7 +526,9 @@ class AdminTest extends TestCase
     {
         $admin = $this->testForgotPasswordSuccess();
 
-        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+        $key = sprintf(
+            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
+            $admin->getId());
 
         $token = Cache::get($key);
 
@@ -549,11 +549,16 @@ class AdminTest extends TestCase
         $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
-    public function testPasswordResetInvalid()
+    public function testPasswordResetInvalidPassword()
     {
+        // This test checks if auth policy rules apply when new password is
+        // given for resetting the old password
+
         $admin = $this->testForgotPasswordSuccess();
 
-        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+        $key = sprintf(
+            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
+            $admin->getId());
 
         $token = Cache::get($key);
 
