@@ -9,7 +9,6 @@ use RZP\Exception;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 
@@ -22,7 +21,7 @@ class Gateway extends Base\Gateway
     protected $bank = 'airtel';
 
     protected $map = [
-        RequestFields::AMOUNT => 'amount'
+        AuthFields::AMOUNT => 'amount'
     ];
 
     const STATUS_MATCH = GatewayBase\VerifyResult::STATUS_MATCH;
@@ -162,22 +161,32 @@ class Gateway extends Base\Gateway
 
     protected function createAuthorizeRequestData($input)
     {
-        $defaultData = $this->getAuthRequestHashArray($input);
+        $mid = $this->getMerchantId();
 
-        $hash = $this->generateHash($defaultData);
+        $amount = $input['payment']['amount'] / 100;
+
+        $date = Carbon::createFromTimestamp(
+            $input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('dmYhms');
 
         $callbackUrl = $input['callbackUrl'];
 
         $data = [
-            RequestFields::SUCCESS_URL      => $callbackUrl,
-            RequestFields::FAILURE_URL      => $callbackUrl,
-            RequestFields::CURRENCY         => Constants::INDIAN_RUPEE,
-            RequestFields::CUSTOMER_MOBILE  => $input['payment']['contact'],
-            RequestFields::CUSTOMER_EMAIL   => $input['payment']['email'],
-            RequestFields::HASH             => $hash,
+            AuthFields::MERCHANT_ID              => $mid,
+            AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
+            AuthFields::AMOUNT                   => $amount,
+            AuthFields::DATE                     => $date,
+            AuthFields::SERVICE                  => Constants::NETBANKING,
+            AuthFields::SUCCESS_URL              => $callbackUrl,
+            AuthFields::FAILURE_URL              => $callbackUrl,
+            AuthFields::CURRENCY                 => Constants::INDIAN_RUPEE,
+            AuthFields::CUSTOMER_MOBILE          => $input['payment']['contact'],
+            AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
         ];
 
-        $data = array_merge($defaultData, $data);
+        $hashArray = array_slice($data, 0, 5);
+
+        $data[AuthFields::HASH] = $this->generateHash($hashArray);
 
         return $data;
     }
@@ -187,7 +196,7 @@ class Gateway extends Base\Gateway
         $amount = $input['payment']['amount'] / 100;
 
         return [
-            RequestFields::AMOUNT => $amount
+            AuthFields::AMOUNT => $amount
         ];
     }
 
@@ -219,11 +228,11 @@ class Gateway extends Base\Gateway
     {
         return [
             Netbanking\Entity::RECEIVED        => true,
-            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS],
-            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::TRANSACTION_ID],
-            Netbanking\Entity::MERCHANT_CODE   => $content[ResponseFields::CODE],
-            Netbanking\Entity::ERROR_MESSAGE   => $content[ResponseFields::MSG],
-            Netbanking\Entity::DATE            => $content[ResponseFields::TRANSACTION_DATE],
+            Netbanking\Entity::STATUS          => $content[AuthFields::STATUS],
+            Netbanking\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
+            Netbanking\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
+            Netbanking\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
+            Netbanking\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
         ];
     }
 
@@ -248,12 +257,12 @@ class Gateway extends Base\Gateway
         $responseArray = $this->getRefundResponseArray($response);
 
         $this->trace->info(
-            TraceCode::GATEWAY_REFUND_REQUEST,
+            TraceCode::GATEWAY_REFUND_RESPONSE,
             (array) $responseArray);
 
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
-        $this->createRefundEntity($responseArray, $input);
+        $this->createGatewayRefundEntity($responseArray);
 
         $this->checkRefundStatus($attributes, $responseArray);
     }
@@ -262,7 +271,7 @@ class Gateway extends Base\Gateway
     {
         $hashArray = $this->getAuthResponseHashArray($content);
 
-        $this->assertResponseHash($hashArray, $content[ResponseFields::HASH]);
+        $this->assertResponseHash($hashArray, $content[AuthFields::HASH]);
     }
 
     protected function getPaymentVerifyData($verify)
@@ -303,7 +312,6 @@ class Gateway extends Base\Gateway
 
         $hashArray = $this->getVerifyResponseHashArray($content);
 
-        // This fails at the moment --> Need to make sure this works
         $this->assertResponseHash($hashArray,
             $response[VerifyFields::HASH]);
 
@@ -353,9 +361,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundResponseArray($response)
     {
-        $responseArray = (array) $response;
-
-        $content = $responseArray[Constants::REFUND_BODY];
+        $content = $response->body;
 
         $refundArray = $this->jsonToArray($content);
 
@@ -381,26 +387,16 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function createRefundEntity($attributes, $input)
-    {
-        $paymentId = $input['payment']['id'];
-
-        $gatewayPayment = $this->createGatewayRefundEntity(
-            $paymentId, $attributes);
-
-        $this->gatewayPayment = $gatewayPayment;
-    }
-
     protected function getRefundAttributes($response, $input)
     {
         try
         {
             $attrs = [
-                'received'        => true,
-                'amount'          => $input['payment']['amount'] / 100,
-                'bank_payment_id' => $response[RefundFields::TRANSACTION_ID],
-                'status'          => $response[RefundFields::STATUS],
-                'refund_id'       => $input['refund']['id']
+                Netbanking\Entity::RECEIVED        => true,
+                Netbanking\Entity::AMOUNT          => $input['payment']['amount'] / 100,
+                Netbanking\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
+                Netbanking\Entity::STATUS          => $response[RefundFields::STATUS],
+                Netbanking\Entity::REFUND_ID       => $input['refund']['id']
             ];
         }
 
@@ -412,33 +408,14 @@ class Gateway extends Base\Gateway
         return $attrs;
     }
 
-    protected function getAuthRequestHashArray($input)
-    {
-        $mid = $this->getMerchantId();
-
-        $amount = (double) $input['payment']['amount'] / 100;
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhms');
-
-        return [
-            RequestFields::MERCHANT_ID               => $mid,
-            RequestFields::TRANSACTION_REFERENCE_NO  => $input['payment']['id'],
-            RequestFields::AMOUNT                    => $amount,
-            RequestFields::DATE                      => $date,
-            RequestFields::SERVICE                   => Constants::NETBANKING,
-        ];
-    }
-
     protected function getAuthResponseHashArray($content)
     {
         return [
-            ResponseFields::MERCHANT_ID              => $content[ResponseFields::MERCHANT_ID],
-            ResponseFields::TRANSACTION_ID           => $content[ResponseFields::TRANSACTION_ID],
-            ResponseFields::TRANSACTION_REFERENCE_NO => $content[ResponseFields::TRANSACTION_REFERENCE_NO],
-            ResponseFields::TRANSACTION_AMOUNT       => $content[ResponseFields::TRANSACTION_AMOUNT],
-            ResponseFields::TRANSACTION_DATE         => $content[ResponseFields::TRANSACTION_DATE],
+            AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
+            AuthFields::TRANSACTION_ID           => $content[AuthFields::TRANSACTION_ID],
+            AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
+            AuthFields::TRANSACTION_AMOUNT       => $content[AuthFields::TRANSACTION_AMOUNT],
+            AuthFields::TRANSACTION_DATE         => $content[AuthFields::TRANSACTION_DATE],
         ];
     }
 
@@ -449,7 +426,7 @@ class Gateway extends Base\Gateway
             VerifyFields::TRANSACTION_REFERENCE_NO => $data[VerifyFields::TRANSACTION_REFERENCE_NO],
             VerifyFields::AMOUNT                   => $data[VerifyFields::AMOUNT],
             VerifyFields::TRANSACTION_DATE         => $data[VerifyFields::TRANSACTION_DATE],
-            ];
+        ];
     }
 
     protected function getVerifyResponseHashArray($content)
@@ -474,7 +451,7 @@ class Gateway extends Base\Gateway
             RefundFields::TRANSACTION_ID           => $data[RefundFields::TRANSACTION_ID],
             RefundFields::AMOUNT                   => $data[RefundFields::AMOUNT],
             RefundFields::TRANSACTION_DATE         => $data[RefundFields::TRANSACTION_DATE],
-            ];
+        ];
     }
 
     protected function getRefundResponseHashArray($data)

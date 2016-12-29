@@ -190,8 +190,8 @@ return array(
     ),
 
     'netbanking_airtel' => [
-        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_SALT'),
+        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => array(

@@ -78,7 +78,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             // Refund double amount
             $refund = $this->refundPayment($payment['id'], 100000);
         });
@@ -92,7 +93,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
+        $this->runRequestResponseFlow($data, function()
+        {
             $this->doAuthPayment($this->payment);
         });
     }
@@ -105,7 +107,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->mockVerifyFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->verifyPayment($payment['razorpay_payment_id']);
         });
     }
@@ -120,7 +123,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->verifyPayment($payment['id']);
         });
     }
@@ -133,7 +137,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->mockRefundFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             // Refund double amount
             $refund = $this->refundPayment($payment['id'], 1000);
         });

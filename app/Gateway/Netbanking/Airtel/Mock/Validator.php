@@ -3,25 +3,26 @@
 namespace RZP\Gateway\Netbanking\Airtel\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Netbanking\Airtel\RequestFields;
+use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
+use RZP\Gateway\Netbanking\Airtel\RefundFields;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::MERCHANT_ID               => 'required|numeric',
-        RequestFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num',
-        RequestFields::SUCCESS_URL               => 'required|string',
-        RequestFields::FAILURE_URL               => 'required|string',
-        RequestFields::AMOUNT                    => 'required',
-        RequestFields::DATE                      => 'required|string',
-        RequestFields::MERCHANT_SERVICE_CODE     => 'sometimes',
-        RequestFields::CURRENCY                  => 'required|in:INR',
-        RequestFields::END_MERCHANT_NAME         => 'sometimes',
-        RequestFields::CUSTOMER_MOBILE           => 'required',
-        RequestFields::CUSTOMER_EMAIL            => 'required',
-        RequestFields::SERVICE                   => 'required',
-        RequestFields::HASH                      => 'required',
+        AuthFields::MERCHANT_ID               => 'required|numeric',
+        AuthFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num',
+        AuthFields::SUCCESS_URL               => 'required|string',
+        AuthFields::FAILURE_URL               => 'required|string',
+        AuthFields::AMOUNT                    => 'required',
+        AuthFields::DATE                      => 'required|string',
+        AuthFields::MERCHANT_SERVICE_CODE     => 'sometimes',
+        AuthFields::CURRENCY                  => 'required|in:INR',
+        AuthFields::END_MERCHANT_NAME         => 'sometimes',
+        AuthFields::CUSTOMER_MOBILE           => 'required',
+        AuthFields::CUSTOMER_EMAIL            => 'required',
+        AuthFields::SERVICE                   => 'required',
+        AuthFields::HASH                      => 'required',
     ];
 
     protected static $verifyRules = [
@@ -31,5 +32,15 @@ class Validator extends Base\Validator
         VerifyFields::MERCHANT_ID               => 'required|numeric',
         VerifyFields::HASH                      => 'required',
         VerifyFields::AMOUNT                    => 'required',
+    ];
+
+    protected static $refundRules = [
+        RefundFields::SESSION_ID                => 'required|alpha_num',
+        RefundFields::TRANSACTION_ID            => 'required|alpha_num',
+        RefundFields::TRANSACTION_DATE          => 'required|string',
+        RefundFields::REQUEST                   => 'required|in:ECOMM_REVERSAL',
+        RefundFields::MERCHANT_ID               => 'required|numeric',
+        RefundFields::HASH                      => 'required',
+        RefundFields::AMOUNT                    => 'required',
     ];
 }

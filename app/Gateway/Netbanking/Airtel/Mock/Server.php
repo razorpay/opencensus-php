@@ -5,10 +5,9 @@ namespace RZP\Gateway\Netbanking\Airtel\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Airtel\Constants;
+use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
 use RZP\Gateway\Netbanking\Airtel\RefundFields;
-use RZP\Gateway\Netbanking\Airtel\RequestFields;
-use RZP\Gateway\Netbanking\Airtel\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -22,7 +21,7 @@ class Server extends Base\Mock\Server
 
         $this->content($content);
 
-        $callbackUrl = $input[RequestFields::SUCCESS_URL] . '?' .
+        $callbackUrl = $input[AuthFields::SUCCESS_URL] . '?' .
                         http_build_query($content);
 
         return $callbackUrl;
@@ -47,6 +46,8 @@ class Server extends Base\Mock\Server
 
         $request = (array) json_decode($input);
 
+        $this->validateActionInput($request);
+
         $response = $this->createRefundResponse($request);
 
         return $this->makeResponse($response);
@@ -66,7 +67,7 @@ class Server extends Base\Mock\Server
 
         $this->content($hashArray);
 
-        $hash = $this->getGatewayInstance()->generateHash($hashArray);
+        $hash = $this->generateHash($hashArray);
 
         $hashArray[RefundFields::HASH] = $hash;
 
@@ -81,7 +82,7 @@ class Server extends Base\Mock\Server
     {
         $hashArray = $this->getAuthResponseHashArray($input);
 
-        $hash = $this->getGatewayInstance()->generateHash($hashArray);
+        $hash = $this->generateHash($hashArray);
 
         $response = $this->getAdditionalAuthData($hash);
 
@@ -93,22 +94,22 @@ class Server extends Base\Mock\Server
     protected function getAuthResponseHashArray($input)
     {
         return [
-            ResponseFields::MERCHANT_ID               => $input[RequestFields::MERCHANT_ID],
-            ResponseFields::TRANSACTION_ID            => mt_rand(11111111, 99999999),
-            ResponseFields::TRANSACTION_REFERENCE_NO  => $input[RequestFields::TRANSACTION_REFERENCE_NO],
-            ResponseFields::TRANSACTION_AMOUNT        => $input[RequestFields::AMOUNT],
-            ResponseFields::TRANSACTION_DATE          => $input[RequestFields::DATE],
+            AuthFields::MERCHANT_ID               => $input[AuthFields::MERCHANT_ID],
+            AuthFields::TRANSACTION_ID            => mt_rand(11111111, 99999999),
+            AuthFields::TRANSACTION_REFERENCE_NO  => $input[AuthFields::TRANSACTION_REFERENCE_NO],
+            AuthFields::TRANSACTION_AMOUNT        => $input[AuthFields::AMOUNT],
+            AuthFields::TRANSACTION_DATE          => $input[AuthFields::DATE],
         ];
     }
 
     protected function getAdditionalAuthData($hash)
     {
         return [
-            ResponseFields::STATUS                    => Constants::SUCCESS,
-            ResponseFields::CODE                      => Constants::CODE,
-            ResponseFields::MSG                       => Constants::SUCCESS_MSG,
-            ResponseFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
-            ResponseFields::HASH                      => $hash
+            AuthFields::STATUS                    => Constants::SUCCESS,
+            AuthFields::CODE                      => Constants::CODE,
+            AuthFields::MSG                       => Constants::SUCCESS_MSG,
+            AuthFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
+            AuthFields::HASH                      => $hash
         ];
     }
 
@@ -131,8 +132,8 @@ class Server extends Base\Mock\Server
     {
         return [
             RefundFields::SESSION_ID    => $request[RefundFields::SESSION_ID],
-            RefundFields::MESSAGE_TEXT  => Constants::REFUND_SUCCESS_MESSAGE,
-            RefundFields::CODE          => Constants::REFUND_CODE
+            RefundFields::MESSAGE_TEXT  => 'Transaction Created Successfully',
+            RefundFields::CODE          => '0'
         ];
     }
 
@@ -176,15 +177,15 @@ class Server extends Base\Mock\Server
 
         $hashArray = $this->getVerifyHashArray($verifyArray, $input);
 
-        $hash = $this->getGatewayInstance()->generateHash($hashArray);
+        $hash = $this->generateHash($hashArray);
 
         return [
             VerifyFields::TRANSACTION               => array($verifyArray),
             VerifyFields::HASH                      => $hash,
             VerifyFields::MERCHANT_ID               => $merchantId,
             VerifyFields::TRANSACTION_REFERENCE_NO  => $input[VerifyFields::TRANSACTION_REFERENCE_NO],
-            VerifyFields::MESSAGE_TEXT              => Constants::VERIFY_SUCCESS,
-            VerifyFields::CODE                      => Constants::VERIFY_CODE,
+            VerifyFields::MESSAGE_TEXT              => 'Success',
+            VerifyFields::CODE                      => '0',
             VerifyFields::ERROR_CODE                => Constants::CODE
         ];
     }

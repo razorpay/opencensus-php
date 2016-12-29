@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Airtel;
 
 class RefundFields
 {
-    const SESSION_ID          = "feSessionId";
+    const SESSION_ID          = 'feSessionId';
     const TRANSACTION_ID      = 'txnId';
     const TRANSACTION_DATE    = 'txnDate';
     const REQUEST             = 'request';
