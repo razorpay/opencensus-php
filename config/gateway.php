@@ -26,7 +26,9 @@ return array(
         'netbanking_kotak',
         'sharp',
         'wallet_olamoney',
+        'upi_idfc',
         'upi_icici',
+        'upi_npci',
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
@@ -54,6 +56,7 @@ return array(
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
     'mock_wallet_jiomoney'    => env('JIOMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
+    'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
@@ -139,6 +142,17 @@ return array(
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
     ),
+
+    'upi_idfc'  =>  [
+        'test_kek'               => env('UPI_IDFC_TEST_KEK'),
+        'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
+    ],
+
+    'upi_npci' => [
+        'test_decryption_key'    => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
+        'test_signing_key'       => env('UPI_NPCI_TEST_SIGNING_KEY'),
+        'test_signing_public_key'=> env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
+    ],
 
     'wallet_payzapp' => array(
         'pg_merchant_login_id'      => env('PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'),

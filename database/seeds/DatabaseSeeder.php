@@ -297,6 +297,12 @@ class DatabaseSeeder extends Seeder
                 $this->createTestTerminals();
 
                 $this->createLocalCustomer();
+
+                $this->createGlobalCustomer();
+
+                $this->createVpas();
+
+                $this->createDevice();
             }
 
             DB::table(Table::METHODS)->insert(
@@ -541,6 +547,68 @@ class DatabaseSeeder extends Seeder
                     'created_at'            => time(),
                     'updated_at'            => time(),
                 ),
+            )
+        );
+    }
+
+    protected function createGlobalCustomer()
+    {
+        DB::table(Table::CUSTOMER)->insert(
+            array(
+                'id'                    => 'TestGloblCstmr',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'name'                  => 'Global Citizen',
+                'contact'               => '+919876543210',
+                'email'                 => 'test4@razorpay.com',
+                'notes'                 => '{}',
+                'active'                => true,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createVpas()
+    {
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestSenderVpa',
+                'username'              => 'sender',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestReceivrVpa',
+                'username'              => 'receiver',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createDevice()
+    {
+        DB::table(Table::DEVICE)->insert(
+            array(
+                'id'                    => 'TestNokia3310',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'customer_id'           => 'TestGloblCstmr',
+                'imei'                  => 'TestImeiValue',
+                'status'                => 'verified',
+                'auth_token'            => 'auth_to_be_okay',
+                'verification_token'    => 'verin_this_together',
+                'upi_token'             => 'upi_dont_need_to',
+                'created_at'            => time(),
+                'updated_at'            => time(),
             )
         );
     }
