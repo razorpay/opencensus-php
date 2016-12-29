@@ -6,5 +6,5 @@ use RZP\Gateway\Wallet\Base;
 
 class Action extends Base\Action
 {
-    const PURCHASE = 'PURCHASE';
+    const PAYMENT_STATUS = 'payment_status';
 }

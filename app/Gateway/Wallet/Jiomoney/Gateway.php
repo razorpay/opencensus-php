@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -14,9 +16,10 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Base\Entity as BaseGatewayEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Currency;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -31,8 +34,6 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
-    const DEFAULT_CURRENCY_CODE = 'INR';
-
     const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
 
     const JSON_MODE = '2';
@@ -41,22 +42,19 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'wallet_jiomoney';
 
-     protected $sortRequestContent = false;
+    protected $sortRequestContent = false;
 
     protected $map = [
         RequestFields::MERCHANT_ID           => WalletEntity::GATEWAY_MERCHANT_ID,
-        RequestFields::PAYMENT_ID            => WalletEntity::PAYMENT_ID,
-        RequestFields::AMOUNT                => WalletEntity::AMOUNT,
-        ResponseFields::STATUS_CODE          => WalletEntity::STATUS_CODE,
-        ResponseFields::RESPONSE_CODE        => WalletEntity::RESPONSE_CODE,
-        ResponseFields::RESPONSE_DESCRIPTION => WalletEntity::RESPONSE_DESCRIPTION,
-        ResponseFields::GATEWAY_PAYMENT_ID   => WalletEntity::GATEWAY_PAYMENT_ID,
-        ResponseFields::DATE                 => WalletEntity::DATE,
-        WalletEntity::EMAIL                  => WalletEntity::EMAIL,
-        WalletEntity::CONTACT                => WalletEntity::CONTACT,
-        BaseGatewayEntity::RECEIVED          => BaseGatewayEntity::RECEIVED
     ];
 
+    /**
+     * Returns JioMoney request content to be redirewcted to from checkout
+     *
+     * @param  array  $input
+     *
+     * @return array  $request
+     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -71,7 +69,7 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT       => $input['payment']['amount'],
             WalletEntity::EMAIL         => $input['payment']['email'],
             WalletEntity::CONTACT       => $input['payment']['contact'],
-            BaseGatewayEntity::RECEIVED => false
+            WalletEntity::RECEIVED      => false
         ];
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -90,16 +88,14 @@ class Gateway extends Base\Gateway
 
         $this->validateResponseChecksum($input['gateway']);
 
-        if (StatusCode::isSuccessStatus($input['gateway'][ResponseFields::STATUS_CODE]) === false)
+        if ($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS)
         {
-            $this->callbackAuthFailureFlow($input);
+            return $this->callbackAuthFailureFlow($input);
         }
-        else
-        {
-            $this->callbackAuthSuccessFlow($input);
 
-            return $this->getCallbackResponseData($input);
-        }
+        $this->callbackAuthSuccessFlow($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -127,12 +123,243 @@ class Gateway extends Base\Gateway
 
         $this->createWalletRefundEntity($content, $input);
 
-        if (StatusCode::isSuccessStatus($content[ResponseFields::STATUS_CODE]) === false)
+        if ($content[ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS)
         {
             $this->handleRefundFailure($content);
         }
     }
 
+    //-------------------------------Authorize helper methods begin-------------------------------
+    protected function getPurchaseRequestArray(array $input)
+    {
+        $payment = $input['payment'];
+
+        $content = $this->getPurchaseRequestContent($payment, $input['callbackUrl']);
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    protected function getPurchaseRequestContent(array $payment, string $callbackUrl)
+    {
+        $timestamp = $this->getFormattedTimeStamp($payment[Payment::CREATED_AT], self::FORMAT);
+
+        $amount = $this->getFormattedAmount($payment[Payment::AMOUNT]);
+
+        $content = [
+            RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
+            RequestFields::CLIENT_ID                                       => $this->getClientId(),
+            RequestFields::CHANNEL                                         => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::CALLBACK_URL                                    => $callbackUrl,
+            RequestFields::TOKEN                                           => '',
+            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment[Payment::ID],
+            RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => $timestamp,
+            RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => strtoupper(Action::PURCHASE),
+            RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => $amount,
+            RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => Currency::INR,
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => $payment[Payment::EMAIL],
+            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment[Payment::EMAIL],
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment[Payment::CONTACT]
+        ];
+
+        $hashArray = $this->getPurchaseRequestArrayToHash($content);
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($hashArray);
+
+        return $content;
+    }
+
+    protected function getPurchaseRequestArrayToHash($content)
+    {
+        return [
+            $content[RequestFields::CLIENT_ID],
+            $content[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
+            $content[RequestFields::TRANSACTION. '.' . RequestFields::PAYMENT_ID],
+            $content[RequestFields::CHANNEL],
+            $content[RequestFields::MERCHANT_ID],
+            $content[RequestFields::TOKEN],
+            $content[RequestFields::CALLBACK_URL],
+            $content[RequestFields::TRANSACTION . '.' .RequestFields::TIMESTAMP],
+            $content[RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE]
+        ];
+    }
+
+    //-------------------------------Authorize helper methods end---------------------------------
+
+    //-------------------------------Callback helper methods begin--------------------------------
+
+    protected function callbackAuthSuccessFlow(array $input)
+    {
+        $content = $input['gateway'];
+
+        $date = $this->getEpochTime($content[ResponseFields::DATE], self::FORMAT);
+
+        $contentToSave = [
+            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
+            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            ResponseFields::DATE                 => $date,
+            WalletEntity::RECEIVED               => true
+        ];
+
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+    }
+
+    protected function callbackAuthFailureFlow(array $input)
+    {
+        $content = $input['gateway'];
+
+        $contentToSave = [
+            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
+            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            ResponseFields::DATE                 => $content[ResponseFields::DATE]
+        ];
+
+        $wallet = $this->repo->findByPaymentIdAndAction($input['payment']['id'],
+                                                                Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+
+        $this->handleCallbackFailure($content);
+    }
+
+    protected function handleCallbackFailure(array $content)
+    {
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+            $content[ResponseFields::RESPONSE_CODE],
+            $content[ResponseFields::RESPONSE_DESCRIPTION]
+        );
+    }
+
+    //-------------------------------Callback helper methods end----------------------------------
+
+    //-------------------------------Refund helper functions begin--------------------------------
+
+    protected function getRefundRequest(array $input)
+    {
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+
+        $content = $this->getRefundRequestContent($input, $wallet);
+
+        $content = json_encode($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = $this->getRequestHeaders($content);
+
+        return $request;
+    }
+
+    protected function getRefundRequestContent(array $input, $wallet)
+    {
+        $refundInfo = $this->generateRefundInfo($wallet);
+
+        $timestamp = Carbon::now('Asia/Kolkata')->format(self::FORMAT);
+
+        $content = [
+            RequestFields::CLIENT_ID    => $this->getClientId(),
+            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
+            RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::TOKEN        => '',
+            RequestFields::CALLBACK_URL => 'NA',
+            RequestFields::TRANSACTION  => [
+                RequestFields::PAYMENT_ID => $input['refund']['id'],
+                RequestFields::TIMESTAMP  => $timestamp,
+                RequestFields::TXN_TYPE   => strtoupper(Action::REFUND),
+                RequestFields::AMOUNT     => $this->getFormattedAmount($input['amount']),
+                RequestFields::CURRENCY   => Currency::INR,
+            ],
+            RequestFields::REFUND_INFO  => $refundInfo,
+        ];
+
+        $content[RequestFields::CHECKSUM] = $this->getRefundRequestHash($content);
+
+        return $content;
+    }
+
+    protected function generateRefundInfo($wallet)
+    {
+        $refundinfo = [
+            $wallet['gateway_payment_id'],
+            $this->getFormattedTimeStamp($wallet['date'], self::FORMAT),
+            'NA'
+        ];
+
+        return implode('|', $refundinfo);
+    }
+
+    protected function getRefundRequestHash($content)
+    {
+        $hashArray = [
+            $content[RequestFields::CLIENT_ID],
+            $content[RequestFields::TRANSACTION][RequestFields::AMOUNT],
+            $content[RequestFields::TRANSACTION][RequestFields::PAYMENT_ID],
+            $content[RequestFields::CHANNEL],
+            $content[RequestFields::MERCHANT_ID],
+            $content[RequestFields::TOKEN],
+            $content[RequestFields::CALLBACK_URL],
+            $content[RequestFields::TRANSACTION][RequestFields::TIMESTAMP],
+            $content[RequestFields::TRANSACTION][RequestFields::TXN_TYPE]
+        ];
+
+        return $this->getHashOfArray($hashArray);
+    }
+
+    protected function createWalletRefundEntity(array $content, array $input)
+    {
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
+
+        return $this->createGatewayRefundEntity($refundAttributes);
+    }
+
+    protected function getRefundEntityAttributesFromRefundResponse(array $content, array $input)
+    {
+        $refundAttributes = [
+            WalletEntity::PAYMENT_ID           => $input['payment']['id'],
+            WalletEntity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
+            WalletEntity::ACTION               => $this->action,
+            WalletEntity::AMOUNT               => $input['refund']['amount'],
+            WalletEntity::RECEIVED             => true,
+            WalletEntity::WALLET               => $input['payment']['wallet'],
+            WalletEntity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            WalletEntity::REFUND_ID            => $input['refund']['id'],
+            WalletEntity::EMAIL                => $input['payment']['email'],
+            WalletEntity::CONTACT              => $input['payment']['contact'],
+            WalletEntity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            WalletEntity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            WalletEntity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
+        ];
+
+        return $refundAttributes;
+    }
+
+    protected function handleRefundFailure(array $content)
+    {
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_REFUND_FAILED,
+            $content[ResponseFields::RESPONSE_CODE],
+            $content[ResponseFields::RESPONSE_DESCRIPTION]
+        );
+    }
+    //-------------------------------Refund helper functions end----------------------------------
+
+    //-------------------------------Verify helper functions begin--------------------------------
+
+    /**
+     * JioMoney payment verification is weird. They have 2 Apis
+     * 1. STATUSQUERY - Cache based api, returns transaction status stored in a cache and cache is wiped after 3 hours
+     * 2. CHECKPAYMENTSTATUS - DB based api, As per the documentation this will return transaction data 3-4 mins
+     * post transaction time. This might realistically be about 10 mins so for our verify use case,
+     * we first make a call to the STATUSQUERY API. The response has a flag to indicate if data was found in cache.
+     * If found, we proceed with the verify flow, else we make a call to CHECKPAYMENTSTATUS API
+     * and proceed with its response
+     */
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
@@ -236,13 +463,13 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
         }
-        elseif (($gatewayPayment['received'] === false) and
+        else if (($gatewayPayment['received'] === false) and
                  (($gatewayPayment['status_code'] === null) or
-                    (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) !== true)))
+                    ($gatewayPayment[WalletEntity::STATUS_CODE] !== StatusCode::SUCCESS)))
         {
             $verify->apiSuccess = false;
         }
-        elseif (StatusCode::isSuccessStatus($gatewayPayment[WalletEntity::STATUS_CODE]) === true)
+        else if ($gatewayPayment[WalletEntity::STATUS_CODE] === StatusCode::SUCCESS)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
@@ -279,25 +506,32 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            ResponseFields::AMOUNT             => $payment['amount'],
-            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            WalletEntity::RECEIVED             => true,
-            WalletEntity::EMAIL                => $payment['email'],
-            WalletEntity::CONTACT              => $payment['contact'],
-            ResponseFields::STATUS_CODE        => StatusCode::SUCCESS,
-            ResponseFields::RESPONSE_CODE      => 'SUCCESS',
+            ResponseFields::AMOUNT               => $payment[Payment::AMOUNT],
+            RequestFields::MERCHANT_ID           => $this->getMerchantId(),
+            WalletEntity::RECEIVED               => true,
+            WalletEntity::EMAIL                  => $payment[Payment::EMAIL],
+            WalletEntity::CONTACT                => $payment[Payment::CONTACT],
+            ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
+            ResponseFields::RESPONSE_CODE        => 'SUCCESS',
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
-            ResponseFields::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content)
+            ResponseFields::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
         );
 
         return $contentToSave;
     }
 
-    public function validStatusQueryResponse($content)
+    /**
+     * Checks if txn data is present in status query response
+     *
+     * @param  array  $content STATUSQUERY API response
+     *
+     * @return bool
+     */
+    public function validStatusQueryResponse(array $content)
     {
-        if (isset($content['response_header']) === true)
+        if (isset($content[StatusQueryResponseFields::RESPONSE_HEADER]) === true)
         {
-            return $content['response_header']['api_status'] === '1';
+            return $content[StatusQueryResponseFields::RESPONSE_HEADER][StatusQueryResponseFields::API_STATUS] === '1';
         }
 
         return false;
@@ -307,7 +541,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->validStatusQueryResponse($content) === true)
         {
-            return $content['payload_data']['txn_status'];
+            return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::TXN_STATUS];
         }
         else
         {
@@ -320,7 +554,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->validStatusQueryResponse($content) === true)
         {
-            return $content['payload_data']['txn_status'];
+            return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
         }
         else
         {
@@ -329,73 +563,14 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function callbackAuthSuccessFlow(array $input)
-    {
-        $content = $input['gateway'];
-
-        $date = $this->getEpochTime($content[ResponseFields::DATE], self::FORMAT);
-
-        $contentToSave = [
-            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
-            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            ResponseFields::DATE                 => $date,
-            BaseGatewayEntity::RECEIVED          => true
-        ];
-
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-    }
-
-    protected function callbackAuthFailureFlow(array $input)
-    {
-        $content = $input['gateway'];
-
-        $contentToSave = [
-            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
-            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            ResponseFields::DATE                 => $content[ResponseFields::DATE]
-        ];
-
-        $wallet = $this->repo->findByPaymentIdAndAction($input['payment']['id'],
-                                                                Action::AUTHORIZE);
-
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
-        $this->handleCallbackFailure($content);
-    }
-
-    protected function handleCallbackFailure($content)
-    {
-        throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-            $content[ResponseFields::RESPONSE_CODE],
-            $content[ResponseFields::RESPONSE_DESCRIPTION]
-        );
-    }
-
-    protected function handleRefundFailure(array $content)
-    {
-        throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_REFUND_FAILED,
-            $content[ResponseFields::RESPONSE_CODE],
-            $content[ResponseFields::RESPONSE_DESCRIPTION]
-        );
-    }
-
     protected function getCheckPaymentStatusRequest(array $input)
     {
-        $this->domainType = 'test_verify';          // TODO Change this later
+        $this->domainType = $this->mode . '_' . $this->action;
 
         $content = [
             RequestFields::APINAME       => ApiName::CHECKPAYMENTSTATUS,
             RequestFields::MODE          => self::JSON_MODE,
-            RequestFields::REQUEST_ID    => $this->genuuid(),
+            RequestFields::REQUEST_ID    => Uuid::uuid4()->toString(),
             RequestFields::STARTDATETIME => 'NA',
             RequestFields::ENDDATETIME   => 'NA',
             RequestFields::MERCHANT_ID   => $this->getMerchantId(),
@@ -418,22 +593,22 @@ class Gateway extends Base\Gateway
     protected function getStatusQueryRequest(array $input)
     {
         $content = [
-            RequestFields::REQUEST_HEADER => [
-                RequestFields::VERSION => self::STATUS_QUERY_API_VERSION,
-                RequestFields::API_NAME => 'STATUSQUERY',
+            StatusQueryRequestFields::REQUEST_HEADER => [
+                StatusQueryRequestFields::VERSION  => self::STATUS_QUERY_API_VERSION,
+                StatusQueryRequestFields::API_NAME => ApiName::STATUSQUERY,
             ],
-            RequestFields::PAYLOAD_DATA => [
-                'client_id' => $this->getClientId(),
-                'merchant_id' => $this->getMerchantId(),
-                'tran_ref_no' => $input['payment']['id']
+            StatusQueryRequestFields::PAYLOAD_DATA => [
+                StatusQueryRequestFields::CLIENT_ID   => $this->getClientId(),
+                StatusQueryRequestFields::MERCHANT_ID => $this->getMerchantId(),
+                StatusQueryRequestFields::TRAN_REF_NO => $input['payment']['id']
             ]
         ];
 
         $hashArray = [
             $this->getClientId(),
             $this->getMerchantId(),
-            'STATUSQUERY',
-            $input['payment']['id']
+            ApiName::STATUSQUERY,
+            $input['payment'][Payment::ID]
         ];
 
         $hash = $this->getHashOfArray($hashArray);
@@ -442,7 +617,7 @@ class Gateway extends Base\Gateway
 
         $content = json_encode($content);
 
-        $this->action = 'payment_status';
+        $this->action = Action::PAYMENT_STATUS;
 
         $request = $this->getStandardRequestArray($content);
 
@@ -453,161 +628,11 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getVerifyResponseContent(array $content)
-    {
-        return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS];
-    }
-
-    protected function getRefundRequest(array $input)
-    {
-        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
-
-        $content = $this->getRefundRequestContent($input, $wallet);
-
-        $content = json_encode($content);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = $this->getRequestHeaders($content);
-
-        return $request;
-    }
-
-    protected function generateRefundInfo($wallet)
-    {
-        $refundinfo = [
-            $wallet['gateway_payment_id'],
-            $this->getFormattedTimeStamp($wallet['date'], self::FORMAT),
-            'NA'
-        ];
-
-        return implode('|', $refundinfo);
-    }
-
-    protected function getRefundRequestContent(array $input, $wallet)
-    {
-        $refundInfo = $this->generateRefundInfo($wallet);
-
-        $timestamp = Carbon::now('Asia/Kolkata')->format(self::FORMAT);
-
-        $content = [
-            RequestFields::CLIENT_ID    => $this->getClientId(),
-            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
-            RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::TOKEN        => '',
-            RequestFields::CALLBACK_URL => 'NA',
-            RequestFields::TRANSACTION  => [
-                RequestFields::PAYMENT_ID => $input['refund']['id'],
-                RequestFields::TIMESTAMP  => $timestamp,
-                RequestFields::TXN_TYPE   => 'REFUND',
-                RequestFields::AMOUNT     => $this->getFormattedAmount($input['amount']),
-                RequestFields::CURRENCY   => 'INR',
-            ],
-            RequestFields::REFUND_INFO  => $refundInfo,
-        ];
-
-        $hashArray = [
-            $content[RequestFields::CLIENT_ID],
-            $content[RequestFields::TRANSACTION][RequestFields::AMOUNT],
-            $content[RequestFields::TRANSACTION][RequestFields::PAYMENT_ID],
-            $content[RequestFields::CHANNEL],
-            $content[RequestFields::MERCHANT_ID],
-            $content[RequestFields::TOKEN],
-            $content[RequestFields::CALLBACK_URL],
-            $content[RequestFields::TRANSACTION][RequestFields::TIMESTAMP],
-            $content[RequestFields::TRANSACTION][RequestFields::TXN_TYPE]
-        ];
-
-        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($hashArray);
-
-        return $content;
-    }
-
-    protected function createWalletRefundEntity(array $content, array $input)
-    {
-        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
-
-        return $this->createGatewayRefundEntity($refundAttributes);
-    }
-
-    protected function getRefundEntityAttributesFromRefundResponse(array $content, array $input)
-    {
-        $refundAttributes = [
-            WalletEntity::PAYMENT_ID           => $input['payment']['id'],
-            WalletEntity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
-            WalletEntity::ACTION               => $this->action,
-            WalletEntity::AMOUNT               => $input['refund']['amount'],
-            WalletEntity::RECEIVED             => true,
-            WalletEntity::WALLET               => $input['payment']['wallet'],
-            WalletEntity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            WalletEntity::REFUND_ID            => $input['refund']['id'],
-            WalletEntity::EMAIL                => $input['payment']['email'],
-            WalletEntity::CONTACT              => $input['payment']['contact'],
-            WalletEntity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            WalletEntity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            WalletEntity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
-        ];
-
-        return $refundAttributes;
-    }
-
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
     }
-
-    protected function getPurchaseRequestArray(array $input)
-    {
-        $payment = $input['payment'];
-
-        $content = $this->getPurchaseRequestContent($payment, $input['callbackUrl']);
-
-        return $this->getStandardRequestArray($content);
-    }
-
-    protected function getPurchaseRequestContent(array $payment, string $callbackUrl)
-    {
-        $timestamp = $this->getFormattedTimeStamp($payment['created_at'], self::FORMAT);
-
-        $amount = $this->getFormattedAmount($payment['amount']);
-
-        $content = [
-            RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
-            RequestFields::CLIENT_ID                                       => $this->getClientId(),
-            RequestFields::CHANNEL                                         => self::DEFAULT_TXN_CHANNEL,
-            RequestFields::CALLBACK_URL                                    => $callbackUrl,
-            RequestFields::TOKEN                                           => '',
-            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment['id'],
-            RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => $timestamp,
-            RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => Action::PURCHASE,
-            RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => $amount,
-            RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => self::DEFAULT_CURRENCY_CODE,
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => self::DEFAULT_CUSTOMER_NAME,
-            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment['email'],
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment['contact']
-        ];
-
-        $hashArray = $this->getPurchaseRequestArrayToHash($content);
-
-        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($hashArray);
-
-        return $content;
-    }
-
-    protected function getPurchaseRequestArrayToHash($content)
-    {
-        return [
-            $content[RequestFields::CLIENT_ID],
-            $content[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
-            $content[RequestFields::TRANSACTION. '.' . RequestFields::PAYMENT_ID],
-            $content[RequestFields::CHANNEL],
-            $content[RequestFields::MERCHANT_ID],
-            $content[RequestFields::TOKEN],
-            $content[RequestFields::CALLBACK_URL],
-            $content[RequestFields::TRANSACTION . '.' .RequestFields::TIMESTAMP],
-            $content[RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE]
-        ];
-    }
+    //----------------------------Verify helper methods end--------------------------------
 
     protected function parseResponseBody($content)
     {
@@ -620,15 +645,15 @@ class Gateway extends Base\Gateway
 
     protected function parseGatewayResponse(\Requests_Response $response)
     {
-        if ($response->body === '')
+        $content = $this->jsonToArray($response->body);
+
+        if ($content === null)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',
                 'Invalid JSON in Response Body');
         }
-
-        $content = $this->jsonToArray($response->body);
 
         return $this->parseResponseBody($content);
     }
@@ -726,26 +751,25 @@ class Gateway extends Base\Gateway
         return number_format(($amount / 100), 2);
     }
 
-    protected function genuuid()
+    protected function getMappedAttributes($attributes)
     {
-        return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            // 32 bits for "time_low"
-            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+        $attr = [];
 
-            // 16 bits for "time_mid"
-            mt_rand( 0, 0xffff ),
+        $map = $this->map;
 
-            // 16 bits for "time_hi_and_version",
-            // four most significant bits holds version number 4
-            mt_rand( 0, 0x0fff ) | 0x4000,
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+            else
+            {
+                $attr[$key] = $value;
+            }
+        }
 
-            // 16 bits, 8 bits for "clk_seq_hi_res",
-            // 8 bits for "clk_seq_low",
-            // two most significant bits holds zero and one for variant DCE1.1
-            mt_rand( 0, 0x3fff ) | 0x8000,
-
-            // 48 bits for "node"
-            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
-        );
+        return $attr;
     }
 }
