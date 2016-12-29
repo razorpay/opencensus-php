@@ -29,8 +29,8 @@ trait Verify
         $refunds = $payment->refunds;
 
         $data = [
-            'payment' => $payment->toArray(),
-            'refunds' => $refunds->toArray(),
+            'payment' => $payment->toArrayGateway(),
+            'refunds' => $refunds->toArrayGateway(),
             'merchant' => $this->merchant,
         ];
 

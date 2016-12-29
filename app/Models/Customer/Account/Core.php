@@ -5,9 +5,12 @@ namespace RZP\Models\Customer;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
+use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
+use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -27,11 +30,18 @@ class Core extends Base\Core
         return $this->create($input, $merchant, $failOnDuplicate);
     }
 
-    public function createGlobalCustomer(array $input)
+    /**
+     * @param      $input
+     * @param bool $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createGlobalCustomer($input, $failOnDuplicate = true)
     {
         assertTrue(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->create($input, $this->getSharedAccount());
+        return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
     protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
@@ -179,8 +189,10 @@ class Core extends Base\Core
 
     /**
      * Gets global customer from db or create one.
-     * @param  string $contact customer's phone number
-     * @return Customer\Entity $contact
+     *
+     * @param $input
+     *
+     * @return Entity $contact
      */
     protected function getOrCreateGlobalCustomer($input)
     {
@@ -301,5 +313,41 @@ class Core extends Base\Core
     protected function getSharedAccount()
     {
         return $this->repo->merchant->getSharedAccount();
+    }
+
+    public function sendSetMpinRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $params = [
+            'method'    =>  'ReqRegMob',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
+    }
+
+    public function sendResetMpinRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $params = [
+            'method'    =>  'ReqSetCre',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
     }
 }
