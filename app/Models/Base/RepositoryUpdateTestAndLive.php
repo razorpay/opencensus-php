@@ -119,6 +119,16 @@ trait RepositoryUpdateTestAndLive
         });
     }
 
+    public function deleteOrFail($entity)
+    {
+        $deleted = static::delete($entity);
+
+        if ($deleted === false)
+        {
+            $this->processDbQueryFailure('delete');
+        }
+    }
+
     public function forceDelete($entity)
     {
         return $this->manager->transactionOnLiveAndTest(function () use ($entity)
