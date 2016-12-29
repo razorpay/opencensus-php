@@ -118,6 +118,29 @@ class Server extends Base\Core
         //     'Unexpected referer value. Referer: ' . $referer);
     }
 
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch(json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
+        }
+    }
+
     protected function getGatewayInstance()
     {
         $class = $this->getGatewayNamespace() . '\Gateway';

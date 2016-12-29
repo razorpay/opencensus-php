@@ -47,7 +47,7 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
-        $request = (array) json_decode($input);
+        $request = $this->jsonToArray($input);
 
         $this->validateActionInput($request);
 
@@ -58,17 +58,24 @@ class Server extends Base\Mock\Server
 
     protected function createRefundResponse($request)
     {
-        $hashArray = $this->getRefundHashArray($request);
+        $date = Carbon::createFromFormat('dmYHis',
+            $request[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
-        $this->content($hashArray);
+        $data = [
+            RefundFields::MERCHANT_ID      => $request[RefundFields::MERCHANT_ID],
+            RefundFields::ERROR_CODE       => Constants::CODE,
+            RefundFields::AMOUNT           => $request[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_ID   => $request[RefundFields::TRANSACTION_ID],
+            RefundFields::TRANSACTION_DATE => $date,
+            RefundFields::STATUS           => Status::SUCCESS,
+            RefundFields::SESSION_ID       => $request[RefundFields::SESSION_ID],
+            RefundFields::MESSAGE_TEXT     => 'Transaction Created Successfully',
+            RefundFields::CODE             => '0'
+        ];
 
-        $hash = $this->generateHash($hashArray);
+        $this->content($data);
 
-        $hashArray[RefundFields::HASH] = $hash;
-
-        $data = $this->getAdditionalRefundData($request);
-
-        $data =  array_merge($hashArray, $data);
+        $data[RefundFields::HASH] = $this->generateHash($data);
 
         return json_encode($data);
     }
@@ -104,16 +111,16 @@ class Server extends Base\Mock\Server
         switch ($this->action)
         {
             case Action::AUTHORIZE:
-            {
                 $content = $this->getCallbackHashArray($content);
                 break;
-            }
 
             case Action::VERIFY:
-            {
                 $content = $this->getVerifyHashArray($content);
                 break;
-            }
+
+            case Action::REFUND:
+                $content = $this->getRefundHashArray($content);
+                break;
         }
 
         $salt = $this->getGatewayInstance()->getSalt();
@@ -139,27 +146,15 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getRefundHashArray($input)
-    {
-        $date = Carbon::createFromFormat('dmYHms',
-            $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
-
-        return [
-            RefundFields::MERCHANT_ID              => $input[RefundFields::MERCHANT_ID],
-            RefundFields::ERROR_CODE               => Constants::CODE,
-            RefundFields::AMOUNT                   => $input[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_ID           => $input[RefundFields::TRANSACTION_ID],
-            RefundFields::TRANSACTION_DATE         => $date,
-            RefundFields::STATUS                   => Status::SUCCESS
-        ];
-    }
-
-    protected function getAdditionalRefundData($request)
+    protected function getRefundHashArray($content)
     {
         return [
-            RefundFields::SESSION_ID    => $request[RefundFields::SESSION_ID],
-            RefundFields::MESSAGE_TEXT  => 'Transaction Created Successfully',
-            RefundFields::CODE          => '0'
+            RefundFields::MERCHANT_ID              => $content[RefundFields::MERCHANT_ID],
+            RefundFields::ERROR_CODE               => $content[RefundFields::ERROR_CODE],
+            RefundFields::AMOUNT                   => $content[RefundFields::AMOUNT],
+            RefundFields::TRANSACTION_ID           => $content[RefundFields::TRANSACTION_ID],
+            RefundFields::TRANSACTION_DATE         => $content[RefundFields::TRANSACTION_DATE],
+            RefundFields::STATUS                   => $content[RefundFields::STATUS]
         ];
     }
 

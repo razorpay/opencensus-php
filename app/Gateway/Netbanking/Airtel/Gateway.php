@@ -215,14 +215,13 @@ class Gateway extends Base\Gateway
         switch ($this->action)
         {
             case Action::CALLBACK:
-            {
                 return $content[AuthFields::HASH];
-            }
 
             case Action::VERIFY:
-            {
                 return $content[VerifyFields::HASH];
-            }
+
+            case Action::REFUND:
+                return $content[RefundFields::HASH];
         }
     }
 
@@ -244,19 +243,14 @@ class Gateway extends Base\Gateway
         switch ($this->action)
         {
             case Action::AUTHORIZE:
-            {
                 $data = $this->getAuthorizeRequestHashArray($content);
                 break;
-            }
 
             case Action::CALLBACK:
-            {
                 $data = $this->getCallbackResponseHashArray($content);
                 break;
-            }
 
             case Action::VERIFY:
-            {
                 if ($this->request === true)
                 {
                     $data = $this->getVerifyRequestHashArray($content);
@@ -265,7 +259,18 @@ class Gateway extends Base\Gateway
                 {
                     $data = $this->getVerifyResponseHashArray($content);
                 }
-            }
+                break;
+
+            case Action::REFUND:
+                if ($this->request === true)
+                {
+                    $data = $this->getRefundRequestHashArray($content);
+                }
+                else
+                {
+                    $data = $this->getRefundResponseHashArray($content);
+                }
+                break;
         }
 
         $salt = $this->getSalt();
@@ -313,7 +318,13 @@ class Gateway extends Base\Gateway
     {
         $response = $this->sendGatewayRequest($request);
 
-        $responseArray = $this->getRefundResponseArray($response);
+        $content = $response->body;
+
+        $responseArray = $this->jsonToArray($content);
+
+        $this->request = false;
+
+        $this->verifySecureHash($responseArray);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
@@ -362,19 +373,11 @@ class Gateway extends Base\Gateway
 
         $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
 
-        $hashArray = $this->getVerifyResponseHashArray($content);
+        $this->request = false;
 
-        $this->assertResponseHash($hashArray,
-            $response[VerifyFields::HASH]);
+        $this->verifySecureHash($responseArray);
 
         return $responseArray;
-    }
-
-    public function assertResponseHash($response, $actual)
-    {
-        $generated = $this->generateHash($response);
-
-        $this->compareHashes($actual, $generated);
     }
 
     protected function getRefundRequestData($input)
@@ -402,31 +405,17 @@ class Gateway extends Base\Gateway
             RefundFields::AMOUNT            => "$amount"
         ];
 
-        $hashArray = $this->getRefundRequestHashArray($request);
+        $this->request = true;
 
-        $hash = $this->generateHash($hashArray);
+        $hash = $this->generateHash($request);
 
         $request[RefundFields::HASH] = $hash;
 
         return json_encode($request);
     }
 
-    protected function getRefundResponseArray($response)
-    {
-        $content = $response->body;
-
-        $refundArray = $this->jsonToArray($content);
-
-        return $refundArray;
-    }
-
     protected function checkRefundStatus($attributes, $refundArray)
     {
-        $hashArray = $this->getRefundResponseHashArray($refundArray);
-
-        $this->assertResponseHash($hashArray,
-            $refundArray[RefundFields::HASH]);
-
         if ((isset($attributes[RefundFields::STATUS]) === false) or
             ($attributes[RefundFields::STATUS] !== Status::SUCCESS))
         {
