@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX         = 'service_tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
+    const GATEWAY_AMOUNT      = 'gateway_amount';
     const GATEWAY_FEE         = 'gateway_fee';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
@@ -102,6 +103,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::GRATIS                => false,
         self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_AMOUNT        => null,
         self::GATEWAY_FEE           => null,
         self::GATEWAY_SERVICE_TAX   => null,
         self::BALANCE               => null,
@@ -142,10 +144,19 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = [
-        self::GRATIS        => 'boolean',
-        self::FEE_CREDITS   => 'integer',
-        self::FEE_MODEL     => 'integer',
-        self::FEE_BEARER    => 'integer',
+        self::CREDIT              => 'int',
+        self::DEBIT               => 'int',
+        self::AMOUNT              => 'int',
+        self::FEE                 => 'int',
+        self::SERVICE_TAX         => 'int',
+        self::BALANCE             => 'int',
+        self::GATEWAY_AMOUNT      => 'int',
+        self::GATEWAY_FEE         => 'int',
+        self::GATEWAY_SERVICE_TAX => 'int',
+        self::GRATIS              => 'bool',
+        self::FEE_CREDITS         => 'int',
+        self::FEE_MODEL           => 'int',
+        self::FEE_BEARER          => 'int',
     ];
 
     public function merchant()
@@ -194,12 +205,12 @@ class Entity extends Base\PublicEntity
 
     public function getCredit()
     {
-        return (int) $this->getAttribute(self::CREDIT);
+        return $this->getAttribute(self::CREDIT);
     }
 
     public function getDebit()
     {
-        return (int) $this->getAttribute(self::DEBIT);
+        return $this->getAttribute(self::DEBIT);
     }
 
     public function getNetAmount()
@@ -209,7 +220,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getType()
@@ -230,6 +241,11 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getGatewayAmount()
+    {
+        return $this->getAttribute(self::GATEWAY_AMOUNT);
     }
 
     public function getGatewayFee()
@@ -259,16 +275,6 @@ class Entity extends Base\PublicEntity
 
 /* ----------------------------- Accessors -----------------------------------*/
 
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
     protected function getApiFeeAttribute()
     {
         return (int) $this->attributes[self::API_FEE];
@@ -282,16 +288,6 @@ class Entity extends Base\PublicEntity
     protected function getGatewayServiceTaxAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
-    }
-
-    protected function getDebitAttribute()
-    {
-        return (int) $this->attributes[self::DEBIT];
-    }
-
-    protected function getCreditAttribute()
-    {
-        return (int) $this->attributes[self::CREDIT];
     }
 
     protected function getBalanceAttribute()
@@ -416,6 +412,11 @@ class Entity extends Base\PublicEntity
     public function setGatewaySettledAt($timestamp)
     {
         $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
+    }
+
+    public function setGatewayAmount($gatewayAmount)
+    {
+        $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
     public function setGatewayFee($gatewayFee)
