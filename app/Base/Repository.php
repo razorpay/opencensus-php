@@ -95,7 +95,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->findMany($ids);
     }
 
-    public function fetchForIndexing(int $skip = 0, int $take = 100, array $fields = ['*'])
+    public function fetchAll(int $skip = 0, int $take = 100, array $fields = ['*'])
     {
         return $this->newQuery()
                     ->skip($skip)
@@ -113,7 +113,14 @@ class Repository extends \Razorpay\Spine\Repository
         $entity->saveOrFail($options);
 
         // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
+        $this->syncToEs($entity, $dirty);
+    }
+
+    public function deleteOrFail($entity)
+    {
+        parent::deleteOrFail($entity);
+
+        $this->syncToEs($entity, [], 'delete');
     }
 
     public function sync($entity, $relation, $ids = [])
@@ -229,10 +236,25 @@ class Repository extends \Razorpay\Spine\Repository
                     ->merchantId($merchantId);
     }
 
-    protected function saveInEs($entity, $dirty)
+    protected function syncToEs($entity, $dirty = [], $action = 'upsert')
     {
         try
         {
+            $esRepoClass = E::getEntityEsRepository($entity->getEntity());
+            $esRepo      = new $esRepoClass;
+
+            if (count($esRepo->getFields()) > 0)
+            {
+                $queueData = [
+                    'mode'   => $this->app['rzp.mode'],
+                    'id'     => $entity->getId(),
+                    'action' => $action,
+                ];
+
+                $this->queue->push($esRepoClass . '@fireSync', $queueData);
+            }
+
+
             // Checks if whitelisted es params is set. If yes, checks if $dirty contains any of them.
             if ((isset($this->esWhitelistedParams) === true) and
                 (empty(array_intersect(array_keys($dirty), $this->esWhitelistedParams)) === false))

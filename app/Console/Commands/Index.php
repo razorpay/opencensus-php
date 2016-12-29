@@ -83,7 +83,7 @@ class Index extends Command
         {
             $indexedFields = $this->esRepo->getFields();
 
-            $collection = $this->repo->fetchForIndexing($skip, $take, $indexedFields);
+            $collection = $this->repo->fetchAll($skip, $take, $indexedFields);
 
             if ($collection->count() === 0)
             {

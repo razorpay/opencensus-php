@@ -123,6 +123,17 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->bulkUpdate($params);
     }
 
+    public function deleteDocument(string $id)
+    {
+        $params = [
+            'index' => $this->indexName,
+            'type'  => $this->indexName,
+            'id'    => $id,
+        ];
+
+        $this->esDao->delete($params);
+    }
+
     public function fetch($params, $merchantId)
     {
         $entities = new Base\PublicCollection;
@@ -221,6 +232,39 @@ class EsRepository extends \Razorpay\Spine\Repository
             {
                 $job->release(self::JOB_RELEASE_WAIT);
             }
+        }
+    }
+
+    public function fireSync($job, $data)
+    {
+        $id     = $data['id'];
+        $mode   = $data['mode'];
+        $action = $data['action'];
+
+        $class = $this->getEntityClass();
+
+        $model = new $class;
+
+        $this->setIndexName($mode . '_' . $model->getEntity());
+
+        switch ($action) {
+            case 'upsert':
+
+                $document = $model->find($id, $this->getFields())->toArray();
+
+                $this->bulkUpdate([$document]);
+
+                break;
+
+            case 'delete':
+
+                $this->deleteDocument($id);
+
+                break;
+
+            default:
+
+                break;
         }
     }
 }
