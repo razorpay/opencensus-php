@@ -323,7 +323,16 @@ class Service extends Base\Service
         // Save complete merchant details on api side
         $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetail->toArray(), $merchantId);
+        $merchantDetailArray = $merchantDetail->toArray();
+
+        // Unsetting fields which are already being filled.
+        unset($merchantDetailArray['merchant_id']);
+        unset($merchantDetailArray['created_at']);
+        unset($merchantDetailArray['updated_at']);
+        unset($merchantDetailArray['submitted']);
+        $merchantDetailArray['transaction_value'] = 1;
+
+        (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetailArray, $merchantId);
 
         return array();
     }
