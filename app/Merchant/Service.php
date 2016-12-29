@@ -955,6 +955,15 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchantDetail->saveOrFail();
+
+            if (isset($input['business_name']))
+            {
+                $merchant = Merchant\Entity::findOrFail($merchantId);
+
+                $merchant->edit(['name' => $input['business_name']], 'changeName');
+
+                $merchant->saveOrFail();
+            }
         }
 
         return [ $error, $merchantDetail->getPreSignupFields()];
