@@ -7,12 +7,13 @@ app.controller('AuthCtrl', [
   '$location',
   'alertsFactory',
   'user',
+  'organization',
   'transformRequestAsFormPost',
   '$analytics',
   '$window',
   '$cookies',
   function ($scope, $http, $state, $stateParams, $location, alertsFactory, user, 
-    transformRequestAsFormPost, $analytics, $window, $cookies) {
+    organization, transformRequestAsFormPost, $analytics, $window, $cookies) {
     console.log('state params', $stateParams)
     $scope.toArray = function (obj) {
       if (!obj) {
@@ -23,6 +24,11 @@ app.controller('AuthCtrl', [
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false; // login layout ? right is true : right is false
+    
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.login_logo = data.login_logo_url || 'img/logo_full.png'; 
+    });
+
     // signup state container
     $scope.signup = {
       currentStep: 0, // 0, 1, 2, 3
