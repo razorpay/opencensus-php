@@ -124,7 +124,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $code = $content['status'];
 
