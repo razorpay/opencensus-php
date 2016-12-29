@@ -182,7 +182,7 @@ class RequestFields
             }
             // If we have a sequential array inside
             else if ((is_array($value) and
-                     (array_keys($value) === range(0, count($value) - 1)))
+                     (array_keys($value) === range(0, count($value) - 1))))
             {
                 $res[$key] = self::makeAssociativeArray($value);
             }
