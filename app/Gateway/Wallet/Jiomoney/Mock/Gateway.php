@@ -24,6 +24,10 @@ class Gateway extends Jiomoney\Gateway
         return $request;
     }
 
+    /**
+     * The JioMoney StatusQuery API cant fetch txn details after 3 hours. To simulate that
+     * condition in test we pass the txn_not_found flag in the request to mock server
+     */
     protected function getStatusQueryRequest(array $input)
     {
         $request = parent::getStatusQueryRequest($input);
