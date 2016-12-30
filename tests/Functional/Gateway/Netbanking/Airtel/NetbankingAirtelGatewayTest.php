@@ -144,6 +144,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['STATUS'] = 'FAL';
+            $content['CODE']   = '902';
         });
     }
 
@@ -152,6 +153,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['code'] = '1';
+            $content['errorCode'] = '910';
         });
     }
 
@@ -169,6 +171,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['code'] = '1';
+            $content['errorCode'] = '9002';
         });
     }
 }

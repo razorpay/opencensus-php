@@ -35,29 +35,29 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
     'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
     'testAuthFailedVerifySuccess' => [
@@ -94,15 +94,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_PARAMETERS,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
         ],
     ]
 ];

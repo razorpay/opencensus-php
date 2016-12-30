@@ -101,6 +101,8 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponse($input)
     {
+        $merchantId = $this->getGatewayInstance()->getMerchantId();
+
         $date = Carbon::createFromFormat('dmYHis',
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
@@ -111,13 +113,8 @@ class Server extends Base\Mock\Server
             VerifyFields::TRANSACTION_AMOUNT    => $input[VerifyFields::AMOUNT],
         ];
 
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
-
-        $hash = $this->generateHash($verifyArray);
-
         $response =  [
             VerifyFields::TRANSACTION               => array($verifyArray),
-            VerifyFields::HASH                      => $hash,
             VerifyFields::MERCHANT_ID               => $merchantId,
             VerifyFields::TRANSACTION_REFERENCE_NO  => $input[VerifyFields::TRANSACTION_REFERENCE_NO],
             VerifyFields::MESSAGE_TEXT              => 'Success',
@@ -126,6 +123,8 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($response);
+
+        $response[VerifyFields::HASH] = $this->generateHash($response);
 
         return json_encode($response);
     }
@@ -189,14 +188,16 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getVerifyHashArray($verifyArray)
+    protected function getVerifyHashArray($content)
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId();
+
+        $verifyArray = $content[VerifyFields::TRANSACTION][0];
 
         return [
             $merchantId,
             '['.json_encode($verifyArray).']',
-            '000',
+            $content[VerifyFields::ERROR_CODE],
         ];
     }
 }

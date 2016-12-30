@@ -12,7 +12,6 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
-use RZP\Gateway\Netbanking\Base as Netbanking;
 
 class Gateway extends Base\Gateway
 {
@@ -25,10 +24,6 @@ class Gateway extends Base\Gateway
     protected $map = [
         AuthFields::AMOUNT => 'amount'
     ];
-
-    const STATUS_MATCH = GatewayBase\VerifyResult::STATUS_MATCH;
-
-    const STATUS_MISMATCH = GatewayBase\VerifyResult::STATUS_MISMATCH;
 
     public function authorize(array $input)
     {
@@ -65,8 +60,6 @@ class Gateway extends Base\Gateway
         $payment->fill($attributes);
 
         $payment->saveOrFail();
-
-        $this->assertCallbackAttributes($attributes, $content);
     }
 
     public function refund(array $input)
@@ -108,24 +101,26 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $responseArray);
+
+        $this->verifySecureHash($responseArray);
     }
 
     public function verifyPayment($verify)
     {
         $response = $verify->verifyResponseContent;
 
-        $this->verifySecureHash($response);
+        $this->checkVerifyStatus($response);
 
-        $status = $this->getVerifyStatus($verify, $response);
+        $status = $this->getVerifyMatchStatus($verify, $response);
 
-        $verify->match = ($status === self::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
 
         return $status;
     }
 
-    protected function getVerifyStatus($verify, $response)
+    protected function getVerifyMatchStatus($verify, $response)
     {
-        $status = self::STATUS_MATCH;
+        $status = GatewayBase\VerifyResult::STATUS_MATCH;
 
         $this->setApiSuccess($verify);
 
@@ -133,10 +128,8 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = self::STATUS_MISMATCH;
+            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
         }
-
-        $this->checkVerifyStatus($response);
 
         return $status;
     }
@@ -167,24 +160,18 @@ class Gateway extends Base\Gateway
 
     protected function createAuthorizeRequestData($input)
     {
-        $mid = $this->getMerchantId();
-
-        $amount = $input['payment']['amount'] / 100;
-
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
             ->format('dmYhis');
 
-        $callbackUrl = $input['callbackUrl'];
-
         $data = [
-            AuthFields::MERCHANT_ID              => $mid,
+            AuthFields::MERCHANT_ID              => $this->getMerchantId(),
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
-            AuthFields::AMOUNT                   => $amount,
+            AuthFields::AMOUNT                   => $input['payment']['amount'] / 100,
             AuthFields::DATE                     => $date,
             AuthFields::SERVICE                  => Service::NETBANKING,
-            AuthFields::SUCCESS_URL              => $callbackUrl,
-            AuthFields::FAILURE_URL              => $callbackUrl,
+            AuthFields::SUCCESS_URL              => $input['callbackUrl'],
+            AuthFields::FAILURE_URL              => $input['callbackUrl'],
             AuthFields::CURRENCY                 => Constants::INDIAN_RUPEE,
             AuthFields::CUSTOMER_MOBILE          => $input['payment']['contact'],
             AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
@@ -206,27 +193,44 @@ class Gateway extends Base\Gateway
 
     protected function getCallackAttributes($content)
     {
-        return [
-            Netbanking\Entity::RECEIVED        => true,
-            Netbanking\Entity::STATUS          => $content[AuthFields::STATUS],
-            Netbanking\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
-            Netbanking\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
-            Netbanking\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
-            Netbanking\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
-        ];
+        $this->assertCallbackAttributes($content);
+
+        try
+        {
+            $attributes = [
+                Base\Entity::RECEIVED        => true,
+                Base\Entity::STATUS          => $content[AuthFields::STATUS],
+                Base\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
+                Base\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
+                Base\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
+                Base\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
+            ];
+        }
+
+        catch(Exception $e)
+        {
+            throw new Exception\GatewayErrorException($e->getMessage());
+        }
+
+        return $attributes;
     }
 
-    protected function assertCallbackAttributes($attributes, $content)
+    protected function assertCallbackAttributes($content)
     {
-        if ($attributes[Netbanking\Entity::STATUS] !== Status::SUCCESS)
+        if ($content[AuthFields::STATUS] !== Status::SUCCESS)
         {
+            $errorDescription = ErrorCodes::getErrorCodeDescription(
+                $content[AuthFields::CODE]);
+
+            $errorCode = ErrorCodes::getErrorCodeMap(
+                $content[AuthFields::CODE]);
+
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['content' => $content]);
 
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\GatewayErrorException($errorCode, AuthFields::CODE, $errorDescription);
         }
     }
 
@@ -247,8 +251,6 @@ class Gateway extends Base\Gateway
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
         $this->createGatewayActionEntity($responseArray);
-
-        $this->checkRefundStatus($attributes, $responseArray);
     }
 
     protected function getPaymentVerifyData($verify)
@@ -310,33 +312,21 @@ class Gateway extends Base\Gateway
         return json_encode($request);
     }
 
-    protected function checkRefundStatus($attributes, $refundArray)
-    {
-        if ((isset($attributes[Netbanking\Entity::MERCHANT_CODE]) === false) or
-            ($attributes[Netbanking\Entity::MERCHANT_CODE] !== Code::SUCCESS))
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                $refundArray);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
-        }
-    }
-
     protected function getRefundAttributes($response, $input)
     {
+        $this->checkRefundStatus($response);
+
         try
         {
-            $attrs = [
-                Netbanking\Entity::RECEIVED        => true,
-                Netbanking\Entity::AMOUNT          => $input['payment']['amount'] / 100,
-                Netbanking\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
-                Netbanking\Entity::STATUS          => $response[RefundFields::STATUS],
-                Netbanking\Entity::REFUND_ID       => $input['refund']['id'],
-                Netbanking\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
-                Netbanking\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
-                Netbanking\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
+            $attributes = [
+                Base\Entity::RECEIVED        => true,
+                Base\Entity::AMOUNT          => $input['payment']['amount'] / 100,
+                Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
+                Base\Entity::STATUS          => $response[RefundFields::STATUS],
+                Base\Entity::REFUND_ID       => $input['refund']['id'],
+                Base\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
+                Base\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
+                Base\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
             ];
         }
 
@@ -345,7 +335,27 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException($e->getMessage());
         }
 
-        return $attrs;
+        return $attributes;
+    }
+
+    protected function checkRefundStatus($response)
+    {
+        if ((isset($response[RefundFields::CODE]) === false) or
+            ($response[RefundFields::CODE] !== Code::SUCCESS))
+        {
+            $errorDescription = ErrorCodes::getErrorCodeDescription(
+                $response[RefundFields::ERROR_CODE]);
+
+            $errorCode = ErrorCodes::getErrorCodeMap(
+                $response[RefundFields::ERROR_CODE]);
+
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                $response);
+
+            throw new Exception\GatewayErrorException($errorCode,
+                RefundFields::ERROR_CODE, $errorDescription);
+        }
     }
 
     protected function checkVerifyStatus($response)
@@ -353,12 +363,18 @@ class Gateway extends Base\Gateway
         if ((isset($response[VerifyFields::CODE]) === false) or
             ($response[VerifyFields::CODE] !== Code::SUCCESS))
         {
+            $errorDescription = ErrorCodes::getErrorCodeDescription(
+                $response[VerifyFields::ERROR_CODE]);
+
+            $errorCode = ErrorCodes::getErrorCodeMap(
+                $response[VerifyFields::ERROR_CODE]);
+
             $this->trace->error(
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 $response);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+                $errorCode, VerifyFields::ERROR_CODE, $errorDescription);
         }
     }
 
