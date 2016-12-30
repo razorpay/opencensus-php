@@ -4,23 +4,21 @@ namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Terminal;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
-use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment\Currency;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -30,14 +28,19 @@ class Gateway extends Base\Gateway
 
     protected $topup = false;
 
-    const FORMAT = 'YmdHis';
+    /**
+     * Format for date param accepted by jiomoney
+     */
+    const DATE_FORMAT = 'YmdHis';
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
-    const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
-
     const JSON_MODE = '2';
 
+    /**
+     * Defines the version for status query api that needs to be
+     * passed in the request params.
+     */
     const STATUS_QUERY_API_VERSION = '1.0';
 
     protected $gateway = 'wallet_jiomoney';
@@ -45,7 +48,7 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     protected $map = [
-        RequestFields::MERCHANT_ID           => WalletEntity::GATEWAY_MERCHANT_ID,
+        RequestFields::MERCHANT_ID => WalletEntity::GATEWAY_MERCHANT_ID,
     ];
 
     /**
@@ -141,7 +144,7 @@ class Gateway extends Base\Gateway
 
     protected function getPurchaseRequestContent(array $payment, string $callbackUrl)
     {
-        $timestamp = $this->getFormattedTimeStamp($payment[Payment::CREATED_AT], self::FORMAT);
+        $timestamp = $this->getFormattedDateFromTimeStamp($payment[Payment::CREATED_AT]);
 
         $amount = $this->getFormattedAmount($payment[Payment::AMOUNT]);
 
@@ -191,7 +194,7 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = $this->getEpochTime($content[ResponseFields::DATE], self::FORMAT);
+        $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
 
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
@@ -260,7 +263,7 @@ class Gateway extends Base\Gateway
     {
         $refundInfo = $this->generateRefundInfo($wallet);
 
-        $timestamp = Carbon::now('Asia/Kolkata')->format(self::FORMAT);
+        $timestamp = Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::CLIENT_ID    => $this->getClientId(),
@@ -287,7 +290,7 @@ class Gateway extends Base\Gateway
     {
         $refundinfo = [
             $wallet['gateway_payment_id'],
-            $this->getFormattedTimeStamp($wallet['date'], self::FORMAT),
+            $this->getFormattedDateFromTimeStamp($wallet['date']),
             'NA'
         ];
 
@@ -438,8 +441,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (($input['payment']['status'] !== PaymentStatus::CREATED) and
-                ($input['payment']['status'] !== PaymentStatus::FAILED))
+        if (($input['payment']['status'] !== Payment\Status::CREATED) and
+                ($input['payment']['status'] !== Payment\Status::FAILED))
         {
             $verify->apiSuccess = true;
         }
@@ -733,7 +736,8 @@ class Gateway extends Base\Gateway
         return $this->input['terminal']['gateway_access_code'];
     }
 
-    protected function getFormattedTimeStamp($timestamp, $format)
+    protected function getFormattedDateFromTimeStamp(
+        $timestamp, $format = self::DATE_FORMAT)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
     }

@@ -124,6 +124,8 @@ if (! function_exists('random_alphanum_string'))
     }
 }
 
+if
+
 if (! function_exists('get_var_in_string'))
 {
     function get_var_in_string($var)
@@ -193,8 +195,8 @@ function assertTrue($assertion, $message = null)
     }
 }
 
-
-function upi_uuid($prefix = true) {
+function upi_uuid($prefix = true)
+{
     $uuid = strtoupper(sprintf( '%04x%04x%04x%04x%04x%04x%04x%04x',
         // 32 bits for "time_low"
         mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
