@@ -309,7 +309,12 @@ app.controller('AuthCtrl', [
           $scope.login.currentStep = 1;
         } else {
           $scope.isLoggedIn = true;
-          $scope.login.currentStep = 2;
+          $scope.login.data.email = (user.getIdentity() && user.getIdentity().email)
+          if (!user.isPreSignupDone()) {
+            $scope.login.currentStep = 2;
+          } else {
+            $scope.login.currentStep = 3;
+          }
         }
       }
     }
@@ -345,7 +350,7 @@ app.controller('AuthCtrl', [
           hideLoginBtn()
           // check questions have been answered or not
           user.identity(true).then(function(user) {
-            if (user.isPreSignupDone) {
+            if (user.isPreSignupDone && !user.confirm_token) {
               var role = user.merchants[user.id].pivot.role;
 
               switch (role) {
@@ -364,7 +369,7 @@ app.controller('AuthCtrl', [
               });
               Object.assign($scope.signup.merchantData, user.pre_signup)
               $scope.isLoggedIn = true;
-              $scope.login.currentStep = 2;  
+              $scope.login.currentStep = user.isPreSignupDone ? 3 : 2; 
             }
           });
           // $scope.goToSignupStep(1)
