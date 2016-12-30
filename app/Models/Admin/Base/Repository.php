@@ -10,7 +10,7 @@ class Repository extends BaseRepository
 {
     use RepositoryUpdateTestAndLive;
 
-    public function findByPublicIdAndOrgId(string & $id, string & $orgId)
+    public function findByPublicIdAndOrgId(string &$id, string &$orgId)
     {
         $entity = $this->getEntityClass();
 
@@ -35,7 +35,7 @@ class Repository extends BaseRepository
     public function findByPublicIdAndOrgIdWithRelations(
         $id,
         $orgId,
-        $relations=[])
+        $relations = [])
     {
         $entity = $this->getEntityClass();
 
@@ -54,7 +54,7 @@ class Repository extends BaseRepository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchByOrgId(string & $orgId, $relations = [])
+    public function fetchByOrgId(string &$orgId, $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Base;
 
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends BaseModel\PublicEntity
 {
@@ -11,13 +12,13 @@ class Entity extends BaseModel\PublicEntity
     const MERCHANTS   = 'merchants';
     const PERMISSIONS = 'permissions';
 
-    public function setPublicOrgIdAttribute(array & $attributes)
+    public function setPublicOrgIdAttribute(array &$attributes)
     {
-        $orgId = $this->getAttribute(self::ORG_ID);
+        $orgId = $this->getAttribute(static::ORG_ID);
 
         if ($orgId !== null)
         {
-            $attributes[self::ORG_ID] = Org::getSignedId($orgId);
+            $attributes[static::ORG_ID] = Org::getSignedId($orgId);
         }
     }
 }
