@@ -1420,3 +1420,8 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
+---
+# Query to add jiomoney method
+ALTER TABLE merchant_banks
+    ADD COLUMN jiomoney TINYINT(1) DEFAULT 0 AFTER freecharge,
+    ADD INDEX merchant_banks_jiomoney_index (jiomoney);

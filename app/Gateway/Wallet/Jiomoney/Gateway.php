@@ -47,6 +47,8 @@ class Gateway extends Base\Gateway
     // Status code returned by jiomoney on successful transaction
     const SUCCESS_STATUS = 'SUCCESS';
 
+    const JIOMONEY_UUID_FORMAT = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
+
     protected $gateway = 'wallet_jiomoney';
 
     protected $sortRequestContent = false;
@@ -551,7 +553,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::APINAME       => ApiName::CHECKPAYMENTSTATUS,
             RequestFields::MODE          => self::JSON_MODE,
-            RequestFields::REQUEST_ID    => gen_uuid(false),
+            RequestFields::REQUEST_ID    => gen_uuid(self::JIOMONEY_UUID_FORMAT),
             RequestFields::STARTDATETIME => 'NA',
             RequestFields::ENDDATETIME   => 'NA',
             RequestFields::MERCHANT_ID   => $this->getMerchantId(),
