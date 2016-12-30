@@ -953,7 +953,7 @@ class Processor
 
         if ($now >= $captureBefore)
         {
-            return;
+            return false;
         }
 
         //
@@ -979,7 +979,7 @@ class Processor
                         'invoice_due_by' => $invoice->getDueBy(),
                     ]);
 
-                return;
+                return false;
             }
         }
 
