@@ -6,12 +6,12 @@ use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Admin\Permission;
 use RZP\Constants\Table;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
@@ -106,19 +106,6 @@ class Entity extends Base\PublicEntity
     public function getName()
     {
         return $this->getAttribute(self::NAME);
-    }
-
-    /**
-     * Public setters
-     * */
-    public function setPublicOrgIdAttribute(array & $attributes)
-    {
-        $orgId = $this->getAttribute(self::ORG_ID);
-
-        if ($orgId !== null)
-        {
-            $attributes[self::ORG_ID] = Org::getSignedId($orgId);
-        }
     }
 
     public function isSuperAdminRole()

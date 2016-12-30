@@ -4,10 +4,10 @@ namespace RZP\Models\Admin\Org\Hostname;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;

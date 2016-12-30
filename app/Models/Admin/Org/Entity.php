@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;

@@ -202,16 +202,6 @@ class Entity extends Base\Entity
         return $this->hasMany('RZP\Models\Admin\Admin\Token\Entity');
     }
 
-    public function setPublicOrgIdAttribute(array & $attributes)
-    {
-        $orgId = $this->getAttribute(self::ORG_ID);
-
-        if ($orgId !== null)
-        {
-            $attributes[self::ORG_ID] = Org\Entity::getSignedId($orgId);
-        }
-    }
-
     public function getPermissionsList()
     {
         $permissions = [];
