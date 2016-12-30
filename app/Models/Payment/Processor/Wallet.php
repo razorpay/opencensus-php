@@ -25,7 +25,7 @@ class Wallet
         self::PAYZAPP       => 'Payzapp',
         self::AIRTELMONEY   => 'Airtelmoney',
         self::FREECHARGE    => 'Freecharge',
-        self::FLASHWALLET   => 'Flash Wallet Whitelabel'
+        self::FLASHWALLET   => 'RZP Flashwallet'
 
     );
 
