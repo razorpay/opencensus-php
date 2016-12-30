@@ -177,6 +177,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
+    protected static $netbankingAirtelTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_airtel',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
