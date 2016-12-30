@@ -6,7 +6,6 @@ use App\Http\AppResponse;
 
 use Input;
 use Password;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
@@ -88,18 +87,18 @@ class PasswordController extends Controller
         }
     }
 
-    public function forgotAdminPassword(Request $request)
+    public function forgotAdminPassword()
     {
-        $email = $request->input('email');
+        $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->forgotPassword($email);
+        list($error, $data) = (new Admin\Service)->forgotPassword($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function resetAdminPassword(Request $request)
+    public function resetAdminPassword()
     {
-        $input = $request->all();
+        $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->resetPassword($input);
 

@@ -62,7 +62,7 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
-    public function forgotPassword($email)
+    public function forgotPassword($input)
     {
         $error = $data = null;
 
@@ -73,14 +73,11 @@ class Service extends Base\Service
         // `/access/resetpwd` is a hard-coded angular route
         $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
 
-        $params = array(
-            'email' => $email,
-            'reset_password_url' => $resetPasswordUrl
-        );
+        $input['reset_password_url'] = $resetPasswordUrl;
 
         try
         {
-            $data = $this->api->admin->forgotPassword($org['id'], $params);
+            $data = $this->api->admin->forgotPassword($org['id'], $input);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
