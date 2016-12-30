@@ -4,23 +4,21 @@ namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Terminal;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
-use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment\Currency;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Gateway\Wallet\Base\Entity;
 
 class Gateway extends Base\Gateway
 {
@@ -30,14 +28,19 @@ class Gateway extends Base\Gateway
 
     protected $topup = false;
 
-    const FORMAT = 'YmdHis';
+    /**
+     * Format for date param accepted by jiomoney
+     */
+    const DATE_FORMAT = 'YmdHis';
 
     const TXN_CHANNEL = 'WEB';
 
-    const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
-
     const JSON_MODE = '2';
 
+    /**
+     * Defines the version for status query api that needs to be
+     * passed in the request params.
+     */
     const STATUS_QUERY_API_VERSION = '1.0';
 
     protected $gateway = 'wallet_jiomoney';
@@ -45,11 +48,11 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     protected $map = [
-        RequestFields::MERCHANT_ID           => WalletEntity::GATEWAY_MERCHANT_ID,
+        RequestFields::MERCHANT_ID => Entity::GATEWAY_MERCHANT_ID,
     ];
 
     /**
-     * Returns JioMoney request content to be redirewcted to from checkout
+     * Returns JioMoney request content to be redirected to from checkout
      *
      * @param  array  $input
      *
@@ -67,9 +70,9 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
             RequestFields::PAYMENT_ID   => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'],
-            WalletEntity::EMAIL         => $input['payment']['email'],
-            WalletEntity::CONTACT       => $input['payment']['contact'],
-            WalletEntity::RECEIVED      => false
+            Entity::EMAIL         => $input['payment']['email'],
+            Entity::CONTACT       => $input['payment']['contact'],
+            Entity::RECEIVED      => false
         ];
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -141,9 +144,9 @@ class Gateway extends Base\Gateway
 
     protected function getPurchaseRequestContent(array $payment, string $callbackUrl)
     {
-        $timestamp = $this->getFormattedTimeStamp($payment[Payment::CREATED_AT], self::FORMAT);
+        $timestamp = $this->getFormattedDateFromTimeStamp($payment[Payment\Entity::CREATED_AT]);
 
-        $amount = $this->getFormattedAmount($payment[Payment::AMOUNT]);
+        $amount = $this->getFormattedAmount($payment[Payment\Entity::AMOUNT]);
 
         $content = [
             RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
@@ -151,14 +154,14 @@ class Gateway extends Base\Gateway
             RequestFields::CHANNEL                                         => self::TXN_CHANNEL,
             RequestFields::CALLBACK_URL                                    => $callbackUrl,
             RequestFields::TOKEN                                           => '',
-            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment[Payment::ID],
+            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment[Payment\Entity::ID],
             RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => $timestamp,
             RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => strtoupper(Action::PURCHASE),
             RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => $amount,
             RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => Currency::INR,
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => $payment[Payment::EMAIL],
-            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment[Payment::EMAIL],
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment[Payment::CONTACT]
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => $payment[Payment\Entity::EMAIL],
+            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment[Payment\Entity::EMAIL],
+            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment[Payment\Entity::CONTACT]
         ];
 
         $hashArray = $this->getPurchaseRequestArrayToHash($content);
@@ -191,7 +194,7 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = $this->getEpochTime($content[ResponseFields::DATE], self::FORMAT);
+        $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
 
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
@@ -199,7 +202,7 @@ class Gateway extends Base\Gateway
             ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
             ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
             ResponseFields::DATE                 => $date,
-            WalletEntity::RECEIVED               => true
+            Entity::RECEIVED               => true
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -220,8 +223,8 @@ class Gateway extends Base\Gateway
             ResponseFields::DATE                 => $content[ResponseFields::DATE]
         ];
 
-        $wallet = $this->repo->findByPaymentIdAndAction($input['payment']['id'],
-                                                                Action::AUTHORIZE);
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
 
@@ -260,7 +263,7 @@ class Gateway extends Base\Gateway
     {
         $refundInfo = $this->generateRefundInfo($wallet);
 
-        $timestamp = Carbon::now('Asia/Kolkata')->format(self::FORMAT);
+        $timestamp = Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::CLIENT_ID    => $this->getClientId(),
@@ -287,7 +290,7 @@ class Gateway extends Base\Gateway
     {
         $refundinfo = [
             $wallet['gateway_payment_id'],
-            $this->getFormattedTimeStamp($wallet['date'], self::FORMAT),
+            $this->getFormattedDateFromTimeStamp($wallet['date']),
             'NA'
         ];
 
@@ -321,19 +324,19 @@ class Gateway extends Base\Gateway
     protected function getRefundEntityAttributesFromRefundResponse(array $content, array $input)
     {
         $refundAttributes = [
-            WalletEntity::PAYMENT_ID           => $input['payment']['id'],
-            WalletEntity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
-            WalletEntity::ACTION               => $this->action,
-            WalletEntity::AMOUNT               => $input['refund']['amount'],
-            WalletEntity::RECEIVED             => true,
-            WalletEntity::WALLET               => $input['payment']['wallet'],
-            WalletEntity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            WalletEntity::REFUND_ID            => $input['refund']['id'],
-            WalletEntity::EMAIL                => $input['payment']['email'],
-            WalletEntity::CONTACT              => $input['payment']['contact'],
-            WalletEntity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            WalletEntity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            WalletEntity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
+            Entity::PAYMENT_ID           => $input['payment']['id'],
+            Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
+            Entity::ACTION               => $this->action,
+            Entity::AMOUNT               => $input['refund']['amount'],
+            Entity::RECEIVED             => true,
+            Entity::WALLET               => $input['payment']['wallet'],
+            Entity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            Entity::REFUND_ID            => $input['refund']['id'],
+            Entity::EMAIL                => $input['payment']['email'],
+            Entity::CONTACT              => $input['payment']['contact'],
+            Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Entity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
         ];
 
         return $refundAttributes;
@@ -347,34 +350,36 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );
     }
-    //-------------------------------Refund helper functions end----------------------------------
 
-    //-------------------------------Verify helper functions begin--------------------------------
+    //-------------------------------Refund helper functions end----------------
+
+    //-------------------------------Verify helper functions begin--------------
 
     /**
      * JioMoney payment verification is weird. They have 2 Apis
-     * 1. STATUSQUERY - Cache based api, returns transaction status stored in a cache and cache is wiped after 3 hours
-     * 2. CHECKPAYMENTSTATUS - DB based api, As per the documentation this will return transaction data 3-4 mins
-     * post transaction time. This might realistically be about 10 mins so for our verify use case,
-     * we first make a call to the STATUSQUERY API. The response has a flag to indicate if data was found in cache.
-     * If found, we proceed with the verify flow, else we make a call to CHECKPAYMENTSTATUS API
-     * and proceed with its response
+     *
+     * 1. STATUSQUERY - Cache based api, returns transaction status stored
+     *     in a cache and cache is wiped after 3 hours
+     *
+     * 2. CHECKPAYMENTSTATUS - DB based api, As per the documentation
+     *     this will return transaction data 3-4 mins post transaction time.
+     *     This might realistically be about 10 mins so for our verify use case,
+     *     we first make a call to the STATUSQUERY API. The response has a
+     *     flag to indicate if data was found in cache.
+     *     If found, we proceed with the verify flow, else we make a call
+     *     to CHECKPAYMENTSTATUS API and proceed with its response
      */
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
 
-        $statusQueryRequest = $this->getStatusQueryRequest($input);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $statusQueryRequest);
+        $statusQueryRequest = $this->getStatusQueryRequestArray($input);
 
         $statusQueryResponse = $this->sendGatewayRequest($statusQueryRequest);
 
-        $this->response = $statusQueryResponse;
+        $content = $this->jsonToArray($statusQueryResponse->body);
 
-        $content = $this->jsonToArray($this->response->body);
+        $response = $statusQueryResponse;
 
         if ($this->validStatusQueryResponse($content) === false)
         {
@@ -382,9 +387,9 @@ class Gateway extends Base\Gateway
 
             $checkPaymentStatusResponse = $this->sendGatewayRequest($checkPaymentStatusRequest);
 
-            $this->response = $checkPaymentStatusResponse;
+            $response = $checkPaymentStatusResponse;
 
-            $content = $this->jsonToArray($this->response->body);
+            $content = $this->jsonToArray($response->body);
         }
 
         $this->trace->info(
@@ -395,9 +400,9 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $verify->verifyResponse = $this->response;
+        $verify->verifyResponse = $response;
 
-        $verify->verifyResponseBody = $this->response->body;
+        $verify->verifyResponseBody = $response->body;
 
         $verify->verifyResponseContent = $content;
 
@@ -438,8 +443,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (($input['payment']['status'] !== PaymentStatus::CREATED) and
-                ($input['payment']['status'] !== PaymentStatus::FAILED))
+        if (($input['payment']['status'] !== Payment\Status::CREATED) and
+                ($input['payment']['status'] !== Payment\Status::FAILED))
         {
             $verify->apiSuccess = true;
         }
@@ -465,11 +470,11 @@ class Gateway extends Base\Gateway
         }
         else if (($gatewayPayment['received'] === false) and
                  (($gatewayPayment['status_code'] === null) or
-                    ($gatewayPayment[WalletEntity::STATUS_CODE] !== StatusCode::SUCCESS)))
+                    ($gatewayPayment[Entity::STATUS_CODE] !== StatusCode::SUCCESS)))
         {
             $verify->apiSuccess = false;
         }
-        else if ($gatewayPayment[WalletEntity::STATUS_CODE] === StatusCode::SUCCESS)
+        else if ($gatewayPayment[Entity::STATUS_CODE] === StatusCode::SUCCESS)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
@@ -506,11 +511,11 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            ResponseFields::AMOUNT               => $payment[Payment::AMOUNT],
+            ResponseFields::AMOUNT               => $payment[Payment\Entity::AMOUNT],
             RequestFields::MERCHANT_ID           => $this->getMerchantId(),
-            WalletEntity::RECEIVED               => true,
-            WalletEntity::EMAIL                  => $payment[Payment::EMAIL],
-            WalletEntity::CONTACT                => $payment[Payment::CONTACT],
+            Entity::RECEIVED               => true,
+            Entity::EMAIL                  => $payment[Payment\Entity::EMAIL],
+            Entity::CONTACT                => $payment[Payment\Entity::CONTACT],
             ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
             ResponseFields::RESPONSE_CODE        => 'SUCCESS',
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
@@ -590,7 +595,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getStatusQueryRequest(array $input)
+    protected function getStatusQueryRequestArray(array $input)
     {
         $content = [
             StatusQueryRequestFields::REQUEST_HEADER => [
@@ -608,7 +613,7 @@ class Gateway extends Base\Gateway
             $this->getClientId(),
             $this->getMerchantId(),
             ApiName::STATUSQUERY,
-            $input['payment'][Payment::ID]
+            $input['payment'][Payment\Entity::ID]
         ];
 
         $hash = $this->getHashOfArray($hashArray);
@@ -625,6 +630,10 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = $this->getRequestHeaders($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $statusQueryRequest);
+
         return $request;
     }
 
@@ -638,7 +647,7 @@ class Gateway extends Base\Gateway
     {
         $responseFieldsArray = ResponseFields::getResponseFieldsArray();
 
-        $gatewayResponseArray = $this->getGatewayResponseArray($content);
+        $gatewayResponseArray = explode('|', $content['response']);
 
         return array_combine($responseFieldsArray, $gatewayResponseArray);
     }
@@ -703,7 +712,7 @@ class Gateway extends Base\Gateway
 
     public function getStringToHash($content, $glue = '|')
     {
-        return implode($glue, $content);
+        return parent::getStringToHash($content, $glue);
     }
 
     public function getHashOfString($hashString)
@@ -733,7 +742,8 @@ class Gateway extends Base\Gateway
         return $this->input['terminal']['gateway_access_code'];
     }
 
-    protected function getFormattedTimeStamp($timestamp, $format)
+    protected function getFormattedDateFromTimeStamp(
+        $timestamp, $format = self::DATE_FORMAT)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
     }

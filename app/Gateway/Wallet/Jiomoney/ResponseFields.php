@@ -23,6 +23,10 @@ class ResponseFields
     const TXN_STATUS           = 'TXN_STATUS';
     const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
 
+    /**
+     * This provides the list of fields returned for callback and
+     * refund gateway response.
+     */
     public static function getResponseFieldsArray()
     {
         return [
