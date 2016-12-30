@@ -9,18 +9,18 @@
             <tbody>
               <tr>
                 <td colspan="3">
-                  <h2>Hi {{$firstName}}</h2>
+                  <h2>Hi {{$firstName}},</h2>
                 </td>
               </tr>
               <tr>
                 <td colspan="3">
-                  <p>We got a request to reset your password for your administrator account in {{$orgName}}</p>
+                  <p>We got a request to reset your password for your administrator account in {{$orgName}}.</p>
                 </td>
               </tr>
               <tr>
                 <td style="width: 25%"></td>
                 <td style="width: 33%">
-                  <a href={{$resetUrl}} target="_blank" style="
+                  <a href="{{$resetUrl}}" target="_blank" style="
                     text-decoration: none;
                     padding: 7px 20px;
                     display: inline-block;
