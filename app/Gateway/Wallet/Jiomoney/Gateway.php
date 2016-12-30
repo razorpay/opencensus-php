@@ -688,6 +688,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
+            s('here', $this->config['test_merchant_id']);
             return $this->config['test_merchant_id'];
         }
 
