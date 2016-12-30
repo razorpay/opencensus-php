@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use Mail;
 use Event;
 use RZP\Error;
 use Carbon\Carbon;
@@ -12,7 +13,6 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
-use Mail;
 use RZP\Models\Merchant;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
@@ -34,7 +34,6 @@ class Service extends Base\Service
     {
         $email = $input['username'];
 
-        // Get the admin record
         $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 
         if ($admin === null)
@@ -45,81 +44,61 @@ class Service extends Base\Service
 
         $admin->getValidator()->validateCredentials($input);
 
+        $ex = null;
+
         try
         {
             $authPolicy = new AuthPolicy\Service;
             $authPolicy->validateLogin($admin, $input['password']);
         }
-        catch (Exception\BadRequestValidationFailureException $e)
+        catch (Exception\RecoverableException $ex)
         {
-            $admin->incrementFailedAttempts();
-            $this->repo->saveOrFail($admin);
-
-            throw $e;
+            $this->handleAuthFailure($admin, Action::LOGIN_FAIL, $ex);
         }
-
-        // Valid password ?
-        $isAuthenticated = true;
-
-        $errorCode = null;
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
 
-            $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
+            $authPolicy->validateLogin($admin, $input['password'], 'after');
 
-            // Send admin, description, entity object
-
-            if ($validate !== null)
-            {
-                $isAuthenticated = false;
-
-                $errorCode = Error\ErrorCode::BAD_REQUEST_AUTH_VALIDATION_FAILED;
-            }
-            else
-            {
-                $this->fireAdminAction($admin, Action::LOGIN);
-            }
+            $this->fireAdminAction($admin, Action::LOGIN);
 
             return $data;
         }
-        else
-        {
-            $isAuthenticated = false;
 
-            $errorCode = Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED;
-        }
-
-        return $this->handleAuthFailure($isAuthenticated, $errorCode, $admin);
+        $this->handleAuthFailure($admin);
     }
 
-    protected function handleAuthFailure(bool $isAuthenticated, string $errorCode, $admin)
+    protected function handleAuthFailure($admin, $action = Action::LOGIN_FAIL, $exception = null)
     {
-        if ($isAuthenticated === false)
+        $admin->incrementFailedAttempts();
+
+        $this->fireAdminAction(
+            $admin,
+            $action,
+            ['failed_attempts' => $admin->getFailedAttempts()]);
+
+        $this->repo->saveOrFail($admin);
+
+        if ($exception === null)
         {
-            $admin->incrementFailedAttempts();
-
-            $this->fireAdminAction(
-                $admin,
-                Action::LOGIN_FAIL,
-                ['failed_attempts' => $admin->getFailedAttempts()]);
-
-            $this->repo->saveOrFail($admin);
-
-            throw new Exception\BadRequestException($errorCode);
-
+            $exception = new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
+
+        throw $exception;
     }
 
     protected function fireAdminAction(Entity $admin, array $action, array $customProperties = null)
     {
-        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
+        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ['admin' => $admin, 'action' => $action]);
 
-        if (!is_array($admin))
+        if ($admin instanceof Entity)
         {
             $admin = $admin->toArrayPublic();
         }
+
         event(new AuditLogEntry($admin, $action, $customProperties));
         //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
@@ -128,7 +107,7 @@ class Service extends Base\Service
     {
         $this->core()->passwordReset($orgId, $input);
 
-        return ["success" => true];
+        return ['success' => true];
     }
 
     public function loginWithOAuth($input)
@@ -138,9 +117,8 @@ class Service extends Base\Service
         // Get the admin record
         $admin = $this->repo->admin->findByEmail($input['email']);
 
-        // Valid token ?
-        if (($admin->oauth_access_token === $input['oauth_access_token']) and
-            ($admin->oauth_provider_id === $input['oauth_provider_id']))
+        if (($admin->getOAuthAccessToken() === $input['oauth_access_token']) and
+            ($admin->getOAuthProviderID() === $input['oauth_provider_id']))
         {
             $data = $this->generateLoginToken($admin);
 
@@ -148,19 +126,8 @@ class Service extends Base\Service
 
             return $data;
         }
-        else
-        {
-            $admin->incrementFailedAttempts();
 
-            $this->fireAdminAction($admin, Action::LOGIN_FAIL_OAUTH, ['failed_attempts' => $admin->getFailedAttempts()]);
-
-            $this->repo->saveOrFail($admin);
-
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
-        }
-
-        return null;
+        $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
     private function generateLoginToken($admin)
@@ -178,7 +145,6 @@ class Service extends Base\Service
             'expires_at' => Carbon::now()->addDays(30)->timestamp
         ];
 
-        // Create a token for the user
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
         $admin = $admin->toArrayPublic();
@@ -203,7 +169,7 @@ class Service extends Base\Service
     {
         $org = $admin->org;
 
-        if ($org['auth_type'] !== 'password')
+        if ($org->getAuthType() !== 'password')
         {
             return;
         }
@@ -222,7 +188,7 @@ class Service extends Base\Service
         $template = [
             'user' => [
                 'email' => $admin->getEmail(),
-                // Hack for now. Remove it
+                // todo: Hack for now. Remove it
                 'password' => $input['password'],
                 'org' => $org->getDisplayName(),
                 'url' => $this->app['config']->get('applications.dashboard.url'),
@@ -246,7 +212,7 @@ class Service extends Base\Service
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, ['groups', 'roles']);
+            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
@@ -293,14 +259,14 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        if (! empty($permissions))
+        if (empty($permissions) === false)
         {
-            $admin['permissions'] = $permissions->all();
+            $admin[Entity::PERMISSIONS] = $permissions->all();
         }
 
-        $admin['roles'] = $roleNames;
+        $admin[Entity::ROLES] = $roleNames;
 
-        $admin['groups'] = $groupRules;
+        $admin[Entity::GROUPS] = $groupRules;
 
         return $admin;
     }
@@ -322,8 +288,7 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admins = $this->repo->admin->fetchByOrgId(
-            $orgId, ['groups', 'roles']);
+        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
@@ -337,6 +302,7 @@ class Service extends Base\Service
         // heimdall dashboard has a custom parser which is not compatible with
         // collections. If dashboard needs a single entity and passes a unique
         // key return the only collection
+        // todo: Use toArrayPublicEmbedded
         if ($admins['count'] === 1)
         {
             return $admins['items'][0];
@@ -373,8 +339,6 @@ class Service extends Base\Service
             $merchants = $this->repo->merchant->fetchMerchantsByOrgId($admin->org->id)->toArray();
 
             $merchantIds = array_column($merchants, 'id');
-
-            // sd($merchantIds);
         }
         else
         {
@@ -462,13 +426,11 @@ class Service extends Base\Service
         {
             $admin = $merchant->admins->first();
 
-            if (! empty($admin))
+            $responseHash[$merchant->id] = null;
+
+            if (empty($admin) === false)
             {
                 $responseHash[$merchant->id] = $merchant->admins->first()->name;
-            }
-            else
-            {
-                $responseHash[$merchant->id] = null;
             }
         }
 

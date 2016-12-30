@@ -26,9 +26,9 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
@@ -44,9 +44,9 @@ class Validator extends Base\Validator
         Entity::LOCATION_CODE         => 'sometimes|string',
         Entity::EMPLOYEE_CODE         => 'sometimes|string',
         Entity::DISABLED              => 'sometimes|in:0,1',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 

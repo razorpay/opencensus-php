@@ -49,8 +49,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::HOSTNAME, $hostname);
     }
 
-    public function setOrgId($orgId)
+    public function setHostnameAttribute($hostname)
     {
-        $this->setAttribute(self::ORG_ID, $orgId);
+        $this->attributes[self::HOSTNAME] = trim($hostname);
     }
 }

@@ -46,22 +46,26 @@ class Entity extends Base\PublicEntity
         self::ADMIN_ID,
     );
 
-    public function setPublicAdminIdAttribute(array & $array)
-    {
-        $array[self::ADMIN_ID] = Admin\Entity::getSignedId(
-            $this->getAttribute(self::ADMIN_ID));
-    }
-
-    public function setExpiresAt(int $timestamp)
-    {
-        $this->setAttribute(self::EXPIRES_AT, $timestamp);
-    }
-
+    // ------------ Relations ------------
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
+    // ---------- Public Setters ---------
+    public function setPublicAdminIdAttribute(array & $attributes)
+    {
+        $attributes[self::ADMIN_ID] = Admin\Entity::getSignedId(
+            $this->getAttribute(self::ADMIN_ID));
+    }
+
+    // -------------- Setters ------------
+    public function setExpiresAt(int $timestamp)
+    {
+        $this->setAttribute(self::EXPIRES_AT, $timestamp);
+    }
+
+    // -------------- Getters ------------
     public function getAdminId()
     {
         return $this->getAttribute(self::ADMIN_ID);

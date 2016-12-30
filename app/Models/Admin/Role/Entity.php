@@ -123,10 +123,8 @@ class Entity extends Base\PublicEntity
 
     public function isSuperAdminRole()
     {
-        $app = App::getFacadeRoot();
-
         // Default role is SuperAdmin
-        if ($app['config']['heimdall']['default_role_name'] === $this->getName())
+        if (config('heimdall.default_role_name') === $this->getName())
         {
             return true;
         }

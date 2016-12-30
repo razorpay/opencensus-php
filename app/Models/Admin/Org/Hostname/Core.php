@@ -16,9 +16,9 @@ class Core extends Base\Core
 
         $orgHost->org()->associate($org);
 
-        $orgHost->build(['hostname' => $hostname, 'org_id' => $org->getId()]);
+        $orgHost->build(['hostname' => $hostname]);
 
-        $this->repo->org_hostname->saveOrFail($orgHost);
+        $this->repo->saveOrFail($orgHost);
 
         return $orgHost;
     }
@@ -34,7 +34,7 @@ class Core extends Base\Core
 
         $orgHost->setAuditAction(Action::DELETE_ORG_HOSTNAME);
 
-        $this->repo->org_hostname->deleteOrFail($orgHost);
+        $this->repo->deleteOrFail($orgHost);
     }
 
     public function deleteHostnamesOfOrg(string $orgId)
@@ -42,7 +42,7 @@ class Core extends Base\Core
         $allHosts = $this->repo->org_hostname->getHostsByOrgId($orgId);
 
         foreach ($allHosts as $host) {
-            $this->repo->org_hostname->deleteOrFail($host);
+            $this->repo->deleteOrFail($host);
         }
     }
 }
