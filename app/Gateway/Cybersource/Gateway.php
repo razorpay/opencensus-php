@@ -1135,7 +1135,7 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
         $amount    = $input['payment']['amount'];
-        $currency  = $input['payment']['current'];
+        $currency  = $input['payment']['currency'];
         $acquirer  = $input['terminal']->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
