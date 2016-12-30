@@ -1,6 +1,6 @@
 <div class="auth-overflow-container">
   <div class="signup-translate-container" style="transform: translateX({{-(240)*signup.currentStep}}px)">
-    <div class="auth-step">
+    <div class="auth-step" ng-if="organization && organization.allow_sign_up || invite">
       <div class="auth-heading">
         Signing Up...
       </div>
@@ -31,6 +31,9 @@
       </form>
       
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+    </div>
+    <div class="auth-step" ng-if="!(organization && organization.allow_sign_up || invite)">
+      <span>You are not authorized to access this page</span>
     </div>
     <div class="auth-step">
       <div class="auth-heading">
