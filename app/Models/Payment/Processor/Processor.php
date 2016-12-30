@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
+use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -931,8 +932,64 @@ class Processor
             return false;
         }
 
+        //
+        // Capture only if now is past payment's auto refund delay.
+        //
+
+        // Gets auto refund delay of merchant's. If that's null usage default.
+        $merchant        = $payment->merchant;
+        $autoRefundDelay = $merchant->getAutoRefundDelay();
+
+        if (empty($autoRefundDelay))
+        {
+            $autoRefundDelay = self::AUTO_REFUND_TIME_PERIOD;
+        }
+
+        $now = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $captureBefore = Carbon::createFromTimestamp($payment->getCreatedAt())
+                                ->addDays($autoRefundDelay)->timestamp;
+
+        if ($now >= $captureBefore)
+        {
+            return;
+        }
+
+        //
+        // Invoice related checks
+        // - Check if now is not past invoice due date
+        // - Check if invoice status is ISSUED
+        //
+
+        if ($payment->hasInvoice())
+        {
+            $invoice = $payment->invoice;
+
+            if (($invoice->isInIssueState() === false) or
+                ($now >= $invoice->getDueBy()))
+            {
+                $this->trace->debug(
+                    TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED,
+                    [
+                        'payment_id'     => $payment->getId(),
+                        'status'         => $payment->getStatus(),
+                        'invoice_id'     => $invoice->getId(),
+                        'invoice_status' => $invoice->getStatus(),
+                        'invoice_due_by' => $invoice->getDueBy(),
+                    ]);
+
+                return;
+            }
+        }
+
         $order = $payment->order;
 
+        //
+        // This mostly handles following case: More than one late authorized
+        // payments come to this flow, in that case only one will be
+        // auto-captured and the others will remain in authorized and then get
+        // refunded later. That is why it's good to reload the order entity too.
+        //
         $this->repo->reload($order);
 
         if (($order->isPaid() === true) or
