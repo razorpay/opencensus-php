@@ -433,8 +433,14 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === self::SUCCESS_STATUS) ? true : false;
-
+        if ($this->checkPaymentStatusResponseFailed($content) === true)
+        {
+            $verify->gatewaySuccess = false;
+        }
+        else
+        {
+            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === self::SUCCESS_STATUS) ? true : false;
+        }
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
@@ -500,6 +506,17 @@ class Gateway extends Base\Gateway
             $this->statusQueryValid = true;
 
             return $content[StatusQueryResponseFields::RESPONSE_HEADER][StatusQueryResponseFields::API_STATUS] === '1';
+        }
+
+        return false;
+    }
+
+    protected function checkPaymentStatusResponseFailed(array $content)
+    {
+        if ($this->statusQueryValid === false)
+        {
+            return ($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]
+                    [ResponseFields::STATUS] !== self::SUCCESS_STATUS);
         }
 
         return false;

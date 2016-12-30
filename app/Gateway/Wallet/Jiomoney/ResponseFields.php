@@ -19,7 +19,9 @@ class ResponseFields
     const CARD_NETWORK         = 'card_network';
     const CHECKSUM             = 'checksum';
     const RESPONSE             = 'RESPONSE';
+    const RESPONSE_HEADER      = 'RESPONSE_HEADER';
     const CHECKPAYMENTSTATUS   = 'CHECKPAYMENTSTATUS';
+    const STATUS               = 'STATUS';
     const TXN_STATUS           = 'TXN_STATUS';
     const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
 
