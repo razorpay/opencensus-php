@@ -37,19 +37,19 @@ class Validator extends Base\Validator
 
     protected static $statusQueryRules = [
         'request_header' => 'required|array|custom',
-        'payload_data' => 'required|array|custom',
-        'checksum' => 'required|string'
+        'payload_data'   => 'required|array|custom',
+        'checksum'       => 'required|string'
     ];
 
     protected static $checkPaymentStatusRules = [
-        RequestFields::APINAME => 'required|string|in:CHECKPAYMENTSTATUS',
-        RequestFields::MODE => 'required|string|in:2',
-        RequestFields::REQUEST_ID => 'required|string',
+        RequestFields::APINAME       => 'required|string|in:CHECKPAYMENTSTATUS',
+        RequestFields::MODE          => 'required|string|in:2',
+        RequestFields::REQUEST_ID    => 'required|string',
         RequestFields::STARTDATETIME => 'required|string|in:NA',
-        RequestFields::ENDDATETIME => 'required|string|in:NA',
-        RequestFields::MERCHANT_ID => 'required|string',
-        RequestFields::PAYMENT_ID => 'required|string',
-        RequestFields::CHECKSUM => 'required|string'
+        RequestFields::ENDDATETIME   => 'required|string|in:NA',
+        RequestFields::MERCHANT_ID   => 'required|string',
+        RequestFields::PAYMENT_ID    => 'required|string',
+        RequestFields::CHECKSUM      => 'required|string'
     ];
 
     protected static $refundTransactionAttributeRules = [
@@ -61,16 +61,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $statusQueryRequestHeaderRules = [
-        'version' => 'required|string|in:1.0',
-        'api_name' => 'required|string|in:STATUSQUERY',
+        'version'       => 'required|string|in:1.0',
+        'api_name'      => 'required|string|in:STATUSQUERY',
         'txn_not_found' => 'sometimes'
     ];
 
     protected static $statusQueryPayloadRules = [
-        'client_id' => 'required|string',
+        'client_id'   => 'required|string',
         'merchant_id' => 'required|string',
         'tran_ref_no' => 'required|string',
-        'amount' => 'sometimes|string'
+        'amount'      => 'sometimes|string'
     ];
 
     protected function validateTransaction($attribute, $value)

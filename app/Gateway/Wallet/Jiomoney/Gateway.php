@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
         RequestFields::MERCHANT_ID => Entity::GATEWAY_MERCHANT_ID,
     ];
 
+    protected $statusQueryValid = false;
+
     /**
      * Returns JioMoney request content to be redirected to from checkout
      *
@@ -154,11 +156,11 @@ class Gateway extends Base\Gateway
         $amount = $this->getFormattedAmount($payment[Payment\Entity::AMOUNT]);
 
         $content = [
-            RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
-            RequestFields::CLIENT_ID                                       => $this->getClientId(),
-            RequestFields::CHANNEL                                         => self::TXN_CHANNEL,
-            RequestFields::CALLBACK_URL                                    => $callbackUrl,
-            RequestFields::TOKEN                                           => '',
+            RequestFields::MERCHANT_ID                                                              => $this->getMerchantId(),
+            RequestFields::CLIENT_ID                                                                => $this->getClientId(),
+            RequestFields::CHANNEL                                                                  => self::TXN_CHANNEL,
+            RequestFields::CALLBACK_URL                                                             => $callbackUrl,
+            RequestFields::TOKEN                                                                    => '',
             self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)   => $payment[Payment\Entity::ID],
             self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)    => $timestamp,
             self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)     => strtoupper(Action::PURCHASE),
@@ -495,6 +497,8 @@ class Gateway extends Base\Gateway
     {
         if (isset($content[StatusQueryResponseFields::RESPONSE_HEADER]) === true)
         {
+            $this->statusQueryValid = true;
+
             return $content[StatusQueryResponseFields::RESPONSE_HEADER][StatusQueryResponseFields::API_STATUS] === '1';
         }
 
@@ -503,28 +507,24 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayTxnStatus(array $content)
     {
-        if ($this->validStatusQueryResponse($content) === true)
+        if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::TXN_STATUS];
         }
-        else
-        {
-            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                    [ResponseFields::TXN_STATUS];
-        }
+
+        return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                [ResponseFields::TXN_STATUS];
     }
 
     protected function getGatewayPaymentId(array $content)
     {
-        if ($this->validStatusQueryResponse($content) === true)
+        if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
         }
-        else
-        {
-            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                    [ResponseFields::JM_TRAN_REF_NO];
-        }
+
+        return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                [ResponseFields::JM_TRAN_REF_NO];
     }
 
     protected function getCheckPaymentStatusRequest(array $input)
