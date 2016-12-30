@@ -86,7 +86,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $input['gateway']);
 
-        $this->validateResponseChecksum($input['gateway']);
+        $this->verifySecureHash($input['gateway']);
 
         if ($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS)
         {
@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response);
 
-        $this->validateResponseChecksum($content);
+        $this->verifySecureHash($content);
 
         $this->createWalletRefundEntity($content, $input);
 
@@ -663,22 +663,15 @@ class Gateway extends Base\Gateway
         return explode('|', $content['response']);
     }
 
-    protected function validateResponseChecksum($content)
+    protected function verifySecureHash(array $content)
     {
-        $responseCheckSum = $content[ResponseFields::CHECKSUM];
-
         $hashArray = $this->getResponseHashArray($content);
 
-        $checksumCalculated = $this->getHashOfArray($hashArray);
+        $generated = $this->getHashOfArray($hashArray);
 
-        $checksumValid = ($checksumCalculated === $responseCheckSum);
+        $actual = $content[ResponseFields::CHECKSUM];
 
-        if ($checksumCalculated !== $responseCheckSum)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED
-            );
-        }
+        $this->compareHashes($actual, $generated);
     }
 
     protected function getResponseHashArray($content)

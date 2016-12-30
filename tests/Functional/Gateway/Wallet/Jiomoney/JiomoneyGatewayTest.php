@@ -120,6 +120,9 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    /**
+     * Tests the case when transaction data is not found using STATUSQUERY API"
+     */
     public function testCheckPaymentStatusApiVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');

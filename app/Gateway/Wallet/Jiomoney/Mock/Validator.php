@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Jiomoney\Mock;
 
 use RZP\Base;
-use RZP\Base\JitValidator;
 use RZP\Gateway\Wallet\Jiomoney\RequestFields;
 
 class Validator extends Base\Validator
@@ -67,7 +66,7 @@ class Validator extends Base\Validator
         'txn_not_found' => 'sometimes'
     ];
 
-    protected static $statusQueryPayLoadRules = [
+    protected static $statusQueryPayloadRules = [
         'client_id' => 'required|string',
         'merchant_id' => 'required|string',
         'tran_ref_no' => 'required|string',
@@ -76,16 +75,16 @@ class Validator extends Base\Validator
 
     protected function validateTransaction($attribute, $value)
     {
-        (new JitValidator)->rules(self::$refundTransactionAttributeRules)->input($value)->validate();
+        $this->validateInput('refund_transaction_attribute', $value);
     }
 
     protected function validatePayloadData($attribute, $value)
     {
-        (new JitValidator)->rules(self::$statusQueryPayLoadRules)->input($value)->validate();
+        $this->validateInput('status_query_payload', $value);
     }
 
     protected function validateRequestHeader($attribute, $value)
     {
-        (new JitValidator)->rules(self::$statusQueryRequestHeaderRules)->input($value)->validate();
+        $this->validateInput('status_query_request_header', $value);
     }
 }

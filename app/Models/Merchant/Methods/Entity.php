@@ -226,8 +226,7 @@ class Entity extends Base\PublicEntity
 
     public function isJiomoneyEnabled()
     {
-        // return $this->getAttribute(self::JIOMONEY);
-        return true;
+        return $this->getAttribute(self::JIOMONEY);
     }
 
     public function isEmiEnabled()
