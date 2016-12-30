@@ -287,6 +287,11 @@ class EsDao
         return $this;
     }
 
+    public function search(array $params)
+    {
+        return $this->es->search($params);
+    }
+
 
     //This method should not be used on prod. We should delete the indices on prod directly.
     public function deleteIndex($indexName)

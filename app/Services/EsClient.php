@@ -65,6 +65,11 @@ class EsClient
         return $this->client->bulk($params);
     }
 
+    public function search(array $params)
+    {
+        return $this->client->search($params);
+    }
+
     public function searchNotes($params)
     {
         // If ES mock is set to true.

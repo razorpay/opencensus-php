@@ -5,13 +5,15 @@ namespace RZP\Console\Commands;
 use Illuminate\Console\Command;
 use App;
 
+use RZP\Constants\Entity;
+
 /**
  * Input:
  * - Mode
- * - Model name
+ * - Entity name
  *
  * Flow:
- * - Ensures index exists for given model
+ * - Ensures index exists for given entity
  * - Reads all data from mysql and indexes into es
  *
  * TODO:
@@ -21,12 +23,12 @@ class Index extends Command
 {
     protected $signature = 'rzp:index
                             {--mode=test : Database mode the command will run in (test|live)}
-                            {--model=    : Model name (eg. Invoice|Merchant) }';
+                            {--entity=   : Entity name (eg. item|merchant) }';
 
-    protected $description = 'Indexes model data into ES.';
+    protected $description = 'Indexes entity data into ES.';
 
     protected $mode;
-    protected $model;
+    protected $entity;
 
     public function fire()
     {
@@ -43,32 +45,30 @@ class Index extends Command
 
     protected function setOptions()
     {
-        $this->mode  = $this->option('mode');
-        $this->model = $this->option('model');
+        $this->mode   = $this->option('mode');
+        $this->entity = $this->option('entity');
     }
 
     protected function initRepo()
     {
         //
-        // Gets EsRepo instanse of model
+        // Gets es repo of entity
         //
 
-        $esRepoPath = 'RZP\\Models\\' . $this->model . '\\EsRepository';
-
+        $esRepoPath   = Entity::getEntityEsRepository($this->entity);
         $this->esRepo = new $esRepoPath;
 
-        $indexName = $this->mode . '_' . camel_case($this->model);
+        $indexName = $this->mode . '_' . $this->entity;
 
         $this->esRepo->setIndexName($indexName);
 
         //
-        // Gets entity of model
+        // Gets repo of entity
         //
 
         $this->repo = $this->app['repo'];
 
-        $accessor = snake_case($this->model);
-
+        $accessor   = $this->entity;
         $this->repo = $this->repo->$accessor;
     }
 

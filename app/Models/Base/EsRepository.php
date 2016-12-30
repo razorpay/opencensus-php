@@ -99,6 +99,34 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this;
     }
 
+    public function search(string $q)
+    {
+        //
+        // Builds query
+        //
+
+        $params = [
+            'index' => $this->indexName,
+            'type'  => $this->indexName,
+            'body'  => [
+                'query' => [
+                    'multi_match' => [
+                        'query'  => $q,
+                        'type'   => 'best_fields',
+                        'fields' => $this->getFields(),
+                    ],
+                ],
+                'highlight' => [
+                    'fields' => [
+                        '*' => new \stdClass,
+                    ],
+                ],
+            ],
+        ];
+
+        return $this->esDao->search($params);
+    }
+
     public function bulkUpdate(array $documents)
     {
         //

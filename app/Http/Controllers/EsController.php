@@ -6,6 +6,8 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Base\EsDao;
 use RZP\Trace\TraceCode;
 use Request;
+use ApiResponse;
+use RZP\Constants\Entity;
 
 class EsController extends Controller
 {
@@ -46,6 +48,25 @@ class EsController extends Controller
         // Currently, only storing notes of an entity.
         // Will change this when we move on to more things.
         $this->migrateNotes();
+    }
+
+    public function search()
+    {
+        $input = Request::all();
+
+        $entity = $input['entity'];
+
+        $esRepoPath = Entity::getEntityEsRepository($entity);
+
+        $esRepo = new $esRepoPath;
+
+        $indexName = $this->app['rzp.mode'] . '_' . $entity;
+
+        $esRepo->setIndexName($indexName);
+
+        $response = $esRepo->search($input['q']);
+
+        return ApiResponse::json($response);
     }
 
     protected function migrateNotes()
