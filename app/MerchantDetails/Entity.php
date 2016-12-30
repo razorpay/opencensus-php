@@ -155,6 +155,7 @@ class Entity extends Base\Entity
         'department',
         'contact_name',
         'business_name',
+        'contact_mobile',
     ];
 
     const UPLOAD_KEYS = [

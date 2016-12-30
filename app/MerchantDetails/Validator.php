@@ -96,6 +96,7 @@ class Validator extends Base\Validator
         'department'                    => 'sometimes|numeric|digits_between:1,6',
         'business_name'                 => 'sometimes|max:255',
         'contact_name'                  => 'sometimes|alpha_space|max:255',
+        'contact_mobile'                => 'required|numeric|digits_between:8,11',
     );
 
     const UPLOAD_KEYS = array(
