@@ -32,7 +32,7 @@ class Gateway extends Base\Gateway
 
     const FORMAT = 'YmdHis';
 
-    const DEFAULT_TXN_CHANNEL = 'WEB';
+    const TXN_CHANNEL = 'WEB';
 
     const DEFAULT_CUSTOMER_NAME = 'Dummy Name';
 
@@ -148,7 +148,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::MERCHANT_ID                                     => $this->getMerchantId(),
             RequestFields::CLIENT_ID                                       => $this->getClientId(),
-            RequestFields::CHANNEL                                         => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::CHANNEL                                         => self::TXN_CHANNEL,
             RequestFields::CALLBACK_URL                                    => $callbackUrl,
             RequestFields::TOKEN                                           => '',
             RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment[Payment::ID],
@@ -265,7 +265,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::CLIENT_ID    => $this->getClientId(),
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
-            RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
+            RequestFields::CHANNEL      => self::TXN_CHANNEL,
             RequestFields::TOKEN        => '',
             RequestFields::CALLBACK_URL => 'NA',
             RequestFields::TRANSACTION  => [
