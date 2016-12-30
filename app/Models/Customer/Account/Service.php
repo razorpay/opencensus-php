@@ -9,9 +9,19 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Device;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->device = $this->app['basicauth']->getDevice();
+
+        $this->core = new Customer\Core;
+    }
+
     /**
      * Creates Local customer entity for merchant
      * @param  array $input
@@ -29,7 +39,7 @@ class Service extends Base\Service
 
         unset($input[Entity::FAIL_EXISTING]);
 
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
+        $customer = $this->core->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
 
         return $customer->toArrayPublic();
     }
@@ -41,7 +51,7 @@ class Service extends Base\Service
      */
     public function createGlobalCustomer($input)
     {
-        $customer = (new Customer\Core)->createGlobalCustomer($input);
+        $customer = $this->core->createGlobalCustomer($input);
 
         return $customer->toArrayPublic();
     }
@@ -59,7 +69,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $customer = (new Customer\Core)->edit($customer, $input);
+        $customer = $this->core->edit($customer, $input);
 
         return $customer->toArrayPublic();
     }
@@ -77,6 +87,11 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $customer->toArrayPublic();
+    }
+
+    public function fetchByDeviceAuth()
+    {
+        return $this->device->customer->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
@@ -128,6 +143,15 @@ class Service extends Base\Service
         return $accounts->toArrayPublic();
     }
 
+    public function getDeviceCustomer()
+    {
+        $customerId = $this->device->getCustomerId();
+
+        $customer = $this->repo->customer->fetchWithVpasBankAcnts($customerId);
+
+        return $customer->toArrayPublic();
+    }
+
     /**
      * Send Oto to customer
      *
@@ -136,7 +160,7 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $data = (new Customer\Core)->sendOtp($input, $this->merchant);
+        $data = $this->core->sendOtp($input, $this->merchant);
 
         return $data;
     }
@@ -147,9 +171,28 @@ class Service extends Base\Service
      */
     public function verifyOtp($input)
     {
-        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
+        $data = $this->core->verifyOtp($input, $this->merchant);
 
         return $data;
+    }
+
+    public function fetchBankAccountsByContact($contact)
+    {
+        $contact = Customer\Validator::validateAndParseContact($contact);
+
+        // TODO: Ensure that + is always entered in the database instead
+        // of this hack
+
+        if (strlen($contact) === 13)
+        {
+            $contact = substr($contact, 1);
+        }
+
+        $merchant = $this->repo->merchant->getSharedAccount();
+
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+        return $this->repo->bank_account->getBankAccountsForCustomer($customer)->toArrayPublic();
     }
 
     /**
@@ -248,7 +291,7 @@ class Service extends Base\Service
 
             $app = (new AppToken\Core)->create($custAppInput);
 
-            (new Customer\Core)->putAppTokenInSession($app);
+            $this->core->putAppTokenInSession($app);
 
             // Fetch existing tokens if exists
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
@@ -267,6 +310,38 @@ class Service extends Base\Service
         $data = (new Customer\Raven)->updateSmsStatus($id, $input);
 
         return $data;
+    }
+
+    public function fetchBalance($accountId)
+    {
+        Entity::stripSignWithoutValidation($accountId);
+        $bankAccount = $this->repo->bank_account->findOrFail($accountId);
+
+        if ($bankAccount->getEntityId() !== $this->device->customer->getId())
+        {
+            return;
+        }
+
+        $balance = [
+            'id'     => $bankAccount->getPublicId(),
+            'amount' => '10000',
+        ];
+
+        return $balance;
+    }
+
+    public function fetchBankAccount($accountId)
+    {
+        Entity::stripSignWithoutValidation($accountId);
+
+        $bankAccount = $this->repo->bank_account->find($accountId);
+
+        if ($bankAccount->getEntityId() !== $this->device->customer->getId())
+        {
+            return;
+        }
+
+        return $bankAccount->toArrayPublic();
     }
 
     public function fetchPaymentsForGlobalCustomer($input)
@@ -386,6 +461,95 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
         return $this->repo->address->findByEntityAndId($addressId, $customer);
+    }
+
+    public function setMPINForBankAccounts($accountNumber, $creds)
+    {
+        $bankAccounts = $this->repo->bank_account->getBankAccountsFromAccountNumber($accountNumber);
+
+        $success = false;
+        $error = [];
+
+        if (isset($creds['otp']))
+        {
+            if ($creds['otp'] === '123456')
+            {
+                foreach ($bankAccounts as $bankAccount)
+                {
+                    $last6 = substr($bankAccount->getAccountNumber(), -6);
+
+                    if ($creds['expiry'] === '1224')
+                    {
+                        $bankAccount->setMpin($creds['mpin']);
+                        $this->repo->saveOrFail($bankAccount);
+
+                        $success = true;
+                    }
+                    else
+                    {
+                        $error[] = 'Invalid Expiry';
+                    }
+                }
+            }
+            else
+            {
+                $error[] = 'Invalid OTP';
+            }
+        }
+        else if (isset($creds['nmpin']))
+        {
+            foreach ($bankAccounts as $bankAccount)
+            {
+                if ($bankAccount->getMpin() === $creds['mpin'])
+                {
+                    $bankAccount->setMpin($creds['nmpin']);
+                    $this->repo->saveOrFail($bankAccount);
+
+                    $success = true;
+                }
+            }
+        }
+
+        if (!$success and empty($error))
+        {
+            $error[] = 'Invalid MPIN';
+        }
+
+        return [$success, $error];
+    }
+
+    public function setMpin($bankAccountId, $input)
+    {
+        Entity::stripSignWithoutValidation($bankAccountId);
+
+        $bankAccount = $this->repo->bank_account->find($bankAccountId);
+
+        // Confirm ownership of bank account
+        assertTrue($bankAccount->getEntityId() === $this->device->customer->getId());
+
+        $response = $this->core->sendSetMpinRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
+
+        return $response;
+    }
+
+    public function resetMpin($bankAccountId, $input)
+    {
+        Entity::stripSignWithoutValidation($bankAccountId);
+
+        $bankAccount = $this->repo->bank_account->find($bankAccountId);
+
+        // Confirm ownership of bank account
+        assertTrue($bankAccount->getEntityId() === $this->device->customer->getId());
+        $response = $this->core->sendResetMpinRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
+
+        return $response;
+    }
+
+    public function fetchUpiBankAccounts($ifsc = 'RAZR')
+    {
+        $accounts = $this->repo->bank_account->getBankAccountsForCustomer($this->device->customer, $ifsc);
+
+        return $accounts->toArrayPublic();
     }
 
     public function getCustomerBalance(string $customerId) : array

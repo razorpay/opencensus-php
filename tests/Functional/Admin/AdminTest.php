@@ -536,6 +536,8 @@ class AdminTest extends TestCase
                 'password' => 'Heimdall!432',
             ]);
 
+        $adminPublicId = $admin->getPublicId();
+
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         // Create some admin tokens
@@ -565,6 +567,21 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+
+        // Check if the associated token is deleted on logout
+        $allTokens = $this->getEntities('admin_token', [], true);
+
+        $remainingTokens =[];
+
+        foreach ($allTokens['items'] as $t)
+        {
+            if ($t['admin_id'] === $adminPublicId)
+            {
+                $remainingTokens[] = $t['token'];
+            }
+        }
+
+        $this->assertArrayNotHasKey($token, $remainingTokens);
      }
 
      public function testGetAdminByEmailOnAppAuth()

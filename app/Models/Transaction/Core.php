@@ -137,7 +137,7 @@ class Core extends Base\Core
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
@@ -170,7 +170,7 @@ class Core extends Base\Core
 
         $feeCredits = $merchantBalance->getFeeCredits();
 
-        $amount = $payment->getAmount();
+        $amount = $payment->getBaseAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
 
@@ -188,7 +188,8 @@ class Core extends Base\Core
                  ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
                  ($payment->isCard() === true) and
                  ($payment->card->isInternational() === false) and
-                 ($payment->card->isDebit() === true))
+                 ($payment->card->isDebit() === true) and
+                 (time() < 1483228800))
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
@@ -216,7 +217,7 @@ class Core extends Base\Core
         }
         // If the customer is fee bearer for the merchant
         // use the fees and service tax from both
-        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        else if ($payment->merchant->isFeeBearerCustomer())
         {
             list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -301,13 +302,13 @@ class Core extends Base\Core
         $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::SERVICE_TAX     => 0,
-            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => 'INR');
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR);
 
         $gateway = $refund->getGateway();
 
@@ -384,7 +385,7 @@ class Core extends Base\Core
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
             Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),

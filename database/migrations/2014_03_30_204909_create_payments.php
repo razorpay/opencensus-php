@@ -33,6 +33,11 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT)
                   ->unsigned();
 
+            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
+
+            $table->integer(Payment::BASE_AMOUNT)
+                  ->unsigned();
+
             $table->string(Payment::METHOD);
 
             $table->string(Payment::STATUS);
@@ -57,14 +62,16 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Payment::BASE_AMOUNT_REFUNDED)
+                  ->unsigned()
+                  ->default(0);
+
             $table->integer(Payment::AMOUNT_TRANSFERRED)
                   ->unsigned()
                   ->default(0);
 
             $table->string(Payment::REFUND_STATUS)
                   ->nullable();
-
-            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
             $table->string(Payment::DESCRIPTION)
                   ->nullable();
@@ -177,6 +184,9 @@ class CreatePayments  extends Migration
                   ->default(0);
 
             $table->tinyInteger(Payment::LATE_AUTHORIZED)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::CONVERT_CURRENCY)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
