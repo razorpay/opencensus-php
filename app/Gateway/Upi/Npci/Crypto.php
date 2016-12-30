@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Npci;
 
 use DOMDocument;
+use phpseclib\Crypt\RSA;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RobRichards\XMLSecLibs\XMLSecEnc;
 
