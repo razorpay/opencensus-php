@@ -177,10 +177,8 @@ class JiomoneyGatewayTest extends TestCase
         {
             $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            // It's a redirect url. Airtelmoney use callback flow for payment authorization.
-            $request = [
-                'url' => $requestUrl,
-            ];
+            // It's a redirect url. Jiomoney use callback flow for payment authorization.
+            $request = ['url' => $requestUrl];
 
             return $this->submitPaymentCallbackRequest($request);
         }

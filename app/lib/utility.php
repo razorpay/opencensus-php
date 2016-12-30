@@ -124,8 +124,6 @@ if (! function_exists('random_alphanum_string'))
     }
 }
 
-if
-
 if (! function_exists('get_var_in_string'))
 {
     function get_var_in_string($var)

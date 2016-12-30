@@ -117,6 +117,10 @@ class Server extends Base\Mock\Server
 
     protected function getAuthorizedFailedResponse(array $input)
     {
+        $date = $this->getFormattedTimeStamp(
+            Carbon::now('Asia/Kolkata')->timestamp,
+            self::TXN_DATE_FORMAT),
+
         return
         [
             ResponseFields::STATUS_CODE             => StatusCode::INTERNAL_ERROR,
@@ -128,8 +132,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                  => $input[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
             ResponseFields::RESPONSE_CODE           => 'FAILED',
             ResponseFields::RESPONSE_DESCRIPTION    => 'NA',
-            ResponseFields::DATE                    => $this->getFormattedTimeStamp(Carbon::now('Asia/Kolkata')->timestamp,
-                                                            self::TXN_DATE_FORMAT),
+            ResponseFields::DATE                    => $date,
             ResponseFields::CARD_NUMBER             => 'NA',
             ResponseFields::CARD_TYPE               => 'NA',
             ResponseFields::CARD_NETWORK            => 'NA'
