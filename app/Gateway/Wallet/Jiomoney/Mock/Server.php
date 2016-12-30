@@ -35,10 +35,9 @@ class Server extends Base\Mock\Server
             $content = $this->getAuthorizeSuccessResponse($input);
         }
 
-        $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        $this->content($content);
 
-        $gatewayResponse = [];
-        $gatewayResponse['response'] = implode('|', array_values($content));
+        $gatewayResponse = $this->getGatewayResponse($content);
 
         $redirectUrl .= '?' . http_build_query($gatewayResponse);
 
@@ -64,10 +63,9 @@ class Server extends Base\Mock\Server
             $content = $this->getRefundSuccessResponse($input);
         }
 
-        $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        $this->content($content);
 
-        $gatewayResponse = [];
-        $gatewayResponse['response'] = implode('|', array_values($content));
+        $gatewayResponse = $this->getGatewayResponse($content);
 
         return $this->makeResponse($gatewayResponse);
     }
@@ -80,6 +78,10 @@ class Server extends Base\Mock\Server
 
         $response = [];
 
+        /**
+         * CHECKPAYMENTSTATUS API has a string request so json_decode returns
+         * null in this case.
+         */
         if ($decodedInput !== null)
         {
             $this->verifyStatusQueryHash($decodedInput);
@@ -112,7 +114,19 @@ class Server extends Base\Mock\Server
             $response = $this->getCheckPaymentStatusResponse($input);
         }
 
+        $this->content($content);
+
         return $this->makeResponse($response);
+    }
+
+    protected function getGatewayResponse(array $content)
+    {
+        $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+
+        $gatewayResponse = [];
+        $gatewayResponse['response'] = implode('|', array_values($content));
+
+        return $gatewayResponse;
     }
 
     protected function getAuthorizedFailedResponse(array $input)
@@ -121,15 +135,22 @@ class Server extends Base\Mock\Server
             Carbon::now('Asia/Kolkata')->timestamp,
             self::TXN_DATE_FORMAT);
 
+        $paymentId = $input[Jiomoney\Gateway::getFormattedRequestField(
+                                RequestFields::TRANSACTION,
+                                RequestFields::PAYMENT_ID)];
+
+        $amount = $input[Jiomoney\Gateway::getFormattedRequestField(RequestFields::TRANSACTION,
+                            RequestFields::AMOUNT)];
+
         return
         [
             ResponseFields::STATUS_CODE             => StatusCode::INTERNAL_ERROR,
             ResponseFields::CLIENT_ID               => $input[RequestFields::CLIENT_ID],
             ResponseFields::MERCHANT_ID             => $input[RequestFields::MERCHANT_ID],
             ResponseFields::CUSTOMER_ID             => 'NA',
-            ResponseFields::PAYMENT_ID              => $input[RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID],
+            ResponseFields::PAYMENT_ID              => $paymentId,
             ResponseFields::GATEWAY_PAYMENT_ID      => $this->getJioMoneyTxnId(),
-            ResponseFields::AMOUNT                  => $input[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
+            ResponseFields::AMOUNT                  => $amount,
             ResponseFields::RESPONSE_CODE           => 'FAILED',
             ResponseFields::RESPONSE_DESCRIPTION    => 'NA',
             ResponseFields::DATE                    => $date,
@@ -141,19 +162,29 @@ class Server extends Base\Mock\Server
 
     protected function getAuthorizeSuccessResponse(array $input)
     {
+        $date = $this->getFormattedTimeStamp(
+                        Carbon::now('Asia/Kolkata')->timestamp,
+                        self::TXN_DATE_FORMAT);
+
+        $paymentId = $input[Jiomoney\Gateway::getFormattedRequestField(
+                                RequestFields::TRANSACTION,
+                                RequestFields::PAYMENT_ID)];
+
+        $amount = $input[Jiomoney\Gateway::getFormattedRequestField(RequestFields::TRANSACTION,
+                                RequestFields::AMOUNT)];
+
         return
         [
             ResponseFields::STATUS_CODE             => StatusCode::SUCCESS,
             ResponseFields::CLIENT_ID               => $input[RequestFields::CLIENT_ID],
             ResponseFields::MERCHANT_ID             => $input[RequestFields::MERCHANT_ID],
             ResponseFields::CUSTOMER_ID             => 'NA',
-            ResponseFields::PAYMENT_ID              => $input[RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID],
+            ResponseFields::PAYMENT_ID              => $paymentId,
             ResponseFields::GATEWAY_PAYMENT_ID      => $this->getJioMoneyTxnId(),
-            ResponseFields::AMOUNT                  => $input[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
+            ResponseFields::AMOUNT                  => $amount,
             ResponseFields::RESPONSE_CODE           => 'SUCCESS',
             ResponseFields::RESPONSE_DESCRIPTION    => 'APPROVED',
-            ResponseFields::DATE                    => $this->getFormattedTimeStamp(Carbon::now('Asia/Kolkata')->timestamp,
-                                                            self::TXN_DATE_FORMAT),
+            ResponseFields::DATE                    => $date,
             ResponseFields::CARD_NUMBER             => 'NA',
             ResponseFields::CARD_TYPE               => 'JM',
             ResponseFields::CARD_NETWORK            => 'NA'
@@ -162,6 +193,10 @@ class Server extends Base\Mock\Server
 
     protected function getRefundFailedResponse(array $input)
     {
+        $date = $this->getFormattedTimeStamp(
+                        Carbon::now('Asia/Kolkata')->timestamp,
+                        self::TXN_DATE_FORMAT);
+
         return
         [
             ResponseFields::STATUS_CODE             => StatusCode::INTERNAL_ERROR,
@@ -173,8 +208,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                  => $input[RequestFields::TRANSACTION][RequestFields::AMOUNT],
             ResponseFields::RESPONSE_CODE           => 'FAILED',
             ResponseFields::RESPONSE_DESCRIPTION    => 'NA',
-            ResponseFields::DATE                    => $this->getFormattedTimeStamp(Carbon::now('Asia/Kolkata')->timestamp,
-                                                            self::TXN_DATE_FORMAT),
+            ResponseFields::DATE                    => $date,
             ResponseFields::CARD_NUMBER             => 'NA',
             ResponseFields::CARD_TYPE               => 'JM',
             ResponseFields::CARD_NETWORK            => 'NA'
@@ -183,6 +217,10 @@ class Server extends Base\Mock\Server
 
     protected function getRefundSuccessResponse(array $input)
     {
+        $date = $this->getFormattedTimeStamp(
+                        Carbon::now('Asia/Kolkata')->timestamp,
+                        self::TXN_DATE_FORMAT);
+
         return
         [
             ResponseFields::STATUS_CODE             => StatusCode::SUCCESS,
@@ -194,8 +232,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                  => $input[RequestFields::TRANSACTION][RequestFields::AMOUNT],
             ResponseFields::RESPONSE_CODE           => 'SUCCESS',
             ResponseFields::RESPONSE_DESCRIPTION    => 'APPROVED',
-            ResponseFields::DATE                    => $this->getFormattedTimeStamp(Carbon::now('Asia/Kolkata')->timestamp,
-                                                            self::TXN_DATE_FORMAT),
+            ResponseFields::DATE                    => $date,
             ResponseFields::CARD_NUMBER             => 'NA',
             ResponseFields::CARD_TYPE               => 'JM',
             ResponseFields::CARD_NETWORK            => 'NA'
@@ -204,6 +241,10 @@ class Server extends Base\Mock\Server
 
     protected function getCheckPaymentStatusResponse(array $input)
     {
+        $date = $this->getFormattedTimeStamp(
+                        Carbon::now('Asia/Kolkata')->timestamp,
+                        self::TXN_DATE_FORMAT);
+
         return
         [
             'RESPONSE' => [
@@ -211,15 +252,14 @@ class Server extends Base\Mock\Server
                     'STATUS' => 'SUCCESS',
                 ],
                 'CHECKPAYMENTSTATUS' => [
-                    'MID' => $input[RequestFields::MERCHANT_ID],
-                    'TRAN_REF_NO' => $input[RequestFields::PAYMENT_ID],
+                    'MID'            => $input[RequestFields::MERCHANT_ID],
+                    'TRAN_REF_NO'    => $input[RequestFields::PAYMENT_ID],
                     'JM_TRAN_REF_NO' => '100',
-                    'TXN_TIME_STAMP' => $this->getFormattedTimeStamp(Carbon::now('Asia/Kolkata')->timestamp,
-                                            self::TXN_DATE_FORMAT),
-                    'CARD_NO' => 'NA',
-                    'TXN_TYPE' => 'JM',
-                    'TXN_STATUS' => 'SUCCESS',
-                    'ERROR_CODE' => '000'
+                    'TXN_TIME_STAMP' => $date,
+                    'CARD_NO'        => 'NA',
+                    'TXN_TYPE'       => 'JM',
+                    'TXN_STATUS'     => 'SUCCESS',
+                    'ERROR_CODE'     => '000'
                 ]
             ]
         ];
@@ -242,19 +282,19 @@ class Server extends Base\Mock\Server
         return
         [
             'response_header' => [
-                'version' => '1.0',
-                'api_name' => 'STATUSQUERY',
+                'version'    => '1.0',
+                'api_name'   => 'STATUSQUERY',
                 'api_status' => '0',
-                'api_msg' => 'Transaction not found'
+                'api_msg'    => 'Transaction not found'
             ],
             'payload_data' => [
-                'client_id' => null,
-                'merchant_id' => null,
-                'tran_ref_no' => null,
+                'client_id'      => null,
+                'merchant_id'    => null,
+                'tran_ref_no'    => null,
                 'jm_tran_ref_no' => null,
-                'txn_amount' => null,
-                'txn_type' => null,
-                'txn_status' => null
+                'txn_amount'     => null,
+                'txn_type'       => null,
+                'txn_status'     => null
             ]
         ];
     }
@@ -264,19 +304,19 @@ class Server extends Base\Mock\Server
         return
         [
             'response_header' => [
-                'version' => '1.0',
-                'api_name' => 'STATUSQUERY',
+                'version'    => '1.0',
+                'api_name'   => 'STATUSQUERY',
                 'api_status' => '1',
-                'api_msg' => 'Transaction Fetched Successfully'
+                'api_msg'    => 'Transaction Fetched Successfully'
             ],
             'payload_data' => [
-                'client_id' => $input['payload_data']['client_id'],
-                'merchant_id' => $input['payload_data']['merchant_id'],
-                'tran_ref_no' => $input['payload_data']['tran_ref_no'],
+                'client_id'      => $input['payload_data']['client_id'],
+                'merchant_id'    => $input['payload_data']['merchant_id'],
+                'tran_ref_no'    => $input['payload_data']['tran_ref_no'],
                 'jm_tran_ref_no' => $this->getJioMoneyTxnId(),
-                'txn_amount' => '5.00',
-                'txn_type' => 'JM',
-                'txn_status' => 'SUCCESS'
+                'txn_amount'     => '5.00',
+                'txn_type'       => 'JM',
+                'txn_status'     => 'SUCCESS'
             ]
         ];
     }

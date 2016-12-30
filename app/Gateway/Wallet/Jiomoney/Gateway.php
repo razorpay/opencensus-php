@@ -44,6 +44,9 @@ class Gateway extends Base\Gateway
      */
     const STATUS_QUERY_API_VERSION = '1.0';
 
+    // Status code returned by jiomoney on successful transaction
+    const SUCCESS_STATUS = 'SUCCESS';
+
     protected $gateway = 'wallet_jiomoney';
 
     protected $sortRequestContent = false;
@@ -419,70 +422,35 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($this->getGatewayTxnStatus($content) === 'SUCCESS')
+        $verify->apiSuccess = true;
+
+        // apiSuccess if false if the payment entity is in failed or created state
+        if (($input['payment']['status'] === Payment\Status::FAILED) or
+                ($input['payment']['status'] === Payment\Status::CREATED))
         {
-            $this->verifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify);
+            $verify->apiSuccess = false;
         }
-        else
+
+        $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === self::SUCCESS_STATUS) ? true : false;
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $this->verifyStatusOnGatewayFailure($gatewayPayment, $input, $verify);
+            $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
+        // save the gateway payment entity with verify response values if there is a status mismatch
         if ($verify->match === false)
         {
-            $verify->payment = $this->saveVerifyContent($gatewayPayment,
-                                                        $verify);
+            $verify->payment = $this->saveVerifyContent($verify);
         }
     }
 
-    protected function verifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
+    protected function saveVerifyContent($verify)
     {
-        $verify->gatewaySuccess = true;
+        $gatewayPayment = $verify->payment;
 
-        $content = $verify->verifyResponseContent;
-
-        if (($input['payment']['status'] !== Payment\Status::CREATED) and
-                ($input['payment']['status'] !== Payment\Status::FAILED))
-        {
-            $verify->apiSuccess = true;
-        }
-        else
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-
-            $verify->apiSuccess = false;
-        }
-    }
-
-    public function verifyStatusOnGatewayFailure($gatewayPayment, array $input, $verify)
-    {
-        $verify->gatewaySuccess = false;
-
-        $content = $verify->verifyResponseContent;
-
-        if (($gatewayPayment === null) or
-            (($input['payment']['status'] === 'failed') or
-                ($input['payment']['status'] === 'created')))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if (($gatewayPayment['received'] === false) and
-                 (($gatewayPayment['status_code'] === null) or
-                    ($gatewayPayment[Entity::STATUS_CODE] !== StatusCode::SUCCESS)))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if ($gatewayPayment[Entity::STATUS_CODE] === StatusCode::SUCCESS)
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = true;
-        }
-    }
-
-    protected function saveVerifyContent($gatewayPayment, $verify)
-    {
         if ($verify->gatewaySuccess === true)
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($verify);
@@ -491,8 +459,6 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment->saveOrFail();
         }
-
-        $this->action = Action::VERIFY;
 
         return $gatewayPayment;
     }
@@ -510,7 +476,7 @@ class Gateway extends Base\Gateway
             Entity::EMAIL                        => $payment[Payment\Entity::EMAIL],
             Entity::CONTACT                      => $payment[Payment\Entity::CONTACT],
             ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
-            ResponseFields::RESPONSE_CODE        => 'SUCCESS',
+            ResponseFields::RESPONSE_CODE        => self::SUCCESS_STATUS,
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
             ResponseFields::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
         );
