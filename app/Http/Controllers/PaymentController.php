@@ -169,6 +169,13 @@ class PaymentController extends Controller
         return ApiResponse::json($refunds);
     }
 
+    public function getTransactionForPayment($paymentId)
+    {
+        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
+
+        return ApiResponse::json($transaction);
+    }
+
     public function postTimeout()
     {
         $data = $this->payment->timeoutOldPayments();

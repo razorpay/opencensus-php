@@ -42,10 +42,6 @@ class Core extends Base\Core
 
         $this->repo->deleteOrFail($perm);
 
-        $ret = $perm->toArrayDeleted();
-
-        $ret = array_merge($ret, ['success' => true]);
-
-        return $ret;
+        return $perm->toArrayDeleted();
     }
 }

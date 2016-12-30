@@ -5,13 +5,13 @@ namespace RZP\Tests\Functional\Admin\AuthPolicy;
 use Hash;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 use RZP\Models\Admin\Admin;
 
 class AuthPolicyTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -20,6 +20,12 @@ class AuthPolicyTest extends TestCase
         parent::setUp();
 
         $this->org = $this->createOrg();
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken);
+
+        $this->adminRepo = (new Admin\Repository);
     }
 
     public function testAdminLogin()
@@ -33,8 +39,6 @@ class AuthPolicyTest extends TestCase
 
     public function testWeakPassword()
     {
-        $this->ba->adminAuth();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -46,8 +50,6 @@ class AuthPolicyTest extends TestCase
 
     public function testShortPassword()
     {
-        $this->ba->adminAuth();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -59,8 +61,6 @@ class AuthPolicyTest extends TestCase
 
     public function testLongPassword()
     {
-        $this->ba->adminAuth();
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -97,8 +97,6 @@ class AuthPolicyTest extends TestCase
 
     public function testPasswordRetainPolicy()
     {
-        $this->ba->adminAuth();
-
         $oldPasswords = [
             // 123456
             '$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW',
@@ -136,15 +134,13 @@ class AuthPolicyTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->adminRepo->findOrFailPublic($admin->getId());
 
         $this->assertFalse(Hash::check('@#12$%^&dfgh', $admin['password']));
     }
 
     public function testPasswordRetainPolicyWithNewPassword()
     {
-        $this->ba->adminAuth();
-
         $oldPasswords = [
             // 123456
             '$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW',
@@ -182,7 +178,7 @@ class AuthPolicyTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->adminRepo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check('@#12$%^&dfghq', $admin['password']));
         $this->assertFalse(in_array('$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW', $admin['old_passwords']));
@@ -209,5 +205,20 @@ class AuthPolicyTest extends TestCase
                     'email'         => 'random@rzp.com',
                     'email_domains' => 'rzp.com',
         ]);
+    }
+
+    public function testAccessWithWrongOrg()
+    {
+        // Sign In using razorpay org
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@testemail.com',
+            'email_domains' => 'rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
     }
 }

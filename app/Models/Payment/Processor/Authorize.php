@@ -12,11 +12,13 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Order;
@@ -48,6 +50,8 @@ trait Authorize
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
+        $this->processCurrencyConversions($payment);
+
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
@@ -200,6 +204,7 @@ trait Authorize
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
+        //
         //
         if ($request !== null)
         {
@@ -396,13 +401,24 @@ trait Authorize
             return;
         }
 
-        if ($payment->isWallet())
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            return;
+        }
+
+        if ($payment->isWallet() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
         else
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 
@@ -418,7 +434,7 @@ trait Authorize
         $merchant = $payment->merchant;
 
         // Ensure that the merchant is allowed to do recurring payments.
-        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
 
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
@@ -465,7 +481,7 @@ trait Authorize
         //
         // Call gateway input
         //
-        $gatewayInput['payment'] = $payment->toArray();
+        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -493,6 +509,8 @@ trait Authorize
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
         $gatewayInput = [];
+
+        $this->processCurrencyConversions($payment);
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
@@ -607,7 +625,7 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
         }
 
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
@@ -619,11 +637,11 @@ trait Authorize
         {
             if ($payment->isWallet())
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
             }
             else
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2S);
             }
         }
     }
@@ -634,6 +652,44 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
+        }
+    }
+
+    protected function processCurrencyConversions(Payment\Entity $payment)
+    {
+        $currency = $payment->getCurrency();
+
+        $merchant = $payment->merchant;
+
+        if ($currency !== Payment\Currency::INR)
+        {
+            // mcc is supported only for merchants where this flag is set to true or false
+            // or merchant is not fee bearer
+            if (($merchant->convertOnApi() === null) or
+                ($merchant->isFeeBearerCustomer() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            }
+
+            // mcc is supported only for card payments
+            if ($payment->isCard() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+
+            }
+        }
+
+        $amount = $payment->getAmount();
+
+        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
+
+        $payment->setBaseAmount($baseAmount);
+
+        if ($payment->isCard() === true)
+        {
+            $payment->setConvertCurrency($payment->merchant->convertOnApi());
         }
     }
 
@@ -1650,8 +1706,9 @@ trait Authorize
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    "$feature is not supported");
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 

@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'admin';
 
+    protected $appFetchParamRules = [
+        Entity::EMAIL => 'sometimes|email',
+    ];
+
     public function findByEmail($email)
     {
         $email = strtolower($email);

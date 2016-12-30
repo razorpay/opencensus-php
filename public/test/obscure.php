@@ -108,7 +108,17 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
+<<<<<<< HEAD
             <td><input type="text" name="amount" size="25" value="1000"></td>
+=======
+            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td>
+            <select name="currency">
+                <option value="INR">Indian Rupee</option>
+                <option value="USD">US Dollar</option>
+            </select>
+        </td>
+>>>>>>> bc2ef8e2fa5b5e3e581341a3d3edcf4a32cf64b2
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
@@ -160,7 +170,15 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 
 <form name ="capture" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="capture_id" placeholder = "Enter payment id to capture"/>
+<<<<<<< HEAD
 <input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="1000" />
+=======
+<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="500" />
+<select name="currency">
+    <option value="INR">Indian Rupee</option>
+    <option value="USD">US Dollar</option>
+</select>
+>>>>>>> bc2ef8e2fa5b5e3e581341a3d3edcf4a32cf64b2
 <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>
 

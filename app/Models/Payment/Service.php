@@ -66,6 +66,23 @@ class Service extends Base\Service
         return $this->getNewProcessor()->process($input);
     }
 
+    /**
+     * Processes a upi payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processUpi(array $input)
+    {
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'upi';
+
+        return $this->getNewProcessor()->process($input);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         return $this->getNewProcessor()->processAndReturnFees($input);
@@ -334,6 +351,17 @@ class Service extends Base\Service
         $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
+    }
+
+    public function fetchTransactionByPaymentId($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $transaction->toArrayPublic();
     }
 
     /**
@@ -957,7 +985,7 @@ class Service extends Base\Service
         Mail::send(
             'emails.merchant.authorized_reminder',
             $data,
-            function ($message) use ($subject, $emails, $name)
+            function ($message) use ($subject, $emails, $name, $data)
             {
 
                 foreach ($emails as $email)
@@ -970,6 +998,12 @@ class Service extends Base\Service
                 $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
+
+                $headers = $message->getHeaders();
+
+                foreach ($data['payments'] as $payment) {
+                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                }
             });
     }
 

@@ -91,12 +91,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
+        $this->app->singleton('upi.client', function($app)
+        {
+            return new \Razorpay\UPI\Client;
+        });
 
         $this->registerApiMutex();
 
         $this->registerMaxMind();
 
         $this->registerBitly();
+
+        $this->registerExchange();
 
         $this->registerValidatorResolver();
 
@@ -113,19 +119,21 @@ class ApiServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return array(
-            'mailgun',
-            'instance',
+            'api.mutex',
+            'bitly',
+            'card.tokenex',
+            'es',
             'exception.handler',
             'gateway',
-            'webhook.inferno',
-            'card.tokenex',
-            'api.mutex',
+            'instance',
+            'mailgun',
+            'maxmind',
             'raven',
             'repo',
-            'es',
-            'maxmind',
-            'bitly',
             'segment',
+            'upi.client',
+            'webhook.inferno',
+            'exchange',
         );
     }
 
@@ -181,6 +189,21 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerExchange()
+    {
+        $this->app->singleton('exchange', function($app)
+        {
+            $exchangeMock = $app['config']->get('applications.exchange.mock');
+
+            if ($exchangeMock === true)
+            {
+                return new Mock\Exchange($app);
+            }
+
+            return new Exchange($app);
+        });
+    }
+
     protected function registerApiMutex()
     {
         $this->app->singleton('api.mutex', function($app)
@@ -207,7 +230,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'permission'      => Admin\Permission\Entity::class,
             'invoice'         => Invoice\Entity::class,
             'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\MerchantDetail\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
         ]);
     }
 }

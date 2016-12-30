@@ -26,8 +26,6 @@ class Gateway extends Base\Gateway
         AuthFields::AMOUNT => 'amount'
     ];
 
-    protected $request = true;
-
     const STATUS_MATCH = GatewayBase\VerifyResult::STATUS_MATCH;
 
     const STATUS_MISMATCH = GatewayBase\VerifyResult::STATUS_MISMATCH;
@@ -56,8 +54,6 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         $this->traceGatewayPaymentResponse($content, $input);
-
-        $this->request = false;
 
         $this->verifySecureHash($content);
 
@@ -117,8 +113,6 @@ class Gateway extends Base\Gateway
     public function verifyPayment($verify)
     {
         $response = $verify->verifyResponseContent;
-
-        $this->request = false;
 
         $this->verifySecureHash($response);
 
@@ -196,9 +190,7 @@ class Gateway extends Base\Gateway
             AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
         ];
 
-        $this->request = true;
-
-        $data[AuthFields::HASH] = $this->generateHash($data);
+        $data[AuthFields::HASH] = $this->getHashOfArray($data, true);
 
         return $data;
     }
@@ -246,8 +238,6 @@ class Gateway extends Base\Gateway
 
         $responseArray = $this->jsonToArray($content);
 
-        $this->request = false;
-
         $this->verifySecureHash($responseArray);
 
         $this->trace->info(
@@ -284,9 +274,7 @@ class Gateway extends Base\Gateway
             VerifyFields::AMOUNT                   => "$amount"
         ];
 
-        $this->request = true;
-
-        $data[VerifyFields::HASH] = $this->generateHash($data);
+        $data[VerifyFields::HASH] = $this->getHashOfArray($data, true);
 
         return json_encode($data);
     }
@@ -296,8 +284,6 @@ class Gateway extends Base\Gateway
         $response = $this->jsonToArray($content);
 
         $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
-
-        $this->request = false;
 
         $this->verifySecureHash($responseArray);
 
@@ -328,9 +314,7 @@ class Gateway extends Base\Gateway
             RefundFields::AMOUNT            => "$amount"
         ];
 
-        $this->request = true;
-
-        $hash = $this->generateHash($request);
+        $hash = $this->getHashOfArray($request, true);
 
         $request[RefundFields::HASH] = $hash;
 
@@ -410,9 +394,9 @@ class Gateway extends Base\Gateway
     /*
      * Overrides the default method contained in Base/Gateway
      */
-    protected function getHashOfArray($content)
+    protected function getHashOfArray($content, $request = false)
     {
-        $hashString = $this->getStringToHash($content, '#');
+        $hashString = $this->getStringToHash($content, '#', $request);
 
         return $this->getHashOfString($hashString);
     }
@@ -420,7 +404,7 @@ class Gateway extends Base\Gateway
     /*
      * Overrides the default method contained in Base/Gateway
      */
-    protected function getStringToHash($content, $glue = '')
+    protected function getStringToHash($content, $glue = '', $request = false)
     {
         switch ($this->action)
         {
@@ -433,7 +417,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Action::VERIFY:
-                if ($this->request === true)
+                if ($request === true)
                 {
                     $data = $this->getVerifyRequestHashArray($content);
                 }
@@ -444,7 +428,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Action::REFUND:
-                if ($this->request === true)
+                if ($request === true)
                 {
                     $data = $this->getRefundRequestHashArray($content);
                 }

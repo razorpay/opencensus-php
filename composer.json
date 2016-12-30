@@ -10,7 +10,7 @@
         "laravelcollective/bus": "^5.2",
         "maatwebsite/excel": "~2.1.0",
         "mailgun/mailgun-php": "~2.0",
-        "aws/aws-sdk-php-laravel": "~3.0",
+        "aws/aws-sdk-php-laravel": "3.1.0",
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-f/queue-with-retry",
         "cebe/markdown": "~1.0.1",
@@ -23,8 +23,11 @@
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
         "minfraud/http": "^1.70",
+        "razorpay/upi-clients": "dev-master",
+        "robrichards/xmlseclibs": "^2.0.1",
         "bjeavons/zxcvbn-php": "^0.2.0",
-        "doctrine/dbal": "^2.5"
+        "doctrine/dbal": "^2.5",
+        "guzzlehttp/promises": "1.2.0"
     },
     "repositories": [
         {
@@ -34,6 +37,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/slack.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/upi-clients.git"
         }
     ],
     "require-dev": {

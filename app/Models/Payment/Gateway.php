@@ -18,22 +18,23 @@ class Gateway
     const AXIS_GENIUS        = 'axis_genius';
     const AXIS_MIGS          = 'axis_migs';
     const BILLDESK           = 'billdesk';
+    const CYBERSOURCE        = 'cybersource';
     const EBS                = 'ebs';
+    const FIRST_DATA         = 'first_data';
     const HDFC               = 'hdfc';
     const MOBIKWIK           = 'mobikwik';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
+    const PAYTM              = 'paytm';
+    const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
-    const WALLET_OLAMONEY    = 'wallet_olamoney';
-    const WALLET_PAYZAPP     = 'wallet_payzapp';
-    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const UPI_IDFC           = 'upi_idfc';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
-    const CYBERSOURCE        = 'cybersource';
-    const FIRST_DATA         = 'first_data';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -121,7 +122,8 @@ class Gateway
         ),
 
         Method::UPI => array(
-            self::UPI_ICICI
+            self::UPI_ICICI,
+            self::UPI_IDFC,
         ),
     );
 
@@ -148,7 +150,8 @@ class Gateway
      */
     public static $reverse = [
         self::CYBERSOURCE,
-        self::FIRST_DATA
+        self::FIRST_DATA,
+        self::AXIS_MIGS,
     ];
 
 
@@ -160,7 +163,8 @@ class Gateway
      * @var array
      */
     public static $asynchronous = array(
-        self::UPI_ICICI
+        self::UPI_ICICI,
+        self::UPI_IDFC,
     );
 
     /**
@@ -220,6 +224,7 @@ class Gateway
 
     public static $upiToGatewayMap = array(
         Upi::ICICI  => Gateway::UPI_ICICI,
+        Upi::IDFC   => Gateway::UPI_IDFC,
     );
 
     /**
@@ -246,6 +251,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::UPI_ICICI,
+        self::UPI_IDFC,
     );
 
     /**
@@ -266,11 +272,11 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = array(
-        Gateway::HDFC,
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::HDFC,
     );
 
     /**
@@ -279,11 +285,11 @@ class Gateway
      * @var array
      */
     public static $domesticCardGateways = array(
-        Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::HDFC,
     );
 
     /**

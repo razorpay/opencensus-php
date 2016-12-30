@@ -93,4 +93,9 @@ class Entity extends Base\Entity
 
         return true;
     }
+
+    public function getBankPaymentId()
+    {
+        return $this->getAttribute('bank_payment_id');
+    }
 }

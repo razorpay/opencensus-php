@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
 
@@ -487,7 +487,9 @@ class Gateway extends Base\Gateway
 
             $response['content'] = '';
 
-            Hdfc\ErrorHandler::setTimeoutError($response);
+            $curlErrorMessage = strtolower($e->getData()['message']);
+
+            Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
 
             return;
         }
@@ -691,7 +693,8 @@ class Gateway extends Base\Gateway
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
-            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004) or
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00013))
         {
             $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
         }

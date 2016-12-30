@@ -163,6 +163,7 @@ class OrderTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
         $feesArray = $this->validateFees($payment);
+
         $this->ba->privateAuth();
 
         $amount = $payment['amount'];
@@ -309,6 +310,25 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
 
         $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testUsdPaymentOnApiWithOrder()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $this->fixtures->create('order', [
+            'amount' => 5000,
+            'currency' => 'USD',
+            'receipt' => 'random receipt']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
     }
 
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')

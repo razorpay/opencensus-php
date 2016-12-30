@@ -38,7 +38,7 @@ class Service extends Base\Service
             $this->markSubmitted($merchantDetails);
         }
 
-        return $response;
+        return $this->createResponse($merchantDetails);
     }
 
     public function uploadActivationFile(array $input)
@@ -72,13 +72,13 @@ class Service extends Base\Service
         return $this->createResponse($merchantDetails);
     }
 
-    public function lockMerchantDetails($id, array $input)
+    public function editMerchantDetails($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $merchantDetails->edit($input, 'lock');
+        $merchantDetails->edit($input, 'editAfterLock');
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -93,9 +93,9 @@ class Service extends Base\Service
         {
             $this->trace->info(
                 TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id'    => $this->merchant->getId() ]);
+                [ 'merchant_id'    => $merchant->getId() ]);
 
-            $merchantDetails = $this->createMerchantDetails($this->merchant, $input);
+            $merchantDetails = $this->createMerchantDetails($merchant, $input);
         }
 
         return $merchantDetails;
@@ -122,7 +122,7 @@ class Service extends Base\Service
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Detail\Entity::SUBMIT]) === true) and
-                ($input[Detail\Entity::SUBMIT] === true));
+                    ($input[Detail\Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -168,7 +168,17 @@ class Service extends Base\Service
 
         // List of all the required fields which are not set
         $detailsKeys = array_keys($merchantDetailsArr);
-        $requiredFields = array_diff($detailsKeys, ValidationFields::DASHBOARD_FIELDS);
+
+        $requiredFields = [];
+
+        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
+        {
+            if ((array_key_exists($key, $merchantDetailsArr) === false) or
+                (is_null($merchantDetailsArr[$key]) === true))
+            {
+                $requiredFields[] = $key;
+            }
+        }
 
         if (count($requiredFields) > 0)
         {

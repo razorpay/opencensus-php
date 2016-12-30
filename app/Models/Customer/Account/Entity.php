@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
 
     const FAIL_EXISTING         = 'fail_existing';
 
+    const VPAS                  = 'vpas';
+    const BANK_ACCOUNTS         = 'bank_accounts';
+
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
@@ -54,16 +57,21 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::SHIPPING_ADDRESS,
         self::CREATED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $defaults = array(
@@ -185,6 +193,16 @@ class Entity extends Base\PublicEntity
     public function tokens()
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+
+    public function vpas()
+    {
+        return $this->hasMany('RZP\Models\Upi\Vpa\Entity');
+    }
+
+    public function bank_accounts()
+    {
+        return $this->hasMany('RZP\Models\BankAccount\Entity', 'entity_id');
     }
 
     // ----------------------------------- END RELATIONS -----------------------------------

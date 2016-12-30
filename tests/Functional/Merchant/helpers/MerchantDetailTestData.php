@@ -7,6 +7,22 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
+    'testGetMerchantDetails' => [
+        'request' => [
+            'url' => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testUpdateIFSCCode' => [
         'request' => [
             'content' =>[
@@ -18,6 +34,44 @@ return [
         'response' => [
             'content' => [
                 "bank_branch_ifsc" => "ICIC0000002",
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testSubmit' => [
+        'request' => [
+            'content' =>[
+                "submit"=> true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "submitted" => 1,
+                "verification" => [
+                    "status" => "pending"
+                ],
+                "can_submit" => true,
+            ],
+        ],
+    ],
+
+    'testSubmitWithInvalidFields' => [
+        'request' => [
+            'content' =>[
+                "submit"=> true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
                 "verification" => [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
@@ -40,6 +94,72 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid IFSC Code',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateEmail' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email"=>"a.b@c.com,a.c@d.com"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "transaction_report_email"=>"a.b@c.com,a.c@d.com",
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testUpdateEmails' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email"=>"a.b@c.com,a.c"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: a.c',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateEmailWithFailure' => [
+        'request' => [
+            'content' =>[
+                "transaction_report_email" =>"a.b"
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: a.b',
                 ],
             ],
             'status_code' => 400,
@@ -79,7 +199,7 @@ return [
                 "locked" => true
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -93,25 +213,83 @@ return [
         ],
     ],
 
+    'testCommentMerchant' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testCommentForLockedMerchant' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testCommentMerchantWithNoMerchantDetail' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testLockMerchantWithInvalidParams' => [
         'request' => [
             'content' =>[
+                'contact_name' => 'abcd',
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The locked field is required.',
+                    'description' => 'contact_name is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED',
         ],
     ],
 
@@ -121,7 +299,7 @@ return [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -141,7 +319,7 @@ return [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [

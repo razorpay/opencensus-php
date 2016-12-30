@@ -16,6 +16,8 @@ class Entity
     // Core entities
     //
 
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
@@ -23,6 +25,7 @@ class Entity
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
+    const DEVICE                = 'device';
     const REFUND                = 'refund';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
@@ -79,12 +82,14 @@ class Entity
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
+    const UPI_NPCI              = 'upi_npci';
     const AXIS_MIGS             = 'axis_migs';
     const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
+    const UPI_IDFC              = 'upi_idfc';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
@@ -95,6 +100,8 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
+        self::P2P                   => \RZP\Models\P2p::class,
+        self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
@@ -120,7 +127,9 @@ class Entity
         self::OFFER                 => \RZP\Models\Offer::class,
         self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
@@ -155,10 +164,12 @@ class Entity
     );
 
     protected static $repository = array(
+        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,

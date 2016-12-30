@@ -109,12 +109,31 @@ return [
         ],
     ],
 
+    'testEditAdminOnAppAuth' => [
+        'request' => [
+            'url' => '/orgs/%s/admin-app-auth/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+                'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAllRolesAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'roles' => [],
             ],
         ],
         'response' => [
@@ -129,6 +148,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'groups' => [],
             ],
         ],
         'response' => [
@@ -144,7 +164,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'deleted' => true,
             ],
             'status_code' => 200,
         ],
@@ -157,7 +177,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'deleted' => true,
             ],
             'status_code' => 200,
         ],
@@ -170,7 +190,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
             ],
             'status_code' => 200,
         ],
@@ -278,6 +298,20 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testGetAdminByEmailOnAppAuth' => [
+        'request' => [
+            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'name' => 'test admin app auth'
+            ],
+            'status_code' => 200,
         ],
     ],
 
