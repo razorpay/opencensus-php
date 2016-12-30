@@ -72,21 +72,6 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->assertEquals($refund['amount'], 10000);
     }
 
-    public function testFailedRefund()
-    {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            // Refund double amount
-            $refund = $this->refundPayment($payment['id'], 100000);
-        });
-    }
-
-    // public function testTPVPayment()
-
     public function testFailedAuthPayment()
     {
         $this->mockPaymentFailure();
@@ -129,7 +114,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
-    public function testFailedRefundStatus()
+    public function testFailedRefund()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -139,8 +124,7 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            // Refund double amount
-            $refund = $this->refundPayment($payment['id'], 1000);
+            $refund = $this->refundPayment($payment['id'], 100);
         });
     }
 

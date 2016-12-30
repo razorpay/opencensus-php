@@ -238,11 +238,11 @@ class Gateway extends Base\Gateway
 
         $responseArray = $this->jsonToArray($content);
 
-        $this->verifySecureHash($responseArray);
-
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             (array) $responseArray);
+
+        $this->verifySecureHash($responseArray);
 
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
@@ -277,17 +277,6 @@ class Gateway extends Base\Gateway
         $data[VerifyFields::HASH] = $this->getHashOfArray($data, true);
 
         return json_encode($data);
-    }
-
-    protected function getVerifyResponseArray($content)
-    {
-        $response = $this->jsonToArray($content);
-
-        $responseArray = (array) $response[VerifyFields::TRANSACTION][0];
-
-        $this->verifySecureHash($responseArray);
-
-        return $responseArray;
     }
 
     protected function getRefundRequestData($input)
