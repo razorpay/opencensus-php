@@ -196,6 +196,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setCurrency($currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
     public function setAcquirer($acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
