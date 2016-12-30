@@ -12,7 +12,7 @@ app.controller('AuthCtrl', [
   '$analytics',
   '$window',
   '$cookies',
-  function ($scope, $http, $state, $stateParams, $location, alertsFactory, user, 
+  function ($scope, $http, $state, $stateParams, $location, alertsFactory, user,
     organization, transformRequestAsFormPost, $analytics, $window, $cookies) {
     $scope.toArray = function (obj) {
       if (!obj) {
@@ -48,7 +48,7 @@ app.controller('AuthCtrl', [
         role: null,
         department: null,
         business_name: '',
-        phone: '',
+        contact_mobile: '',
         contact_name: '',
       },
       details: {
@@ -113,8 +113,8 @@ app.controller('AuthCtrl', [
         return true;
       }
 
-      if (window.location.hostname !== 'dashboard.razorpay.com' 
-          && window.location.hostname !== 'betadashboard.razorpay.com' 
+      if (window.location.hostname !== 'dashboard.razorpay.com'
+          && window.location.hostname !== 'betadashboard.razorpay.com'
           && !$scope.signup.data.captcha) {
         $scope.signup.data.captcha = 'Faked';
       }
@@ -163,7 +163,7 @@ app.controller('AuthCtrl', [
     }
 
     function goToPostSignup () {
-      $scope.goToSignupStep(2)    
+      $scope.goToSignupStep(2)
     }
 
     $scope.sendDetails = function () {
@@ -190,7 +190,7 @@ app.controller('AuthCtrl', [
       })
     }
 
-    function goToVerification() {      
+    function goToVerification() {
       if (!$scope.right) {
         $scope.goToSignupStep(3)
       } else {
@@ -203,12 +203,12 @@ app.controller('AuthCtrl', [
       if (!payload.email) {
         return
       }
-      const keys = ['business_type','transaction_volume','role','department','business_name','phone','contact_name']
+      const keys = ['business_type','transaction_volume','role','department','business_name','contact_mobile','contact_name']
       keys.forEach(function (key){
         if ($scope.signup.merchantData[key]) {
-          payload[key] = $scope.signup.details[key] 
+          payload[key] = $scope.signup.details[key]
           // multi select field
-          ? $scope.signup.details[key][$scope.signup.merchantData[key]] 
+          ? $scope.signup.details[key][$scope.signup.merchantData[key]]
           // string field
           : $scope.signup.merchantData[key]
         }
