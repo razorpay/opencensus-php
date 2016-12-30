@@ -1420,6 +1420,7 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
+<<<<<<< HEAD
 ALTER TABLE payments
     MODIFY contact VARCHAR(20);
 
@@ -1451,10 +1452,25 @@ DELETE FROM features WHERE name='cardsaving';
 ## Queries for PR:1943
 ALTER TABLE merchants
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer;
+
 ALTER TABLE transactions
     ADD COLUMN fee_bearer TINYINT(1) NOT NULL DEFAULT 0 AFTER channel,
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
     ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
+
 UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
+
 UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 
+# multicurrency support
+ALTER TABLE transactions
+    ADD COLUMN gateway_amount INTEGER NOT NULL AFTER BALANCE;
+
+ALTER TABLE hdfc
+    ADD COLUMN currency VARCHAR(3) AFTER amount;
+
+ALTER TABLE cybersource
+    ADD COLUMN currency VARCHAR(3) AFTER amount;
+
+ALTER TABLE first_data
+    ADD COLUMN currency VARCHAR(3) AFTER amount;
