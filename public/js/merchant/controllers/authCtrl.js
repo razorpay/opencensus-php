@@ -24,11 +24,14 @@ app.controller('AuthCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false; // login layout ? right is true : right is false
     
+    $scope.organization = {};
     organization.fetchCurrentOrg().then(function (data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_full.png'; 
+      $scope.organization = data;
     });
 
-    $scope.signupDisabled = true;
+    // $scope.signupDisabled = true;
+    $scope.isLoggedIn = false;
 
     // signup state container
     $scope.signup = {
@@ -116,7 +119,6 @@ app.controller('AuthCtrl', [
         $scope.signup.data.captcha = 'Faked';
       }
 
-      // todo show spinner
       var payload = {
         method: 'post',
         url: '/user/register',
@@ -132,9 +134,13 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         hideSpinner()
         if (data.success) {
-          // todo hide login button because user is logged in
+          // hide login button because user is logged in
           hideLoginBtn()
+          $scope.isLoggedIn = true;
           $scope.goToSignupStep(1)
+          $state.transitionTo('access.pre_signup', {}, {
+            notify: false,
+          });
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -284,6 +290,7 @@ app.controller('AuthCtrl', [
           $state.transitionTo('access.pre_signup', {}, {
             notify: false,
           });
+          $scope.isLoggedIn = true;
           $scope.login.data.email = (user.getIdentity() && user.getIdentity().email)
           if (!user.isPreSignupDone()) {
             $scope.login.currentStep = 2;
@@ -301,6 +308,7 @@ app.controller('AuthCtrl', [
           });
           $scope.login.currentStep = 1;
         } else {
+          $scope.isLoggedIn = true;
           $scope.login.currentStep = 2;
         }
       }
@@ -351,11 +359,11 @@ app.controller('AuthCtrl', [
                   $state.go('app.dashboard');
               }
             } else {
-              // todo check verify also
               $state.transitionTo('access.pre_signup', {}, {
                 notify: false,
               });
               Object.assign($scope.signup.merchantData, user.pre_signup)
+              $scope.isLoggedIn = true;
               $scope.login.currentStep = 2;  
             }
           });
@@ -396,6 +404,23 @@ app.controller('AuthCtrl', [
           });
         }
       })
+    }
+
+    $scope.logoutAndGoToLogin = function () {
+      var request = $http({
+        method: 'get',
+        url: '/user/logout'
+      });
+      request.finally(function () {
+        user.identity(true);
+        $scope.isLoggedIn = false;
+        $state.transitionTo('access.signin', {}, {
+          notify: false,
+        });
+        $scope.login.currentStep = 1; 
+        $scope.right = true; 
+      });
+      return request;
     }
 
   }

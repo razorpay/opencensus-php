@@ -3,8 +3,9 @@
     <div class="auth-header">
       <div class="rzp-logo">
         <img class="logo" src="{{login_logo}}" alt='Logo' height="">
-        <button ng-if="!right" class="btn pull-right btn-layout-change" ng-click="goToSigninLayout()">Login</button>
-        <button ng-if="right" class="btn pull-right btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
+        <button ng-if="!right && !isLoggedIn" class="btn pull-right btn-layout-change" ng-click="goToSigninLayout()">Login</button>
+        <button ng-if="isLoggedIn" class="btn pull-right btn-layout-change" ng-click="logoutAndGoToLogin()">Logout</button>
+        <button ng-if="right && !isLoggedIn" class="btn pull-right btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
       </div>
 
     </div>
