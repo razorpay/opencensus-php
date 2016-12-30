@@ -3,21 +3,19 @@
 namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
-use Ramsey\Uuid\Uuid;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Wallet\Base\Entity;
 
 class Gateway extends Base\Gateway
@@ -35,6 +33,9 @@ class Gateway extends Base\Gateway
 
     const TXN_CHANNEL = 'WEB';
 
+    /**
+     * Needs to be sent in verify api calls to get response in json from gateway
+     */
     const JSON_MODE = '2';
 
     /**
@@ -67,12 +68,12 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         $contentToSave = [
-            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID   => $input['payment']['id'],
-            RequestFields::AMOUNT       => $input['payment']['amount'],
-            Entity::EMAIL         => $input['payment']['email'],
-            Entity::CONTACT       => $input['payment']['contact'],
-            Entity::RECEIVED      => false
+            RequestFields::MERCHANT_ID => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID  => $input['payment'][Payment\Entity::ID],
+            RequestFields::AMOUNT      => $input['payment'][Payment\Entity::AMOUNT],
+            Entity::EMAIL              => $input['payment'][Payment\Entity::EMAIL],
+            Entity::CONTACT            => $input['payment'][Payment\Entity::CONTACT],
+            Entity::RECEIVED           => false
         ];
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -132,7 +133,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    //-------------------------------Authorize helper methods begin-------------------------------
+    //------------------Authorize helper methods begin--------------------------
+
     protected function getPurchaseRequestArray(array $input)
     {
         $payment = $input['payment'];
@@ -154,14 +156,14 @@ class Gateway extends Base\Gateway
             RequestFields::CHANNEL                                         => self::TXN_CHANNEL,
             RequestFields::CALLBACK_URL                                    => $callbackUrl,
             RequestFields::TOKEN                                           => '',
-            RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => $payment[Payment\Entity::ID],
-            RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => $timestamp,
-            RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => strtoupper(Action::PURCHASE),
-            RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => $amount,
-            RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => Currency::INR,
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => $payment[Payment\Entity::EMAIL],
-            RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => $payment[Payment\Entity::EMAIL],
-            RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => $payment[Payment\Entity::CONTACT]
+            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)   => $payment[Payment\Entity::ID],
+            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)    => $timestamp,
+            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)     => strtoupper(Action::PURCHASE),
+            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::AMOUNT)       => $amount,
+            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::CURRENCY)     => Currency::INR,
+            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::CUSTOMER_NAME) => $payment[Payment\Entity::EMAIL],
+            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::EMAIL)         => $payment[Payment\Entity::EMAIL],
+            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::CONTACT)       => $payment[Payment\Entity::CONTACT]
         ];
 
         $hashArray = $this->getPurchaseRequestArrayToHash($content);
@@ -175,14 +177,14 @@ class Gateway extends Base\Gateway
     {
         return [
             $content[RequestFields::CLIENT_ID],
-            $content[RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT],
-            $content[RequestFields::TRANSACTION. '.' . RequestFields::PAYMENT_ID],
+            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::AMOUNT)],
+            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)],
             $content[RequestFields::CHANNEL],
             $content[RequestFields::MERCHANT_ID],
             $content[RequestFields::TOKEN],
             $content[RequestFields::CALLBACK_URL],
-            $content[RequestFields::TRANSACTION . '.' .RequestFields::TIMESTAMP],
-            $content[RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE]
+            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)],
+            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)]
         ];
     }
 
@@ -202,7 +204,7 @@ class Gateway extends Base\Gateway
             ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
             ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
             ResponseFields::DATE                 => $date,
-            Entity::RECEIVED               => true
+            Entity::RECEIVED                     => true
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -351,9 +353,9 @@ class Gateway extends Base\Gateway
         );
     }
 
-    //-------------------------------Refund helper functions end----------------
+    //-------------------Refund helper functions end----------------------------
 
-    //-------------------------------Verify helper functions begin--------------
+    //------------------ Verify helper functions begin--------------------------
 
     /**
      * JioMoney payment verification is weird. They have 2 Apis
@@ -433,8 +435,6 @@ class Gateway extends Base\Gateway
             $verify->payment = $this->saveVerifyContent($gatewayPayment,
                                                         $verify);
         }
-
-        return $verify->status;
     }
 
     protected function verifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
@@ -483,20 +483,13 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent($gatewayPayment, $verify)
     {
-        $this->action = Action::AUTHORIZE;
         if ($verify->gatewaySuccess === true)
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($verify);
-            if ($gatewayPayment === null)
-            {
-                $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
-            }
-            else if (($gatewayPayment['received'] === false) or
-                     ($gatewayPayment['status_code'] !== StatusCode::SUCCESS))
-            {
-                $gatewayPayment->fill($walletAttributes);
-                $gatewayPayment->saveOrFail();
-            }
+
+            $gatewayPayment->fill($walletAttributes);
+
+            $gatewayPayment->saveOrFail();
         }
 
         $this->action = Action::VERIFY;
@@ -513,9 +506,9 @@ class Gateway extends Base\Gateway
         $contentToSave = array(
             ResponseFields::AMOUNT               => $payment[Payment\Entity::AMOUNT],
             RequestFields::MERCHANT_ID           => $this->getMerchantId(),
-            Entity::RECEIVED               => true,
-            Entity::EMAIL                  => $payment[Payment\Entity::EMAIL],
-            Entity::CONTACT                => $payment[Payment\Entity::CONTACT],
+            Entity::RECEIVED                     => true,
+            Entity::EMAIL                        => $payment[Payment\Entity::EMAIL],
+            Entity::CONTACT                      => $payment[Payment\Entity::CONTACT],
             ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
             ResponseFields::RESPONSE_CODE        => 'SUCCESS',
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
@@ -575,7 +568,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::APINAME       => ApiName::CHECKPAYMENTSTATUS,
             RequestFields::MODE          => self::JSON_MODE,
-            RequestFields::REQUEST_ID    => Uuid::uuid4()->toString(),
+            RequestFields::REQUEST_ID    => gen_uuid(false),
             RequestFields::STARTDATETIME => 'NA',
             RequestFields::ENDDATETIME   => 'NA',
             RequestFields::MERCHANT_ID   => $this->getMerchantId(),
@@ -632,7 +625,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $statusQueryRequest);
+            $request);
 
         return $request;
     }
@@ -643,6 +636,13 @@ class Gateway extends Base\Gateway
     }
     //----------------------------Verify helper methods end--------------------------------
 
+    protected function parseGatewayResponse(\Requests_Response $response)
+    {
+        $content = $this->jsonToArray($response->body);
+
+        return $this->parseResponseBody($content);
+    }
+
     protected function parseResponseBody($content)
     {
         $responseFieldsArray = ResponseFields::getResponseFieldsArray();
@@ -650,26 +650,6 @@ class Gateway extends Base\Gateway
         $gatewayResponseArray = explode('|', $content['response']);
 
         return array_combine($responseFieldsArray, $gatewayResponseArray);
-    }
-
-    protected function parseGatewayResponse(\Requests_Response $response)
-    {
-        $content = $this->jsonToArray($response->body);
-
-        if ($content === null)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                '',
-                'Invalid JSON in Response Body');
-        }
-
-        return $this->parseResponseBody($content);
-    }
-
-    protected function getGatewayResponseArray($content)
-    {
-        return explode('|', $content['response']);
     }
 
     protected function verifySecureHash(array $content)
@@ -706,7 +686,6 @@ class Gateway extends Base\Gateway
     {
         return [
             'Content-Type'   =>  'application/json',
-            'Content-Length' => strlen($content)
         ];
     }
 
@@ -756,6 +735,11 @@ class Gateway extends Base\Gateway
     protected function getFormattedAmount($amount)
     {
         return number_format(($amount / 100), 2);
+    }
+
+    public static function getFormattedRequestField(string $prefix, string $field, string $delimiter = '.')
+    {
+        return ($prefix . $delimiter . $field);
     }
 
     protected function getMappedAttributes($attributes)

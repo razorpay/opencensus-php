@@ -119,7 +119,7 @@ class Server extends Base\Mock\Server
     {
         $date = $this->getFormattedTimeStamp(
             Carbon::now('Asia/Kolkata')->timestamp,
-            self::TXN_DATE_FORMAT),
+            self::TXN_DATE_FORMAT);
 
         return
         [

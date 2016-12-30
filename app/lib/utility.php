@@ -193,7 +193,7 @@ function assertTrue($assertion, $message = null)
     }
 }
 
-function upi_uuid($prefix = true)
+function gen_uuid()
 {
     $uuid = strtoupper(sprintf( '%04x%04x%04x%04x%04x%04x%04x%04x',
         // 32 bits for "time_low"
@@ -214,6 +214,13 @@ function upi_uuid($prefix = true)
         // 48 bits for "node"
         mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
     ));
+
+    return $uuid;
+}
+
+function upi_uuid($prefix = true)
+{
+    $uuid = gen_uuid();
 
     if ($prefix)
     {

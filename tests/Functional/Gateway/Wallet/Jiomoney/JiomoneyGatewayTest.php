@@ -155,6 +155,17 @@ class JiomoneyGatewayTest extends TestCase
                 'terminal_id'   => $this->sharedTerminal->id
             ]);
 
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'          => $payment->getId(),
+            'amount'              => $payment->getAmount(),
+            'wallet'              => 'jiomoney',
+            'action'              => 'authorize',
+            'gateway_payment_id'  => null,
+            'email'               => 'a@b.com',
+            'contact'             => '+919918899029',
+            'gateway_merchant_id' => 'random_id',
+        ]);
+
         $id = $payment->getPublicId();
 
         $this->runRequestResponseFlow($data, function() use ($id)
