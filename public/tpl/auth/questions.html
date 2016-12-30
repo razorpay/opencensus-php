@@ -5,31 +5,31 @@
   Just need a few more details.
 </div>
 <div class="auth-text" ng-if="signup.currentSubStep == 1">
-  Business Type 
+  Business Type
   <strong>
     {{signup.details.business_type[signup.merchantData.business_type]}}
-  </strong> 
+  </strong>
   (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 0)">Edit</span>)
 </div>
 <div class="auth-text" ng-if="signup.currentSubStep == 2">
-  Monthly Transaction Volume (INR) 
+  Monthly Transaction Volume (INR)
   <strong>
     {{signup.details.transaction_volume[signup.merchantData.transaction_volume]}}
-  </strong> 
+  </strong>
   (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 1)">Edit</span>)
 </div>
 <div class="auth-text" ng-if="signup.currentSubStep == 3">
-  Your Role 
+  Your Role
   <strong>
     {{signup.details.role[signup.merchantData.role]}}
-  </strong> 
+  </strong>
   (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 2)">Edit</span>)
 </div>
 <div class="auth-text" ng-if="signup.currentSubStep == 4">
-  Your Department  
+  Your Department
   <strong>
     {{signup.details.department[signup.merchantData.department]}}
-  </strong> 
+  </strong>
   (<span class="highlight-clickable-text" ng-click="goToSignupStep(2, 3)">Edit</span>)
 </div>
 <div class="signup-detail-form">
@@ -37,8 +37,8 @@
     <div class="step-dot" ng-repeat="key in [0, 1, 2, 3, 4]" ng-class="key == signup.currentSubStep && 'active'"></div>
     <div class="clearfix"></div>
   </div>
-  
-  
+
+
   <div class="signup-details-overflow-container">
     <div class="signup-details-translate-container" style="transform: translateX({{-(240)*signup.currentSubStep}}px)">
       <div class="auth-substep">
@@ -131,9 +131,9 @@
         <input override-tab type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
           class="form-control" placeholder="min 4 characters" required ng-minlength="4" >
         <label class="form-label" for="phone">Phone</label>
-        <input override-tab type="tel" name="phone" id="phone" ng-model="signup.merchantData.phone"
+        <input override-tab type="tel" name="contact_mobile" id="contact_mobile" ng-model="signup.merchantData.contact_mobile"
           class="form-control" placeholder="10 digit phone number" required ng-minlength="10" ng-maxlength="13" >
-        <button override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.phone)" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+        <button override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
           Finish
         </button>
       </div>
