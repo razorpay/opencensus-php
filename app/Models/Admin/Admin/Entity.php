@@ -284,6 +284,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILED_ATTEMPTS);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getFirstName()
+    {
+        return explode(' ', $this->getName())[0];
+    }
+
     public function incrementFailedAttempts()
     {
         $attempts = $this->getAttribute(self::FAILED_ATTEMPTS) + 1;

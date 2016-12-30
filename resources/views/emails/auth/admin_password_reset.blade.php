@@ -4,10 +4,12 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h2>Password Reset</h2>
+        Hi {{$firstName}},
 
-        <div>
-            To reset your password for your administrator account in {{$user['org']}}, Click on the url: {{$user['resetUrl']}}.
-        </div>
+We got a request to reset your password for your administrator account in {{$orgName}}'s Razorpay Dashboard.
+
+[reset password button]{{$resetUrl}}
+
+If you ignore this email, your password won't be changed. If you didn't initiate a password reset, Please contact us at support@razorpay.com
     </body>
 </html>

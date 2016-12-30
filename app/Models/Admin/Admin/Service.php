@@ -166,11 +166,9 @@ class Service extends Base\Service
         $view = 'emails.auth.admin_password_reset';
 
         $template = [
-            'user' => [
-                'email'    => $admin->getEmail(),
-                'org'      => $org->getDisplayName(),
-                'resetUrl' => $input['reset_password_url'] . '/' . $input[self::TOKEN],
-            ]
+            'firstName' => $admin->getFirstName(),
+            'resetUrl'  => $input['reset_password_url'] . '/' . $input[self::TOKEN],
+            'orgName'   => $org->getDisplayName(),
         ];
 
         Mail::queue(
