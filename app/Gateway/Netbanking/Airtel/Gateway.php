@@ -463,45 +463,41 @@ class Gateway extends Base\Gateway
         switch($this->action)
         {
             case Action::CALLBACK:
-                if ((isset($content[AuthFields::STATUS]) === false) or
-                    ($content[AuthFields::STATUS] !== Status::SUCCESS))
-                {
-                    $this->throwException($content, AuthFields::CODE);
-                }
+                $statusField = AuthFields::CODE;
                 break;
 
             case Action::REFUND:
-                if ((isset($content[RefundFields::CODE]) === false) or
-                    ($content[RefundFields::CODE] !== Code::SUCCESS))
-                {
-                    $this->throwException($content, RefundFields::ERROR_CODE);
-                }
+                $statusField = RefundFields::ERROR_CODE;
                 break;
 
             case Action::VERIFY:
-                if ((isset($content[VerifyFields::CODE]) === false) or
-                    ($content[VerifyFields::CODE] !== Code::SUCCESS))
-                {
-                    $this->throwException($content, VerifyFields::ERROR_CODE);
-                }
+                $statusField = VerifyFields::ERROR_CODE;
                 break;
         }
+
+        $successValue = ErrorCodes::getSuccessField();
+
+        $this->throwException($content, $statusField, $successValue);
     }
 
-    protected function throwException($content, $code)
+    protected function throwException($content, $statusField = '', $successValue)
     {
-        $errorDescription = ErrorCodes::getErrorCodeDescription(
-                $content[$code]);
+        if ((isset($content[$statusField]) === false) or
+            ($content[$statusField] !== $successValue))
+        {
+            $errorDescription = ErrorCodes::getErrorCodeDescription(
+                    $content[$statusField]);
 
-        $errorCode = ErrorCodes::getErrorCodeMap(
-            $content[$code]);
+            $errorCode = ErrorCodes::getErrorCodeMap(
+                $content[$statusField]);
 
-        $this->trace->info(
-            TraceCode::PAYMENT_CALLBACK_FAILURE,
-            ['content' => $content]);
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
 
-        // Payment fails, throw exception
-        throw new Exception\GatewayErrorException($errorCode, $code, $errorDescription);
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);
+        }
     }
 
     public function getMerchantId()

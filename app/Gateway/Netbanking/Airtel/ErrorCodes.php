@@ -6,6 +6,8 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
+    protected static $success = '000';
+
     protected static $errorCodeDesc = [
         '902'       => 'Invalid MID in Request',
         '905'       => 'Invalid input in Success / Failure URL',
@@ -52,5 +54,10 @@ class ErrorCodes
         }
 
         return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+    }
+
+    public static function getSuccessField()
+    {
+        return self::$success;
     }
 }
