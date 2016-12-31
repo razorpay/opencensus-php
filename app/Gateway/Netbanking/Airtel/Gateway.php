@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($content);
 
-        $attributes = $this->getCallackAttributes($content);
+        $attributes = $this->getCallbackAttributes($content);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
@@ -116,8 +116,6 @@ class Gateway extends Base\Gateway
         $status = $this->getVerifyMatchStatus($verify, $response);
 
         $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
-
-        return $status;
     }
 
     protected function getVerifyMatchStatus($verify, $response)
@@ -193,7 +191,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getCallackAttributes($content)
+    protected function getCallbackAttributes($content)
     {
         try
         {
@@ -231,7 +229,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
-        $this->createGatewayActionEntity($responseArray);
+        $this->createGatewayActionEntity($attributes);
 
         $this->checkActionStatus($responseArray);
     }
@@ -244,18 +242,13 @@ class Gateway extends Base\Gateway
             $input['payment']['created_at'], 'Asia/Kolkata')
             ->format('dmYhis');
 
-        $merchantId = $this->getMerchantId();
-
-        $paymentId = $input['payment']['id'];
-
         $amount = $input['payment']['amount'] / 100;
 
         $data = [
             VerifyFields::SESSION_ID               => uniqid(),
-            VerifyFields::TRANSACTION_REFERENCE_NO => $paymentId,
+            VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             VerifyFields::TRANSACTION_DATE         => $date,
-            VerifyFields::MERCHANT_ID              => $merchantId,
-            VerifyFields::HASH                     => '',
+            VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
             VerifyFields::AMOUNT                   => "$amount"
         ];
 
