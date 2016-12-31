@@ -40,12 +40,20 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByPaymentIdAndCommand($paymentId, $command)
+    public function findByPaymentIdAndCommandOrFail($paymentId, $command)
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
                     ->where('vpc_Command', '=', $command)
                     ->firstOrFail();
+    }
+
+    public function findByPaymentIdAndCommand($paymentId, $command)
+    {
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('vpc_Command', '=', $command)
+                    ->get();
     }
 
     public function findCapturedPaymentByIdOrFail($paymentId)
