@@ -21,10 +21,6 @@ app.controller('RegisterCtrl', [
     $scope.invite = $location.search().merchant_invitation;
 
     if ($location.search().email) {
-
-      // Used to make the email field in the form readonly
-      $scope.query_email = $location.search().email;
-
       $scope.data.email = $location.search().email;
 
       // XHR to save this email in a generic table
