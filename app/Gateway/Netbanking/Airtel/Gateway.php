@@ -186,9 +186,11 @@ class Gateway extends Base\Gateway
     {
         $amount = $input['payment']['amount'] / 100;
 
-        return [
+        $paymentArray = [
             AuthFields::AMOUNT => $amount
         ];
+
+        return $paymentArray;
     }
 
     protected function getCallbackAttributes($content)
@@ -395,60 +397,68 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestHashArray($content)
     {
-        return [
+        $hashArray = [
             AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
             AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
             AuthFields::AMOUNT                   => $content[AuthFields::AMOUNT],
             AuthFields::DATE                     => $content[AuthFields::DATE],
             AuthFields::SERVICE                  => $content[AuthFields::SERVICE],
         ];
+
+        return $hashArray;
     }
 
     protected function getCallbackResponseHashArray($content)
     {
-        return [
+        $hashArray = [
             AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
             AuthFields::TRANSACTION_ID           => $content[AuthFields::TRANSACTION_ID],
             AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
             AuthFields::TRANSACTION_AMOUNT       => $content[AuthFields::TRANSACTION_AMOUNT],
             AuthFields::TRANSACTION_DATE         => $content[AuthFields::TRANSACTION_DATE],
         ];
+
+        return $hashArray;
     }
 
     protected function getVerifyRequestHashArray($data)
     {
-        return [
+        $hashArray = [
             $data[VerifyFields::MERCHANT_ID],
             $data[VerifyFields::TRANSACTION_REFERENCE_NO],
             $data[VerifyFields::AMOUNT],
             $data[VerifyFields::TRANSACTION_DATE],
         ];
+
+        return $hashArray;
     }
 
     protected function getVerifyResponseHashArray($content)
     {
-        $verifyJson = json_encode($content[VerifyFields::TRANSACTION]);
-
-        return [
+        $hashArray = [
             $content[VerifyFields::MERCHANT_ID],
-            $verifyJson,
+            json_encode($content[VerifyFields::TRANSACTION]),
             $content[VerifyFields::ERROR_CODE]
         ];
+
+        return $hashArray;
     }
 
     protected function getRefundRequestHashArray($data)
     {
-        return [
+        $hashArray = [
             $data[RefundFields::MERCHANT_ID],
             $data[RefundFields::TRANSACTION_ID],
             $data[RefundFields::AMOUNT],
             $data[RefundFields::TRANSACTION_DATE],
         ];
+
+        return $hashArray;
     }
 
     protected function getRefundResponseHashArray($data)
     {
-        return [
+        $hashArray = [
             $data[RefundFields::MERCHANT_ID],
             $data[RefundFields::ERROR_CODE],
             $data[RefundFields::AMOUNT],
@@ -456,6 +466,8 @@ class Gateway extends Base\Gateway
             $data[RefundFields::TRANSACTION_DATE],
             $data[RefundFields::STATUS]
         ];
+
+        return $hashArray;
     }
 
     protected function checkActionStatus($content)
