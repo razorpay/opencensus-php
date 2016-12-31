@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
 
         $entity = $this->createPaymentArray($input);
 
-        $payment = $this->createGatewayPaymentEntity($entity);
+        $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -61,7 +61,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->saveOrFail();
 
-        $this->checkCallbackStatus($content);
+        $this->checkActionStatus($content);
     }
 
     public function refund(array $input)
@@ -111,7 +111,7 @@ class Gateway extends Base\Gateway
     {
         $response = $verify->verifyResponseContent;
 
-        $this->checkVerifyStatus($response);
+        $this->checkActionStatus($response);
 
         $status = $this->getVerifyMatchStatus($verify, $response);
 
@@ -215,25 +215,6 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function checkCallbackStatus($content)
-    {
-        if ($content[AuthFields::STATUS] !== Status::SUCCESS)
-        {
-            $errorDescription = ErrorCodes::getErrorCodeDescription(
-                $content[AuthFields::CODE]);
-
-            $errorCode = ErrorCodes::getErrorCodeMap(
-                $content[AuthFields::CODE]);
-
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException($errorCode, AuthFields::CODE, $errorDescription);
-        }
-    }
-
     protected function sendRefundRequestAndCheckResponse($request, $input)
     {
         $response = $this->sendGatewayRequest($request);
@@ -252,7 +233,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayActionEntity($responseArray);
 
-        $this->checkRefundStatus($responseArray);
+        $this->checkActionStatus($responseArray);
     }
 
     protected function getPaymentVerifyData($verify)
@@ -336,46 +317,6 @@ class Gateway extends Base\Gateway
         }
 
         return $attributes;
-    }
-
-    protected function checkRefundStatus($response)
-    {
-        if ((isset($response[RefundFields::CODE]) === false) or
-            ($response[RefundFields::CODE] !== Code::SUCCESS))
-        {
-            $errorDescription = ErrorCodes::getErrorCodeDescription(
-                $response[RefundFields::ERROR_CODE]);
-
-            $errorCode = ErrorCodes::getErrorCodeMap(
-                $response[RefundFields::ERROR_CODE]);
-
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                $response);
-
-            throw new Exception\GatewayErrorException($errorCode,
-                RefundFields::ERROR_CODE, $errorDescription);
-        }
-    }
-
-    protected function checkVerifyStatus($response)
-    {
-        if ((isset($response[VerifyFields::CODE]) === false) or
-            ($response[VerifyFields::CODE] !== Code::SUCCESS))
-        {
-            $errorDescription = ErrorCodes::getErrorCodeDescription(
-                $response[VerifyFields::ERROR_CODE]);
-
-            $errorCode = ErrorCodes::getErrorCodeMap(
-                $response[VerifyFields::ERROR_CODE]);
-
-            $this->trace->error(
-                TraceCode::PAYMENT_VERIFY_FAILED,
-                $response);
-
-            throw new Exception\GatewayErrorException(
-                $errorCode, VerifyFields::ERROR_CODE, $errorDescription);
-        }
     }
 
     /*
@@ -522,6 +463,52 @@ class Gateway extends Base\Gateway
             $data[RefundFields::TRANSACTION_DATE],
             $data[RefundFields::STATUS]
         ];
+    }
+
+    protected function checkActionStatus($content)
+    {
+        switch($this->action)
+        {
+            case Action::CALLBACK:
+                if ((isset($content[AuthFields::STATUS]) === false) or
+                    ($content[AuthFields::STATUS] !== Status::SUCCESS))
+                {
+                    $this->throwException($content, AuthFields::CODE);
+                }
+                break;
+
+            case Action::REFUND:
+                if ((isset($content[RefundFields::CODE]) === false) or
+                    ($content[RefundFields::CODE] !== Code::SUCCESS))
+                {
+                    $this->throwException($content, RefundFields::ERROR_CODE);
+                }
+                break;
+
+            case Action::VERIFY:
+                if ((isset($content[VerifyFields::CODE]) === false) or
+                    ($content[VerifyFields::CODE] !== Code::SUCCESS))
+                {
+                    $this->throwException($content, VerifyFields::ERROR_CODE);
+                }
+                break;
+        }
+    }
+
+    protected function throwException($content, $code)
+    {
+        $errorDescription = ErrorCodes::getErrorCodeDescription(
+                $content[$code]);
+
+        $errorCode = ErrorCodes::getErrorCodeMap(
+            $content[$code]);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            ['content' => $content]);
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException($errorCode, $code, $errorDescription);
     }
 
     public function getMerchantId()
