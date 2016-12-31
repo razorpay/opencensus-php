@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
@@ -152,7 +152,7 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentReversalRequestContent($input, $payment);
@@ -182,7 +182,7 @@ class Gateway extends Base\Gateway
     {
         $repo = $this->repo;
 
-        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommandOrFail($input['payment']['id'], Command::PAY);
 
         // If it's already authorized on axis side, there's nothing to do here. We just return back.
         if (($gatewayPayment->getTransactionId() !== null) and
@@ -237,7 +237,7 @@ class Gateway extends Base\Gateway
     {
         assert ($input['payment']['status'] === 'authorized');
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndCommand(
+        $gatewayPayment = $this->repo->findByPaymentIdAndCommandOrFail(
             $input['payment']['id'], Command::PAY);
 
         $capturedAmount = (int) $gatewayPayment['vpc_CapturedAmount'];
