@@ -34,12 +34,12 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('netbanking', true);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         // Assert that bank payment id exists and is an integer
-        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
 
-        $this->assertTrue(filter_var($payment['bank_payment_id'],
+        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
     }
 

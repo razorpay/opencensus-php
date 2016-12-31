@@ -54,12 +54,14 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getCallackAttributes($content);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
 
-        $payment->fill($attributes);
+        $gatewayPayment->fill($attributes);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
+
+        $this->checkCallbackStatus($content);
     }
 
     public function refund(array $input)
@@ -193,8 +195,6 @@ class Gateway extends Base\Gateway
 
     protected function getCallackAttributes($content)
     {
-        $this->assertCallbackAttributes($content);
-
         try
         {
             $attributes = [
@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function assertCallbackAttributes($content)
+    protected function checkCallbackStatus($content)
     {
         if ($content[AuthFields::STATUS] !== Status::SUCCESS)
         {
@@ -251,6 +251,8 @@ class Gateway extends Base\Gateway
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
         $this->createGatewayActionEntity($responseArray);
+
+        $this->checkRefundStatus($responseArray);
     }
 
     protected function getPaymentVerifyData($verify)
@@ -314,8 +316,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundAttributes($response, $input)
     {
-        $this->checkRefundStatus($response);
-
         try
         {
             $attributes = [
