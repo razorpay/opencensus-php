@@ -195,22 +195,14 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackAttributes($content)
     {
-        try
-        {
-            $attributes = [
-                Base\Entity::RECEIVED        => true,
-                Base\Entity::STATUS          => $content[AuthFields::STATUS],
-                Base\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
-                Base\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
-                Base\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
-                Base\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
-            ];
-        }
-
-        catch(Exception $e)
-        {
-            throw new Exception\GatewayErrorException($e->getMessage());
-        }
+        $attributes = [
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[AuthFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
+            Base\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
+            Base\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
+            Base\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
+        ];
 
         return $attributes;
     }
@@ -292,24 +284,16 @@ class Gateway extends Base\Gateway
 
     protected function getRefundAttributes($response, $input)
     {
-        try
-        {
-            $attributes = [
-                Base\Entity::RECEIVED        => true,
-                Base\Entity::AMOUNT          => $input['payment']['amount'] / 100,
-                Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
-                Base\Entity::STATUS          => $response[RefundFields::STATUS],
-                Base\Entity::REFUND_ID       => $input['refund']['id'],
-                Base\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
-                Base\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
-                Base\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
-            ];
-        }
-
-        catch(Exception $e)
-        {
-            throw new Exception\GatewayErrorException($e->getMessage());
-        }
+        $attributes = [
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::AMOUNT          => $input['payment']['amount'] / 100,
+            Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
+            Base\Entity::STATUS          => $response[RefundFields::STATUS],
+            Base\Entity::REFUND_ID       => $input['refund']['id'],
+            Base\Entity::DATE            => $response[RefundFields::TRANSACTION_DATE],
+            Base\Entity::ERROR_MESSAGE   => $response[RefundFields::MESSAGE_TEXT],
+            Base\Entity::MERCHANT_CODE   => $response[RefundFields::CODE],
+        ];
 
         return $attributes;
     }
@@ -398,11 +382,11 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestHashArray($content)
     {
         $hashArray = [
-            AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
-            AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
-            AuthFields::AMOUNT                   => $content[AuthFields::AMOUNT],
-            AuthFields::DATE                     => $content[AuthFields::DATE],
-            AuthFields::SERVICE                  => $content[AuthFields::SERVICE],
+            $content[AuthFields::MERCHANT_ID],
+            $content[AuthFields::TRANSACTION_REFERENCE_NO],
+            $content[AuthFields::AMOUNT],
+            $content[AuthFields::DATE],
+            $content[AuthFields::SERVICE],
         ];
 
         return $hashArray;
@@ -411,11 +395,11 @@ class Gateway extends Base\Gateway
     protected function getCallbackResponseHashArray($content)
     {
         $hashArray = [
-            AuthFields::MERCHANT_ID              => $content[AuthFields::MERCHANT_ID],
-            AuthFields::TRANSACTION_ID           => $content[AuthFields::TRANSACTION_ID],
-            AuthFields::TRANSACTION_REFERENCE_NO => $content[AuthFields::TRANSACTION_REFERENCE_NO],
-            AuthFields::TRANSACTION_AMOUNT       => $content[AuthFields::TRANSACTION_AMOUNT],
-            AuthFields::TRANSACTION_DATE         => $content[AuthFields::TRANSACTION_DATE],
+            $content[AuthFields::MERCHANT_ID],
+            $content[AuthFields::TRANSACTION_ID],
+            $content[AuthFields::TRANSACTION_REFERENCE_NO],
+            $content[AuthFields::TRANSACTION_AMOUNT],
+            $content[AuthFields::TRANSACTION_DATE],
         ];
 
         return $hashArray;
@@ -489,27 +473,27 @@ class Gateway extends Base\Gateway
 
         $successValue = ErrorCodes::getSuccessField();
 
-        $this->throwException($content, $statusField, $successValue);
-    }
-
-    protected function throwException($content, $statusField = '', $successValue)
-    {
         if ((isset($content[$statusField]) === false) or
             ($content[$statusField] !== $successValue))
         {
-            $errorDescription = ErrorCodes::getErrorCodeDescription(
-                    $content[$statusField]);
+            $this->throwException($content, $statusField);
+        }
+    }
 
-            $errorCode = ErrorCodes::getErrorCodeMap(
+    protected function throwException($content, $statusField)
+    {
+        $errorDescription = ErrorCodes::getErrorCodeDescription(
                 $content[$statusField]);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
+        $errorCode = ErrorCodes::getErrorCodeMap(
+            $content[$statusField]);
 
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);
-        }
+        $this->trace->info(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            ['content' => $content]);
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);
     }
 
     public function getMerchantId()
