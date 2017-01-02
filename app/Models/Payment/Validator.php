@@ -209,6 +209,12 @@ class Validator extends Base\Validator
     {
         if ($input['method'] === Payment\Method::WALLET)
         {
+            if (isset($input['contact']) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_REQUIRED);
+            }
+
             $number = new PhoneBook($input['contact'], true);
             $country = $number->getRegionCodeForNumber();
 
