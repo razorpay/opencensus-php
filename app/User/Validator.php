@@ -20,7 +20,8 @@ class Validator extends Base\Validator
         'email'                 => 'required|email|unique:users',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
-        'captcha'               => 'required_unless:captcha_disable,'. self::DISABLE_CAPTCHA_SECRET,
+        // 'captcha'               => 'required_unless:captcha_disable,'. self::DISABLE_CAPTCHA_SECRET,
+        'captcha'               => 'sometimes',
         'invitation'            => 'max:40',
         'ref'                   => 'sometimes|max:255'
     );

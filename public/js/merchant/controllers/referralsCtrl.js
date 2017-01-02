@@ -67,6 +67,29 @@ app.controller('ReferralsCtrl', [
       });
     }
 
+    $scope.createUser = function(input) {
+      var request = $http({
+        method: 'post',
+        url: '/subusers',
+        data: input
+      });
+
+      request.success(function (data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'User was created successfully');
+          fetchReferrals();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     fetchReferrals();
 
     $scope.openCreateMerchant = function() {

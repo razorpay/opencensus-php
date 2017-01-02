@@ -16,9 +16,11 @@
             <!-- <th>Webhook Id</th> -->
             <th data-toggle="true">Merchant Id</th>
             <th>Name</th>
+            <th>Email</th>
             <th>Registered At</th>
             <th>Submitted</th>
             <th>Activated</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -29,9 +31,18 @@
             </td>
             <td ng-show="user.tags.indexOf('Aggregator') === -1">{{merchant.id}}</td>
             <td>{{merchant.name}}</td>
+            <td>{{merchant.email}}</td>
             <td>{{merchant.created_at*1000 | date:'medium'}}</td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
+            <td>
+              <div class="btn-group">
+                <a class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to create user for this merchant?" ng-click="createUser({id: merchant.id, email: merchant.email, name: merchant.name})">
+                  <i class="fa fa-pencil-square"></i>
+                  edit
+                </a>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>

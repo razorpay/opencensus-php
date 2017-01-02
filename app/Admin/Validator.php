@@ -120,8 +120,6 @@ class Validator extends Base\Validator
         'lc_ro_code' => 'required',
         'mrm_code' => 'required',
         'merchant_type' => 'required',
-        'subvention' => 'required',
-        'surcharge' => 'required',
         'merchant_name' => 'required',
         'contact_name' => 'required',
         'dba_name' => 'required'

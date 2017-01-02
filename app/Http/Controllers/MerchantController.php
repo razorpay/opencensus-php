@@ -326,6 +326,16 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postRegisterSubUser()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)
+            ->registerSubMerchantUser($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getBankAccount()
     {
         list($error, $data) = (new Merchant\Service)

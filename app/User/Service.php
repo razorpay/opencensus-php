@@ -132,6 +132,18 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function createUserFromEmail(array $input)
+    {
+        $user = $this->buildUserEntity($input);
+
+        if ($user->confirm_token != NULL)
+        {
+            (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        }
+
+        return $user;
+    }
+
     public function createLead($input)
     {
         $error = $data = null;
