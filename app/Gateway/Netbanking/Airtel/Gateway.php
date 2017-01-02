@@ -28,6 +28,10 @@ class Gateway extends Base\Gateway
         AuthFields::AMOUNT => 'amount'
     ];
 
+    const REVERSAL               = 'ECOMM_REVERSAL';
+
+    const TIME_FORMAT            = 'dmYhis';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -167,7 +171,7 @@ class Gateway extends Base\Gateway
     {
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(Constants::TIME_FORMAT);
+            ->format(self::TIME_FORMAT);
 
         $data = [
             AuthFields::MERCHANT_ID              => $this->getMerchantId(),
@@ -235,7 +239,7 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(Constants::TIME_FORMAT);
+            ->format(self::TIME_FORMAT);
 
         $amount = $this->getFormattedAmount($input);
 
@@ -261,7 +265,7 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(Constants::TIME_FORMAT);
+            ->format(self::TIME_FORMAT);
 
         $merchantId = $this->getMerchantId();
 
@@ -271,7 +275,7 @@ class Gateway extends Base\Gateway
             RefundFields::SESSION_ID        => uniqid(),
             RefundFields::TRANSACTION_ID    => $tranId,
             RefundFields::TRANSACTION_DATE  => $date,
-            RefundFields::REQUEST           => Constants::REVERSAL,
+            RefundFields::REQUEST           => self::REVERSAL,
             RefundFields::MERCHANT_ID       => $merchantId,
             RefundFields::AMOUNT            => "$amount"
         ];

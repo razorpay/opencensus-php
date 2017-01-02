@@ -9,13 +9,14 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Currency;
 use RZP\Gateway\Netbanking\Airtel\Status;
-use RZP\Gateway\Netbanking\Airtel\Constants;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
 use RZP\Gateway\Netbanking\Airtel\RefundFields;
 
 class Server extends Base\Mock\Server
 {
+    const TIME_FORMAT            = 'dmYhis';
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -66,7 +67,7 @@ class Server extends Base\Mock\Server
 
     protected function createRefundResponse($request)
     {
-        $date = Carbon::createFromFormat(Constants::TIME_FORMAT,
+        $date = Carbon::createFromFormat(self::TIME_FORMAT,
             $request[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         $data = [
@@ -111,7 +112,7 @@ class Server extends Base\Mock\Server
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
-        $date = Carbon::createFromFormat(Constants::TIME_FORMAT,
+        $date = Carbon::createFromFormat(self::TIME_FORMAT,
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         $verifyArray = [
