@@ -122,21 +122,53 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
+
+        if ($refundedEntities === 0)
+        {
+            return false;
+        }
+
+        foreach ($refundedEntities as $refundedEntity)
+        {
+            if ($refundedEntity->getRefundId() === $refundId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function isRefundRequired(array $input)
     {
-        $id = $input['payment']['id'];
+        $paymentId = $input['payment']['id'];
+        $refundAmount = $input['amount'];
 
-        $refundedEntities = $this->repo->findByPaymentIdAndCommand($id, Command::REFUND);
+        //
+        // Gets all the refund entities with the given amount and payment id and which were successful.
+        // This is not an absolute check since for the same payment id, two partial refunds of the same
+        // amount could be successful.
+        //
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
 
         $verify = new Base\Verify($this->gateway, $input);
 
         $verifyContent = $this->sendPaymentVerifyRequest($verify);
 
+        //
         // If the payment transaction id is present, we assume that the payment
-        // has been captured on the gateway
+        // has been captured on the gateway.
         // We also check for the refund entities, if present. If refund entity is present
         // we assume that the payment has been refunded on gateway and refund should
         // not be called again.
+        //
         if (($input['payment']['transaction_id'] === null) or
             ($refundedEntities->count() > 0) or
             ((isset($verifyContent['vpc_RefundedAmount']) === true) and
