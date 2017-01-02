@@ -44,8 +44,6 @@ class Service extends Base\Service
 
         $admin->getValidator()->validateCredentials($input);
 
-        $ex = null;
-
         try
         {
             $authPolicy = new AuthPolicy\Service;
@@ -100,7 +98,6 @@ class Service extends Base\Service
         }
 
         event(new AuditLogEntry($admin, $action, $customProperties));
-        //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function passwordReset(string $orgId, array $input)
