@@ -9,7 +9,7 @@ use RZP\Gateway\Netbanking\Axis\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    const MODE_ECB = 1;
+    const MODE_CBC = 1;
 
     public function authorize($input)
     {
@@ -40,7 +40,7 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedData($input)
     {
-        $masterKey = $this->getGatewayInstance()->getMasterKey();
+        $masterKey = $this->getGatewayInstance()->getSecret();
 
         $decryptedString = $this->getGatewayInstance()->decryptString(
             $input[RequestFields::ENCRYPTED_STRING], $masterKey);
@@ -73,7 +73,7 @@ class Server extends Base\Mock\Server
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
 
-        $masterKey = $this->getGatewayInstance()->getMasterKey();
+        $masterKey = $this->getGatewayInstance()->getSecret();
 
         $content['qs'] = $this->getGatewayInstance()->encryptString(
             $query, $masterKey);

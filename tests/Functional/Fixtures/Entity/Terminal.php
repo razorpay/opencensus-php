@@ -668,7 +668,7 @@ class Terminal extends Base
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_axis',
             'gateway_merchant_id'       => 'test_pid',
-            'gateway_terminal_password' => 'test_masterkey',
+            'gateway_secure_secret'     => 'test_masterkey',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

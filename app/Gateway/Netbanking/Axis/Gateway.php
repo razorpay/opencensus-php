@@ -5,7 +5,10 @@ namespace RZP\Gateway\Netbanking\Axis;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base as GatewayBase;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -13,13 +16,13 @@ use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
-    use GatewayBase\AuthorizeFailed;
+    use AuthorizeFailed;
 
     protected $gateway = 'netbanking_axis';
 
     protected $bank = 'axis';
 
-    const MODE_ECB = 1;
+    const MODE_CBC = 2;
 
     protected $map = [
         RequestFields::AMOUNT                    => 'amount',
@@ -39,6 +42,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        sd($request);
+
         return $request;
     }
 
@@ -51,7 +56,7 @@ class Gateway extends Base\Gateway
         $this->trace>info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs = $this->getCallbackAttributes($content);
 
@@ -66,7 +71,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new GatewayBase\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -83,11 +88,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
-        $verify->verifyResponseContent = $content;
-
-        return $verify;
     }
 
     public function verifyPayment($verify)
@@ -101,30 +102,26 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $response);
 
-        $status = $this->getVerifyStatus($verify, $response);
-
-        return $status;
+        $this->getVerifyStatus($verify, $response);
     }
 
     protected function getVerifyStatus($verify, $response)
     {
-        $this->setApiSuccess($verify);
+        $this->checkApiSuccess($verify);
 
-        $this->setGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify, $response);
 
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+        $status = VerifyResult::STATUS_MATCH;
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
-
-        return $status;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
     }
 
-    protected function setApiSuccess($verify)
+    protected function checkApiSuccess($verify)
     {
         $verify->apiSuccess = true;
 
@@ -137,7 +134,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function setGatewaySuccess($verify, $response)
+    protected function checkGatewaySuccess($verify, $response)
     {
         $verify->gatewaySuccess = false;
 
@@ -167,12 +164,10 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        $pid = $this->getPid();
-
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
-            RequestFields::PAYEE_ID         => $pid,
+            // RequestFields::PAYEE_ID         => $this->getPid(),
             RequestFields::ENCRYPTED_STRING => $encryptedString,
             RequestFields::RETURN_URL       => $input['callbackUrl']
         ];
@@ -180,18 +175,19 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeEncryptedString($input)
     {
-        $masterKey = $this->getMasterKey();
+        $masterKey = $this->getSecret();
 
         $defaultData = $this->getDefaultRequestData($input);
 
         $data = [
+            RequestFields::PAYEE_ID         => $this->getPid(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Constants::INDIAN_RUPEE,
             RequestFields::CONFIRMATION      => Constants::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
-        // if tpv is enabled, add tpv account number -> next step
+        // TODO: Add TPV to the request array
 
         $data = array_merge($defaultData, $data);
 
@@ -200,6 +196,8 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
+        // sd($stringToEncrypt);
+
         return $this->encryptString($stringToEncrypt, $masterKey);
     }
 
@@ -207,7 +205,7 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment']['id'];
 
-        $amount = $input['payment']['amount'] /100;
+        $amount = number_format($input['payment']['amount'] /100, 2, '.', ' ');
 
         return [
             RequestFields::MERCHANT_UNIQUE_REFERENCE => $paymentId,
@@ -232,7 +230,7 @@ class Gateway extends Base\Gateway
 
     protected function getDataFromResponse($encryptedResponse)
     {
-        $masterKey = $this->getMasterKey();
+        $masterKey = $this->getSecret();
 
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
@@ -299,7 +297,7 @@ class Gateway extends Base\Gateway
 
     public function encryptString(string $string, string $masterKey)
     {
-        $aes = new AES(self::MODE_ECB);
+        $aes = new AES(self::MODE_CBC);
         $aes->setKey($masterKey);
 
         // returning Encrypted String
@@ -308,25 +306,13 @@ class Gateway extends Base\Gateway
 
     public function decryptString(string $string, string $masterKey)
     {
-        $aes = new AES(self::MODE_ECB);
+        $aes = new AES(self::MODE_CBC);
         $aes->setKey($masterKey);
 
         $encryptedString = base64_decode($string);
 
         // returning Decrypted String
         return $aes->decrypt($encryptedString);
-    }
-
-    public function getMasterKey()
-    {
-        $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
-
-        if ($this->mode === Mode::TEST)
-        {
-            $masterKey = $this->config['test_hash_secret'];
-        }
-
-        return $masterKey;
     }
 
     public function getPid()
