@@ -249,7 +249,7 @@ app.controller('AuthCtrl', [
           : $scope.signup.merchantData[key]
         }
       })
-      payload.source = location.search().utm_source || document.referrer
+      payload.source = $location.search().utm_source || document.referrer
       try {
         // try-catch, since there could be tracker blocking scripts
         _dcq.push(["identify", payload]);
