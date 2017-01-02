@@ -358,16 +358,6 @@ trait Refund
     {
         try
         {
-            // This has already been refunded on Billdesk.
-            // We'll run create record later after this is refunded.
-            $paymentId = $data['payment']['id'];
-            $refAmount = $data['amount'];
-
-            if ((($paymentId === '6wGoozP7uG0uNE') and ($refAmount === 60000)))
-            {
-                return;
-            }
-
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
@@ -463,8 +453,7 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]
-        );
+            ]);
 
         $this->setPayment($payment);
 

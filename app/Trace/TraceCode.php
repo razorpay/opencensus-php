@@ -81,7 +81,7 @@ class TraceCode
     const PAYMENT_CAPTURE_INVOICE_UPDATE            = 'PAYMENT_CAPTURE_INVOICE_UPDATE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
     const PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       = 'PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED';
-    const INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED = 'INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED';
+    const INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  = 'INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
@@ -489,7 +489,7 @@ class TraceCode
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       => 'Payment cannot be auto captured since it is not in authorized state',
-        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED => 'Invoice payment cannot be auto capture since it is either past due date or is not in issued state',
+        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  => 'Invoice payment cannot be auto captured since it is either past due date or is not in issued state',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
         self::PAYMENT_ANALYTICS_INCORRECT_DATA          => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',

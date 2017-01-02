@@ -1007,7 +1007,7 @@ class Processor
             ($now >= $invoice->getDueBy()))
         {
             $this->trace->debug(
-                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED,
+                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
                 [
                     'payment_id'     => $payment->getId(),
                     'status'         => $payment->getStatus(),
