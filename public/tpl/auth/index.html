@@ -1,0 +1,114 @@
+<div class="auth-container" id="auth-container" ng-controller="AuthCtrl">
+  <div class="auth-inner">
+    <div class="auth-header">
+      <div class="rzp-logo">
+        <img class="logo" src="{{login_logo}}" alt='Logo' height="">
+        <button ng-if="!right && !isLoggedIn" class="btn pull-right btn-layout-change" ng-click="goToSigninLayout()">Login</button>
+        <button ng-if="isLoggedIn || lockme" class="btn pull-right btn-layout-change" ng-click="logoutAndGoToLogin()">Logout</button>
+        <button ng-if="right && !isLoggedIn && !lockme" class="btn pull-right btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
+      </div>
+
+    </div>
+    <div class="auth-body">
+      <div class="auth-messaging" ng-class="right ? 'login' : 'signup'">
+        <div class="signup-messaging">
+          <div class="messaging-heading">
+            Why choose Razorpay?
+          </div>
+
+          <div class="messaging-text">
+            “Razorpay is revolutionising the Indian payments space. Their focus on easy on-boarding, swift integrations and high success rates make them the first choice for new age businesses.”
+          </div>
+
+          <div class="messaging-testimonial">
+            <div class="messaging-image"><img src="img/punit_soni.png" alt=""></div>
+            <div class="messaging-right">
+              <div class="messaging-name">Punit Soni</div>
+              <div class="messaging-position">Ex-CPO, Flipkart</div>
+            </div>
+          </div>
+
+          <div class="messaging-support">
+            <div class="line-segment"></div>
+            <div class="support-container">
+              <div class="support-icon">
+                <i class="fa fa-phone"></i>
+              </div>
+              <div class="support-info-container">
+                <div class="support-text">
+                  HELP AND SUPPORT
+                </div>
+                <div class="support-number">
+                  1800 2700 323
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="login-messaging">
+          <div class="messaging-heading">
+            Introducing ePOS
+          </div>
+
+          <div class="messaging-text">
+            Make your Smartphone a POS and get paid securely!
+          </div>
+
+          <a href="https://razorpay.com/epos/" target="_blank" class="messaging-link">LEARN MORE</a>
+
+          <div class="messaging-heading m-t">
+            Introducing Recurring payments
+          </div>
+
+          <div class="messaging-text">
+            Now collect payments online from your customers every month without the hassle of multiple reminders.
+          </div>
+
+          <a href="https://razorpay.com/blog/product/2016/11/22/introducing-recurring-payments-in-india.html" target="_blank" class="messaging-link">LEARN MORE</a>
+
+          <div class="messaging-support">
+            <div class="line-segment"></div>
+            <div class="support-container">
+              <div class="support-icon">
+                <i class="fa fa-phone"></i>
+              </div>
+              <div class="support-info-container">
+                <div class="support-text">
+                  HELP AND SUPPORT
+                </div>
+                <div class="support-number">
+                  1800 2700 323
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="auth-main-container" ng-class="{'right-align': right}">
+        <div class="overflow-container">
+          <div class="translate-container">
+            <div class="auth-signup-container" ng-include="'tpl/auth/signup.html'">
+              
+            </div>
+            <div class="auth-signin-container" ng-include="'tpl/auth/signin.html'">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script >  
+var _dcq = _dcq || [];
+var _dcs = _dcs || {}; 
+_dcs.account = '9421167';
+
+(function() {
+  var dc = document.createElement('script');
+  dc.type = 'text/javascript'; dc.async = true; 
+  dc.src = '//tag.getdrip.com/9421167.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(dc, s);
+})();
+</script>

@@ -48,6 +48,8 @@ var app = angular.module('app', [
       $state.go('500');
     });
 
+        
+
     $rootScope.tour = jqTourbusService;
   }
 ]).config([
@@ -209,7 +211,7 @@ var app = angular.module('app', [
 
 
       //Guest Routes
-.state('access', {
+    .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',
       resolve: {
@@ -221,25 +223,31 @@ var app = angular.module('app', [
         ]
       },
       data: { role: 'guest' }
-    }).state('access.signin', {
+    })
+
+    // auth routes
+    .state('access.signin', {
       url: '/signin',
-      templateUrl: 'tpl/page_signin.html'
+      templateUrl: 'tpl/auth/index.html',
+    }).state('access.pre_signup', {
+      url: '/pre_signup',
+      templateUrl: 'tpl/auth/index.html',
     }).state('access.lockme', {
       url: '/lockme/:email',
-      templateUrl: 'tpl/page_lockme.html'
-    }).state('access.signupnasscom', {
+      templateUrl: 'tpl/auth/index.html'
+    }).state('access.signup', {
+      url: '/signup',
+      templateUrl: 'tpl/auth/index.html'
+    }).state('access.forgotpwd', {
+      url: '/forgotpwd',
+      templateUrl: 'tpl/auth/index.html'
+    })/*.state('access.signupnasscom', {
       url: '/signup/nasscom',
       templateUrl: 'tpl/page_signup.html',
       data: {
         ref: 'nasscom'
       }
-    }).state('access.signup', {
-      url: '/signup',
-      templateUrl: 'tpl/page_signup.html'
-    }).state('access.forgotpwd', {
-      url: '/forgotpwd',
-      templateUrl: 'tpl/page_forgotpwd.html'
-    }).state('access.confirm', {
+    })*/.state('access.confirm', {
       url: '/confirm/:token',
       templateUrl: 'tpl/page_confirm.html',
       data: { role: 'any' }
@@ -247,11 +255,11 @@ var app = angular.module('app', [
       url: '/resetpwd/:token',
       templateUrl: 'tpl/page_resetpwd.html'
     })  //404
-.state('404', {
+    .state('404', {
       url: '/404',
       templateUrl: 'tpl/page_404.html'
     })  //500
-.state('500', {
+    .state('500', {
       url: '/500',
       templateUrl: 'tpl/page_500.html'
     });

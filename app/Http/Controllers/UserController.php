@@ -42,6 +42,11 @@ class UserController extends Controller
         try
         {
             list($error, $data) = (new User\Service)->register($input);
+
+            if (empty($error))
+            {
+                $this->postSignin();
+            }
         }
         catch (User\RecoverableException $e)
         {
@@ -134,6 +139,8 @@ class UserController extends Controller
         {
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
+
+            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
 
             foreach ($merchants as $merchant) {
                 $data['merchants'][$merchant['id']] = $merchant;
