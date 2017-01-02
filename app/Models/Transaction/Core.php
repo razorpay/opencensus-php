@@ -83,8 +83,6 @@ class Core extends Base\Core
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
-        $updateNodalBalance = true;
-
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
             [
@@ -98,16 +96,19 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $isFlashWalletCapture = ($payment->getWallet() === Payment\Processor\Wallet::FLASHWALLET);
-
-        if ($isFlashWalletCapture === true)
-        {
-            $updateNodalBalance = false;
-        }
-
-        $this->updateBalances($txn, $updateNodalBalance);
+        $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
 
         return [$txn, $feesSplit];
+    }
+
+    public function shouldUpdateNodalBalance(Payment\Entity $payment) : bool
+    {
+        if ($payment->isFlashWalletPayment() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -297,8 +298,6 @@ class Core extends Base\Core
 
         assert ($payment->transaction !== null);
 
-        $updateNodalBalance = true;
-
         $settledAt = 1;
 
         $txnData = array(
@@ -334,22 +333,21 @@ class Core extends Base\Core
 
         $paymentStatus = $payment->getStatus();
 
-        $isFlashWalletCapture = ($payment->getWallet() === Payment\Processor\Wallet::FLASHWALLET);
-
-        if ($isFlashWalletCapture === true)
-        {
-            $updateNodalBalance = false;
-        }
-
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
+                // Flashwallet refunds are internal, and wont change Nodal balance
+                if ($payment->isFlashWalletPayment() === true)
+                {
+                    break;
+                }
+
                 // When refunding authorized payments, we do not charge merchants
                 $this->updateNodalBalance($txn);
 
                 break;
             case Payment\Status::CAPTURED:
-                $this->updateBalances($txn, $updateNodalBalance);
+                $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
 
                 break;
             case Payment\Status::REFUNDED:

@@ -17,11 +17,11 @@ class Repository extends Base\Repository
         return Entity::lockForUpdate()->findOrFail($customerId);
     }
 
-    public function findByIdAndMerchantSilent(string $customerId, Merchant\Entity $merchant)
+    public function findByCustomerAndMerchantSilent(Customer\Entity $customer, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->merchantId($merchant->getId())
-                    ->find($customerId);
+                    ->find($customer->getId());
     }
 
     protected function addQueryOrder($query)

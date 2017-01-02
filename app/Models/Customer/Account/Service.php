@@ -563,6 +563,10 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        return (new Customer\Transaction\Service)->getStatement($customerId, $input);
+        $customerBalance = $this->repo
+                                ->customer_balance
+                                ->findByIdAndMerchant($customerId, $this->merchant);
+
+        return (new Customer\Transaction\Service)->getStatement($customerBalance, $input);
     }
 }

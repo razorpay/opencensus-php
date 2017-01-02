@@ -878,14 +878,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BASE_AMOUNT_REFUNDED);
     }
 
-    public function getBaseAmountUnrefunded()
-    {
-        return $this->getBaseAmount() - $this->getBaseAmountRefunded();
-    }
-
     public function getAmountUnrefunded()
     {
         return $this->getAmount() - $this->getAmountRefunded();
+    }
+
+    public function getBaseAmountUnrefunded()
+    {
+        return $this->getBaseAmount() - $this->getBaseAmountRefunded();
     }
 
     public function getAmountTransferred()
@@ -1494,16 +1494,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $baseAmountRefunded);
     }
 
-    public function transferAmount($amount)
+    public function transferAmount(int $amount)
     {
-        if (is_int($amount) === false)
-        {
-            throw new Exception\InvalidArgumentException(
-                'amount should be an integer ' . $amount);
-        }
-
-        $amount = (int) $amount;
-
         $amountUntransferred = $this->getAmountUntransferred();
 
         if ($amount > $amountUntransferred)

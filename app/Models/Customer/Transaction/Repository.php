@@ -35,9 +35,9 @@ class Repository extends Base\Repository
      * @param  string   $merchantId
      * @return array
      */
-    public function fetchCustomerStatement(array $input, string $merchantId)
+    public function fetchCustomerStatement(array $input, Merchant\Entity $merchant)
     {
-        $records = $this->fetch($input, $merchantId);
+        $records = $this->fetch($input, $merchant->getId());
 
         return $records;
     }

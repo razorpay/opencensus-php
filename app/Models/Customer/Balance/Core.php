@@ -32,7 +32,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Debit an amount from customer_balance
+     * Debit an amount from customer_balance account
      *
      * @param  Entity $balance
      * @param  int    $amount
@@ -50,7 +50,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Credit an amount from customer_balance
+     * Credit an amount to customer_balance account
      *
      * @param  Entity $balance
      * @param  int    $amount
@@ -74,7 +74,7 @@ class Core extends Base\Core
 
 
     /**
-     * Fetches or creates and returns a customer_balance entity for a merchant-customer pair
+     * Fetches, or creates and returns, a customer_balance entity for a merchant
      *
      * @param  Customer\Entity $customer
      * @return Entity
@@ -83,7 +83,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByIdAndMerchantSilent($customer->getId(), $this->merchant);
+                        ->findByCustomerAndMerchantSilent($customer, $this->merchant);
 
         if ($balance !== null)
         {

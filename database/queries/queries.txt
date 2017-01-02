@@ -671,7 +671,7 @@ ALTER TABLE payments
 ALTER TABLE mobikwik
     MODIFY COLUMN merchantname VARCHAR(255);
 
-###   1. Saved payments with app token set but global_customer_id null
+###    1. Saved payments with app token set but global_customer_id null
     UPDATE payments
     JOIN customer_apps as appTokens ON payments.app_token = appTokens.id
     SET payments.global_customer_id=appTokens.customer_id
@@ -1228,11 +1228,13 @@ ALTER TABLE upi
     ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
     MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
 
+----
+
 ALTER TABLE payment_analytics
     ADD COLUMN merchant_id VARCHAR(14) AFTER payment_id,
     ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 
-# Queries around "invoices" prs deployment
+-- Queries around "invoices" prs deployment
 
 ALTER TABLE `invoices` ADD COLUMN `ref_num`    char(14) DEFAULT NULL AFTER `id`;
 ALTER TABLE `invoices` ADD COLUMN `issued_at`  int(11)  DEFAULT NULL AFTER `scheduled_at`;
@@ -1252,7 +1254,8 @@ ALTER TABLE `line_items` ADD CONSTRAINT `line_items_item_id_foreign` FOREIGN KEY
 CREATE INDEX `line_items_entity_id_index`   ON `line_items` (`entity_id`);
 CREATE INDEX `line_items_entity_type_index` ON `line_items` (`entity_type`);
 
-# Run these queries post https://github.com/razorpay/api/pull/1575/ 's code deployment
+
+-- Run these queries post https://github.com/razorpay/api/pull/1575/ 's code deployment
 
 ALTER TABLE `line_items` DROP FOREIGN KEY `line_items_invoice_id_foreign`;
 DROP INDEX `line_items_amount_index` ON `line_items`;
@@ -1266,33 +1269,41 @@ ALTER TABLE `line_items` MODIFY COLUMN `item_id`     char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_id`   char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 
-# Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
+-----
+
+
+-- Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
 
-# Queries for updating credit_card, debit_card method
+--Queries for updating credit_card, debit_card method
 UPDATE merchant_banks SET credit_card = 0 WHERE card = 0;
 UPDATE merchant_banks SET debit_card = 0 WHERE card = 0;
 
-# Pre code deployment / https://github.com/razorpay/api/pull/1697
+--- Pre code deployment / https://github.com/razorpay/api/pull/1697
 
 ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
 ALTER TABLE invoices MODIFY COLUMN customer_id CHAR(14) DEFAULT NULL;
+
+---
 
 ALTER TABLE payments
     ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
 ALTER TABLE payments
     ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
 
-# Pre code deployment / Branch: invoices_rename_column
+--- Pre code deployment / Branch: invoices_rename_column
 
 ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
 ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
+--- UPDATE invoices SET receipt = ref_num LIMIT 1000;
 
-UPDATE invoices SET receipt = ref_num LIMIT 1000;
+--- Post code deployment / Branch: invoices_rename_column
 
 ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
 ALTER TABLE invoices DROP COLUMN ref_num;
+
+---
 
 ALTER TABLE billdesk
     ADD COLUMN AccountNumber VARCHAR(50) AFTER BankID;
@@ -1313,6 +1324,9 @@ ALTER TABLE payments
 
 UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
 
+---
+
+----
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource
@@ -1339,11 +1353,11 @@ ALTER TABLE cybersource
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
 
+----
 ALTER TABLE terminals
     ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
 
-UPDATE terminals
-    SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
+UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
 
 ----
 ALTER TABLE merchants

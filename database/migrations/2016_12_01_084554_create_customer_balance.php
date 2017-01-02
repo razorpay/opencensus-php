@@ -27,7 +27,7 @@ class CreateCustomerBalance extends Migration
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::BALANCE)
-                  ->nullable();
+                  ->unsigned();
 
             $table->integer(Entity::DAILY_USAGE)
                   ->unsigned();
@@ -39,6 +39,8 @@ class CreateCustomerBalance extends Migration
                   ->unsigned();
 
             $table->integer(Entity::MAX_BALANCE)
+                  ->unsigned()
+                  ->default(null)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

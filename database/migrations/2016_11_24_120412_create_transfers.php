@@ -32,7 +32,8 @@ class CreateTransfers extends Migration
 
             $table->string(Entity::TO_TYPE, 50);
 
-            $table->integer(Entity::AMOUNT);
+            $table->integer(Entity::AMOUNT)
+                  ->unsigned();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 

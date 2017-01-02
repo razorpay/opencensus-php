@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::CUSTOMER_ID;
 
+    const MAX_BALANCE_DEFAULT = 2000000;
+
     protected $fillable = [
         self::BALANCE,
         self::DAILY_USAGE,
@@ -46,7 +48,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::BALANCE       => 0,
-        self::MAX_BALANCE   => 2000000,
+        self::MAX_BALANCE   => null,
         self::DAILY_USAGE   => 0,
         self::WEEKLY_USAGE  => 0,
         self::MONTHLY_USAGE => 0,
@@ -149,6 +151,19 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Helpers -------------------------
+
+    public function getMaxBalanceAttribute()
+    {
+        $balance = $this->attributes[self::MAX_BALANCE];
+
+        if (($balance === null) or
+            ($balance === '0'))
+        {
+            $balance = self::MAX_BALANCE_DEFAULT;
+        }
+
+        return (int) $balance;
+    }
 
     protected function setPublicCustomerIdAttribute(array & $array)
     {
