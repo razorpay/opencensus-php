@@ -28,7 +28,7 @@ class Core extends Base\Core
         $this->associateRelevantEntitiesToAdmin($admin, $input);
 
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
-            $admin->getId(), $org->getId(), ['roles', 'groups']);
+            $admin->getId(), $org->getId(), [Entity::ROLES, Entity::GROUPS]);
 
         return $admin;
     }
@@ -119,7 +119,7 @@ class Core extends Base\Core
             $admin->setAuditAction(
                 Action::RESET_PASSWORD_INVALID_OLD_PASSWORD);
 
-            if($admin->matchPassword($oldPassword) === false)
+            if ($admin->matchPassword($oldPassword) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Old Password is incorrect');
