@@ -167,67 +167,100 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureOnLateAuthorizedPayment()
     {
-        $this->app['config']->set('gateway.mock_hdfc', true);
-
-        $order = $this->fixtures->create('order', [
-            'id'              => '100000000order',
-            'payment_capture' => '1'
-            ]);
-
-        $this->fixtures->create('invoice');
-
-        $this->gateway = 'hdfc';
-
-        $this->mockServerVerifyContentFunction();
-
-        $this->gateway = null;
-
-        $this->doAuthPaymentAndCatchException($order);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+        $payment = $this->createFailedPayment();
 
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
-        $order = $this->getLastEntity('order', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('paid', $order['status']);
+        $this->assertEquals('paid', $invoice['status']);
 
         $this->assertTrue($payment['amount'] === $order['amount']);
     }
 
     public function testAutoCaptureFailAsPastDefaultRefundTimePeriod()
     {
+        $payment = $this->createFailedPayment();
+
+        $past = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals('attempted', $invoice['status']);
     }
 
     public function testAutoCaptureFailAsPastMerchantRefundTimePeriod()
     {
+        $payment = $this->createFailedPayment();
+
+        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
+
+        $defaultMerchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit($defaultMerchantId, ['auto_refund_delay' => '2 hours']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals('attempted', $invoice['status']);
     }
 
     public function testAutoCaptureFailAsInvoicePastDueBy()
     {
+        $payment = $this->createFailedPayment();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        // TODO: Need to get this working
+        // $this->fixtures->invoice->edit($invoice['id'], ['due_by' => $past]);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals('attempted', $invoice['status']);
+    }
+
+    public function testAutoCaptureFailAsNoInvoice()
+    {
+        $payment = $this->createFailedPayment('1', false);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals('attempted', $invoice['status']);
     }
 
     public function testPaymentNotCapturedWithOrder()
     {
-        $this->app['config']->set('gateway.mock_hdfc', true);
-
-        $order = $this->fixtures->create('order');
-
-        $this->gateway = 'hdfc';
-
-        $this->mockServerVerifyContentFunction();
-
-        $this->gateway = null;
-
-        $this->doAuthPaymentAndCatchException($order);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+        $payment = $this->createFailedPayment('0');
 
         $this->authorizeFailedPayment($payment['id']);
 
@@ -237,8 +270,6 @@ class CaptureTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
         $this->assertEquals(true, $order['authorized']);
-
-        $this->assertTrue($payment['amount'] === $order['amount']);
     }
 
     public function testMultiplePaymentsWithAutoCapture()
@@ -494,6 +525,44 @@ class CaptureTest extends TestCase
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
               ->with('payment', Mockery::type('RZP\Models\\Base\\PublicEntity'));
+    }
+
+    /**
+     * Helper method which creates order, invoices and attempts to make a payment
+     * which must fail.
+     *
+     * @param string  $paymentCapture
+     * @param boolean $withInvoice
+     *
+     * @return array
+     */
+    protected function createFailedPayment($paymentCapture = '1', $withInvoice = true)
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $order = $this->fixtures->create('order', [
+            'id'              => '100000000order',
+            'payment_capture' => $paymentCapture,
+            ]);
+
+        if ($withInvoice)
+        {
+            $this->fixtures->create('invoice');
+        }
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerVerifyContentFunction();
+
+        $this->gateway = null;
+
+        $this->doAuthPaymentAndCatchException($order);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+
+        return $payment;
     }
 
     protected function mockServerVerifyContentFunction()
