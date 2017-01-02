@@ -119,9 +119,9 @@ class Validator extends Base\Validator
         'lg_code' => 'required',
         'lc_ro_code' => 'required',
         'mrm_code' => 'required',
+        'mcc_category' => 'required',
+        'mcc_code' => 'required',
         'merchant_type' => 'required',
-        'subvention' => 'required',
-        'surcharge' => 'required',
         'merchant_name' => 'required',
         'contact_name' => 'required',
         'dba_name' => 'required'

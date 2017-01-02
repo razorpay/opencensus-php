@@ -121,6 +121,7 @@ app.controller('AuthCtrl', [
           var form_data = JSON.parse(data.data.form_data);
 
           $scope.signup.data.email = data.data.email;
+          $scope.lock_email = data.data.email ? true : false;
           $scope.signup.data.business_name = form_data.merchant_name;
           $scope.signup.data.name = form_data.contact_name;
         }
