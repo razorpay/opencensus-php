@@ -97,6 +97,11 @@ class CaptureTest extends TestCase
 
             $this->assertEquals("Error while recording fee breakup", $ex->getMessage());
 
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals('authorized', $payment['status']);
+
+            $this->assertNull($payment['captured_at']);
             return;
         }
 

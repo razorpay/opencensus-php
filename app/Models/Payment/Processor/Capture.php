@@ -244,11 +244,9 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
-        $paymentCopy = clone $this->payment;
-
         $this->mutex->acquireAndRelease(
             $this->payment->getId(),
-            function() use($data, $paymentCopy)
+            function() use($data)
             {
                 try
                 {
@@ -258,16 +256,18 @@ trait Capture
                 {
                     $this->trace->traceException($ex);
 
-                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex, $paymentCopy);
+                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex);
                 }
 
+                // In case of a failure (marking the payment as failed),
+                // we won't record this capture since we throw the exception
+                // after marking the payment as failed.
                 $this->recordCapture();
             });
     }
 
     protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
-        Exception\BaseException $ex,
-        Payment\Entity $paymentCopy)
+        Exception\BaseException $ex)
     {
         //
         // For validation failures from the gateway or
@@ -279,14 +279,6 @@ trait Capture
         {
             throw $ex;
         }
-
-        //
-        // We need to use the old payment
-        // because the recordCapture would have made some changes
-        // to payment entity but not committed due to which payment
-        // entity will have corrupted data
-        //
-        $this->payment = $paymentCopy;
 
         $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
 
