@@ -9,7 +9,7 @@ class Service extends Base\Service
 {
     public function createPermission(array $input)
     {
-        $permission = (new Core)->create($input);
+        $permission = $this->core()->create($input);
 
         return $permission->toArrayPublic();
     }
@@ -18,31 +18,31 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($permissionId);
 
-        $permission = $this->repo->permission->findorfailpublic($permissionId);
+        $permission = $this->repo->permission->findOrFailPublic($permissionId);
 
         return $permission->toArrayPublic();
     }
 
-    public function deletePermission(string $permId)
+    public function deletePermission(string $id)
     {
-        Entity::verifyIdAndStripSign($permId);
+        Entity::verifyIdAndStripSign($id);
 
-        $perm = $this->repo->permission->findorfailpublic($permId);
+        $permission = $this->repo->permission->findOrFailPublic($id);
 
-        $data = $this->core()->delete($perm);
+        $permission = $this->core()->delete($permission);
 
-        return $data;
+        return $permission->toArrayDeleted();
     }
 
-    public function editPermission(string $permId, array $input)
+    public function editPermission(string $id, array $input)
     {
-        Entity::verifyIdAndStripSign($permId);
+        Entity::verifyIdAndStripSign($id);
 
-        $perm = $this->repo->permission->findOrFail($permId);
+        $permission = $this->repo->permission->findOrFail($id);
 
-        $perm = $this->core()->edit($perm, $input);
+        $permission = $this->core()->edit($permission, $input);
 
-        return $perm->toArrayPublic();
+        return $permission->toArrayPublic();
     }
 
     public function getMultiplePermissions(array $input)
