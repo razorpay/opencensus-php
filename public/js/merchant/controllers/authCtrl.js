@@ -23,6 +23,7 @@ app.controller('AuthCtrl', [
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
     $scope.right = false; // login layout ? right is true : right is false
+    $scope.lockme = false; // only turns true for lockme route
     
     $scope.organization = {};
     organization.fetchCurrentOrg().then(function (data) {
@@ -315,13 +316,16 @@ app.controller('AuthCtrl', [
     if ($state.current.name === 'access.pre_signup') {
       Object.assign($scope.signup.merchantData, (user.getIdentity() && user.getIdentity().pre_signup))
     }
-
-    if (['access.signin', 'access.forgotpwd', 'access.pre_signup'].indexOf($state.current.name) !== -1) {
+    if (['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf($state.current.name) !== -1) {
       $scope.right = true;
-      if ($state.current.name === 'access.signin') {
+      if ($state.current.name === 'access.signin' || $state.current.name === 'access.lockme') {
         if (!user.isAuthenticated()) {
           $scope.login.currentStep = 1;
-        } else {
+          if ($state.current.name === 'access.lockme') {
+            $scope.lockme = true;
+            $scope.login.data.email = $stateParams.email
+          }
+        } else if (!user.isPreSignupDone() || !user.isVerified()){
           $state.transitionTo('access.pre_signup', {}, {
             notify: false,
           });
@@ -332,6 +336,20 @@ app.controller('AuthCtrl', [
           } else {
             // email not verified case
             $scope.login.currentStep = 3;
+          }
+        } else {
+          var userDetails = user.getIdentity()
+          var role = userDetails.merchants[userDetails.id].pivot.role;
+
+          switch (role) {
+            case 'support':
+              $state.go('app.payments.list');
+              break;
+            case 'sellerapp':
+              $state.go('app.invoices');
+              break;
+            default:
+              $state.go('app.dashboard');
           }
         }
       } else if ($state.current.name === 'access.forgotpwd') {
@@ -385,6 +403,7 @@ app.controller('AuthCtrl', [
           hideLoginBtn()
           // check questions have been answered or not
           user.identity(true).then(function(userDetails) {
+            debugger
             if (user.isPreSignupDone() && user.isVerified()) {
               var role = userDetails.merchants[userDetails.id].pivot.role;
 
@@ -454,6 +473,7 @@ app.controller('AuthCtrl', [
       request.finally(function () {
         user.identity(true);
         $scope.isLoggedIn = false;
+        $scope.lockme = false;
         $state.transitionTo('access.signin', {}, {
           notify: false,
         });

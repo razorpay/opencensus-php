@@ -20,25 +20,26 @@
     </div>
     <div class="auth-step">
       <div class="auth-heading">
-        Login to Dashboard
+        {{lockme ? "Dashboard Locked" : "Login to Dashboard"}}
       </div>
       <div class="login-details-overflow-container">
         <div class="login-details-translate-container" style="transform: translateX({{-(240)*login.currentSubStep}}px)">
           <div class="auth-substep">
             <div class="auth-text">
-              Enter your Razorpay Credentials
+              {{lockme ? "You have been inactive for more than 5 minutes. Enter password to access the dashboard as " : "Enter your Razorpay Credentials"}}
+              <strong ng-if="lockme">{{login.data.email}}</strong>
             </div>
 
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
-              <label class="form-label auth-subheading" for="email">Email</label>
-              <input override-tab type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
+              <label ng-if="!lockme" class="form-label auth-subheading" for="email">Email</label>
+              <input ng-if="!lockme" override-tab type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
               <input override-tab type="password" placeholder="••••••••" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
-              <div class="highlight-clickable-text" ng-click="goToForgotPwd()">
+              <div ng-if="!lockme" class="highlight-clickable-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
               <button override-tab class="btn btn-primary form-control login-btn" type="submit">
-                Login
+                {{lockme ? "Unlock" : "Login"}}
               </button>
             </form>
             
