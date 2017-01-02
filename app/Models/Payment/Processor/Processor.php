@@ -912,21 +912,26 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
+        // Pre-validations. Should be in auth state.
         if ($this->validatePaymentForAutoCapture($payment) === false)
         {
             return false;
         }
 
+
+        // Is within auto-refund delay window
         if ($this->validateMerchantRefundDelayForAutoCapture($payment) === false)
         {
             return false;
         }
 
+        // For now, only invoice late-auth payments are being auto-captured.
         if ($this->validatePaymentInvoiceForAutoCapture($payment) === false)
         {
             return false;
         }
 
+        // Validates order is unpaid and payment capture is true.
         if ($this->validatePaymentOrderForAutoCapture($payment) === false)
         {
             return false;
@@ -979,12 +984,7 @@ class Processor
                                 ->addSeconds($autoRefundDelay)
                                 ->timestamp;
 
-        if ($now >= $captureBefore)
-        {
-            return false;
-        }
-
-        return true;
+        return ($now <= $captureBefore)
     }
 
     protected function validatePaymentInvoiceForAutoCapture(Payment\Entity $payment)
