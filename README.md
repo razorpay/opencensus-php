@@ -12,8 +12,9 @@
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * Make sure you are running the latest node (only 6 and above are supported)
-* `npm i`
-* `npm i -g gulp`
+* Install Yarn if it's not pre-installed (https://yarnpkg.com/en/docs/install)
+* `yarn install`
+* `yarn global add gulp`
 * `gulp watch`
 
 - Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.
