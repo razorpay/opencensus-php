@@ -8,15 +8,18 @@ use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const TO_ID             = 'to_id';
-    const TO_TYPE           = 'to_type';
-    const SOURCE_ID         = 'source_id';
-    const SOURCE_TYPE       = 'source_type';
-    const AMOUNT            = 'amount';
-    const AMOUNT_REVERSED   = 'amount_reversed';
-    const TRANSACTION_ID    = 'transaction_id';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const TO_ID                 = 'to_id';
+    const TO_TYPE               = 'to_type';
+    const SOURCE_ID             = 'source_id';
+    const SOURCE_TYPE           = 'source_type';
+    const AMOUNT                = 'amount';
+    const BASE_AMOUNT           = 'base_amount';
+    const CURRENCY              = 'currency';
+    const AMOUNT_REVERSED       = 'amount_reversed';
+    const BASE_AMOUNT_REVERSED  = 'base_amount_reversed';
+    const TRANSACTION_ID        = 'transaction_id';
 
     protected static $sign = 'trf';
 
@@ -41,7 +44,10 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::AMOUNT,
+        self::BASE_AMOUNT,
+        self::CURRENCY,
         self::AMOUNT_REVERSED,
+        self::BASE_AMOUNT_REVERSED,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -53,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::TO_ID,
         self::AMOUNT,
+        self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::CREATED_AT,
     ];
@@ -66,8 +73,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT            => 'int',
-        self::AMOUNT_REVERSED   => 'int',
+        self::AMOUNT                 => 'int',
+        self::BASE_AMOUNT            => 'int',
+        self::AMOUNT_REVERSED        => 'int',
+        self::BASE_AMOUNT_REVERSED   => 'int',
     ];
 
     protected $defaults = [
@@ -165,18 +174,6 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::TO_ID] = $entity::getSignedId($toId);
         }
-    }
-
-    public function setPublicToTypeAttribute(array & $attributes)
-    {
-        $toType = $this->getAttribute(self::TO_TYPE);
-
-        if ($toType === 'merchant')
-        {
-            $toType = 'account';
-        }
-
-        $attributes[self::TO_TYPE] = $toType;
     }
 
     public function setPublicSourceIdAttribute(array & $attributes)

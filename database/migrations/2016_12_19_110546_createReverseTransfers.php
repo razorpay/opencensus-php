@@ -32,6 +32,8 @@ class CreateReverseTransfers extends Migration
 
             $table->integer(Entity::AMOUNT);
 
+            $table->char(Entity::CURRENCY, 3);
+
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
 
             $table->integer(Entity::CREATED_AT);

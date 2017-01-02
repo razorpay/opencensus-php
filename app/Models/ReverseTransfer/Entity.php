@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const TRANSFER_ID       = 'transfer_id';
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
+    const CURRENCY          = 'currency';
     const TRANSACTION_ID    = 'transaction_id';
 
     protected static $sign = 'revtrf';
@@ -29,16 +30,17 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AMOUNT,
+        self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $public = [
         self::ID,
-        self::MERCHANT_ID,
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AMOUNT,
+        self::CURRENCY,
         self::CREATED_AT,
     ];
 

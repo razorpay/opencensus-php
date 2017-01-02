@@ -76,7 +76,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::PARENT_ID,
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,

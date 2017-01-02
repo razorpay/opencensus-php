@@ -148,9 +148,7 @@ class CreatePayments  extends Migration
                   ->nullable()
                   ->default(null);
 
-            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
-                  ->nullable()
-                  ->default(null);
+            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
 
             $table->tinyInteger(Payment::SIGNED)
                   ->default(0);
