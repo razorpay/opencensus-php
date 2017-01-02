@@ -978,13 +978,13 @@ class Processor
         $merchant        = $payment->merchant;
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
-        $now             = Carbon::today('Asia/Kolkata')->timestamp;
-
         $captureBefore = Carbon::createFromTimestamp($payment->getCreatedAt())
                                 ->addSeconds($autoRefundDelay)
                                 ->timestamp;
 
-        return ($now <= $captureBefore)
+        $now = Carbon::today('Asia/Kolkata')->timestamp;
+
+        return ($now < $captureBefore);
     }
 
     protected function validatePaymentInvoiceForAutoCapture(Payment\Entity $payment)

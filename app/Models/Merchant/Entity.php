@@ -460,7 +460,7 @@ class Entity extends Base\PublicEntity
         // - Converted to seconds.
         //
 
-        if (empty($autoRefundDelay))
+        if ($autoRefundDelay === null)
         {
             $autoRefundDelay = Processor::AUTO_REFUND_TIME_PERIOD * 86400;
         }

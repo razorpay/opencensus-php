@@ -615,7 +615,7 @@ trait Authorize
 
             // For now: Only if the failed payment has invoice, attempt auto capture.
             // This condition should be removed later.
-            if ($payment->hasInvoice())
+            if ($payment->hasInvoice() === true)
             {
                 $this->autoCapturePaymentIfApplicable($payment);
             }
