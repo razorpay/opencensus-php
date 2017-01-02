@@ -384,9 +384,9 @@ app.controller('AuthCtrl', [
           // todo hide login button because user is logged in
           hideLoginBtn()
           // check questions have been answered or not
-          user.identity(true).then(function(user) {
-            if (user.isPreSignupDone && !user.confirm_token) {
-              var role = user.merchants[user.id].pivot.role;
+          user.identity(true).then(function(userDetails) {
+            if (user.isPreSignupDone() && user.isVerified()) {
+              var role = userDetails.merchants[userDetails.id].pivot.role;
 
               switch (role) {
                 case 'support':
@@ -402,9 +402,9 @@ app.controller('AuthCtrl', [
               $state.transitionTo('access.pre_signup', {}, {
                 notify: false,
               });
-              Object.assign($scope.signup.merchantData, user.pre_signup)
+              Object.assign($scope.signup.merchantData, userDetails.pre_signup)
               $scope.isLoggedIn = true;
-              $scope.login.currentStep = user.isPreSignupDone ? 3 : 2; 
+              $scope.login.currentStep = user.isPreSignupDone() ? 3 : 2; 
             }
           });
           // $scope.goToSignupStep(1)

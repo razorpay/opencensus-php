@@ -10,7 +10,12 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
-    var _identity, _authenticated = false;
+    var _identity, 
+        _isPreSignupDone = false, 
+        _isVerified = false,
+        _authenticated = false;
+
+
     return {
       isIdentityResolved: function () {
         return angular.isDefined(_identity);
@@ -26,10 +31,10 @@ angular.module('app.services', [])
         return _identity;
       },
       isPreSignupDone: function() {
-        return _identity && _identity.isPreSignupDone;
+        return _isPreSignupDone;
       },
       isVerified: function() {
-        return _identity && _identity.isVerified;
+        return _isVerified;
       },
       identity: function (force) {
         var deferred = $q.defer();
@@ -47,13 +52,13 @@ angular.module('app.services', [])
           }
 
           // if any of the fields is missing, isPreSignupDone will be false
-          _identity.isPreSignupDone = !!Object.keys(_identity.pre_signup)
+          _isPreSignupDone = !!Object.keys(_identity.pre_signup)
             // get all values
             .map(function (key) {return _identity.pre_signup[key]})
             // reduce all values using '&&'
             .reduce(function (x, y){return x && y});
 
-          _identity.isVerified = !_identity.confirm_token;
+          _isVerified = !_identity.confirm_token;
 
           _authenticated = data.success === true;
           if (_authenticated)
