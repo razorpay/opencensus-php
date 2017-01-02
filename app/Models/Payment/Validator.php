@@ -23,8 +23,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'sometimes|email',
-        'contact'                 =>  'sometimes|contact_syntax',
+        'email'                   =>  'required_unless:method,aeps|email',
+        'contact'                 =>  'required_unless:method,aeps|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -209,12 +209,6 @@ class Validator extends Base\Validator
     {
         if ($input['method'] === Payment\Method::WALLET)
         {
-            if (isset($input['contact']) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_REQUIRED);
-            }
-
             $number = new PhoneBook($input['contact'], true);
             $country = $number->getRegionCodeForNumber();
 
