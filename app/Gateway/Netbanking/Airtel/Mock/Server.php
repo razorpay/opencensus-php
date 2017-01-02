@@ -204,6 +204,7 @@ class Server extends Base\Mock\Server
                 $data = ($type === 'response') ? $this->getRefundResponseHashArray($data) :
                                                 $this->getRefundRequestHashArray($data);
                 break;
+
             default:
                 throw new Exception\RuntimeException('Action not set correctly');
         }

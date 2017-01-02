@@ -319,6 +319,7 @@ class Gateway extends Base\Gateway
 
             case Action::REFUND:
                 return $content[RefundFields::HASH];
+
             default:
                 throw new Exception\RuntimeException('Action not set correctly');
         }
