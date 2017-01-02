@@ -608,6 +608,8 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
+            $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
+
             $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
         }
         else if ($this->isTypeSettlement())

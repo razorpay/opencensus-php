@@ -135,6 +135,8 @@ trait Support
         }
         catch (\Exception $ex)
         {
+            $this->trace->traceException($ex, null, null, ['payment_id' => $paymentId]);
+
             return false;
         }
     }

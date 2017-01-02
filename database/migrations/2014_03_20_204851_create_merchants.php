@@ -26,6 +26,9 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ID, Merchant::ID_LENGTH)
                   ->primary();
 
+            $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Merchant::NAME);
 
             $table->string(Merchant::EMAIL, 255);
@@ -89,12 +92,13 @@ class CreateMerchants extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->tinyInteger(Merchant::CONVERT_CURRENCY)
+                  ->nullable();
+
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
 
-            $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
-                  ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
 
