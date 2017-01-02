@@ -402,7 +402,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content'    => $content,
                 'gateway'    => $this->gateway,
@@ -505,9 +505,15 @@ class Gateway extends Base\Gateway
     {
         if (isset($content[StatusQueryResponseFields::RESPONSE_HEADER]) === true)
         {
-            $this->statusQueryValid = true;
+            $txnFound = ($content[StatusQueryResponseFields::RESPONSE_HEADER]
+                                 [StatusQueryResponseFields::API_STATUS] === '1');
 
-            return $content[StatusQueryResponseFields::RESPONSE_HEADER][StatusQueryResponseFields::API_STATUS] === '1';
+            if ($txnFound === true)
+            {
+                $this->statusQueryValid = true;
+            }
+
+            return $txnFound;
         }
 
         return false;
@@ -569,6 +575,10 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = $this->getRequestHeaders($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
 
         return $request;
     }

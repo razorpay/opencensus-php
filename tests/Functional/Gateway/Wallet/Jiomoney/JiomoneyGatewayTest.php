@@ -4,6 +4,9 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Jiomoney;
 
 use RZP\Http\Route;
 use RZP\Gateway\Wallet\Jiomoney\TestAmount;
+use RZP\Gateway\Wallet\Jiomoney\StatusCode;
+use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
+use RZP\Gateway\Wallet\Jiomoney\RequestFields;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -43,7 +46,12 @@ class JiomoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
-        $payment['amount'] = ((float) TestAmount::FAIL_PAYMENT_AMOUNT) * 100;
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[ResponseFields::STATUS_CODE] = StatusCode::INTERNAL_ERROR;
+            $content[ResponseFields::RESPONSE_CODE] = 'FAILED';
+            $content[ResponseFields::RESPONSE_DESCRIPTION] = 'NA';
+        });
 
         $data = $this->testData[__FUNCTION__];
 
@@ -80,7 +88,21 @@ class JiomoneyGatewayTest extends TestCase
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
-        $this->refundPayment($capturePayment['id'], $payment['amount'] / 2);
+        $refundAmount = $payment['amount'] / 2;
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
+        {
+            if ($action === 'validateRefund')
+            {
+                $actualRefundAmount = (int) ($content[RequestFields::TRANSACTION][RequestFields::AMOUNT] * 100);
+
+                $assertion = ($actualRefundAmount === $refundAmount);
+
+                $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $this->refundPayment($capturePayment['id'], $refundAmount);
 
         $refund = $this->getLastEntity('wallet', true);
 
@@ -91,7 +113,15 @@ class JiomoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
-        $payment['amount'] = (((float) TestAmount::FAIL_REFUND_AMOUNT) * 100);
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::STATUS_CODE] = StatusCode::INTERNAL_ERROR;
+                $content[ResponseFields::RESPONSE_CODE] = 'FAILED';
+                $content[ResponseFields::RESPONSE_DESCRIPTION] = 'NA';
+            }
+        });
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
@@ -127,7 +157,13 @@ class JiomoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
-        $payment['amount'] = TestAmount::FAIL_STATUSQUERY_AMOUNT;
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'status_query')
+            {
+                $content['response_header']['api_status'] = '0';
+            }
+        });
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -176,6 +212,64 @@ class JiomoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testVerifyLateAuthorizedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create(
+            'payment',
+            [
+                'email'           => 'a@b.com',
+                'amount'          => 50000,
+                'contact'         => '9918899029',
+                'status'          => 'created',
+                'method'          => 'wallet',
+                'wallet'          => 'jiomoney',
+                'gateway'         => 'wallet_jiomoney',
+                'card_id'         => null,
+                'terminal_id'     => $this->sharedTerminal->id,
+                'late_authorized' => 1,
+            ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'         => $payment->getId(),
+            'amount'             => $payment->getAmount(),
+            'wallet'             => 'jiomoney',
+            'action'             => 'authorize',
+            'gateway_payment_id' => null,
+        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNotNull($wallet['gateway_payment_id']);
+    }
+
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($paymentId, $input);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertSame($paymentId, $refund['payment_id']);
+        $this->assertTestResponse($refund);
     }
 
     protected function runPaymentCallbackFlowWalletJiomoney($response, & $callback = null)

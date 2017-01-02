@@ -1245,7 +1245,7 @@ class DatabaseSeeder extends Seeder
     protected function createJiomoneyTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                        => '6tUImiItg84AzK',
                 'merchant_id'               => Account::TEST_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_JIOMONEY,
@@ -1256,11 +1256,11 @@ class DatabaseSeeder extends Seeder
                 'updated_at'                => time(),
                 'category'                  => 1000,
                 'shared'                    => '1',
-            )
+            ]
         );
 
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                        => Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_JIOMONEY,
@@ -1270,7 +1270,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_jiomoney_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
-            )
+            ]
         );
     }
 

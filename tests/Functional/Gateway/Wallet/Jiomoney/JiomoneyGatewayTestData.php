@@ -93,11 +93,27 @@ return [
         ],
     ],
 
+    'testVerifyLateAuthorizedPayment'   => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ],
+    ],
+
     'testRefundFailedPaymentEntity' => [
         'action'               => 'refund',
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
-        'amount'               => 1999,
+        'amount'               => 50000,
         'contact'              => '+919918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '500',
@@ -135,7 +151,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 999,
+        'amount'               => 50000,
         'wallet'               => 'jiomoney',
         'received'             => false,
         'email'                => 'a@b.com',
@@ -145,5 +161,12 @@ return [
         'response_code'        => 'FAILED',
         'response_description' => 'NA',
         'entity'               => 'wallet'
-    ]
+    ],
+
+    'testAuthorizedPaymentRefund' => [
+        'amount'    => 50000,
+        'currency'  => 'INR',
+        'entity'    => 'refund',
+        'admin'     => true,
+    ],
 ];
