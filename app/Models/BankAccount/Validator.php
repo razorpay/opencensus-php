@@ -19,6 +19,8 @@ class Validator extends Base\Validator
         'beneficiary_address2'  => 'sometimes|max:30',
         'beneficiary_address3'  => 'sometimes|max:30',
         'beneficiary_address4'  => 'sometimes|max:30',
+        'mobile_banking_enabled'=> 'sometimes|in:0,1',
+        'mpin'                  => 'sometimes|max:6',
         'beneficiary_city'      => 'required|max:30',
         'beneficiary_state'     => 'required|max:2',
         'beneficiary_pin'       => 'required|integer|digits:6',

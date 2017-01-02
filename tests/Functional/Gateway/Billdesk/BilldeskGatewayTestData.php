@@ -258,6 +258,22 @@ return [
         ],
     ],
 
+    'testPaymentVerifyError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+        ],
+    ],
+
     'testServerToServerCallback' => [
         'response'  => [
             'content'     => [

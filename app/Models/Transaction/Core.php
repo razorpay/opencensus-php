@@ -17,6 +17,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -332,8 +333,9 @@ class Core extends Base\Core
 
                 break;
             case Payment\Status::REFUNDED:
-                // This is a rare case and is here just to fix bugs.
-                assert ($payment->getGateway() === Payment\Gateway::HDFC);
+                $gateway = $payment->getGateway();
+
+                Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
                 $this->updateNodalBalance($txn);
 

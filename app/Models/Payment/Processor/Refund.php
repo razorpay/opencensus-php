@@ -42,17 +42,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $verifyRefundGateways = [
-            Payment\Gateway::HDFC,
-            Payment\Gateway::AXIS_MIGS
-        ];
+        $gateway = $payment->getGateway();
 
-        // Currently doing it for only HDFC and Migs. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        if (in_array($payment->getGateway(), $verifyRefundGateways, true) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
-        }
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
