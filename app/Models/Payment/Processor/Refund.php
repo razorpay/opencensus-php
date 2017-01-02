@@ -48,6 +48,8 @@ trait Refund
 
         $refund = $this->buildRefundEntity($payment, $input);
 
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
         $refund->setId($refundId);
 
         $data = [
