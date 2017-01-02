@@ -47,14 +47,14 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
-    public function testPutItem()
+    public function testUpdateItem()
     {
         $this->fixtures->create('item');
 
         $this->startTest();
     }
 
-    public function testPutItemHavingLineItemsAssociated()
+    public function testUpdateItemHavingLineItemsAssociated()
     {
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');

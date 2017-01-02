@@ -879,7 +879,7 @@ return [
     'testUpdateDraftInvoiceWithAmount' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'amount' => 1000,
             ],
@@ -902,7 +902,7 @@ return [
     'testUpdateDraftInvoiceWithBasicFields' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'sms_notify'   => '0',
@@ -952,7 +952,7 @@ return [
     'testUpdateDraftInvoiceWithBasicFieldsAndLineItems' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'sms_notify'   => '0',
@@ -1055,7 +1055,7 @@ return [
     'testUpdateDraftInvoiceAmountWhenLineItemsExists' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'amount'       => 100,
             ],
@@ -1078,7 +1078,7 @@ return [
     'testUpdateDraftInvoiceWithCustomerId' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'customer_id'  => 'cust_100001customer',
@@ -1104,7 +1104,7 @@ return [
     'testUpdateDraftInvoiceWithCustomerDetails' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
@@ -1132,7 +1132,7 @@ return [
     'testUpdateDraftInvoiceWithCustomerIdAndDetails' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'customer_id'  => 'cust_100000customer',
@@ -1160,7 +1160,7 @@ return [
     'testUpdateIssuedInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'date'         => 1480506888,
@@ -1201,7 +1201,7 @@ return [
     'testUpdateIssuedInvoiceWithExtraFields' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
                 'date'         => 1480506888,
@@ -1530,7 +1530,7 @@ return [
     'testUpdateLineItemOfInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'quantity'    => 1000,
             ],
@@ -1567,7 +1567,7 @@ return [
     'testUpdateLineItemOfInvoiceWithNewItemData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'name'        => 'Item New',
                 'description' => 'Item New Description',
@@ -1608,7 +1608,7 @@ return [
     'testUpdateLineItemOfInvoiceWithExistingItem' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'item_id'     => 'item_1000000001item',
                 'quantity'    => 5,
@@ -1646,7 +1646,7 @@ return [
     'testUpdateLineItemOfInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'quantity'    => 5,
                 'name'        => 'New item'
@@ -1815,7 +1815,7 @@ return [
     'testUpdateLineItemOfIssuedInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'put',
+            'method'    => 'patch',
             'content'   => [
                 'quantity'    => 100,
             ],

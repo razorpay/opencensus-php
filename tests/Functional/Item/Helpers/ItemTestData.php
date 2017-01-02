@@ -78,10 +78,10 @@ return [
         ],
     ],
 
-    'testPutItem' => [
+    'testUpdateItem' => [
         'request' => [
             'url'     => '/items/item_1000000000item',
-            'method'  => 'put',
+            'method'  => 'patch',
             'content' => [
                 'name'        => 'Item 2 Updated',
                 'amount'      => 1000,
@@ -98,10 +98,10 @@ return [
         ],
     ],
 
-    'testPutItemHavingLineItemsAssociated' => [
+    'testUpdateItemHavingLineItemsAssociated' => [
         'request' => [
             'url'     => '/items/item_1000000000item',
-            'method'  => 'put',
+            'method'  => 'patch',
             'content' => [
                 'name'        => 'Item 2 Updated',
                 'amount'      => 1000,
