@@ -31,9 +31,9 @@ class Entity extends Base\PublicEntity
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
-    const PLAN                = 'plan';
+    const FEE_MODEL           = 'fee_model';
     const FEE_BEARER          = 'fee_bearer';
-    const FEE_TYPE            = 'fee_type';
+    const CREDIT_TYPE         = 'credit_type';
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
@@ -67,9 +67,9 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
         self::CHANNEL,
-        self::PLAN,
+        self::FEE_MODEL,
         self::FEE_BEARER,
-        self::FEE_TYPE,
+        self::CREDIT_TYPE,
         self::SETTLED_AT,
         self::SERVICE_TAX);
 
@@ -114,9 +114,9 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
-        self::PLAN                  => Merchant\Plan::PREPAID,
+        self::FEE_MODEL             => Merchant\FeeModel::PREPAID,
         self::FEE_BEARER            => Merchant\FeeBearer::PLATFORM,
-        self::FEE_TYPE              => FeeType::DEFAULT,
+        self::CREDIT_TYPE           => CreditType::DEFAULT,
     );
 
     protected $amounts = array(
@@ -144,7 +144,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::GRATIS        => 'boolean',
         self::FEE_CREDITS   => 'integer',
-        self::PLAN          => 'integer',
+        self::FEE_MODEL     => 'integer',
         self::FEE_BEARER    => 'integer',
     ];
 
@@ -333,15 +333,15 @@ class Entity extends Base\PublicEntity
         return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
-    protected function getPlanAttribute()
+    protected function getFeeModelAttribute()
     {
-        return Merchant\Plan::getPlanStringForValue($this->attributes[self::PLAN]);
+        return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
 
 
-    protected function setPlanAttribute($plan)
+    protected function setFeeModelAttribute($feeModel)
     {
-        $this->attributes[self::PLAN] = Merchant\Plan::getValueForPlanString($plan);
+        $this->attributes[self::FEE_MODEL] = Merchant\FeeModel::getValueForFeeModelString($feeModel);
     }
 
 /* --------------------------- End Accessors ---------------------------------*/
@@ -504,14 +504,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_BEARER, $bearer);
     }
 
-    public function setPlan($plan)
+    public function setFeeModel($feeModel)
     {
-        $this->setAttribute(self::PLAN, $plan);
+        $this->setAttribute(self::FEE_MODEL, $feeModel);
     }
 
-    public function setFeeType($feeType)
+    public function setCreditType($creditType)
     {
-        $this->setAttribute(self::FEE_TYPE, $feeType);
+        $this->setAttribute(self::CREDIT_TYPE, $creditType);
     }
 
     public function isReconciled()
@@ -559,14 +559,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER);
     }
 
-    public function getPlan()
+    public function getFeeModel()
     {
-        return $this->getAttribute(self::PLAN);
+        return $this->getAttribute(self::FEE_MODEL);
     }
 
-    public function getFeeType()
+    public function getCreditType()
     {
-        return $this->getAttribute(self::FEE_TYPE);
+        return $this->getAttribute(self::CREDIT_TYPE);
     }
 
     public function toArrayReport()

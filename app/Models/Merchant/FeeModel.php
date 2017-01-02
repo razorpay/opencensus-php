@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-class Plan
+class FeeModel
 {
     const PREPAID   = 'prepaid';
     const POSTPAID  = 'postpaid';
@@ -12,15 +12,15 @@ class Plan
         self::POSTPAID  => 1,
     ];
 
-    public static function getValueForPlanString($plan)
+    public static function getValueForFeeModelString($feeModel)
     {
-        return self::$values[$plan];
+        return self::$values[$feeModel];
     }
 
-    public static function getPlanStringForValue($planValue)
+    public static function getFeeModelStringForValue($feeModelValue)
     {
         $values = array_flip(self::$values);
 
-        return $values[$planValue];
+        return $values[$feeModelValue];
     }
 }

@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
     const FEATURES                  = 'features';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
-    const PLAN                      = 'plan';
+    const FEE_MODEL                 = 'fee_model';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
     const LOGO_URL                  = 'logo_url';
@@ -67,12 +67,12 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::PLAN,
         self::EMAIL,
         self::SCOPE,
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
+        self::FEE_MODEL,
         self::FEATURES,
         self::LOGO_URL,
         self::FEE_BEARER,
@@ -149,7 +149,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
-        self::PLAN                   => Plan::PREPAID,
+        self::FEE_MODEL              => FeeModel::PREPAID,
         self::CONVERT_CURRENCY       => null,
     );
 
@@ -192,6 +192,11 @@ class Entity extends Base\PublicEntity
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isPrepaid()
+    {
+        return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
     }
 
     public function isLive()
@@ -397,9 +402,9 @@ class Entity extends Base\PublicEntity
         return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
-    protected function getPlanAttribute()
+    protected function getFeeModelAttribute()
     {
-        return Plan::getPlanStringForValue($this->attributes[self::PLAN]);
+        return FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
 
     protected function getInternationalAttribute()
@@ -638,9 +643,9 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
-    protected function setPlanAttribute($plan)
+    protected function setFeeModelAttribute($feeModel)
     {
-        $this->attributes[self::PLAN] = Plan::getValueForPlanString($plan);
+        $this->attributes[self::FEE_MODEL] = FeeModel::getValueForFeeModelString($feeModel);
     }
 
     protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)

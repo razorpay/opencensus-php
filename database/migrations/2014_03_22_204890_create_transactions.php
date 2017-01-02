@@ -6,11 +6,11 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction\Entity as Transaction;
-use RZP\Models\Transaction\FeeType;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Merchant\FeeBearer;
-use RZP\Models\Merchant\Plan;
+use RZP\Models\Merchant\FeeModel;
 
 
 class CreateTransactions extends Migration
@@ -87,11 +87,11 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
-            $table->tinyInteger(Transaction::PLAN)
-                  ->default(Plan::getValueForPlanString(Plan::PREPAID));
+            $table->tinyInteger(Transaction::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
-            $table->char(Transaction::FEE_TYPE)
-                  ->default(FeeType::DEFAULT);
+            $table->char(Transaction::CREDIT_TYPE)
+                  ->default(CreditType::DEFAULT);
 
             $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
