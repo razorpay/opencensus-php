@@ -1059,7 +1059,7 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_airtel_terminal_salt'),
+                'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),

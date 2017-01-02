@@ -3,9 +3,11 @@
 namespace RZP\Gateway\Netbanking\Airtel\Mock;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Currency;
 use RZP\Gateway\Netbanking\Airtel\Status;
 use RZP\Gateway\Netbanking\Airtel\Constants;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
@@ -19,6 +21,8 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
+
+        $this->verifySecureHash($input);
 
         $content = $this->createCallbackResponseArray($input);
 
@@ -34,9 +38,11 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
-        $request = $this->jsonToArray($input);
+        $request = json_decode($input, true);
 
         $this->validateActionInput($request);
+
+        $this->verifySecureHash($request);
 
         $response = $this->createRefundResponse($request);
 
@@ -47,9 +53,11 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $request = $this->jsonToArray($input);
+        $request = json_decode($input, true);
 
         $this->validateActionInput($request);
+
+        $this->verifySecureHash($request);
 
         $response = $this->getVerifyResponse($request);
 
@@ -58,7 +66,7 @@ class Server extends Base\Mock\Server
 
     protected function createRefundResponse($request)
     {
-        $date = Carbon::createFromFormat('dmYHis',
+        $date = Carbon::createFromFormat(Constants::TIME_FORMAT,
             $request[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         $data = [
@@ -75,7 +83,7 @@ class Server extends Base\Mock\Server
 
         $this->content($data);
 
-        $data[RefundFields::HASH] = $this->generateHash($data);
+        $data[RefundFields::HASH] = $this->generateHash($data, 'response');
 
         return json_encode($data);
     }
@@ -91,10 +99,10 @@ class Server extends Base\Mock\Server
             AuthFields::STATUS                    => Status::SUCCESS,
             AuthFields::CODE                      => '000',
             AuthFields::MSG                       => 'eCommerce transaction successful',
-            AuthFields::TRANSACTION_CURRENCY      => Constants::INDIAN_RUPEE,
+            AuthFields::TRANSACTION_CURRENCY      => Currency::INR,
         ];
 
-        $response[AuthFields::HASH] = $this->generateHash($response);
+        $response[AuthFields::HASH] = $this->generateHash($response, 'response');
 
         return $response;
     }
@@ -103,7 +111,7 @@ class Server extends Base\Mock\Server
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
-        $date = Carbon::createFromFormat('dmYHis',
+        $date = Carbon::createFromFormat(Constants::TIME_FORMAT,
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
 
         $verifyArray = [
@@ -124,40 +132,87 @@ class Server extends Base\Mock\Server
 
         $this->content($response);
 
-        $response[VerifyFields::HASH] = $this->generateHash($response);
+        $response[VerifyFields::HASH] = $this->generateHash($response, 'response');
 
         return json_encode($response);
     }
 
-    protected function generateHash($content)
-    {
-        $hashString = $this->getStringToHash($content, '#');
-
-        return $this->getHashOfString($hashString);
-    }
-
-    protected function getStringToHash($content, $glue = '')
+    protected function getHashValueFromContent(array $content)
     {
         switch ($this->action)
         {
             case Action::AUTHORIZE:
-                $content = $this->getCallbackHashArray($content);
+                return $content[AuthFields::HASH];
+
+            case Action::VERIFY:
+                return $content[VerifyFields::HASH];
+
+            case Action::REFUND:
+                return $content[RefundFields::HASH];
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
+        }
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]
+            );
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
+    protected function generateHash($content, $type = 'request')
+    {
+        $hashString = $this->getStringToHash($content, '#', $type);
+
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getStringToHash($data, $glue = '', $type = 'request')
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+                $data = ($type === 'response') ? $this->getCallbackResponseHashArray($data) :
+                                                $this->getCallbackRequestHashArray($data);
                 break;
 
             case Action::VERIFY:
-                $content = $this->getVerifyHashArray($content);
+                $data = ($type === 'response') ? $this->getVerifyResponseHashArray($data) :
+                                                $this->getVerifyRequestHashArray($data);
                 break;
 
             case Action::REFUND:
-                $content = $this->getRefundHashArray($content);
+                $data = ($type === 'response') ? $this->getRefundResponseHashArray($data) :
+                                                $this->getRefundRequestHashArray($data);
                 break;
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
         }
 
-        $salt = $this->getGatewayInstance()->getSalt();
+        $salt = $this->getGatewayInstance()->getSecret();
 
-        array_push($content, $salt);
+        array_push($data, $salt);
 
-        return implode($glue, $content);
+        return implode($glue, $data);
     }
 
     protected function getHashOfString($string)
@@ -165,20 +220,47 @@ class Server extends Base\Mock\Server
         return hash(HashAlgo::SHA512, $string);
     }
 
-    protected function getCallbackHashArray($input)
+    protected function getCallbackRequestHashArray($content)
     {
-        return [
+        $hashArray = [
+            $content[AuthFields::MERCHANT_ID],
+            $content[AuthFields::TRANSACTION_REFERENCE_NO],
+            $content[AuthFields::AMOUNT],
+            $content[AuthFields::DATE],
+            $content[AuthFields::SERVICE],
+        ];
+
+        return $hashArray;
+    }
+
+    protected function getCallbackResponseHashArray($input)
+    {
+        $hashArray = [
             $input[AuthFields::MERCHANT_ID],
             $input[AuthFields::TRANSACTION_ID],
             $input[AuthFields::TRANSACTION_REFERENCE_NO],
             $input[AuthFields::TRANSACTION_AMOUNT],
             $input[AuthFields::TRANSACTION_DATE],
         ];
+
+        return $hashArray;
     }
 
-    protected function getRefundHashArray($content)
+    protected function getRefundRequestHashArray($data)
     {
-        return [
+        $hashArray = [
+            $data[RefundFields::MERCHANT_ID],
+            $data[RefundFields::TRANSACTION_ID],
+            $data[RefundFields::AMOUNT],
+            $data[RefundFields::TRANSACTION_DATE],
+        ];
+
+        return $hashArray;
+    }
+
+    protected function getRefundResponseHashArray($content)
+    {
+        $hashArray = [
             $content[RefundFields::MERCHANT_ID],
             $content[RefundFields::ERROR_CODE],
             $content[RefundFields::AMOUNT],
@@ -186,18 +268,34 @@ class Server extends Base\Mock\Server
             $content[RefundFields::TRANSACTION_DATE],
             $content[RefundFields::STATUS]
         ];
+
+        return $hashArray;
     }
 
-    protected function getVerifyHashArray($content)
+    protected function getVerifyRequestHashArray($data)
+    {
+        $hashArray = [
+            $data[VerifyFields::MERCHANT_ID],
+            $data[VerifyFields::TRANSACTION_REFERENCE_NO],
+            $data[VerifyFields::AMOUNT],
+            $data[VerifyFields::TRANSACTION_DATE],
+        ];
+
+        return $hashArray;
+    }
+
+    protected function getVerifyResponseHashArray($content)
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
         $verifyArray = $content[VerifyFields::TRANSACTION][0];
 
-        return [
+        $hashArray = [
             $merchantId,
             '['.json_encode($verifyArray).']',
             $content[VerifyFields::ERROR_CODE],
         ];
+
+        return $hashArray;
     }
 }

@@ -4,18 +4,21 @@ namespace RZP\Gateway\Netbanking\Airtel;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base as GatewayBase;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Currency;
 
 class Gateway extends Base\Gateway
 {
-    use GatewayBase\AuthorizeFailed;
+    use AuthorizeFailed;
 
     protected $gateway = 'netbanking_airtel';
 
@@ -55,7 +58,7 @@ class Gateway extends Base\Gateway
         $attributes = $this->getCallbackAttributes($content);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
 
@@ -74,14 +77,16 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
-        $this->sendRefundRequestAndCheckResponse($request, $input);
+        $response = $this->sendGatewayRequest($request);
+
+        $this->checkRefundResponse($response, $input);
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
-        $verify = new GatewayBase\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -115,26 +120,26 @@ class Gateway extends Base\Gateway
 
         $status = $this->getVerifyMatchStatus($verify, $response);
 
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
     }
 
     protected function getVerifyMatchStatus($verify, $response)
     {
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+        $status = VerifyResult::STATUS_MATCH;
 
-        $this->setApiSuccess($verify);
+        $this->checkApiSuccess($verify);
 
-        $this->setGatewaySuccess($verify, $response[VerifyFields::TRANSACTION][0]);
+        $this->checkGatewaySuccess($verify, $response[VerifyFields::TRANSACTION][0]);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
         return $status;
     }
 
-    protected function setApiSuccess($verify)
+    protected function checkApiSuccess($verify)
     {
         $verify->apiSuccess = true;
 
@@ -147,7 +152,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function setGatewaySuccess($verify, $response)
+    protected function checkGatewaySuccess($verify, $response)
     {
         $verify->gatewaySuccess = false;
 
@@ -162,32 +167,30 @@ class Gateway extends Base\Gateway
     {
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhis');
+            ->format(Constants::TIME_FORMAT);
 
         $data = [
             AuthFields::MERCHANT_ID              => $this->getMerchantId(),
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
-            AuthFields::AMOUNT                   => $input['payment']['amount'] / 100,
+            AuthFields::AMOUNT                   => $this->getFormattedAmount($input),
             AuthFields::DATE                     => $date,
             AuthFields::SERVICE                  => Service::NETBANKING,
             AuthFields::SUCCESS_URL              => $input['callbackUrl'],
             AuthFields::FAILURE_URL              => $input['callbackUrl'],
-            AuthFields::CURRENCY                 => Constants::INDIAN_RUPEE,
+            AuthFields::CURRENCY                 => Currency::INR,
             AuthFields::CUSTOMER_MOBILE          => $input['payment']['contact'],
             AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
         ];
 
-        $data[AuthFields::HASH] = $this->getHashOfArray($data, true);
+        $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');
 
         return $data;
     }
 
     protected function createPaymentArray($input)
     {
-        $amount = $input['payment']['amount'] / 100;
-
         $paymentArray = [
-            AuthFields::AMOUNT => $amount
+            AuthFields::AMOUNT => $this->getFormattedAmount($input)
         ];
 
         return $paymentArray;
@@ -207,10 +210,8 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function sendRefundRequestAndCheckResponse($request, $input)
+    protected function checkRefundResponse($response, $input)
     {
-        $response = $this->sendGatewayRequest($request);
-
         $content = $response->body;
 
         $responseArray = $this->jsonToArray($content);
@@ -234,9 +235,9 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhis');
+            ->format(Constants::TIME_FORMAT);
 
-        $amount = $input['payment']['amount'] / 100;
+        $amount = $this->getFormattedAmount($input);
 
         $data = [
             VerifyFields::SESSION_ID               => uniqid(),
@@ -246,7 +247,7 @@ class Gateway extends Base\Gateway
             VerifyFields::AMOUNT                   => "$amount"
         ];
 
-        $data[VerifyFields::HASH] = $this->getHashOfArray($data, true);
+        $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
 
         return json_encode($data);
     }
@@ -254,17 +255,17 @@ class Gateway extends Base\Gateway
     protected function getRefundRequestData($input)
     {
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], GatewayBase\Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $tranId = $payment['bank_payment_id'];
 
         $date = Carbon::createFromTimestamp(
             $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('dmYhis');
+            ->format(Constants::TIME_FORMAT);
 
         $merchantId = $this->getMerchantId();
 
-        $amount = $input['refund']['amount'] / 100;
+        $amount = $this->getFormattedAmount($input);
 
         $request = [
             RefundFields::SESSION_ID        => uniqid(),
@@ -275,7 +276,7 @@ class Gateway extends Base\Gateway
             RefundFields::AMOUNT            => "$amount"
         ];
 
-        $hash = $this->getHashOfArray($request, true);
+        $hash = $this->getHashOfArray($request, 'request');
 
         $request[RefundFields::HASH] = $hash;
 
@@ -298,6 +299,11 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function getFormattedAmount($input)
+    {
+        return $input['payment']['id'] / 100;
+    }
+
     /*
      * Overrides the default method contained in Base/Gateway
      */
@@ -313,15 +319,17 @@ class Gateway extends Base\Gateway
 
             case Action::REFUND:
                 return $content[RefundFields::HASH];
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
         }
     }
 
     /*
      * Overrides the default method contained in Base/Gateway
      */
-    protected function getHashOfArray($content, $request = false)
+    protected function getHashOfArray($content, $type = 'response')
     {
-        $hashString = $this->getStringToHash($content, '#', $request);
+        $hashString = $this->getStringToHash($content, '#', $type);
 
         return $this->getHashOfString($hashString);
     }
@@ -329,7 +337,7 @@ class Gateway extends Base\Gateway
     /*
      * Overrides the default method contained in Base/Gateway
      */
-    protected function getStringToHash($content, $glue = '', $request = false)
+    protected function getStringToHash($content, $glue = '', $type = 'response')
     {
         switch ($this->action)
         {
@@ -342,29 +350,20 @@ class Gateway extends Base\Gateway
                 break;
 
             case Action::VERIFY:
-                if ($request === true)
-                {
-                    $data = $this->getVerifyRequestHashArray($content);
-                }
-                else
-                {
-                    $data = $this->getVerifyResponseHashArray($content);
-                }
+                $data = ($type === 'request') ? $this->getVerifyRequestHashArray($content) :
+                                            $this->getVerifyResponseHashArray($content);
                 break;
 
             case Action::REFUND:
-                if ($request === true)
-                {
-                    $data = $this->getRefundRequestHashArray($content);
-                }
-                else
-                {
-                    $data = $this->getRefundResponseHashArray($content);
-                }
+                $data = ($type === 'request') ? $this->getRefundRequestHashArray($content) :
+                                            $this->getRefundResponseHashArray($content);
                 break;
+
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
         }
 
-        $salt = $this->getSalt();
+        $salt = $this->getSecret();
 
         array_push($data, $salt);
 
@@ -476,11 +475,11 @@ class Gateway extends Base\Gateway
         if ((isset($content[$statusField]) === false) or
             ($content[$statusField] !== $successValue))
         {
-            $this->throwException($content, $statusField);
+            $this->handleRequestError($content, $statusField);
         }
     }
 
-    protected function throwException($content, $statusField)
+    protected function handleRequestError($content, $statusField)
     {
         $errorDescription = ErrorCodes::getErrorCodeDescription(
                 $content[$statusField]);
@@ -506,17 +505,5 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
-    }
-
-    public function getSalt()
-    {
-        $salt = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
-
-        if ($this->mode === Mode::TEST)
-        {
-            $salt = $this->getTestSecret();
-        }
-
-        return $salt;
     }
 }
