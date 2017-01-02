@@ -229,8 +229,7 @@ class CaptureTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
 
         $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
-        // TODO: Need to get this working
-        // $this->fixtures->invoice->edit($invoice['id'], ['due_by' => $past]);
+        $invoice = $this->fixtures->invoice->edit($invoice['id'], ['due_by' => $past]);
 
         $this->authorizeFailedPayment($payment['id']);
 
