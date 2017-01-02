@@ -19,8 +19,6 @@ class AxisGatewayTest extends TestCase
 
     public function setUp()
     {
-        // $this->markTestSkipped('Removed');
-
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
 
         parent::setUp();
@@ -105,6 +103,27 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('axis_migs', true);
 
         $this->assertEquals($amount, $refund['vpc_amount']);
+    }
+
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($paymentId, $input);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertSame($paymentId, $refund['payment_id']);
+        // $this->assertTestResponse($refund);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals('voidAuthorisation', $migs['vpc_Command']);
     }
 
     public function testMaestroOnMigsFailOnLive()
@@ -211,8 +230,8 @@ class AxisGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-	        $payment = $this->doAuthPayment($payment);
-	    });
+            $payment = $this->doAuthPayment($payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
