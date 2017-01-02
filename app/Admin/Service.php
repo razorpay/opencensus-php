@@ -44,7 +44,6 @@ class Service extends Base\Service
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
-    const SELF_DELETE_ERROR = 'You can not delete yourself.';
     const PAGE_SIZE = 1000;
 
     const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
@@ -62,27 +61,6 @@ class Service extends Base\Service
 
         $this->cache = $app['cache'];
     }
-
-    // public function login(array $input)
-    // {
-    //     $error = (new Admin\Validator)->validateInput('login', $input)->messages();
-    //
-    //     $verify = false;
-    //
-    //     if (empty($error))
-    //     {
-    //         $verify = Auth::guard('admin')->attempt($input);
-    //
-    //         if ($verify)
-    //         {
-    //             Session::put('timeout', time());
-    //         }
-    //     }
-    //
-    //     $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
-    //
-    //     return [$error, null];
-    // }
 
     public function passwordLogin($domain, array $input)
     {
@@ -431,6 +409,8 @@ class Service extends Base\Service
             $parser = Parser::create();
             $session->parsed_user_agent = $parser->parse($session->user_agent);
             $session->parsed_last_activity = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
+
+            unset($session['id']);
             $sessions[] = $session;
         }
 
@@ -453,22 +433,6 @@ class Service extends Base\Service
     public function deleteAllAdminSessions($adminId)
     {
         (new SessionTable\Entity)->deleteAllSessionsForAdmin($adminId);
-    }
-
-    public function deleteAdmin($id)
-    {
-        $error = array();
-
-        if ($id === Auth::guard('admin')->id())
-        {
-            $error[] = self::SELF_DELETE_ERROR;
-        }
-
-        $admin = Admin\Entity::findorfail($id);
-
-        $admin->delete();
-
-        return $error;
     }
 
     /**
@@ -1871,7 +1835,7 @@ class Service extends Base\Service
 
         try
         {
-            $input['email'] = Auth::guard('admin')->get()->email;
+            $input['email'] = Auth::guard('api')->user()->email;
 
             return [null, $this->api->admin->sendTestNewsletter($input)
                 ->toArray()];

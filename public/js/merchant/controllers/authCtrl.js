@@ -107,6 +107,40 @@ app.controller('AuthCtrl', [
       }
     }
 
+    if ($location.search().invitation) {
+      $scope.signup.data.invitation = $location.search().invitation;
+    }
+    // heimdall specific
+    else if ($location.search().merchant_invitation) {
+      $scope.singup.data.merchant_invitation = $location.search().merchant_invitation;
+
+      // Get invitation details
+      $http.get('/invitation/' + $scope.signup.data.merchant_invitation).success(function (data) {
+        if (data.success) {
+          var form_data = JSON.parse(data.data.form_data);
+
+          $scope.signup.data.email = data.data.email;
+          $scope.signup.data.business_name = form_data.merchant_name;
+          $scope.signup.data.name = form_data.contact_name;
+        }
+      }).error(function () {
+
+      });
+    }
+    // We only track referers if they are registering a business
+    else {
+      if (typeof $window.google_trackConversion === 'function') {
+        $window.google_trackConversion({
+          google_conversion_id : 928471290,
+          google_conversion_language : "en",
+          google_conversion_format : "3",
+          google_conversion_color : "ffffff",
+          google_conversion_label : "CM9fCLm40GMQ-rHdugM",
+          google_remarketing_only : false
+        });
+      }
+    }
+
     $scope.createAccount = function ($valid) {
       if (!$valid) {
         $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
@@ -127,7 +161,7 @@ app.controller('AuthCtrl', [
       }
 
       payload.data.password_confirmation = payload.data.password
-      payload.data.business_name = ''
+      payload.data.business_name = payload.data.business_name || ''
 
       var request = $http(payload);
       showSpinner()
@@ -275,7 +309,7 @@ app.controller('AuthCtrl', [
         password: '',
       },
       currentStep: 1, // 2 -> questions, 1 -> login, 0 -> forgotpwd
-      currentSubStep: 0, // 0 -> email+pwd
+      currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
     }
 
     if ($state.current.name === 'access.pre_signup') {

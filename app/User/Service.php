@@ -144,8 +144,10 @@ class Service extends Base\Service
         {
             $error = array_values($error);
         }
-
-        $lead->save();
+        else
+        {
+            $lead->save();
+        }
 
         return [$error, null];
     }

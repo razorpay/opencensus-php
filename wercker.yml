@@ -19,7 +19,9 @@ build:
           name: clear cache
           code: php artisan cache:clear; php artisan clear-compiled
 
-      - npm-install
+      - script:
+          name: Install js dependencies
+          code: yarn install
 
       - script:
           name: gulp

@@ -191,7 +191,7 @@ class AdminController extends Controller
 
     public function getAdminActivity()
     {
-        $id = Auth::guard('admin')->user()->id;
+        $id = Auth::guard('api')->user()->id;
 
         $activity = (new Admin\Service)->getAdminActivity($id);
 
@@ -200,7 +200,7 @@ class AdminController extends Controller
 
     public function deleteOtherAdminActivity()
     {
-        $id = Auth::guard('admin')->user()->id;
+        $id = Auth::guard('api')->user()->id;
 
         (new Admin\Service)->deleteAllOtherAdminSessions($id);
 
@@ -239,7 +239,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::guard('admin')->user());
+        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::guard('api')->user());
 
         return AppResponse::jsonResponse($error);
     }
