@@ -147,9 +147,11 @@ class Core extends Base\Core
             });
     }
 
-    public function getInvoiceAmountForLineItems(Base\PublicCollection $lineItems)
+    public function getTotalAmountByMorphEntity(Base\PublicEntity $morphEntity)
     {
         $totalAmount = 0;
+
+        $lineItems = $morphEntity->lineItems()->get();
 
         foreach ($lineItems as $lineItem)
         {
@@ -157,6 +159,75 @@ class Core extends Base\Core
         }
 
         return $totalAmount;
+    }
+
+    /**
+     * Updates line items collection of given entity.
+     *
+     * Eg.
+     * [
+     *     {
+     *         "item_id" : "item_123",     // This line item will be created
+     *         "quantity": 10
+     *     },
+     *     {
+     *         "id"      : "li_123"        // This will be patched with
+     *                                     // Existing line_item
+     *         "item_id" : "item_123",
+     *         "quantity": 10
+     *     }
+     *                                     // If there was a line item for this
+     *                                     // invoice with id = li_456, all such
+     *                                     // will be deleted.
+     * ]
+     *
+     * @param array             $input
+     * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $morphEntity
+     *
+     * @return Core
+     */
+    public function updateLineItemsForMorphEntity(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $morphEntity)
+    {
+        $oldLineItemsCollection = $morphEntity->lineItems()->get();
+
+        $inputLineItemIds = collect($input)->pluck('id')->all();
+
+        foreach ($input as $lineItemDetails)
+        {
+            if (array_key_exists(Entity::ID, $lineItemDetails))
+            {
+                $id = $lineItemDetails[Entity::ID];
+                unset($lineItemDetails[Entity::ID]);
+
+                $lineItem = $this->repo->line_item
+                                       ->findByPublicIdAndMorphEntity($id, $morphEntity);
+
+                $this->update($lineItem, $lineItemDetails, $this->merchant, $morphEntity);
+            }
+            else
+            {
+                $this->create($lineItemDetails, $this->merchant, $morphEntity);
+            }
+        }
+
+        $oldLineItemsCollection->map(
+            function($lineItem, $i) use ($inputLineItemIds)
+            {
+                if (in_array($lineItem->getPublicId(), $inputLineItemIds, true) === false)
+                {
+                    $this->delete($lineItem);
+                }
+            });
+
+        $totalAmount = $this->getTotalAmountByMorphEntity($morphEntity);
+
+        $morphEntity->setAmount($totalAmount);
+
+        return $this;
     }
 
     // -------------------- Protected methods --------------------

@@ -105,7 +105,7 @@ class Generator extends Base\Core
     {
         $this->associateCustomerWithInvoice($input);
 
-        $this->createLineItemsFromInputAndSetInvoiceTotalAmount($input);
+        $this->createLineItemsFromInputAndSetInvoiceAmount($input);
     }
 
     /**
@@ -119,6 +119,13 @@ class Generator extends Base\Core
     public function updateDraftInvoice(array $input)
     {
         $this->associateCustomerWithInvoice($input);
+
+        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+
+        $this->lineItemCore->updateLineItemsForMorphEntity(
+            $lineItemsDetails,
+            $this->merchant,
+            $this->invoice);
     }
 
     public static function getInvoiceLink(string $invoiceId, string $mode)
@@ -232,7 +239,7 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    protected function createLineItemsFromInputAndSetInvoiceTotalAmount(array $input)
+    protected function createLineItemsFromInputAndSetInvoiceAmount(array $input)
     {
         $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
 
@@ -241,20 +248,10 @@ class Generator extends Base\Core
             return;
         }
 
-        foreach ($lineItemsDetails as $lineItemDetails)
-        {
-            $lineItem = $this->lineItemCore->create(
-                $lineItemDetails,
-                $this->merchant,
-                $this->invoice
-            );
-
-            $this->invoice->lineItems()->save($lineItem);
-        }
-
-        $totalAmount = $this->lineItemCore->getInvoiceAmountForLineItems($this->invoice->lineItems()->get());
-
-        $this->invoice->setAmount($totalAmount);
+        $this->lineItemCore->updateLineItemsForMorphEntity(
+            $lineItemsDetails,
+            $this->merchant,
+            $this->invoice);
     }
 
     protected function createAndAssociateOrderForInvoice()

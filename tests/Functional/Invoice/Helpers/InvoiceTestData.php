@@ -949,6 +949,109 @@ return [
         ]
     ],
 
+    'testUpdateDraftInvoiceWithBasicFieldsAndLineItems' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'put',
+            'content'   => [
+                'receipt'      => 'inv_receipt_0001',
+                'sms_notify'   => '0',
+                'email_notify' => '0',
+                'date'         => 1480506888,
+                'terms'        => 'Updated terms & conditions',
+                'notes'        => [
+                    'new_key'  => 'new_value'
+                ],
+                'line_items'   => [
+                    [
+                        'name'     => 'Very new item',
+                        'amount'   => 100,
+                        'quantity' => 3,
+                    ],
+                    [
+                        'name'     => 'Very new item 2',
+                        'amount'   => 200,
+                        'quantity' => 4,
+                    ],
+                    [
+                        'id'       => 'li_100000lineitem',
+                        'quantity' => 2
+                    ],
+                    [
+                        'id'     => 'li_100001lineitem',
+                        'name'   => 'Very new item 3',
+                        'amount' => 500
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'receipt'              => 'inv_receipt_0001',
+                'customer_id'          => 'cust_100000customer',
+                'customer_details'     => [
+                    'customer_name'    => 'test',
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_address' => null,
+                ],
+                'order_id'             => null,
+                'line_items'           => [
+                    [
+                        'id'          => 'li_100000lineitem',
+                        'quantity'    => 2,
+                        'item_id'     => 'item_1000000000item',
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                    ],
+                    [
+                        'id'          => 'li_100001lineitem',
+                        'quantity'    => 1,
+                        'name'        => 'Very new item 3',
+                        'description' => null,
+                        'amount'      => 500,
+                        'currency'    => 'INR',
+                    ],
+                    [
+                        'quantity'    => 3,
+                        'name'        => 'Very new item',
+                        'description' => null,
+                        'amount'      => 100,
+                        'currency'    => 'INR',
+                    ],
+                    [
+                        'quantity'    => 4,
+                        'name'        => 'Very new item 2',
+                        'description' => null,
+                        'amount'      => 200,
+                        'currency'    => 'INR',
+                    ],
+                ],
+                'payment_id'           => null,
+                'status'               => 'draft',
+                'issued_at'            => null,
+                'paid_at'              => null,
+                'sms_status'           => null,
+                'email_status'         => null,
+                'date'                 => 1480506888,
+                'terms'                => 'Updated terms & conditions',
+                'amount'               => 201600,
+                'description'          => null,
+                'notes'                => [
+                    'new_key'          => 'new_value'
+                ],
+                'currency'             => 'INR',
+                'short_url'            => null,
+                'view_less'            => true,
+                'type'                 => 'invoice',
+            ]
+        ]
+    ],
+
     'testUpdateDraftInvoiceAmountWhenLineItemsExists' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -969,32 +1072,6 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testUpdateDraftInvoiceWithLineItems' => [
-        'request' => [
-            'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'put',
-            'content'   => [
-                'line_items' => [
-                    'name' => 'Abc Def',
-                    'amount' => 100
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'line_items is/are not required and should not be sent',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\ExtraFieldsException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 
@@ -1662,7 +1739,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'One/more of the ids provided does not exist',
+                    'description' => 'One or more of the ids provided does not exist',
                 ],
             ],
             'status_code' => 400,

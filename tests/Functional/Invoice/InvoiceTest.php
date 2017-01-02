@@ -281,19 +281,41 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithBasicFieldsAndLineItems()
+    {
+        $this->createDraftInvoice();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->fixtures->create('item', ['id' => '1000000001item']);
+        $this->fixtures->create('line_item', ['id' => '100001lineitem', 'item_id' => '1000000001item']);
+
+        $this->fixtures->create('item', ['id' => '1000000002item']);
+        $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
+
+        $this->fixtures->create('item', ['id' => '1000000003item']);
+        $this->fixtures->create('line_item', ['id' => '100003lineitem', 'item_id' => '1000000003item']);
+
+        $this->startTest();
+
+        $lineItems = $this->getEntities('line_item', [], true);
+        $this->assertEquals(4, $lineItems['count']);
+
+        $lineItemIds = collect($lineItems['items'])->pluck('id')->all();
+
+        $this->assertNotContains('1000000002item', $lineItemIds);
+        $this->assertNotContains('1000000003item', $lineItemIds);
+    }
+
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
     {
         $this->createDraftInvoice(['type' => 'link']);
 
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
-
-        $this->startTest();
-    }
-
-    public function testUpdateDraftInvoiceWithLineItems()
-    {
-        $this->createDraftInvoice();
 
         $this->startTest();
     }
@@ -939,7 +961,7 @@ class InvoiceTest extends TestCase
                     'status'       => 'draft',
                     'order_id'     => null,
                     'short_url'    => null,
-                    'amount'       => 0,
+                    'amount'       => null,
                     'sms_status'   => 'pending',
                     'email_status' => 'pending',
                 ],

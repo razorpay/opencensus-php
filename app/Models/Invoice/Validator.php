@@ -120,6 +120,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -376,14 +377,6 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        $invoiceAmount = $invoice->getAmount();
-
-        if ($invoiceAmount === null)
-        {
-            throw new BadRequestValidationFailureException(
-                'amount cannot be empty.');
-        }
-
         $type = $invoice->getType();
 
         switch ($type)
@@ -419,6 +412,14 @@ class Validator extends Base\Validator
 
     protected function validateInvoiceIssueForOtherTypes(Entity $invoice)
     {
+        $invoiceAmount = $invoice->getAmount();
+
+        if ($invoiceAmount === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount cannot be empty.');
+        }
+
         $lineItemsCount = $invoice->lineItems()->count();
         $description    = $invoice->getDescription();
 
