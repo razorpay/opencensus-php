@@ -7,6 +7,7 @@ use Config;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Trace;
 
 class Entity extends Base\PublicEntity
@@ -451,7 +452,20 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
+
+        //
+        // - If AUTO_REFUND_DELAY attribute is not set, use the defaul value
+        // specified in processor.
+        // - Converted to seconds.
+        //
+
+        if (empty($autoRefundDelay))
+        {
+            $autoRefundDelay = Processor::AUTO_REFUND_TIME_PERIOD * 86400;
+        }
+
+        return $autoRefundDelay;
     }
 
     /**

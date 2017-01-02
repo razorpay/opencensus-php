@@ -334,7 +334,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DUE_BY);
     }
 
-    public function isInIssueState()
+    public function isIssued()
     {
         return ($this->getStatus() === Status::ISSUED);
     }

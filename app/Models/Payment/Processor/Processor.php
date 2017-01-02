@@ -912,9 +912,36 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
+        if ($this->validatePaymentForAutoCapture($payment) === false)
+        {
+            return false;
+        }
+
+        if ($this->validateMerchantRefundDelayForAutoCapture($payment) === false)
+        {
+            return false;
+        }
+
+        if ($this->validatePaymentInvoiceForAutoCapture($payment) === false)
+        {
+            return false;
+        }
+
+        if ($this->validatePaymentOrderForAutoCapture($payment) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function validatePaymentForAutoCapture(Payment\Entity $payment)
+    {
+        //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
         // the payment because of an internal issue.
+        //
         if ($payment->isAuthorized() === false)
         {
             $this->trace->error(
@@ -927,33 +954,44 @@ class Processor
             return false;
         }
 
+
         // We do an auto capture only if payment is associated with an order.
         if ($payment->getApiOrderId() === null)
         {
             return false;
         }
 
+        return true;
+    }
+
+    protected function validateMerchantRefundDelayForAutoCapture(Payment\Entity $payment)
+    {
         //
         // Capture only if now is past payment's auto refund delay.
         //
 
-        // Gets auto refund delay of merchant's. If that's null usage default.
         $merchant        = $payment->merchant;
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
-        if (empty($autoRefundDelay))
-        {
-            $autoRefundDelay = self::AUTO_REFUND_TIME_PERIOD;
-        }
-
-        $now = Carbon::today('Asia/Kolkata')->timestamp;
+        $now             = Carbon::today('Asia/Kolkata')->timestamp;
 
         $captureBefore = Carbon::createFromTimestamp($payment->getCreatedAt())
-                                ->addDays($autoRefundDelay)->timestamp;
+                                ->addSeconds($autoRefundDelay)
+                                ->timestamp;
 
         if ($now >= $captureBefore)
         {
             return false;
+        }
+
+        return true;
+    }
+
+    protected function validatePaymentInvoiceForAutoCapture(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return true;
         }
 
         //
@@ -962,27 +1000,30 @@ class Processor
         // - Check if invoice status is ISSUED
         //
 
-        if ($payment->hasInvoice())
+        $invoice = $payment->invoice;
+        $now     = Carbon::today('Asia/Kolkata')->timestamp;
+
+        if (($invoice->isIssued() === false) or
+            ($now >= $invoice->getDueBy()))
         {
-            $invoice = $payment->invoice;
+            $this->trace->debug(
+                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'status'         => $payment->getStatus(),
+                    'invoice_id'     => $invoice->getId(),
+                    'invoice_status' => $invoice->getStatus(),
+                    'invoice_due_by' => $invoice->getDueBy(),
+                ]);
 
-            if (($invoice->isInIssueState() === false) or
-                ($now >= $invoice->getDueBy()))
-            {
-                $this->trace->debug(
-                    TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_FOLLOWED,
-                    [
-                        'payment_id'     => $payment->getId(),
-                        'status'         => $payment->getStatus(),
-                        'invoice_id'     => $invoice->getId(),
-                        'invoice_status' => $invoice->getStatus(),
-                        'invoice_due_by' => $invoice->getDueBy(),
-                    ]);
-
-                return false;
-            }
+            return false;
         }
 
+        return true;
+    }
+
+    protected function validatePaymentOrderForAutoCapture(Payment\Entity $payment)
+    {
         $order = $payment->order;
 
         //
