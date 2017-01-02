@@ -167,6 +167,21 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureOnLateAuthorizedPayment()
     {
+        $payment = $this->createFailedPayment(1, false);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->assertTrue($payment['amount'] === $order['amount']);
+    }
+
+    public function testAutoCaptureInvoiceOnLateAuthorizedPayment()
+    {
         $payment = $this->createFailedPayment();
 
         $this->authorizeFailedPayment($payment['id']);

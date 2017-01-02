@@ -912,41 +912,15 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
-        // Pre-validations. Should be in auth state.
-        if ($this->validatePaymentForAutoCapture($payment) === false)
+        // We do an auto capture only if payment is associated with an order.
+        if ($payment->getApiOrderId() === null)
         {
             return false;
         }
 
-
-        // Is within auto-refund delay window
-        if ($this->validateMerchantRefundDelayForAutoCapture($payment) === false)
-        {
-            return false;
-        }
-
-        // For now, only invoice late-auth payments are being auto-captured.
-        if ($this->validatePaymentInvoiceForAutoCapture($payment) === false)
-        {
-            return false;
-        }
-
-        // Validates order is unpaid and payment capture is true.
-        if ($this->validatePaymentOrderForAutoCapture($payment) === false)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function validatePaymentForAutoCapture(Payment\Entity $payment)
-    {
-        //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
         // the payment because of an internal issue.
-        //
         if ($payment->isAuthorized() === false)
         {
             $this->trace->error(
@@ -959,71 +933,64 @@ class Processor
             return false;
         }
 
-
-        // We do an auto capture only if payment is associated with an order.
-        if ($payment->getApiOrderId() === null)
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->getInvoiceId() === null))
         {
             return false;
         }
 
-        return true;
-    }
-
-    protected function validateMerchantRefundDelayForAutoCapture(Payment\Entity $payment)
-    {
-        //
-        // Capture only if now is past payment's auto refund delay.
-        //
-
-        $merchant        = $payment->merchant;
-        $autoRefundDelay = $merchant->getAutoRefundDelay();
-
-        $captureBefore = Carbon::createFromTimestamp($payment->getCreatedAt())
-                                ->addSeconds($autoRefundDelay)
-                                ->timestamp;
-
-        $now = Carbon::today('Asia/Kolkata')->timestamp;
-
-        return ($now < $captureBefore);
-    }
-
-    protected function validatePaymentInvoiceForAutoCapture(Payment\Entity $payment)
-    {
-        if ($payment->hasInvoice() === false)
+        if ($payment->hasInvoice() === true)
         {
-            return true;
+            // We check auto refund delay only for invoices
+            // As we are only doing auto-capture for
+            // late authorized invoices.
+            $merchant        = $payment->merchant;
+            $autoRefundDelay = $merchant->getAutoRefundDelay();
+
+            $createdAt = $payment->getCreatedAt();
+
+            // Default value of auto capture delay
+            $refundPeriodStart = Carbon::today('Asia/Kolkata')
+                                        ->subDays(Processor::AUTO_REFUND_TIME_PERIOD)
+                                        ->timestamp;
+
+            if ($autoRefundDelay !== null)
+            {
+                $refundPeriodStart = Carbon::now('Asia/Kolkata')
+                                             ->subSeconds($autoRefundDelay)
+                                             ->timestamp;
+            }
+
+            if ($refundPeriodStart > $createdAt)
+            {
+                return false;
+            }
+
+            //
+            // Invoice related checks
+            // - Check if now is not past invoice due date
+            // - Check if invoice status is ISSUED
+            //
+            $invoice = $payment->invoice;
+            $now     = Carbon::today('Asia/Kolkata')->timestamp;
+
+            if (($invoice->isIssued() === false) or
+                ($now >= $invoice->getDueBy()))
+            {
+                $this->trace->debug(
+                    TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
+                    [
+                        'payment_id'     => $payment->getId(),
+                        'status'         => $payment->getStatus(),
+                        'invoice_id'     => $invoice->getId(),
+                        'invoice_status' => $invoice->getStatus(),
+                        'invoice_due_by' => $invoice->getDueBy(),
+                    ]);
+
+                return false;
+            }
         }
 
-        //
-        // Invoice related checks
-        // - Check if now is not past invoice due date
-        // - Check if invoice status is ISSUED
-        //
-
-        $invoice = $payment->invoice;
-        $now     = Carbon::today('Asia/Kolkata')->timestamp;
-
-        if (($invoice->isIssued() === false) or
-            ($now >= $invoice->getDueBy()))
-        {
-            $this->trace->debug(
-                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
-                [
-                    'payment_id'     => $payment->getId(),
-                    'status'         => $payment->getStatus(),
-                    'invoice_id'     => $invoice->getId(),
-                    'invoice_status' => $invoice->getStatus(),
-                    'invoice_due_by' => $invoice->getDueBy(),
-                ]);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function validatePaymentOrderForAutoCapture(Payment\Entity $payment)
-    {
         $order = $payment->order;
 
         //
