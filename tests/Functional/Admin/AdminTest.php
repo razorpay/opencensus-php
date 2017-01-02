@@ -72,6 +72,37 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAdminWithExistingEmail()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'xyz@rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmailOfDeletedAdmin()
+    {
+        $admin = $this->testDeleteAdmin();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
+
+        $this->startTest();
+    }
+
     public function testGetAdmin()
     {
         $admin = $this->fixtures->create('admin', [
@@ -180,6 +211,7 @@ class AdminTest extends TestCase
     {
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz@rzp.com'
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -189,6 +221,8 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        return $admin;
     }
 
     public function testDeleteAdminFailed()

@@ -14,9 +14,9 @@ class Validator extends Base\Validator
     const RESET_PASSWORD_URL = 'reset_password_url';
 
     protected static $createRules = [
-        // One problem with this uniqueness if what if an admin
-        // wants to belong to 2 org or is moved from 1 to another
-        Entity::EMAIL                 => 'required|max:255|email|custom',
+        // The unique validation on email will run only on rows that have deleted_at = NULL
+        // Referred to https://github.com/laravel/framework/issues/1820#issuecomment-32828216 for this validation
+        Entity::EMAIL                 => 'required|max:255|email|unique:admins,email,NULL,deleted_at,deleted_at,NULL|custom',
         Entity::NAME                  => 'required|alpha_space|between:3,100',
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD              => 'sometimes|string|confirmed',

@@ -205,7 +205,7 @@ class Core extends Base\Core
         }
         // If the customer is fee bearer for the merchant
         // use the fees and service tax from both
-        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        else if ($payment->merchant->isFeeBearerCustomer())
         {
             list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 

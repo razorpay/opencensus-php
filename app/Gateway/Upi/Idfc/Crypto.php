@@ -8,7 +8,7 @@ class Crypto
 {
     protected $kek = null;
 
-    public function __construct(array $config, $mode)
+    public function __construct(array $config, $mode = 'test')
     {
         $this->kek = $config["{$mode}_kek"];
         $this->password = $config["{$mode}_password"];
