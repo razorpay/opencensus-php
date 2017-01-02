@@ -42,12 +42,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        if ($payment->getGateway() !== Payment\Gateway::HDFC)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
-        }
+        $gateway = $payment->getGateway();
+
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 

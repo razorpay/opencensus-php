@@ -187,7 +187,8 @@ class Processor
             ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
             ($payment->isCard() === true) and
             ($payment->card->isInternational() === false) and
-            ($payment->card->isDebit() === true))
+            ($payment->card->isDebit() === true) and
+            (time() < 1483228800))
         {
             $fee = 0;
             $serviceTax = 0;

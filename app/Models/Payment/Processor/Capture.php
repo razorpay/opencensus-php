@@ -138,35 +138,26 @@ trait Capture
         // The payment should be in authorized or refunded state only.
         assert ($payment->isStatusCreatedOrFailed() === false);
 
-        // Currently going to do this only for HDFC. If we find issues with other gateways too,
-        // we will add the support for them.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        $gatewayCaptured = $payment->isGatewayCaptured();
 
-        $data = [
-            'payment'   => $payment->toArray(),
-        ];
-
-        $verify = $this->callGatewayForVerifyCapture($data);
-
-        // Here, verify=true means that the payment is captured on the gateway side.
-        if ($verify === true)
+        //
+        // This is not really required and is here for a more robust check. Can be removed anytime.
+        //
+        if (($payment->getGateway() === Payment\Gateway::HDFC) and
+            ($gatewayCaptured === true))
         {
-            $msg = 'Has been captured on gateway. Gateway captured flag is set to false. It\'s a bug!';
-
-            if ($payment->isGatewayCaptured())
-            {
-                $this->recordTransactionForFailedApiCapture();
-
-                $msg = 'Has been captured on gateway and hence creating a transaction in api.';
-            }
+            $gatewayCaptured = $this->callGatewayForVerifyCapture(['payment' => $payment->toArray()]);
         }
-        else if ($verify === false)
+
+        if ($gatewayCaptured)
         {
-            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
+            $this->recordTransactionForFailedApiCapture();
+
+            $msg = 'Has been captured on gateway and hence creating a transaction in api.';
         }
         else
         {
-            $msg = 'Could not perform verify capture.';
+            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
         }
 
         return ['verify_capture' => $msg];
