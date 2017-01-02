@@ -169,35 +169,6 @@ class CaptureTest extends TestCase
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
 
-        $order = $this->fixtures->create('order', ['payment_capture' => '1']);
-
-        $this->gateway = 'hdfc';
-
-        $this->mockServerVerifyContentFunction();
-
-        $this->gateway = null;
-
-        $this->doAuthPaymentAndCatchException($order);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
-
-        $this->authorizeFailedPayment($payment['id']);
-
-        $payment = $this->getLastEntity('payment', true);
-        $order = $this->getLastEntity('order', true);
-
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('paid', $order['status']);
-
-        $this->assertTrue($payment['amount'] === $order['amount']);
-    }
-
-    public function testAutoCaptureOnLateAuthorizedPaymentWithInvoice()
-    {
-        $this->app['config']->set('gateway.mock_hdfc', true);
-
         $order = $this->fixtures->create('order', [
             'id'              => '100000000order',
             'payment_capture' => '1'
@@ -221,12 +192,9 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $order = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('paid', $order['status']);
-        $this->assertEquals('paid', $invoice['status']);
-        $this->assertEquals($payment['invoice_id'], $invoice['id']);
 
         $this->assertTrue($payment['amount'] === $order['amount']);
     }
@@ -277,7 +245,12 @@ class CaptureTest extends TestCase
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
 
-        $order = $this->fixtures->create('order', ['payment_capture' => '1']);
+        $order = $this->fixtures->create('order', [
+            'id'              => '100000000order',
+            'payment_capture' => '1'
+            ]);
+
+        $this->fixtures->create('invoice');
 
         $this->gateway = 'hdfc';
 

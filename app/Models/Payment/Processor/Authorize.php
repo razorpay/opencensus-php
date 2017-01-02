@@ -613,7 +613,12 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
-            $this->autoCapturePaymentIfApplicable($payment);
+            // For now: Only if the failed payment has invoice, attempt auto capture.
+            // This condition should be removed later.
+            if ($payment->hasInvoice())
+            {
+                $this->autoCapturePaymentIfApplicable($payment);
+            }
 
             $this->repo->saveOrFail($payment);
 
