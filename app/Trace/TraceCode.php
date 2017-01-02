@@ -151,6 +151,7 @@ class TraceCode
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
+    const FEES_BREAKUP_CREATION_FAILED              = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
     const GATEWAY_UPI_REQUEST_CALLBACK              = 'GATEWAY_UPI_REQUEST_CALLBACK';
 
