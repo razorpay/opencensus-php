@@ -11,7 +11,7 @@ return [
             'content' => [
             ],
             'method' => 'POST',
-            'url' => '/international/USD/rates',
+            'url' => '/currency/USD/rates',
         ],
         'response' => [
             'status_code' => 200,
