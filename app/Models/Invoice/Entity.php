@@ -329,6 +329,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getDueBy()
+    {
+        return $this->getAttribute(self::DUE_BY);
+    }
+
+    public function isIssued()
+    {
+        return ($this->getStatus() === Status::ISSUED);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 

@@ -488,8 +488,7 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]
-        );
+            ]);
 
         $this->setPayment($payment);
 
