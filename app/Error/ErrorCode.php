@@ -377,6 +377,7 @@ class ErrorCode
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
     const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
+    const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -420,4 +421,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
+
+    const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
+
+    const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 }

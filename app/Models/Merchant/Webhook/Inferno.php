@@ -34,6 +34,7 @@ class Inferno
         'ssl certificate problem: certificate has expired',
         '<url> malformed',
         'server error response',
+        'too many redirects',
     ];
 
     /**
@@ -41,6 +42,8 @@ class Inferno
      * but publicly we only say it's 5 seconds.
      */
     const WEBHOOK_TIMEOUT = 20;
+
+    const WEBHOOK_REDIRECTS = 3;
 
     public function __construct()
     {
@@ -270,13 +273,17 @@ class Inferno
 
         $headers = $this->getRequestHeaders($hmac);
 
-        $request = array(
+        $request = [
             'url' => $webhook->getUrl(),
             'method' => 'post',
             'content' => $event,
-            'headers' => $headers);
+            'headers' => $headers
+        ];
 
-        $request['options'] = ['timeout' => self::WEBHOOK_TIMEOUT];
+        $request['options'] = [
+            'timeout'   => self::WEBHOOK_TIMEOUT,
+            'redirects' => self::WEBHOOK_REDIRECTS,
+        ];
 
         return $request;
     }
