@@ -548,6 +548,8 @@ class Gateway extends Base\Gateway
         $req = $this->getUpiReq($params);
 
         // TODO: Sign it if $hmac===true
+        //
+        // TODO: Write the getUpiReq and createSoapRequestBody functions
 
         return $this->createSoapRequestBody($type, $req);
     }

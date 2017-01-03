@@ -71,7 +71,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $this->createWalletRefundEntity($content, $input);
 
@@ -106,8 +111,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpGenerateRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'payment_id' => $input['payment']['id']]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -124,7 +133,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $code = $content['status'];
 
@@ -150,7 +164,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -168,8 +187,12 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::REFRESH_TOKEN] = '';
         }
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE,
-            ['content' => $content, 'payment_id' => $input['payment']['id']]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'content' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         // Payment fails, throw exception
         if (($content[ResponseFields::STATUS] !== Status::SUCCESS) or
@@ -200,7 +223,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray();
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -210,7 +238,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $userBalance = 0;
 
@@ -246,7 +279,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -285,8 +323,12 @@ class Gateway extends Base\Gateway
         $traceContent[RequestFields::ACCESS_TOKEN] = '';
         $traceContent[RequestFields::HASH] = '';
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $traceContent]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'content' => $traceContent
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -414,8 +456,12 @@ class Gateway extends Base\Gateway
         $content[RequestFields::ACCESS_TOKEN] = '';
         $content[RequestFields::HASH] = '';
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $content]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'content' => $content
+            ]);
 
         $query = http_build_query($requestContent);
 

@@ -173,7 +173,7 @@ class DailyReport extends Base\Core
                     )
         );
 
-        Mail::queue($view, $data, function($message) use ($data)
+        Mail::queue($view, $data, function($message) use ($data, $merchant)
         {
             $to = $data['email'];
 
@@ -199,6 +199,10 @@ class DailyReport extends Base\Core
             $message->cc('notifications@razorpay.com');
 
             $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', $merchant->getPublicId());
         });
     }
 

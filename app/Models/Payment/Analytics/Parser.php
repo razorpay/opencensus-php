@@ -328,23 +328,30 @@ class Parser extends Base\Core
         {
             $metadataKey = self::$map[$key];
 
-            if (isset($metadata[$metadataKey]) === true)
+            if (isset($metadata[$metadataKey]) === false)
             {
-                $logValueForKey = $log[$key] ?? null;
-
-                if ($logValueForKey !== $metadata[$metadataKey])
-                {
-                    // collect anomalies
-                    $this->collectMismatch($logValueForKey,
-                        $metadata[$metadataKey],
-                        $key,
-                        $anomalies);
-
-                    $functionName = 'set' . studly_case($key);
-
-                    $log->$functionName($metadata[$metadataKey]);
-                }
+                continue;
             }
+
+            $logValueForKey = $log[$key] ?? null;
+
+            if ($logValueForKey === $metadata[$metadataKey])
+            {
+                continue;
+            }
+
+            // collect anomalies
+            if ($logValueForKey !== null)
+            {
+                $this->collectMismatch($logValueForKey,
+                    $metadata[$metadataKey],
+                    $key,
+                    $anomalies);
+            }
+
+            $functionName = 'set' . studly_case($key);
+
+            $log->$functionName($metadata[$metadataKey]);
         }
 
         // log anomalies
