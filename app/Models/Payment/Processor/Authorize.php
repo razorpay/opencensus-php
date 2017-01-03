@@ -206,7 +206,6 @@ trait Authorize
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
-        //
         if ($request !== null)
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
@@ -241,7 +240,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
     }
 
-    protected function autoCapturePaymentIfApplicable($payment)
+    protected function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
@@ -613,6 +612,8 @@ trait Authorize
             // The first argument marks the payment as converted from failed
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
+
+            $this->autoCapturePaymentIfApplicable($payment);
 
             $this->repo->saveOrFail($payment);
 
@@ -1505,7 +1506,7 @@ trait Authorize
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount()/100), 2),
+                'amount'  => number_format(($payment->getAmount() / 100), 2),
                 'wallet'  => $payment->getWallet()
             ];
 

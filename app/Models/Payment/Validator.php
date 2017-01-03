@@ -15,7 +15,7 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
@@ -25,8 +25,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'required|email',
-        'contact'                 =>  'required|contact_syntax',
+        'email'                   =>  'required_unless:method,aeps|email',
+        'contact'                 =>  'required_unless:method,aeps|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -40,17 +40,18 @@ class Validator extends Base\Validator
         'customer_id'             =>  'required_if:wallet,flashwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
-        '_'                       =>  'sometimes');
+        '_'                       =>  'sometimes'
+    ];
 
     protected static $captureRules = [
         'amount'        => 'required|integer',
         'currency'      => 'required|in:INR,USD',
     ];
 
-    protected static $refundRules = array(
+    protected static $refundRules = [
         'amount'        => 'sometimes|integer',
         'notes'         => 'sometimes|notes'
-    );
+    ];
 
     protected static $transferRules = [
         'transfers'                  => 'required|array',
@@ -59,14 +60,15 @@ class Validator extends Base\Validator
         'transfers.*.amount'         => 'required|integer|min:100',
     ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'card_key',
         'amount',
         'bank',
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact'
+    ];
 
     protected function validateMethod($attribute, $method)
     {

@@ -144,9 +144,12 @@ trait Refund
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
         // been captured. Check PR #905 and #909.
-        assert (($payment->hasBeenCaptured() === true) or
-                (in_array($payment->card->getNetworkCode(),
-                          [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+
+        // Commenting this because we have reached past this stage.
+        // A refund transaction could have been created even if the payment is not captured.
+        // assert (($payment->hasBeenCaptured() === true) or
+        //         (in_array($payment->card->getNetworkCode(),
+        //                   [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
@@ -485,8 +488,7 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]
-        );
+            ]);
 
         $this->setPayment($payment);
 
