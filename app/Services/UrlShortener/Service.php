@@ -55,6 +55,11 @@ class Service extends Impl\Base
         return $this;
     }
 
+    public function getServices()
+    {
+        return $this->services;
+    }
+
     /**
      * Shorten given url.
      *
@@ -68,7 +73,7 @@ class Service extends Impl\Base
     {
         $e = null;
 
-        foreach ($this->services as $service)
+        foreach ($this->getServices() as $service)
         {
             try
             {
@@ -80,7 +85,7 @@ class Service extends Impl\Base
 
                 $this->trace->traceException($e, null, null, $data);
 
-                if ($this->shouldTryOtherServices($e->getData()) === false)
+                if ($this->allowFallback === false)
                 {
                     break;
                 }
@@ -109,21 +114,10 @@ class Service extends Impl\Base
     {
         if (isset($this->drivers[$service]) === false)
         {
-            $this->drivers[$service] = $this->createDriver($service);
+            $this->drivers[$service] = $this->createUrlShortenerDriver($service);
         }
 
         return $this->drivers[$service];
-    }
-
-    protected function createDriver($driver)
-    {
-        if (in_array($driver, $this->getServices(), true) === false)
-        {
-            throw new Exception\LogicException(
-                $driver . ' is not an available url shortener service');
-        }
-
-        return $this->createUrlShortenerDriver($driver);
     }
 
     protected function createUrlShortenerDriver($service)
@@ -138,62 +132,5 @@ class Service extends Impl\Base
         $config = $this->config[$service];
 
         return new $class($config);
-    }
-
-    /**
-     * Given the failure response from some service, decides if it should
-     * try with next available service or not.
-     *
-     * @param array $data
-     *
-     * @return boolean
-     */
-    protected function shouldTryOtherServices($data)
-    {
-        if ($this->allowFallback === false)
-        {
-            return false;
-        }
-
-        //
-        // Checks if it should continue with other services or just fail.
-        //
-
-        if (isset($data['status_code']) === false)
-        {
-            return true;
-        }
-
-        $code = $data['status_code'];
-
-        if ($code >= 500)
-        {
-            return true;
-        }
-
-        if (in_array(
-                $code,
-                [
-                    401, // Authentication issues
-                    429, // Too many requests
-                    451, // Unavailable for legal reasons
-                ],
-                true
-            ))
-        {
-            return true;
-        }
-
-        //
-        // In every other cases, such as validation error etc. should just fail
-        // and not try with other services.
-        //
-
-        return false;
-    }
-
-    protected function getServices()
-    {
-        return $this->services;
     }
 }

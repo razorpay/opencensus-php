@@ -111,67 +111,40 @@ class ServiceTest extends TestCase
 
     /**
      * @expectedException        \RZP\Exception\RuntimeException
-     * @expectedExceptionMessage Unexpected response code received from Gimli service.
+     * @expectedExceptionMessage url not valid.
      */
-    public function testShortenFail()
+    public function testShortenFailWithSingleService()
     {
         //
-        // Tests when first of the service fails, but must not try another service
-        // as it's client side error.
+        // Tests when fisrt of the service fails and second returns the short url.
         //
 
+        $this->service->setServices(['bitly']);
+
         $this->service->expects($this->once())
-                       ->method('createUrlShortenerDriver')
-                       ->with('gimli')
-                       ->willReturn($this->gimli);
+                      ->method('createUrlShortenerDriver')
+                       ->with('bitly')
+                       ->willReturn($this->bitly);
 
         $exception = new Exception\RuntimeException(
             'Unexpected response code received from Gimli service.',
             [
-                'status_code' => 400,
-                'res_body'    => [
-                    'status_code' => 400,
-                    'message'     => 'Invalid url.'
-                ],
+                'status_code' => 500
             ]
         );
 
-        $this->gimli->expects($this->once())
-                            ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
+        $this->bitly->expects($this->once())
+                    ->method('makeRequestAndValidateHeader')
+                    ->willReturn(
+                        [
+                            'status_code' => 400,
+                            'status_txt'  => 'url not valid.',
+                        ]
+                    );
 
         $shortUrl = $this->service->shorten($this->testUrl);
-    }
 
-    public function testShortenFailSilent()
-    {
-        //
-        // Same as above, but returns original url and stays silent
-        //
-
-        $this->service->expects($this->once())
-                       ->method('createUrlShortenerDriver')
-                       ->with('gimli')
-                       ->willReturn($this->gimli);
-
-        $exception = new Exception\RuntimeException(
-            'Unexpected response code received from Gimli service.',
-            [
-                'status_code' => 400,
-                'res_body'    => [
-                    'status_code' => 400,
-                    'message'     => 'Invalid url.'
-                ],
-            ]
-        );
-
-        $this->gimli->expects($this->once())
-                            ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
-
-        $shortUrl = $this->service->shorten($this->testUrl, false);
-
-        $this->assertEquals($this->testUrl, $shortUrl);
+        $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
 
     /**
