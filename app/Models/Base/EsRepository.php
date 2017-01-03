@@ -21,6 +21,13 @@ class EsRepository extends \Razorpay\Spine\Repository
     // This is in seconds
     const JOB_RELEASE_WAIT = 120;
 
+    protected $defaultFieldMapping = [
+        'type'            => 'text',
+        'analyzer'        => 'edge_ngram_analyzer',
+        'search_analyzer' => 'standard',
+        'index_options'   => 'offsets',
+    ];
+
     //
     // Fields indexed in es and their mappings
     //
@@ -48,6 +55,11 @@ class EsRepository extends \Razorpay\Spine\Repository
     public function getFieldsMappings()
     {
         return $this->fieldsMappings;
+    }
+
+    public function getDefaultFieldMapping()
+    {
+        return $this->defaultFieldMapping;
     }
 
     public function setIndexName($indexName)
@@ -90,7 +102,16 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $mappings = [
             '_default_' => [
-                'properties' => $this->fieldsMappings,
+                'properties' => $this->getFieldsMappings(),
+                'dynamic_templates' => [
+                    [
+                        'notes' => [
+                            'match' => '*',
+                            'match_mapping_type' => 'string',
+                            'mapping' => $this->getDefaultFieldMapping(),
+                        ],
+                    ],
+                ],
             ],
         ];
 

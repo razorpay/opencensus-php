@@ -295,7 +295,6 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
-        'es_search'                               => ['get',      'es/search',                                      'EsController@search'                                               ],
         'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
         'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
@@ -662,7 +661,6 @@ final class Route
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',
-        'es_search',
     );
 
     public static $admin = [
