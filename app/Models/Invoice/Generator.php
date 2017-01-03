@@ -78,8 +78,7 @@ class Generator extends Base\Core
                 function() use ($invoice, $input)
                 {
                     $this->buildAndSaveInvoice($input);
-                }
-            );
+                });
         }
         catch (\Exception $e)
         {

@@ -16,9 +16,17 @@ use RZP\Trace\TraceCode;
  */
 class Service extends Impl\Base
 {
-    // Comma separated list of services, eg. 'gimli,bitly'.
+    // Comma separated list of services, eg. 'gimli, bitly'.
+    // Gimly is internal implementation while Bitly is the external service.
 
-    private $services;
+    /**
+     * Holds the available services for shortening urls.
+     *
+     * @var array
+     */
+    protected $services = [];
+
+    protected $allowFallback = false;
 
     public function __construct(Config $config, Trace $trace)
     {
@@ -27,10 +35,12 @@ class Service extends Impl\Base
         $this->trace    = $trace;
 
         $this->services = explode(',', $this->config['services']);
+
+        $this->allowFallback = $config['allow_fallback'];
     }
 
     /**
-     * Sets services to a different vaule. By default in ApiServiceProvider reg,
+     * Sets services to a different value. By default in ApiServiceProvider reg,
      * It will take from config, but in case in code we need to update this, this
      * will be used.
      *
@@ -56,43 +66,35 @@ class Service extends Impl\Base
      */
     public function shorten(string $url, bool $fail = true)
     {
+        $e = null;
+
         foreach ($this->services as $service)
         {
             try
             {
-                $implementation = $this->getImplementation($service, $this->config[$service]);
-
-                $shortUrl = $implementation->shorten($url);
-
-                return $shortUrl;
+                return $this->driver($service)->shorten($url);
             }
             catch (Exception\RuntimeException $e)
             {
-                $this->trace->traceException($e, null, null, [
-                        'service' => $service,
-                        'url'     => $url,
-                    ]);
+                $data = ['service' => $service, 'url' => $url];
+
+                $this->trace->traceException($e, null, null, $data);
 
                 if ($this->shouldTryOtherServices($e->getData()) === false)
                 {
-                    if ($fail === false)
-                    {
-                        return $url;
-                    }
-
-                    throw $e;
+                    break;
                 }
             }
         }
 
-        $this->trace->error(TraceCode::URL_SHORTENER_SERVICE_FAIL, ['url' => $url]);
-
-        if ($fail === false)
+        // If failing is allowed, and exception is thrown earlier, then
+        // rethrow it here.
+        if (($fail === true) and ($e !== null))
         {
-            return $url;
+            throw $e;
         }
 
-        throw new Exception\RuntimeException('Failed to get short url.');
+        return $url;
     }
 
     /**
@@ -103,16 +105,39 @@ class Service extends Impl\Base
      *
      * @return Impl\Base
      */
-    protected function getImplementation(string $service, array $config)
+    protected function driver(string $service)
     {
-        $impl = 'RZP\\Services\\UrlShortener\\Impl\\' . ucfirst($service);
-
-        if (class_exists($impl) === false)
+        if (isset($this->drivers[$service]) === false)
         {
-            throw new Exception\RuntimeException("$impl does not exists.");
+            $this->drivers[$service] = $this->createDriver($service);
         }
 
-        return $impl::instance($config);
+        return $this->drivers[$service];
+    }
+
+    protected function createDriver($driver)
+    {
+        if (in_array($driver, $this->getServices(), true) === false)
+        {
+            throw new Exception\LogicException(
+                $driver . ' is not an available url shortener service');
+        }
+
+        return $this->createUrlShortenerDriver($driver);
+    }
+
+    protected function createUrlShortenerDriver($service)
+    {
+        $class = __NAMESPACE__ . '\\Impl\\' . ucfirst($service);
+
+        if (class_exists($class) === false)
+        {
+            throw new Exception\RuntimeException("$class does not exist.");
+        }
+
+        $config = $this->config[$service];
+
+        return new $class($config);
     }
 
     /**
@@ -125,6 +150,11 @@ class Service extends Impl\Base
      */
     protected function shouldTryOtherServices($data)
     {
+        if ($this->allowFallback === false)
+        {
+            return false;
+        }
+
         //
         // Checks if it should continue with other services or just fail.
         //
@@ -160,5 +190,10 @@ class Service extends Impl\Base
         //
 
         return false;
+    }
+
+    protected function getServices()
+    {
+        return $this->services;
     }
 }

@@ -5,39 +5,10 @@ namespace RZP\Services\UrlShortener\Mock;
 use Illuminate\Config\Repository as Config;
 
 use RZP\Trace\Trace;
-use RZP\Services\UrlShortener\Impl\Base;
+use RZP\Services\UrlShortener;
 
-class Service extends Base
+class Service extends UrlShortener\Service
 {
-    // Comma separated list of services, eg. 'gimli,bitly'.
-
-    private $services;
-
-    public function __construct(Config $config, Trace $trace)
-    {
-        $this->config   = $config->get('applications.url_shortener');
-
-        $this->trace    = $trace;
-
-        $this->services = explode(',', $this->config['services']);
-    }
-
-    /**
-     * Sets services to a different vaule. By default in ApiServiceProvider reg,
-     * It will take from config, but in case in code we need to update this, this
-     * will be used.
-     *
-     * @param array $services
-     *
-     * @return Service
-     */
-    public function setServices(array $services)
-    {
-        $this->services = $services;
-
-        return $this;
-    }
-
     /**
      * Shorten given url.
      *

@@ -67,14 +67,15 @@ return array(
     ),
 
     'url_shortener' => [
-        'mock'     => env('URL_SHORTENER_MOCK', false),
+        'mock'     => env('URL_SHORTENER_MOCK', true),
         'services' => env('URL_SHORTENER_SERVICES', 'gimli,bitly'),
         'gimli'    => [
             'secret'   => env('GIMLI_SECRET', 'RANDOM_SECRET'),
             'base_url' => env('GIMLI_BASE_URL', 'http://gimli.razorpay.dev/v1')
         ],
         'bitly'    => [
-            'access_token' => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
+            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
         ],
+        'allow_fallback' => true,
     ],
 );

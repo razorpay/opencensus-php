@@ -8,29 +8,7 @@ use RZP\Exception;
 
 abstract class Base
 {
-
     abstract public function shorten(string $url);
-
-
-    //
-    // Calling instance() on any class which is extending this will return
-    // singleton of the same.
-    // Following block implements that.
-    //
-
-    static $instances = [];
-
-    public static function instance(array $config = [])
-    {
-        $calledClass = get_called_class();
-
-        if (isset($instances[$calledClass]) === false)
-        {
-            self::$instances[$calledClass] = new static($config);
-        }
-
-        return self::$instances[$calledClass];
-    }
 
     protected function makeRequestAndValidateHeader(string $api, array $headers, $params)
     {

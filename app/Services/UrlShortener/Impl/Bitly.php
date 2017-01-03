@@ -12,7 +12,7 @@ class Bitly extends Base
 
     public function __construct(array $config)
     {
-        $this->accessToken = $config['access_token'];
+        $this->accessToken = $config['secret'];
     }
 
     public function shorten(string $url)
