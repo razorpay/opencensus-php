@@ -149,7 +149,7 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
-    public function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
+    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
     {
         $pricingRuleId = null;
 
@@ -315,11 +315,12 @@ class Core extends Base\Core
 
         switch (true)
         {
-            case ($amountCredits > 0):
-                return $this->calculateFeeForAmountCredit($payment, $transaction, $merchantBalance);
+            // Uncomment this when Prepaid Customer Fee Bearer supported for amount_credit and fee_credit
+            // case ($amountCredits > 0):
+            //     return $this->calculateFeeForAmountCredit($payment, $transaction, $merchantBalance);
 
-            case ($feeCredits >= $fee):
-                return $this->calculateFeeForFeeCredit($payment, $transaction);
+            // case ($feeCredits >= $fee):
+            //     return $this->calculateFeeForFeeCredit($payment, $transaction);
 
             default:
                 return $this->calculateFeeForPrepaidDefault($payment, $transaction);

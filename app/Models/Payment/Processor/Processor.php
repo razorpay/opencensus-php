@@ -183,12 +183,7 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        $transaction = $this->createDummyTransactionEntity();
-
-        list($transaction, $feeSplit) = (new Transaction\Core)->fillTxnFeesAndAmount($transaction, $payment);
-
-        $fee = $transaction->getFee();
-        $serviceTax = $transaction->getServiceTax();
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -651,15 +646,6 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
-    }
-
-    protected function createDummyTransactionEntity()
-    {
-        $transaction = new Transaction\Entity;
-
-        $transaction->generateId();
-
-        return $transaction;
     }
 
     /**
