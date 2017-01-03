@@ -109,7 +109,18 @@ class Service extends Base\Service
 
         $merchantDetail->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($merchantDetail);
+        try
+        {
+            $this->repo->saveOrFail($merchantDetail);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->info(
+                TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
+                [ 'merchant_id'   => $merchant->getId()]);
+
+            return $merchantDetail;
+        }
 
         $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
