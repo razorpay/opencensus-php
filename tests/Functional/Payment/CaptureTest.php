@@ -344,7 +344,9 @@ class CaptureTest extends TestCase
             'payment_capture' => '1'
             ]);
 
-        $this->fixtures->create('invoice');
+        $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+
+        $this->fixtures->create('invoice', ['due_by' => $dueBy]);
 
         $this->gateway = 'hdfc';
 
@@ -610,7 +612,9 @@ class CaptureTest extends TestCase
 
         if ($withInvoice)
         {
-            $this->fixtures->create('invoice');
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+
+            $this->fixtures->create('invoice', ['due_by' => $dueBy]);
         }
 
         $this->gateway = 'hdfc';

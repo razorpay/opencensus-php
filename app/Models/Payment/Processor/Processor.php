@@ -933,11 +933,6 @@ class Processor
             return false;
         }
 
-        if ($payment->isLateAuthorized())
-        {
-            return $this->shouldAutoCaptureLateAuthorized($payment);
-        }
-
         $order = $payment->order;
 
         //
@@ -955,6 +950,11 @@ class Processor
             ($order->getPaymentCapture() === false))
         {
             return false;
+        }
+
+        if ($payment->isLateAuthorized())
+        {
+            return $this->shouldAutoCaptureLateAuthorized($payment);
         }
 
         return true;
