@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Airtel;
 
-class Service
+class PaymentMethod
 {
     const NETBANKING = 'NB';
     const WALLET     = 'WT';

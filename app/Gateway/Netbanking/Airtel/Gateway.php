@@ -2,19 +2,19 @@
 
 namespace RZP\Gateway\Netbanking\Airtel;
 
+use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Payment\Currency;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
     protected $bank = 'airtel';
 
     protected $map = [
-        AuthFields::AMOUNT => 'amount'
+        AuthFields::AMOUNT => Base\Entity::AMOUNT
     ];
 
     const REVERSAL               = 'ECOMM_REVERSAL';
@@ -38,9 +38,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->createAuthorizeRequestData($input);
 
-        $entity = $this->createPaymentArray($input);
+        $contentToSave = [AuthFields::AMOUNT => $this->getFormattedAmount($input)];
 
-        $this->createGatewayPaymentEntity($entity);
+        $this->createGatewayPaymentEntity($contentToSave);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -125,6 +125,8 @@ class Gateway extends Base\Gateway
         $status = $this->getVerifyMatchStatus($verify, $response);
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $response);
     }
 
     protected function getVerifyMatchStatus($verify, $response)
@@ -169,16 +171,12 @@ class Gateway extends Base\Gateway
 
     protected function createAuthorizeRequestData($input)
     {
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(self::TIME_FORMAT);
-
         $data = [
             AuthFields::MERCHANT_ID              => $this->getMerchantId(),
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             AuthFields::AMOUNT                   => $this->getFormattedAmount($input),
-            AuthFields::DATE                     => $date,
-            AuthFields::SERVICE                  => Service::NETBANKING,
+            AuthFields::DATE                     => $this->getFormattedDate($input),
+            AuthFields::SERVICE                  => PaymentMethod::NETBANKING,
             AuthFields::SUCCESS_URL              => $input['callbackUrl'],
             AuthFields::FAILURE_URL              => $input['callbackUrl'],
             AuthFields::CURRENCY                 => Currency::INR,
@@ -189,15 +187,6 @@ class Gateway extends Base\Gateway
         $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');
 
         return $data;
-    }
-
-    protected function createPaymentArray($input)
-    {
-        $paymentArray = [
-            AuthFields::AMOUNT => $this->getFormattedAmount($input)
-        ];
-
-        return $paymentArray;
     }
 
     protected function getCallbackAttributes($content)
@@ -212,6 +201,93 @@ class Gateway extends Base\Gateway
         ];
 
         return $attributes;
+    }
+
+    protected function getPaymentVerifyData($verify)
+    {
+        $input = $verify->input;
+
+        $amount = $this->getFormattedAmount($input);
+
+        $data = [
+            VerifyFields::SESSION_ID               => uniqid(),
+            VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
+            VerifyFields::TRANSACTION_DATE         => $this->getFormattedDate($input),
+            VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
+            VerifyFields::AMOUNT                   => "$amount"
+        ];
+
+        $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
+
+        return json_encode($data);
+    }
+
+    protected function saveVerifyContentIfNeeded($verify, $response)
+    {
+        $input = $verify->input;
+
+        $gatewayPayment = $verify->payment;
+
+        $content = $response[VerifyFields::TRANSACTION][0];
+
+        if ((isset($content[VerifyFields::STATUS]) === true) and
+            ($content[VerifyFields::STATUS]) === Status::SUCCESS)
+        {
+            $attributes = $this->getVerifyAttributes($response, $input);
+
+            // Late authorization case
+            if ($gatewayPayment[Base\Entity::RECEIVED] === false)
+            {
+                $gatewayPayment->fill($attributes);
+
+                $this->repo->saveOrFail($gatewayPayment);
+            }
+        }
+
+        return $gatewayPayment;
+    }
+
+    protected function getVerifyAttributes($response, $input)
+    {
+        $content = $response[VerifyFields::TRANSACTION][0];
+
+        $contentToSave = [
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[VerifyFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[VerifyFields::TRANSACTION_ID],
+            Base\Entity::MERCHANT_CODE   => $response[VerifyFields::CODE],
+            Base\Entity::ERROR_MESSAGE   => $response[VerifyFields::MESSAGE_TEXT],
+            Base\Entity::DATE            => $content[VerifyFields::TRANSACTION_DATE],
+        ];
+
+        return $contentToSave;
+    }
+
+    protected function getRefundRequestData($input)
+    {
+        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $tranId = $payment['bank_payment_id'];
+
+        $merchantId = $this->getMerchantId();
+
+        $amount = $this->getFormattedAmount($input);
+
+        $request = [
+            RefundFields::SESSION_ID        => uniqid(),
+            RefundFields::TRANSACTION_ID    => $tranId,
+            RefundFields::TRANSACTION_DATE  => $this->getFormattedDate($input),
+            RefundFields::REQUEST           => self::REVERSAL,
+            RefundFields::MERCHANT_ID       => $merchantId,
+            RefundFields::AMOUNT            => "$amount"
+        ];
+
+        $hash = $this->getHashOfArray($request, 'request');
+
+        $request[RefundFields::HASH] = $hash;
+
+        return json_encode($request);
     }
 
     protected function checkRefundResponse($response, $input)
@@ -233,60 +309,6 @@ class Gateway extends Base\Gateway
         $this->checkActionStatus($responseArray);
     }
 
-    protected function getPaymentVerifyData($verify)
-    {
-        $input = $verify->input;
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(self::TIME_FORMAT);
-
-        $amount = $this->getFormattedAmount($input);
-
-        $data = [
-            VerifyFields::SESSION_ID               => uniqid(),
-            VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
-            VerifyFields::TRANSACTION_DATE         => $date,
-            VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
-            VerifyFields::AMOUNT                   => "$amount"
-        ];
-
-        $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
-
-        return json_encode($data);
-    }
-
-    protected function getRefundRequestData($input)
-    {
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $tranId = $payment['bank_payment_id'];
-
-        $date = Carbon::createFromTimestamp(
-            $input['payment']['created_at'], 'Asia/Kolkata')
-            ->format(self::TIME_FORMAT);
-
-        $merchantId = $this->getMerchantId();
-
-        $amount = $this->getFormattedAmount($input);
-
-        $request = [
-            RefundFields::SESSION_ID        => uniqid(),
-            RefundFields::TRANSACTION_ID    => $tranId,
-            RefundFields::TRANSACTION_DATE  => $date,
-            RefundFields::REQUEST           => self::REVERSAL,
-            RefundFields::MERCHANT_ID       => $merchantId,
-            RefundFields::AMOUNT            => "$amount"
-        ];
-
-        $hash = $this->getHashOfArray($request, 'request');
-
-        $request[RefundFields::HASH] = $hash;
-
-        return json_encode($request);
-    }
-
     protected function getRefundAttributes($response, $input)
     {
         $attributes = [
@@ -305,7 +327,15 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedAmount($input)
     {
-        return $input['payment']['id'] / 100;
+        return $input['payment']['amount'] / 100;
+    }
+
+    protected function getFormattedDate($input)
+    {
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
+                                            ->format(self::TIME_FORMAT);
+
+        return $date;
     }
 
     /*
@@ -356,12 +386,12 @@ class Gateway extends Base\Gateway
 
             case Action::VERIFY:
                 $data = ($type === 'request') ? $this->getVerifyRequestHashArray($content) :
-                                            $this->getVerifyResponseHashArray($content);
+                                                $this->getVerifyResponseHashArray($content);
                 break;
 
             case Action::REFUND:
                 $data = ($type === 'request') ? $this->getRefundRequestHashArray($content) :
-                                            $this->getRefundResponseHashArray($content);
+                                                $this->getRefundResponseHashArray($content);
                 break;
 
             default:
@@ -473,6 +503,9 @@ class Gateway extends Base\Gateway
             case Action::VERIFY:
                 $statusField = VerifyFields::ERROR_CODE;
                 break;
+
+            default:
+                throw new Exception/RuntimeException('Action not set correctly');
         }
 
         $successValue = ErrorCodes::getSuccessField();

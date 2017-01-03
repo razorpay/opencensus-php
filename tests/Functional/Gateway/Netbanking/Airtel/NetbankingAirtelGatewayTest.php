@@ -139,6 +139,15 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    public function testRefundAuthorizedPayment()
+    {
+        $payment = $this->doAuthPayment($this->payment);
+
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $this->assertSame($refund['payment_id'], $payment['razorpay_payment_id']);
+    }
+
     protected function mockPaymentFailure()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)

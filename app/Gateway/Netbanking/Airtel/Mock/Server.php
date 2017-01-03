@@ -150,6 +150,7 @@ class Server extends Base\Mock\Server
 
             case Action::REFUND:
                 return $content[RefundFields::HASH];
+
             default:
                 throw new Exception\RuntimeException('Action not set correctly');
         }
@@ -193,17 +194,17 @@ class Server extends Base\Mock\Server
         {
             case Action::AUTHORIZE:
                 $data = ($type === 'response') ? $this->getCallbackResponseHashArray($data) :
-                                                $this->getCallbackRequestHashArray($data);
+                                                 $this->getCallbackRequestHashArray($data);
                 break;
 
             case Action::VERIFY:
                 $data = ($type === 'response') ? $this->getVerifyResponseHashArray($data) :
-                                                $this->getVerifyRequestHashArray($data);
+                                                 $this->getVerifyRequestHashArray($data);
                 break;
 
             case Action::REFUND:
                 $data = ($type === 'response') ? $this->getRefundResponseHashArray($data) :
-                                                $this->getRefundRequestHashArray($data);
+                                                 $this->getRefundRequestHashArray($data);
                 break;
 
             default:
