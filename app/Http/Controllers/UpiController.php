@@ -140,7 +140,7 @@ class UpiController extends Controller
         return response($xml)->header('Content-Type', 'application/xml');
     }
 
-    public function patchVpaExclusion()
+    public function postPspDisallow()
     {
         $input = Request::all();
 
@@ -149,7 +149,7 @@ class UpiController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deleteVpaExclusion()
+    public function postPspAllow()
     {
         $input = Request::all();
 

@@ -79,21 +79,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
-
-        $excludedPsps = Upi\Core::getDisallowedPsp();
-
-        if (in_array($vpaParts[1], $excludedPsps, true) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
-        }
-
-        $merchantId = null;
-
-        if ($this->entity->getMerchantId() !== null)
-        {
-            $merchantId = $this->entity->merchant->getId();
-        }
     }
 
     protected function validateWallet($attribute, $value)
@@ -164,6 +149,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount', $amount);
+        }
+    }
+
+    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (in_array($vpaParts[1], $excludedPsps, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
         }
     }
 

@@ -297,7 +297,7 @@ class Core extends Base\Core
 
         $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
 
-        return ['success' => true];
+        return ['excluded' => $excludedPsps, 'success' => true];
     }
 
     public function allowVpaPsp()
@@ -312,7 +312,7 @@ class Core extends Base\Core
 
         $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
 
-        return ['success' => true];
+        return ['excluded' => $excludedPsps, 'success' => true];
     }
 
     public static function getDisallowedPsp()
