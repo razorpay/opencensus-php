@@ -989,6 +989,13 @@ class Processor
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
 
+        if ($autoRefundDelay === null)
+        {
+            $shouldRefundAt = Carbon::createFromTimestamp($createdAt)
+                                    ->addDays(Processor::AUTO_REFUND_TIME_PERIOD)
+                                    ->timestamp;
+        }
+
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         //
