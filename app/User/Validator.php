@@ -9,7 +9,7 @@ class Validator extends Base\Validator
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
     public static $createRules = array(
         // Individual Name
-        'name'                  => 'sometimes|alpha_space|max:200',
+        'name'                  => 'required|alpha_space|max:200',
         // Merchant Business Name
         'business_name'         => 'alpha_space_num|max:200|min:4',
 
