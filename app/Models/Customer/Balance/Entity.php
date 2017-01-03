@@ -7,13 +7,14 @@ use RZP\Models\Customer;
 
 class Entity extends Base\PublicEntity
 {
-    const CUSTOMER_ID   = 'customer_id';
-    const MERCHANT_ID   = 'merchant_id';
-    const BALANCE       = 'balance';
-    const DAILY_USAGE   = 'daily_usage';
-    const WEEKLY_USAGE  = 'weekly_usage';
-    const MONTHLY_USAGE = 'monthly_usage';
-    const MAX_BALANCE   = 'max_balance';
+    const CUSTOMER_ID       = 'customer_id';
+    const MERCHANT_ID       = 'merchant_id';
+    const BALANCE           = 'balance';
+    const DAILY_USAGE       = 'daily_usage';
+    const WEEKLY_USAGE      = 'weekly_usage';
+    const MONTHLY_USAGE     = 'monthly_usage';
+    const MAX_BALANCE       = 'max_balance';
+    const LAST_LOADED_AT    = 'last_loaded_at';
 
     protected $entity = 'customer_balance';
 
@@ -43,7 +44,6 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
-        self::UPDATED_AT,
     ];
 
     protected $defaults = [
@@ -102,6 +102,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MONTHLY_USAGE, $amount);
     }
 
+    public function setLastLoadedAt($timestamp)
+    {
+        $this->setAttribute(self::LAST_LOADED_AT, $timestamp);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
@@ -130,6 +135,11 @@ class Entity extends Base\PublicEntity
     public function getMonthlyUsage()
     {
         return $this->getAttribute(self::MONTHLY_USAGE);
+    }
+
+    public function getLastLoadedAt()
+    {
+        return $this->getAttribute(self::LAST_LOADED_AT);
     }
 
     // -------------------- Helpers ----------------------------

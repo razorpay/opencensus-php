@@ -24,6 +24,21 @@ class PaymentTransferTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function testCreateWalletWithNonIndianContact()
+    {
+        $customer = $this->fixtures->create('customer', ['contact' => '+9293003939']);
+
+        $customerPublicId = $customer->getPublicId();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
+
+        $this->startTest();
+    }
+
     public function testCaptureAndTransferToInvalidCustomerId()
     {
         $this->payment = $this->doAuthAndCapturePayment();

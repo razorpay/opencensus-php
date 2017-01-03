@@ -31,6 +31,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+    'testCreateWalletWithNonIndianContact' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => 'cust_3030300000cust',
+                        'amount'   => 200
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED
+        ],
+    ],
     'testCaptureAndTransferToUnknownCustomerId' => [
         'request' => [
             'content' => [

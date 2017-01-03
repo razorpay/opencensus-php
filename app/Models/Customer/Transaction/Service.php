@@ -14,18 +14,6 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function getStatement(Customer\Balance\Entity $customerBalance, array $input = []) : array
-    {
-        $input[Entity::CUSTOMER_ID] = $customerBalance->getCustomerId();
-
-        $entities = $this->repo
-                         ->customer_transaction
-                         ->fetchCustomerStatement(
-                            $input, $this->merchant);
-
-        return $entities->toArrayPublic();
-    }
-
     public function createForRefund(array $input) : string
     {
         return $this->repo->transaction(function () use ($input)

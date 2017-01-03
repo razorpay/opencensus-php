@@ -3,10 +3,14 @@
 namespace RZP\Models\Customer\Balance;
 
 use Carbon\Carbon;
+use Lib\PhoneBook;
+
 use RZP\Models\Base;
 use RZP\Models\Wallet;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -18,6 +22,16 @@ class Core extends Base\Core
      */
     protected function create(Customer\Entity $customer) : Entity
     {
+        $number = new PhoneBook($customer->getContact(), true);
+
+        $country = $number->getRegionCodeForNumber();
+
+        if ($country !== 'IN')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+        }
+
         $balance = new Entity;
 
         $balance->customer()->associate($customer);
@@ -64,7 +78,9 @@ class Core extends Base\Core
 
         if ($isRefund === false)
         {
-            $balance = $this->updateUsages($balance, $amount);
+            $this->updateUsages($balance, $amount);
+
+            $balance->setLastLoadedAt(time());
         }
 
         $this->repo->saveOrFail($balance);
@@ -111,28 +127,32 @@ class Core extends Base\Core
         return $this->credit($balance, $amount, true);
     }
 
+    /**
+     * Update usage limits for the balance entity
+     *
+     * @param  Entity $balance
+     * @param  int    $amount
+     */
     protected function updateUsages(Entity $balance, int $amount)
     {
-        $lastTxnTime = (new Customer\Transaction\Core)->getLastCreditTransactionTime($balance);
+        $lastTxnTime = $balance->getLastLoadedAt();
 
         // No previous transaction on the wallet
+        // (shouldn't happen - entity is created on first credit)
         if ($lastTxnTime === null)
         {
             return $this->resetAllUsages($balance, $amount);
         }
 
+        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
+
         list($resetDay, $resetWeek, $resetMonth) = $this->checkTimestampForReset($lastTxnTime);
 
-        // Daily/ Weekly limits are not being enforced right now,
-        // leaving the code commented - for future use
+        $this->updateDailyUsage($balance, $amount, $resetDay);
 
-        // $balance = $this->updateDailyUsage($balance, $amount, $resetDay);
+        $this->updateWeeklyUsage($balance, $amount, $resetWeek);
 
-        // $balance = $this->updateWeeklyUsage($balance, $amount, $resetWeek);
-
-        $balance = $this->updateMonthlyUsage($balance, $amount, $resetMonth);
-
-        return $balance;
+        $this->updateMonthlyUsage($balance, $amount, $resetMonth);
     }
 
     protected function checkTimestampForReset(Carbon $lastTxnTime) : array
@@ -163,19 +183,16 @@ class Core extends Base\Core
         return [$resetDay, $resetWeek, $resetMonth];
     }
 
-    protected function resetAllUsages(Entity $balance, int $amount) : Entity
+    protected function resetAllUsages(Entity $balance, int $amount)
     {
-        // $balance->setDailyUsage($amount);
+        $balance->setDailyUsage($amount);
 
-        // $balance->setWeeklyUsage($amount);
+        $balance->setWeeklyUsage($amount);
 
         $balance->setMonthlyUsage($amount);
-
-        return $balance;
     }
 
-    // Unused
-    protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay) : Entity
+    protected function updateDailyUsage(Entity $balance, int $amount, bool $resetDay)
     {
         if ($resetDay === false)
         {
@@ -183,12 +200,9 @@ class Core extends Base\Core
         }
 
         $balance->setDailyUsage($amount);
-
-        return $balance;
     }
 
-    // Unused
-    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek) : Entity
+    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek)
     {
         if ($resetWeek === false)
         {
@@ -196,11 +210,9 @@ class Core extends Base\Core
         }
 
         $balance->setWeeklyUsage($amount);
-
-        return $balance;
     }
 
-    protected function updateMonthlyUsage(Entity $balance, int $amount, bool $resetMonth) : Entity
+    protected function updateMonthlyUsage(Entity $balance, int $amount, bool $resetMonth)
     {
         if ($resetMonth === false)
         {
@@ -208,7 +220,5 @@ class Core extends Base\Core
         }
 
         $balance->setMonthlyUsage($amount);
-
-        return $balance;
     }
 }

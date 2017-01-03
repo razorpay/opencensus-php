@@ -100,21 +100,6 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    public function getLastCreditTransactionTime(Customer\Balance\Entity $balance)
-    {
-        $lastTxn = $this->repo
-                        ->customer_transaction
-                        ->fetchLastCreditTransaction(
-                            $balance->getCustomerId(), $this->merchant->getId());
-
-        if ($lastTxn === NULL)
-        {
-            return NULL;
-        }
-
-        return Carbon::createFromTimestamp($lastTxn->getCreatedAt(), 'Asia/Kolkata');
-    }
-
     protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId) : Entity
     {
         $customerTxn = new Entity;
@@ -150,5 +135,16 @@ class Core extends Base\Core
         $customerTxn->fillAndGenerateId($txnData);
 
         return $customerTxn;
+    }
+
+    public function getStatement(Customer\Balance\Entity $customerBalance, array $input = [])
+    {
+        $input[Entity::CUSTOMER_ID] = $customerBalance->getCustomerId();
+
+        $entities = $this->repo
+                         ->customer_transaction
+                         ->fetch($input, $this->merchant->getId());
+
+        return $entities;
     }
 }

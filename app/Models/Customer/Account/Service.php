@@ -567,6 +567,8 @@ class Service extends Base\Service
                                 ->customer_balance
                                 ->findByIdAndMerchant($customerId, $this->merchant);
 
-        return (new Customer\Transaction\Service)->getStatement($customerBalance, $input);
+        $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $input);
+
+        return $records->toArrayPublic();
     }
 }

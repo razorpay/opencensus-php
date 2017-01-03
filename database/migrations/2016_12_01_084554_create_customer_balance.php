@@ -43,6 +43,10 @@ class CreateCustomerBalance extends Migration
                   ->default(null)
                   ->nullable();
 
+            $table->integer(Entity::LAST_LOADED_AT)
+                  ->default(null)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
