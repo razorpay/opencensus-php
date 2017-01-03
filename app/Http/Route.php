@@ -391,6 +391,8 @@ final class Route
         'p2p_reject'                              => ['put',      'upi/p2p/{id}/reject',                            'P2pController@rejectP2p'                                           ],
         'p2p_authorize'                           => ['post',     'upi/p2p/{id}/authorize',                         'P2pController@postAuthorize'                                       ],
         'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
+        'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
+        'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
     );
 
     public static $public = array(
@@ -677,6 +679,8 @@ final class Route
         'offer_update',
         'offer_delete',
         'international_exchange_rates',
+        'upi_psp_disallow',
+        'upi_psp_allow',
     );
 
     public static $proxy = array(

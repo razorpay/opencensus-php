@@ -32,6 +32,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -733,6 +734,11 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isUpi())
+        {
+            $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
@@ -1722,6 +1728,16 @@ trait Authorize
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }
+    }
+
+    protected function validateUpiPspIsAllowed($payment)
+    {
+        $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
+
+        $disallowedPsps = json_decode($disallowedPspJson, true);
+
+        $payment->getValidator()->validateUpiVpaPsp(
+            $payment->getVpa(), $disallowedPsps);
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)

@@ -36,6 +36,40 @@ trait Refund
         return $refund;
     }
 
+    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    {
+        if ($payment->transaction === null)
+        {
+            throw new Exception\LogicException(
+                'Transaction expected but not present for payment: ' . $payment->getId());
+        }
+
+        $input = ['amount' => $refundAmount];
+
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refund->setId($refundId);
+
+        $data = [
+            'payment_id' => $payment->getId(),
+            'refund_id' => $refundId,
+            'refund_amount' => $refundAmount,
+        ];
+
+        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
+
+        if ($gatewayRefunded === false)
+        {
+            throw new Exception\LogicException(
+                'Should have been refunded on gateway but is not',
+                $data);
+        }
+
+        $this->recordRefund();
+    }
+
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
@@ -110,9 +144,12 @@ trait Refund
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
         // been captured. Check PR #905 and #909.
-        assert (($payment->hasBeenCaptured() === true) or
-                (in_array($payment->card->getNetworkCode(),
-                          [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+
+        // Commenting this because we have reached past this stage.
+        // A refund transaction could have been created even if the payment is not captured.
+        // assert (($payment->hasBeenCaptured() === true) or
+        //         (in_array($payment->card->getNetworkCode(),
+        //                   [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
@@ -300,6 +337,13 @@ trait Refund
         return $verifyRefundResult;
     }
 
+    protected function callGatewayForAlreadyRefunded($data)
+    {
+        $gatewayRefunded = $this->callGatewayFunction(Payment\Action::ALREADY_REFUNDED, $data);
+
+        return $gatewayRefunded;
+    }
+
     protected function callGatewayForManualRefund($data)
     {
         $manualGatewayRefundResult = null;
@@ -309,8 +353,7 @@ trait Refund
             [
                 'payment_id'    => $data['payment']['id'],
                 'refund_id'     => $data['refund']['id'],
-            ]
-        );
+            ]);
 
         try
         {
