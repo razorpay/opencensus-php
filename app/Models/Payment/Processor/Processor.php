@@ -933,77 +933,98 @@ class Processor
             return false;
         }
 
-        if (($payment->isLateAuthorized() === true) and
-            ($payment->getInvoiceId() === null))
+        if ($payment->isLateAuthorized())
         {
-            return false;
-        }
-
-        if ($payment->hasInvoice() === true)
-        {
-            // We check auto refund delay only for invoices
-            // As we are only doing auto-capture for
-            // late authorized invoices.
-            $merchant        = $payment->merchant;
-            $autoRefundDelay = $merchant->getAutoRefundDelay();
-
-            $createdAt = $payment->getCreatedAt();
-
-            // Default value of auto capture delay
-            $refundPeriodStart = Carbon::today('Asia/Kolkata')
-                                        ->subDays(Processor::AUTO_REFUND_TIME_PERIOD)
-                                        ->timestamp;
-
-            if ($autoRefundDelay !== null)
-            {
-                $refundPeriodStart = Carbon::now('Asia/Kolkata')
-                                             ->subSeconds($autoRefundDelay)
-                                             ->timestamp;
-            }
-
-            if ($refundPeriodStart > $createdAt)
-            {
-                return false;
-            }
-
-            //
-            // Invoice related checks
-            // - Check if now is not past invoice due date
-            // - Check if invoice status is ISSUED
-            //
-            $invoice = $payment->invoice;
-            $now     = Carbon::today('Asia/Kolkata')->timestamp;
-
-            if (($invoice->isIssued() === false) or
-                ($now >= $invoice->getDueBy()))
-            {
-                $this->trace->debug(
-                    TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
-                    [
-                        'payment_id'     => $payment->getId(),
-                        'status'         => $payment->getStatus(),
-                        'invoice_id'     => $invoice->getId(),
-                        'invoice_status' => $invoice->getStatus(),
-                        'invoice_due_by' => $invoice->getDueBy(),
-                    ]);
-
-                return false;
-            }
+            return $this->shouldAutoCaptureLateAuthorized($payment);
         }
 
         $order = $payment->order;
 
         //
-        // This mostly handles following case: More than one late authorized
-        // payments come to this flow, in that case only one will be
-        // auto-captured and the others will remain in authorized and then get
-        // refunded later. That is why it's good to reload the order entity too.
+        // Assume a case where the first payment failed.
+        // The second payment is getting authorized.
+        // The first payment is now getting late authorized.
+        // If the second payment gets captured, we need to ensure that we don't capture
+        // the first payment. We do a reload here to ensure that we get the latest
+        // status of the order before marking the payment as captured.
+        // An order must not have more than one captured payment.
         //
         $this->repo->reload($order);
 
         if (($order->isPaid() === true) or
             ($order->getPaymentCapture() === false))
         {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
+    {
+        // For now, we would be auto capturing only payments with an invoice.
+        // This will be removed later.
+        if ($payment->getInvoiceId() === null)
+        {
+            return false;
+        }
+
+        // Auto capturing a late authorized invoice has a little different logic.
+        // Later, we would add logic for auto capturing a payment which is not
+        // associated with an invoice also.
+        if ($payment->hasInvoice())
+        {
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
+        }
+
+        return false;
+    }
+
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
+    {
+        $merchant        = $payment->merchant;
+        $autoRefundDelay = $merchant->getAutoRefundDelay();
+
+        $createdAt = $payment->getCreatedAt();
+
+        $shouldRefundAt = $createdAt + $autoRefundDelay;
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        //
+        // If the payment is supposed to get refunded by now,
+        // do not auto capture it.
+        //
+        if ($currentTime > $shouldRefundAt)
+        {
+            return false;
+        }
+
+        //
+        // Invoice related checks
+        // - Check if now is not past invoice due date
+        // - Check if invoice status is ISSUED
+        //
+
+        $invoice = $payment->invoice;
+
+        $this->repo->reload($invoice);
+
+        if (($invoice->isIssued() === false) or
+            ($currentTime >= $invoice->getDueBy()))
+        {
+            $this->trace->debug(
+                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'status'            => $payment->getStatus(),
+                    'invoice_id'        => $invoice->getId(),
+                    'invoice_status'    => $invoice->getStatus(),
+                    'invoice_due_by'    => $invoice->getDueBy(),
+                    'refund_delay'      => $autoRefundDelay,
+                    'should_refund_at'  => $shouldRefundAt,
+                ]);
+
             return false;
         }
 
