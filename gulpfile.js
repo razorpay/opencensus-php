@@ -164,12 +164,12 @@ gulp.task('reactRevReplace', () => {
 
 const runWebpack = (webpackConfig, cb) => {
   webpack(webpackConfig, (err, stats) => {
-    if (err) {
-      throw new Error(err);
-    }
     console.log(stats.toString({
       colors: true
     }));
+    if (stats.hasErrors()) {
+      throw new Error('Webpack failed')
+    }
     cb();
   });
 };
