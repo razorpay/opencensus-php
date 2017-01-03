@@ -30,12 +30,9 @@ class Service extends Impl\Base
 
     public function __construct(Config $config, Trace $trace)
     {
-        $this->config   = $config->get('applications.url_shortener');
-
-        $this->trace    = $trace;
-
-        $this->services = explode(',', $this->config['services']);
-
+        $this->config        = $config->get('applications.url_shortener');
+        $this->trace         = $trace;
+        $this->services      = explode(',', $this->config['services']);
         $this->allowFallback = $config['allow_fallback'];
     }
 

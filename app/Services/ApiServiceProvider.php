@@ -130,8 +130,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'maxmind',
             'raven',
             'repo',
-            'es',
-            'maxmind',
             'url_shortener',
             'segment',
             'upi.client',
