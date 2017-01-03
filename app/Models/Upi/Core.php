@@ -293,14 +293,14 @@ class Core extends Base\Core
 
         $newExcludedPsps = $input['psps'];
 
-        $excludedPsps = array_merge($excludedPsps, $newExcludedPsps);
+        $excludedPsps = array_unique(array_merge($excludedPsps, $newExcludedPsps));
 
         $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
 
         return ['excluded' => $excludedPsps, 'success' => true];
     }
 
-    public function allowVpaPsp()
+    public function allowVpaPsp(array $input)
     {
         $cache = $this->app['cache'];
 
@@ -313,16 +313,5 @@ class Core extends Base\Core
         $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
 
         return ['excluded' => $excludedPsps, 'success' => true];
-    }
-
-    public static function getDisallowedPsp()
-    {
-        $cache = Cache::getFacadeRoot();
-
-        $disallowedPspJson = $cache->get(self::EXCLUDED_PSPS, '[]');
-
-        $disallowedPsp = json_decode($disallowedPspJson, true);
-
-        return $disallowedPsp;
     }
 }
