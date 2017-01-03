@@ -15,7 +15,7 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-    const EXCLUDED_VPAS = 'excluded_vpas';
+    const EXCLUDED_PSPS = 'excluded_psps';
 
     protected $customerService;
 
@@ -285,27 +285,38 @@ class Core extends Base\Core
         return (new P2p\Service)->completeAuthorization($arr['p2p_id'], $arr);
     }
 
-    public function patchVpaExclusion(array $input)
+    public function disallowVpaPsp(array $input)
     {
         $cache = $this->app['cache'];
 
-        $excludedVpas = json_decode($cache->get(self::EXCLUDED_VPAS, '[]'));
+        $excludedVpas = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
 
         $newExcludedVpas = $input['vpas'];
 
         $excludedVpas = array_merge($excludedVpas, $newExcludedVpas);
 
-        $cache->forever(self::EXCLUDED_VPAS, json_encode($excludedVpas));
+        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedVpas));
 
         return ['success' => true];
     }
 
-    public function deleteVpaExclusion()
+    public function allowVpaPsp()
     {
         $cache = $this->app['cache'];
 
-        $deleted = $cache->forget(self::EXCLUDED_VPAS);
+        $deleted = $cache->forget(self::EXCLUDED_PSPS);
 
         return ['deleted' => $deleted];
+    }
+
+    public static function getDisallowedPsp()
+    {
+        $cache = Cache::getFacadeRoot();
+
+        $disallowedPspJson = $cache->get(self::EXCLUDED_PSPS, '[]');
+
+        $disallowedPsp = json_decode($disallowedPspJson, true);
+
+        return $disallowedPsp;
     }
 }

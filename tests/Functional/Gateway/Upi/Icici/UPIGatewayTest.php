@@ -146,7 +146,7 @@ EOT;
 
         $payment['vpa'] = 'nemo@upi';
 
-        Cache::forever('excluded_vpas', '["upi"]');
+        Cache::forever('excluded_psps', '["upi"]');
 
         $data = $this->testData[__FUNCTION__];
 

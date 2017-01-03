@@ -80,13 +80,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        $cache = Cache::getFacadeRoot();
+        $excludedPsps = Upi\Core::getDisallowedPsp();
 
-        $excludedVpasJson = $cache->get(Upi\Core::EXCLUDED_VPAS, '[]');
-
-        $excludedVpas = json_decode($excludedVpasJson, true);
-
-        if (in_array($vpaParts[1], $excludedVpas, true) === true)
+        if (in_array($vpaParts[1], $excludedPsps, true) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);

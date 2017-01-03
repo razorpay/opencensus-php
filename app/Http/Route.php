@@ -392,8 +392,8 @@ final class Route
         'p2p_authorize'                           => ['post',     'upi/p2p/{id}/authorize',                         'P2pController@postAuthorize'                                       ],
         'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
 
-        'patch_upi_exclusion'                     => ['patch',    'upi/vpa/exclude',                                'UpiController@patchVpaExclusion'                                   ],
-        'delete_upi_exclusion'                    => ['delete',   'upi/vpa/exclude',                                'UpiController@deleteVpaExclusion'                                  ],
+        'upi_vpa_disallow'                        => ['patch',    'upi/vpa/exclude',                                'UpiController@patchVpaExclusion'                                   ],
+        'upi_vpa_allow'                           => ['delete',   'upi/vpa/exclude',                                'UpiController@deleteVpaExclusion'                                  ],
     );
 
     public static $public = array(
@@ -680,8 +680,8 @@ final class Route
         'offer_update',
         'offer_delete',
         'international_exchange_rates',
-        'patch_upi_exclusion',
-        'delete_upi_exclusion',
+        'upi_vpa_disallow',
+        'upi_vpa_allow',
     );
 
     public static $proxy = array(

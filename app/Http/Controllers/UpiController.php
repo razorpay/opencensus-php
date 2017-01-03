@@ -144,14 +144,14 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->core->patchVpaExclusion($input);
+        $data = $this->core->disallowVpaPsp($input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteVpaExclusion()
     {
-        $data = $this->core->deleteVpaExclusion();
+        $data = $this->core->allowVpaPsp();
 
         return ApiResponse::json($data);
     }
