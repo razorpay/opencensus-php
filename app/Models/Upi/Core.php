@@ -15,6 +15,8 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
+    const EXCLUDED_VPAS = 'excluded_vpas';
+
     protected $customerService;
 
     public function __construct()
@@ -281,5 +283,29 @@ class Core extends Base\Core
     protected function AuthorizePayment($arr)
     {
         return (new P2p\Service)->completeAuthorization($arr['p2p_id'], $arr);
+    }
+
+    public function patchVpaExclusion(array $input)
+    {
+        $cache = $this->app['cache'];
+
+        $excludedVpas = json_decode($cache->get(self::EXCLUDED_VPAS, '[]'));
+
+        $newExcludedVpas = $input['vpas'];
+
+        $excludedVpas = array_merge($excludedVpas, $newExcludedVpas);
+
+        $cache->forever(self::EXCLUDED_VPAS, json_encode($excludedVpas));
+
+        return ['success' => true];
+    }
+
+    public function deleteVpaExclusion()
+    {
+        $cache = $this->app['cache'];
+
+        $deleted = $cache->forget(self::EXCLUDED_VPAS);
+
+        return ['deleted' => $deleted];
     }
 }

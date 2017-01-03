@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Cache;
 use Closure;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
@@ -144,6 +145,8 @@ EOT;
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['vpa'] = 'nemo@upi';
+
+        Cache::forever('excluded_vpas', '["upi"]');
 
         $data = $this->testData[__FUNCTION__];
 

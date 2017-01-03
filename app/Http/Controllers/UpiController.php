@@ -139,4 +139,20 @@ class UpiController extends Controller
     {
         return response($xml)->header('Content-Type', 'application/xml');
     }
+
+    public function patchVpaExclusion()
+    {
+        $input = Request::all();
+
+        $data = $this->core->patchVpaExclusion($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteVpaExclusion()
+    {
+        $data = $this->core->deleteVpaExclusion();
+
+        return ApiResponse::json($data);
+    }
 }

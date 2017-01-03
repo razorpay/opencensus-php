@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Upi;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -78,7 +80,13 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
-        if ($vpaParts[1] === 'upi')
+        $cache = Cache::getFacadeRoot();
+
+        $excludedVpasJson = $cache->get(Upi\Core::EXCLUDED_VPAS, '[]');
+
+        $excludedVpas = json_decode($excludedVpasJson, true);
+
+        if (in_array($vpaParts[1], $excludedVpas, true) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
