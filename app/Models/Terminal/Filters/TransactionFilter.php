@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
@@ -16,6 +17,7 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
         'maestro',
@@ -65,6 +67,22 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function currencyFilter($terminal, $input)
+    {
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $paymentCurrency = Currency::INR;
+        }
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
     }
 
     public function internationalFilter($terminal, $input)

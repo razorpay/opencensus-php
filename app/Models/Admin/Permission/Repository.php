@@ -15,7 +15,7 @@ class Repository extends Base\Repository
 
     protected $proxyFetchParamRules = [
         Entity::CATEGORY  => 'sometimes|string|max:255',
-        Entity::NAME    => 'sometimes|string',
+        Entity::NAME      => 'sometimes|string',
     ];
 
     protected $appFetchParamRules = [

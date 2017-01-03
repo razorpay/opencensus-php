@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
     const MAIN_LOGO_URL     = 'main_logo_url';
     const INVOICE_LOGO_URL  = 'invoice_logo_url';
     const DELETED_AT        = 'deleted_at';
+    const CUSTOM_CODE       = 'custom_code';
+    const ADMIN             = 'admin';
 
     protected static $sign = 'org';
 
@@ -93,8 +95,8 @@ class Entity extends Base\PublicEntity
 
         static::deleting(function ($org)
         {
+            $org->hostnames()->delete();
             $org->roles()->delete();
-            // $org->policy()->delete();
             $org->admins()->delete();
             $org->groups()->delete();
             $org->permissions()->delete();
@@ -102,8 +104,8 @@ class Entity extends Base\PublicEntity
 
         static::restored(function ($org)
         {
+            $org->hostnames()->withTrashed()->restore();
             $org->roles()->withTrashed()->restore();
-            // $org->policy()->withTrashed()->restore();
             $org->admins()->withTrashed()->restore();
             $org->groups()->withTrashed()->restore();
             $org->permissions()->withTrashed()->restore();

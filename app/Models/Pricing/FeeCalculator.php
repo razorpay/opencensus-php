@@ -59,7 +59,7 @@ class FeeCalculator
 
         $this->getRelevantPricingRule($pricing);
 
-        $amount = $entity->getAmount();
+        $amount = $entity->getBaseAmount();
 
         if ($entity->merchant->isFeeBearerCustomer())
         {
@@ -178,7 +178,9 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'No appropriate pricing rule found', null, ['entity' => $entity->toArray()]);
+                'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                ['entity' => $this->entity->toArray()]);
         }
 
         $this->pricingRules->push($rule);
@@ -230,13 +232,20 @@ class FeeCalculator
     {
         $payment = $this->entity;
 
-        $amount = $payment->getAmount();
+        $amount = $payment->getBaseAmount();
 
         $filters = [
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        if (count($rules) === 0)
+        {
+            throw new Exception\LogicException(
+                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT);
+        }
 
         $subventionType = $payment->merchant->getSubventionType();
 

@@ -78,4 +78,10 @@ return array(
         ],
         'allow_fallback' => true,
     ],
+
+    'exchange'  => [
+        'mock'      => env('EXCHANGE_MOCK', false),
+        'url'       => env('EXCHANGE_URL'),
+        'appId'     => env('EXCHANGE_APP_ID')
+    ],
 );

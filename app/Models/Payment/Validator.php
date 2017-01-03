@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Upi;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -39,9 +41,10 @@ class Validator extends Base\Validator
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes');
 
-    protected static $captureRules = array(
+    protected static $captureRules = [
         'amount'        => 'required|integer',
-        'currency'      => 'sometimes|in:INR');
+        'currency'      => 'required|in:INR,USD',
+    ];
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|integer',
@@ -75,13 +78,6 @@ class Validator extends Base\Validator
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
-        }
-
-        $merchantId = null;
-
-        if ($this->entity->getMerchantId() !== null)
-        {
-            $merchantId = $this->entity->merchant->getId();
         }
     }
 
@@ -153,6 +149,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount', $amount);
+        }
+    }
+
+    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (in_array($vpaParts[1], $excludedPsps, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
         }
     }
 
@@ -266,11 +273,8 @@ class Validator extends Base\Validator
     {
         $currency = $input['currency'];
 
-        //
-        // Right now only INR is supported.
-        //
-
-        if ($currency !== "INR")
+        // Right now only INR and USD is supported.
+        if (in_array($currency, Payment\Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -295,13 +299,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $amount)
+    public function captureValidate($payment, $amount, $currency)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
         $this->captureAmountValidate($payment, $amount);
+
+        $this->captureCurrencyValidate($payment, $currency);
     }
 
     public function cancelValidate($payment)
@@ -309,7 +315,7 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $amount)
+    protected function captureAmountValidate($payment, $amount)
     {
         $amount = (int) $amount;
 
@@ -324,6 +330,22 @@ class Validator extends Base\Validator
                     'payment_id'     => $payment->getId(),
                 ]);
         }
+    }
+
+    protected function captureCurrencyValidate($payment, $currency)
+    {
+        if ($currency !== $payment->getCurrency())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
+                Payment\Entity::CURRENCY,
+                [
+                    'capture_currency' => $currency,
+                    'payment_currency' => $payment->getCurrency(),
+                    'payment_id'       => $payment->getId(),
+                ]);
+        }
+
     }
 
     protected function failIfNotCreated($payment)

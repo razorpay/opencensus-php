@@ -66,6 +66,11 @@ TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testin
 
 * Run `cp scripts/git-hooks/pre-commit .git/hooks/`
 
+### Setup crons
+
+* Run `./scripts/crontab.sh` to set up all crons that exist on prod.
+* Consider commenting out the ones you don't actually need with `crontab -e`.
+
 # Docs
 
 To generate documentation, run the following:

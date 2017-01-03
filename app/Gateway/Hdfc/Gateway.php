@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
 
@@ -418,7 +418,16 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment']['id'];
 
-        return $this->isCapturedSuccessfully($paymentId);
+        $gatewayCaptured = $this->isCapturedSuccessfully($paymentId);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_HDFC_CAPTURED,
+            [
+                'input'     => $input,
+                'captured'  => $gatewayCaptured
+            ]);
+
+        return $gatewayCaptured;
     }
 
 // ----------------------Gateway operations end --------------------------------

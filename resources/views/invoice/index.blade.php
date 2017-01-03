@@ -111,7 +111,11 @@
 
           @if ($data['merchant_details'])
             @if ($data['merchant_details']['id'] === '6lGF5wNtCS8UA0')
-              options.theme.branding = 'payzapp';
+              options.theme.branding = 'payzapp'
+            @elseif ($data['merchant_details']['organization'])
+              @if ($data['merchant_details']['organization']['invoice_logo_url'])
+                options.theme.branding = merchant_details.organization.invoice_logo_url;
+              @endif
             @endif
           @endif
 

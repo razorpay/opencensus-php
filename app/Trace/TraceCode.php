@@ -80,6 +80,8 @@ class TraceCode
     const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
     const PAYMENT_CAPTURE_INVOICE_UPDATE            = 'PAYMENT_CAPTURE_INVOICE_UPDATE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
+    const PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       = 'PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED';
+    const INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  = 'INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
     const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
@@ -115,6 +117,7 @@ class TraceCode
     const MULTIPLE_GATEWAY_ENTITIES_FOUND           = 'MULTIPLE_GATEWAY_ENTITIES_FOUND';
     const BILLDESK_REFUND_UNEXPECTED_STATE          = 'BILLDESK_REFUND_UNEXPECTED_STATE';
     const BILLDESK_CAN_MANUAL_REFUND                = 'BILLDESK_CAN_MANUAL_REFUND';
+    const LATE_AUTHORIZE_AUTO_CAPTURE               = 'LATE_AUTHORIZE_AUTO_CAPTURE';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -149,7 +152,9 @@ class TraceCode
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
+    const FEES_BREAKUP_CREATION_FAILED              = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
+    const GATEWAY_UPI_REQUEST_CALLBACK              = 'GATEWAY_UPI_REQUEST_CALLBACK';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
@@ -268,6 +273,7 @@ class TraceCode
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
     const GATEWAY_ALREADY_REFUNDED                  = 'GATEWAY_ALREADY_REFUNDED';
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
+    const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -288,6 +294,11 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
+
+    const VPA_CREATE_REQUEST                        = 'VPA_CREATE_REQUEST';
+    const VPA_CREATED                               = 'VPA_CREATED';
+    const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
+    const VPA_DELETED                               = 'VPA_DELETED';
 
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
@@ -350,6 +361,9 @@ class TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+
+    const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
+    const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
@@ -477,6 +491,8 @@ class TraceCode
         self::TRANSACTION_FREE_CREDITS                  => 'Using free credits for the payment',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
+        self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       => 'Payment cannot be auto captured since it is not in authorized state',
+        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  => 'Invoice payment cannot be auto captured since it is either past due date or is not in issued state',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
         self::PAYMENT_ANALYTICS_INCORRECT_DATA          => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',

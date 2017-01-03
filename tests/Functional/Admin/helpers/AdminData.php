@@ -76,6 +76,74 @@ return [
         ],
     ],
 
+    'testCreateAdminWithExistingEmail' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@rzp.com',
+                'username'           => 'harshil',
+                'password'           => 'random!12#',
+                'remember_token'     => 'yes',
+                'oauth_access_token' => 'oauth123',
+                'oauth_provider_id'  => 'google',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateAdminWithExistingEmailOfDeletedAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'                  => 'test admin',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'oauth_access_token'    => 'oauth123',
+                'oauth_provider_id'     => 'google',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@rzp.com',
+                'username'           => 'harshil',
+                'remember_token'     => 'yes',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testGetAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
@@ -109,12 +177,31 @@ return [
         ],
     ],
 
+    'testEditAdminOnAppAuth' => [
+        'request' => [
+            'url' => '/orgs/%s/admin-app-auth/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+                'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAllRolesAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'roles' => [],
             ],
         ],
         'response' => [
@@ -129,6 +216,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'groups' => [],
             ],
         ],
         'response' => [
@@ -278,6 +366,20 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testGetAdminByEmailOnAppAuth' => [
+        'request' => [
+            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'name' => 'test admin app auth'
+            ],
+            'status_code' => 200,
         ],
     ],
 

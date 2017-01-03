@@ -4,10 +4,10 @@ namespace RZP\Models\Admin\Org\Hostname;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
@@ -18,7 +18,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'org_hostname';
 
-    public $incrementing = true;
+    protected $generateIdOnCreate = false;
+
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::HOSTNAME
@@ -49,8 +53,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::HOSTNAME, $hostname);
     }
 
-    public function setOrgId($orgId)
+    public function setHostnameAttribute($hostname)
     {
-        $this->setAttribute(self::ORG_ID, $orgId);
+        $this->attributes[self::HOSTNAME] = trim($hostname);
     }
 }
