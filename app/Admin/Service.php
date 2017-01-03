@@ -764,6 +764,7 @@ class Service extends Base\Service
             "type",
             'id',
             'merchant_id',
+            'mpin_set',
         ]);
 
         $this->setApiCredentials();
