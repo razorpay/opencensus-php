@@ -523,6 +523,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER);
     }
 
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();

@@ -242,6 +242,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_SERVICE_TAX);
     }
 
+    public function getFeeBearer()
+    {
+        return $this->getAttribute(self::FEE_BEARER);
+    }
+
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
+    }
+
+    public function getCreditType()
+    {
+        return $this->getAttribute(self::CREDIT_TYPE);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getAmountAttribute()
@@ -337,7 +352,6 @@ class Entity extends Base\PublicEntity
     {
         return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
-
 
     protected function setFeeModelAttribute($feeModel)
     {
@@ -554,19 +568,9 @@ class Entity extends Base\PublicEntity
         return $this->getSettledAttribute();
     }
 
-    public function getFeeBearer()
+    public function isFeeBearerCustomer()
     {
-        return $this->getAttribute(self::FEE_BEARER);
-    }
-
-    public function getFeeModel()
-    {
-        return $this->getAttribute(self::FEE_MODEL);
-    }
-
-    public function getCreditType()
-    {
-        return $this->getAttribute(self::CREDIT_TYPE);
+        return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
     }
 
     public function toArrayReport()

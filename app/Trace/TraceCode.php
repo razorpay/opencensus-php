@@ -68,7 +68,7 @@ class TraceCode
     const PAYMENT_USER_AGENT_ANOMALY                = 'PAYMENT_USER_AGENT_ANOMALY';
     const PAYMENT_CARD_IIN_MISSING                  = 'PAYMENT_CARD_IIN_MISSING';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
-    const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
+    const TRANSACTION_AMOUNT_CREDITS                = 'TRANSACTION_AMOUNT_CREDITS';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED             = 'PAYMENT_ANALYTICS_SAVE_FAILED';
@@ -485,7 +485,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_UPDATE_TRANSACTION        => 'Update existing transaction on payment capture',
         self::PAYMENT_CAPTURE_ORDER_UPDATE              => 'Update corresponding order on payment capture',
         self::PAYMENT_TRANSACTION_OLD                   => 'Updating/Creating transaction of an old payment',
-        self::TRANSACTION_FREE_CREDITS                  => 'Using free credits for the payment',
+        self::TRANSACTION_AMOUNT_CREDITS                => 'Using amount credits for the payment',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
