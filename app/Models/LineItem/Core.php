@@ -82,8 +82,7 @@ class Core extends Base\Core
             [
                 'id'    => $lineItem->getId(),
                 'input' => $input,
-            ]
-        );
+            ]);
 
         list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
 
@@ -122,8 +121,7 @@ class Core extends Base\Core
             TraceCode::LINE_ITEM_DELETE_REQUEST,
             [
                 'id' => $lineItem->getId(),
-            ]
-        );
+            ]);
 
         return $this->repo->line_item->deleteOrFail($lineItem);
     }
@@ -134,8 +132,7 @@ class Core extends Base\Core
             TraceCode::LINE_ITEM_DELETE_MANY_REQUEST,
             [
                 'ids' => $lineItems->pluck('id')->toArray(),
-            ]
-        );
+            ]);
 
         $this->repo->transaction(
             function() use ($lineItems)
@@ -147,7 +144,7 @@ class Core extends Base\Core
             });
     }
 
-    public function getTotalAmountByMorphEntity(Base\PublicEntity $morphEntity)
+    public function getTotalAmountOfLineItems(Base\PublicEntity $morphEntity)
     {
         $totalAmount = 0;
 
@@ -223,7 +220,7 @@ class Core extends Base\Core
                 }
             });
 
-        $totalAmount = $this->getTotalAmountByMorphEntity($morphEntity);
+        $totalAmount = $this->getTotalAmountOfLineItems($morphEntity);
 
         $morphEntity->setAmount($totalAmount);
 

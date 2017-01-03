@@ -70,7 +70,6 @@ class Validator extends Base\Validator
             null,
             [
                 'item_id' => $item->getId(),
-            ]
-        );
+            ]);
     }
 }

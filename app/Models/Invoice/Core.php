@@ -408,7 +408,7 @@ class Core extends Base\Core
      */
     protected function recomputeInvoiceAmount(Entity $invoice)
     {
-        $totalAmount = $this->lineItemCore->getTotalAmountByMorphEntity($invoice);
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($invoice);
 
         $invoice->setAmount($totalAmount);
     }
