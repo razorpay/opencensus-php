@@ -71,6 +71,37 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAdminWithExistingEmail()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'xyz@rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmailOfDeletedAdmin()
+    {
+        $admin = $this->testDeleteAdmin();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
+
+        $this->startTest();
+    }
+
     public function testGetAdmin()
     {
         $admin = $this->fixtures->create('admin', [
@@ -179,6 +210,7 @@ class AdminTest extends TestCase
     {
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz@rzp.com'
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -188,6 +220,8 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        return $admin;
     }
 
     public function testDeleteAdminFailed()
@@ -536,6 +570,8 @@ class AdminTest extends TestCase
                 'password' => 'Heimdall!432',
             ]);
 
+        $adminPublicId = $admin->getPublicId();
+
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         // Create some admin tokens
@@ -565,6 +601,21 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+
+        // Check if the associated token is deleted on logout
+        $allTokens = $this->getEntities('admin_token', [], true);
+
+        $remainingTokens =[];
+
+        foreach ($allTokens['items'] as $t)
+        {
+            if ($t['admin_id'] === $adminPublicId)
+            {
+                $remainingTokens[] = $t['token'];
+            }
+        }
+
+        $this->assertArrayNotHasKey($token, $remainingTokens);
      }
 
      public function testGetAdminByEmailOnAppAuth()

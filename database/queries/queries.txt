@@ -1396,12 +1396,13 @@ ALTER TABLE orgs
 ALTER TABLE terminals
     ADD COLUMN currency VARCHAR(3) DEFAULT 'INR' after tpv;
 
-# Queries to add Role and Department in merchant_details for new signup flow
-ALTER TABLE merchant_details
-    ADD COLUMN role VARCHAR (255) AFTER transaction_report_email;
-ALTER TABLE merchant_details
-    ADD COLUMN department VARCHAR (255) AFTER role;
-    
+# ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign;
+
+# ALTER TABLE org_hostname
+    ADD CONSTRAINT `org_hostname_org_id_foreign`
+    FOREIGN KEY (`org_id`) REFERENCES `orgs` (`id`) ON DELETE cascade;
+
 ALTER TABLE merchants
     ADD COLUMN convert_currency TINYINT(1) AFTER auto_refund_delay;
 
@@ -1413,3 +1414,13 @@ ALTER TABLE payments
 
 ALTER TABLE refunds
     ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN mobile_banking_enabled TINYINT(1) AFTER beneficiary_address4,
+    ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
+    MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
+
+# Queries to add Role and Department in merchant_details for new signup flow
+ALTER TABLE merchant_details
+    ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,
+    ADD COLUMN department VARCHAR (255) AFTER role;

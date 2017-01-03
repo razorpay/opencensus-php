@@ -187,7 +187,8 @@ class Processor
             ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
             ($payment->isCard() === true) and
             ($payment->card->isInternational() === false) and
-            ($payment->card->isDebit() === true))
+            ($payment->card->isDebit() === true) and
+            (time() < 1483228800))
         {
             $fee = 0;
             $serviceTax = 0;
@@ -978,22 +979,46 @@ class Processor
                 'fee_split'         => $feesSplit->toArrayPublic(),
             ]);
 
-        $this->repo->transaction(function() use ($txn, $feesSplit)
+        try
         {
-            foreach ($feesSplit as $feeSplit)
+            $this->repo->transaction(function() use ($txn, $feesSplit)
             {
-                $feeSplit->transaction()->associate($txn);
+                foreach ($feesSplit as $feeSplit)
+                {
+                    $feeSplit->transaction()->associate($txn);
 
-                $this->repo->saveOrFail($feeSplit);
-            }
+                    $this->repo->saveOrFail($feeSplit);
+                }
 
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_CREATED,
+                    [
+                        'transaction_id'    => $txn->getId(),
+                        'payment_id'        => $txn->getEntityId(),
+                        'fee_split'         => $feesSplit->toArrayPublic(),
+                    ]);
+            });
+        }
+        catch (Exception\BaseException $ex)
+        {
             $this->trace->info(
-                TraceCode::FEES_BREAKUP_CREATED,
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                    'message'           => $ex->getMessage(),
+                ]);
+
+            throw new Exception\LogicException(
+                'Error while recording fee breakup',
+                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED,
                 [
                     'transaction_id'    => $txn->getId(),
                     'payment_id'        => $txn->getEntityId(),
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
-        });
+        }
+
     }
 }

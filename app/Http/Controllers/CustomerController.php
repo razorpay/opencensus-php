@@ -4,19 +4,21 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
+use RZP\Models\Upi\Vpa;
 use Request;
 
 class CustomerController extends Controller
 {
     protected $customer;
     protected $token;
-    
+
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->customer = new Customer\Service;
-        
+
         $this->token = new Customer\Token\Service;
     }
 
@@ -44,11 +46,25 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
+    public function fetchUpiCustomer()
+    {
+        $data = $this->customer->fetchByDeviceAuth();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDeviceCustomer()
+    {
+        $data = $this->customer->getDeviceCustomer();
+
+        return ApiResponse::json($data);
+    }
+
     public function getCustomers()
     {
         $input = Request::all();
-        
+
         $customers = $this->customer->fetchMultiple($input);
 
         return ApiResponse::json($customers);
@@ -82,6 +98,20 @@ class CustomerController extends Controller
     public function deleteToken($id, $token)
     {
         $data = $this->token->deleteTokenForLocalCustomer($id, $token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchBalance($accountId)
+    {
+        $data = $this->customer->fetchBalance($accountId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchBankAccount($accountId)
+    {
+        $data = $this->customer->fetchBankAccount($accountId);
 
         return ApiResponse::json($data);
     }
@@ -150,11 +180,41 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createVpa()
+    {
+        $input = Request::all();
+
+        $data = (new Vpa\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccounts($id)
     {
         $data = $this->customer->getBankAccounts($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function fetchUpiBankAccounts($ifsc = 'RAZR')
+    {
+        return $this->customer->fetchUpiBankAccounts($ifsc);
+    }
+
+    public function setMpin($bankAccountId)
+    {
+        $input = Request::all();
+
+        return $this->customer->setMpin($bankAccountId, $input);
+    }
+
+    public function resetMpin($bankAccountId)
+    {
+        $input = Request::all();
+
+        $data = $this->customer->resetMpin($bankAccountId, $input);
+
+        return $data;
     }
 
     public function postOtp()

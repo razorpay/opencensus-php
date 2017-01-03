@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
@@ -99,16 +99,6 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
-    }
-
-    public function setPublicOrgIdAttribute(array & $attributes)
-    {
-        $orgId = $this->getAttribute(self::ORG_ID);
-
-        if ($orgId !== null)
-        {
-            $attributes[self::ORG_ID] = Org\Entity::getSignedId($orgId);
-        }
     }
 
     public function getName()
