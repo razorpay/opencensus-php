@@ -962,26 +962,6 @@ class Processor
 
     protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
     {
-        // For now, we would be auto capturing only payments with an invoice.
-        // This will be removed later.
-        if ($payment->getInvoiceId() === null)
-        {
-            return false;
-        }
-
-        // Auto capturing a late authorized invoice has a little different logic.
-        // Later, we would add logic for auto capturing a payment which is not
-        // associated with an invoice also.
-        if ($payment->hasInvoice())
-        {
-            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
-        }
-
-        return false;
-    }
-
-    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
-    {
         $merchant        = $payment->merchant;
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
@@ -998,6 +978,16 @@ class Processor
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
+        $this->trace->info(
+            TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,
+            [
+                'payment_id'        => $payment->getId(),
+                'status'            => $payment->getStatus(),
+                'refund_delay'      => $autoRefundDelay,
+                'should_refund_at'  => $shouldRefundAt,
+                'current_time'      => $currentTime,
+            ]);
+
         //
         // If the payment is supposed to get refunded by now,
         // do not auto capture it.
@@ -1007,6 +997,26 @@ class Processor
             return false;
         }
 
+        // For now, we would be auto capturing only payments with an invoice.
+        // This will be removed later.
+        if ($payment->getInvoiceId() === null)
+        {
+            return false;
+        }
+
+        // Auto capturing a late authorized invoice has a little different logic.
+        // Later, we would add logic for auto capturing a payment which is not
+        // associated with an invoice also.
+        if ($payment->hasInvoice())
+        {
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
+        }
+
+        return false;
+    }
+
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
+    {
         //
         // Invoice related checks
         // - Check if now is not past invoice due date
@@ -1028,8 +1038,7 @@ class Processor
                     'invoice_id'        => $invoice->getId(),
                     'invoice_status'    => $invoice->getStatus(),
                     'invoice_due_by'    => $invoice->getDueBy(),
-                    'refund_delay'      => $autoRefundDelay,
-                    'should_refund_at'  => $shouldRefundAt,
+                    'current_time'      => $currentTime,
                 ]);
 
             return false;

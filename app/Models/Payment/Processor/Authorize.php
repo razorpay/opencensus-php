@@ -205,7 +205,6 @@ trait Authorize
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
-        //
         if ($request !== null)
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
