@@ -35,25 +35,15 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $columnPaymentId = null;
-
-        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
             if (isset($row[$cpi]) === true)
             {
-                $columnPaymentId = $cpi;
-                break;
+                return $row[$cpi];
             }
         }
 
-        if ($columnPaymentId === null)
-        {
-            return null;
-        }
-
-        $paymentId = $row[$columnPaymentId];
-
-        return $paymentId;
+        return null;
     }
 
     protected function getRefundAmount(array $row)

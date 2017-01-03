@@ -130,11 +130,6 @@ class Gateway extends Base\Gateway
 
         $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
 
-        if ($refundedEntities === 0)
-        {
-            return false;
-        }
-
         foreach ($refundedEntities as $refundedEntity)
         {
             if ($refundedEntity->getRefundId() === $refundId)
