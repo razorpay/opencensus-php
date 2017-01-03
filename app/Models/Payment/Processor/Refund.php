@@ -36,23 +36,49 @@ trait Refund
         return $refund;
     }
 
+    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    {
+        if ($payment->transaction === null)
+        {
+            throw new Exception\LogicException(
+                'Transaction expected but not present for payment: ' . $payment->getId());
+        }
+
+        $input = ['amount' => $refundAmount];
+
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refund->setId($refundId);
+
+        $data = [
+            'payment_id' => $payment->getId(),
+            'refund_id' => $refundId,
+            'refund_amount' => $refundAmount,
+        ];
+
+        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
+
+        if ($gatewayRefunded === false)
+        {
+            throw new Exception\LogicException(
+                'Should have been refunded on gateway but is not',
+                $data);
+        }
+
+        $this->recordRefund();
+    }
+
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $verifyRefundGateways = [
-            Payment\Gateway::HDFC,
-            Payment\Gateway::AXIS_MIGS
-        ];
+        $gateway = $payment->getGateway();
 
-        // Currently doing it for only HDFC and Migs. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        if (in_array($payment->getGateway(), $verifyRefundGateways, true) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
-        }
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
@@ -308,6 +334,13 @@ trait Refund
         return $verifyRefundResult;
     }
 
+    protected function callGatewayForAlreadyRefunded($data)
+    {
+        $gatewayRefunded = $this->callGatewayFunction(Payment\Action::ALREADY_REFUNDED, $data);
+
+        return $gatewayRefunded;
+    }
+
     protected function callGatewayForManualRefund($data)
     {
         $manualGatewayRefundResult = null;
@@ -317,8 +350,7 @@ trait Refund
             [
                 'payment_id'    => $data['payment']['id'],
                 'refund_id'     => $data['refund']['id'],
-            ]
-        );
+            ]);
 
         try
         {
@@ -358,16 +390,6 @@ trait Refund
     {
         try
         {
-            // This has already been refunded on Billdesk.
-            // We'll run create record later after this is refunded.
-            $paymentId = $data['payment']['id'];
-            $refAmount = $data['amount'];
-
-            if ((($paymentId === '6wGoozP7uG0uNE') and ($refAmount === 60000)))
-            {
-                return;
-            }
-
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)

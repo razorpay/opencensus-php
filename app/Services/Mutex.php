@@ -26,7 +26,6 @@ class Mutex
         $this->requestId = $app['request']->getId();
 
         $this->trace = $app['trace'];
-
     }
 
     /**
