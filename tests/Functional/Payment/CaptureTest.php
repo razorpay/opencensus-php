@@ -257,11 +257,11 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
-        $this->assertEquals('attempted', $invoice['status']);
+        $this->assertEquals('issued', $invoice['status']);
     }
 
     public function testAutoCaptureFailAsPastMerchantRefundTimePeriod()
@@ -279,11 +279,11 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
-        $this->assertEquals('attempted', $invoice['status']);
+        $this->assertEquals('issued', $invoice['status']);
     }
 
     public function testAutoCaptureFailAsInvoicePastDueBy()
@@ -299,11 +299,11 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
-        $this->assertEquals('attempted', $invoice['status']);
+        $this->assertEquals('issued', $invoice['status']);
     }
 
     public function testAutoCaptureFailAsNoInvoice()
@@ -314,11 +314,9 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('order', true);
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
-        $this->assertEquals('attempted', $invoice['status']);
     }
 
     public function testPaymentNotCapturedWithOrder()
@@ -328,11 +326,13 @@ class CaptureTest extends TestCase
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
-        $order = $this->getLastEntity('order', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
         $this->assertEquals(true, $order['authorized']);
+        $this->assertEquals('issued', $invoice['status']);
     }
 
     public function testMultiplePaymentsWithAutoCapture()
@@ -372,12 +372,14 @@ class CaptureTest extends TestCase
         $olderPayment = $this->getEntityById('payment', $payment1['id'], true);
         $newerPayment = $this->getEntityById('payment', $payment2['id'], true);
 
-        $order = $this->getLastEntity('order', true);
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals('captured', $newerPayment['status']);
         $this->assertEquals('authorized', $olderPayment['status']);
         $this->assertEquals('paid', $order['status']);
         $this->assertEquals(true, $order['authorized']);
+        $this->assertEquals('paid', $invoice['status']);
 
         $this->assertTrue($olderPayment['amount'] === $order['amount']);
     }
