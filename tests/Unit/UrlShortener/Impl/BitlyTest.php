@@ -16,7 +16,7 @@ class BitlyTest extends TestCase
         $config             = $app['config'];
         $bitlyConfig        = $config['applications.url_shortener.bitly'];
 
-        $this->accessToken  = $bitlyConfig['access_token'];
+        $this->accessToken  = $bitlyConfig['secret'];
 
         $this->bitly = $this->getMockBuilder(UrlShortener\Impl\Bitly::class)
                             ->setConstructorArgs([$bitlyConfig])

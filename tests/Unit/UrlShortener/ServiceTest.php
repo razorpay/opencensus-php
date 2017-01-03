@@ -14,25 +14,23 @@ class ServiceTest extends TestCase
 
         $app = $this->createApplication();
 
-        $config             = $app['config'];
-        $trace              = $app['trace'];
+        $config            = $app['config'];
+        $trace             = $app['trace'];
 
         $this->service = $this->getMockBuilder(UrlShortener\Service::class)
                             ->setConstructorArgs([$config, $trace])
-                            ->setMethods(['getImplementation'])
+                            ->setMethods(['createUrlShortenerDriver'])
                             ->getMock();
 
-        $this->gimliConfig        = $config['applications.url_shortener.gimli'];
-
+        $gimliConfig = $config['applications.url_shortener.gimli'];
         $this->gimli = $this->getMockBuilder(UrlShortener\Impl\Gimli::class)
-                            ->setConstructorArgs([$this->gimliConfig])
+                            ->setConstructorArgs([$gimliConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
 
-        $this->bitlyConfig        = $config['applications.url_shortener.bitly'];
-
+        $bitlyConfig = $config['applications.url_shortener.bitly'];
         $this->bitly = $this->getMockBuilder(UrlShortener\Impl\Bitly::class)
-                            ->setConstructorArgs([$this->bitlyConfig])
+                            ->setConstructorArgs([$bitlyConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
 
@@ -46,8 +44,8 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->once())
-                      ->method('getImplementation')
-                      ->with('gimli', $this->gimliConfig)
+                      ->method('createUrlShortenerDriver')
+                      ->with('gimli')
                       ->willReturn($this->gimli);
 
         $this->gimli->expects($this->once())
@@ -75,10 +73,10 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('getImplementation')
+                      ->method('createUrlShortenerDriver')
                        ->withConsecutive(
-                            ['gimli', $this->gimliConfig],
-                            ['bitly', $this->bitlyConfig]
+                            ['gimli'],
+                            ['bitly']
                         )
                        ->will(
                             $this->onConsecutiveCalls($this->gimli, $this->bitly)
@@ -123,8 +121,8 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->once())
-                       ->method('getImplementation')
-                       ->with('gimli', $this->gimliConfig)
+                       ->method('createUrlShortenerDriver')
+                       ->with('gimli')
                        ->willReturn($this->gimli);
 
         $exception = new Exception\RuntimeException(
@@ -152,8 +150,8 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->once())
-                       ->method('getImplementation')
-                       ->with('gimli', $this->gimliConfig)
+                       ->method('createUrlShortenerDriver')
+                       ->with('gimli')
                        ->willReturn($this->gimli);
 
         $exception = new Exception\RuntimeException(
@@ -178,7 +176,7 @@ class ServiceTest extends TestCase
 
     /**
      * @expectedException        \RZP\Exception\RuntimeException
-     * @expectedExceptionMessage Failed to get short url.
+     * @expectedExceptionMessage Unexpected response code received from Gimli/Bitly service.
      */
     public function testShortenFailAll()
     {
@@ -187,10 +185,10 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('getImplementation')
+                      ->method('createUrlShortenerDriver')
                        ->withConsecutive(
-                            ['gimli', $this->gimliConfig],
-                            ['bitly', $this->bitlyConfig]
+                            ['gimli'],
+                            ['bitly']
                         )
                        ->will(
                             $this->onConsecutiveCalls($this->gimli, $this->bitly)
@@ -221,10 +219,10 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('getImplementation')
+                      ->method('createUrlShortenerDriver')
                        ->withConsecutive(
-                            ['gimli', $this->gimliConfig],
-                            ['bitly', $this->bitlyConfig]
+                            ['gimli'],
+                            ['bitly']
                         )
                        ->will(
                             $this->onConsecutiveCalls($this->gimli, $this->bitly)
