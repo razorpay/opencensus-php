@@ -110,23 +110,23 @@ class Service extends Base\Service
         // These two branches are exclusive
         // You cannot accept an invite and create a merchant account
         // at the same time
-        if ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-
-            $data['login'] = true;
-        }
-        else 
+        if (isset($input['business_name']))
         {
             // See HACKING.md in the root of the repo for a detailed note
+            assert(! $invitationToken);
+
             $data = [
-                'business_name'  =>  $input['business_name'],
+                'business_name' =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
 
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
-
+        else if ($invitationToken)
+        {
+            $this->attachUserToInvite($user, $invitation);
+            $data['login'] = true;
+        }
 
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
@@ -420,17 +420,17 @@ class Service extends Base\Service
         if (Auth::attempt($credentials, false, false))
         {
             // And user is not confirmed
-            // if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
-            // {
-            //     // TODO: Use single error message to avoid info leak
-            //     // @see https://github.com/razorpay/dashboard/issues/216
-            //     $error = ['User account not confirmed'];
-            // }
-            // else
-            // {
+            if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
+            {
+                // TODO: Use single error message to avoid info leak
+                // @see https://github.com/razorpay/dashboard/issues/216
+                $error = ['User account not confirmed'];
+            }
+            else
+            {
                 // Login the user
-            Auth::attempt($credentials, false, true);
-            // }
+                Auth::attempt($credentials, false, true);
+            }
         }
         else
         {

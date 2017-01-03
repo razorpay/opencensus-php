@@ -82,9 +82,7 @@ class Entity extends Base\Entity
         'locked',
         'comment',
         'submitted_at',
-        'transaction_report_email',
-        'role',
-        'department'
+        'transaction_report_email'
     );
 
     const AJAX_FIELDS = array(
@@ -147,16 +145,6 @@ class Entity extends Base\Entity
         'locked',
         'transaction_report_email'
     );
-
-    const PRE_SIGNUP_FIELDS = [
-        'business_type',
-        'transaction_volume',
-        'role',
-        'department',
-        'contact_name',
-        'business_name',
-        'contact_mobile',
-    ];
 
     const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
@@ -367,17 +355,5 @@ class Entity extends Base\Entity
         ];
 
         $error = $this->edit($input, 'editEmail');
-    }
-
-    public function getPreSignupFields()
-    {
-        $merchantDetails = [];
-
-        foreach (self::PRE_SIGNUP_FIELDS as $key)
-        {
-            $merchantDetails[$key] = $this->getAttribute($key);
-        }
-
-        return $merchantDetails;
     }
 }
