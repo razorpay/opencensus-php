@@ -1420,6 +1420,21 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
+ALTER TABLE org_hostname
+    MODIFY COLUMN id CHAR(14);
+
+UPDATE org_hostname
+    SET id = '70I3fMI9AGKROX' WHERE hostname = 'dashboard.razorpay.com';
+
+UPDATE org_hostname
+    SET id = '70I47LP6lyPYJR' WHERE hostname = 'beta-dashboard.razorpay.com';
+
+UPDATE org_hostname
+    SET id = '70I6GMmOpMJp40' WHERE hostname = 'dashboard.razorpay.dev';
+
+UPDATE org_hostname
+    SET id = '70I6bfuaPQ72xa' WHERE hostname = 'dashboard-hdfc.razorpay.dev';
+
 # Queries to add Role and Department in merchant_details for new signup flow
 ALTER TABLE merchant_details
     ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,

@@ -12,6 +12,8 @@ class Core extends Base\Core
     {
         $orgHost = new Entity;
 
+        $orgHost->generateId();
+
         $orgHost->setAuditAction(Action::CREATE_ORG_HOSTNAME);
 
         $orgHost->org()->associate($org);
