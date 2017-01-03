@@ -2,6 +2,7 @@
 
 const path = require('path')
 const webpack = require('webpack')
+const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 const webpackConfig = {
   context: process.cwd() + '/public/react',
@@ -68,6 +69,8 @@ webpackConfig.module.loaders = [
 // ------------------------------------
 // Plugins
 // ------------------------------------
-webpackConfig.plugins = []
+webpackConfig.plugins = [
+  new CaseSensitivePathsPlugin()
+]
 
 module.exports = webpackConfig
