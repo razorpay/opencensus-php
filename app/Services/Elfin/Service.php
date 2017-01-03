@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortener;
+namespace RZP\Services\Elfin;
 
 use Illuminate\Config\Repository as Config;
 
@@ -30,7 +30,7 @@ class Service extends Impl\Base
 
     public function __construct(Config $config, Trace $trace)
     {
-        $this->config        = $config->get('applications.url_shortener');
+        $this->config        = $config->get('applications.elfin');
         $this->trace         = $trace;
         $this->services      = explode(',', $this->config['services']);
         $this->allowFallback = $config['allow_fallback'];
@@ -111,13 +111,13 @@ class Service extends Impl\Base
     {
         if (isset($this->drivers[$service]) === false)
         {
-            $this->drivers[$service] = $this->createUrlShortenerDriver($service);
+            $this->drivers[$service] = $this->createDriver($service);
         }
 
         return $this->drivers[$service];
     }
 
-    protected function createUrlShortenerDriver($service)
+    protected function createDriver($service)
     {
         $class = __NAMESPACE__ . '\\Impl\\' . ucfirst($service);
 

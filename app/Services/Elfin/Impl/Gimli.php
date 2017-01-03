@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\UrlShortener\Impl;
+namespace RZP\Services\Elfin\Impl;
 
 class Gimli extends Base
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Tests\Unit\UrlShortener;
+namespace RZP\Tests\Unit\Elfin;
 
 use RZP\Tests\TestCase;
-use RZP\Services\UrlShortener;
+use RZP\Services\Elfin;
 
 class BitlyTest extends TestCase
 {
@@ -14,11 +14,11 @@ class BitlyTest extends TestCase
         $app = $this->createApplication();
 
         $config             = $app['config'];
-        $bitlyConfig        = $config['applications.url_shortener.bitly'];
+        $bitlyConfig        = $config['applications.elfin.bitly'];
 
         $this->accessToken  = $bitlyConfig['secret'];
 
-        $this->bitly = $this->getMockBuilder(UrlShortener\Impl\Bitly::class)
+        $this->bitly = $this->getMockBuilder(Elfin\Impl\Bitly::class)
                             ->setConstructorArgs([$bitlyConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();

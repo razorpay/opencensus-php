@@ -100,7 +100,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMaxMind();
 
-        $this->registerUrlShortener();
+        $this->registerElfin();
 
         $this->registerExchange();
 
@@ -130,7 +130,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'maxmind',
             'raven',
             'repo',
-            'url_shortener',
+            'elfin',
             'segment',
             'upi.client',
             'webhook.inferno',
@@ -175,18 +175,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerUrlShortener()
+    protected function registerElfin()
     {
-        $this->app->singleton('url_shortener', function($app)
+        $this->app->singleton('elfin', function($app)
         {
-            $mock = $app['config']->get('applications.url_shortener.mock');
+            $mock = $app['config']->get('applications.elfin.mock');
 
             if ($mock)
             {
-                return new UrlShortener\Mock\Service($app['config'], $app['trace']);
+                return new Elfin\Mock\Service($app['config'], $app['trace']);
             }
 
-            return new UrlShortener\Service($app['config'], $app['trace']);
+            return new Elfin\Service($app['config'], $app['trace']);
         });
     }
 

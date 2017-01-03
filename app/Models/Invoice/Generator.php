@@ -43,7 +43,10 @@ class Generator extends Base\Core
      */
     protected $lineItemCore;
 
-    protected $urlShortener;
+    /**
+     * Elfin: Url shortener service
+     */
+    protected $elfin;
 
     /**
      * Base invoice url from which invoice link is generated.
@@ -61,7 +64,7 @@ class Generator extends Base\Core
 
         $this->merchant = $merchant;
 
-        $this->urlShortener = $this->app['url_shortener'];
+        $this->elfin = $this->app['elfin'];
 
         $this->lineItemCore = new LineItem\Core;
 
@@ -191,7 +194,7 @@ class Generator extends Base\Core
     {
         $longUrl = $this->getInvoiceLink();
 
-        $shortenedUrl = $this->urlShortener->shorten($longUrl);
+        $shortenedUrl = $this->elfin->shorten($longUrl);
 
         $this->trace->info(
             TraceCode::INVOICE_LINKS,

@@ -66,9 +66,9 @@ return array(
         'secret'    => env('LUMBERJACK_SECRET')
     ),
 
-    'url_shortener' => [
-        'mock'     => env('URL_SHORTENER_MOCK', true),
-        'services' => env('URL_SHORTENER_SERVICES', 'gimli,bitly'),
+    'elfin' => [
+        'mock'     => env('ELFIN_MOCK', true),
+        'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
         'gimli'    => [
             'secret'   => env('GIMLI_SECRET', 'RANDOM_SECRET'),
             'base_url' => env('GIMLI_BASE_URL', 'http://gimli.razorpay.dev/v1')

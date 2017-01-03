@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Tests\Unit\UrlShortener;
+namespace RZP\Tests\Unit\Elfin;
 
 use RZP\Tests\TestCase;
-use RZP\Services\UrlShortener;
+use RZP\Services\Elfin;
 use RZP\Exception;
 
 class ServiceTest extends TestCase
@@ -17,19 +17,19 @@ class ServiceTest extends TestCase
         $config            = $app['config'];
         $trace             = $app['trace'];
 
-        $this->service = $this->getMockBuilder(UrlShortener\Service::class)
+        $this->service = $this->getMockBuilder(Elfin\Service::class)
                             ->setConstructorArgs([$config, $trace])
-                            ->setMethods(['createUrlShortenerDriver'])
+                            ->setMethods(['createDriver'])
                             ->getMock();
 
-        $gimliConfig = $config['applications.url_shortener.gimli'];
-        $this->gimli = $this->getMockBuilder(UrlShortener\Impl\Gimli::class)
+        $gimliConfig = $config['applications.elfin.gimli'];
+        $this->gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
                             ->setConstructorArgs([$gimliConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
 
-        $bitlyConfig = $config['applications.url_shortener.bitly'];
-        $this->bitly = $this->getMockBuilder(UrlShortener\Impl\Bitly::class)
+        $bitlyConfig = $config['applications.elfin.bitly'];
+        $this->bitly = $this->getMockBuilder(Elfin\Impl\Bitly::class)
                             ->setConstructorArgs([$bitlyConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
@@ -44,7 +44,7 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->once())
-                      ->method('createUrlShortenerDriver')
+                      ->method('createDriver')
                       ->with('gimli')
                       ->willReturn($this->gimli);
 
@@ -73,7 +73,7 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('createUrlShortenerDriver')
+                      ->method('createDriver')
                        ->withConsecutive(
                             ['gimli'],
                             ['bitly']
@@ -122,7 +122,7 @@ class ServiceTest extends TestCase
         $this->service->setServices(['bitly']);
 
         $this->service->expects($this->once())
-                      ->method('createUrlShortenerDriver')
+                      ->method('createDriver')
                        ->with('bitly')
                        ->willReturn($this->bitly);
 
@@ -158,7 +158,7 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('createUrlShortenerDriver')
+                      ->method('createDriver')
                        ->withConsecutive(
                             ['gimli'],
                             ['bitly']
@@ -192,7 +192,7 @@ class ServiceTest extends TestCase
         //
 
         $this->service->expects($this->exactly(2))
-                      ->method('createUrlShortenerDriver')
+                      ->method('createDriver')
                        ->withConsecutive(
                             ['gimli'],
                             ['bitly']

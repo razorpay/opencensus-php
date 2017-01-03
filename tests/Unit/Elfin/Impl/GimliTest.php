@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Tests\Unit\UrlShortener;
+namespace RZP\Tests\Unit\Elfin;
 
 use RZP\Tests\TestCase;
-use RZP\Services\UrlShortener;
+use RZP\Services\Elfin;
 
 class GimliTest extends TestCase
 {
@@ -14,9 +14,9 @@ class GimliTest extends TestCase
         $app = $this->createApplication();
 
         $config             = $app['config'];
-        $gimliConfig        = $config['applications.url_shortener.gimli'];
+        $gimliConfig        = $config['applications.elfin.gimli'];
 
-        $this->gimli = $this->getMockBuilder(UrlShortener\Impl\Gimli::class)
+        $this->gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
                             ->setConstructorArgs([$gimliConfig])
                             ->setMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
