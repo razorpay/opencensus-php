@@ -313,7 +313,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::AMOUNT          => $input['payment']['amount'] / 100,
+            Base\Entity::AMOUNT          => $input['refund']['amount'] / 100,
             Base\Entity::BANK_PAYMENT_ID => $response[RefundFields::TRANSACTION_ID],
             Base\Entity::STATUS          => $response[RefundFields::STATUS],
             Base\Entity::REFUND_ID       => $input['refund']['id'],
@@ -327,7 +327,18 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedAmount($input)
     {
-        return $input['payment']['amount'] / 100;
+        switch ($this->action)
+        {
+            case Action::REFUND:
+                $field = 'refund';
+                break;
+
+            default:
+                $field = 'payment';
+                break;
+        }
+
+        return $input[$field]['amount'] / 100;
     }
 
     protected function getFormattedDate($input)
