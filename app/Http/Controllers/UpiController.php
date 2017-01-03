@@ -151,7 +151,9 @@ class UpiController extends Controller
 
     public function deleteVpaExclusion()
     {
-        $data = $this->core->allowVpaPsp();
+        $input = Request::all();
+
+        $data = $this->core->allowVpaPsp($input);
 
         return ApiResponse::json($data);
     }

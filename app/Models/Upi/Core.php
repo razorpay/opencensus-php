@@ -289,13 +289,13 @@ class Core extends Base\Core
     {
         $cache = $this->app['cache'];
 
-        $excludedVpas = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
+        $excludedPsps = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
 
-        $newExcludedVpas = $input['vpas'];
+        $newExcludedPsps = $input['psps'];
 
-        $excludedVpas = array_merge($excludedVpas, $newExcludedVpas);
+        $excludedPsps = array_merge($excludedPsps, $newExcludedPsps);
 
-        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedVpas));
+        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
 
         return ['success' => true];
     }
@@ -304,9 +304,15 @@ class Core extends Base\Core
     {
         $cache = $this->app['cache'];
 
-        $deleted = $cache->forget(self::EXCLUDED_PSPS);
+        $excludedPsps = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
 
-        return ['deleted' => $deleted];
+        $allowedPsps = $input['psps'];
+
+        $excludedPsps = array_diff($excludedPsps, $allowedPsps);
+
+        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
+
+        return ['success' => true];
     }
 
     public static function getDisallowedPsp()
