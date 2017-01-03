@@ -314,8 +314,8 @@ final class Route
         'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
-        'exchange_update_rates'                   => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
-        'exchange_fetch_rates'                    => ['get',      'international/{currency}/rates',                 'AdminController@getInternationalRates'                             ],
+        'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'AdminController@postCurrencyRates'                                 ],
+        'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'AdminController@getCurrencyRates'                                  ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -677,8 +677,8 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
-        'exchange_update_rates',
-        'exchange_fetch_rates',
+        'currency_update_rates',
+        'currency_fetch_rates',
     );
 
     public static $proxy = array(
@@ -879,7 +879,7 @@ final class Route
             'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
-            'exchange_update_rates',
+            'currency_update_rates',
         ),
 
         'mailgun' => array(

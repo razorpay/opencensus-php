@@ -77,19 +77,15 @@ class Service extends Base\Service
         return (new Mailgun)->processCallback($type, $input);
     }
 
-    public function postInternationalRates($currency)
+    public function postCurrencyRates($currency)
     {
-        $currency = strtoupper($currency);
-
         $data = (new ExchangeRate)->updateRates($currency);
 
         return $data;
     }
 
-    public function getInternationalRates($currency)
+    public function getCurrencyRates($currency)
     {
-        $currency = strtoupper($currency);
-
         $data = (new ExchangeRate)->getRates($currency);
 
         return $data;

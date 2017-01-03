@@ -23,6 +23,8 @@ class ExchangeRate extends Base\Core
 
     public function updateRates($currency)
     {
+        $currency = strtoupper($currency);
+
         $rates = $this->exchange->latest($currency);
 
         $key = self::EXCHANGE_RATE_KEY . $currency;
@@ -56,7 +58,7 @@ class ExchangeRate extends Base\Core
 
     public function getRates($currency)
     {
-        $key = self::EXCHANGE_RATE_KEY . $currency;
+        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
 
         $rates = $this->redis->get($key);
 

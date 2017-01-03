@@ -83,16 +83,16 @@ class AdminController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
-    public function postInternationalRates($currency)
+    public function postCurrencyRates($currency)
     {
-        $data = (new Admin\Service)->postInternationalRates($currency);
+        $data = (new Admin\Service)->postCurrencyRates($currency);
 
         return ApiResponse::json($data);
     }
 
-    public function getInternationalRates($currency)
+    public function getCurrencyRates($currency)
     {
-        $data = (new Admin\Service)->getInternationalRates($currency);
+        $data = (new Admin\Service)->getCurrencyRates($currency);
 
         return ApiResponse::json($data);
     }
