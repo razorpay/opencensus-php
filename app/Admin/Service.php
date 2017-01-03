@@ -291,7 +291,6 @@ class Service extends Base\Service
             'merchants.id',
             'merchants.name',
             'merchants.email',
-            'merchants.confirm_token',
             'merchants.activated',
             'merchant_details.steps_finished',
             'merchants.created_at',
@@ -342,16 +341,6 @@ class Service extends Base\Service
                     $response = $data->filter(function($merchant)
                     {
                         return ($merchant->activated == 0 and $merchant->merchantDetails->submitted == 1);
-                    });
-                    break;
-
-                case "confirmed":
-                    $response = $data->filter(function($merchant) use($value)
-                    {
-                        if($value)
-                            return ($merchant->confirm_token == null);
-                        else
-                            return !($merchant->confirm_token == null);
                     });
                     break;
 
@@ -545,8 +534,9 @@ class Service extends Base\Service
         {
             $details = $this->fetchMerchantDetails($id);
 
-            if (isset($details['confirm_token']))
+            if (isset($details['confirmed']) && $details['confirmed'] === false)
             {
+                unset($details['confirmed']);
                 return [['Merchant not confirmed'], null];
             }
         }
@@ -567,16 +557,21 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findOrSoftFail($id);
 
-        if ($merchant->confirm_token !== null)
-        {
-            return $merchant->toArray();
-        }
-
         $merchantDetails = MerchantDetails\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
-        $data = $this->api->merchant->fetch($id)->toArray();
+        try
+        {
+            $data = $this->api->merchant->fetch($id)->toArray();
+        }
+        catch (BadRequestError $e)
+        {
+            $merchant = $merchant->toArray();
+            $merchant['confirmed'] = false;
+            return $merchant;
+        }
+
 
         $data['merchant_details'] = $merchantDetails->toArray();
 
