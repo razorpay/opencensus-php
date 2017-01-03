@@ -276,9 +276,9 @@ class ErrorCode
         self::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
         self::RP00007   => 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"',
         self::RP00008   => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
-        self::RP00009   => 'Wrong resposne content-type, not application/xml',
+        self::RP00009   => 'Wrong response content-type, not application/xml',
         self::RP00010   => 'Result code is AUTH ERROR. This happens mostly because card number provided is invalid',
-        self::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on rupay 3dsecure page.',
+        self::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on RuPay 3dsecure page.',
         self::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
         self::RP00013   => 'Operation timed out while making the request',
     );
@@ -293,18 +293,16 @@ class ErrorCode
         self::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         self::GV00002   => Error\ErrorCode::GATEWAY_ERROR_CARD_NOT_ENROLLED,
 
-        self::GW00159   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        self::GV00010   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        self::GV00101   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
         self::GW00150   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
 
         self::GW00151   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
-        self::GV00102   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         self::GW00152   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         self::GW00153   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         self::GW00154   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
 
         self::GW00157   => Error\ErrorCode::GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR,
+
+        self::GW00159   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
         self::GW00160   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         self::GW00161   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NAME,
         self::GW00162   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
@@ -331,16 +329,23 @@ class ErrorCode
         self::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         self::GW00856   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
 
+        self::GV00001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+
+        self::GV00003   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GV00004   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
         self::GV00005   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         self::GV00006   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         self::GV00007   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         self::GV00008   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         self::GV00009   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
+        self::GV00010   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
         self::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
+        self::GV00012   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GV00013   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
 
         self::GV00100   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
+        self::GV00101   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
+        self::GV00102   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         self::GV00103   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
 
         self::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
@@ -348,11 +353,8 @@ class ErrorCode
         self::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
         self::PY20085   => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
-        self::GV00001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        self::GV00003   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        self::GV00012   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        self::GW00261   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00171   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::GW00261   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         self::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
