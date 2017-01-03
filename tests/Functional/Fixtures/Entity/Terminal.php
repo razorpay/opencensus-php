@@ -319,9 +319,6 @@ class Terminal extends Base
             'netbanking'                => 0,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'jiomoney_merchant',
-            'gateway_merchant_id2'      => 'jiomoney_auth_code',
-            'gateway_terminal_id'       => 'jiomoney_terminal',
-            'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
         ];
