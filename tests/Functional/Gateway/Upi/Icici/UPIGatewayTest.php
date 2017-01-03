@@ -139,6 +139,20 @@ EOT;
         });
     }
 
+    public function testUpiVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'nemo@upi';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testInvalidVPA()
     {
         $payment = $this->getDefaultUpiPaymentArray();

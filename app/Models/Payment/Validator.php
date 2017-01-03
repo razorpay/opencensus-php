@@ -78,6 +78,12 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
 
+        if ($vpaParts[1] === 'upi')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+        }
+
         $merchantId = null;
 
         if ($this->entity->getMerchantId() !== null)
