@@ -120,7 +120,8 @@ class CreatePayments  extends Migration
             $table->string(Payment::EMAIL, 255)
                   ->nullable();
 
-            $table->string(Payment::CONTACT, 20);
+            $table->string(Payment::CONTACT, 20)
+                  ->nullable();
 
             $table->text(Payment::NOTES);
 
