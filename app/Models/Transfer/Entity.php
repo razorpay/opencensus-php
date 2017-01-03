@@ -15,8 +15,8 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID             = 'source_id';
     const SOURCE_TYPE           = 'source_type';
     const AMOUNT                = 'amount';
-    const BASE_AMOUNT           = 'base_amount';
     const CURRENCY              = 'currency';
+    const BASE_AMOUNT           = 'base_amount';
     const AMOUNT_REVERSED       = 'amount_reversed';
     const BASE_AMOUNT_REVERSED  = 'base_amount_reversed';
     const TRANSACTION_ID        = 'transaction_id';
@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::TO_ID,
         self::TO_TYPE,
         self::AMOUNT,
+        self::CURRENCY,
         self::SOURCE_ID,
         self::SOURCE_TYPE
     ];
@@ -107,6 +108,16 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::AMOUNT);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getBaseAmount()
+    {
+        return $this->GetAttribute(self::BASE_AMOUNT);
+    }
+
     public function getToId()
     {
         return $this->getAttribute(self::TO_ID);
@@ -127,12 +138,40 @@ class Entity extends Base\PublicEntity
         return $this->getAmount() - $this->getAmountReversed();
     }
 
+    public function getBaseAmountReversed()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT_REVERSED);
+    }
+
+    public function getBaseAmountUnreversed()
+    {
+        return $this->getBaseAmount() - $this->getBaseAmountReversed();
+    }
+
+    /**
+     * Get the rate at which currency conversion was applied to
+     * the transfer amount
+     */
+    public function getCurrencyConversionRate()
+    {
+        $baseAmount = $this->getBaseAmount();
+
+        $transferAmount = $this->getAmount();
+
+        return $baseAmount / $transferAmount;
+    }
+
+    public function setBaseAmount(int $amount)
+    {
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
+    }
+
     public function setAmountReversed(int $amount)
     {
         $this->setAttribute(self::AMOUNT_REVERSED, $amount);
     }
 
-    public function reverseAmount(int $amount)
+    public function reverseAmount(int $amount, int $baseAmount)
     {
         $amountUnreversed = $this->getAmountUnreversed();
 
@@ -144,7 +183,12 @@ class Entity extends Base\PublicEntity
 
         $amountReversed = $this->getAmountReversed() + $amount;
 
+        $baseAmountReversed = $this->getBaseAmountReversed() + $baseAmount;
+
         $this->setAttribute(self::AMOUNT_REVERSED, $amountReversed);
+
+        $this->setAttribute(self::BASE_AMOUNT_REVERSED, $baseAmountReversed);
+
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)

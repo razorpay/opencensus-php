@@ -21,8 +21,6 @@ class PaymentWalletTransferTest extends TestCase
 
         $this->payment = $this->getLastEntity('payment', false);
 
-        $this->fixtures->merchant->addFeatures(['openwallet']);
-
         $this->ba->privateAuth();
     }
 
@@ -30,7 +28,7 @@ class PaymentWalletTransferTest extends TestCase
     {
         $this->payment = $this->doAuthAndCapturePayment();
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $this->startTest();
     }
@@ -38,6 +36,8 @@ class PaymentWalletTransferTest extends TestCase
     public function testCreateWalletWithNonIndianContact()
     {
         $customer = $this->fixtures->create('customer', ['contact' => '+9293003939']);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $customerPublicId = $customer->getPublicId();
 
@@ -61,7 +61,7 @@ class PaymentWalletTransferTest extends TestCase
     {
         $this->payment = $this->doAuthAndCapturePayment();
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $amount = $this->payment['amount'];
 
@@ -72,7 +72,7 @@ class PaymentWalletTransferTest extends TestCase
     {
         $customer = $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $customerPublicId = $customer->getPublicId();
 
@@ -95,7 +95,7 @@ class PaymentWalletTransferTest extends TestCase
     {
         $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $customerPublicId = $customerBalance->customer->getPublicId();
 
@@ -117,7 +117,7 @@ class PaymentWalletTransferTest extends TestCase
 
         $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
 
-        $this->checkLastTransferEntity('cust_' . $customerId, 'customer', $amount);
+        $this->checkLastTransferEntity($customerId, 'customer', $amount);
     }
 
     public function testTransferCustomerUsageFirstTxn()
@@ -129,7 +129,7 @@ class PaymentWalletTransferTest extends TestCase
 
         $customerBalance = $this->fixtures->create('customer:customer_balance', $customerValues);
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $customerPublicId = $customerBalance->customer->getPublicId();
 

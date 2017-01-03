@@ -145,10 +145,10 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->string(Payment::GATEWAY)
-                  ->nullable()
                   ->default(null);
 
-            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
+            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
+                  ->nullable();
 
             $table->tinyInteger(Payment::SIGNED)
                   ->default(0);

@@ -57,7 +57,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => $this->payment['amount'] + 1000
+            'amount'  => $this->payment['amount'] + 1000,
+            'currency'=> 'INR',
         ];
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
@@ -72,12 +73,14 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
 
         $transfers[1] = [
             'customer'=> 'cust_100000customer',
-            'amount'  => 400
+            'amount'  => 400,
+            'currency'=> 'INR',
         ];
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
@@ -94,7 +97,8 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 4000
+            'amount'  => 4000,
+            'currency'=> 'INR',
         ];
 
         $expected = [
@@ -130,12 +134,14 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 43000
+            'amount'  => 43000,
+            'currency'=> 'INR',
         ];
 
         $transfers[1] = [
             'account' => 'acc_10000000000002',
-            'amount'  => 7000
+            'amount'  => 7000,
+            'currency'=> 'INR',
         ];
 
         $expected = [

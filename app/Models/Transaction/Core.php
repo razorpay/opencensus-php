@@ -586,7 +586,7 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
-        $amount = $transfer->getAmount();
+        $amount = $transfer->getBaseAmount();
 
         $settledAt = time();
 
@@ -597,7 +597,7 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => time(),
-            Transaction\Entity::SETTLED       => 0,
+            Transaction\Entity::SETTLED       => 1,
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::SERVICE_TAX   => 0,

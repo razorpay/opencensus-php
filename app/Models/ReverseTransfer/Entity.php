@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
+    const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
 
     protected static $sign = 'revtrf';
@@ -21,7 +22,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::AMOUNT
+        self::AMOUNT,
+        self::CURRENCY,
     ];
 
     protected $visible = [
@@ -38,14 +40,19 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::TRANSFER_ID,
-        self::TRANSACTION_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::CREATED_AT,
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
+        self::AMOUNT        => 'int',
+        self::BASE_AMOUNT   => 'int'
+    ];
+
+    protected $amounts = [
+        self::AMOUNT,
+        self::BASE_AMOUNT,
     ];
 
     protected $publicSetters = [
@@ -75,7 +82,34 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getBaseAmount()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT);
+    }
+
+    public function setBaseAmount()
+    {
+        $transfer = $this->transfer;
+
+        $amount = $this->getAmount();
+
+        $unreversedAmount = $transfer->getAmountUnreversed();
+
+        if ($amount === $unreversedAmount)
+        {
+            $baseAmount = $transfer->getBaseAmountUnreversed();
+        }
+        else
+        {
+            $conversionRate = $transfer->getCurrencyConversionRate();
+
+            $baseAmount = (int) floor($amount * $conversionRate);
+        }
+
+        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
     public function setPublicTransferIdAttribute(array & $attributes)

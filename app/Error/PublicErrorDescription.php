@@ -318,6 +318,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TRANSFER_ENTITIES_NOT_SET                         = 'Payment transfer entities provided are invalid or not set';
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
+    const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
     const BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT                = 'Payment cannot be transferred to the same account more than one time';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';

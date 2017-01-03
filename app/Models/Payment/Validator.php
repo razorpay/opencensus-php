@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'customer_id'             =>  'required_if:wallet,flashwallet|string|size:19',
+        'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         '_'                       =>  'sometimes'
@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         'transfers'               => 'sometimes|array',
         'transfers.*.transfer'    => 'required_with:transfers|string|min:14',
         'transfers.*.amount'      => 'required_with:transfers|integer|min:100',
+        'transfers.*.currency'    => 'required_with:transfers|string|size:3'
     ];
 
     protected static $transferRules = [
@@ -62,6 +63,7 @@ class Validator extends Base\Validator
         'transfers.*.customer'       => 'sometimes|string|max:19',
         'transfers.*.account'        => 'sometimes|string|max:19',
         'transfers.*.amount'         => 'required|integer|min:100',
+        'transfers.*.currency'       => 'required|string|size:3'
     ];
 
     protected static $createValidators = [
@@ -302,7 +304,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCurrency($input)
+    public function validateCurrency($input)
     {
         $currency = $input['currency'];
 

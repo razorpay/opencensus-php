@@ -12,7 +12,8 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000000',
-                        'amount' => 100
+                        'amount' => 100,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -37,7 +38,8 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000001',
-                        'amount' => 100
+                        'amount' => 100,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -62,7 +64,8 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000001',
-                        'amount' => 100
+                        'amount' => 100,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]

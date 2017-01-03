@@ -21,7 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Transfer;
+use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Models\Transaction;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -35,6 +35,7 @@ class Processor
     use OtpResend;
     use Topup;
     use FraudDetector;
+    use Transfer;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -209,51 +210,6 @@ class Processor
         return $data;
     }
 
-    /**
-     * Create a payment entity for marketplace transfer,
-     * create and process a payment transaction
-     *
-     * @param  Merchant\Entity $account
-     * @param  Payment\Entity  $originPayment
-     * @param  array           $input
-     */
-    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, array $input) : Payment\Entity
-    {
-        $paymentData = [
-            'method'            => Payment\Method::TRANSFER,
-            'amount'            => $input['amount'],
-            'currency'          => 'INR',
-            'contact'           => $input['contact'],
-            'email'             => $input['email'],
-        ];
-
-        $payment = $this->createPaymentEntity($paymentData);
-
-        $this->processCurrencyConversions($payment);
-
-        $payment->setStatus(Status::CAPTURED);
-
-        $payment->setMarketplaceGateway();
-
-        $payment->setGatewayCaptured(true);
-
-        $payment->setAuthorizeTimestamp();
-
-        $payment->setCaptureTimestamp();
-
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
-
-        $this->repo->saveOrFail($txn);
-
-        $payment->originPayment()->associate($originPayment);
-
-        $this->repo->saveOrFail($payment);
-
-        $this->saveFeeDetails($txn, $feesSplit);
-
-        return $payment;
-    }
-
     protected function checkSignature($input, $payment)
     {
         if (isset($input['signature']) === false)
@@ -355,7 +311,7 @@ class Processor
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
-            $transfers = (new Transfer\Core)->createForPayment(
+            $transfers = (new TransferCore)->createForPayment(
                             $payment,
                             $this->merchant,
                             $input['transfers']);

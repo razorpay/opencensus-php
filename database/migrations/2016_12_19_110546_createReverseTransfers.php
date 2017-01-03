@@ -30,9 +30,13 @@ class CreateReverseTransfers extends Migration
 
             $table->char(Entity::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
 
-            $table->integer(Entity::AMOUNT);
+            $table->integer(Entity::AMOUNT)
+                  ->unsigned();
 
             $table->char(Entity::CURRENCY, 3);
+
+            $table->integer(Entity::BASE_AMOUNT)
+                  ->unsigned();
 
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
 
@@ -74,18 +78,12 @@ class CreateReverseTransfers extends Migration
             (
                 Table::REVERSE_TRANSFER . '_' . Entity::TRANSACTION_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::REVERSE_TRANSFER, function($table)
-        {
             $table->dropForeign
             (
                 Table::REVERSE_TRANSFER . '_' . Entity::MERCHANT_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::REVERSE_TRANSFER, function($table)
-        {
             $table->dropForeign
             (
                 Table::REVERSE_TRANSFER . '_' . Entity::TRANSFER_ID . '_foreign'

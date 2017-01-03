@@ -1548,9 +1548,11 @@ ALTER TABLE merchants
 
 ALTER TABLE payments
     ADD COLUMN origin_payment_id CHAR(14) DEFAULT NULL AFTER invoice_id,
-    MODIFY COLUMN gateway varchar(255) DEFAULT NULL,
     MODIFY COLUMN terminal_id char(14) DEFAULT NULL,
     ADD CONSTRAINT payments_origin_payment_id_foreign FOREIGN KEY (origin_payment_id) REFERENCES payments(id) ON DELETE RESTRICT;
 
 ALTER TABLE transfers
-    ADD COLUMN amount_reversed INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER amount;
+    ADD COLUMN currency CHAR(3) NOT NULL AFTER amount,
+    ADD COLUMN base_amount INTEGER UNSIGNED NOT NULL AFTER currency,
+    ADD COLUMN amount_reversed INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount,
+    ADD COLUMN base_amount_reversed INTERGER UNSIGNED NOT NULL DEFAULT 0 AFTER amount_reversed;

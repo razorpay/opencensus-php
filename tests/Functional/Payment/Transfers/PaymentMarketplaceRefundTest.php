@@ -38,7 +38,8 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);
@@ -68,11 +69,13 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
         $transfers[1] = [
             'account' => 'acc_10000000000002',
-            'amount'  => 12000
+            'amount'  => 12000,
+            'currency'=> 'INR',
         ];
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);
@@ -104,11 +107,13 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
         $transfers[1] = [
             'account' => 'acc_10000000000002',
-            'amount'  => 12000
+            'amount'  => 12000,
+            'currency'=> 'INR',
         ];
 
         $this->transferPayment($this->payment['id'], $transfers);
@@ -126,7 +131,8 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);
@@ -142,11 +148,13 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 1000
+            'amount'  => 1000,
+            'currency'=> 'INR',
         ];
         $transfers[1] = [
             'account' => 'acc_10000000000002',
-            'amount'  => 12000
+            'amount'  => 12000,
+            'currency'=> 'INR',
         ];
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);
@@ -171,11 +179,13 @@ class PaymentMarketplaceRefundTest extends TestCase
     {
         $transfers[0] = [
             'account' => 'acc_10000000000001',
-            'amount'  => 20000
+            'amount'  => 20000,
+            'currency'=> 'INR',
         ];
         $transfers[1] = [
             'account' => 'acc_10000000000002',
-            'amount'  => 10000
+            'amount'  => 10000,
+            'currency'=> 'INR',
         ];
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);

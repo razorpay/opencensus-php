@@ -391,9 +391,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setBaseAmount($amount)
+    public function setBaseAmount(int $amount)
     {
-        $this->setAttribute(self::BASE_AMOUNT, $amount);
+        $this->setAttribute(self::BASE_AMOUNT, (int) $amount);
     }
 
     public function setAmountAuthorized()
@@ -1129,6 +1129,19 @@ class Entity extends Base\PublicEntity
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
+    }
+
+    /**
+     * Get the rate at which currency conversion was applied to
+     * the payment amount
+     */
+    public function getCurrencyConversionRate()
+    {
+        $baseAmount = $this->getBaseAmount();
+
+        $paymentAmount = $this->getAmount();
+
+        return $baseAmount / $paymentAmount;
     }
 
     /**

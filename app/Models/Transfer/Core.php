@@ -30,19 +30,22 @@ class Core extends Base\Core
      * @param  int                $amount
      * @return Transfer\Entity
      */
-    public function createTransfer(Base\Entity $to, $source, int $amount) : Entity
+    public function createTransfer(Base\Entity $to, $source, array $input, int $baseAmount) : Entity
     {
         $transferData = [
             Entity::TO_ID           => $to->getId(),
             Entity::TO_TYPE         => $to->getEntityName(),
             Entity::SOURCE_ID       => $source->getId(),
             Entity::SOURCE_TYPE     => $source->getEntityName(),
-            Entity::AMOUNT          => $amount,
+            Entity::AMOUNT          => $input['amount'],
+            Entity::CURRENCY        => $input['currency'],
         ];
 
         $transfer = (new Entity)->build($transferData);
 
         $transfer->generateId();
+
+        $transfer->setBaseAmount($baseAmount);
 
         $transfer->merchant()->associate($source->merchant);
 
@@ -110,27 +113,25 @@ class Core extends Base\Core
      * Transfer to a customer account
      *
      * @param  Payment\Entity   $payment
-     * @param  array            $transfer
+     * @param  array            $transferInput
      * @return Transfer\Entity
      */
-    protected function customerTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
+    protected function customerTransfer(Payment\Entity $payment, array $transferInput) : Transfer\Entity
     {
-        $this->verifyFeatureAllowed(Feature\Constants::B2BWALLET);
+        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
-            ['transfer' => $transfer]);
+            ['transfer' => $transferInput]);
 
         $to = $this->repo
                    ->customer
-                   ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $merchant);
+                   ->findByPublicIdAndMerchant($transferInput[ToType::CUSTOMER], $this->merchant);
 
-        $amount = $transfer['amount'];
-
-        $transfer = $this->createTransfer($to, $payment, $amount);
+        $transfer = $this->createTransfer($to, $payment, $transferInput, $transferInput['amount']);
 
         $customerTxn = (new Customer\Transaction\Core)
-                        ->createFromCustomerCredit($payment, $transfer, $amount, $to->getId());
+                        ->createFromCustomerCredit($payment, $transfer, $transferInput['amount'], $to->getId());
 
         $this->repo->saveOrFail($customerTxn);
 
@@ -141,20 +142,20 @@ class Core extends Base\Core
      * Transfer to a Marketplace account
      *
      * @param  Payment\Entity   $payment
-     * @param  array            $transfer
+     * @param  array            $transferInput
      * @return Transfer\Entity
      */
-    protected function accountTransfer(Payment\Entity $payment, array $transfer) : Transfer\Entity
+    protected function accountTransfer(Payment\Entity $payment, array $transferInput) : Transfer\Entity
     {
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE);
 
-        $accountId = $transfer[ToType::ACCOUNT];
+        $accountId = $transferInput[ToType::ACCOUNT];
 
-        $amount = $transfer['amount'];
+        $amount = $transferInput['amount'];
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
-            ['transfer' => $transfer]);
+            ['transfer' => $transferInput]);
 
         $this->checkMultipleMarketplaceTransfer($payment->getId(), $accountId);
 
@@ -162,29 +163,29 @@ class Core extends Base\Core
                         ->merchant
                         ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
 
-        $transfer = $this->createTransfer($account, $payment, $amount);
-
         $paymentData = [
-            Payment\Entity::AMOUNT    => $amount,
+            Payment\Entity::AMOUNT    => $transferInput['amount'],
             Payment\Entity::CONTACT   => $payment->getContact(),
             Payment\Entity::EMAIL     => $payment->getEmail(),
+            Payment\Entity::CURRENCY  => $transferInput['currency'],
         ];
 
-        (new Payment\Service)->processTransfer($account, $payment, $paymentData);
+        $transferPayment = (new Payment\Service)->processTransfer($account, $payment, $paymentData);
+
+        $baseAmount = $transferPayment->getBaseAmount();
+
+        $transfer = $this->createTransfer($account, $payment, $transferInput, $baseAmount);
 
         return $transfer;
     }
 
     protected function verifyFeatureAllowed(string $feature)
     {
-        $merchant = $this->merchant;
-
-        if ($merchant->isFeatureEnabled($feature) === false)
+        if ($this->merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                     "$feature is not supported");
         }
-
     }
 
     /**

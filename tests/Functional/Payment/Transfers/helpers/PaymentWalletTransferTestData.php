@@ -12,7 +12,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => 'cust_asd',
-                        'amount'   => 200
+                        'amount'   => 200,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -62,7 +63,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => 'cust_10000000000001',
-                        'amount' => 100
+                        'amount' => 100,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -71,7 +73,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'b2bwallet is not supported',
+                    'description' => 'openwallet is not supported',
                 ],
             ],
             'status_code' => 400,
@@ -87,7 +89,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => 'cust_3030300000cust',
-                        'amount'   => 200
+                        'amount'   => 200,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -112,7 +115,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => null,
-                        'amount'   => null
+                        'amount'   => null,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -136,7 +140,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => null,
-                        'amount'   => null
+                        'amount'   => null,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]
@@ -160,7 +165,8 @@ return [
                 'transfers' => [
                     [
                         'customer' => null,
-                        'amount'   => null
+                        'amount'   => null,
+                        'currency'=> 'INR',
                     ],
                 ]
             ]

@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::SOURCE_ID      => 'required|alpha_num|size:14',
         Entity::SOURCE_TYPE    => 'required|string',
         Entity::AMOUNT         => 'required|integer',
+        Entity::CURRENCY       => 'required|size:3'
     ];
 
     public function validateTransfers(
@@ -29,6 +30,8 @@ class Validator extends Base\Validator
 
         foreach ($transfers as $transfer)
         {
+            $this->validateTransferCurrency($payment, $transfer['currency']);
+
             $keySet = false;
 
             ++$transferCount;
@@ -70,6 +73,27 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN);
+        }
+    }
+
+    /**
+     * Fail if the requested transfer currency is not same as payment currency
+     *
+     * @param  Payment\Entity $payment
+     * @param  string         $currency
+     */
+    protected function validateTransferCurrency(Payment\Entity $payment, string $currency)
+    {
+        if ($currency !== $payment->getCurrency())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH,
+                Payment\Entity::CURRENCY,
+                [
+                    'transfer_currency' => $currency,
+                    'payment_currency' => $payment->getCurrency(),
+                    'payment_id'       => $payment->getId(),
+                ]);
         }
     }
 

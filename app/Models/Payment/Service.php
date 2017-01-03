@@ -41,7 +41,7 @@ class Service extends Base\Service
      */
     public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, array $input)
     {
-        return $this->getNewProcessor($account)->processTransfer($account, $originPayment, $input);
+        return $this->getNewProcessor($account)->processTransfer($originPayment, $input);
     }
 
     /**

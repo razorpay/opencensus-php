@@ -963,7 +963,7 @@ final class Route
         'reports_transaction_broking'   => Feature::BROKING_REPORT,
         'customer_get_wallet_balance'   => Feature::OPENWALLET,
         'customer_get_wallet_statement' => Feature::OPENWALLET,
-        'payment_transfer'              => Feature::OPENWALLET,
+        'reports_transaction_broking'   => Feature::BROKING_REPORT,
     );
 
     /*

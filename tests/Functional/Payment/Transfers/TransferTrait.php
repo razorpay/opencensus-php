@@ -24,6 +24,7 @@ trait TransferTrait
         $transferData = [
             'customer' => $customerId,
             'amount'   => $amount,
+            'currency'=> 'INR',
         ];
 
         $testData['request']['content']['transfers'][0] = $transferData;
