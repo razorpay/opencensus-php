@@ -843,9 +843,9 @@ class Entity extends Base\PublicEntity
         return $this->card->isInternational();
     }
 
-    public function isFlashWalletPayment()
+    public function isOpenWalletPayment()
     {
-        return ($this->getWallet() === Processor\Wallet::FLASHWALLET);
+        return ($this->getWallet() === Processor\Wallet::OPENWALLET);
     }
 
 // ----------------------- Getters ---------------------------------------------

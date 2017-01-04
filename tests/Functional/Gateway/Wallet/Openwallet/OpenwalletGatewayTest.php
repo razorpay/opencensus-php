@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Wallet\Flashwallet;
+namespace RZP\Tests\Functional\Gateway\Wallet\Openwallet;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -8,32 +8,32 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
-class FlashWalletGatewayTest extends TestCase
+class OpenwalletGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    const WALLET = 'flashwallet';
+    const WALLET = 'openwallet';
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/FlashWalletGatewayTestData.php';
+        $this->testDataFilePath = __DIR__ . '/OpenwalletGatewayTestData.php';
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_flashwallet_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_openwallet_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'wallet_flashwallet';
+        $this->gateway = 'wallet_openwallet';
 
-        $this->fixtures->merchant->enableWallet('10000000000000', 'flashwallet');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'openwallet');
     }
 
     public function testRefundPayment()
     {
         $customerBalance = $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 200]);
 
-        $payment = $this->getDefaultFlashWalletPaymentArray('cust_100000customer', 200);
+        $payment = $this->getDefaultOpenwalletPaymentArray('cust_100000customer', 200);
 
         $input = ['amount' => $payment['amount']];
 
@@ -56,7 +56,7 @@ class FlashWalletGatewayTest extends TestCase
     {
         $customerBalance = $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 3000]);
 
-        $payment = $this->getDefaultFlashWalletPaymentArray('cust_100000customer', 1500);
+        $payment = $this->getDefaultOpenwalletPaymentArray('cust_100000customer', 1500);
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -79,7 +79,7 @@ class FlashWalletGatewayTest extends TestCase
     {
         $customerBalance = $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 100]);
 
-        $payment = $this->getDefaultFlashWalletPaymentArray('cust_100000customer', 200);
+        $payment = $this->getDefaultOpenwalletPaymentArray('cust_100000customer', 200);
 
         $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($payment)
         {

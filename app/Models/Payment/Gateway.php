@@ -31,7 +31,7 @@ class Gateway
     const UPI_IDFC           = 'upi_idfc';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
-    const WALLET_FLASHWALLET = 'wallet_flashwallet';
+    const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
@@ -72,7 +72,7 @@ class Gateway
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
-        self::WALLET_FLASHWALLET => Settlement\Channel::KOTAK,
+        self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK
@@ -112,7 +112,7 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
-            self::WALLET_FLASHWALLET,
+            self::WALLET_OPENWALLET,
         ),
 
         Method::EMI => array(
@@ -130,7 +130,7 @@ class Gateway
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
-     * (Now also includes our custom flashwallet gateway)
+     * (Now also includes our custom openwallet gateway)
      *
      * @var array
      */
@@ -142,7 +142,7 @@ class Gateway
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
         self::FIRST_DATA            => [],
-        self::WALLET_FLASHWALLET    => [],
+        self::WALLET_OPENWALLET    => [],
     ];
 
     /**
@@ -154,7 +154,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
-        self::WALLET_FLASHWALLET,
+        self::WALLET_OPENWALLET,
     ];
 
 
@@ -223,7 +223,7 @@ class Gateway
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
-        Wallet::FLASHWALLET => Gateway::WALLET_FLASHWALLET
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
     );
 
     public static $upiToGatewayMap = array(

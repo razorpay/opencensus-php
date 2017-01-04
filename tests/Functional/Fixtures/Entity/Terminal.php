@@ -730,14 +730,14 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedFlashwalletTerminal(array $attributes = [])
+    public function createSharedOpenwalletTerminal(array $attributes = [])
     {
-        $terminalId = Shared::FLASHWALLET_RAZORPAY_TERMINAL;
+        $terminalId = Shared::OPENWALLET_RAZORPAY_TERMINAL;
 
         $defaultValues = [
             'id'                        => $terminalId,
             'merchant_id'               => '1MercShareTerm',
-            'gateway'                   => 'wallet_flashwallet',
+            'gateway'                   => 'wallet_openwallet',
             'shared'                    => 1,
         ];
 

@@ -3,6 +3,7 @@
 namespace RZP\Http;
 
 use ApiResponse;
+use RZP\Models\Feature\Constants as Feature;
 
 final class Route
 {
@@ -916,20 +917,20 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'feature_dummy'                 => 'dummy',
-        'merchant_sub_create'           => 'aggregator',
-        'customer_delete'               => 'tokens',
-        'customer_delete_token'         => 'tokens',
-        'customer_fetch_tokens'         => 'tokens',
-        'payment_create_wallet'         => 's2swallet',
-        'payment_create_upi'            => 's2supi',
-        'payment_create_recurring'      => 'recurring',
-        'payment_create_private_old'    => 's2s',
-        'setl_combined_report'          => 'setl_report',
-        'customer_get_wallet_balance'   => 'b2bwallet',
-        'customer_get_wallet_statement' => 'b2bwallet',
-        'payment_transfer'              => 'b2bwallet',
-        'reports_transaction_broking'   => 'broking_report'
+        'feature_dummy'                 => Feature::DUMMY,
+        'merchant_sub_create'           => Feature::AGGREGATOR,
+        'customer_delete'               => Feature::TOKENS,
+        'customer_delete_token'         => Feature::TOKENS,
+        'customer_fetch_tokens'         => Feature::TOKENS,
+        'payment_create_wallet'         => Feature::S2SWALLET,
+        'payment_create_upi'            => Feature::S2SUPI,
+        'payment_create_recurring'      => Feature::RECURRING,
+        'payment_create_private_old'    => Feature::S2S,
+        'setl_combined_report'          => Feature::SETL_REPORT,
+        'customer_get_wallet_balance'   => Feature::OPENWALLET,
+        'customer_get_wallet_statement' => Feature::OPENWALLET,
+        'payment_transfer'              => Feature::OPENWALLET,
+        'reports_transaction_broking'   => Feature::BROKING_REPORT,
     );
 
     const RAZORPAYJS_ROUTES = array(

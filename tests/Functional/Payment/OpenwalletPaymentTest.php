@@ -5,33 +5,33 @@ namespace RZP\Tests\Functional\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class FlashWalletPaymentTest extends TestCase
+class OpenwalletPaymentTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/FlashWalletPaymentTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/OpenwalletPaymentTestData.php';
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_flashwallet_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_openwallet_terminal');
 
-        $this->fixtures->merchant->enableWallet('10000000000000', 'flashwallet');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'openwallet');
 
-        $this->gateway = 'wallet_flashwallet';
+        $this->gateway = 'wallet_openwallet';
     }
 
     public function testCustomerIdNotSent()
     {
-        $payment = $this->getDefaultFlashWalletPaymentArray(null);
+        $payment = $this->getDefaultOpenwalletPaymentArray(null);
 
         return $this->runTestForAuthPayment($payment);
     }
 
     public function testCustomerDoesNotExistForMerchant()
     {
-        $payment = $this->getDefaultFlashWalletPaymentArray('cust_dummycustomer1');
+        $payment = $this->getDefaultOpenwalletPaymentArray('cust_dummycustomer1');
 
         return $this->runTestForAuthPayment($payment);
     }
@@ -91,7 +91,7 @@ class FlashWalletPaymentTest extends TestCase
     {
         $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => $customerBalance]);
 
-        $payment = $this->getDefaultFlashWalletPaymentArray($customerBalance->customer->getPublicId(), $paymentAmount);
+        $payment = $this->getDefaultOpenwalletPaymentArray($customerBalance->customer->getPublicId(), $paymentAmount);
 
         return $this->doAuthPayment($payment)['razorpay_payment_id'];
     }

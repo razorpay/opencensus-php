@@ -104,7 +104,7 @@ class Core extends Base\Core
 
     public function shouldUpdateNodalBalance(Payment\Entity $payment) : bool
     {
-        if ($payment->isFlashWalletPayment() === true)
+        if ($payment->isOpenwalletPayment() === true)
         {
             return false;
         }
@@ -337,8 +337,8 @@ class Core extends Base\Core
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
-                // Flashwallet refunds are internal, and wont change Nodal balance
-                if ($payment->isFlashWalletPayment() === true)
+                // Openwallet refunds are internal, and wont change Nodal balance
+                if ($payment->isOpenwalletPayment() === true)
                 {
                     break;
                 }

@@ -60,6 +60,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::STATUS,
         self::TYPE,
         self::AMOUNT,
@@ -69,7 +70,6 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::DESCRIPTION,
         self::CREATED_AT,
-        self::UPDATED_AT
     ];
 
     protected $casts = [

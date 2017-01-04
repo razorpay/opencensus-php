@@ -19,7 +19,7 @@ class PaymentTransferTest extends TestCase
 
         $this->payment = $this->getLastEntity('payment', false);
 
-        $this->fixtures->merchant->addFeatures(['b2bwallet']);
+        $this->fixtures->merchant->addFeatures(['openwallet']);
 
         $this->ba->privateAuth();
     }
@@ -82,7 +82,7 @@ class PaymentTransferTest extends TestCase
 
         $customerPublicId = $customerBalance->customer->getPublicId();
 
-        $customerId = $customerBalance->customer->getId();
+        $customerId = $customerBalance->customer->getPublicId();
 
         $oldBalanceAmount = $customerBalance->getBalance();
 
@@ -137,7 +137,6 @@ class PaymentTransferTest extends TestCase
     protected function testLastTransferEntity($toId, $toType, int $amount)
     {
         $testData = [
-            'to_type' => $toType,
             'to_id'   => $toId,
             'amount'  => $amount
         ];

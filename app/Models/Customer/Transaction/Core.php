@@ -13,7 +13,7 @@ class Core extends Base\Core
 {
     /**
      * Creates a customer_transaction record and am amount debit on the wallet balance
-     * Called at payment authorize, for a flashwallet payment.
+     * Called at payment authorize, for a openwallet payment.
      *
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity

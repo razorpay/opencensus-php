@@ -15,7 +15,6 @@ class Features
     const CARD_SAVING   = 'cardsaving';
     const RECURRING     = 'recurring';
     const S2S           = 's2s';
-    const B2BWALLET     = 'b2bwallet';
 
     const DELIMITER     = ',';
 
@@ -29,7 +28,6 @@ class Features
         self::CARD_SAVING,
         self::RECURRING,
         self::S2S,
-        self::B2BWALLET,
     );
 
     public static function validateFeatures($input)

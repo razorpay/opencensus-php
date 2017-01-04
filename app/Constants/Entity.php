@@ -99,7 +99,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
-    const WALLET_FLASHWALLET    = 'wallet_flashwallet';
+    const WALLET_OPENWALLET     = 'wallet_openwallet';
 
     public static $namespace = [
         self::P2P                   => \RZP\Models\P2p::class,
@@ -157,7 +157,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
-        self::WALLET_FLASHWALLET    => \RZP\Gateway\Wallet\Flashwallet::class,
+        self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,

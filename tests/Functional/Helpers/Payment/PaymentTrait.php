@@ -884,9 +884,9 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultFlashWalletPaymentArray($customerId = null, $amount = null)
+    protected function getDefaultOpenwalletPaymentArray($customerId = null, $amount = null)
     {
-        $payment = $this->getDefaultWalletPaymentArray('flashwallet');
+        $payment = $this->getDefaultWalletPaymentArray('openwallet');
 
         if ($customerId !== null)
         {

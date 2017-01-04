@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
-    const FLASHWALLET       = 'flashwallet';
+    const OPENWALLET        = 'openwallet';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
-        self::FLASHWALLET,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
-        self::FLASHWALLET,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
-        self::FLASHWALLET   => false,
+        self::OPENWALLET    => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
-        self::FLASHWALLET,
+        self::OPENWALLET,
     );
 
     // Casts the attributes to native types
@@ -120,7 +120,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
-        self::FLASHWALLET => 'bool',
+        self::OPENWALLET  => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
     ];
@@ -224,9 +224,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
-    public function isFlashwalletEnabled()
+    public function isOpenwalletEnabled()
     {
-        return $this->getAttribute(self::FLASHWALLET);
+        return $this->getAttribute(self::OPENWALLET);
     }
 
     public function isEmiEnabled()
@@ -297,9 +297,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREECHARGE);
     }
 
-    public function getFlashwallet()
+    public function getOpenwallet()
     {
-        return $this->getAttribute(self::FLASHWALLET);
+        return $this->getAttribute(self::OPENWALLET);
     }
 
     public function getEmi()
@@ -381,9 +381,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREECHARGE, $value);
     }
 
-    public function setFlashwallet($value)
+    public function setOpenwallet($value)
     {
-        $this->setAttribute(self::FLASHWALLET, $value);
+        $this->setAttribute(self::OPENWALLET, $value);
     }
 
     public function setCreditCard($card)
@@ -455,7 +455,7 @@ class Entity extends Base\PublicEntity
             self::EMI,
             self::UPI,
             self::FREECHARGE,
-            self::FLASHWALLET,
+            self::OPENWALLET,
         );
     }
 }

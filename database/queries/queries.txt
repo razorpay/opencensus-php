@@ -1420,9 +1420,9 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
-ALTER TABLE payments 
+ALTER TABLE payments
     MODIFY contact VARCHAR(20);
-    
+
 ALTER TABLE org_hostname
     MODIFY COLUMN id CHAR(14);
 
@@ -1447,7 +1447,7 @@ ALTER TABLE merchant_details
 ----------------------------------- TODO ---------------------------------------
 
 ALTER TABLE merchant_banks
-    ADD COLUMN flashwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
+    ADD COLUMN openwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
 
 ALTER TABLE payments
     ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded;

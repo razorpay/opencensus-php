@@ -3,6 +3,8 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
+use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {
@@ -46,15 +48,18 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::MERCHANT_ID,
-        self::TO_ID,
-        self::TO_TYPE,
         self::SOURCE_ID,
-        self::SOURCE_TYPE,
+        self::TO_ID,
         self::AMOUNT,
-        self::TRANSACTION_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::TRANSACTION_ID,
+        self::TO_ID,
+        self::SOURCE_ID,
     ];
 
     protected $casts = [
@@ -83,5 +88,49 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function setPublicTransactionIdAttribute(array & $attributes)
+    {
+        $txnId = $this->getAttribute(self::TRANSACTION_ID);
+
+        if ($txnId !== null)
+        {
+            $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($txnId);
+        }
+    }
+
+    public function setPublicToIdAttribute(array & $attributes)
+    {
+        $toId = $this->getAttribute(self::TO_ID);
+
+        $toType = $this->getAttribute(self::TO_TYPE);
+
+        $entity = E::getEntityClass($toType);
+
+        // @todo: check for a better way
+        if ($toType === 'merchant')
+        {
+            $entity = 'RZP\Models\Merchant\AccountEntity';
+        }
+
+        if ($toId !== null)
+        {
+            $attributes[self::TO_ID] = $entity::getSignedId($toId);
+        }
+    }
+
+    public function setPublicSourceIdAttribute(array & $attributes)
+    {
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
+
+        $sourceType = $this->getAttribute(self::SOURCE_TYPE);
+
+        $entity = E::getEntityClass($sourceType);
+
+        if ($sourceId !== null)
+        {
+            $attributes[self::SOURCE_ID] = $entity::getSignedId($sourceId);
+        }
     }
 }

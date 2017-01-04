@@ -72,7 +72,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="olamoney">Olamoney</option>
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
-                <option value="flashwallet">Flashwallet (B2B)</option>
+                <option value="openwallet">Openwallet (B2B)</option>
             </select>
         </td>
     </tr>

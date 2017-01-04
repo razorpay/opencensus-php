@@ -20,7 +20,7 @@ class Constants
     const INVOICE         = 'invoice';
     const NOZEROPRICING   = 'nozeropricing';
     const REVERSE         = 'reverse';
-    const B2BWALLET       = 'b2bwallet';
+    const OPENWALLET      = 'openwallet';
     const BROKING_REPORT  = 'broking_report';
 
     public static $allFeatures = [
@@ -38,8 +38,8 @@ class Constants
         self::INVOICE,
         self::NOZEROPRICING,
         self::REVERSE,
-        self::B2BWALLET,
-        self::BROKING_REPORT
+        self::OPENWALLET,
+        self::BROKING_REPORT,
     ];
 
     // TODOL Use this instead of alFeatures once in final code change pr
@@ -58,8 +58,8 @@ class Constants
         self::INVOICE         => true,
         self::NOZEROPRICING   => false,
         self::REVERSE         => true,
-        self::B2BWALLET       => true,
-        self::BROKING_REPORT  => true
+        self::OPENWALLET      => true,
+        self::BROKING_REPORT  => true,
     ];
 
     public static $visibleFeaturesMap = [

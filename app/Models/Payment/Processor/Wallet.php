@@ -15,7 +15,7 @@ class Wallet
     const OLAMONEY    = 'olamoney';
     const AIRTELMONEY = 'airtelmoney';
     const FREECHARGE  = 'freecharge';
-    const FLASHWALLET = 'flashwallet';
+    const OPENWALLET  = 'openwallet';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -25,7 +25,7 @@ class Wallet
         self::PAYZAPP       => 'Payzapp',
         self::AIRTELMONEY   => 'Airtelmoney',
         self::FREECHARGE    => 'Freecharge',
-        self::FLASHWALLET   => 'RZP Flashwallet'
+        self::OPENWALLET    => 'RZP Open Wallet'
 
     );
 

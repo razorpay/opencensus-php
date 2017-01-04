@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Flashwallet;
+namespace RZP\Gateway\Wallet\Openwallet;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -10,12 +10,12 @@ use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
-    protected $gateway = 'wallet_flashwallet';
+    protected $gateway = 'wallet_openwallet';
 
     protected $topup = true;
 
     /**
-     * Pay from wallet: flashwallet
+     * Pay from wallet: openwallet
      *
      * @param  array  $input
      * @return void

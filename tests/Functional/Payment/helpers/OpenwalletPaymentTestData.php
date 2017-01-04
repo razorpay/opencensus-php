@@ -11,7 +11,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The customer id field is required when wallet is flashwallet.'
+                    'description' => 'The customer id field is required when wallet is openwallet.'
                 ],
             ],
             'status_code' => 400,
@@ -42,7 +42,7 @@ return [
         'payment' => [
             'amount'        => 2000,
             'status'        => 'authorized',
-            'terminal_id'   => Shared::FLASHWALLET_RAZORPAY_TERMINAL
+            'terminal_id'   => Shared::OPENWALLET_RAZORPAY_TERMINAL
         ],
         'customerBalance' => [
             'balance'       => 1000,
