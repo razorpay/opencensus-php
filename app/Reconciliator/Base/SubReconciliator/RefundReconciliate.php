@@ -26,17 +26,18 @@ class RefundReconciliate extends Foundation\SubReconciliate
      *******************/
 
     protected $repo;
+    protected $trace;
+    protected $app;
+    protected $messenger;
 
     protected $payment;
     protected $refund;
-
-    protected $app;
-    protected $messenger;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+        $this->trace = $this->app['trace'];
 
         $this->messenger = new Messenger();
     }

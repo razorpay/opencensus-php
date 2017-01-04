@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
@@ -287,7 +288,8 @@ class Repository extends Base\Repository
     public function retrieve($id)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)->firstOrFail();
+                    ->where('payment_id', '=', $id)
+                    ->firstOrFail();
     }
 
     public function retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId)
@@ -332,7 +334,8 @@ class Repository extends Base\Repository
     public function retrieveMultiplePayments(array $ids)
     {
         return $this->newQuery()
-                    ->whereIn('payment_id', $ids)->get();
+                    ->whereIn('payment_id', $ids)
+                    ->get();
     }
 
     public function retrieveCapturedPayments(array $ids)
@@ -394,5 +397,26 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)
                     ->where('status', '=', $status)
                     ->get();
+    }
+
+    public function findSuccessfulRefundByRefundId($refundId)
+    {
+        $refundEntities =  $this->newQuery()
+                                ->where('refund_id', $refundId)
+                                ->where('status', '=', Payment\Status::REFUNDED)
+                                ->get();
+
+        if ($refundEntities->count() > 0)
+        {
+            throw new Exception\LogicException(
+                'Multiple successful refund entities found for a refund ID',
+                ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,
+                [
+                    'refund_id' => $refundId,
+                    'refund_entities' => $refundEntities->toArray()
+                ]);
+        }
+
+        return $refundEntities;
     }
 }
