@@ -47,6 +47,8 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
+        $this->mockSetVerifyTransactionId();
+
         $content = $this->verifyPayment($payment['id']);
 
         assert($content['payment']['verified'] === 1);
@@ -84,13 +86,27 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
-    public function testVerifyMismatch()
+    public function testVerifyFailed()
     {
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->doAuthPayment($this->payment);
 
         $this->mockVerifyFailure();
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
+    public function testVerifyMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockVerifyStatusFailure();
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -107,6 +123,8 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetVerifyTransactionId();
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -148,6 +166,16 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->assertSame($refund['payment_id'], $payment['razorpay_payment_id']);
     }
 
+    protected function mockSetVerifyTransactionId()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+            $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
+        });
+    }
+
     protected function mockPaymentFailure()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
@@ -163,6 +191,14 @@ class NetbankingAirtelGatewayTest extends TestCase
         {
             $content['code'] = '1';
             $content['errorCode'] = '910';
+        });
+    }
+
+    protected function mockVerifyStatusFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['txns'][0]['status'] = 'FAL';
         });
     }
 

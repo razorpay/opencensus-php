@@ -114,19 +114,23 @@ class Gateway extends Base\Gateway
             $responseArray);
 
         $this->verifySecureHash($responseArray);
+
+        $this->checkActionStatus($responseArray);
     }
 
     public function verifyPayment($verify)
     {
         $response = $verify->verifyResponseContent;
 
-        $this->checkActionStatus($response);
+        $authContent = $this->getAuthContentFromVerifyResponse($verify, $response);
 
-        $status = $this->getVerifyMatchStatus($verify, $response);
+        $status = $this->getVerifyMatchStatus($verify, $authContent);
+
+        $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $response);
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $response, $authContent);
     }
 
     protected function getVerifyMatchStatus($verify, $response)
@@ -135,7 +139,7 @@ class Gateway extends Base\Gateway
 
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response[VerifyFields::TRANSACTION][0]);
+        $this->checkGatewaySuccess($verify, $response);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -222,18 +226,16 @@ class Gateway extends Base\Gateway
         return json_encode($data);
     }
 
-    protected function saveVerifyContentIfNeeded($verify, $response)
+    protected function saveVerifyContentIfNeeded($verify, $response, $content)
     {
         $input = $verify->input;
 
         $gatewayPayment = $verify->payment;
 
-        $content = $response[VerifyFields::TRANSACTION][0];
-
         if ((isset($content[VerifyFields::STATUS]) === true) and
             ($content[VerifyFields::STATUS]) === Status::SUCCESS)
         {
-            $attributes = $this->getVerifyAttributes($response, $input);
+            $attributes = $this->getVerifyAttributes($response, $content);
 
             // Late authorization case
             if ($gatewayPayment[Base\Entity::RECEIVED] === false)
@@ -247,10 +249,8 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes($response, $input)
+    protected function getVerifyAttributes($response, $content)
     {
-        $content = $response[VerifyFields::TRANSACTION][0];
-
         $contentToSave = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[VerifyFields::STATUS],
@@ -261,6 +261,19 @@ class Gateway extends Base\Gateway
         ];
 
         return $contentToSave;
+    }
+
+    protected function getAuthContentFromVerifyResponse($verify, $response)
+    {
+        $bankPaymentId = $verify->payment->getBankPaymentId();
+
+        foreach ($response[VerifyFields::TRANSACTION] as $transaction)
+        {
+            if ($transaction[VerifyFields::TRANSACTION_ID] === $bankPaymentId)
+            {
+                return $transaction;
+            }
+        }
     }
 
     protected function getRefundRequestData($input)
