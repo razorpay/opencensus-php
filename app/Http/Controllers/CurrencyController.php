@@ -9,6 +9,8 @@ use RZP\Models\Currency;
 
 class CurrencyController extends Controller
 {
+    protected $currency;
+
     public function __construct()
     {
         parent::__construct();

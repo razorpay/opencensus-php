@@ -8,6 +8,7 @@ use RZP\Models\Base;
 class Core extends Base\Core
 {
     protected $exchange;
+    protected $redis;
 
     const EXCHANGE_RATE_KEY = 'exchange_rates_';
 
