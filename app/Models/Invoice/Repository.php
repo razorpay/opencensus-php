@@ -14,6 +14,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID => 'sometimes|string|size:18',
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+        'q' => 'sometimes|string',
     ];
 
     protected $proxyFetchParamRules = [
@@ -25,6 +26,8 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
+
+    protected $es = true;
 
     public function getInvoicesForNotification($medium)
     {
@@ -78,5 +81,18 @@ class Repository extends Base\Repository
         $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
 
         $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+    }
+
+    public function fetchAll(int $skip = 0, int $take = 100, array $fields = ['*'])
+    {
+        $invoices = parent::fetchAll($skip, $take, $fields);
+
+        return $invoices->makeHidden(
+            [
+                Entity::CUSTOMER_DETAILS,
+                Entity::LINE_ITEMS,
+                Entity::PUBLIC_ID,
+                Entity::PAYMENT_ID,
+            ]);
     }
 }

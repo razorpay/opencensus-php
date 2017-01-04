@@ -40,6 +40,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
+        // TODO: Fix this, how to get app mode?
+        $this->mode = 'test';
+
         $this->trace = $app['trace'];
 
         $this->indexName = $app['config']->get('database.es_index');
@@ -120,23 +123,40 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function search(string $q)
+    public function search(array $params, string $merchantId = null)
     {
         //
-        // Builds query
+        // Sets index name: Index name is current entity (eg. invoice|merchant)
         //
 
-        $params = [
+        $class = $this->getEntityClass();
+        $model = new $class;
+
+        $this->setIndexName($this->mode . '_' . $model->getEntity());
+
+        $clauses = []; // Boolean query clauses
+        $filters = []; // Filters
+        $from    = ($params['skip']) ?? 0;
+        $size    = ($params['count']) ?? 10;
+
+        $this->buildSearchQuery($params, $merchantId, $clauses, $filters);
+
+        $query = [
+            'bool' => [
+                'should'               => $clauses,
+                'minimum_should_match' => 1,
+                'filter'               => $filters
+            ],
+        ];
+
+        $searchParams = [
             'index' => $this->indexName,
             'type'  => $this->indexName,
             'body'  => [
-                'query' => [
-                    'multi_match' => [
-                        'query'  => $q,
-                        'type'   => 'best_fields',
-                        'fields' => $this->getFields(),
-                    ],
-                ],
+                '_source' => false,
+                'from'    => $from,
+                'size'    => $size,
+                'query'   => $query,
                 'highlight' => [
                     'fields' => [
                         '*' => new \stdClass,
@@ -145,7 +165,81 @@ class EsRepository extends \Razorpay\Spine\Repository
             ],
         ];
 
-        return $this->esDao->search($params);
+        $searchResult = $this->esDao->search($searchParams);
+
+        $hits = $searchResult['hits']['hits'];
+
+        $ids = collect($hits)->pluck('_id')->all();
+
+        // sd($ids);
+        // sd(json_encode($searchParams['body']));
+
+        if (count($ids) === 0)
+        {
+            return (new PublicCollection);
+        }
+
+        $entities = $this->newQuery()->findOrFailPublic($ids, array('*'));
+
+        return $entities;
+    }
+
+    public function buildSearchQuery(
+        array   $params,
+        string  $merchantId,
+        array & $clauses,
+        array & $filters)
+    {
+        if ($merchantId !== null)
+        {
+            $filters[] = [
+                'term' => [
+                    'merchant_id' => [
+                        'value' => $merchantId,
+                    ],
+                ],
+            ];
+        }
+
+        if (empty($params['q']) === false)
+        {
+            $clauses[] = [
+                'multi_match' => [
+                    'query'  => $params['q'],
+                    'type'   => 'best_fields',
+                    'fields' => $this->getFields(),
+                    'boost'  => 1,
+                ],
+            ];
+
+            unset($params['q']);
+        }
+
+        if (empty($params['notes']) === false)
+        {
+            $clauses[] = [
+                'multi_match' => [
+                    'query'  => $params['notes'],
+                    'type'   => 'best_fields',
+                    'fields' => 'notes.*',
+                    'boost'  => 2,
+                ],
+            ];
+
+            unset($params['notes']);
+        }
+
+        foreach ($params as $key => $value)
+        {
+            $clauses[] = [
+                'term' => [
+                    $key => [
+                        'value' => $value,
+                        'boost' => 3,
+                    ],
+                ]
+            ];
+        }
     }
 
     public function bulkUpdate(array $documents)

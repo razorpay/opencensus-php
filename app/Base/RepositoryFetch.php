@@ -66,11 +66,13 @@ trait RepositoryFetch
         $this->validateFetchParams($params);
 
         // Check if the params need to be searched via ES.
-        $isEs = $this->isEsFetch($params);
+        $esRepo = $this->getEsRepoClass();
+
+        $isEs = $this->isEsFetch($esRepo, $params);
 
         if ($isEs === true)
         {
-            return $this->runEsFetch($params, $merchantId);
+            return $this->runEsFetch($esRepo, $params, $merchantId);
         }
 
         /*
@@ -96,10 +98,11 @@ trait RepositoryFetch
      * If query params contain status, ES fetch is not used, since it's not part of esWhitelistedParams.
      * If after removing the default params, no params are left, ES fetch is not used.
      */
-    protected function isEsFetch($params)
+    protected function isEsFetch($esRepo, $params)
     {
+        return true;
         // Checks if esWhitelistedParams has been set for the entity.
-        if (isset($this->esWhitelistedParams) === false)
+        if (isset($this->es) === false)
         {
             return false;
         }
@@ -123,7 +126,7 @@ trait RepositoryFetch
         // Checks if the raw query params are present in the esWhitelistedParams list.
         // ($params - $esWhitelistedParams) should be 0.
         // Currently, not supporting ES+MySQL search through query params.
-        if (empty(array_diff_key($rawParams, array_flip($this->esWhitelistedParams))) === true)
+        if (empty(array_diff_key($rawParams, array_flip($esRepo->getFields()))) === true)
         {
             return true;
         }
@@ -131,11 +134,9 @@ trait RepositoryFetch
         return false;
     }
 
-    protected function runEsFetch($params, $merchantId)
+    protected function runEsFetch($esRepo, $params, $merchantId)
     {
-        $esRepo = $this->getEsRepoClass();
-
-        return $esRepo->fetch($params, $merchantId);
+        return $esRepo->search($params, $merchantId);
     }
 
     protected function getEsRepoClass()

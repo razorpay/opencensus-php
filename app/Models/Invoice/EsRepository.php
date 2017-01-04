@@ -11,6 +11,7 @@ class EsRepository extends Base\EsRepository
 
     protected $fields = [
         Entity::ID,
+        Entity::MERCHANT_ID,
         Entity::RECEIPT,
         Entity::DESCRIPTION,
         Entity::NOTES,
@@ -20,5 +21,6 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES => [
             'type' => 'object',
         ],
+        // TODO: Add merchant_id mapping: keyword
     ];
 }
