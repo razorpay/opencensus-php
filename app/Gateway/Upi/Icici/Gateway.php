@@ -624,7 +624,7 @@ class Gateway extends Base\Gateway
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
             Fields::MERCHANT_TRAN_ID                => $refund['id'],
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
-            Fields::REFUND_AMOUNT                   => $refund['amount'],
+            Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::PAYEE_VA                        => $this->getTerminalVpa($input),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',

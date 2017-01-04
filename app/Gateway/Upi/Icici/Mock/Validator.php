@@ -20,10 +20,23 @@ class Validator extends Base\Validator
         'collectByDate'     => 'sometimes|string|max:255'
     ];
 
-    protected static $verifyRules = array(
+    protected static $verifyRules = [
         'merchantId'        => 'numeric|max:9999999999',
         'merchantTranId'    => 'required|alpha_num|max:20',
         'subMerchantId'     => 'sometimes|alpha_num|max:10',
         'terminalId'        => 'sometimes|digits_between:1,10'
-    );
+    ];
+
+    protected static $refundRules = [
+        'merchantId'                => 'numeric|max:9999999999',
+        'subMerchantId'             => 'required|alpha_num|max:10',
+        'terminalId'                => 'required|digits_between:1,10',
+        'originalBankRRN'           => 'required|digits:12',
+        'merchantTranId'            => 'required|alpha_num|max:20',
+        'originalmerchantTranId'    => 'required|alpha_num|max:20',
+        'payeeVA'                   => 'required|string|max:255',
+        'refundAmount'              => ['required', 'regex:/^\d*(\.\d{2})$/'],
+        'note'                      => 'required|string|max:50',
+        'onlineRefund'              => 'required|string|in:Y,N'
+    ];
 }

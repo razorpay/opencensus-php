@@ -65,6 +65,44 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content, $dontEncrypt);
     }
 
+    public function refund($input)
+    {
+
+        $input = $this->parseInput($input);
+
+        parent::refund($input);
+
+        $this->validateRefundInput($input);
+
+        $content = $this->getRefundResponseContent($input);
+
+        $this->content($content);
+
+        return $this->makeResponse($content);
+    }
+
+    protected function getRefundResponseContent(array $input)
+    {
+        $vpa = $input['payeeVA'];
+
+        // TODO: use VPA or something else to switch to failure responses
+
+        return [
+            // Conditional Fields
+            "merchantId"        =>  $input['merchantId'],
+            "subMerchantId"     =>  $input['subMerchantId'],
+            "terminalId"        =>  $input['terminalId'],
+            "status"            =>  "SUCCESS",
+            "originalBankRRN"   =>  "12345678",
+            "merchantTranId"    =>  $input['merchantTranId'],
+
+            // Mandatory fields
+            "response"          =>  "0",
+            "success"           =>  "true",
+            "message"           => "Transaction Successful",
+        ];
+    }
+
     public function verify($input)
     {
         $input = $this->parseInput($input);
@@ -104,7 +142,7 @@ class Server extends Base\Mock\Server
             'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
-            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'OriginalBankRRN'   => (string) random_int(1111111, 9999999),
             'status'            => $status
         ];
 
