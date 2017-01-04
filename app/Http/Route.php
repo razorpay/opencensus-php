@@ -314,8 +314,8 @@ final class Route
         'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
-        'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'AdminController@postCurrencyRates'                                 ],
-        'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'AdminController@getCurrencyRates'                                  ],
+        'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
