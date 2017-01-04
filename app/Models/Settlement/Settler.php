@@ -319,12 +319,12 @@ class Settler
                 continue;
             }
 
+            $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $this->repo->beginTransaction();
-
-            try
+            $setl = $this->repo->transaction(function() use ($merchantSettler, $setlTxns,
+                $setlAmount, $setlFee, $setlApiFee, $serviceTax)
             {
-                $setl = (new Settlement\Merchant($merchant, $channel, $this->repo))->settle(
+                $setl = $merchantSettler->settle(
                                             $setlTxns,
                                             $setlAmount,
                                             $setlFee,
@@ -333,23 +333,18 @@ class Settler
 
                 $this->repo->transaction->settled($setlTxns, self::$settlementTimestamp);
 
-                $settlements->push($setl);
-                $txnsSettled = $txnsSettled->merge($setlTxns);
+                return $setl;
+            });
 
-                $totalSetlAmount += $setlAmount;
-                $totalSetlApiFee += $setlApiFee;
-                $totalSetlFee += $setlFee;
-                $totalSetlGatewayFee += $setlGatewayFee;
-                $totalServiceTax += $serviceTax;
 
-                $this->repo->commit();
-            }
-            catch (\Exception $e)
-            {
-                $this->repo->rollback();
+            $settlements->push($setl);
+            $txnsSettled = $txnsSettled->merge($setlTxns);
 
-                $this->settlementFailure($channel, $e);
-            }
+            $totalSetlAmount += $setlAmount;
+            $totalSetlApiFee += $setlApiFee;
+            $totalSetlFee += $setlFee;
+            $totalSetlGatewayFee += $setlGatewayFee;
+            $totalServiceTax += $serviceTax;
         }
 
         $this->dailySettlement->amount = $totalSetlAmount;

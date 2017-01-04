@@ -155,8 +155,6 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel, $schedule)
     {
-        // $txns = new Base\PublicCollection;
-
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
@@ -172,18 +170,17 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, $txns->getIds());
+        $this->trace->info(
+            TraceCode::SCHEDULE_UNSETTLED_TXNS,
+            [
+                'count' => $txns->count()
+            ]);
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
-
-        // return $this->repo->transaction(function() use ($txns, $channel)
-        // {
 
         list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
 
         return [$settlements, $settledTxns->count()];
-
-        // });
     }
 
     protected function filterTransactionsForSettlement($txns, $channel)
