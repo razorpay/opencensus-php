@@ -338,4 +338,16 @@ class Gateway extends Base\Gateway
 
         return parent::getUrlDomain();
     }
+
+    public function getMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+        else
+        {
+            return $this->getLiveMerchantId();
+        }
+    }
 }
