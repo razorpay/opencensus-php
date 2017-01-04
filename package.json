@@ -13,6 +13,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "bootstrap-styl": "^5.0.8",
+    "css-loader": "^0.25.0",
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "dot": "^1.1.1",
     "gulp": "^3.9.1",
