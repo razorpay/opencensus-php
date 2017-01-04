@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use RZP\Error\ErrorCode;
+use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
@@ -406,11 +406,16 @@ class Repository extends Base\Repository
                                 ->where('status', '=', Payment\Status::REFUNDED)
                                 ->get();
 
-        if ($refundEntities->count() > 0)
+        //
+        // There should never be more than one successful gateway refund entity
+        // for a given refund_id
+        //
+
+        if ($refundEntities->count() > 1)
         {
             throw new Exception\LogicException(
                 'Multiple successful refund entities found for a refund ID',
-                ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,
+                Error\ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,
                 [
                     'refund_id' => $refundId,
                     'refund_entities' => $refundEntities->toArray()
