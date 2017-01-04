@@ -382,7 +382,7 @@ class Validator extends Base\Validator
         switch ($type)
         {
             case Type::INVOICE:
-                $this->validateInvoiceIssueForDefaultType($invoice);
+                $this->validateInvoiceIssueForInvoiceType($invoice);
                 break;
 
             default:
@@ -391,7 +391,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateInvoiceIssueForDefaultType(Entity $invoice)
+    protected function validateInvoiceIssueForInvoiceType(Entity $invoice)
     {
         $lineItemsCount = $invoice->lineItems()->count();
 

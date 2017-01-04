@@ -122,10 +122,14 @@ class Generator extends Base\Core
 
         $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
 
-        $this->lineItemCore->updateLineItemsForMorphEntity(
+        $this->lineItemCore->updateLineItems(
             $lineItemsDetails,
             $this->merchant,
             $this->invoice);
+
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+        $this->invoice->setAmount($totalAmount);
     }
 
     public static function getInvoiceLink(string $invoiceId, string $mode)
@@ -248,10 +252,14 @@ class Generator extends Base\Core
             return;
         }
 
-        $this->lineItemCore->updateLineItemsForMorphEntity(
+        $this->lineItemCore->updateLineItems(
             $lineItemsDetails,
             $this->merchant,
             $this->invoice);
+
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+        $this->invoice->setAmount($totalAmount);
     }
 
     protected function createAndAssociateOrderForInvoice()

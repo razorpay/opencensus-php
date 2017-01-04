@@ -184,7 +184,7 @@ class Core extends Base\Core
      *
      * @return Core
      */
-    public function updateLineItemsForMorphEntity(
+    public function updateLineItems(
         array $input,
         Merchant\Entity $merchant,
         Base\PublicEntity $morphEntity)
@@ -195,6 +195,10 @@ class Core extends Base\Core
 
         foreach ($input as $lineItemDetails)
         {
+            //
+            // If id exists in input, find and update the line item
+            //
+
             if (array_key_exists(Entity::ID, $lineItemDetails))
             {
                 $id = $lineItemDetails[Entity::ID];
@@ -205,11 +209,20 @@ class Core extends Base\Core
 
                 $this->update($lineItem, $lineItemDetails, $this->merchant, $morphEntity);
             }
+
+            //
+            // Else, create new line item with given input
+            //
+
             else
             {
                 $this->create($lineItemDetails, $this->merchant, $morphEntity);
             }
         }
+
+        //
+        // Clean old line items which were not sent in the input
+        //
 
         $oldLineItemsCollection->map(
             function($lineItem, $i) use ($inputLineItemIds)
@@ -219,10 +232,6 @@ class Core extends Base\Core
                     $this->delete($lineItem);
                 }
             });
-
-        $totalAmount = $this->getTotalAmountOfLineItems($morphEntity);
-
-        $morphEntity->setAmount($totalAmount);
 
         return $this;
     }
