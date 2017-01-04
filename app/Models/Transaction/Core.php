@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -126,7 +127,7 @@ class Core extends Base\Core
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
@@ -295,7 +296,7 @@ class Core extends Base\Core
             Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR);
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR);
 
         $gateway = $refund->getGateway();
 
@@ -366,7 +367,7 @@ class Core extends Base\Core
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
             Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),

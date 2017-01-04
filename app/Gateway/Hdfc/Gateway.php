@@ -58,8 +58,6 @@ class Gateway extends Base\Gateway
      */
     protected $model = null;
 
-    const INR_CODE = 356;
-
     /**
      * If during the payment flow, we detect an
      * error, or the payment fails for any reason,
