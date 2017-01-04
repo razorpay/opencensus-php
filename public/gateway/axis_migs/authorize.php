@@ -10,6 +10,7 @@
 // *********************
 // START OF MAIN PROGRAM
 // *********************
+require_once('./helpers.php');
 
 // Define Constants
 // ----------------
@@ -48,6 +49,7 @@ $_POST['vpc_CardSecurityCode'] = '333';
 $_POST['vpc_Card'] = 'MasterCard';
 $_POST['vpc_Command'] = 'pay';
 $_POST['vpc_Version'] = '1';
+$_POST['vpc_SecureHashType'] = 'SHA256';
 
 // The URL link for the receipt to do another transaction.
 // Note: This is ONLY used for this example and is not required for
@@ -61,26 +63,15 @@ $_POST['vpc_Version'] = '1';
 // request. Since we are looping through all the data we may as well sort it in
 // case we want to create a secure hash and add it to the VPC data if the
 // merchant secret has been provided.
-$md5HashData = $SECURE_SECRET;
 ksort ($_POST);
 
 // set a parameter to show the first pair in the URL
 $appendAmp = 0;
 
-foreach($_POST as $key => $value) {
+$hashData = getStringToHash($_POST);
 
-    // create the md5 input and URL leaving out any fields that have no value
-    if (strlen($value) > 0) {
-        $md5HashData .= $value;
-    }
-}
 
-$hashedvalue = '';
-// Create the secure hash and append it to the Virtual Payment Client Data if
-// the merchant secret has been provided.
-if (strlen($SECURE_SECRET) > 0) {
-    $hashedvalue .= strtoupper(md5($md5HashData));
-}
+$hashedvalue = getHashOfString($hashData, $SECURE_SECRET);
 print_r($hashedvalue);
 
 // FINISH TRANSACTION - Redirect the customers using the Digital Order
