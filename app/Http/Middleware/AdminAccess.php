@@ -53,11 +53,33 @@ class AdminAccess
         return $next($request);
     }
 
+    private function getRoutePermissions(string $routeName)
+    {
+        $adminAuthRoutes = Route::$adminPermission;
+
+        if (isset($adminAuthRoutes[$routeName]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
+
+        return $adminAuthRoutes[$routeName];
+    }
+
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
         if (in_array($routeName, self::getExcludedRoutes()) === true)
         {
             return;
+        }
+
+        // Some orgs have global access to edit other org over specific routes
+        $interOrgRoutes = static::getInterOrgRoutes();
+
+        if ((in_array($routeName, $interOrgRoutes) === true) and
+            ($admin->org->isGlobal() === true))
+        {
+            return true;
         }
 
         // Fetch public org Id from uri
@@ -98,6 +120,18 @@ class AdminAccess
         ];
     }
 
+    /*
+     * Routes that can be accessed by other org admins.
+     * primarily razorpay org
+     */
+    private static function getInterOrgRoutes()
+    {
+        return [
+            'org_edit',
+            'org_get',
+        ];
+    }
+
     private function getMerchant($request)
     {
         $params = $request->route()->parameters();
@@ -118,15 +152,7 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        $adminAuthRoutes = Route::$adminPermission;
-
-        if (isset($adminAuthRoutes[$routeName]) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
-        }
-
-        $permissions = $adminAuthRoutes[$routeName];
+        $permissions = $this->getRoutePermissions($routeName);
 
         // We have the following:
         // - permission

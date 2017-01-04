@@ -1458,3 +1458,4 @@ ALTER TABLE transactions
 UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
 UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 
+ALTER TABLE orgs ADD COLUMN global_access boolean default 0;

@@ -36,6 +36,21 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditOtherOrg()
+    {
+        $org = $this->fixtures->create('org', ['global_access' => true]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $otherOrg = $this->fixtures->create('org');
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $otherOrg->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testDeleteOrg()
     {
         $org = $this->fixtures->create('org');
@@ -99,6 +114,25 @@ class OrgTest extends TestCase
         $hostnames = explode(',', $result['hostname']);
 
         $this->assertEquals(2, count($hostnames));
+    }
+
+    public function testGetOtherOrg()
+    {
+        $org = $this->fixtures->create('org', [
+            'global_access' => true,
+        ]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $otherOrg = $this->fixtures->create('org', [
+            'email' => 'testotherrzp@gmail.com',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $otherOrg->getPublicId();
+
+        $result = $this->startTest();
     }
 
     public function testGetOrgByHostname()

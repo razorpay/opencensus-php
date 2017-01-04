@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
+                    'global_access'     => true,
                 ]
             );
 

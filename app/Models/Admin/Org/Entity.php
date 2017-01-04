@@ -27,6 +27,7 @@ class Entity extends Base\Entity
     const DELETED_AT        = 'deleted_at';
     const CUSTOM_CODE       = 'custom_code';
     const ADMIN             = 'admin';
+    const GLOBAL_ACCESS     = 'global_access';
 
     protected static $sign = 'org';
 
@@ -48,6 +49,7 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
+        self::GLOBAL_ACCESS,
     ];
 
     protected $visible = [
@@ -86,7 +88,8 @@ class Entity extends Base\Entity
     ];
 
     protected $casts = [
-        self::ALLOW_SIGN_UP => 'bool'
+        self::ALLOW_SIGN_UP => 'bool',
+        self::GLOBAL_ACCESS => 'bool',
     ];
 
     protected static function boot()
@@ -160,6 +163,11 @@ class Entity extends Base\Entity
     public function getAuthType()
     {
         return $this->getAttribute(self::AUTH_TYPE);
+    }
+
+    public function isGlobal()
+    {
+        return $this->getAttribute(self::GLOBAL_ACCESS);
     }
 
     protected function getEmailDomainsAttribute()
