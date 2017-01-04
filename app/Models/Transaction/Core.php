@@ -17,6 +17,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -205,7 +206,7 @@ class Core extends Base\Core
         }
         // If the customer is fee bearer for the merchant
         // use the fees and service tax from both
-        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        else if ($payment->merchant->isFeeBearerCustomer())
         {
             list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -332,8 +333,9 @@ class Core extends Base\Core
 
                 break;
             case Payment\Status::REFUNDED:
-                // This is a rare case and is here just to fix bugs.
-                assert ($payment->getGateway() === Payment\Gateway::HDFC);
+                $gateway = $payment->getGateway();
+
+                Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
                 $this->updateNodalBalance($txn);
 

@@ -208,6 +208,11 @@ class Service extends Base\Service
             'id'    => $merchant->getId(),
         ];
 
+        if (empty($merchant->org) === false)
+        {
+            $merchantDetails['organization'] = $merchant->org->toArrayPublic();
+        }
+
         // This is required so that the mode and the db connection are set.
         // Since this is via direct auth, this will not set on its own.
         // $this->app['basicauth']->checkAndSetKeyId($publicKey);

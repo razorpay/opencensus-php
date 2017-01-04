@@ -356,14 +356,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function hasBeenPaid()
+    {
+        return ($this->getPaidAt() !== null);
+    }
+
+    public function getDueBy()
+    {
+        return $this->getAttribute(self::DUE_BY);
+    }
+
     public function isDraft()
     {
         return ($this->getStatus() === Status::DRAFT);
     }
 
-    public function hasBeenPaid()
+    public function isIssued()
     {
-        return ($this->getPaidAt() !== null);
+        return ($this->getStatus() === Status::ISSUED);
     }
 
     // -------------------------------------- End Getters --------------------------------------

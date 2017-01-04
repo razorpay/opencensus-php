@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 class Upi
 {
     const ICICI = 'icici';
+    const IDFC = 'idfc';
 
     public static $fullName = array(
         self::ICICI         => 'ICICI Bank',

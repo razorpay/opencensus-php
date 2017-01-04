@@ -1002,7 +1002,6 @@ return [
                     [
                         'id'          => 'li_100000lineitem',
                         'quantity'    => 2,
-                        'item_id'     => 'item_1000000000item',
                         'name'        => 'Some item name',
                         'description' => 'Some item description',
                         'amount'      => 100000,
@@ -1706,7 +1705,6 @@ return [
                 'line_items' => [
                     [
                         'id'       => 'li_100002lineitem',
-                        'item_id'  => 'item_1000000002item',
                         'quantity' => 1,
                         'name'     => 'Some item name',
                         'amount'   => 100000,

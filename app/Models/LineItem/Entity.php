@@ -66,7 +66,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::QUANTITY,
-        self::ITEM_ID,
 
         Item\Entity::NAME,
         Item\Entity::DESCRIPTION,

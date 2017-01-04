@@ -130,6 +130,22 @@ return [
         ],
     ],
 
+    'deleteOrgException' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
     'testGetOrg' => [
         'request' => [
             'url' => '/orgs',

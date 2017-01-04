@@ -9,9 +9,7 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $org = new Entity;
-
-        $org->generateId();
+        $org = (new Entity)->generateId();
 
         $org->setAuditAction(Action::CREATE_ORG);
 

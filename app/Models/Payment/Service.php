@@ -985,7 +985,7 @@ class Service extends Base\Service
         Mail::send(
             'emails.merchant.authorized_reminder',
             $data,
-            function ($message) use ($subject, $emails, $name)
+            function ($message) use ($subject, $emails, $name, $data)
             {
 
                 foreach ($emails as $email)
@@ -998,6 +998,12 @@ class Service extends Base\Service
                 $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
+
+                $headers = $message->getHeaders();
+
+                foreach ($data['payments'] as $payment) {
+                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                }
             });
     }
 

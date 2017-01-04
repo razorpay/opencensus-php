@@ -81,9 +81,6 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['entity_id']);
-
-        $this->assertEquals($items['items'][0]['id'], $lineItems['items'][0]['item_id']);
-        $this->assertEquals($items['items'][1]['id'], $lineItems['items'][1]['item_id']);
     }
 
     public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
@@ -108,9 +105,6 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][1]['entity_id']);
-
-        $this->assertEquals($items['items'][0]['id'], $lineItems['items'][0]['item_id']);
-        $this->assertEquals($items['items'][1]['id'], $lineItems['items'][1]['item_id']);
     }
 
     public function testCreateInvoiceWithUsingInactiveItem()
@@ -156,7 +150,6 @@ class InvoiceTest extends TestCase
         $this->assertNotEmpty($response['id']);
         $this->assertNotEmpty($response['customer_id']);
         $this->assertNotEmpty($response['line_items'][0]['id']);
-        $this->assertNotEmpty($response['line_items'][0]['item_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertNull($order);
@@ -176,7 +169,6 @@ class InvoiceTest extends TestCase
         $this->assertNotEmpty($response['id']);
         $this->assertNotEmpty($response['customer_id']);
         $this->assertNotEmpty($response['line_items'][0]['id']);
-        $this->assertNotEmpty($response['line_items'][0]['item_id']);
         $this->assertNotEmpty($response['order_id']);
         $this->assertNotEmpty($response['short_url']);
 

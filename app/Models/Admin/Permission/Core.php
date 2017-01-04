@@ -25,23 +25,23 @@ class Core extends Base\Core
         return $permissions;
     }
 
-    public function edit(Entity $perm, array $input)
+    public function edit(Entity $permission, array $input)
     {
-        $perm->edit($input);
+        $permission->edit($input);
 
-        $perm->setAuditAction(Action::EDIT_PERMISSION);
+        $permission->setAuditAction(Action::EDIT_PERMISSION);
 
-        $this->repo->saveOrFail($perm);
+        $this->repo->saveOrFail($permission);
 
-        return $perm;
+        return $permission;
     }
 
-    public function delete(Entity $perm)
+    public function delete(Entity $permission)
     {
-        $perm->setAuditAction(Action::DELETE_PERMISSION);
+        $permission->setAuditAction(Action::DELETE_PERMISSION);
 
-        $this->repo->deleteOrFail($perm);
+        $this->repo->deleteOrFail($permission);
 
-        return $perm->toArrayDeleted();
+        return $permission;
     }
 }
