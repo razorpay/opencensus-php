@@ -15,7 +15,10 @@ class Url
      */
     const LIVE_AUTHORIZE    = '/api/MerchantAPI/UPI/v1/CollectPay';
     const LIVE_VERIFY       = '/api/MerchantAPI/UPI/v1/TransactionStatus';
+    const LIVE_REFUND       = '/api/MerchantAPI/UPI/v1/refund';
 
     const TEST_AUTHORIZE    = '/newCollectPay';
     const TEST_VERIFY       = '/newTransactionStatus';
+    const TEST_REFUND       = '/api/MerchantAPI/UPI/v1/refund';
+
 }

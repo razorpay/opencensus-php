@@ -44,5 +44,5 @@
 ## Testing
 
 - Download and install the APK from the Google Drive link above
-- Login using `sudeepabc / d#demo` as the credentials
 - You will still need the environment variables to raise the collect request
+- PIN=1234 (For the iMobile App)
