@@ -18,14 +18,14 @@ class CurrencyController extends Controller
 
     public function postCurrencyRates($currency)
     {
-        $data = $this->currency->postCurrencyRates($currency);
+        $data = $this->currency->updateRates($currency);
 
         return ApiResponse::json($data);
     }
 
     public function getCurrencyRates($currency)
     {
-        $data = $this->currency->getCurrencyRates($currency);
+        $data = $this->currency->getRates($currency);
 
         return ApiResponse::json($data);
     }
