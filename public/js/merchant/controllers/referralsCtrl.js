@@ -100,6 +100,27 @@ app.controller('ReferralsCtrl', [
       modalInstance.result.then($scope.createMerchant, $.noop);
     };
 
+    $scope.openPasswordModal = function (merchant) {
+      var modalInstance = $modal.open({
+        templateUrl: 'passwordModalContent.html',
+        controller: 'PasswordModalCtrl',
+        resolve: {
+          password: function () {
+            return $scope.password;
+          },
+          password_confirmation: function () {
+            return $scope.password_confirmation;
+          }
+        }
+      });
+      modalInstance.result.then(function (password) {
+        merchant.password = password.password;
+        merchant.password_confirmation = password.password_confirmation;
+        $scope.createUser(merchant);
+      }, function () {
+      });
+    };
+
 }]).controller('createMerchantCtrl', [
   '$scope',
   '$modalInstance',
@@ -112,6 +133,21 @@ app.controller('ReferralsCtrl', [
       $modalInstance.close(merchant);
     };
 
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('PasswordModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'password',
+  'password_confirmation',
+  function ($scope, $modalInstance, password, password_confirmation) {
+    $scope.password = password;
+    $scope.password_confirmation = password_confirmation;
+    $scope.ok = function (password, password_confirmation) {
+      $modalInstance.close({password, password_confirmation});
+    };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };

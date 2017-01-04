@@ -36,12 +36,24 @@
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
             <td>
-              <div class="btn-group">
-                <a class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to create user for this merchant?" ng-click="createUser({id: merchant.id, email: merchant.email, name: merchant.name})">
-                  <i class="fa fa-pencil-square"></i>
-                  edit
-                </a>
+              <script type="text/ng-template" id="passwordModalContent.html">
+              <div class="modal-header">
+                <h3 class="modal-title">Create Login</h3>
               </div>
+              <div class="modal-body">
+                  <form>
+                    <label>Password:</label>
+                    <input type="password" placeholder="Password" class="form-control" ng-model="password">
+                    <label>Password Confirmation:</label>
+                    <input type="password" placeholder="Password Confirmation" class="form-control" ng-model="password_confirmation">
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+                  <button class="btn btn-primary" ng-click="ok(password, password_confirmation)">OK</button>
+              </div>
+            </script>
+            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openPasswordModal({id: merchant.id, email: merchant.email, name: merchant.name})">Create Login</button>
             </td>
           </tr>
         </tbody>

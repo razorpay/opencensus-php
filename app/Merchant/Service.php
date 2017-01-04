@@ -156,7 +156,6 @@ class Service extends Base\Service
 
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant_user', $input)->messages();
-        // $error = null;
 
         if (empty($error))
         {

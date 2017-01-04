@@ -16,6 +16,14 @@ class Validator extends Base\Validator
         'email'                 => 'sometimes|email',
     );
 
+    protected static $createSubmerchantUserRules = array(
+        'id'                    => 'required|alpha_num',
+        'name'                  => 'required|alpha_space_num|max:200',
+        'email'                 => 'sometimes|email',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+    );
+
     protected static $unsetCreateInput = array(
         'captcha'
     );
