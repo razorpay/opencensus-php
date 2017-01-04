@@ -478,14 +478,14 @@ class Core extends Base\Core
             $amount = $amountCredits;
         }
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+        // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractAmountCredits($amount);
+        // $nodalBalance->subtractAmountCredits($amount);
 
         $merchantBalance->subtractAmountCredits($amount);
 
         // Nodal balance needs to be saved because of amount credit update
-        $this->repo->balance->updateBalance($nodalBalance);
+        // $this->repo->balance->updateBalance($nodalBalance);
     }
 
     public function updateFeeCredits(Transaction\Entity $txn)
@@ -509,28 +509,28 @@ class Core extends Base\Core
             throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
         }
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+        // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractFeeCredits($fee);
+        // $nodalBalance->subtractFeeCredits($fee);
 
         $merchantBalance->subtractFeeCredits($fee);
 
-        // Nodal balance needs to be saved because of amount credit update
-        $this->repo->balance->updateBalance($nodalBalance);
+        // // Nodal balance needs to be saved because of amount credit update
+        // $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
     {
-        if ($this->nodalBalance !== null)
-        {
-            return $this->nodalBalance;
-        }
+        // if ($this->nodalBalance !== null)
+        // {
+        //     return $this->nodalBalance;
+        // }
 
-        $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
+        // $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
 
-        $this->nodalBalance = $nodalBalance;
+        // $this->nodalBalance = $nodalBalance;
 
-        return $nodalBalance;
+        // return $nodalBalance;
     }
 
     protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
