@@ -8,9 +8,11 @@ use RZP\Gateway\Netbanking\Axis\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::PAYEE_ID                   => 'required|string',
-        RequestFields::ENCRYPTED_STRING           => 'required|string',
-        RequestFields::RETURN_URL                 => 'required|string'
+        RequestFields::AUTHENTICATION_MENU_ID   => 'required|string|in:CIMSHP',
+        RequestFields::AUTHENTICATION_CALL_MODE => 'required|string|in:2',
+        RequestFields::CATEGORY_ID              => 'required|string|in:IRCSM',
+        RequestFields::ENCRYPTED_STRING         => 'required|string',
+        RequestFields::RETURN_URL               => 'required|string'
     ];
 
     protected static $verifyRules = [

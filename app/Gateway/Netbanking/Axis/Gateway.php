@@ -2,17 +2,17 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use phpseclib\Crypt\AES;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
@@ -41,8 +41,6 @@ class Gateway extends Base\Gateway
         $payment = $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getStandardRequestArray($content);
-
-        sd($request);
 
         return $request;
     }
@@ -167,9 +165,11 @@ class Gateway extends Base\Gateway
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
-            // RequestFields::PAYEE_ID         => $this->getPid(),
-            RequestFields::ENCRYPTED_STRING => $encryptedString,
-            RequestFields::RETURN_URL       => $input['callbackUrl']
+            RequestFields::AUTHENTICATION_MENU_ID   => Constants::AUTH_MENU_ID,
+            RequestFields::AUTHENTICATION_CALL_MODE => Constants::AUTH_CALL_MODE,
+            RequestFields::CATEGORY_ID              => Constants::CATEGORY_ID,
+            RequestFields::ENCRYPTED_STRING         => $encryptedString,
+            RequestFields::RETURN_URL               => $input['callbackUrl']
         ];
     }
 
@@ -180,7 +180,7 @@ class Gateway extends Base\Gateway
         $defaultData = $this->getDefaultRequestData($input);
 
         $data = [
-            RequestFields::PAYEE_ID         => $this->getPid(),
+            RequestFields::PAYEE_ID          => $this->getPid(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Constants::INDIAN_RUPEE,
             RequestFields::CONFIRMATION      => Constants::YES,
@@ -195,8 +195,6 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($data, $input);
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
-
-        // sd($stringToEncrypt);
 
         return $this->encryptString($stringToEncrypt, $masterKey);
     }
@@ -298,7 +296,10 @@ class Gateway extends Base\Gateway
     public function encryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_CBC);
+
         $aes->setKey($masterKey);
+
+        $aes->setIV($masterKey);
 
         // returning Encrypted String
         return base64_encode($aes->encrypt($string));
@@ -307,7 +308,10 @@ class Gateway extends Base\Gateway
     public function decryptString(string $string, string $masterKey)
     {
         $aes = new AES(self::MODE_CBC);
+
         $aes->setKey($masterKey);
+
+        $aes->setIV($masterKey);
 
         $encryptedString = base64_decode($string);
 
@@ -325,5 +329,26 @@ class Gateway extends Base\Gateway
         }
 
         return $pid;
+    }
+
+    /*
+     *  Overriding parent class's method
+     */
+    protected function getUrlDomain()
+    {
+        $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        $type = '_'.strtoupper($this->action);
+
+        $domainConstantName = strtoupper($this->mode).$type.'_DOMAIN';
+
+        if ($this->domainType !== null)
+        {
+            $domainType = strtoupper($this->domainType);
+
+            $domainConstantName = $domainType.'_DOMAIN';
+        }
+
+        return constant($urlClass . '::' .$domainConstantName);
     }
 }
