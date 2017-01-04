@@ -66,6 +66,8 @@ class Generator extends Base\Core
 
         $this->elfin = $this->app['elfin'];
 
+        $this->setElfinServices();
+
         $this->lineItemCore = new LineItem\Core;
 
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
@@ -440,6 +442,34 @@ class Generator extends Base\Core
             throw new BadRequestValidationFailureException(
                 'Currency of all items should be same as of the invoice itself'
             );
+        }
+    }
+
+    /**
+     * Sets Elfin services.
+     *
+     * TO BE REMOVED.
+     *
+     * For testing purposes, it'll set services to:
+     * - gimli:       For demo merchant account
+     * - gimli,bitly: For test merchant account
+     * - bitly:       For others
+     */
+    protected function setElfinServices()
+    {
+        switch ($this->merchant->getEmail())
+        {
+            case 'harshit.marwah@razorpay.com':
+                $this->elfin->setServices(['gimli']);
+                break;
+
+            case '`harshil@razorpay.com':
+                $this->elfin->setServices(['gimli', 'bitly']);
+                break;
+
+            default:
+                $this->elfin->setServices(['bitly']);
+                break;
         }
     }
 }
