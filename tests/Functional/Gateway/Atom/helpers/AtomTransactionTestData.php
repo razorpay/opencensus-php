@@ -16,7 +16,7 @@ return [
         'gateway_fee' => 1438,
         'api_fee' => 0,
         'balance' => 1048562,
-        'escrow_balance' => 1048562,
+//        'escrow_balance' => 1048562,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
         'channel' => 'atom',
