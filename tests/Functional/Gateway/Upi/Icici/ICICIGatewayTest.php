@@ -8,13 +8,13 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UPIGatewayTest extends TestCase
+class ICICIGatewayTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UPIGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/ICICIGatewayTestData.php';
 
         parent::setUp();
 
