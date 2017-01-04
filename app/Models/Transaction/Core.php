@@ -408,7 +408,7 @@ class Core extends Base\Core
         // else
         // {
         //     $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
-
+        //
         //     $txn->setEscrowBalance($nodalBalance->getBalance());
         // }
 
