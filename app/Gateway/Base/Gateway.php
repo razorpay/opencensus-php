@@ -535,6 +535,18 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    public function getMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+        else
+        {
+            return $this->getLiveMerchantId();
+        }
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         $class = $this->getGatewayNamespace() . '\Entity';

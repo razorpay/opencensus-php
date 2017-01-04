@@ -75,8 +75,10 @@ class Server extends Base\Mock\Server
 
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $content['qs'] = $this->getGatewayInstance()->encryptString(
-            $query, $masterKey);
+         $encryptString = urlencode($this->getGatewayInstance()
+                                         ->encryptString($query,$masterKey));
+
+        $content[ResponseFields::ENCRYPTED_STRING] = $encryptString;
 
         return $content;
     }

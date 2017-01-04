@@ -49,9 +49,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace>info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
         $content = $this->getDataFromResponse($input['gateway']);
 
-        $this->trace>info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -80,6 +82,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        // sd($request);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
@@ -93,6 +97,8 @@ class Gateway extends Base\Gateway
     {
         // Response XML
         $content = $verify->verifyResponseBody;
+
+        // sd($content);
 
         $response = $this->parseResponseXml($content);
 
@@ -152,7 +158,7 @@ class Gateway extends Base\Gateway
 
         $paymentDate = $this->getPaymentDate($payment);
 
-        $pid = $this->getPid();
+        $pid = $this->getMerchantId();
 
         $data[RequestFields::DATE] = $paymentDate;
         $data[RequestFields::PAYEE_ID] = $pid;
@@ -180,7 +186,7 @@ class Gateway extends Base\Gateway
         $defaultData = $this->getDefaultRequestData($input);
 
         $data = [
-            RequestFields::PAYEE_ID          => $this->getPid(),
+            RequestFields::PAYEE_ID          => $this->getMerchantId(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Constants::INDIAN_RUPEE,
             RequestFields::CONFIRMATION      => Constants::YES,
@@ -236,7 +242,7 @@ class Gateway extends Base\Gateway
 
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $decryptedString = $this->decryptString($encryptedString, $masterKey);
+        $decryptedString = $this->decryptString(urldecode($encryptedString), $masterKey);
 
         parse_str($decryptedString, $response);
 
@@ -323,36 +329,13 @@ class Gateway extends Base\Gateway
         return $aes->decrypt($encryptedString);
     }
 
-    public function getPid()
-    {
-        $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-        if ($this->mode === Mode::TEST)
-        {
-            $pid = $this->config['test_merchant_id'];
-        }
-
-        return $pid;
-    }
-
     /*
      *  Overriding parent class's method
      */
     protected function getUrlDomain()
     {
-        $urlClass = $this->getGatewayNamespace() . '\Url';
+        $this->domainType = $this->action;
 
-        $type = '_'.strtoupper($this->action);
-
-        $domainConstantName = strtoupper($this->mode).$type.'_DOMAIN';
-
-        if ($this->domainType !== null)
-        {
-            $domainType = strtoupper($this->domainType);
-
-            $domainConstantName = $domainType.'_DOMAIN';
-        }
-
-        return constant($urlClass . '::' .$domainConstantName);
+        return parent::getUrlDomain();
     }
 }

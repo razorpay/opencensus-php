@@ -550,14 +550,6 @@ trait FileHandlerTrait
         return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
-    protected function getNetbankingAxisFileToWriteName()
-    {
-        // test this
-        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
-
-        return static::$fileToWriteName.'_'.$time.'_1';
-    }
-
     protected function parseTextFile($file)
     {
         $rows = $this->getFileLines($file);

@@ -188,8 +188,8 @@ return array(
     ),
 
     'netbanking_axis' => array(
-        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_MASTER_KEY'),
-        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_PID'),
+        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
     ),
 
     'sharp' => array(

@@ -28,7 +28,7 @@ class RefundFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getRefundData($input);
 
-        $fileName = $this->getNetbankingAxisFileToWriteName();
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
         $creator = $this->createFile(
             FileStore\Format::TXT,
@@ -51,7 +51,6 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
             $row['payment']['created_at'], 'Asia/Kolkata')->format('Y/m/d');
 
-            // Make sure this is correct
             $data[] = [
                 $index + 1,
                 $row['terminal']['gateway_merchant_id'],
@@ -91,5 +90,15 @@ class RefundFile extends Base\RefundFile
         $txt = $prependLine.$txt;
 
         return $txt;
+    }
+
+    /*
+     * @override parent class's method
+     */
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+
+        return static::$fileToWriteName.'_'.$time.'_1';
     }
 }
