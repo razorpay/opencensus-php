@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -112,19 +113,17 @@ class Service extends Base\Service
         try
         {
             $this->repo->saveOrFail($merchantDetail);
+
+            $this->trace->info(
+                TraceCode::CREATE_MERCHANT_DETAIL,
+                [ 'merchant_id'   => $merchant->getId()]);
         }
-        catch (Exception\BaseException $e)
+        catch (\Throwable $e)
         {
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
                 [ 'merchant_id'   => $merchant->getId()]);
-
-            return $merchantDetail;
         }
-
-        $this->trace->info(
-                TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
 
         return $merchantDetail;
     }
