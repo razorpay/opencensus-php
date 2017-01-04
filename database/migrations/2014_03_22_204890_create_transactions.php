@@ -90,7 +90,7 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
-            $table->char(Transaction::CREDIT_TYPE)
+            $table->string(Transaction::CREDIT_TYPE, 25)
                   ->default(CreditType::DEFAULT);
 
             $table->tinyInteger(Transaction::SETTLED)
