@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant;
 use Config;
 
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Trace;
@@ -684,6 +686,16 @@ class Entity extends Base\PublicEntity
             case 'days':
                 $multiplier = 86400;
                 break;
+
+            default:
+                throw new LogicException(
+                    'Invalid duration for auto refund delay',
+                    ErrorCode::SERVER_ERROR_INVALID_DURATION,
+                    [
+                        'auto_refund_delay_period' => $autoRefundDelayPeriod,
+                        'duration' => $duration,
+                        'time' => $time
+                    ]);
         }
 
         $delay = $time * $multiplier;

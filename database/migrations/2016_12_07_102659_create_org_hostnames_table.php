@@ -20,7 +20,8 @@ class CreateOrgHostnamesTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->char(OrgHost::ID, OrgHost::ID_LENGTH)
+                  ->primary();
 
             $table->char(OrgHost::ORG_ID);
 
