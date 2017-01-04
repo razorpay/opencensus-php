@@ -207,7 +207,7 @@ class Core extends Base\Core
                 $lineItem = $this->repo->line_item
                                        ->findByPublicIdAndMorphEntity($id, $morphEntity);
 
-                $this->update($lineItem, $lineItemDetails, $this->merchant, $morphEntity);
+                $this->update($lineItem, $lineItemDetails, $merchant, $morphEntity);
             }
 
             //
@@ -216,7 +216,7 @@ class Core extends Base\Core
 
             else
             {
-                $this->create($lineItemDetails, $this->merchant, $morphEntity);
+                $this->create($lineItemDetails, $merchant, $morphEntity);
             }
         }
 
