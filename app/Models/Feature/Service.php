@@ -3,7 +3,6 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
-use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -35,7 +34,7 @@ class Service extends Base\Service
 
     public function deleteFeature(string $entityId, string $featureName)
     {
-        $feature = $this->repo->feature->findByEntityIdAndName($entityId, $featureName);
+        $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
@@ -89,7 +88,7 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByEntityIdAndName(
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
                         $entityId,
                         $featureName);
 
