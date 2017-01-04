@@ -321,7 +321,7 @@ class Gateway extends Base\Gateway
             'payerVa'           => $input['payment']['vpa'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'subMerchantName'   => $input['merchant']->getFilteredDba(),
-            'terminalId'        => '1234',
+            'terminalId'        => $this->getTerminalId($input),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -338,6 +338,18 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    protected function getTerminalId(array $input): string
+    {
+        $mcc = (string) $input['merchant']->getCategory();
+
+        if ($mcc === '1234')
+        {
+            $mcc = '5411';
+        }
+
+        return $mcc;
     }
 
     /**
