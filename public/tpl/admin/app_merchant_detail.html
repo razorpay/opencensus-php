@@ -476,6 +476,7 @@
                     <th>Emi</th>
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
+                    <th>Tpv</th>
                     <th>Created At</th>
                   </thead>
                   <tbody>
@@ -489,9 +490,11 @@
                     <td>{{terminal.gateway_merchant_id2}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
+                    <td>{{terminal.netbanking}}</td>
                     <td>{{terminal.emi}}</td>
                     <th>{{terminal.emi_duration}}</th>
                     <th>{{terminal.shared}}</th>
+                    <th>{{terminal.tpv}}</th>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
                   </tr>
                 </tbody>
@@ -762,11 +765,20 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="card" class="col-lg-3 control-label">Netbanking Allowed:</label>
+        <label for="netbanking" class="col-lg-3 control-label">Netbanking Allowed:</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.netbanking">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="tpv" class="col-lg-3 control-label">TPV</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="tpv" ng-model="terminal.tpv">
+             <option value="1">Yes</option>
+             <option value="0" selected>No</option>
           </select>
         </div>
       </div>
@@ -934,6 +946,7 @@
           <option value="housing">Housing</option>
           <option value="mutual_funds">Mutual funds</option>
           <option value="travel_agency">Travel Agency</option>
+          <option value="pharma">Pharma</option>
           </select>
         </div>
       </div>

@@ -24,7 +24,6 @@ class Entity extends Base\Entity
         'name',
         'email',
         'password',
-        'confirm_token',
         'activated',
         'archived_at'
     );
@@ -34,7 +33,7 @@ class Entity extends Base\Entity
     const ID_LENGTH = 14;
     const EMAIL     = 'email';
 
-    protected static $generators = array('id', 'confirm_token');
+    protected static $generators = array('id');
 
     protected static $test_merchant_ids = array(
         '10000000000000',
@@ -93,7 +92,6 @@ class Entity extends Base\Entity
         $merchant->email = $user->email;
 
         $merchant->password = $user->password;
-        $merchant->confirm_token = $user->confirm_token;
 
         return $merchant;
     }
@@ -117,9 +115,6 @@ class Entity extends Base\Entity
         // the field entirely from our database
         // Logins run on top of User\password.
         $merchant->password = "invalid_password";
-
-        // We mark the user as confirmed
-        $merchant->confirm_token = null;
 
         // We tag the merchant as referred from the original merchant as well
         $merchant->tag("ref-{$aggregator->id}");
@@ -285,16 +280,6 @@ class Entity extends Base\Entity
         $this->setAttribute('id', Uuid::generate());
     }
 
-    /**
-     * Generates Confirmation token
-     */
-    public function generateConfirmToken()
-    {
-        $this->setAttribute(
-            'confirm_token',
-            bin2hex(openssl_random_pseudo_bytes(32/2)));
-    }
-
     public function transactions()
     {
         return $this->hasMany(
@@ -451,18 +436,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Generates data required for merchant confirmation email
-     */
-    public function generateEmailData()
-    {
-        return array(
-            'name'          => $this->name,
-            'email'         => $this->email,
-            'confirm_token' => $this->confirm_token
-        );
-    }
-
-    /**
      * Get the unique identifier for the user.
      *
      * @return mixed
@@ -535,9 +508,7 @@ class Entity extends Base\Entity
 
     public function confirm()
     {
-        $this->confirm_token = null;
         $email = $this->email;
-        $this->saveOrFail();
 
         // This is only to make sure that the user and merchants are in sync
         // for now. We will drop the method from Merchant\Entity and shift it

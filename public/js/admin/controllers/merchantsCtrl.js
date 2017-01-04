@@ -28,10 +28,6 @@ app.controller('MerchantsCtrl', [
           query.pending    = 1;
           break;
 
-        case '4':
-          query.confirmed  = 1;
-          break;
-
         case '5':
           query.dead       = 1;
           break;

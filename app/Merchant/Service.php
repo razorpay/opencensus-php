@@ -305,7 +305,8 @@ class Service extends Base\Service
 
     public function confirm($token)
     {
-        $merchant = Merchant\Entity::getMerchantForConfirmation($token);
+        $user = User\Entity::getUserForConfirmation($token);
+        $merchant = $user->getOwnerMerchant();
 
         if (is_null($merchant))
         {

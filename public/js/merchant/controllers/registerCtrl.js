@@ -54,6 +54,9 @@ app.controller('RegisterCtrl', [
           var form_data = JSON.parse(data.data.form_data);
 
           $scope.data.email = data.data.email;
+
+          // lock email if the invite is being sent for heimdall
+          $scope.lock_email = data.data.email ? true : false;
           $scope.data.business_name = form_data.merchant_name;
           $scope.data.name = form_data.contact_name;
         }

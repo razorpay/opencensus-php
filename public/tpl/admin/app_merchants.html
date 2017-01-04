@@ -24,7 +24,6 @@
             <option value="1">Activated</option>
             <option value="2">Not Activated</option>
             <!-- <option value="3">Pending Activation</option> -->
-            <option value="4">Confirmed</option>
             <option value="5">Dead</option>
             <option value="6">Archived</option>
           </select>
@@ -43,7 +42,6 @@
             <th>Referrer</th>
             <th>Name</th>
             <th>Email</th>
-            <th data-type="numeric">Confirmed</th>
             <th data-type="numeric">Activation Progress (%)</th>
             <th data-type="numeric">Activated</th>
             <th data-type="numeric">Registration Date</th>
@@ -58,9 +56,6 @@
             <td>{{row.referrer}}</td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
-            <td data-value="{{row.confirm_token == null ? 1 : 0}}">
-              <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
-            </td>
             <td data-value="{{row.activation_progress}}">
               <b class="badge bg-success dk">{{row.activation_progress}}%</b>
             </td>
