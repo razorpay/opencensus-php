@@ -332,7 +332,13 @@ class EsDao
             $params['body']['size'] = (int) $options['count'];
         }
 
-        $results =  $this->es->searchHeimdall($params);
+        $results = $this->es->searchHeimdall($params);
+
+        // If the index has no documents
+        if (empty($results))
+        {
+            $results = [];
+        }
 
         $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
 
