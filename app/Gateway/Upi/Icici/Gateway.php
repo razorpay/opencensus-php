@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
     /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
-     * @return null
+     * @return boolean
      */
     public function authorize(array $input)
     {
@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
      * @param  array  $input
      * @return Array
      */
-    protected function getGatewayEntityAttributes(array $input)
+    protected function getGatewayEntityAttributes(array $input): array
     {
         return [
             Entity::VPA => $input['payment']['vpa'],
@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
      * @param  string $response
      * @return array response as associative array
      */
-    protected function parseGatewayResponse($response, $forceDecryption = false)
+    protected function parseGatewayResponse(string $response, bool $forceDecryption = false): array
     {
         if ($forceDecryption === false)
         {
@@ -170,7 +170,7 @@ class Gateway extends Base\Gateway
      * @param  int $amount amount in paise (100)
      * @return string amount formatted to 2 decimal places in INR (1.00)
      */
-    protected function formatAmount($amount)
+    protected function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }
@@ -180,7 +180,7 @@ class Gateway extends Base\Gateway
      * merchants since this is the master merchant Id
      * @return string (numeric merchant id)
      */
-    protected function getMerchantId()
+    protected function getMerchantId(): string
     {
         if ($this->mode === Mode::TEST)
         {
@@ -201,7 +201,7 @@ class Gateway extends Base\Gateway
      * This is the public key used to encrypt requests
      * @return string public key
      */
-    protected function getPublicKey()
+    protected function getPublicKey(): string
     {
         $key = $this->config['live_public_key'];
 
@@ -220,7 +220,7 @@ class Gateway extends Base\Gateway
      * @see getPublicKey
      * @return string Private Key
      */
-    protected function getPrivateKey()
+    protected function getPrivateKey(): string
     {
         $key = $this->config['live_private_key'];
 
@@ -241,7 +241,7 @@ class Gateway extends Base\Gateway
      * @param  string $type Action String
      * @return String URL
      */
-    protected function getUrl($type = null)
+    protected function getUrl($type = null): string
     {
         if ($type === null)
         {
@@ -258,7 +258,7 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    protected function encrypt($data)
+    protected function encrypt(string $data): string
     {
         $rsa = $this->getRSAInstance();
 
@@ -272,7 +272,7 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    protected function decrypt($data)
+    protected function decrypt(string $data): string
     {
         $rsa = $this->getRSAInstance();
 
@@ -283,7 +283,7 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt($data);
     }
 
-    protected function getRSAInstance()
+    protected function getRSAInstance(): RSA
     {
         /**
          * We need to do this to use PCCS 1.5 instead of 1.7
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
         return $rsa;
     }
 
-    protected function getAuthorizeRequestArray($input)
+    protected function getAuthorizeRequestArray(array $input): array
     {
         $payment = $input['payment'];
 
@@ -345,7 +345,7 @@ class Gateway extends Base\Gateway
      * to 50 characters
      * @return string
      */
-    protected function getPaymentRemark(array $input)
+    protected function getPaymentRemark(array $input): string
     {
         $description = $input['merchant']->getFilteredDba();
 
@@ -358,7 +358,7 @@ class Gateway extends Base\Gateway
      * @param  array  $data request array
      * @return string post body
      */
-    protected function transformRequestArrayToContent(array $data)
+    protected function transformRequestArrayToContent(array $data): string
     {
         $json = json_encode($data);
 
@@ -391,7 +391,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function sendPaymentVerifyRequest($verify)
+    protected function sendPaymentVerifyRequest(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -421,7 +421,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray($input)
+    protected function getPaymentVerifyRequestArray(array $input): array
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -448,7 +448,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function verifyPayment($verify)
+    protected function verifyPayment(Verify $verify): string
     {
         $content = $verify->verifyResponseContent;
 
@@ -500,7 +500,7 @@ class Gateway extends Base\Gateway
      * so we send the first 10 characters
      * @return string
      */
-    protected function getSubMerchantId(array $input)
+    protected function getSubMerchantId(array $input): string
     {
         // ICICI docs say that they accept alphanumeric
         // merchant IDs, but they do not. The field is
@@ -515,7 +515,7 @@ class Gateway extends Base\Gateway
      * @param  string $body Request Body
      * @return string Payment Id
      */
-    public function getPaymentIdFromServerCallback(array $response)
+    public function getPaymentIdFromServerCallback(array $response): string
     {
         return $response[ResponseFields::MERCHANT_TRAN_ID];
     }
@@ -526,7 +526,7 @@ class Gateway extends Base\Gateway
      * @param  String $body Request body
      * @return array
      */
-    public function preProcessS2SResponse($body)
+    public function preProcessS2SResponse($body): array
     {
         $response = $this->parseGatewayResponse($body, true);
 
@@ -545,7 +545,7 @@ class Gateway extends Base\Gateway
     /**
      * Handles the S2S callback
      * @param  array $input
-     * @return boolean
+     * @return null
      */
     public function callback(array $input)
     {
@@ -579,5 +579,10 @@ class Gateway extends Base\Gateway
 
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
     }
 }

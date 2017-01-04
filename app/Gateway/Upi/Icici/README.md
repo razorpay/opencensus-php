@@ -39,3 +39,10 @@
 - the authorize method returns true, because we do not have a request to redirect to
 - the icici server only encrypts responses sometimes. (Take a look at mock server)
 - submerchantID is expected to be numeric 10 characters, so we always send 1234
+
+
+## Testing
+
+- Download and install the APK from the Google Drive link above
+- Login using `sudeepabc / d#demo` as the credentials
+- You will still need the environment variables to raise the collect request
