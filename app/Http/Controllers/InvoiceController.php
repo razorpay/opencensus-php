@@ -77,15 +77,6 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
-    public function addManyLineItems($id)
-    {
-        $input = Request::all();
-
-        $invoice = $this->service->addManyLineItems($id, $input);
-
-        return ApiResponse::json($invoice);
-    }
-
     public function updateLineItem($id, $lineItemId)
     {
         $input = Request::all();

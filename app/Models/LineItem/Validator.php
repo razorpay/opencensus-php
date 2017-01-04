@@ -13,6 +13,7 @@ class Validator extends Base\Validator
 
     protected static $createManyRules = [
         Entity::LINE_ITEMS          => 'required|array|min:1|max:10',
+        Entity::LINE_ITEMS . '.*'   => 'required|array',
     ];
 
     protected static $editRules = [
@@ -21,6 +22,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $removeManyRules = [
-        Entity::LINE_ITEM_IDS       => 'required|array|min:1|max:10',
+        Entity::IDS                 => 'required|array|min:1|max:10',
     ];
 }

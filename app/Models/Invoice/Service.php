@@ -88,16 +88,6 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function addManyLineItems(string $id, array $input)
-    {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $invoice = $this->core->addManyLineItems($invoice, $input, $this->merchant);
-
-        return $invoice->toArrayPublic();
-    }
-
     public function updateLineItem(string $id, string $lineItemId, array $input)
     {
         $invoice  = $this->repo->invoice
@@ -144,7 +134,7 @@ class Service extends Base\Service
 
         $lineItems = $this->repo->line_item
                                ->findManyByPublicIdsAndMorphEntity(
-                                    $input[LineItem\Entity::LINE_ITEM_IDS],
+                                    $input[LineItem\Entity::IDS],
                                     $invoice
                                 );
 

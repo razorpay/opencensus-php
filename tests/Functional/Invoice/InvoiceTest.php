@@ -480,12 +480,14 @@ class InvoiceTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $lineItem2 = [
-            'item_id'  => 'item_1000000000item',
-            'quantity' => 2,
+        $input = [
+            [
+                'item_id'  => 'item_1000000000item',
+                'quantity' => 2,
+            ]
         ];
 
-        $testData['request']['content'] = $lineItem2;
+        $testData['request']['content'] = $input;
 
         $testData['response']['content']['line_items'][] =[
             'quantity'         => 2,
@@ -562,12 +564,14 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('item');
 
-        $lineItem2 = [
-            'item_id'  => 'item_1000000000item',
-            'quantity' => 2,
+        $input = [
+            [
+                'item_id'  => 'item_1000000000item',
+                'quantity' => 2,
+            ],
         ];
 
-        $testData['request']['content'] = $lineItem2;
+        $testData['request']['content'] = $input;
 
         $testData['response']['content']['line_items'][] = [
             'quantity'         => 2,

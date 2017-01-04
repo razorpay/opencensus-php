@@ -55,16 +55,16 @@ class Core extends Base\Core
         Base\PublicEntity $morphEntity)
     {
         $this->trace->info(
-            TraceCode::LINE_ITEM_CREATE_MANY_REQUEST,
+            TraceCode::LINE_ITEM_CREATE_BULK_REQUEST,
             $input
         );
 
-        (new Validator)->validateInput('create_many', $input);
+        (new Validator)->validateInput('create_many', [Entity::LINE_ITEMS => $input]);
 
         $this->repo->transaction(
             function() use ($merchant, $morphEntity, $input)
             {
-                foreach ($input[Entity::LINE_ITEMS] as $singleLineItemInput)
+                foreach ($input as $singleLineItemInput)
                 {
                     $this->create($singleLineItemInput, $merchant, $morphEntity);
                 }
@@ -129,7 +129,7 @@ class Core extends Base\Core
     public function deleteMany(Base\PublicCollection $lineItems)
     {
         $this->trace->info(
-            TraceCode::LINE_ITEM_DELETE_MANY_REQUEST,
+            TraceCode::LINE_ITEM_DELETE_BULK_REQUEST,
             [
                 'ids' => $lineItems->pluck('id')->toArray(),
             ]);

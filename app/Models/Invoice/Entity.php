@@ -587,15 +587,11 @@ class Entity extends Base\PublicEntity
 
     public function generateStatus($input)
     {
-        $status = Status::ISSUED;
-
         if (isset($input[self::DRAFT]) and
             ($input[self::DRAFT] === '1'))
         {
-            $status = Status::DRAFT;
+            $this->setAttribute(self::STATUS, Status::DRAFT);
         }
-
-        $this->setAttribute(self::STATUS, $status);
     }
 
     // public function generateDiscount($input)

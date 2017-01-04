@@ -135,33 +135,6 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
             {
-                $this->lineItemCore->create($input, $merchant, $invoice);
-
-                $this->recomputeInvoiceAmount($invoice);
-                $this->repo->saveOrFail($invoice);
-            });
-
-        return $invoice;
-    }
-
-    public function addManyLineItems(
-        Entity $invoice,
-        array $input,
-        Merchant\Entity $merchant)
-    {
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
-
-        $this->trace->info(
-            TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
-            [
-                'invoice_id'     => $invoice->getId(),
-                'invoice_status' => $invoice->getStatus(),
-                'input'          => $input,
-            ]);
-
-        $this->repo->transaction(
-            function() use ($invoice, $input, $merchant)
-            {
                 $this->lineItemCore->createMany($input, $merchant, $invoice);
 
                 $this->recomputeInvoiceAmount($invoice);

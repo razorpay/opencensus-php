@@ -1357,10 +1357,12 @@ return [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
             'content'   => [
-                'name'        => 'Item 1',
-                'description' => 'Item 1 Description',
-                'quantity'    => 10,
-                'amount'      => 200,
+                [
+                    'name'        => 'Item 1',
+                    'description' => 'Item 1 Description',
+                    'quantity'    => 10,
+                    'amount'      => 200,
+                ]
             ],
         ],
         'response' => [
@@ -1394,28 +1396,26 @@ return [
 
     'testAddManyLineItemsToInvoice' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
             'content'   => [
-                'line_items' => [
-                    [
-                        'name'        => 'Item 1',
-                        'description' => 'Item 1 Description',
-                        'quantity'    => 10,
-                        'amount'      => 100,
-                    ],
-                    [
-                        'name'        => 'Item 2',
-                        'description' => 'Item 2 Description',
-                        'quantity'    => 10,
-                        'amount'      => 200,
-                    ],
-                    [
-                        'name'        => 'Item 3',
-                        'description' => 'Item 3 Description',
-                        'quantity'    => 10,
-                        'amount'      => 300,
-                    ],
+                [
+                    'name'        => 'Item 1',
+                    'description' => 'Item 1 Description',
+                    'quantity'    => 10,
+                    'amount'      => 100,
+                ],
+                [
+                    'name'        => 'Item 2',
+                    'description' => 'Item 2 Description',
+                    'quantity'    => 10,
+                    'amount'      => 200,
+                ],
+                [
+                    'name'        => 'Item 3',
+                    'description' => 'Item 3 Description',
+                    'quantity'    => 10,
+                    'amount'      => 300,
                 ],
             ],
         ],
@@ -1464,26 +1464,24 @@ return [
 
     'testAddManyLineItemsToInvoiceWithBadData' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
             'content'   => [
-                'line_items' => [
-                    [
-                        'name'        => 'Item 1',
-                        'description' => 'Item 1 Description',
-                        'quantity'    => 10,
-                        'amount'      => 100,
-                    ],
-                    [
-                        'name'        => 'Item 2',
-                        'description' => 'Item 2 Description',
-                        'quantity'    => 10,
-                        'amount'      => 200,
-                    ],
-                    [
-                        'name'        => 'Item 3',
-                        'description' => 'Item 3 Description',
-                    ],
+                [
+                    'name'        => 'Item 1',
+                    'description' => 'Item 1 Description',
+                    'quantity'    => 10,
+                    'amount'      => 100,
+                ],
+                [
+                    'name'        => 'Item 2',
+                    'description' => 'Item 2 Description',
+                    'quantity'    => 10,
+                    'amount'      => 200,
+                ],
+                [
+                    'name'        => 'Item 3',
+                    'description' => 'Item 3 Description',
                 ],
             ],
         ],
@@ -1507,9 +1505,11 @@ return [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
             'content'   => [
-                'name'        => 'Item 1',
-                'description' => 'Item 1 Description',
-                'quantity'    => 10,
+                [
+                    'name'        => 'Item 1',
+                    'description' => 'Item 1 Description',
+                    'quantity'    => 10,
+                ],
             ],
         ],
         'response' => [
@@ -1690,10 +1690,10 @@ return [
 
     'testRemoveManyLineItemsOfInvoice' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items/bulk',
             'method'    => 'delete',
             'content'   => [
-                'line_item_ids' => [
+                'ids' => [
                     'li_100000lineitem',
                     'li_100001lineitem',
                 ],
@@ -1725,10 +1725,10 @@ return [
 
     'testRemoveManyLineItemsOfInvoiceWithBadData' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items/bulk',
             'method'    => 'delete',
             'content'   => [
-                'line_item_ids' => [
+                'ids' => [
                     'li_100000lineitem',
                     'li_100001lineitem',
                     'li_10000Xlineitem',
@@ -1778,10 +1778,10 @@ return [
 
     'testAddManyLineItemsToIssuedInvoice' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
             'content'   => [
-                'line_items' => [
+                [
                     [
                         'name'        => 'Item 1',
                         'description' => 'Item 1 Description',
@@ -1858,10 +1858,10 @@ return [
 
     'testRemoveManyLineItemsOfIssuedInvoice' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/many',
+            'url'       => '/invoices/inv_1000000invoice/line_items/bulk',
             'method'    => 'delete',
             'content'   => [
-                'line_item_ids' => [
+                'ids' => [
                     'li_100000lineitem',
                     'li_100001lineitem',
                 ],

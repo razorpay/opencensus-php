@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
     //
 
     const LINE_ITEMS       = 'line_items';
-    const LINE_ITEM_IDS    = 'line_item_ids';
+    const IDS              = 'ids';
 
     protected static $sign = 'li';
 
