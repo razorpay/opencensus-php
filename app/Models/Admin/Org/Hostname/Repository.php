@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Org\Hostname;
 
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {

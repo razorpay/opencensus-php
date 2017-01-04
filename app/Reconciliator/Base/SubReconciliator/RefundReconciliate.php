@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Base;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\Card;
@@ -217,18 +218,23 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
-                    'row'        => $row,
-                    'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
-                ]);
+            $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
 
-            throw $ex;
+            if ($refundSuccess === false)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_MISMATCH,
+                        'message' => 'Unable to create a refund on API after finding it missing',
+                        'row' => $row,
+                        'refund_id' => $refundId,
+                        'gateway' => get_called_class(),
+                    ]);
 
-            //return null;
+                return null;
+            }
+
+            $this->refund = $this->repo->refund->findOrFail($refundId);
         }
 
         // Sets the corresponding payment for the refund.
@@ -257,12 +263,32 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
-        
+
         $rowDetails = [
             BaseReconciliate::REFUND_ID             => $refundId,
             BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
         ];
 
         return $rowDetails;
+    }
+
+    /**
+     * This will create a refund on the API side. It will also check that
+     * the refund on the gateway side is already created.
+     *
+     * The created refund and the refund id in the transaction entity
+     * will have the refund ID set explicitly.
+     *
+     * Each gateway needs to implement this on its own.
+     *
+     * @param array      $row
+     * @param string     $refundId
+     * @param \Exception $ex
+     *
+     * @return bool returns true if successfully created. False otherwise.
+     */
+    protected function createRefundOnApi(array $row, string $refundId, \Exception $ex)
+    {
+        return false;
     }
 }

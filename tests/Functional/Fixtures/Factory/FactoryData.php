@@ -391,7 +391,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
-            'id'            => $faker->randomNumber(6),
+            'id'            => $faker->uniqueid,
             'org_id'        => $faker->uniqueid,
             'hostname'      => $faker->rzpSubdomain,
         ]);
