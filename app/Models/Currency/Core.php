@@ -1,10 +1,9 @@
 <?php
 
-namespace RZP\Models\Admin;
+namespace RZP\Models\Currency;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment\Currency;
 
 class Core extends Base\Core
 {
@@ -34,6 +33,15 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    public function getRates($currency)
+    {
+        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
+
+        $rates = $this->redis->get($key);
+
+        return $rates;
+    }
+
     public function getBaseAmount($amount, $currency)
     {
         if ($currency === Currency::INR)
@@ -54,14 +62,5 @@ class Core extends Base\Core
         $baseAmount = (int) ceil($baseAmount);
 
         return $baseAmount;
-    }
-
-    public function getRates($currency)
-    {
-        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
-
-        $rates = $this->redis->get($key);
-
-        return $rates;
     }
 }

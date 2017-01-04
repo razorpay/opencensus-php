@@ -4,7 +4,7 @@ namespace RZP\Models\Admin;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Currency\Currency;
 
 class ExchangeRate extends Base\Core
 {
