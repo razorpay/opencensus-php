@@ -47,7 +47,7 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateNodalBalance($txn);
+        // $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
@@ -325,7 +325,7 @@ class Core extends Base\Core
         {
             case Payment\Status::AUTHORIZED:
                 // When refunding authorized payments, we do not charge merchants
-                $this->updateNodalBalance($txn);
+                //$this->updateNodalBalance($txn);
 
                 break;
             case Payment\Status::CAPTURED:
@@ -337,7 +337,7 @@ class Core extends Base\Core
 
                 Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
-                $this->updateNodalBalance($txn);
+                //$this->updateNodalBalance($txn);
 
                 break;
             default:
@@ -401,16 +401,16 @@ class Core extends Base\Core
     {
         $txn = $this->updateMerchantBalance($txn);
 
-        if ($updateNodalBalance === true)
-        {
-            $txn = $this->updateNodalBalance($txn);
-        }
-        else
-        {
-            $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
+        // if ($updateNodalBalance === true)
+        // {
+        //     $txn = $this->updateNodalBalance($txn);
+        // }
+        // else
+        // {
+        //     $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
 
-            $txn->setEscrowBalance($nodalBalance->getBalance());
-        }
+        //     $txn->setEscrowBalance($nodalBalance->getBalance());
+        // }
 
         return $txn;
     }
@@ -427,19 +427,19 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateNodalBalance(Transaction\Entity $txn)
-    {
-        $channel = $txn->getChannel();
+    // public function updateNodalBalance(Transaction\Entity $txn)
+    // {
+    //     $channel = $txn->getChannel();
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
+    //     $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalBalance->updateBalance($txn);
-        $this->repo->balance->updateBalance($nodalBalance);
+    //     $nodalBalance->updateBalance($txn);
+    //     $this->repo->balance->updateBalance($nodalBalance);
 
-        $txn->setEscrowBalance($nodalBalance->getBalance());
+    //     $txn->setEscrowBalance($nodalBalance->getBalance());
 
-        return $txn;
-    }
+    //     return $txn;
+    // }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
