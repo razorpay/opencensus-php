@@ -176,14 +176,14 @@ class Processor extends Base\Core
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
-        return $this->repo->transaction(function() use ($txns, $channel)
-        {
-            list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
+        // return $this->repo->transaction(function() use ($txns, $channel)
+        // {
 
-            $this->repo->transaction->settled($settledTxns, $this->setlTime);
+        list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
 
-            return [$settlements, $settledTxns->count()];
-        });
+        return [$settlements, $settledTxns->count()];
+
+        // });
     }
 
     protected function filterTransactionsForSettlement($txns, $channel)
@@ -265,12 +265,20 @@ class Processor extends Base\Core
 
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $setl = $merchantSettler->settle(
+            $setl = $this->repo->transaction(function() use ($merchantSettler,
+                $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
+            {
+                $setl = $merchantSettler->settle(
                                         $setlTxns,
                                         $setlAmount,
                                         $setlFee,
                                         $setlApiFee,
                                         $serviceTax);
+
+                $this->repo->transaction->settled($setlTxns, $this->setlTime);
+
+                return $setl;
+            });
 
             $txnsSettled = $txnsSettled->merge($setlTxns);
 
