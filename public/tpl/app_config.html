@@ -57,7 +57,7 @@
     </footer>
   </div>
 
-  <div class="panel panel-default" ng-controller="FeaturesCtrl">
+  <!-- <div class="panel panel-default" ng-controller="FeaturesCtrl">
     <div class="panel-heading">
       <span>Flash Checkout</span>
       <label ng-if="fcOpted" class=" pull-right">
@@ -74,11 +74,11 @@
           </div>
           <div class="clearfix"></div>
           <div class="m-t">
-            
+
             <span class="help-block m-b-none pull-left"><a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">Know more about Flash Checkout <i class="fa fa-external-link"></i></a></span>
-            
+
             <div class="pull-right">
-              
+
               <div ng-if="fcOpted" class=" text-center prev-next">
                 <button ng-click="toggleFc()" type="submit" class="btn btn-save btn-default btn-rounded ">
                   <span ng-if="fcEnabled">Disable Flash Checkout</span>
@@ -90,7 +90,7 @@
                 <button ng-click="optInFc()" type="submit" class="btn btn-save btn-default btn-rounded pull-right m-r">Enable Flash Checkout</button>
               </div>
             </div>
-              
+
           </div>
         </div>
       </form>
@@ -100,7 +100,7 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
     </footer>
-  </div>
+  </div> -->
 
   <div class="panel panel-default" ng-controller="ConfigCtrl">
     <div class="panel-heading">
