@@ -16,8 +16,6 @@ class NetbankingAxisGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
         $this->gateway = 'netbanking_axis';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB');
@@ -115,7 +113,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        $data = $this->generateRefundsFileForAxisNB();
+        $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->assertEquals($data['netbanking_axis']['count'], 3);
         // assert that total amount is 1000

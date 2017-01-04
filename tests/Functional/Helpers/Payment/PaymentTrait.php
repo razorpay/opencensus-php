@@ -819,7 +819,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function generateRefundsExcelForHdfcNB()
+    protected function generateRefundsExcelForNB($bank)
     {
         $this->ba->appAuth();
 
@@ -827,24 +827,9 @@ trait PaymentTrait
             'url' => '/refunds/netbanking/excel',
             'method' => 'post',
             'content' => [
-                'bank'   => 'HDFC'
+                'bank'   => $bank
             ],
         );
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function generateRefundsFileForAxisNB()
-    {
-        $this->ba->appAuth();
-
-        $request = [
-            'url' => '/refunds/netbanking/excel',
-            'method' => 'post',
-            'content' => [
-                'bank' => 'UTIB'
-            ],
-        ];
 
         return $this->makeRequestAndGetContent($request);
     }

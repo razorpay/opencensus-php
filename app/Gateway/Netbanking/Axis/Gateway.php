@@ -212,7 +212,11 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function prepareStringToEncrypt($data)
+    /*
+     * @param associative array $data
+     * @return string in key1~value1$key2~value2 format
+     */
+    protected function prepareStringToEncrypt(array $data)
     {
         $queryArray = [];
 
