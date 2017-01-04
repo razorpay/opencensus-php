@@ -33,6 +33,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -206,7 +207,6 @@ trait Authorize
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
-        //
         if ($request !== null)
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
@@ -241,7 +241,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
     }
 
-    protected function autoCapturePaymentIfApplicable($payment)
+    protected function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
@@ -614,6 +614,8 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
+            $this->autoCapturePaymentIfApplicable($payment);
+
             $this->repo->saveOrFail($payment);
 
             $this->setPayment($payment);
@@ -733,6 +735,11 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isUpi())
+        {
+            $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
@@ -1500,7 +1507,7 @@ trait Authorize
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount()/100), 2),
+                'amount'  => number_format(($payment->getAmount() / 100), 2),
                 'wallet'  => $payment->getWallet()
             ];
 
@@ -1722,6 +1729,16 @@ trait Authorize
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }
+    }
+
+    protected function validateUpiPspIsAllowed($payment)
+    {
+        $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
+
+        $disallowedPsps = json_decode($disallowedPspJson, true);
+
+        $payment->getValidator()->validateUpiVpaPsp(
+            $payment->getVpa(), $disallowedPsps);
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)

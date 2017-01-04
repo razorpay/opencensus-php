@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Upi;
 use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
@@ -14,7 +16,7 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
@@ -24,8 +26,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'required|email',
-        'contact'                 =>  'required|contact_syntax',
+        'email'                   =>  'required_unless:method,aeps|email',
+        'contact'                 =>  'required_unless:method,aeps|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -38,26 +40,28 @@ class Validator extends Base\Validator
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
-        '_'                       =>  'sometimes');
+        '_'                       =>  'sometimes'
+    ];
 
     protected static $captureRules = [
         'amount'        => 'required|integer',
         'currency'      => 'required|in:INR,USD',
     ];
 
-    protected static $refundRules = array(
+    protected static $refundRules = [
         'amount'        => 'sometimes|integer',
         'notes'         => 'sometimes|notes'
-    );
+    ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'card_key',
         'amount',
         'bank',
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact'
+    ];
 
     protected function validateMethod($attribute, $method)
     {
@@ -77,13 +81,6 @@ class Validator extends Base\Validator
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
-        }
-
-        $merchantId = null;
-
-        if ($this->entity->getMerchantId() !== null)
-        {
-            $merchantId = $this->entity->merchant->getId();
         }
     }
 
@@ -155,6 +152,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount', $amount);
+        }
+    }
+
+    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (in_array($vpaParts[1], $excludedPsps, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
         }
     }
 

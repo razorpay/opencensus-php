@@ -139,4 +139,22 @@ class UpiController extends Controller
     {
         return response($xml)->header('Content-Type', 'application/xml');
     }
+
+    public function postPspDisallow()
+    {
+        $input = Request::all();
+
+        $data = $this->core->disallowVpaPsp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPspAllow()
+    {
+        $input = Request::all();
+
+        $data = $this->core->allowVpaPsp($input);
+
+        return ApiResponse::json($data);
+    }
 }
