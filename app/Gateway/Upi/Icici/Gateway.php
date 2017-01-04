@@ -32,13 +32,13 @@ class Gateway extends Base\Gateway
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
         Entity::RECEIVED                  => Entity::RECEIVED,
-        ResponseFields::PAYER_VA          => Entity::VPA,
-        ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::PAYER_MOBILE      => Entity::CONTACT,
-        ResponseFields::RESPONSE          => Entity::STATUS_CODE,
-        ResponseFields::BANK_RRN          => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::ORIGINAL_BANK_RRN => Entity::GATEWAY_PAYMENT_ID,
-        ResponseFields::MERCHANT_ID       => Entity::GATEWAY_MERCHANT_ID,
+        Fields::PAYER_VA                  => Entity::VPA,
+        Fields::PAYER_NAME                => Entity::NAME,
+        Fields::PAYER_MOBILE              => Entity::CONTACT,
+        Fields::RESPONSE                  => Entity::STATUS_CODE,
+        Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
+        Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
+        Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
     ];
 
     /**
@@ -529,7 +529,7 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
-        return $response[ResponseFields::MERCHANT_TRAN_ID];
+        return $response[Fields::MERCHANT_TRAN_ID];
     }
 
     /**
@@ -565,7 +565,7 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $status = $content[ResponseFields::TXN_STATUS];
+        $status = $content[Fields::TXN_STATUS];
 
         $repo = $this->getRepository();
 
@@ -575,9 +575,9 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assertTrue($content[ResponseFields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
-        assertTrue($content[ResponseFields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assertTrue($content[ResponseFields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
+        assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
@@ -596,5 +596,70 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        $request = $this->getRefundRequest($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [
+            'gateway'   => $this->gateway,
+            'response'  => $response
+        ]);
+    }
+
+    protected function getRefundRequest(array $input)
+    {
+        $payment = $input['payment'];
+        $refund = $input['refund'];
+
+        $repo = $this->getRepository();
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $data = [
+            Fields::MERCHANT_ID                     => $this->getMerchantId(),
+            Fields::SUBMERCHANT_ID                  => $this->getSubMerchantId($input),
+            Fields::TERMINAL_ID                     => $this->getTerminalId($input),
+            Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
+            Fields::MERCHANT_TRAN_ID                => $refund['id'],
+            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
+            Fields::REFUND_AMOUNT                   => $refund['amount'],
+            Fields::PAYEE_VA                        => $this->getTerminalVpa($input),
+            Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
+            Fields::ONLINE_REFUND                   => 'Y',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data,
+                'gateway' => 'upi_icici',
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id'],
+            ]);
+
+        return $request;
+    }
+
+    /**
+     * This is the VPA which will issue the collect
+     * requests. This is currently:
+     *
+     * - razorpay@icici on production
+     * - razorpay@easypay on UAT
+     *
+     * We are storing this value on the gateway_merchant_id2 parameter
+     *
+     * @return string
+     */
+    protected function getTerminalVpa($input)
+    {
+        return $input['terminal']['gateway_merchant_id2'];
     }
 }
