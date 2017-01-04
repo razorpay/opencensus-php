@@ -44,18 +44,18 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'                => '100000razorpay',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'Razorpay',
-                    'display_name'      => 'Razorpay Software Private Ltd',
-                    'email'             => 'admin@razorpay.com',
-                    'email_domains'     => 'razorpay.com',
-                    'allow_sign_up'     => true,
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => $currentTime,
-                    'updated_at'        => $currentTime,
-                    'global_access'     => true,
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
                 ]
             );
 

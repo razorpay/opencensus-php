@@ -77,7 +77,7 @@ class AdminAccess
         $interOrgRoutes = static::getInterOrgRoutes();
 
         if ((in_array($routeName, $interOrgRoutes, true) === true) and
-            ($admin->org->isGlobal() === true))
+            ($admin->org->isCrossOrgAccessEnabled() === true))
         {
             return true;
         }

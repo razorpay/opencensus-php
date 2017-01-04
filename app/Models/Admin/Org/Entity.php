@@ -15,19 +15,19 @@ class Entity extends Base\Entity
     use SoftDeletes;
     use RevisionableTrait;
 
-    const AUTH_TYPE         = 'auth_type';
-    const BUSINESS_NAME     = 'business_name';
-    const DISPLAY_NAME      = 'display_name';
-    const EMAIL             = 'email';
-    const EMAIL_DOMAINS     = 'email_domains';
-    const ALLOW_SIGN_UP     = 'allow_sign_up';
-    const LOGIN_LOGO_URL    = 'login_logo_url';
-    const MAIN_LOGO_URL     = 'main_logo_url';
-    const INVOICE_LOGO_URL  = 'invoice_logo_url';
-    const DELETED_AT        = 'deleted_at';
-    const CUSTOM_CODE       = 'custom_code';
-    const ADMIN             = 'admin';
-    const GLOBAL_ACCESS     = 'global_access';
+    const AUTH_TYPE        = 'auth_type';
+    const BUSINESS_NAME    = 'business_name';
+    const DISPLAY_NAME     = 'display_name';
+    const EMAIL            = 'email';
+    const EMAIL_DOMAINS    = 'email_domains';
+    const ALLOW_SIGN_UP    = 'allow_sign_up';
+    const LOGIN_LOGO_URL   = 'login_logo_url';
+    const MAIN_LOGO_URL    = 'main_logo_url';
+    const INVOICE_LOGO_URL = 'invoice_logo_url';
+    const DELETED_AT       = 'deleted_at';
+    const CUSTOM_CODE      = 'custom_code';
+    const ADMIN            = 'admin';
+    const CROSS_ORG_ACCESS = 'cross_org_access';
 
     protected static $sign = 'org';
 
@@ -49,7 +49,7 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
-        self::GLOBAL_ACCESS,
+        self::CROSS_ORG_ACCESS,
     ];
 
     protected $visible = [
@@ -88,8 +88,8 @@ class Entity extends Base\Entity
     ];
 
     protected $casts = [
-        self::ALLOW_SIGN_UP => 'bool',
-        self::GLOBAL_ACCESS => 'bool',
+        self::ALLOW_SIGN_UP    => 'bool',
+        self::CROSS_ORG_ACCESS => 'bool',
     ];
 
     protected static function boot()
@@ -165,9 +165,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH_TYPE);
     }
 
-    public function isGlobal()
+    public function isCrossOrgAccessEnabled()
     {
-        return $this->getAttribute(self::GLOBAL_ACCESS);
+        return $this->getAttribute(self::CROSS_ORG_ACCESS);
     }
 
     protected function getEmailDomainsAttribute()

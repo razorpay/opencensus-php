@@ -38,7 +38,7 @@ class CreateOrgs extends Migration
 
             $table->boolean(Org::ALLOW_SIGN_UP);
 
-            $table->boolean(Org::GLOBAL_ACCESS)
+            $table->boolean(Org::CROSS_ORG_ACCESS)
                   ->default(0);
 
             $table->string(Org::LOGIN_LOGO_URL)

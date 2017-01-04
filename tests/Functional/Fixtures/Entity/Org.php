@@ -44,7 +44,7 @@ class Org extends Base
             'id'    => self::RZP_ORG,
             'email' => 'admin@razorpay.com',
 
-            'global_access' => true,
+            'cross_org_access' => true,
         ]);
 
         $this->fixtures->create('org_hostname', [

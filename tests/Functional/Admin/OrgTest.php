@@ -38,7 +38,7 @@ class OrgTest extends TestCase
 
     public function testEditOtherOrg()
     {
-        $org = $this->fixtures->create('org', ['global_access' => true]);
+        $org = $this->fixtures->create('org', ['cross_org_access' => true]);
 
         $authToken = $this->getAuthTokenForOrg($org);
 
@@ -119,7 +119,7 @@ class OrgTest extends TestCase
     public function testGetOtherOrg()
     {
         $org = $this->fixtures->create('org', [
-            'global_access' => true,
+            'cross_org_access' => true,
         ]);
 
         $authToken = $this->getAuthTokenForOrg($org);
