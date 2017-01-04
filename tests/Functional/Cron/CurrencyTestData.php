@@ -6,7 +6,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testExchangeRatesLatest' => [
+    'testCurrencyRatesLatest' => [
         'request' => [
             'content' => [
             ],
@@ -18,6 +18,21 @@ return [
             'content' => [
                 'success' => true
             ],
+        ],
+    ],
+
+    'testGetCurrencyRates' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'GET',
+            'url' => '/currency/USD/rates',
+        ],
+        'response' => [
+            'content' => [
+                'INR' => 10,
+                'USD' => 1
+            ]
         ],
     ],
 ];
