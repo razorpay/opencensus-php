@@ -27,7 +27,7 @@ class Core extends Base\Core
 
         $rates = $this->exchange->latest($currency);
 
-        $key = self::EXCHANGE_RATE_KEY . $currency;
+        $key = $this->getRedisKey($currency);
 
         $this->redis->forever($key, $rates);
 
@@ -36,7 +36,7 @@ class Core extends Base\Core
 
     public function getRates($currency)
     {
-        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
+        $key = $this->getRedisKey($currency);
 
         $rates = $this->redis->get($key);
 
@@ -63,5 +63,12 @@ class Core extends Base\Core
         $baseAmount = (int) ceil($baseAmount);
 
         return $baseAmount;
+    }
+
+    protected function getRedisKey($currency)
+    {
+        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
+
+        return $key;
     }
 }
