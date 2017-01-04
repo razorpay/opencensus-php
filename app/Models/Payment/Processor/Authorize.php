@@ -18,6 +18,7 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
@@ -661,7 +662,7 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        if ($currency !== Payment\Currency::INR)
+        if ($currency !== Currency\Currency::INR)
         {
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer

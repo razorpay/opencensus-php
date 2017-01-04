@@ -11,6 +11,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
@@ -641,7 +642,7 @@ trait Refund
         {
             $data['amount'] = $refund->getBaseAmount();
 
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
         }
 
         return $data;
