@@ -825,6 +825,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'razorpay upi',
             'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
         ];
 

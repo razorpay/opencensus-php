@@ -55,7 +55,7 @@ class Server extends Base\Mock\Server
             'success'           => 'true',
             'message'           => 'Transaction initiated',
             'merchantTranId'    => $input['merchantTranId'],
-            'BankRRN'           => '1234567',
+            'BankRRN'           => random_int(1111111111, 9999999999),
         ];
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
@@ -67,7 +67,6 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
-
         $input = $this->parseInput($input);
 
         parent::refund($input);
@@ -93,7 +92,7 @@ class Server extends Base\Mock\Server
             "subMerchantId"     =>  $input['subMerchantId'],
             "terminalId"        =>  $input['terminalId'],
             "status"            =>  "SUCCESS",
-            "originalBankRRN"   =>  "12345678",
+            "originalBankRRN"   =>  (string) random_int(1111111111, 9999999999),
             "merchantTranId"    =>  $input['merchantTranId'],
 
             // Mandatory fields
@@ -142,7 +141,7 @@ class Server extends Base\Mock\Server
             'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
-            'OriginalBankRRN'   => (string) random_int(1111111, 9999999),
+            'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
             'status'            => $status
         ];
 

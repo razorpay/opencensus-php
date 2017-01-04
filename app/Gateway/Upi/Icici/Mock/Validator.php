@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         'merchantId'                => 'numeric|max:9999999999',
         'subMerchantId'             => 'required|alpha_num|max:10',
         'terminalId'                => 'required|digits_between:1,10',
-        'originalBankRRN'           => 'required|digits:12',
+        'originalBankRRN'           => 'required|digits_between:8,15',
         'merchantTranId'            => 'required|alpha_num|max:20',
         'originalmerchantTranId'    => 'required|alpha_num|max:20',
         'payeeVA'                   => 'required|string|max:255',
