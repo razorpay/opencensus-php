@@ -146,8 +146,6 @@ class Settler
 
     protected function settleForKotak($txns)
     {
-        $this->repo->beginTransaction();
-
         $data['channel'] = 'kotak';
 
         try
@@ -169,13 +167,9 @@ class Settler
             {
                 $data['message'] = 'No settlements found!';
             }
-
-            $this->repo->commit();
         }
         catch (\Exception $e)
         {
-            $this->repo->rollback();
-
             $this->settlementFailure('kotak', $e);
         }
 
@@ -249,8 +243,6 @@ class Settler
     protected function process($txns, $channel)
     {
         list($settlements, $txnsSettled, $amounts) = $this->createSettlements($txns, $channel);
-
-        $this->repo->transaction->settled($txnsSettled, self::$settlementTimestamp);
 
         return array($settlements, $txnsSettled, $amounts);
     }
@@ -327,33 +319,37 @@ class Settler
                 continue;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $channel, $this->repo))->settle(
-                                        $setlTxns,
-                                        $setlAmount,
-                                        $setlFee,
-                                        $setlApiFee,
-                                        $serviceTax);
 
-            $settlements->push($setl);
-            $txnsSettled = $txnsSettled->merge($setlTxns);
+            $this->repo->beginTransaction();
 
-            $totalSetlAmount += $setlAmount;
-            $totalSetlApiFee += $setlApiFee;
-            $totalSetlFee += $setlFee;
-            $totalSetlGatewayFee += $setlGatewayFee;
-            $totalServiceTax += $serviceTax;
-        }
+            try
+            {
+                $setl = (new Settlement\Merchant($merchant, $channel, $this->repo))->settle(
+                                            $setlTxns,
+                                            $setlAmount,
+                                            $setlFee,
+                                            $setlApiFee,
+                                            $serviceTax);
 
-        if (($totalSetlApiFee !== 0) and
-            ($channel === Settlement\Channel::KOTAK))
-        {
-            list($setl, $adjTxn) = $this->collectApiFees($totalSetlApiFee, $channel);
+                $this->repo->transaction->settled($setlTxns, self::$settlementTimestamp);
 
-            $settlements->push($setl);
-            $txns->push($adjTxn);
-            $txnsSettled->push($adjTxn);
+                $settlements->push($setl);
+                $txnsSettled = $txnsSettled->merge($setlTxns);
 
-            $totalSetlAmount += $totalSetlApiFee;
+                $totalSetlAmount += $setlAmount;
+                $totalSetlApiFee += $setlApiFee;
+                $totalSetlFee += $setlFee;
+                $totalSetlGatewayFee += $setlGatewayFee;
+                $totalServiceTax += $serviceTax;
+
+                $this->repo->commit();
+            }
+            catch (\Exception $e)
+            {
+                $this->repo->rollback();
+
+                $this->settlementFailure($channel, $e);
+            }
         }
 
         $this->dailySettlement->amount = $totalSetlAmount;
