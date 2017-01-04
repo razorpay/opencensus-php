@@ -686,7 +686,7 @@ trait Authorize
 
         $amount = $payment->getAmount();
 
-        $baseAmount = (new Admin\ExchangeRate)->getBaseAmount($amount, $currency);
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         $payment->setBaseAmount($baseAmount);
 
