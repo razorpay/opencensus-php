@@ -48,6 +48,7 @@ class Entity extends Base\Entity
         self::LOGIN_LOGO_URL,
         self::MAIN_LOGO_URL,
         self::INVOICE_LOGO_URL,
+        self::CUSTOM_CODE,
     ];
 
     protected $visible = [
@@ -64,6 +65,7 @@ class Entity extends Base\Entity
         self::DELETED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::CUSTOM_CODE,
     ];
 
     protected $public = [
@@ -79,6 +81,7 @@ class Entity extends Base\Entity
         self::INVOICE_LOGO_URL,
         self::AUTH_TYPE,
         self::CREATED_AT,
+        self::CUSTOM_CODE,
     ];
 
     protected $guarded = [
