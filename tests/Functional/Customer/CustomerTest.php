@@ -6,7 +6,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
-use RZP\Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {
@@ -18,7 +17,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['tokens', 'cardsaving']);
+        $this->fixtures->merchant->addFeatures(['tokens']);
     }
 
     public function testCreateCustomer()

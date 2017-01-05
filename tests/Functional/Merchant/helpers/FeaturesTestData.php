@@ -164,7 +164,6 @@ return [
                     "s2swallet",
                     "s2supi",
                     "setl_report",
-                    "cardsaving",
                     "noflashcheckout",
                     "recurring",
                     "s2s"
