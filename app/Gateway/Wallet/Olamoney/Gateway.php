@@ -15,6 +15,7 @@ use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Processor;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -97,7 +98,7 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund_amount'];
         $refundId = $input['refund_id'];
 
-        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Processor\Wallet::OLAMONEY);
 
         if ($refundedEntities->count() === 0)
         {

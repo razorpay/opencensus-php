@@ -28,7 +28,9 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundId = $this->getRefundId($row);
 
-        $gatewayEntities = $this->repo->wallet_olamoney->findSuccessfulRefundByRefundId($refundId);
+        $gatewayEntities = $this->repo->wallet_olamoney->findSuccessfulRefundByRefundId(
+                                                                $refundId,
+                                                                Payment\Processor\Wallet::OLAMONEY);
 
         if ($gatewayEntities->count() === 0)
         {
