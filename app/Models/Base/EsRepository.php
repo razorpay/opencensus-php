@@ -21,6 +21,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     // This is in seconds
     const JOB_RELEASE_WAIT = 120;
 
+    const QUERY            = 'q';
+
     protected $defaultFieldMapping = [
         'type'            => 'text',
         'analyzer'        => 'edge_ngram_analyzer',
@@ -33,6 +35,13 @@ class EsRepository extends \Razorpay\Spine\Repository
     //
     protected $fields         = [];
     protected $fieldsMappings = [];
+    protected $searchFields   = [];
+
+    // protected $searchParamRules        = [];
+    // protected $defaultSearchParamRules = [
+    //     self::COUNT => 'sometimes|integer|min:1|max:5000',
+    //     self::SKIP  => 'sometimes|integer'
+    // ];
 
     public function __construct()
     {
@@ -123,16 +132,9 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function search(array $params, string $merchantId = null)
+    public function search(string $entity, array $params, string $merchantId = null)
     {
-        //
-        // Sets index name: Index name is current entity (eg. invoice|merchant)
-        //
-
-        $class = $this->getEntityClass();
-        $model = new $class;
-
-        $this->setIndexName($this->mode . '_' . $model->getEntity());
+        $this->setIndexName($this->mode . '_' . $entity);
 
         $clauses = []; // Boolean query clauses
         $filters = []; // Filters
@@ -277,44 +279,44 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->delete($params);
     }
 
-    public function fetch($params, $merchantId)
-    {
-        $entities = new Base\PublicCollection;
+    // public function fetch($params, $merchantId)
+    // {
+    //     $entities = new Base\PublicCollection;
 
-        if (isset($params['notes']))
-        {
-            $entities = $this->fetchNotes(static::$table, $params, $merchantId);
-        }
+    //     if (isset($params['notes']))
+    //     {
+    //         $entities = $this->fetchNotes(static::$table, $params, $merchantId);
+    //     }
 
-        return $entities;
-    }
+    //     return $entities;
+    // }
 
-    public function fetchNotes($typeName, $params, $merchantId)
-    {
-        $params['merchant_id'] = $merchantId;
+    // public function fetchNotes($typeName, $params, $merchantId)
+    // {
+    //     $params['merchant_id'] = $merchantId;
 
-        $entities = new PublicCollection;
+    //     $entities = new PublicCollection;
 
-        // Returns all the entity IDs matching the notes search.
-        $entityIds = $this->esDao->getNotes($typeName, $params);
+    //     // Returns all the entity IDs matching the notes search.
+    //     $entityIds = $this->esDao->getNotes($typeName, $params);
 
-       if (empty($entityIds) === false)
-        {
-            // Get the entity data from MySQL.
-            $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
+    //    if (empty($entityIds) === false)
+    //     {
+    //         // Get the entity data from MySQL.
+    //         $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
 
-            // MySQL should contain all entities present in ES.
-            if ($entities->count() !== count($entityIds))
-            {
-                throw new Exception\ServerErrorException(
-                    'Did not find corresponding entity data in MySQL' ,
-                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
-                    ['es_entity_ids' => $entityIds]);
-            }
-        }
+    //         // MySQL should contain all entities present in ES.
+    //         if ($entities->count() !== count($entityIds))
+    //         {
+    //             throw new Exception\ServerErrorException(
+    //                 'Did not find corresponding entity data in MySQL' ,
+    //                 ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
+    //                 ['es_entity_ids' => $entityIds]);
+    //         }
+    //     }
 
-        return $entities;
-    }
+    //     return $entities;
+    // }
 
     // Currently storing only notes and merchant ID.
     public function storeEntity($typeName, $entityArray, $esDao = null)
