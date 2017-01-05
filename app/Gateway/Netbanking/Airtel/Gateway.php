@@ -32,8 +32,6 @@ class Gateway extends Base\Gateway
 
     const TIME_FORMAT            = 'dmYhis';
 
-    const TRANSACTION_ID_NOT_FOUND = '910';
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -276,37 +274,24 @@ class Gateway extends Base\Gateway
         }
 
         // Saved bank_payment_id from Auth not found in Verify Response
+        // We then mock a failed verify response, and return that transaction
         $this->trace->error(
             TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
             $response);
 
-        return $this->mockFailedVerifyTransaction($verify, $response);
+        return $this->mockFailedVerifyTransaction($transaction, $bankPaymentId);
     }
 
     /*
-     *  Mocking a failed response from verify (Transaction ID not found)
+     * Mocking a failed response from verify
      */
-    protected function mockFailedVerifyTransaction($verify, $response)
+    protected function mockFailedVerifyTransaction($transaction, $bankPaymentId)
     {
-        $bankPaymentId = $verify->payment->getBankPaymentId();
-
-        $transaction = $response[VerifyFields::TRANSACTION][0];
-
-        $transaction[VerifyFields::AMOUNT] = $verify->payment->getAttribute('amount');
-
         $transaction[VerifyFields::STATUS] = Status::FAILURE;
 
         $transaction[VerifyFields::TRANSACTION_ID] = $bankPaymentId;
 
-        $response[VerifyFields::TRANSACTION] = $transaction;
-
-        $response[VerifyFields::CODE] = Code::FAILURE;
-
-        $response[VerifyFields::ERROR_CODE] = self::TRANSACTION_ID_NOT_FOUND;
-
-        $verify->verifyResponseContent = $transaction;
-
-        return $response;
+        return $transaction;
     }
 
     protected function getRefundRequestData($input)
