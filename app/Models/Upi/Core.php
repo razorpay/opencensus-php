@@ -15,6 +15,8 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
+    const EXCLUDED_PSPS = 'excluded_psps';
+
     protected $customerService;
 
     public function __construct()
@@ -281,5 +283,35 @@ class Core extends Base\Core
     protected function AuthorizePayment($arr)
     {
         return (new P2p\Service)->completeAuthorization($arr['p2p_id'], $arr);
+    }
+
+    public function disallowVpaPsp(array $input)
+    {
+        $cache = $this->app['cache'];
+
+        $excludedPsps = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
+
+        $newExcludedPsps = $input['psps'];
+
+        $excludedPsps = array_unique(array_merge($excludedPsps, $newExcludedPsps));
+
+        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
+
+        return ['excluded' => $excludedPsps, 'success' => true];
+    }
+
+    public function allowVpaPsp(array $input)
+    {
+        $cache = $this->app['cache'];
+
+        $excludedPsps = json_decode($cache->get(self::EXCLUDED_PSPS, '[]'), true);
+
+        $allowedPsps = $input['psps'];
+
+        $excludedPsps = array_diff($excludedPsps, $allowedPsps);
+
+        $cache->forever(self::EXCLUDED_PSPS, json_encode($excludedPsps));
+
+        return ['excluded' => $excludedPsps, 'success' => true];
     }
 }

@@ -5,7 +5,10 @@ namespace RZP\Models\Merchant;
 use Config;
 
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Trace;
 
@@ -31,6 +34,7 @@ class Entity extends Base\PublicEntity
     const FEATURES                  = 'features';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
+    const FEE_MODEL                 = 'fee_model';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
     const LOGO_URL                  = 'logo_url';
@@ -71,7 +75,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
-        self::FEATURES,
+        self::FEE_MODEL,
         self::LOGO_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
@@ -111,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::INTERNATIONAL,
         self::FEE_BEARER,
+        self::FEE_MODEL,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -139,7 +144,6 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS             => false,
         self::SETTLEMENT_SCHEDULE    => 3,
         self::SETTLEMENT_SCHEDULE_ID => null,
-        self::FEATURES               => Features::CARD_SAVING,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
         self::RISK_RATING            => 3,
@@ -147,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::FEE_MODEL              => FeeModel::PREPAID,
         self::CONVERT_CURRENCY       => null,
     );
 
@@ -189,6 +194,11 @@ class Entity extends Base\PublicEntity
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isPrepaid()
+    {
+        return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
     }
 
     public function isLive()
@@ -394,6 +404,11 @@ class Entity extends Base\PublicEntity
         return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
+    protected function getFeeModelAttribute()
+    {
+        return FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
+    }
+
     protected function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
@@ -505,6 +520,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LOGO_URL);
     }
 
+    public function getFeeBearer()
+    {
+        return $this->getAttribute(self::FEE_BEARER);
+    }
+
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -570,34 +595,6 @@ class Entity extends Base\PublicEntity
         return array_map('trim', $emails);
     }
 
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-
-        if (empty($features))
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-            return array_map('trim', $features);
-        }
-    }
-
-    protected function setFeaturesAttribute($features)
-    {
-        if (is_array($features))
-        {
-            $this->attributes[self::FEATURES] =
-                implode(Features::DELIMITER, $features);
-        }
-        else
-        {
-            $this->attributes[self::FEATURES] = $features;
-        }
-    }
-
     protected function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
@@ -630,6 +627,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
+    protected function setFeeModelAttribute($feeModel)
+    {
+        $this->attributes[self::FEE_MODEL] = FeeModel::getValueForFeeModelString($feeModel);
+    }
+
     protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)
     {
         if ($autoRefundDelayPeriod === null)
@@ -656,6 +658,16 @@ class Entity extends Base\PublicEntity
             case 'days':
                 $multiplier = 86400;
                 break;
+
+            default:
+                throw new LogicException(
+                    'Invalid duration for auto refund delay',
+                    ErrorCode::SERVER_ERROR_INVALID_DURATION,
+                    [
+                        'auto_refund_delay_period' => $autoRefundDelayPeriod,
+                        'duration' => $duration,
+                        'time' => $time
+                    ]);
         }
 
         $delay = $time * $multiplier;

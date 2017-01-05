@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -36,9 +37,9 @@ trait Capture
 
         // set the input currency if missing and payment currency is INR
         if ((isset($input['currency']) === false) and
-            ($payment->getCurrency() === Payment\Currency::INR))
+            ($payment->getCurrency() === Currency\Currency::INR))
         {
-            $input['currency'] = Payment\Currency::INR;
+            $input['currency'] = Currency\Currency::INR;
         }
 
         $payment->getValidator()->validateInput('capture', $input);
@@ -184,8 +185,10 @@ trait Capture
     /**
      * Captures the payment.
      *
-     * @param  Payment\Entity   $payment
-     * @param  integer          $amount
+     * @param  Payment\Entity $payment
+     * @param  integer        $amount
+     * @param                 $currency
+     *
      * @return Payment\Entity
      */
     protected function capturePayment($payment, $amount, $currency)
@@ -223,7 +226,7 @@ trait Capture
         if ($payment->getConvertCurrency() === true)
         {
             $data['amount'] = $payment->getBaseAmount();
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
         }
 
         $this->captureOnGateway($data);
@@ -242,53 +245,41 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
-        $paymentCopy = clone $this->payment;
+        $this->mutex->acquireAndRelease(
+            $this->payment->getId(),
+            function() use($data)
+            {
+                try
+                {
+                    $this->callAndHandleCaptureOnGateway($data);
+                }
+                catch (Exception\BaseException $ex)
+                {
+                    $this->trace->traceException($ex);
 
-        try
-        {
-            $this->acquireMutexOnPayment($this->payment);
+                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex);
+                }
 
-            $this->callAndHandleCaptureOnGateway($data);
-
-            $this->recordCapture();
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->updatePaymentIfApplicableOnCaptureFailure($ex, $paymentCopy);
-        }
-        finally
-        {
-            $this->releaseMutexOnPayment($this->payment);
-        }
+                // In case of a failure (marking the payment as failed),
+                // we won't record this capture since we throw the exception
+                // after marking the payment as failed.
+                $this->recordCapture();
+            });
     }
 
-    protected function updatePaymentIfApplicableOnCaptureFailure(
-        Exception\BaseException $ex,
-        Payment\Entity $paymentCopy)
+    protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
+        Exception\BaseException $ex)
     {
-        // For validation failures, we shouldn't mark capture as failed ever.
+        //
+        // For validation failures from the gateway or
+        // request exceptions, we shouldn't mark capture as failed ever.
+        //
         if (($ex instanceof Exception\BadRequestValidationFailureException) or
             ($ex instanceof Exception\BadRequestException) or
             ($ex instanceof Exception\GatewayRequestException))
         {
             throw $ex;
         }
-
-        if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
-        {
-            // If pricing rule is not found, we should not mark capture as failed ever.
-            throw $ex;
-        }
-
-        $this->trace->traceException($ex);
-
-        //
-        // We need to use the old payment
-        // because the recordCapture would have made some changes
-        // to payment entity but not committed due to which payment
-        // entity will have corrupted data
-        //
-        $this->payment = $paymentCopy;
 
         $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
 

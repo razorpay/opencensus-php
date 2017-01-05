@@ -77,18 +77,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        $this->setDefaultFeatures($merchant);
-
         (new Detail\Service)->createMerchantDetails($merchant);
-    }
-
-    protected function setDefaultFeatures($merchant)
-    {
-        (new Feature\Core)->create([
-            'name'          => Feature\Constants::CARD_SAVING,
-            'entity_id'     => $merchant->getId(),
-            'entity_type'   => 'merchant'
-        ]);
     }
 
     /**

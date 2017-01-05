@@ -330,7 +330,7 @@ class Service extends Base\Service
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTransaction->merchant)
                                         ->createTransactionForRefund(
-                                            $refundWithoutTransaction, $payment);
+                                            $refundWithoutTransaction, $payment, true);
 
                     $this->repo->saveOrFail($refundWithoutTransaction);
 

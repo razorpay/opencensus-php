@@ -44,17 +44,18 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'                => '100000razorpay',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'Razorpay',
-                    'display_name'      => 'Razorpay Software Private Ltd',
-                    'email'             => 'admin@razorpay.com',
-                    'email_domains'     => 'razorpay.com',
-                    'allow_sign_up'     => true,
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => $currentTime,
-                    'updated_at'        => $currentTime,
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
                 ]
             );
 
@@ -76,6 +77,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I3fMI9AGKROX',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -85,6 +87,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I47LP6lyPYJR',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'beta-dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6GMmOpMJp40',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.dev',
                     'created_at'        => $currentTime,
@@ -103,6 +107,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6bfuaPQ72xa',
                     'org_id'            => '6dLbNSpv5XbCOG',
                     'hostname'          => 'dashboard-hdfc.razorpay.dev',
                     'created_at'        => $currentTime,

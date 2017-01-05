@@ -59,7 +59,6 @@ class Entity extends Base\PublicEntity
         self::SINK_ID,
         self::SINK_TYPE,
         self::STATUS,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::DESCRIPTION,
         self::TYPE,
