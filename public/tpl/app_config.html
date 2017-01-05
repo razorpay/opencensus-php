@@ -57,40 +57,27 @@
     </footer>
   </div>
 
-  <!-- <div class="panel panel-default" ng-controller="FeaturesCtrl">
+  <div class="panel panel-default" ng-controller="FeaturesCtrl">
     <div class="panel-heading">
       <span>Flash Checkout</span>
-      <label ng-if="fcOpted" class=" pull-right">
+      <label class=" pull-right">
         <span ng-if="fcEnabled" class="text-success">ENABLED</span>
         <span ng-if="!fcEnabled" class="text-danger">DISABLED</span>
       </label>
     </div>
     <div class="panel-body">
       <form class="form-horizontal">
-        <div class="">
-          <div class="">
-            <span class="help-block m-b-none">Securely save the card details of your customers, with Razorpay's Flash Checkout. </span>
-            <span ng-if="!fcOpted">Flash Checkout feature will be <strong>automatically enabled on your account on 5 Jan, 2017</strong>. You can opt out right now from this automatic update and enable this feature later.</span>
-          </div>
-          <div class="clearfix"></div>
-          <div class="m-t">
-
-            <span class="help-block m-b-none pull-left"><a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">Know more about Flash Checkout <i class="fa fa-external-link"></i></a></span>
-
-            <div class="pull-right">
-
-              <div ng-if="fcOpted" class=" text-center prev-next">
-                <button ng-click="toggleFc()" type="submit" class="btn btn-save btn-default btn-rounded ">
-                  <span ng-if="fcEnabled">Disable Flash Checkout</span>
-                  <span ng-if="!fcEnabled">Enable Flash Checkout</span>
-                </button>
-              </div>
-              <div ng-if="!fcOpted" class=" text-center prev-next">
-                <button ng-click="optOutFirstFc()" type="submit" class="btn btn-save btn-default btn-rounded pull-right">Opt Out</button>
-                <button ng-click="optInFc()" type="submit" class="btn btn-save btn-default btn-rounded pull-right m-r">Enable Flash Checkout</button>
-              </div>
+        <span class="help-block m-b-none">Securely save the card details of your customers, with Razorpay's Flash Checkout. </span>
+        <div class="clearfix"></div>
+        <div class="m-t">
+          <span class="help-block m-b-none pull-left"><a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">Know more about Flash Checkout <i class="fa fa-external-link"></i></a></span>
+          <div class="pull-right">
+            <div class=" text-center prev-next">
+              <button ng-click="toggleFc()" type="submit" class="btn btn-save btn-default btn-rounded ">
+                <span ng-if="fcEnabled">Disable Flash Checkout</span>
+                <span ng-if="!fcEnabled">Enable Flash Checkout</span>
+              </button>
             </div>
-
           </div>
         </div>
       </form>
@@ -100,7 +87,7 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
     </footer>
-  </div> -->
+  </div>
 
   <div class="panel panel-default" ng-controller="ConfigCtrl">
     <div class="panel-heading">
@@ -127,17 +114,3 @@
     </footer>
   </div>
 </div>
-<script type="text/ng-template" id="optOutReasonModal.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Please enter reason to disable Flash Checkout</h3>
-  </div>
-  <div class="modal-body roll-key-modal">
-      <form>
-        <input type="textarea" name="optOutReason" ng-model="optOutReason" class="form-control" value="">
-      </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok btn-roll-key-ok" ng-disabled="!optOutReason" ng-click="ok(optOutReason)">OK</button>
-  </div>
-</script>
