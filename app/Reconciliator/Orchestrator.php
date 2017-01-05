@@ -41,7 +41,7 @@ class Orchestrator
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC     => ['prashanth@razorpay.com'],
+        self::HDFC     => ['prashanth@razorpay.com', 'payoutreport@hdfcbank.com'],
         self::AXIS     => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
@@ -98,10 +98,7 @@ class Orchestrator
      */
     public function initiateReconciliationProcess(array $input)
     {
-        $this->app['trace']->info(
-            TraceCode::RECON_REQUEST,
-            $input
-        );
+        $this->traceReconRequest($input);
 
         // Checks if it's manual call or mailgun call
         if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
@@ -131,6 +128,28 @@ class Orchestrator
         );
 
         return $this->orchestrate();
+    }
+
+    /**
+     * Request body, if sent via mail through Mailgun, is too large
+     * to be parsed effectively on Splunk. So we unset the body params,
+     * then trace everything else.
+     * Other headers will be enough to identify the mail if needed.
+     *
+     * @param  array $input Request body
+     */
+    protected function traceReconRequest(array $input)
+    {
+        unset($input['body-html']);
+        unset($input['body-plain']);
+        unset($input['stripped-html']);
+        unset($input['stripped-text']);
+
+
+        $this->app['trace']->info(
+            TraceCode::RECON_REQUEST,
+            $input
+        );
     }
 
     /**
