@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment;
+namespace RZP\Models\Currency;
 
 class Currency
 {
@@ -107,8 +107,7 @@ class Currency
     ];
 
     const DENOMINATION_FACTOR = [
-        self::INR  => 100,
-        self::USD  => 100,
+        self::INR => 100,
+        self::USD => 100,
     ];
 }
-

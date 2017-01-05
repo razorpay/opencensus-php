@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -47,7 +48,7 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateNodalBalance($txn);
+        // $this->updateNodalBalance($txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
@@ -126,7 +127,7 @@ class Core extends Base\Core
 
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
@@ -295,7 +296,7 @@ class Core extends Base\Core
             Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR);
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR);
 
         $gateway = $refund->getGateway();
 
@@ -325,7 +326,7 @@ class Core extends Base\Core
         {
             case Payment\Status::AUTHORIZED:
                 // When refunding authorized payments, we do not charge merchants
-                $this->updateNodalBalance($txn);
+                //$this->updateNodalBalance($txn);
 
                 break;
             case Payment\Status::CAPTURED:
@@ -337,7 +338,7 @@ class Core extends Base\Core
 
                 Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
-                $this->updateNodalBalance($txn);
+                //$this->updateNodalBalance($txn);
 
                 break;
             default:
@@ -366,7 +367,7 @@ class Core extends Base\Core
         $values = array(
             Transaction\Entity::DEBIT           => $debit,
             Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => Payment\Currency::INR,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),
@@ -401,16 +402,16 @@ class Core extends Base\Core
     {
         $txn = $this->updateMerchantBalance($txn);
 
-        if ($updateNodalBalance === true)
-        {
-            $txn = $this->updateNodalBalance($txn);
-        }
-        else
-        {
-            $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
-
-            $txn->setEscrowBalance($nodalBalance->getBalance());
-        }
+        // if ($updateNodalBalance === true)
+        // {
+        //     $txn = $this->updateNodalBalance($txn);
+        // }
+        // else
+        // {
+        //     $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
+        //
+        //     $txn->setEscrowBalance($nodalBalance->getBalance());
+        // }
 
         return $txn;
     }
@@ -427,19 +428,19 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateNodalBalance(Transaction\Entity $txn)
-    {
-        $channel = $txn->getChannel();
+    // public function updateNodalBalance(Transaction\Entity $txn)
+    // {
+    //     $channel = $txn->getChannel();
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
+    //     $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalBalance->updateBalance($txn);
-        $this->repo->balance->updateBalance($nodalBalance);
+    //     $nodalBalance->updateBalance($txn);
+    //     $this->repo->balance->updateBalance($nodalBalance);
 
-        $txn->setEscrowBalance($nodalBalance->getBalance());
+    //     $txn->setEscrowBalance($nodalBalance->getBalance());
 
-        return $txn;
-    }
+    //     return $txn;
+    // }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
@@ -478,14 +479,14 @@ class Core extends Base\Core
             $amount = $amountCredits;
         }
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+        // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractAmountCredits($amount);
+        // $nodalBalance->subtractAmountCredits($amount);
 
         $merchantBalance->subtractAmountCredits($amount);
 
         // Nodal balance needs to be saved because of amount credit update
-        $this->repo->balance->updateBalance($nodalBalance);
+        // $this->repo->balance->updateBalance($nodalBalance);
     }
 
     public function updateFeeCredits(Transaction\Entity $txn)
@@ -509,28 +510,28 @@ class Core extends Base\Core
             throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
         }
 
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
+        // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractFeeCredits($fee);
+        // $nodalBalance->subtractFeeCredits($fee);
 
         $merchantBalance->subtractFeeCredits($fee);
 
-        // Nodal balance needs to be saved because of amount credit update
-        $this->repo->balance->updateBalance($nodalBalance);
+        // // Nodal balance needs to be saved because of amount credit update
+        // $this->repo->balance->updateBalance($nodalBalance);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
     {
-        if ($this->nodalBalance !== null)
-        {
-            return $this->nodalBalance;
-        }
+        // if ($this->nodalBalance !== null)
+        // {
+        //     return $this->nodalBalance;
+        // }
 
-        $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
+        // $nodalBalance = $this->repo->balance->getNodalBalanceLockForUpdate($channel);
 
-        $this->nodalBalance = $nodalBalance;
+        // $this->nodalBalance = $nodalBalance;
 
-        return $nodalBalance;
+        // return $nodalBalance;
     }
 
     protected function getBalanceLockForUpdate(Merchant\Entity $merchant)

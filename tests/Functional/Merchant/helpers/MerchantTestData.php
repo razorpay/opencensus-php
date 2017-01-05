@@ -1193,7 +1193,7 @@ return [
         'request' => [
             'content' => [
                 "features" => [
-                    "flashcheckout" => "0",
+                    "flashcheckout" => "1",
                 ],
                 "optout_reason" => "some reason"
             ],
@@ -1205,7 +1205,7 @@ return [
                 'features' => [
                     [
                         'feature' => "flashcheckout",
-                        'value' => FALSE,
+                        'value' => TRUE,
                         'display_name' => "Flash Checkout"
                     ]
                 ]
