@@ -92,6 +92,10 @@ class Entity extends Base\Entity
         self::CROSS_ORG_ACCESS => 'bool',
     ];
 
+    protected $defaults = [
+        self::CROSS_ORG_ACCESS => false,
+    ];
+
     protected static function boot()
     {
         parent::boot();

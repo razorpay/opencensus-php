@@ -68,15 +68,13 @@ class AdminAccess
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
-        if (in_array($routeName, self::getExcludedRoutes(), true) === true)
+        if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;
         }
 
         // Some orgs have global access to edit other org over specific routes
-        $interOrgRoutes = static::getInterOrgRoutes();
-
-        if ((in_array($routeName, $interOrgRoutes, true) === true) and
+        if ((in_array($routeName, Route::$crossOrgRoutes, true) === true) and
             ($admin->org->isCrossOrgAccessEnabled() === true))
         {
             return true;
@@ -117,18 +115,6 @@ class AdminAccess
             'permission_get_multiple',
             'permission_delete',
             'permission_edit',
-        ];
-    }
-
-    /*
-     * Routes that can be accessed by other org admins.
-     * primarily razorpay org
-     */
-    private static function getInterOrgRoutes()
-    {
-        return [
-            'org_edit',
-            'org_get',
         ];
     }
 

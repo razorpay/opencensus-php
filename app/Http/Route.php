@@ -925,6 +925,15 @@ final class Route
         'reports_transaction_broking'   => 'broking_report'
     );
 
+    /*
+     * Routes that can be accessed by other org admins.
+     * primarily razorpay org
+     */
+    public static $crossOrgRoutes = [
+        'org_edit',
+        'org_get',
+    ];
+
     const RAZORPAYJS_ROUTES = array(
         'payment_cancel',
         'payment_create_ajax',
