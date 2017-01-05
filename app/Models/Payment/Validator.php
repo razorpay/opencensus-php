@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
@@ -276,7 +277,7 @@ class Validator extends Base\Validator
         $currency = $input['currency'];
 
         // Right now only INR and USD is supported.
-        if (in_array($currency, Payment\Currency::SUPPORTED_CURRENCIES, true) === false)
+        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,

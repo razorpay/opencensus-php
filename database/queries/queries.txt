@@ -1420,9 +1420,9 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
-ALTER TABLE payments 
+ALTER TABLE payments
     MODIFY contact VARCHAR(20);
-    
+
 ALTER TABLE org_hostname
     MODIFY COLUMN id CHAR(14);
 
@@ -1442,3 +1442,19 @@ UPDATE org_hostname
 ALTER TABLE merchant_details
     ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,
     ADD COLUMN department VARCHAR (255) AFTER role;
+
+# Queries to remove redundant features column in merchants table
+ALTER TABLE merchants
+    DROP COLUMN features;
+DELETE FROM features WHERE name='cardsaving';
+
+## Queries for PR:1943
+ALTER TABLE merchants
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer;
+ALTER TABLE transactions
+    ADD COLUMN fee_bearer TINYINT(1) NOT NULL DEFAULT 0 AFTER channel,
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
+    ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
+UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
+UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
+
