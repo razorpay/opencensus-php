@@ -172,9 +172,7 @@ class Processor extends Base\Core
 
         $this->trace->info(
             TraceCode::SCHEDULE_UNSETTLED_TXNS,
-            [
-                'count' => $txns->count()
-            ]);
+            ['count' => $txns->count()]);
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
@@ -266,20 +264,22 @@ class Processor extends Base\Core
 
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $setl = $this->repo->transaction(function() use ($merchantSettler,
-                $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
-            {
-                $setl = $merchantSettler->settle(
-                                        $setlTxns,
-                                        $setlAmount,
-                                        $setlFee,
-                                        $setlApiFee,
-                                        $serviceTax);
+            $setl = $this->repo->transaction(
+                function()
+                    use ($merchantSettler, $setlTxns, $setlAmount,
+                         $setlFee, $setlApiFee, $serviceTax)
+                {
+                    $setl = $merchantSettler->settle(
+                                            $setlTxns,
+                                            $setlAmount,
+                                            $setlFee,
+                                            $setlApiFee,
+                                            $serviceTax);
 
-                $this->repo->transaction->settled($setlTxns, $this->setlTime);
+                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
 
-                return $setl;
-            });
+                    return $setl;
+                });
 
             $txnsSettled = $txnsSettled->merge($setlTxns);
 
