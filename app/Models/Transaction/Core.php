@@ -599,7 +599,11 @@ class Core extends Base\Core
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
-        assert($amountCredits > 0);
+        // Removing Assert for now, as there is a race condition. if 2 payments
+        // are authorized at the same time where we create txn on auth with. both
+        // will try to set amount credits to zero and one will throw below assert
+        // as both txn were marked as gratis on authorization
+        // assert($amountCredits > 0);
 
         //
         // Even if free credits is less than txn amount, we still give full
