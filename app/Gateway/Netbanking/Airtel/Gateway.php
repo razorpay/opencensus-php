@@ -32,6 +32,8 @@ class Gateway extends Base\Gateway
 
     const TIME_FORMAT            = 'dmYhis';
 
+    const TRANSACTION_ID_NOT_FOUND = '910';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -211,14 +213,12 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $amount = (string) $this->getFormattedAmount($input);
-
         $data = [
             VerifyFields::SESSION_ID               => uniqid(),
             VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             VerifyFields::TRANSACTION_DATE         => $this->getFormattedDate($input),
             VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
-            VerifyFields::AMOUNT                   => $amount
+            VerifyFields::AMOUNT                   => (string) $this->getFormattedAmount($input)
         ];
 
         $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
@@ -275,9 +275,38 @@ class Gateway extends Base\Gateway
             }
         }
 
+        // Saved bank_payment_id from Auth not found in Verify Response
         $this->trace->error(
             TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
             $response);
+
+        return $this->mockFailedVerifyTransaction($verify, $response);
+    }
+
+    /*
+     *  Mocking a failed response from verify (Transaction ID not found)
+     */
+    protected function mockFailedVerifyTransaction($verify, $response)
+    {
+        $bankPaymentId = $verify->payment->getBankPaymentId();
+
+        $transaction = $response[VerifyFields::TRANSACTION][0];
+
+        $transaction[VerifyFields::AMOUNT] = $verify->payment->getAttribute('amount');
+
+        $transaction[VerifyFields::STATUS] = Status::FAILURE;
+
+        $transaction[VerifyFields::TRANSACTION_ID] = $bankPaymentId;
+
+        $response[VerifyFields::TRANSACTION] = $transaction;
+
+        $response[VerifyFields::CODE] = Code::FAILURE;
+
+        $response[VerifyFields::ERROR_CODE] = self::TRANSACTION_ID_NOT_FOUND;
+
+        $verify->verifyResponseContent = $transaction;
+
+        return $response;
     }
 
     protected function getRefundRequestData($input)
@@ -285,19 +314,13 @@ class Gateway extends Base\Gateway
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $tranId = $payment['bank_payment_id'];
-
-        $merchantId = $this->getMerchantId();
-
-        $amount = $this->getFormattedAmount($input);
-
         $request = [
             RefundFields::SESSION_ID        => uniqid(),
-            RefundFields::TRANSACTION_ID    => $tranId,
+            RefundFields::TRANSACTION_ID    => $payment[Base\Entity::BANK_PAYMENT_ID],
             RefundFields::TRANSACTION_DATE  => $this->getFormattedDate($input),
             RefundFields::REQUEST           => self::REVERSAL,
-            RefundFields::MERCHANT_ID       => $merchantId,
-            RefundFields::AMOUNT            => "$amount"
+            RefundFields::MERCHANT_ID       => $this->getMerchantId(),
+            RefundFields::AMOUNT            => (string) $this->getFormattedAmount($input),
         ];
 
         $hash = $this->getHashOfArray($request, 'request');
@@ -574,7 +597,7 @@ class Gateway extends Base\Gateway
     }
 
     /*
-     * @Override parent method
+     * Overrides the default method contained in Base/Gateway
      */
     protected function getMappedAttributes($attributes)
     {

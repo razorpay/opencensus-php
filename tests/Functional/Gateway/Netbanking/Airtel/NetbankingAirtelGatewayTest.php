@@ -114,6 +114,19 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    // Verify doesn't contain the bank_payment_id from auth
+    public function testUnexpectedVerifyResponse()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+    }
+
     // Authorization fails, but verify shows success
     // Results in a payment verification error
     public function testAuthFailedVerifySuccess()
