@@ -65,6 +65,7 @@ trait Refund
         {
             throw new Exception\LogicException(
                 'Should have been refunded on gateway but is not',
+                ErrorCode::SERVER_ERROR_GATEWAY_NOT_REFUNDED,
                 $data);
         }
 

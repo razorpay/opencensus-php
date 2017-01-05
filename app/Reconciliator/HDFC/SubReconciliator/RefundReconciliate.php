@@ -38,18 +38,6 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $paymentId;
     }
 
-    protected function getRefundAmount(array $row)
-    {
-        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === false)
-        {
-            return null;
-        }
-
-        $refundAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
-
-        return $refundAmount;
-    }
-
     protected function createRefundOnApi(array $row, string $refundId, \Exception $ex)
     {
         $this->messenger->raiseReconAlert(
