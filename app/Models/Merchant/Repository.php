@@ -140,6 +140,21 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable().'.*');
     }
 
+    protected function addQueryParamFeeBearer($query, $params)
+    {
+        $feeBearer = $this->getAttributeWithTableName(Entity::FEE_BEARER);
+
+        $query->where($feeBearer, '=', FeeBearer::getValueForBearerString($params[Entity::FEE_BEARER]));
+    }
+
+    protected function addQueryParamFeeModel($query, $params)
+    {
+        $feeModel = $this->getAttributeWithTableName(Entity::FEE_MODEL);
+
+        $query->where($feeModel, '=', FeeModel::getValueForFeeModelString($params[Entity::FEE_MODEL]));
+    }
+
+
     /**
      * Returns all the emails and names for all Merchants
      * No limits
