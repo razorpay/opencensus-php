@@ -7,5 +7,24 @@ use RZP\Constants\Table;
 
 class EsRepository extends Base\EsRepository
 {
-    protected static $table = Table::PAYMENT;
+    protected static $table = Table::Payment;
+
+    protected $fields = [
+        Entity::ID,
+        Entity::MERCHANT_ID,
+        Entity::NOTES,
+    ];
+
+    protected $searchFields = [
+        Entity::NOTES . '.*',
+    ];
+
+    protected $fieldsMappings = [
+        Entity::NOTES => [
+            'type' => 'object',
+        ],
+        Entity::MERCHANT_ID => [
+            'type' => 'keyword',
+        ],
+    ];
 }

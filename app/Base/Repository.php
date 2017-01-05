@@ -103,7 +103,7 @@ class Repository extends \Razorpay\Spine\Repository
         // Saves the entity in MySql.
         $entity->saveOrFail($options);
 
-        // [Queue] saves in ES if certain conditions are met.
+        // [Queue] Saves in ES if certain conditions are met.
         $this->syncToEs($entity, $dirty);
     }
 
@@ -111,6 +111,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         parent::deleteOrFail($entity);
 
+        // [Queue] Removes documetn from ES
         $this->syncToEs($entity, [], 'delete');
     }
 
@@ -246,13 +247,12 @@ class Repository extends \Razorpay\Spine\Repository
 
             $this->queue->push($esRepoClass . '@fireSync', $queueData);
         }
-        catch (\Exception $ex)
+        catch (\Exception $e)
         {
-            $this->trace->error(
-                TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
+            $this->trace->traceException($e, null, null, [
+                    'entity_id' => $entity->getId(),
+                    'action'    => $action,
+                ]);
         }
     }
 
@@ -277,28 +277,6 @@ class Repository extends \Razorpay\Spine\Repository
         // get_called_class gives the (namespace+classname)
         // removing the last element to get only the namespace.
         return join('\\', explode('\\', get_called_class(), -1));
-    }
-
-    /**
-     * Override this method in entity/repository in case the type name is
-     * different for that entity.
-     *
-     * @return string
-     */
-    protected function getEsType()
-    {
-        $parentNamespace = $this->getParentNamespace();
-
-        $parentNamespaceArray = explode('\\', $parentNamespace);
-
-        // Constant names are all uppercase.
-        // Table constant class has the same name as the entity class name.
-        $className = strtoupper(end($parentNamespaceArray));
-
-        // The ES type name is the same as the table name for the entity in MySQL.
-        $typeName = constant("RZP\\Constants\\Table::$className");
-
-        return $typeName;
     }
 
     protected function getAttributeWithTableName($col)

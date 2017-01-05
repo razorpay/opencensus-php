@@ -8,16 +8,8 @@ use App;
 use RZP\Constants\Entity;
 
 /**
- * Input:
- * - Mode
- * - Entity name
+ * Indexes entity into es for search purposes.
  *
- * Flow:
- * - Ensures index exists for given entity
- * - Reads all data from mysql and indexes into es
- *
- * TODO:
- * - Add logging/tracing and debug lines
  */
 class Index extends Command
 {
@@ -25,7 +17,7 @@ class Index extends Command
                             {--mode=test : Database mode the command will run in (test|live)}
                             {--entity=   : Entity name (eg. item|merchant) }';
 
-    protected $description = 'Indexes entity data into ES.';
+    protected $description = 'Indexes entity into es for search purposes.';
 
     protected $mode;
     protected $entity;
@@ -36,7 +28,9 @@ class Index extends Command
 
         \Database\DefaultConnection::set($this->mode);
 
-        $this->app  = App::getFacadeRoot();
+        $app  = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
 
         $this->initRepo();
 
@@ -49,12 +43,12 @@ class Index extends Command
         $this->entity = $this->option('entity');
     }
 
+    /**
+     * Sets es repo and index name for the entity.
+     *
+     */
     protected function initRepo()
     {
-        //
-        // Gets es repo of entity
-        //
-
         $esRepoPath   = Entity::getEntityEsRepository($this->entity);
         $this->esRepo = new $esRepoPath;
 
@@ -63,6 +57,10 @@ class Index extends Command
         $this->esRepo->setIndexName($indexName);
     }
 
+    /**
+     * Fetches all entities in batch and indexes them to es.
+     *
+     */
     protected function doIndexing()
     {
         $this->esRepo->createIndexIfNotExists();
@@ -72,6 +70,8 @@ class Index extends Command
 
         while (true)
         {
+            $this->info('Offset: ' . $skip);
+
             $collection = $this->esRepo->fetchForIndex(null, $skip, $take);
 
             if ($collection->count() === 0)
@@ -79,22 +79,27 @@ class Index extends Command
                 break;
             }
 
-            $serialized = $collection->toArray();
+            try
+            {
+                $this->esRepo->bulkUpdate($collection->toArray());
+            }
+            catch(\Exception $e)
+            {
+                $this->error($e);
 
-            $this->bulkUpdate($serialized);
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    null,
+                    [
+                        'mode'   => $this->mode,
+                        'entity' => $this->entity,
+                        'skip'   => $skip,
+                        'take'   => $take,
+                    ]);
+            }
 
             $skip += $take;
-        }
-    }
-
-    protected function bulkUpdate(array $documents)
-    {
-        try
-        {
-            $this->esRepo->bulkUpdate($documents);
-        }
-        catch(\Exception $ex)
-        {
         }
     }
 }

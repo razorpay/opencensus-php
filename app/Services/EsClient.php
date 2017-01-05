@@ -70,31 +70,6 @@ class EsClient
         return $this->client->search($params);
     }
 
-    public function searchNotes($params)
-    {
-        // If ES mock is set to true.
-        if ($this->esMock === true)
-        {
-            return null;
-        }
-
-        $searchResponse = $this->client->search($params);
-
-        if ($searchResponse['hits']['total'] === 0)
-        {
-            return null;
-        }
-
-        $entityResults = $searchResponse['hits']['hits'];
-        $entityIds = [];
-        foreach ($entityResults as $_ => $entityData)
-        {
-            $entityIds[] = $entityData['_id'];
-        }
-
-        return $entityIds;
-    }
-
     public function get($params)
     {
         return $this->client->get($params);

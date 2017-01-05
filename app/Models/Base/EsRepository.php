@@ -12,17 +12,18 @@ class EsRepository extends \Razorpay\Spine\Repository
 {
     protected $esDao;
     protected $indexName;
-
     protected $trace;
 
     protected static $table;
 
     const MAX_JOB_ATTEMPTS = 10;
-    // This is in seconds
-    const JOB_RELEASE_WAIT = 120;
+    const JOB_RELEASE_WAIT = 120; // In seconds
 
     const QUERY            = 'q';
 
+    //
+    // Default mapping for most of the es fields
+    //
     protected $defaultFieldMapping = [
         'type'            => 'text',
         'analyzer'        => 'edge_ngram_analyzer',
@@ -31,17 +32,17 @@ class EsRepository extends \Razorpay\Spine\Repository
     ];
 
     //
-    // Fields indexed in es and their mappings
+    // Fields indexed in es and their mappings.
+    // These fields will be queried to db and will be indexed.
     //
     protected $fields         = [];
     protected $fieldsMappings = [];
-    protected $searchFields   = [];
 
-    // protected $searchParamRules        = [];
-    // protected $defaultSearchParamRules = [
-    //     self::COUNT => 'sometimes|integer|min:1|max:5000',
-    //     self::SKIP  => 'sometimes|integer'
-    // ];
+    //
+    // These fields will be searched on 'q' (the query string).
+    // These can be different from all the fields(above) indexed.
+    //
+    protected $searchFields   = [];
 
     public function __construct()
     {
@@ -49,7 +50,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
+        //
         // TODO: Fix this, how to get app mode?
+        //
         $this->mode = 'test';
 
         $this->trace = $app['trace'];
@@ -67,6 +70,11 @@ class EsRepository extends \Razorpay\Spine\Repository
     public function getFieldsMappings()
     {
         return $this->fieldsMappings;
+    }
+
+    public function getSearchFields()
+    {
+        return $this->searchFields;
     }
 
     public function getDefaultFieldMapping()
@@ -117,7 +125,7 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'properties' => $this->getFieldsMappings(),
                 'dynamic_templates' => [
                     [
-                        'notes' => [
+                        'default' => [
                             'match' => '*',
                             'match_mapping_type' => 'string',
                             'mapping' => $this->getDefaultFieldMapping(),
@@ -128,16 +136,14 @@ class EsRepository extends \Razorpay\Spine\Repository
         ];
 
         $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
-
-        return $this;
     }
 
     public function search(string $entity, array $params, string $merchantId = null)
     {
         $this->setIndexName($this->mode . '_' . $entity);
 
-        $clauses = []; // Boolean query clauses
-        $filters = []; // Filters
+        $clauses = [];                       // Boolean query clauses
+        $filters = [];                       // Filters
         $from    = ($params['skip']) ?? 0;
         $size    = ($params['count']) ?? 10;
 
@@ -169,6 +175,12 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $searchResult = $this->esDao->search($searchParams);
 
+        //
+        // TODO:
+        // What to do about highlights, Need to discuss in what format those will be
+        // returned in the api respose.
+        //
+
         $hits = $searchResult['hits']['hits'];
 
         $ids = collect($hits)->pluck('_id')->all();
@@ -183,12 +195,25 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $entities;
     }
 
+    /**
+     * Builds search clauses(should) and filters for forming the query.
+     *
+     * @param array  $params
+     * @param string $merchantId
+     * @param array  $clauses
+     * @param array  $filters
+     *
+     * @return null
+     */
     public function buildSearchQuery(
         array   $params,
         string  $merchantId,
         array & $clauses,
         array & $filters)
     {
+        //
+        // If merchand id is available, add it to filters
+        //
         if ($merchantId !== null)
         {
             $filters[] = [
@@ -200,13 +225,16 @@ class EsRepository extends \Razorpay\Spine\Repository
             ];
         }
 
+        //
+        // If 'q' is set, form a multi_match clause on search fields
+        //
         if (empty($params['q']) === false)
         {
             $clauses[] = [
                 'multi_match' => [
                     'query'  => $params['q'],
                     'type'   => 'best_fields',
-                    'fields' => $this->getFields(),
+                    'fields' => $this->getSearchFields(),
                     'boost'  => 1,
                 ],
             ];
@@ -214,6 +242,9 @@ class EsRepository extends \Razorpay\Spine\Repository
             unset($params['q']);
         }
 
+        //
+        // If notes is set, form a multi_match clause on notes.* fields
+        //
         if (empty($params['notes']) === false)
         {
             $clauses[] = [
@@ -228,6 +259,9 @@ class EsRepository extends \Razorpay\Spine\Repository
             unset($params['notes']);
         }
 
+        //
+        // For all other params add a term clause
+        //
         foreach ($params as $key => $value)
         {
             $clauses[] = [
@@ -241,12 +275,15 @@ class EsRepository extends \Razorpay\Spine\Repository
         }
     }
 
+    /**
+     * Builds es payload and makes bulk upsert request to es.
+     *
+     * @param array $documents
+     *
+     * @return null
+     */
     public function bulkUpdate(array $documents)
     {
-        //
-        // Builds es payload and makes bulk upsert request to es
-        //
-
         $params = [];
 
         foreach($documents as $document)
@@ -276,107 +313,17 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->delete($params);
     }
 
-    // public function fetch($params, $merchantId)
-    // {
-    //     $entities = new Base\PublicCollection;
-
-    //     if (isset($params['notes']))
-    //     {
-    //         $entities = $this->fetchNotes(static::$table, $params, $merchantId);
-    //     }
-
-    //     return $entities;
-    // }
-
-    // public function fetchNotes($typeName, $params, $merchantId)
-    // {
-    //     $params['merchant_id'] = $merchantId;
-
-    //     $entities = new PublicCollection;
-
-    //     // Returns all the entity IDs matching the notes search.
-    //     $entityIds = $this->esDao->getNotes($typeName, $params);
-
-    //    if (empty($entityIds) === false)
-    //     {
-    //         // Get the entity data from MySQL.
-    //         $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
-
-    //         // MySQL should contain all entities present in ES.
-    //         if ($entities->count() !== count($entityIds))
-    //         {
-    //             throw new Exception\ServerErrorException(
-    //                 'Did not find corresponding entity data in MySQL' ,
-    //                 ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
-    //                 ['es_entity_ids' => $entityIds]);
-    //         }
-    //     }
-
-    //     return $entities;
-    // }
-
-    // Currently storing only notes and merchant ID.
-    public function storeEntity($typeName, $entityArray, $esDao = null)
-    {
-        $params['notes'] = $entityArray['notes'];
-        $params['merchant_id'] = $entityArray['merchant_id'];
-        $params['entity_id'] = $entityArray['id'];
-
-        if ($esDao === null)
-        {
-            $esDao = $this->esDao;
-        }
-
-        $esDao->storeNotes($typeName, $params);
-    }
-
-    // Called through queue
-    // Called through the entity repository
-    public function fireStoreEntity($job, $data)
-    {
-        $esType = $data['es_type'];
-        $entityArray = $data['entity'];
-        $mode = $data['mode'];
-
-        try
-        {
-            $this->trace->info(
-                TraceCode::ES_SAVE_REQUEST,
-                $data);
-
-            // Creating a new EsDao object because,
-            // in the queue flow, the mode needs to be passed
-            // to the constructor.
-            $esDao = new EsDao($mode);
-            // Calls the entity es repository
-            $this->storeEntity($esType, $entityArray, $esDao);
-
-            $job->delete();
-        }
-        catch (\Exception $ex)
-        {
-            $data['job_attempts'] = $job->attempts();
-
-            $this->trace->error(
-                TraceCode::ES_SAVE_FAILED,
-                [
-                    $data
-                ]
-            );
-
-            $this->trace->traceException($ex);
-
-            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
-            {
-                $job->delete();
-            }
-            else
-            {
-                $job->release(self::JOB_RELEASE_WAIT);
-            }
-        }
-    }
-
+    /**
+     * Fetches data from mysql for indexing the entity.
+     * If list of ids given then usage that to run findMany else will find all
+     * with given skip and take param.
+     *
+     * @param array|null  $ids
+     * @param int|integer $skip
+     * @param int|integer $take
+     *
+     * @return PublicCollection
+     */
     public function fetchForIndex(array $ids = null, int $skip = 0, int $take = 100)
     {
         $query = $this->newQuery();
@@ -394,6 +341,14 @@ class EsRepository extends \Razorpay\Spine\Repository
                      ->get();
     }
 
+    /**
+     * Called through queue from Base/Repository's saveOrFail and deleteOfFail.
+     *
+     * @param mixed $job
+     * @param array $data
+     *
+     * @return null
+     */
     public function fireSync($job, $data)
     {
         $id     = $data['id'];
@@ -405,8 +360,30 @@ class EsRepository extends \Razorpay\Spine\Repository
         $model = new $class;
 
         $this->setIndexName($mode . '_' . $model->getEntity());
+
         $this->createIndexIfNotExists();
 
+        try
+        {
+            $this->sync($id, $action);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, null, [$data]);
+
+            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
+            {
+                $job->delete();
+            }
+            else
+            {
+                $job->release(self::JOB_RELEASE_WAIT);
+            }
+        }
+    }
+
+    protected function sync(string $id, string $action)
+    {
         switch ($action) {
             case 'upsert':
 

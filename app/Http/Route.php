@@ -294,7 +294,6 @@ final class Route
         'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
-        'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
         'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
         'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
@@ -563,7 +562,6 @@ final class Route
         'emi_generate_excel',
         'refund_verify',
         'payment_capture_verify',
-        'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
@@ -798,7 +796,6 @@ final class Route
             'payment_refund_authorized',
             'payment_capture_reminder',
             'emi_generate_excel',
-            'es_migrate_entity',
             'setl_post_details_old',
             'invoice_send_notifications',
             'invoice_expire',
@@ -824,8 +821,6 @@ final class Route
     );
 
     public static $slaveRoutes = [
-        // TODO: Uncomment this when slave variables issue is fixed.
-        //'es_migrate_entity',
     ];
 
     protected static $jsonpRoutes = array(
