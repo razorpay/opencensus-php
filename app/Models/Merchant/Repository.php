@@ -30,6 +30,7 @@ class Repository extends Base\Repository
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
