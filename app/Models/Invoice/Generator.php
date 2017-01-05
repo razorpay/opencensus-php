@@ -18,6 +18,7 @@ use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
+use RZP\Services\Elfin\Service as Elfin;
 
 class Generator extends Base\Core
 {
@@ -460,15 +461,15 @@ class Generator extends Base\Core
         switch ($this->merchant->getEmail())
         {
             case 'harshit.marwah@razorpay.com':
-                $this->elfin->setServices(['gimli']);
+                $this->elfin->setServices([Elfin::GIMLI]);
                 break;
 
-            case '`harshil@razorpay.com':
-                $this->elfin->setServices(['gimli', 'bitly']);
+            case 'harshil@razorpay.com':
+                $this->elfin->setServices([Elfin::GIMLI, Elfin::BITLY]);
                 break;
 
             default:
-                $this->elfin->setServices(['bitly']);
+                $this->elfin->setServices([Elfin::BITLY]);
                 break;
         }
     }

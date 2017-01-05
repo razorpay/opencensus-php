@@ -19,6 +19,9 @@ class Service extends Impl\Base
     // Comma separated list of services, eg. 'gimli, bitly'.
     // Gimly is internal implementation while Bitly is the external service.
 
+    const GIMLI = 'gimli';
+    const BITLY = 'bitly';
+
     /**
      * Holds the available services for shortening urls.
      *
