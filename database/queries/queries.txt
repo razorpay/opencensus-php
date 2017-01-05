@@ -1420,7 +1420,6 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
-<<<<<<< HEAD
 ALTER TABLE payments
     MODIFY contact VARCHAR(20);
 
