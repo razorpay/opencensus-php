@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::INTERNATIONAL,
         self::FEE_BEARER,
+        self::FEE_MODEL,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
