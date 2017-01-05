@@ -217,7 +217,7 @@ trait RepositoryUpdateTestAndLive
         if ($diff)
         {
             $msg = 'Entity: ' . $this->entity . PHP_EOL . $msg;
-            $msg = 'A row in test and live database do not match' . PHP_EOL;
+            $msg .= '. A row in test and live database do not match' . PHP_EOL;
 
             throw new Exception\LogicException($msg);
         }

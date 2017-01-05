@@ -17,7 +17,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
-                'custom_code' => 'hdfc',
+                'custom_code' => 'test custom code',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -35,10 +35,11 @@ return [
                     'fbapi.com'
                 ],
                 'allow_sign_up' => false,
-                'email' => 'test@hdfc.com',
-                'display_name' => 'HDFC Bank',
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
-                'auth_type' => 'password',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code'
             ],
             'status_code' => 200,
         ],
@@ -55,7 +56,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
-                'custom_code' => 'hdfc',
+                'custom_code' => 'test custom code',
             ],
         ],
         'response' => [
@@ -64,10 +65,11 @@ return [
                     'fbapi.com'
                 ],
                 'allow_sign_up' => true,
-                'email' => 'test@hdfc.com',
-                'display_name' => 'HDFC Bank',
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
-                'auth_type' => 'password',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
             ],
             'status_code' => 200,
         ],

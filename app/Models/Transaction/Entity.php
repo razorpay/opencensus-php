@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -30,6 +31,9 @@ class Entity extends Base\PublicEntity
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
+    const FEE_MODEL           = 'fee_model';
+    const FEE_BEARER          = 'fee_bearer';
+    const CREDIT_TYPE         = 'credit_type';
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
@@ -63,6 +67,9 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
         self::CHANNEL,
+        self::FEE_MODEL,
+        self::FEE_BEARER,
+        self::CREDIT_TYPE,
         self::SETTLED_AT,
         self::SERVICE_TAX);
 
@@ -107,6 +114,9 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
+        self::FEE_MODEL             => Merchant\FeeModel::PREPAID,
+        self::FEE_BEARER            => Merchant\FeeBearer::PLATFORM,
+        self::CREDIT_TYPE           => CreditType::DEFAULT,
     );
 
     protected $amounts = array(
@@ -132,8 +142,10 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = [
-        self::GRATIS      => 'boolean',
-        self::FEE_CREDITS => 'integer',
+        self::GRATIS        => 'boolean',
+        self::FEE_CREDITS   => 'integer',
+        self::FEE_MODEL     => 'integer',
+        self::FEE_BEARER    => 'integer',
     ];
 
     public function merchant()
@@ -230,6 +242,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_SERVICE_TAX);
     }
 
+    public function getFeeBearer()
+    {
+        return $this->getAttribute(self::FEE_BEARER);
+    }
+
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
+    }
+
+    public function getCreditType()
+    {
+        return $this->getAttribute(self::CREDIT_TYPE);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getAmountAttribute()
@@ -311,7 +338,28 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
+    protected function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function getFeeBearerAttribute()
+    {
+        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
+    protected function getFeeModelAttribute()
+    {
+        return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
+    }
+
+    protected function setFeeModelAttribute($feeModel)
+    {
+        $this->attributes[self::FEE_MODEL] = Merchant\FeeModel::getValueForFeeModelString($feeModel);
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
+
 
     public function getGateway()
     {
@@ -465,6 +513,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
+    public function setFeeBearer($bearer)
+    {
+        $this->setAttribute(self::FEE_BEARER, $bearer);
+    }
+
+    public function setFeeModel($feeModel)
+    {
+        $this->setAttribute(self::FEE_MODEL, $feeModel);
+    }
+
+    public function setCreditType($creditType)
+    {
+        $this->setAttribute(self::CREDIT_TYPE, $creditType);
+    }
+
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);
@@ -503,6 +566,11 @@ class Entity extends Base\PublicEntity
     public function isSettled()
     {
         return $this->getSettledAttribute();
+    }
+
+    public function isFeeBearerCustomer()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
     }
 
     public function toArrayReport()
