@@ -78,7 +78,7 @@ class Entity extends Base\Entity
 
     public function getStatusCode()
     {
-        $this->getAttribute(self::STATUS_CODE);
+        return $this->getAttribute(self::STATUS_CODE);
     }
 
     public function setWallet($wallet)
