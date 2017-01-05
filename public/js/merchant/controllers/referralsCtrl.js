@@ -102,16 +102,8 @@ app.controller('ReferralsCtrl', [
 
     $scope.openPasswordModal = function (merchant) {
       var modalInstance = $modal.open({
-        templateUrl: 'passwordModalContent.html',
-        controller: 'PasswordModalCtrl',
-        resolve: {
-          password: function () {
-            return $scope.password;
-          },
-          password_confirmation: function () {
-            return $scope.password_confirmation;
-          }
-        }
+        templateUrl: 'createUserModal.html',
+        controller: 'createUserModalCtrl',
       });
       modalInstance.result.then(function (password) {
         merchant.password = password.password;

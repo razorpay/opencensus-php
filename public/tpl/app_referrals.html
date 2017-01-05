@@ -36,7 +36,7 @@
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
             <td>
-              <script type="text/ng-template" id="passwordModalContent.html">
+              <script type="text/ng-template" id="createUserModal.html">
               <div class="modal-header">
                 <h3 class="modal-title">Create Login</h3>
               </div>
@@ -53,7 +53,7 @@
                   <button class="btn btn-primary" ng-click="ok(password, password_confirmation)">OK</button>
               </div>
             </script>
-            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openPasswordModal({id: merchant.id, email: merchant.email, name: merchant.name})">Create Login</button>
+            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCreateUserModal({id: merchant.id, email: merchant.email, name: merchant.name})">Create Login</button>
             </td>
           </tr>
         </tbody>

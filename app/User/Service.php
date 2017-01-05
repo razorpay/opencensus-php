@@ -132,7 +132,7 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function createUserFromEmail(array $input)
+    public function createUserForSubmerchant(array $input)
     {
         $user = $this->buildUserEntity($input);
 
