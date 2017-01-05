@@ -60,7 +60,9 @@ class RefundReconciliate extends Base\RefundReconciliate
                 [
                     'row' => $row,
                     'message' => 'Unable to get the payment ID or amount from the refund recon file',
-                    'refund_id' => $refundId
+                    'refund_id' => $refundId,
+                    'refund_amount' => $refundAmount,
+                    'payment_id' => $paymentId,
                 ]);
 
             return false;
