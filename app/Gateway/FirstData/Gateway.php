@@ -334,9 +334,13 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED               => true,
             Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
             Entity::AMOUNT                 => $input['amount'],
-            Entity::CURRENCY               => Currency::ISO_NUMERIC_CODES[$input['currency']],
             Entity::STATUS                 => Status::CAPTURED,
         ];
+
+        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        {
+            $attributes[Entity::CURRENCY] = $input['currency'];
+        }
 
         $this->setApproval($attributes[Entity::APPROVAL_CODE]);
 
