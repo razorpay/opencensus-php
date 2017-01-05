@@ -155,7 +155,6 @@ return array(
         'test' => env('ES_TEST_INDEX')
     ],
 
-    // TODO MAKE BOTH USE DIFFERENT INDEX
     'es_audit' => [
         'live' => env('ES_AUDIT_LIVE_INDEX'),
         'test' => env('ES_AUDIT_TEST_INDEX')
