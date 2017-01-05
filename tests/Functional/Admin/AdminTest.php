@@ -509,7 +509,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->orgId, $admin->getEmail());
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
@@ -543,7 +543,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->orgId, $admin->getEmail());
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -565,7 +565,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->orgId, $admin->getEmail());
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
@@ -598,7 +598,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->orgId, $admin->getEmail());
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
@@ -628,7 +628,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->orgId, $admin->getEmail());
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,

@@ -114,13 +114,13 @@ class Service extends Base\Service
     {
         $validator = new Validator();
 
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
+
         $validator->validateInput('forgot', $input);
 
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
-
-        // Validate if admin's org allows password reset
-        $admin->getValidator()->validateOrgSupportsPasswordReset(
-            $admin->org->getAuthType());
 
         $this->setPasswordResetToken($admin, $input);
 
@@ -166,16 +166,14 @@ class Service extends Base\Service
 
         $secret = $app->config->get('app.key');
 
-        $token =  hash_hmac(HashAlgo::SHA256, Str::random(40), $secret);
+        $token = hash_hmac(HashAlgo::SHA256, Str::random(40), $secret);
 
         return $token;
     }
 
     protected function setPasswordResetToken(Entity $admin, array & $input)
     {
-        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
-            $admin->org->getId(),
-            $admin->getId());
+        $key = $this->getCacheKeyForResetToken($admin->org->getId(), $admin->getId());
 
         $expiresAt = Carbon::now()->addHours(1);
 
@@ -190,17 +188,16 @@ class Service extends Base\Service
     {
         $validator = new Validator();
 
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
+
         $validator->validateInput('reset', $input);
 
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
 
-        $org = $admin->org;
-
-        // Validate if admin's org allows password reset
-        $admin->getValidator()->validateOrgSupportsPasswordReset($org->getAuthType());
-
-        $key = sprintf(self::ADMIN_PASSWORD_RESET_TOKEN_KEY, $org->getId(), $admin->getId());
+        $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
 
         $resetToken = Cache::get($key);
 
@@ -218,7 +215,7 @@ class Service extends Base\Service
 
     protected function getAdminFromEmail($orgId, $email)
     {
-        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email, ['org']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 
         if ($admin === null)
         {
@@ -592,5 +589,12 @@ class Service extends Base\Service
         (new Token\Service)->deleteToken($adminToken);
 
         return ['success' => true];
+    }
+
+    protected function getCacheKeyForResetToken(string $orgId, string $adminId)
+    {
+        return  sprintf(
+            self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
+            $orgId, $adminId);
     }
 }

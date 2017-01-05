@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Admin;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
 
@@ -64,11 +65,13 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'required|string',
         self::TOKEN                   => 'required|string',
+        Org\Entity::AUTH_TYPE         => 'required|string|in:password',
     ];
 
     protected static $forgotRules = [
         Entity::EMAIL                 => 'required|email|max:255',
-        self::RESET_PASSWORD_URL      => 'required|string'
+        self::RESET_PASSWORD_URL      => 'required|string',
+        Org\Entity::AUTH_TYPE         => 'required|string|in:password',
     ];
 
     protected static $createValidators = [
@@ -113,20 +116,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
-        }
-    }
-
-    public function validateOrgSupportsPasswordReset(string $authType)
-    {
-        $passwordResetTypes = ['password'];
-
-        if (in_array($authType, $passwordResetTypes) === false)
-        {
-            $this->entity->setAuditAction(
-                Action::RESET_PASSWORD_INVALID_AUTH_TYPE);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'The AuthType does not support password-reset');
         }
     }
 }

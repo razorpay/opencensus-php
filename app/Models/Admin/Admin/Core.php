@@ -99,9 +99,6 @@ class Core extends Base\Core
 
         $validator->validateInput('reset', $input);
 
-        $admin->getValidator()->validateOrgSupportsPasswordReset(
-            $admin->org->getAuthType());
-
         $admin->setAuditAction(Action::RESET_PASSWORD);
 
         // Check if the pwd follows the auth policy guidelines
