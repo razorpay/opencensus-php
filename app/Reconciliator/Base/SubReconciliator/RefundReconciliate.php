@@ -141,12 +141,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getRefundAmount(array $row)
     {
-        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === false)
+        if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
         {
             return null;
         }
 
-        $refundAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
+        $refundAmount = floatval($row[static::COLUMN_REFUND_AMOUNT]) * 100;
 
         return $refundAmount;
     }
