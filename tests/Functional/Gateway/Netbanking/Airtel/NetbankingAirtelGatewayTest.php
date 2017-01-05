@@ -198,6 +198,9 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
+            $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+            $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
             $content['txns'][0]['status'] = 'FAL';
         });
     }

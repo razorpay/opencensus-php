@@ -1052,7 +1052,7 @@ class DatabaseSeeder extends Seeder
     protected function createNetbankingAirtelTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => Terminal\Shared::NETBANKING_AIRTEL_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_AIRTEL,
@@ -1063,7 +1063,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
-            )
+            ]
         );
     }
 

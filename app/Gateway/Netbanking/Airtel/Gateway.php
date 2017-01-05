@@ -211,14 +211,14 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $amount = $this->getFormattedAmount($input);
+        $amount = (string) $this->getFormattedAmount($input);
 
         $data = [
             VerifyFields::SESSION_ID               => uniqid(),
             VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             VerifyFields::TRANSACTION_DATE         => $this->getFormattedDate($input),
             VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
-            VerifyFields::AMOUNT                   => "$amount"
+            VerifyFields::AMOUNT                   => $amount
         ];
 
         $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
@@ -274,6 +274,10 @@ class Gateway extends Base\Gateway
                 return $transaction;
             }
         }
+
+        $this->trace->error(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+            $response);
     }
 
     protected function getRefundRequestData($input)
@@ -317,7 +321,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributes($responseArray, $input);
 
-        $this->createGatewayActionEntity($attributes);
+        $this->createGatewayPaymentEntity($attributes);
 
         $this->checkActionStatus($responseArray);
     }
@@ -567,5 +571,31 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
+    }
+
+    /*
+     * @Override parent method
+     */
+    protected function getMappedAttributes($attributes)
+    {
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $attr = [];
+
+            $map = $this->map;
+
+            foreach ($attributes as $key => $value)
+            {
+                if (isset($map[$key]))
+                {
+                    $newKey = $map[$key];
+                    $attr[$newKey] = $value;
+                }
+            }
+
+            return $attr;
+        }
+
+        return $attributes;
     }
 }
