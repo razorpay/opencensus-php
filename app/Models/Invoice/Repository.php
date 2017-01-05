@@ -32,7 +32,6 @@ class Repository extends Base\Repository
 
     protected $esWhitelistedParams = [
         Base\EsRepository::QUERY,
-        Entity::RECEIPT,
         Entity::NOTES,
     ];
 

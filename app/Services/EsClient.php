@@ -87,11 +87,21 @@ class EsClient
 
     public function indexExists(array $params)
     {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
         return $this->client->indices()->exists($params);
     }
 
     public function createIndex($params)
     {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
         return $this->client->indices()->create($params);
     }
 

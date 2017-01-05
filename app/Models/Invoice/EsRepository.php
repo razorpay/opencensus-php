@@ -12,13 +12,11 @@ class EsRepository extends Base\EsRepository
     protected $fields = [
         Entity::ID,
         Entity::MERCHANT_ID,
-        Entity::RECEIPT,
         Entity::DESCRIPTION,
         Entity::NOTES,
     ];
 
     protected $searchFields = [
-        Entity::RECEIPT,
         Entity::DESCRIPTION,
         Entity::NOTES . '.*',
     ];
