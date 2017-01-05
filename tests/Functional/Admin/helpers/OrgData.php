@@ -75,6 +75,33 @@ return [
         ],
     ],
 
+    'testEditOtherOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'email' => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name' => 'HDFC Bank Edited By RZP',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type' => 'password',
+                'custom_code' => 'hdfc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'allow_sign_up' => true,
+                'email' => 'test@hdfc.com',
+                'display_name' => 'HDFC Bank Edited By RZP',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type' => 'password',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testfetchMultipleOrg' => [
         'request' => [
             'url' => '/orgs',
@@ -156,6 +183,19 @@ return [
         'response' => [
             'content' => [
                 'email' => 'sreeram12@gmail.com'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetOtherOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'testotherrzp@gmail.com'
             ],
             'status_code' => 200,
         ],
