@@ -556,8 +556,12 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
             'vpc_Amount'        => $input['amount'],
-            'vpc_Currency'      => $input['currency'],
         );
+
+        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        {
+            $content['vpc_Currency'] = $input['currency'];
+        }
 
         return $content;
     }
@@ -578,10 +582,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
-            'vpc_Currency'      => $input['refund']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
+
+        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        {
+            $content['vpc_Currency'] = $input['currency'];
+        }
 
         return $content;
     }
