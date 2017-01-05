@@ -1450,6 +1450,6 @@ ALTER TABLE transactions
     ADD COLUMN fee_bearer TINYINT(1) NOT NULL DEFAULT 0 AFTER channel,
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
     ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
-
-
+UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
+UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 
