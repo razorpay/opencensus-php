@@ -279,6 +279,10 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
             $response);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+            ['BANK_PAYMENT_ID' => $bankPaymentId]);
+
         return $this->mockFailedVerifyTransaction($transaction, $bankPaymentId);
     }
 
