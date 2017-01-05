@@ -184,6 +184,7 @@ app.controller('EntitiesCtrl', [
       batch: {
         merchant_id: ['Merchant Id'],
         status: [
+          'all',
           'created',
           'processing',
           'processed'
@@ -232,6 +233,7 @@ app.controller('EntitiesCtrl', [
       },
       fee_breakup: {
         transaction_id: ['Transaction Id'],
+        pricing_rule_id: ['Pricing Rule Id'],
       },
       first_data: {
         payment_id: ['Payment ID'],
@@ -300,11 +302,19 @@ app.controller('EntitiesCtrl', [
             'platform',
             'customer'
         ],
+        fee_model: [
+            'all',
+            'prepaid',
+            'postpaid'
+        ],
         risk_rating: [
             'all',
             1, 2, 3, 4, 5
         ],
         hold_funds: booleanList
+      },
+      merchant_detail: {
+
       },
       methods: {
         amex: booleanList,

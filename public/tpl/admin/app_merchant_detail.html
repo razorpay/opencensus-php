@@ -323,6 +323,12 @@
           Fee Bearer
         </div>
         <div class="list-group-item">
+          <span class="pull-right">
+            {{merchant.details.fee_model|titlecase}}
+          </span>
+          Fee Model
+        </div>
+        <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
           Settlement Schedule <i class="fa fa-clock-o"></i>
         </div>
@@ -911,7 +917,7 @@
   </div>
   <div class="modal-body merchant-modal">
     <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category,
-    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name, max_payment_amount: current.max_payment_amount/100}">
+    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, fee_model: current.fee_model, name: current.name, max_payment_amount: current.max_payment_amount/100}">
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >
@@ -984,6 +990,15 @@
           <select class="form-control m-b" name="fee_bearer" ng-model="merchant.fee_bearer">
             <option value="platform">Platform</option>
             <option value="customer">Customer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="fee_model" class="col-lg-2 control-label">Fee Model:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="fee_model" ng-model="merchant.fee_model">
+            <option value="prepaid">Prepaid</option>
+            <option value="postpaid">Postpaid</option>
           </select>
         </div>
       </div>
