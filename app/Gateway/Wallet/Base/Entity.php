@@ -80,10 +80,15 @@ class Entity extends Base\Entity
     {
         $this->getAttribute(self::STATUS_CODE);
     }
-    
+
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountAttribute()
