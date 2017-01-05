@@ -224,11 +224,11 @@ class BrokerTransactionReport extends Report
     protected function getFeesBreakupDetails($txn)
     {
         $fees = [
-            'Txn Charges'        => 0.0,
-            'Service Tax'        => 0.0,
-            'SB Cess'            => 0.0,
-            'Krishi Kalyan Cess' => 0.0,
-            'Total Chargeable'   => 0.0,
+            'Txn Charges'        => 0,
+            'Service Tax'        => 0,
+            'SB Cess'            => 0,
+            'Krishi Kalyan Cess' => 0,
+            'Total Chargeable'   => 0,
         ];
 
         return $fees;
