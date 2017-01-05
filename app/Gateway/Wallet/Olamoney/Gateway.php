@@ -108,7 +108,7 @@ class Gateway extends Base\Gateway
         $refundEntity = $refundedEntities->first();
 
         $refundEntityPaymentId = $refundEntity->getPaymentId();
-        $refundEntityRefundAmount = $refundEntity->getAmount() * 100;
+        $refundEntityRefundAmount = $refundEntity->getAmount();
         $refundEntityStatusCode = $refundEntity->getStatusCode();
 
         $this->trace->info(
