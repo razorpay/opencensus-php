@@ -1443,6 +1443,11 @@ ALTER TABLE merchant_details
     ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,
     ADD COLUMN department VARCHAR (255) AFTER role;
 
+# Queries to remove redundant features column in merchants table
+ALTER TABLE merchants
+    DROP COLUMN features;
+DELETE FROM features WHERE name='cardsaving';
+
 ## Queries for PR:1943
 ALTER TABLE merchants
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer;

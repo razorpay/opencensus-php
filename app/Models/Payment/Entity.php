@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -1330,7 +1331,7 @@ class Entity extends Base\PublicEntity
             ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
             $data['amount_refunded'] = $this->getBaseAmountRefunded();
         }
 

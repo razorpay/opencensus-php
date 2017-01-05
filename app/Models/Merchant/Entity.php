@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Trace;
 
@@ -75,7 +76,6 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::FEE_MODEL,
-        self::FEATURES,
         self::LOGO_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
@@ -143,7 +143,6 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS             => false,
         self::SETTLEMENT_SCHEDULE    => 3,
         self::SETTLEMENT_SCHEDULE_ID => null,
-        self::FEATURES               => Features::CARD_SAVING,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
         self::RISK_RATING            => 3,
@@ -593,34 +592,6 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
-    }
-
-    protected function getFeaturesAttribute()
-    {
-        $features = $this->attributes[self::FEATURES];
-
-        if (empty($features))
-        {
-            return [];
-        }
-        else
-        {
-            $features = explode(Features::DELIMITER, $features);
-            return array_map('trim', $features);
-        }
-    }
-
-    protected function setFeaturesAttribute($features)
-    {
-        if (is_array($features))
-        {
-            $this->attributes[self::FEATURES] =
-                implode(Features::DELIMITER, $features);
-        }
-        else
-        {
-            $this->attributes[self::FEATURES] = $features;
-        }
     }
 
     protected function setEmailAttribute($email)

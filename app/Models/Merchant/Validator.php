@@ -76,7 +76,6 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'csv_email',
-        'features',
     ];
 
     protected static $featureValidators = [
@@ -158,11 +157,6 @@ class Validator extends Base\Validator
                 );
             }
         }
-    }
-
-    protected function validateFeatures($input)
-    {
-        Features::validateFeatures($input);
     }
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
