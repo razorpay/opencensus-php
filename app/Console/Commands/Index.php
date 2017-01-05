@@ -61,15 +61,6 @@ class Index extends Command
         $indexName = $this->mode . '_' . $this->entity;
 
         $this->esRepo->setIndexName($indexName);
-
-        //
-        // Gets repo of entity
-        //
-
-        $this->repo = $this->app['repo'];
-
-        $accessor   = $this->entity;
-        $this->repo = $this->repo->$accessor;
     }
 
     protected function doIndexing()
@@ -81,9 +72,7 @@ class Index extends Command
 
         while (true)
         {
-            $indexedFields = $this->esRepo->getFields();
-
-            $collection = $this->repo->fetchAll($skip, $take, $indexedFields);
+            $collection = $this->esRepo->fetchForIndex(null, $skip, $take);
 
             if ($collection->count() === 0)
             {

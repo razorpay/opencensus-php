@@ -46,4 +46,17 @@ class EsRepository extends Base\EsRepository
     //     Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
     //     Entity::NOTES       => 'sometimes|string|min:1|max:40',
     // ];
+
+    public function fetchForIndex(array $ids = null, int $skip = 0, int $take = 100)
+    {
+        $invoices = parent::fetchForIndex($ids, $skip, $take);
+
+        return $invoices->makeHidden(
+            [
+                Entity::CUSTOMER_DETAILS,
+                Entity::LINE_ITEMS,
+                Entity::PUBLIC_ID,
+                Entity::PAYMENT_ID,
+            ]);
+    }
 }

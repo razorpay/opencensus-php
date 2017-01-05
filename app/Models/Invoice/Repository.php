@@ -89,17 +89,4 @@ class Repository extends Base\Repository
 
         $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
     }
-
-    public function fetchAll(int $skip = 0, int $take = 100, array $fields = ['*'])
-    {
-        $invoices = parent::fetchAll($skip, $take, $fields);
-
-        return $invoices->makeHidden(
-            [
-                Entity::CUSTOMER_DETAILS,
-                Entity::LINE_ITEMS,
-                Entity::PUBLIC_ID,
-                Entity::PAYMENT_ID,
-            ]);
-    }
 }

@@ -173,9 +173,6 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $ids = collect($hits)->pluck('_id')->all();
 
-        // sd($ids);
-        // sd(json_encode($searchParams['body']));
-
         if (count($ids) === 0)
         {
             return (new PublicCollection);
@@ -380,6 +377,23 @@ class EsRepository extends \Razorpay\Spine\Repository
         }
     }
 
+    public function fetchForIndex(array $ids = null, int $skip = 0, int $take = 100)
+    {
+        $query = $this->newQuery();
+
+        $fields = $this->getFields();
+
+        if ($ids !== null)
+        {
+            return $query->findMany($ids, $fields);
+        }
+
+        return $query->skip($skip)
+                     ->take($take)
+                     ->select($fields)
+                     ->get();
+    }
+
     public function fireSync($job, $data)
     {
         $id     = $data['id'];
@@ -391,13 +405,14 @@ class EsRepository extends \Razorpay\Spine\Repository
         $model = new $class;
 
         $this->setIndexName($mode . '_' . $model->getEntity());
+        $this->createIndexIfNotExists();
 
         switch ($action) {
             case 'upsert':
 
-                $document = $model->find($id, $this->getFields())->toArray();
+                $documents = $this->fetchForIndex([$id])->toArray();
 
-                $this->bulkUpdate([$document]);
+                $this->bulkUpdate($documents);
 
                 break;
 

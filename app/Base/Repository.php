@@ -95,15 +95,6 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->findMany($ids);
     }
 
-    public function fetchAll(int $skip = 0, int $take = 100, array $fields = ['*'])
-    {
-        return $this->newQuery()
-                    ->skip($skip)
-                    ->take($take)
-                    ->select($fields)
-                    ->get();
-    }
-
     public function saveOrFail($entity, array $options = array())
     {
         // Gets the attributes which are being newly inserted or updated.
@@ -238,46 +229,25 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function syncToEs($entity, $dirty = [], $action = 'upsert')
     {
+        if (isset($this->esWhitelistedParams) === false)
+        {
+            return;
+        }
+
         try
         {
             $esRepoClass = E::getEntityEsRepository($entity->getEntity());
-            $esRepo      = new $esRepoClass;
 
-            if (count($esRepo->getFields()) > 0)
-            {
-                $queueData = [
-                    'mode'   => $this->app['rzp.mode'],
-                    'id'     => $entity->getId(),
-                    'action' => $action,
-                ];
+            $queueData = [
+                'mode'   => $this->app['rzp.mode'],
+                'id'     => $entity->getId(),
+                'action' => $action,
+            ];
 
-                $this->queue->push($esRepoClass . '@fireSync', $queueData);
-            }
-
-
-            // Checks if whitelisted es params is set. If yes, checks if $dirty contains any of them.
-            if ((isset($this->esWhitelistedParams) === true) and
-                (empty(array_intersect(array_keys($dirty), $this->esWhitelistedParams)) === false))
-            {
-                $esRepoClassPath = $this->getEsRepoClassPath();
-
-                $esType = $this->getEsType();
-
-                $queueData = [
-                    'es_type'           => $esType,
-                    // This entity object is converted into an array because Queue::push
-                    // decodes and encodes it with assoc array flag set to true.
-                    'entity'            => $entity->toArray(),
-                    'mode'              => $this->app['rzp.mode'],
-                ];
-
-                // Saving the entity in ES.
-                $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
-            }
+            $this->queue->push($esRepoClass . '@fireSync', $queueData);
         }
         catch (\Exception $ex)
         {
-            // Shouldn't fail for any reason
             $this->trace->error(
                 TraceCode::ES_SAVE_FAILED,
                 $entity->toArray());
@@ -293,6 +263,13 @@ class Repository extends \Razorpay\Spine\Repository
         $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
 
         return $esRepoClassPath;
+    }
+
+    protected function getEsRepo()
+    {
+        $esRepoClassPath = $this->getEsRepoClassPath();
+
+        return (new $esRepoClassPath);
     }
 
     protected function getParentNamespace()
