@@ -8,7 +8,8 @@ app.controller('ActivationCtrl', [
   'transformRequestAsFormPost',
   '$upload',
   'user',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $upload, user) {
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $upload, user, organization) {
     $scope.steps = {
       percent: 0,
       step1: true
@@ -222,6 +223,8 @@ app.controller('ActivationCtrl', [
     // =====
 
     // Get org details for certain display things
-    $scope.org = location.hostname.indexOf('wl') !== -1 ? 'hdfc' : localStorage.getItem('theme');
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.org = data.custom_code;
+    });
   }
 ]);
