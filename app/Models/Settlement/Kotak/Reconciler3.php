@@ -355,4 +355,34 @@ class Reconciler3
 
         return $reconcileFile;
     }
+
+    protected function parseTextFile($file)
+    {
+        $rows = $this->getFileLines($file);
+
+        $data = [];
+        $headings = $this->getHeadings();
+
+        foreach ($rows as $ix => $row)
+        {
+            // Ending row may be just empty.
+            if ($row === '')
+            {
+                continue;
+            }
+
+            $values = explode('~', $row);
+
+            $count = count($values);
+
+            $headings = array_slice($headings, 0, $count);
+
+            $values = array_combine($headings, $values);
+
+            $data[] = $values;
+        }
+
+        return $data;
+    }
+
 }
