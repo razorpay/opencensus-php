@@ -104,10 +104,9 @@
               document.body.className = 'paid';
             },
             prefill: {
-              contact: 999998888,
-              email: 'aa@bv.cc'
+              contact: data.customer_contact,
+              email: data.customer_email,
             },
-            redirect: true,
             callback_url: location.href,
             theme: {
               close_button: false
