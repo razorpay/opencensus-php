@@ -100,6 +100,7 @@
               contact: data.customer_contact,
               email: data.customer_email
             },
+            callback_url: location.href,
             theme: {
               close_button: false
             },
