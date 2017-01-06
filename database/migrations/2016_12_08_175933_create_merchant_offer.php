@@ -47,7 +47,7 @@ class CreateMerchantOffer extends Migration
         {
             $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::MERCHANT_ID.'_foreign');
 
-            $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::OFFER_ID.'_foreign');
         });
 
         Schema::drop(Table::MERCHANT_OFFER);
