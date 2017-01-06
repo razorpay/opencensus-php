@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
@@ -59,7 +60,7 @@ class Server extends Base\Mock\Server
             ResponseFields::BANK_REFERENCE_ID  => mt_rand(1000000000, 9999999999),
             ResponseFields::ITEM_CODE          => $data[RequestFields::ITEM_CODE],
             ResponseFields::AMOUNT             => $data[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY_CODE      => Constants::INDIAN_RUPEE,
+            ResponseFields::CURRENCY_CODE      => Currency::INR,
             ResponseFields::FLAG               => Constants::SUCCESS,
         ];
 

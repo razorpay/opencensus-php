@@ -11,6 +11,7 @@ use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -182,7 +183,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::PAYEE_ID          => $this->getMerchantId(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
-            RequestFields::CURRENCY_CODE     => Constants::INDIAN_RUPEE,
+            RequestFields::CURRENCY_CODE     => Currency::INR,
             RequestFields::CONFIRMATION      => Constants::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
