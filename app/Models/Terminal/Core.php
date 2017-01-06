@@ -15,7 +15,7 @@ class Core extends Base\Core
     {
         $input['merchant_id'] = $merchant->getKey();
 
-        $terminal = (new Terminal\Entity)->build($input);
+        $terminal = (new Entity)->build($input);
 
         $this->validateExistingTerminal($terminal);
 
@@ -128,8 +128,7 @@ class Core extends Base\Core
 
     public function validateExistingTerminal($terminal)
     {
-        $params = array(
-            Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
+        $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
@@ -145,8 +144,7 @@ class Core extends Base\Core
     protected function validateExistingTerminalGatewayMerchantId($terminal)
     {
         // Check no record with same 'gateway_merchant_id' exists
-        $params = array(
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
+        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
@@ -164,7 +162,7 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
-                Terminal\Entity::GATEWAY_MERCHANT_ID);
+                Entity::GATEWAY_MERCHANT_ID);
         }
     }
 
@@ -188,7 +186,7 @@ class Core extends Base\Core
 
         $input['merchant_id'] = $merchant->getKey();
 
-        $terminal = (new Terminal\Entity)->build($input);
+        $terminal = (new Entity)->build($input);
 
         $this->validateExistingTerminal($terminal);
 
