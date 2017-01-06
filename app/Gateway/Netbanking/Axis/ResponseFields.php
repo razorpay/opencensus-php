@@ -15,4 +15,5 @@ class ResponseFields
     const PAYEE_ID                  = 'PAYEEID';
     const DATE                      = 'PaymentDate';
     const PAYMENT_STATUS            = 'PaymentStatus';
+    const VERIFY_RESPONSE_AMOUNT    = 'Amount';
 }

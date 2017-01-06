@@ -309,7 +309,7 @@ class Gateway extends Base\Gateway
         return [
             'received'          => true,
             'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'amount'            => $content[ResponseFields::AMOUNT],
+            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMOUNT],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }

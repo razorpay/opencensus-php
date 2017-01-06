@@ -86,13 +86,13 @@ class Server extends Base\Mock\Server
     protected function getVerifyXml($input)
     {
         $response = [
-            ResponseFields::PAYEE_ID                   => $input[RequestFields::VERIFY_PAYEE_ID],
-            ResponseFields::ITEM_CODE                  => $input[RequestFields::VERIFY_ITC],
-            ResponseFields::MERCHANT_UNIQUE_REFERENCE  => $input[RequestFields::VERIFY_PRN],
-            ResponseFields::DATE                       => $input[RequestFields::VERIFY_AMT],
-            ResponseFields::AMOUNT                     => $input[RequestFields::VERIFY_DATE],
-            ResponseFields::BANK_REFERENCE_ID          => '',
-            ResponseFields::PAYMENT_STATUS             => Constants::SUCCESS,
+            ResponseFields::PAYEE_ID                  => $input[RequestFields::VERIFY_PAYEE_ID],
+            ResponseFields::ITEM_CODE                 => $input[RequestFields::VERIFY_ITC],
+            ResponseFields::MERCHANT_UNIQUE_REFERENCE => $input[RequestFields::VERIFY_PRN],
+            ResponseFields::DATE                      => $input[RequestFields::VERIFY_AMT],
+            ResponseFields::VERIFY_RESPONSE_AMOUNT    => $input[RequestFields::VERIFY_DATE],
+            ResponseFields::BANK_REFERENCE_ID         => '',
+            ResponseFields::PAYMENT_STATUS            => Constants::SUCCESS,
         ];
 
         // for test cases
