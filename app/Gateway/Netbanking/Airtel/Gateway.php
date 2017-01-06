@@ -303,14 +303,11 @@ class Gateway extends Base\Gateway
 
             // Saved bank_payment_id from Auth not found in Verify Response
             // We then mock a failed verify response, and return that transaction
-            $log = [
-                'BANK_PAYMENT_ID' => $bankPaymentId,
-                'response'        => $response
-            ];
-
-            $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
-                $log);
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                [
+                    'expected_txnid'  => $bankPaymentId,
+                    'verify_response' => $response
+                ]);
 
             if ($bankPaymentId !== null)
             {
