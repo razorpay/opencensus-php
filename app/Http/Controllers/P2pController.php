@@ -12,6 +12,7 @@ class P2pController extends Controller
 
     public function __construct()
     {
+        parent::__construct();
         $this->service = new P2p\Service;
     }
 

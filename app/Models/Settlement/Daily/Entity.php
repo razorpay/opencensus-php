@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * This entity contains aggregated settlement data.
+ * It is updated during settlement creation.
+ * If the update fails and the settlement creation
+ * goes through successfully, this will not get updated.
+ * We will need to update it manually via a route.
+ */
+
 namespace RZP\Models\Settlement\Daily;
 
 use RZP\Models\Base;

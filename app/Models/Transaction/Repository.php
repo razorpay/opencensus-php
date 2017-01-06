@@ -55,6 +55,10 @@ class Repository extends Base\Repository
 
         $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
 
+        // TODO: Need to fix this.
+        // If there are too many merchants, the sql query string length
+        // can become too long and get truncated.
+
         $txns = $this->newQuery()
                      ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)

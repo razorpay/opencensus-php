@@ -35,7 +35,7 @@ class Repository extends BaseRepository
     public function findByPublicIdAndOrgIdWithRelations(
         $id,
         $orgId,
-        $relations=[])
+        $relations = [])
     {
         $entity = $this->getEntityClass();
 

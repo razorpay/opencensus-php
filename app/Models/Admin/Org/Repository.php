@@ -39,19 +39,14 @@ class Repository extends Base\Repository
         $hostname = mb_strtolower($hostname);
 
         $orgId = $this->getAttributeWithTableName(Entity::ID);
-        $hostnameOrgId = $this->manager
-                              ->org_hostname
-                              ->getAttributeWithTableName(Hostname\Entity::ORG_ID);
-
-        $hostnameAttr = $this->manager
-                             ->org_hostname
-                             ->getAttributeWithTableName(Hostname\Entity::HOSTNAME);
-
         $orgColumnNames = $this->getAttributeWithTableName('*');
 
-        $orgHostnamesTable = $this->manager
-                                  ->org_hostname
-                                  ->getTableName();
+        $orgHostName = $this->manager->org_hostname;
+
+        $orgHostnamesTable = $orgHostName->getTableName();
+
+        $hostnameOrgId = $orgHostName->getAttributeWithTableName(Hostname\Entity::ORG_ID);
+        $hostnameAttr = $orgHostName->getAttributeWithTableName(Hostname\Entity::HOSTNAME);
 
         // Join the orgs, and org_hostname table to get the org with the given hostname
         return $this->newQuery()

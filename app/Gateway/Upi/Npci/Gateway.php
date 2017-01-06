@@ -6,7 +6,6 @@ use Cache;
 use Carbon\Carbon;
 use RZP\Gateway\Upi\Base;
 use ErrorException;
-use phpseclib\Crypt\RSA;
 use RZP\Trace\TraceCode;
 use Trace;
 use Requests;
