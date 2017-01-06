@@ -156,7 +156,7 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function netBankingBilldeskFilter($terminal, $input)
+    public function netbankingBilldeskFilter($terminal, $input)
     {
         $bankIfsc = [
             IFSC::ICIC,
