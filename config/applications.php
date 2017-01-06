@@ -68,8 +68,10 @@ return array(
     ),
 
     'lumberjack' => array(
+        'version'   => env('LUMBERJACK_VERSION'),
         'url'       => env('LUMBERJACK_URL'),
-        'secret'    => env('LUMBERJACK_SECRET')
+        'secret'    => env('LUMBERJACK_SECRET'),
+        'key'       => env('LUMBERJACK_KEY'),
     ),
 
     'exchange'  => [
