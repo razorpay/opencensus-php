@@ -905,7 +905,7 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndName($merchant->getId(),
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail($merchant->getId(),
                             $featureName);
             if ($feature !== null)
             {

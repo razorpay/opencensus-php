@@ -184,20 +184,7 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        if (($this->app->runningUnitTests() === false) and
-            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
-            ($payment->isCard() === true) and
-            ($payment->card->isInternational() === false) and
-            ($payment->card->isDebit() === true) and
-            (time() < 1483228800))
-        {
-            $fee = 0;
-            $serviceTax = 0;
-        }
-        else
-        {
-            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-        }
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],

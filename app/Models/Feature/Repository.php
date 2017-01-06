@@ -26,11 +26,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByEntityIdAndName(string $entityId, string $featureName)
+    public function findByEntityIdAndNameOrFail(string $entityId, string $featureName)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $entityId)
                     ->where(Entity::NAME, '=', $featureName)
-                    ->first();
+                    ->firstOrFailPublic();
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
+use RZP\Models\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Batch;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -137,15 +138,7 @@ class Entity extends Base\PublicEntity
 
     public function getBaseAmount()
     {
-        $amount = $this->getAttribute(self::BASE_AMOUNT);
-
-        // hack to avoid
-        if ($amount === null)
-        {
-            return $this->getAttribute(self::AMOUNT);
-        }
-
-        return $amount;
+        return $this->getAttribute(self::BASE_AMOUNT);
     }
 
     public function getCurrency()
@@ -229,7 +222,7 @@ class Entity extends Base\PublicEntity
             ($this->payment->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
         }
 
         return $data;

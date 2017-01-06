@@ -244,15 +244,13 @@ class Generator extends Base\Core
 
     protected function createLineItemsFromInputAndSetInvoiceAmount(array $input)
     {
-        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
-
-        if (empty($lineItemsDetails))
+        if (isset($input[Entity::LINE_ITEMS]) === false)
         {
             return;
         }
 
         $this->lineItemCore->updateLineItems(
-            $lineItemsDetails,
+            $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
 

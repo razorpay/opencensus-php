@@ -25,18 +25,22 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Instance objects
      *******************/
 
+    // This will need to be overridden in each gateway's refund recon.
+    const COLUMN_REFUND_AMOUNT = '';
+
     protected $repo;
+    protected $trace;
+    protected $app;
+    protected $messenger;
 
     protected $payment;
     protected $refund;
-
-    protected $app;
-    protected $messenger;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+        $this->trace = $this->app['trace'];
 
         $this->messenger = new Messenger();
     }
@@ -133,6 +137,18 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function getRefundAmount(array $row)
+    {
+        if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
+        {
+            return null;
+        }
+
+        $refundAmount = floatval($row[static::COLUMN_REFUND_AMOUNT]) * 100;
+
+        return $refundAmount;
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)
