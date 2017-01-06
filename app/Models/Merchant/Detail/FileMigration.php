@@ -120,7 +120,11 @@ class FileMigration extends Base\Service
                 {
                     $s3url = $merchantDetail[$key];
 
-                    $awsKey = $merchantId . explode($merchantId, $s3url)[1];
+                    $fileName = explode($merchantId, $s3url)[1];
+
+                    $fileExtension = explode('.', $fileName)[1];
+
+                    $awsKey = $merchantId . $fileName;
 
                     $result = $s3->headObject([
                         'Bucket' => $bucket,
@@ -130,8 +134,9 @@ class FileMigration extends Base\Service
                     $fileInfo[$key] = [
                         'bucket'         => $bucket,
                         'aws_key'        => $awsKey,
-                        'content_type'   => $result['ContentType'],
+                        'content_type'   => $fileExtension,
                         'content_length' => $result['ContentLength'],
+
                     ];
                 }
             }
